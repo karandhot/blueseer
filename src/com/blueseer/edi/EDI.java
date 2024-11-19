@@ -5409,14 +5409,15 @@ public class EDI {
          // create batch file
           String batchfile = "S" + String.format("%07d", filenumber); 
           
-          
+          int comkey = OVData.getNextNbr("edilog");
                // update c for edi_idx
          String[] cc = c.clone();
          cc[0] = c[21];
-         cc[1] = "997x12";
+         cc[1] = "DB";
          cc[15] = "997x12";
          cc[8] = filename;
          cc[21] = c[0];
+         cc[22] = String.valueOf(comkey);
          cc[24] = batchfile;
          cc[25] = batchfile;
          cc[28] = "X12";
@@ -5428,7 +5429,9 @@ public class EDI {
          cc[35] = c[9];
          cc[36] = c[10];
          cc[37] = c[11];
-         EDData.writeEDIIDX(cc);
+         int idxnbr = EDData.writeEDIIDX(cc);
+         cc[16] = String.valueOf(idxnbr);
+         EDData.writeEDILog(cc, "success", "generated 997 response for GS: " + c[14]);
          
         try {
             

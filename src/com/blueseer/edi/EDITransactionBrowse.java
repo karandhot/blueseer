@@ -1184,6 +1184,9 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
              
         }
           if ( (col == 13) && rbDocLog.isSelected()) {
+              if (tablereport.getValueAt(row, 7).toString().equals("DB")) {
+                  return;
+              }
               int k = 10;
               String[] p = EDData.getEDIDocPositionEDIIDX(tablereport.getValueAt(row, 1).toString());
               String end = "0";  // doc end ...revisit...just show everything for now
@@ -1216,6 +1219,9 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
         }
           
          if ( (col == 14) && rbDocLog.isSelected()) {
+             if (tablereport.getValueAt(row, 11).toString().equals("DB")) {
+                  return;
+              }
               int k = 10;
               String[] p = EDData.getEDIDocPositionEDIIDX(tablereport.getValueAt(row, 1).toString());
              
