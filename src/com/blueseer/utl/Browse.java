@@ -274,7 +274,7 @@ public class Browse extends javax.swing.JPanel {
                     state = 0; // match
                 }
                 
-                
+                String site = OVData.getSiteListConditional(bsmf.MainFrame.userid);
                 
                 if (callingpanel.equals("glmaint")) {
                 tablereport.setModel(DTData.getGLTranBrowseUtil(tbtext.getText(), state, searchfield));
@@ -290,7 +290,7 @@ public class Browse extends javax.swing.JPanel {
                 }
                
                 if (callingpanel.equals("edicustmaint")) {
-                tablereport.setModel(DTData.getEDICustBrowseUtil(tbtext.getText(), state, searchfield));
+                tablereport.setModel(DTData.getEDICustBrowseUtil(tbtext.getText(), state, searchfield, site));
                 }
                
                 if (callingpanel.equals("taskmaint")) {

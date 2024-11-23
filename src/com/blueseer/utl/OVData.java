@@ -10011,6 +10011,47 @@ return outvalue;
         
     }
     
+    public static String getSiteListConditional(String userid) {
+         String r = "";  
+         try{
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                res = st.executeQuery("select user_allowedsites, user_site from  " +
+                        "  user_mstr where user_id = " + "'" + userid + "'" + ";" );
+               
+               while (res.next()) {
+                    if (res.getString("user_allowedsites").equals("*")) {
+                      r = "all";
+                    } else {
+                      r = res.getString("user_site");
+                    }
+               }
+               
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return r;
+        
+    }
+    
     public static ArrayList<String> getSiteListAll() {
            ArrayList<String> myarray = new ArrayList<String>();
            String[] sites = null;

@@ -97,8 +97,8 @@ public class ediData {
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  edi_xref where exr_tpid = ? and exr_tpaddr = ? " +
                 " and exr_ovaddr = ? and exr_gsid = ? and exr_type = ?";
-        String sqlInsert = "insert into edi_xref (exr_tpid, exr_tpaddr, exr_ovaddr, exr_gsid, exr_type) " 
-                        + " values (?,?,?,?,?); "; 
+        String sqlInsert = "insert into edi_xref (exr_tpid, exr_tpaddr, exr_ovaddr, exr_gsid, exr_type, exr_site) " 
+                        + " values (?,?,?,?,?,?); "; 
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
              PreparedStatement ps = con.prepareStatement(sqlSelect);) {
              ps.setString(1, x.exr_tpid);
@@ -114,6 +114,7 @@ public class ediData {
              psi.setString(3, x.exr_ovaddr);
              psi.setString(4, x.exr_gsid);
              psi.setString(5, x.exr_type);
+             psi.setString(6, x.exr_site);
             int rows = psi.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
             } else {
@@ -134,8 +135,8 @@ public class ediData {
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  edi_xref where exr_tpid = ? and exr_tpaddr = ? " +
                 " and exr_ovaddr = ? and exr_gsid = ? and exr_type = ?";
-        String sqlInsert = "insert into edi_xref (exr_tpid, exr_tpaddr, exr_ovaddr, exr_gsid, exr_type) " 
-                        + " values (?,?,?,?,?); "; 
+        String sqlInsert = "insert into edi_xref (exr_tpid, exr_tpaddr, exr_ovaddr, exr_gsid, exr_type, exr_site) " 
+                        + " values (?,?,?,?,?,?); "; 
         String sqlUpdate = "update edi_xref set exr_tpaddr = ?, exr_ovaddr = ? " +
                            " where exr_tpid = ? and exr_gsid = ? and exr_type = ? ; "; 
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
@@ -154,6 +155,7 @@ public class ediData {
              psi.setString(3, x.exr_ovaddr);
              psi.setString(4, x.exr_gsid);
              psi.setString(5, x.exr_type); 
+             psi.setString(6, x.exr_site);
             int rows = psi.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
             } else {
@@ -244,7 +246,8 @@ public class ediData {
                             res.getString("exr_tpaddr"),
                             res.getString("exr_ovaddr"),
                             res.getString("exr_gsid"),
-                            res.getString("exr_type")
+                            res.getString("exr_type"),
+                            res.getString("exr_site")
                         );
                     }
                 }
@@ -4731,9 +4734,9 @@ public class ediData {
     
     
     public record edi_xref(String[] m, String exr_tpid, String exr_tpaddr, String exr_ovaddr,
-        String exr_gsid, String exr_type ) {
+        String exr_gsid, String exr_type, String exr_site ) {
         public edi_xref(String[] m) {
-            this(m, "", "", "", "", "");
+            this(m, "", "", "", "", "", "");
         }
     }
     

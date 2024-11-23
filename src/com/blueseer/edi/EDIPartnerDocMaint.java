@@ -140,6 +140,7 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
                     cbenvelopeall.setSelected(BlueSeerUtils.ConvertStringToBool(res.getString("edi_envelopeall")));
                     cbuna.setSelected(BlueSeerUtils.ConvertStringToBool(res.getString("edi_una")));
                     cbung.setSelected(BlueSeerUtils.ConvertStringToBool(res.getString("edi_ung")));
+                    ddsite.setSelectedItem(res.getString("edi_site"));
                     
                 }
                
@@ -201,6 +202,11 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
         
         listAttributes.setModel(listmodel);
         
+        ddsite.removeAllItems();
+        OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));  
+        ddsite.insertItemAt("", 0);
+        ddsite.setSelectedItem(OVData.getDefaultSiteForUserid(bsmf.MainFrame.userid));
+        
         dddoc.removeAllItems();
         ArrayList<String> mylist = OVData.getCodeMstrKeyList("edidoctype");
         for (int i = 0; i < mylist.size(); i++) {
@@ -226,6 +232,9 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
         }
         ddkey.insertItemAt("", 0);
         ddkey.setSelectedIndex(0);
+        
+        
+        
         
         tbrcvisa.setText("");
         tbrcvq.setText("");
@@ -287,6 +296,7 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
      
         ddattributekey.setEnabled(true);
         tbattributevalue.setEnabled(true);
+        ddsite.setEnabled(true);
     }
     
     public void disableAll() {
@@ -326,6 +336,7 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
         ddattributekey.setEnabled(false);
         tbattributevalue.setEnabled(false);
         btcopy.setEnabled(false);
+        ddsite.setEnabled(false);
     }
     
     public void setLanguageTags(Object myobj) {
@@ -395,11 +406,11 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
         lual = new ActionListener() {
         public void actionPerformed(ActionEvent event) {
         if (lurb1.isSelected()) {  
-         luModel = DTData.getEDICustBrowseUtil(luinput.getText(),0, "edi_id");
+         luModel = DTData.getEDICustBrowseUtil(luinput.getText(),0, "edi_id", OVData.getSiteListConditional(bsmf.MainFrame.userid));
         } else if (lurb2.isSelected()) {
-         luModel = DTData.getEDICustBrowseUtil(luinput.getText(),0, "edi_doc");   
+         luModel = DTData.getEDICustBrowseUtil(luinput.getText(),0, "edi_doc", OVData.getSiteListConditional(bsmf.MainFrame.userid));   
         } else {
-         luModel = DTData.getEDICustBrowseUtil(luinput.getText(),0, "edi_sndgs");   
+         luModel = DTData.getEDICustBrowseUtil(luinput.getText(),0, "edi_sndgs", OVData.getSiteListConditional(bsmf.MainFrame.userid));   
         }
         luTable.setModel(luModel);
         luTable.getColumnModel().getColumn(0).setMaxWidth(50);
@@ -545,6 +556,8 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
         btclear = new javax.swing.JButton();
         lblpartner = new javax.swing.JLabel();
         btcopy = new javax.swing.JButton();
+        ddsite = new javax.swing.JComboBox<>();
+        jLabel22 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         ddoutdoctype = new javax.swing.JComboBox<>();
@@ -699,6 +712,8 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
             }
         });
 
+        jLabel22.setText("Site");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -725,18 +740,26 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(tbrcvisa, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tbrcvgs, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tbrcvq, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(ddmap, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tbsndisa, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tbsndgs, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tbsndq, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addGap(1, 1, 1)
+                                .addComponent(tbrcvq, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel22)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(ddkey, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(lblpartner, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                    .addComponent(tbrcvisa, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(tbrcvgs, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(ddmap, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(tbsndisa, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(tbsndgs, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(tbsndq, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(jPanel2Layout.createSequentialGroup()
+                                        .addGap(1, 1, 1)
+                                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(ddkey, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(lblpartner, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addGap(0, 0, Short.MAX_VALUE)))
                         .addContainerGap())
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(dddoc, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -797,7 +820,9 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbrcvq, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel6))
+                    .addComponent(jLabel6)
+                    .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel22))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbrcvisa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1262,7 +1287,7 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
                             + "(edi_id, edi_doc, edi_sndisa, edi_sndq, " 
                             + "edi_sndgs, edi_map, edi_eledelim, edi_segdelim, edi_subdelim, edi_fileprefix, edi_filesuffix, edi_filepath, "
                             + "edi_version, edi_rcvisa, edi_rcvgs, edi_rcvq, edi_supcode, edi_doctypeout, edi_filetypeout, edi_ifs, edi_ofs, edi_filetype, " +
-                                " edi_fa_required, edi_envelopeall, edi_una, edi_ung ) "
+                                " edi_fa_required, edi_envelopeall, edi_una, edi_ung, edi_site ) "
                             + " values ( " + "'" + ddkey.getSelectedItem().toString() + "'" + ","
                                 + "'" + dddoc.getSelectedItem().toString() + "'" + ","
                                 + "'" + tbsndisa.getText() + "'" + ","
@@ -1288,7 +1313,8 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
                                 + "'" + fa + "'" + ","
                                 + "'" + envelopeall + "'" + ","
                                 + "'" + una + "'" + ","
-                                + "'" + ung + "'"        
+                                + "'" + ung + "'" + "," 
+                                + "'" + ddsite.getSelectedItem().toString() + "'" 
                             + ")"
                             + ";");
                         bsmf.MainFrame.show(getMessageTag(1007));
@@ -1398,7 +1424,8 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
                             + "edi_fa_required = " + "'" + fa + "'" + ","
                             + "edi_envelopeall = " + "'" + envelopeall + "'" + ","
                             + "edi_una = " + "'" + envelopeall + "'" + ","
-                            + "edi_ung = " + "'" + envelopeall + "'"        
+                            + "edi_ung = " + "'" + envelopeall + "'" + ","
+                            + "edi_site = " + "'" + ddsite.getSelectedItem().toString() + "'"
                             + " where edi_id = " + "'" + ddkey.getSelectedItem().toString() + "'"     
                             + " AND edi_doc = " + "'" + dddoc.getSelectedItem().toString() + "'"
                             + " AND edi_rcvgs = " + "'" + tbrcvgs.getText() + "'"
@@ -1682,6 +1709,7 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
     private javax.swing.JComboBox<String> ddmap;
     private javax.swing.JComboBox<String> ddoutdoctype;
     private javax.swing.JComboBox<String> ddoutfiletype;
+    private javax.swing.JComboBox<String> ddsite;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -1696,6 +1724,7 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
+    private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;

@@ -151,22 +151,33 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="tbrcvisa" alignment="0" min="-2" pref="120" max="-2" attributes="0"/>
-                                  <Component id="tbrcvgs" alignment="0" min="-2" pref="122" max="-2" attributes="0"/>
-                                  <Component id="tbrcvq" alignment="0" min="-2" pref="51" max="-2" attributes="0"/>
-                                  <Component id="ddmap" alignment="0" min="-2" pref="201" max="-2" attributes="0"/>
-                                  <Component id="tbsndisa" alignment="0" min="-2" pref="122" max="-2" attributes="0"/>
-                                  <Component id="tbsndgs" alignment="0" min="-2" pref="122" max="-2" attributes="0"/>
-                                  <Component id="tbsndq" alignment="0" min="-2" pref="51" max="-2" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
+                                      <Component id="tbrcvq" min="-2" pref="51" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                      <Component id="jLabel22" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="ddsite" min="-2" pref="92" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="ddkey" min="-2" pref="139" max="-2" attributes="0"/>
-                                          <Component id="lblpartner" min="-2" pref="194" max="-2" attributes="0"/>
+                                          <Component id="tbrcvisa" alignment="0" min="-2" pref="120" max="-2" attributes="0"/>
+                                          <Component id="tbrcvgs" alignment="0" min="-2" pref="122" max="-2" attributes="0"/>
+                                          <Component id="ddmap" alignment="0" min="-2" pref="201" max="-2" attributes="0"/>
+                                          <Component id="tbsndisa" alignment="0" min="-2" pref="122" max="-2" attributes="0"/>
+                                          <Component id="tbsndgs" alignment="0" min="-2" pref="122" max="-2" attributes="0"/>
+                                          <Component id="tbsndq" alignment="0" min="-2" pref="51" max="-2" attributes="0"/>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="ddkey" min="-2" pref="139" max="-2" attributes="0"/>
+                                                  <Component id="lblpartner" min="-2" pref="194" max="-2" attributes="0"/>
+                                              </Group>
+                                          </Group>
                                       </Group>
+                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="dddoc" min="-2" pref="120" max="-2" attributes="0"/>
@@ -245,6 +256,8 @@
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="tbrcvq" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="ddsite" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel22" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -399,6 +412,21 @@
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btcopyActionPerformed"/>
               </Events>
+            </Component>
+            <Component class="javax.swing.JComboBox" name="ddsite">
+              <Properties>
+                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                  <StringArray count="0"/>
+                </Property>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel22">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Site"/>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>

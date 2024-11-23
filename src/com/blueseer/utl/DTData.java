@@ -3142,7 +3142,7 @@ public class DTData {
         
          } 
         
-    public static DefaultTableModel getEDIPartnerBrowseUtil( String str, int state, String myfield) {
+    public static DefaultTableModel getEDIPartnerBrowseUtil( String str, int state, String myfield, String site) {
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                       new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("id"), getGlobalColumnTag("description")})
                 {
@@ -3165,6 +3165,7 @@ public class DTData {
             Statement st = con.createStatement();
             ResultSet res = null;
             try{
+                if (site.equals("all")) {
                 if (state == 1) { // begins
                     res = st.executeQuery(" select edp_id, edp_desc " +
                         " FROM  edp_partner where " + myfield + " like " + "'" + str + "%'" +
@@ -3180,6 +3181,23 @@ public class DTData {
                         " FROM  edp_partner where " + myfield + " like " + "'%" + str + "%'" +
                         " order by edp_id ;");
                  }
+                } else {
+                 if (state == 1) { // begins
+                    res = st.executeQuery(" select edp_id, edp_desc " +
+                        " FROM  edp_partner where edp_site = " + "'" + site + "'" + " AND " + myfield + " like " + "'" + str + "%'" +
+                        " order by edp_id ;");
+                }
+                if (state == 2) { // ends
+                    res = st.executeQuery(" select edp_id, edp_desc " +
+                        " FROM  edp_partner where edp_site = " + "'" + site + "'" + " AND " + myfield + " like " + "'%" + str + "'" +
+                        " order by edp_id ;");
+                }
+                 if (state == 0) { // match
+                 res = st.executeQuery(" select edp_id, edp_desc " +
+                        " FROM  edp_partner where edp_site = " + "'" + site + "'" + " AND " + myfield + " like " + "'%" + str + "%'" +
+                        " order by edp_id ;");
+                 }   
+                }
                     while (res.next()) {
                         mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("edp_id"),
                                    res.getString("edp_desc")
@@ -4076,7 +4094,7 @@ public class DTData {
         
          }  
           
-    public static DefaultTableModel getEDICustBrowseUtil( String str, int state, String myfield) {
+    public static DefaultTableModel getEDICustBrowseUtil( String str, int state, String myfield, String site) {
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                       new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("code"), getGlobalColumnTag("doctype"), "Sender", "Receiver", getGlobalColumnTag("map")})
                 {
@@ -4099,6 +4117,7 @@ public class DTData {
             Statement st = con.createStatement();
             ResultSet res = null;
             try{
+                if (site.equals("all")) {
                 if (state == 1) { // begins
                     res = st.executeQuery(" select edi_id, edi_doc, edi_sndisa, edi_sndgs, edi_rcvisa, edi_rcvgs,  edi_map  " +
                         " FROM  edi_mstr where " + myfield + " like " + "'" + str + "%'" +
@@ -4114,6 +4133,23 @@ public class DTData {
                         " FROM  edi_mstr where " + myfield + " like " + "'%" + str + "%'" +
                         " order by edi_id, edi_doc ;");
                  }
+                } else {
+                 if (state == 1) { // begins
+                    res = st.executeQuery(" select edi_id, edi_doc, edi_sndisa, edi_sndgs, edi_rcvisa, edi_rcvgs,  edi_map  " +
+                        " FROM  edi_mstr where edi_site = " + "'" + site + "'" + " AND " + myfield + " like " + "'" + str + "%'" +
+                        " order by edi_id, edi_doc ;");
+                }
+                if (state == 2) { // ends
+                    res = st.executeQuery(" select edi_id, edi_doc, edi_sndisa, edi_sndgs, edi_rcvisa, edi_rcvgs,  edi_map  " +
+                        " FROM  edi_mstr where edi_site = " + "'" + site + "'" + " AND " + myfield + " like " + "'%" + str + "'" +
+                        " order by edi_id, edi_doc ;");
+                }
+                 if (state == 0) { // match
+                 res = st.executeQuery("  select edi_id, edi_doc, edi_sndisa, edi_sndgs, edi_rcvisa, edi_rcvgs,  edi_map  " +
+                        " FROM  edi_mstr where edi_site = " + "'" + site + "'" + " AND " + myfield + " like " + "'%" + str + "%'" +
+                        " order by edi_id, edi_doc ;");
+                 }    
+                }
                     while (res.next()) {
                         mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("edi_id"),
                                    res.getString("edi_doc"),
@@ -6095,7 +6131,7 @@ public class DTData {
         
          }
     
-    public static DefaultTableModel getEDIPartnerDocAll() {
+    public static DefaultTableModel getEDIPartnerDocAll(String site) {
         
         
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -6133,7 +6169,12 @@ public class DTData {
             Statement st = con.createStatement();
             ResultSet res = null;
             try{
+                 if (site.equals("all")) {
                   res = st.executeQuery("select * from edi_mstr inner join edp_partner on edp_id = edi_id order by edi_id;" );
+                 } else {
+                  res = st.executeQuery("select * from edi_mstr inner join edp_partner on edp_id = edi_id " +
+                          " where edi_site = " + "'" + site + "'" + " order by edi_id;" );   
+                 }
                     while (res.next()) {
                         mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("edi_id"),
                                    res.getString("edi_doc"),
@@ -8958,7 +8999,7 @@ return mymodel;
 
      }
 
-    public static DefaultTableModel getEDITPAll() {
+    public static DefaultTableModel getEDITPAll(String site) {
           javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                   new String[]{getGlobalColumnTag("select"), 
                       getGlobalColumnTag("id"), 
@@ -8985,8 +9026,12 @@ return mymodel;
         Statement st = con.createStatement();
         ResultSet res = null;
         try{
-
-                  res = st.executeQuery("select * from edp_partner inner join edpd_partner on edpd_parent = edp_id order by edp_id;");
+            if (site.equals("all")) { 
+               res = st.executeQuery("select * from edp_partner inner join edpd_partner on edpd_parent = edp_id order by edp_id;");
+            } else {
+               res = st.executeQuery("select * from edp_partner inner join edpd_partner on edpd_parent = edp_id " +
+                       " where edp_site = " + "'" + site + "'" + " order by edp_id;"); 
+            }
                 while (res.next()) {
                     mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("edp_id"),
                                res.getString("edp_desc"),
@@ -9011,7 +9056,7 @@ return mymodel;
 
      }
 
-    public static DefaultTableModel getEDITPDOCAll() {
+    public static DefaultTableModel getEDITPDOCAll(String site) {
           javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                   new String[]{getGlobalColumnTag("select"), 
                       getGlobalColumnTag("id"), 
@@ -9039,8 +9084,13 @@ return mymodel;
         Statement st = con.createStatement();
         ResultSet res = null;
         try{
-                  res = st.executeQuery("select * from edi_mstr order by edi_id;");
-                while (res.next()) {
+            if (site.equals("all")) { 
+                res = st.executeQuery("select * from edi_mstr order by edi_id;");
+            } else {
+                res = st.executeQuery("select * from edi_mstr " + 
+                        " where edi_site = " + "'" + site + "'" + " order by edi_id;");
+            }
+            while (res.next()) {
                     mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("edi_id"),
                                res.getString("edi_doc"),
                                res.getString("edi_map"),
@@ -9065,7 +9115,7 @@ return mymodel;
 
      }
 
-     public static DefaultTableModel getEDIXrefAll() {
+     public static DefaultTableModel getEDIXrefAll(String site) {
           javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                   new String[]{getGlobalColumnTag("select"), 
                       getGlobalColumnTag("tpid"), 
@@ -9093,8 +9143,12 @@ return mymodel;
         Statement st = con.createStatement();
         ResultSet res = null;
         try{
-
+                if (site.equals("all")) {
                   res = st.executeQuery("select * from edi_xref order by exr_tpid;");
+                } else {
+                  res = st.executeQuery("select * from edi_xref " + 
+                          " where exr_site = " + "'" + site + "'" + " order by exr_tpid;");  
+                }
                 while (res.next()) {
                     mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("exr_tpid"),
                                res.getString("exr_gsid"),

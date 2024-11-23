@@ -239,7 +239,7 @@ public int[] mywidth;
              mymodel = DTData.getCarrierAll();
         }
         if (arg[0].equals("EDIXrefBrowse")) {
-             mymodel = DTData.getEDIXrefAll(); 
+             mymodel = DTData.getEDIXrefAll(OVData.getSiteListConditional(bsmf.MainFrame.userid)); 
         }
         if (arg[0].equals("TaxBrowse")) {
              mymodel = DTData.getTaxAll();
@@ -248,10 +248,10 @@ public int[] mywidth;
              mymodel = DTData.getPayProfileAll(); 
         }
         if (arg[0].equals("EDIPartnerBrowse")) {
-             mymodel = DTData.getEDITPAll();
+             mymodel = DTData.getEDITPAll(OVData.getSiteListConditional(bsmf.MainFrame.userid));
         }
         if (arg[0].equals("EDITPDocBrowse")) {
-             mymodel = DTData.getEDITPDOCAll();
+             mymodel = DTData.getEDITPDOCAll(OVData.getSiteListConditional(bsmf.MainFrame.userid));
         }
         if (arg[0].equals("noStdCostBrowse")) {
              mymodel = DTData.getNoStdCostItems();
@@ -278,7 +278,7 @@ public int[] mywidth;
              mymodel = DTData.getPrintersAll();
         } 
         if (arg[0].equals("EDIPartnerDocBrowse")) {
-             mymodel = DTData.getEDIPartnerDocAll();
+             mymodel = DTData.getEDIPartnerDocAll(OVData.getSiteListConditional(bsmf.MainFrame.userid));
         } 
         if (arg[0].equals("LabelFileBrowse")) {
              mymodel = DTData.getLabelFileAll();
