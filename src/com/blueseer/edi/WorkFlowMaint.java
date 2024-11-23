@@ -719,9 +719,7 @@ public class WorkFlowMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
             if (i == 19) {
                 ArrayList<String[]> x = new ArrayList<String[]>();
-                x.add(new String[]{"filter", ""});
-                x.add(new String[]{"destination dir", ""});
-                x.add(new String[]{"overwrite", ""}); 
+                x.add(new String[]{"site", ""});
                 kvs.put("AS2Outbound", x);
             }
         }

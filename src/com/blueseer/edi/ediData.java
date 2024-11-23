@@ -26,6 +26,7 @@ SOFTWARE.
 package com.blueseer.edi;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
@@ -65,7 +66,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -78,6 +83,8 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.mail.Session;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.mail.smime.SMIMEException;
 import org.bouncycastle.openpgp.PGPException;
 
 /**
@@ -3077,7 +3084,7 @@ public class ediData {
         return x;
     }
     
-    public static ArrayList<String> getAS2WkflIn(String site) {
+    public static ArrayList<String> getAS2Wkfl(String site) {
        ArrayList<String> mylist = new ArrayList<String>();
         try{
             Connection con = null;
@@ -3142,8 +3149,8 @@ public class ediData {
                info[13] = res.getString("as2_forcesigned");
                info[14] = res.getString("as2_signcert");
                info[15] = res.getString("as2_protocol");
-               info[16] = res.getString("as2_indir");
-               info[17] = res.getString("as2_outdir");
+               info[16] = res.getString("as2_outdir");
+               info[17] = res.getString("as2_indir");
                info[18] = res.getString("as2_encalgo");
                info[19] = res.getString("as2_signalgo");
                info[20] = res.getString("as2_micalgo");
@@ -3189,8 +3196,8 @@ public class ediData {
                info[13] = res.getString("as2_forcesigned");
                info[14] = res.getString("as2_signcert");
                info[15] = res.getString("as2_protocol");
-               info[16] = res.getString("as2_indir");
-               info[17] = res.getString("as2_outdir");
+               info[16] = res.getString("as2_outdir");
+               info[17] = res.getString("as2_indir");
                info[18] = res.getString("as2_encalgo");
                info[19] = res.getString("as2_signalgo");
                info[20] = res.getString("as2_micalgo");
@@ -4337,7 +4344,7 @@ public class ediData {
         if (site.equals("*")) {
             site = "all";
         }
-        ArrayList<String> as2list = getAS2WkflIn(site);  // list of all as2 inbounds that are 'enabled'
+        ArrayList<String> as2list = getAS2Wkfl(site);  // list of all as2 that are 'enabled'
         for (String s : as2list) {
         as2_mstr as2 = getAS2Mstr(new String[]{s});
             if (as2.as2_inwkf().equals(wkf.wkf_id)) {  // if as2 ID is assigned this executing workflow id then fire
@@ -4352,23 +4359,50 @@ public class ediData {
     }
     
     public static String[] wkfaction_as2outbound(wkf_mstr wkf, wkf_det wkfd, ArrayList<wkfd_meta> list) {
-       String messg = "";
-        /*   UNDONE!!!!!!!
+       StringBuilder messg = new StringBuilder();
+        String site = "";
         
+        for (wkfd_meta m : list) {
+            if (m.wkfdm_key().equals("site") && ! m.wkfdm_value.isBlank()) {
+                site = m.wkfdm_value();
+            }
+        }
+        if (site.equals("*")) {
+            site = "all";
+        }
+        ArrayList<String> as2list = getAS2Wkfl(site);  // list of all as2 that are 'enabled'
+        messg.append("processing as2 id: ");
+        for (String s : as2list) {
+        as2_mstr as2 = getAS2Mstr(new String[]{s});
         
-        ArrayList<String[]> as2list = getAS2WkflIn("all");  // list of all as2 inbounds that are 'enabled'
-        for (String[] s : as2list) {
-        as2_mstr as2 = getAS2Mstr(new String[]{s[0]});
-            if (as2.as2_inwkf().equals(wkf.wkf_id)) {  // if as2 ID is assigned this executing workflow id then fire
-                File folder = new File(as2.as2_outdir());
-                File[] listOfFiles = folder.listFiles();
-                if (listOfFiles != null) {
-                   messg = runEDIForSite(null, wkf.wkf_site(), listOfFiles); 
+            if (as2.as2_outwkf().equals(wkf.wkf_id)) {  // if as2 ID is assigned this executing workflow id then fire
+                try {
+                    messg.append(as2.as2_id).append(", ");
+                    apiUtils.postAS2(as2.as2_id, false);
+                    //File folder = new File(as2.as2_outdir());
+                    //File[] listOfFiles = folder.listFiles();
+                } catch (IOException ex) {
+                    bslog(ex);
+                } catch (CertificateException ex) {
+                    bslog(ex);
+                } catch (NoSuchProviderException ex) {
+                    bslog(ex);
+                } catch (KeyStoreException ex) {
+                    bslog(ex);
+                } catch (NoSuchAlgorithmException ex) {
+                    bslog(ex);
+                } catch (UnrecoverableKeyException ex) {
+                    bslog(ex);
+                } catch (CMSException ex) {
+                    bslog(ex);
+                } catch (SMIMEException ex) {
+                    bslog(ex);
+                } catch (Exception ex) {
+                    bslog(ex);
                 }
             }
         }
-        */
-        return new String[]{"0", messg};  // overall...workflow suceeds even if individual internal actions do not...will be logged regardless
+        return new String[]{"0", messg.toString()};  // overall...workflow suceeds even if individual internal actions do not...will be logged regardless
     }
     
     public static String[] wkfaction_encryptDir(wkf_det wkfd, ArrayList<wkfd_meta> list) {

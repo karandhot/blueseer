@@ -318,8 +318,8 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
            tbpass.setText("");
            tbpath.setText("");
            
-           tbindir.setText("");
            tboutdir.setText("");
+           tbindir.setText("");
            cbenabled.setSelected(false);
            taoutput.setText("");
            lblurl.setText("");
@@ -562,8 +562,8 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
         tbapikey.setText(x.as2_key());
         ddprotocol.setSelectedItem(x.as2_protocol());
         ddclass.setSelectedItem(x.as2_class());
-        tbindir.setText(x.as2_indir());
         tboutdir.setText(x.as2_outdir());
+        tbindir.setText(x.as2_indir());
         ddenccert.setSelectedItem(x.as2_enccert());
         cboutputsign.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.as2_signed())));
         cboutputencryption.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.as2_encrypted())));
@@ -594,7 +594,7 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
     public void processRun() {
          
         String r = null;
-        Path folderpath = FileSystems.getDefault().getPath(tbindir.getText());
+        Path folderpath = FileSystems.getDefault().getPath(tboutdir.getText());
         File folder = new File(folderpath.toString());
         File[] listOfFiles = folder.listFiles();
         taoutput.append("number of files to transmit: ");
@@ -680,8 +680,8 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
         btupdate = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         cbenabled = new javax.swing.JCheckBox();
-        tbindir = new javax.swing.JTextField();
         tboutdir = new javax.swing.JTextField();
+        tbindir = new javax.swing.JTextField();
         jLabel13 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
@@ -769,10 +769,10 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
         cbenabled.setText("Enabled");
         cbenabled.setName("cbenabled"); // NOI18N
 
-        jLabel13.setText("InDir");
+        jLabel13.setText("Out");
         jLabel13.setName("lblsourcedir"); // NOI18N
 
-        jLabel14.setText("OutDir");
+        jLabel14.setText("In");
         jLabel14.setName("lbldestdir"); // NOI18N
 
         jLabel19.setText("HTTP Tag");
@@ -817,7 +817,7 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
                             .addComponent(tbheadertag, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                 .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
-                                    .addComponent(tbindir, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(tboutdir, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(jLabel23)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -837,7 +837,7 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btaddheader, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tboutdir, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(tbindir, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(cbenabled)
                         .addGap(36, 36, 36))))
@@ -847,13 +847,13 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tbindir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tboutdir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel13)
                     .addComponent(jLabel23)
                     .addComponent(ddinworkflow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(4, 4, 4)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tboutdir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tbindir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel14)
                     .addComponent(ddoutworkflow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel24))
