@@ -969,7 +969,7 @@ public class DTData {
         
          } 
     
-    public static DefaultTableModel getMapBrowseUtil( String str, int state, String myfield) {
+    public static DefaultTableModel getMapBrowseUtil( String str, int state, String myfield, String site) {
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                       new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("id"), getGlobalColumnTag("description"), getGlobalColumnTag("ifs"), getGlobalColumnTag("ofs")})
                 {
@@ -997,6 +997,7 @@ public class DTData {
             Statement st = con.createStatement();
             ResultSet res = null;
             try{
+                if (site.equals("all")) {
                 if (state == 1) { // begins
                     res = st.executeQuery("SELECT map_id, map_desc, map_ifs, map_ofs  " +
                         " FROM  map_mstr where " + myfield + " like " + "'" + str + "%'" +
@@ -1012,6 +1013,23 @@ public class DTData {
                         " FROM  map_mstr where " + myfield + " like " + "'%" + str + "%'" +
                         " and map_internal <> " + "'" + internal + "'" + " order by map_id ;");
                  }
+                } else {
+                 if (state == 1) { // begins
+                    res = st.executeQuery("SELECT map_id, map_desc, map_ifs, map_ofs  " +
+                        " FROM  map_mstr where map_site = " + "'" + site + "'" + " AND " + myfield + " like " + "'" + str + "%'" +
+                        " and map_internal <> " + "'" + internal + "'" + " order by map_id ;");
+                }
+                if (state == 2) { // ends
+                    res = st.executeQuery("SELECT map_id, map_desc, map_ifs, map_ofs  " +
+                        " FROM  map_mstr where map_site = " + "'" + site + "'" + " AND " + myfield + " like " + "'%" + str + "'" +
+                        " and map_internal <> " + "'" + internal + "'" + " order by map_id ;");
+                }
+                 if (state == 0) { // match
+                 res = st.executeQuery("SELECT map_id, map_desc, map_ifs, map_ofs   " +
+                        " FROM  map_mstr where map_site = " + "'" + site + "'" + " AND " + myfield + " like " + "'%" + str + "%'" +
+                        " and map_internal <> " + "'" + internal + "'" + " order by map_id ;");
+                 }   
+                }
                     while (res.next()) {
                         mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("map_id"),
                                    res.getString("map_desc"),
@@ -4982,7 +5000,7 @@ public class DTData {
         
          } 
           
-    public static DefaultTableModel getFTPBrowseUtil( String str, int state, String myfield) {
+    public static DefaultTableModel getFTPBrowseUtil( String str, int state, String myfield, String site) {
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                       new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("id"), getGlobalColumnTag("description"), "IP/URL", "Login", "Passwd", "CDDir", "InDir", "OutDir", "Delete?"})
                 {
@@ -5005,6 +5023,7 @@ public class DTData {
             Statement st = con.createStatement();
             ResultSet res = null;
             try{
+                if (site.equals("all")) {
                 if (state == 1) { // begins
                     res = st.executeQuery(" SELECT ftp_id, ftp_desc, ftp_ip, ftp_login, ftp_passwd, ftp_commands, ftp_indir, ftp_outdir, ftp_delete " +
                         " FROM  ftp_mstr where " + myfield + " like " + "'" + str + "%'" +
@@ -5020,6 +5039,23 @@ public class DTData {
                         " FROM  ftp_mstr where " + myfield + " like " + "'%" + str + "%'" +
                         " order by ftp_id ;");
                  }
+                } else {
+                 if (state == 1) { // begins
+                    res = st.executeQuery(" SELECT ftp_id, ftp_desc, ftp_ip, ftp_login, ftp_passwd, ftp_commands, ftp_indir, ftp_outdir, ftp_delete " +
+                        " FROM  ftp_mstr where ftp_site = " + "'" + site + "'" + " AND " + myfield + " like " + "'" + str + "%'" +
+                        " order by ftp_id ;");
+                }
+                if (state == 2) { // ends
+                    res = st.executeQuery(" SELECT ftp_id, ftp_desc, ftp_ip, ftp_login, ftp_passwd, ftp_commands, ftp_indir, ftp_outdir, ftp_delete " +
+                        " FROM  ftp_mstr where ftp_site = " + "'" + site + "'" + " AND " + myfield + " like " + "'%" + str + "'" +
+                        " order by ftp_id ;");
+                }
+                 if (state == 0) { // match
+                 res = st.executeQuery(" SELECT ftp_id, ftp_desc, ftp_ip, ftp_login, ftp_passwd, ftp_commands, ftp_indir, ftp_outdir, ftp_delete  " +
+                        " FROM  ftp_mstr where ftp_site = " + "'" + site + "'" + " AND " + myfield + " like " + "'%" + str + "%'" +
+                        " order by ftp_id ;");
+                 }   
+                }
                     while (res.next()) {
                         mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("ftp_id"),
                                    res.getString("ftp_desc"),

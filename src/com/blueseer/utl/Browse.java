@@ -348,7 +348,7 @@ public class Browse extends javax.swing.JPanel {
                 tablereport.setModel(DTData.getLocationBrowseUtil(tbtext.getText(), state, searchfield));
                 }
                 if (callingpanel.equals("ftpmaint")) {
-                tablereport.setModel(DTData.getFTPBrowseUtil(tbtext.getText(), state, searchfield)); 
+                tablereport.setModel(DTData.getFTPBrowseUtil(tbtext.getText(), state, searchfield, site)); 
                 }
                 if (callingpanel.equals("warehousemaint")) {
                 tablereport.setModel(DTData.getWareHouseBrowseUtil(tbtext.getText(), state, searchfield));

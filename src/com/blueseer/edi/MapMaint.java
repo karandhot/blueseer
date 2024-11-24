@@ -949,6 +949,11 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         ddindoctype.setEnabled(false);
         ddoutdoctype.setEnabled(false);
         
+        ddsite.removeAllItems();
+        OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));  
+        ddsite.insertItemAt("", 0);
+        ddsite.setSelectedItem(OVData.getDefaultSiteForUserid(bsmf.MainFrame.userid));
+        
        isLoad = false;
     }
     
@@ -1070,7 +1075,8 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
                 ddoutfiletype.getSelectedItem().toString(),
                 tbpath.getText(),
                 tbpackage.getText(), // package
-                String.valueOf(BlueSeerUtils.boolToInt(cbinternal.isSelected()))
+                String.valueOf(BlueSeerUtils.boolToInt(cbinternal.isSelected())),
+                ddsite.getSelectedItem().toString()
                 );
         /* potential validation mechanism...would need association between record field and input field
         for(Field f : x.getClass().getDeclaredFields()){
@@ -1131,9 +1137,9 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         lual = new ActionListener() {
         public void actionPerformed(ActionEvent event) {
         if (lurb1.isSelected()) {  
-         luModel = DTData.getMapBrowseUtil(luinput.getText(),0, "map_id"); 
+         luModel = DTData.getMapBrowseUtil(luinput.getText(),0, "map_id", OVData.getSiteListConditional(bsmf.MainFrame.userid)); 
         } else {
-         luModel = DTData.getMapBrowseUtil(luinput.getText(),0, "map_desc");   
+         luModel = DTData.getMapBrowseUtil(luinput.getText(),0, "map_desc", OVData.getSiteListConditional(bsmf.MainFrame.userid));   
         }
         luTable.setModel(luModel);
         luTable.getColumnModel().getColumn(0).setMaxWidth(50);
@@ -1178,6 +1184,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         ddinfiletype.setSelectedItem(x.map_infiletype());
         ddoutdoctype.setSelectedItem(x.map_outdoctype());
         ddoutfiletype.setSelectedItem(x.map_outfiletype());
+        ddsite.setSelectedItem(x.map_site());
         cbinternal.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.map_internal())));
         Path path = FileSystems.getDefault().getPath(tbpath.getText());
         tamap.setText("");
@@ -2095,8 +2102,8 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
                         v[8],
                         v[9],
                         v[10], // package
-                        v[11] // tinyint
-                        );
+                        v[11], // tinyint
+                        OVData.getDefaultSiteForUserid(bsmf.MainFrame.userid));
             }
                m = addMapMstr(x);
             }
@@ -2559,6 +2566,8 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         ddenvelope = new javax.swing.JComboBox<>();
         jLabel12 = new javax.swing.JLabel();
         cbenvelope = new javax.swing.JCheckBox();
+        ddsite = new javax.swing.JComboBox<>();
+        jLabel13 = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -2884,6 +2893,8 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
             }
         });
 
+        jLabel13.setText("Site");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -2937,22 +2948,24 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
                     .addComponent(jLabel10)
                     .addComponent(jLabel11))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(tbpackage, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(tbversion, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(ddinfiletype, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(ddoutfiletype, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
-                        .addComponent(jLabel12)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cbenvelope)
-                            .addComponent(ddenvelope, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap())))
+                        .addComponent(jLabel12))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(tbpackage, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel13)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cbenvelope)
+                    .addComponent(ddenvelope, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2966,7 +2979,9 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(tbpackage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel11)))
+                            .addComponent(jLabel11)
+                            .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel13)))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(63, 63, 63)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -3764,6 +3779,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
     private javax.swing.JComboBox<String> ddofs;
     private javax.swing.JComboBox<String> ddoutdoctype;
     private javax.swing.JComboBox<String> ddoutfiletype;
+    private javax.swing.JComboBox<String> ddsite;
     private javax.swing.JFileChooser fc;
     private javax.swing.JScrollPane inScrollPaneInput;
     private javax.swing.JPanel inputpanel;
@@ -3771,6 +3787,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;

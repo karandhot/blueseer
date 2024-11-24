@@ -352,6 +352,11 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
          tacommands.setText("");
          tbtimeout.setText("10");
         
+         ddsite.removeAllItems();
+        OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));  
+        ddsite.insertItemAt("", 0);
+        ddsite.setSelectedItem(OVData.getDefaultSiteForUserid(bsmf.MainFrame.userid));
+         
        isLoad = false;
     }
     
@@ -499,7 +504,8 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                 String.valueOf(BlueSeerUtils.boolToInt(cbbinary.isSelected())),       
                 tbtimeout.getText(),
                 String.valueOf(BlueSeerUtils.boolToInt(cbenabled.isSelected())),
-                String.valueOf(BlueSeerUtils.boolToInt(cbsftp.isSelected()))
+                String.valueOf(BlueSeerUtils.boolToInt(cbsftp.isSelected())),
+                ddsite.getSelectedItem().toString()
                 );
         return x;
     }
@@ -510,9 +516,9 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
         lual = new ActionListener() {
         public void actionPerformed(ActionEvent event) {
         if (lurb1.isSelected()) {  
-         luModel = DTData.getFTPBrowseUtil(luinput.getText(),0, "ftp_id");
+         luModel = DTData.getFTPBrowseUtil(luinput.getText(),0, "ftp_id", OVData.getSiteListConditional(bsmf.MainFrame.userid));
         } else {
-         luModel = DTData.getFTPBrowseUtil(luinput.getText(),0, "ftp_desc");   
+         luModel = DTData.getFTPBrowseUtil(luinput.getText(),0, "ftp_desc", OVData.getSiteListConditional(bsmf.MainFrame.userid));   
         }
         luTable.setModel(luModel);
         luTable.getColumnModel().getColumn(0).setMaxWidth(50);
@@ -561,7 +567,7 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbtimeout.setText(x.ftp_timeout());
         cbenabled.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.ftp_enabled())));
         cbsftp.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.ftp_sftp())));
-        
+        ddsite.setSelectedItem(x.ftp_site());
         for (ftp_attr fa : ftpa) {
             modelattributes.addRow(new Object[]{fa.ftpa_key(), fa.ftpa_value()});   
         }
@@ -1025,6 +1031,8 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
         textpanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         talog = new javax.swing.JTextArea();
+        ddsite = new javax.swing.JComboBox<>();
+        jLabel15 = new javax.swing.JLabel();
 
         jLabel8.setText("jLabel8");
 
@@ -1273,7 +1281,7 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addGroup(mainpanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(lblstatus, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel12))
-                .addContainerGap(96, Short.MAX_VALUE))
+                .addContainerGap(73, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("tab1", mainpanel);
@@ -1359,7 +1367,7 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addGroup(attributepanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btdeleteattr)
                     .addComponent(btaddattr))
-                .addGap(0, 300, Short.MAX_VALUE))
+                .addGap(0, 277, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("tab2", attributepanel);
@@ -1381,20 +1389,26 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
         );
         textpanelLayout.setVerticalGroup(
             textpanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 533, Short.MAX_VALUE)
         );
 
         bodypanel.add(textpanel);
+
+        jLabel15.setText("Site");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(69, 69, 69)
-                .addComponent(jLabel1)
+                .addGap(40, 40, 40)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel15))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btlookup, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(13, 13, 13)
@@ -1410,16 +1424,23 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(btnew)
-                        .addComponent(tbclear))
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(btlookup)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(btnew)
+                                .addComponent(tbclear))
+                            .addComponent(btlookup))
+                        .addGap(27, 27, 27))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel1))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(jLabel1))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel15))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                 .addComponent(bodypanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -1529,12 +1550,14 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JCheckBox cbenabled;
     private javax.swing.JCheckBox cbpassive;
     private javax.swing.JCheckBox cbsftp;
+    private javax.swing.JComboBox<String> ddsite;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
