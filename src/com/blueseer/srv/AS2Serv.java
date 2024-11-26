@@ -478,11 +478,13 @@ public class AS2Serv extends HttpServlet {
                
            if (FileWHeadersBytes == null || FileBytes == null) {
             //  return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "unable to retrieve contents of File " + sender + "/" + receiver); 
+              writeAS2LogStop(new String[]{"0","unknown","in","error","Null content in FileBytes or FileWHeader Bytes " + sender + "/" + receiver,now,"", info[22]});
               return createMDN("2010", elementals, returnheaders, isDebug);
            }
 
            if (Signature == null) {
                // return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "Signature content is null" + sender + "/" + receiver);
+               writeAS2LogStop(new String[]{"0","unknown","in","error","Signature mp content is null " + sender + "/" + receiver,now,"", info[22]});
                return createMDN("2015", elementals, returnheaders, isDebug);
            } else {
              validSignature = verifySignature(FileWHeadersBytes, Signature); 
@@ -512,6 +514,7 @@ public class AS2Serv extends HttpServlet {
 
            if (! validSignature) {
              // return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "Signature could not be validated " + sender + "/" + receiver); 
+              writeAS2LogStop(new String[]{"0","unknown","in","error","invalid signature " + sender + "/" + receiver,now,"", info[22]});
               return createMDN("2020", elementals, returnheaders, isDebug);
            } 
               
@@ -536,6 +539,9 @@ public class AS2Serv extends HttpServlet {
             path = FileSystems.getDefault().getPath(info[17] + "/" + filename);
         }
         Files.write(path, FileBytes);
+        
+        logdet.add(new String[]{parentkey, "info", "receiving file = " + path + " at size: " + FileBytes.length});
+        
         /*
         output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path.toFile())));
         String datastring = new String(FileBytes);   

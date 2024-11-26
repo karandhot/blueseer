@@ -634,6 +634,16 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                    config.put("PreferredAuthentications", "publickey,password"); 
             }
             
+            if (ftpa.containsKey("server_host_key")) {
+                   config.put("server_host_key", ftpa.get("server_host_key"));
+            } 
+            
+            if (ftpa.containsKey("PubkeyAcceptedAlgorithms")) {
+                   config.put("PubkeyAcceptedAlgorithms", ftpa.get("PubkeyAcceptedAlgorithms"));
+            } 
+            
+           // JSch.setConfig("server_host_key", JSch.getConfig("server_host_key") + ",ssh-rsa");
+           // JSch.setConfig("PubkeyAcceptedAlgorithms", JSch.getConfig("PubkeyAcceptedAlgorithms") + ",ssh-rsa")
             
              try {
                  

@@ -70,6 +70,10 @@ import static com.blueseer.utl.EDData.getEDIFFDocType;
 import static com.blueseer.utl.EDData.getEDIFFSubType;
 import static com.blueseer.utl.EDData.getEDIFileTypeDocType;
 import com.blueseer.utl.OVData;
+import static com.blueseer.utl.OVData.getSMTPCredentials;
+import static com.blueseer.utl.OVData.sendEmail;
+import static com.blueseer.utl.OVData.sendEmailwSession;
+import static com.blueseer.utl.OVData.setEmailSession;
 import static com.blueseer.vdr.venData.getVendInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -127,6 +131,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.mail.Session;
 import javax.swing.JFileChooser;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -3560,6 +3565,18 @@ public class EDI {
         } else {
             m[0] = "error";
         }
+        
+        if (OVData.getSysMetaValue("system", "emailkey", "order").equals("1")) {
+            Session session = setEmailSession();
+            String to = OVData.getSysMetaValue("system", "emailrecipient", "order");
+            String[] creds = getSMTPCredentials();
+            if (! to.isBlank() && ! creds[1].isBlank()) {
+                sendEmail(to,"Sales Order Entry Event", "A new sales order has been created for PO: " + e.po, "");
+               // Session sessionmail = setEmailSession();
+               // sendEmailwSession(sessionmail, creds[1], to, "Sales Order Entry Event", "A new sales order has been created for PO: " + e.po, "");
+            }
+        } 
+        
         return m;
     }
     
