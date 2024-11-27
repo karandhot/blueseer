@@ -26,6 +26,7 @@ SOFTWARE.
 package com.blueseer.edi;
 
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
+import static com.blueseer.utl.OVData.sendEmail;
 import static com.blueseer.utl.OVData.sendEmailwSession;
 import static com.blueseer.utl.OVData.setEmailSession;
 import java.io.BufferedReader;
@@ -425,8 +426,7 @@ return r;
               boolean sent = false;
               String message = "This is an automated email alert." + '\n';
              
-              Session session = setEmailSession();
-              
+                            
               for (int i = 0; i < listOfFiles.length; i++) {
             	 sent = false;
                  if (listOfFiles[i].isFile()) {
@@ -438,7 +438,7 @@ return r;
                 			 Path archpath = FileSystems.getDefault().getPath(archdir + listOfFiles[i].getName() + "." + now);
                 			 log.write(now + " sending email for file: " + listOfFiles[i].getName() + " to " + e[1] +  "\n");
                 			 log.write("\n");
-                                         sendEmailwSession(session, from, e[2], e[1], message, filepath.toString());
+                                         sendEmail(from, e[2], e[1], message, filepath.toString());
                 			 Files.copy(filepath, archpath, StandardCopyOption.REPLACE_EXISTING);
                 			 Files.delete(filepath);
                 			 break;

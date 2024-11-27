@@ -3567,7 +3567,7 @@ public class EDI {
         }
         
         if (OVData.getSysMetaValue("system", "emailkey", "order").equals("1")) {
-            Session session = setEmailSession();
+           
             String to = OVData.getSysMetaValue("system", "emailrecipient", "order");
             String[] creds = getSMTPCredentials();
             if (! to.isBlank() && ! creds[1].isBlank()) {

@@ -18643,7 +18643,84 @@ MainFrame.bslog(e);
       MainFrame.bslog(e);
     }
  }
-         
+      
+    public static void sendEmail(String from, String to, String subject, String body, String filename) {
+
+  // Strings that contain from, to, subject, body and file path to the attachment
+
+      String[] smtpcreds = getSMTPCredentials();
+      String emailserver = smtpcreds[0];
+
+
+      if (emailserver.isEmpty() || from.isEmpty()) {
+          return;
+      }
+      // Set smtp properties
+      Properties properties = new Properties();
+      properties.put("mail.smtp.host", emailserver);
+      ArrayList<String[]> obc = getSysMetaData("system", "smtp_server_properties");
+        for (String[] s : obc) {
+            properties.put(s[0], s[1]);
+        } 
+      Authenticator auth = new SMTPAuthenticator();
+      Session session = Session.getDefaultInstance(properties, auth);
+
+  try {
+   
+    MimeMessage message = new MimeMessage(session);
+
+    message.setFrom(new InternetAddress(from));
+
+    message.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
+
+    message.setSubject(subject);
+
+    message.setSentDate(new Date());
+
+// Set the email body
+
+    MimeBodyPart messagePart = new MimeBodyPart();
+
+    messagePart.setText(body);
+
+// Set the email attachment file
+
+    if (! filename.isEmpty()) {
+            attachmentPart = new MimeBodyPart();
+            FileDataSource fileDataSource = new FileDataSource(filename) {
+
+                @Override
+
+                public String getContentType() {
+
+              return "application/octet-stream";
+
+                }
+
+            };
+            attachmentPart.setDataHandler(new DataHandler(fileDataSource));
+            attachmentPart.setFileName(fileDataSource.getName());
+    }
+// Add all parts of the email to Multipart object
+
+    Multipart multipart = new MimeMultipart();
+
+    multipart.addBodyPart(messagePart);
+     if (! filename.isEmpty()) {
+     multipart.addBodyPart(attachmentPart);
+     }
+    message.setContent(multipart);
+
+    // Send email
+
+    Transport.send(message);
+
+    } catch (MessagingException e) {
+      MainFrame.bslog(e);
+    }
+ }
+    
+    
     public static void sendEmailByID(String to, String subject, String body, String filename) {
 	 
 	

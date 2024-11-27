@@ -50,6 +50,7 @@ import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.parseFileName;
 import static com.blueseer.utl.OVData.isSMTPServer;
 import static com.blueseer.utl.OVData.isSMTPServerBool;
+import static com.blueseer.utl.OVData.sendEmail;
 import static com.blueseer.utl.OVData.sendEmailwSession;
 import static com.blueseer.utl.OVData.setEmailSession;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -3410,6 +3411,16 @@ public class ediData {
           JRRT rr = null;
           switch (wkd.wkfd_action()) {
             
+            case "EmailDirList" :
+                r = wkfaction_emaildirlist(wkd, getWkfdMeta(wkd.wkfd_id(), wkd.wkfd_line()));
+                lgd[3] = r[0];
+                lgd[4] = r[1];
+                if (! r[0].equals("0")) {
+                    logdetail.add(lgd);
+                    break forloop;
+                } 
+                break; 
+                
             case "FileMatchMove" :
                 r = wkfaction_filematchmove(wkd, getWkfdMeta(wkd.wkfd_id(), wkd.wkfd_line()));
                 lgd[3] = r[0];
@@ -4245,8 +4256,7 @@ public class ediData {
            return r;  
         }
         
-        Session session = setEmailSession();
-        sendEmailwSession(session, smtpfrom, smtpto, smtpsubject, "", filepath.toString());
+        sendEmail(smtpfrom, smtpto, smtpsubject, "", filepath.toString());
         try {
             if (deletefile) {
                 Files.delete(vfilepath);
@@ -4675,8 +4685,7 @@ public class ediData {
         
         return r;
     }
-    
-    
+        
     public static String[] wkfaction_filematchmove(wkf_det wkfd, ArrayList<wkfd_meta> list) {
         String[] r = new String[]{"0",""};
         
@@ -4725,6 +4734,54 @@ public class ediData {
                     }
                 }
                 r[1] = "Moving " + count +  " files " + " from " + source + " to " + destination + " as " + destinationFileName;
+            } catch (IOException ex) {  
+                    r[0] = "1";
+                    r[1] = "ERROR WorkFlowID: " + wkfd.wkfd_id + " action: " + wkfd.wkfd_action + "->"  + ex.getMessage();
+            }  
+        } 
+        return r;
+    }
+    
+    public static String[] wkfaction_emaildirlist(wkf_det wkfd, ArrayList<wkfd_meta> list) {
+        String[] r = new String[]{"0",""};
+        
+        String source = "";
+        String smtpfrom = "";
+        String smtpto = "";
+        StringBuilder subject = new StringBuilder();
+        StringBuilder body = new StringBuilder();
+        
+        for (wkfd_meta m : list) {
+            if (m.wkfdm_key().equals("source dir") && ! m.wkfdm_value.isBlank()) {
+                source = m.wkfdm_value();
+            }
+            if (m.wkfdm_key().equals("smtpfrom") && ! m.wkfdm_value.isBlank()) {
+                smtpfrom = m.wkfdm_value();
+            }
+            if (m.wkfdm_key().equals("smtpto") && ! m.wkfdm_value.isBlank()) {
+                smtpto = m.wkfdm_value();
+            }
+            if (m.wkfdm_key().equals("subject") && ! m.wkfdm_value.isBlank()) {
+                subject.append(m.wkfdm_value());
+            }
+        }
+        
+        
+       
+        if (! source.isEmpty() && ! smtpfrom.isEmpty() && ! smtpto.isEmpty()) {
+        int count = 0;
+        Path sourcepath = FileSystems.getDefault().getPath(source);
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(sourcepath)) {
+                int f = 0;
+                for (Path path : stream) {
+                    if (! Files.isDirectory(path)) {
+                        count++;   
+                        body.append(path.toString()).append("\n");                        
+                    }
+                }
+                subject.append(" filecount: ").append(String.valueOf(count));
+                sendEmail(smtpfrom, smtpto, subject.toString(), body.toString(), ""); 
+                r[1] = "Emailing Dir listing count: " + count +  " files " + " from " + smtpfrom + " to " + smtpto;
             } catch (IOException ex) {  
                     r[0] = "1";
                     r[1] = "ERROR WorkFlowID: " + wkfd.wkfd_id + " action: " + wkfd.wkfd_action + "->"  + ex.getMessage();
