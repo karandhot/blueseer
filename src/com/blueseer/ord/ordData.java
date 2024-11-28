@@ -3183,6 +3183,9 @@ public class ordData {
                         continue;
                     }
                     i++;
+                    if (s.length() > 199) {
+                        s = s.substring(0,199);
+                    }
                 st.executeUpdate("insert into so_meta (som_id, som_type, som_key, som_value) values ( "
                         + "'" + id + "'" + ","
                         + "'" + "ordernotes" + "'" + ","
