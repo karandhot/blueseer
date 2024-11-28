@@ -3095,6 +3095,156 @@ public class ordData {
     
     
     // miscellaneous SQL queries
+    public static boolean addUpdateSOMeta(String id, String type, String key, String value) {
+        boolean x = false;
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+                int i = 0;
+                res = st.executeQuery("SELECT som_value FROM so_meta where som_id = " + "'" + id + "'"
+                        + " AND som_type = " + "'" + type + "'"
+                        + " AND somm_key = " + "'" + key + "'"     
+                        + " ;");
+                while (res.next()) {
+                    i++;
+                }
+
+                if (i == 0) {
+                    st.executeUpdate("insert into so_meta (som_id, som_type, som_key, som_value) values ( "
+                            + "'" + id + "'" + ","
+                            + "'" + type + "'" + ","
+                            + "'" + key + "'" + ","
+                            + "'" + value + "'" + ")"
+                            + ";");
+                    x = true;
+                } else {
+                    st.executeUpdate("update so_meta set "
+                            + " som_value = " + "'" + value + "'"
+                            + " where som_id = " + "'" + id + "'" + " and "
+                            + " som_type = " +  "'" + type + "'" + " and "
+                            + " som_key = " +  "'" + key + "'"  
+                            + ";");
+                    x = true;
+                }
+            } // if proceed
+            catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return x;
+    }
+
+    public static void addUpdateSOMetaNotes(String id, String[] values) {  //used primarily for order notes where key is counter
+        
+        
+        if (values != null) {
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+                int i = 0;
+                
+                
+                // delete old order notes if available
+                st.executeUpdate("delete from so_meta "
+                            + " where som_id = " + "'" + id + "'" + " and "
+                            + " som_type = 'ordernotes' " 
+                            + ";");
+              
+
+                //now add
+                for (String s : values) {
+                    if (s.isBlank()) {
+                        continue;
+                    }
+                    i++;
+                st.executeUpdate("insert into so_meta (som_id, som_type, som_key, som_value) values ( "
+                        + "'" + id + "'" + ","
+                        + "'" + "ordernotes" + "'" + ","
+                        + "'" + String.valueOf(i) + "'" + ","
+                        + "'" + s + "'" + ")"
+                        + ";");
+                }
+                    
+               
+            } // if proceed
+            catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        
+    }
+    }
+
+    public static ArrayList<String> getSOMetaNotes(String id) {
+        ArrayList<String> r = new ArrayList<String>();
+        
+        try{
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+            try{
+                                
+                res = st.executeQuery("select * from so_meta " +
+                        " where som_id = " + "'" + id + "'" + " and som_type = 'ordernotes' order by som_key;");
+                while (res.next()) {
+                    r.add(res.getString("som_value"));
+                }
+            }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+             return r;
+    }
+    
+    
     public static String[] getBillTranByDate(String bill, LocalDate billdate) {
         String[] r = null;
         

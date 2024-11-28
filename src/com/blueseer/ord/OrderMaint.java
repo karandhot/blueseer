@@ -44,9 +44,11 @@ import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.getItemDataInit;
 import static com.blueseer.inv.invData.getItemQOHTotal;
 import static com.blueseer.ord.ordData.addOrderTransaction;
+import static com.blueseer.ord.ordData.addUpdateSOMetaNotes;
 import static com.blueseer.ord.ordData.getOrderItemAllocatedQty;
 import static com.blueseer.ord.ordData.getOrderLines;
 import static com.blueseer.ord.ordData.getOrderMstrSet;
+import static com.blueseer.ord.ordData.getSOMetaNotes;
 import com.blueseer.ord.ordData.salesOrder;
 import com.blueseer.ord.ordData.sod_det;
 import com.blueseer.ord.ordData.so_mstr;
@@ -443,6 +445,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
        jTabbedPane1.add(getClassLabelTag("lines", this.getClass().getSimpleName()), jPanelLines);
        jTabbedPane1.add(getClassLabelTag("schedule", this.getClass().getSimpleName()), jPanelSched);
        jTabbedPane1.add(getClassLabelTag("attachments", this.getClass().getSimpleName()), panelAttachment);
+       jTabbedPane1.add(getClassLabelTag("notes", this.getClass().getSimpleName()), panelNotes);
         
         
        // jTabbedPane1.setEnabledAt(1, false);
@@ -2411,6 +2414,10 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         btdeleteattachment = new javax.swing.JButton();
         jScrollPane4 = new javax.swing.JScrollPane();
         tableattachment = new javax.swing.JTable();
+        panelNotes = new javax.swing.JPanel();
+        btnotes = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tanotes = new javax.swing.JTextArea();
 
         jTextField1.setText("jTextField1");
 
@@ -3676,6 +3683,45 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         );
 
         add(panelAttachment);
+
+        panelNotes.setBorder(javax.swing.BorderFactory.createTitledBorder("Notes Panel"));
+        panelNotes.setName("panelAttachment"); // NOI18N
+        panelNotes.setPreferredSize(new java.awt.Dimension(974, 560));
+
+        btnotes.setText("Update Notes");
+        btnotes.setName("btnotes"); // NOI18N
+        btnotes.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnotesActionPerformed(evt);
+            }
+        });
+
+        tanotes.setColumns(20);
+        tanotes.setRows(5);
+        tanotes.setName("panelnotes"); // NOI18N
+        jScrollPane1.setViewportView(tanotes);
+
+        javax.swing.GroupLayout panelNotesLayout = new javax.swing.GroupLayout(panelNotes);
+        panelNotes.setLayout(panelNotesLayout);
+        panelNotesLayout.setHorizontalGroup(
+            panelNotesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelNotesLayout.createSequentialGroup()
+                .addGroup(panelNotesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnotes)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 551, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(411, Short.MAX_VALUE))
+        );
+        panelNotesLayout.setVerticalGroup(
+            panelNotesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelNotesLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(btnotes)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(353, 353, 353))
+        );
+
+        add(panelNotes);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnewActionPerformed
@@ -4108,15 +4154,20 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_ddtaxActionPerformed
 
     private void jTabbedPane1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane1StateChanged
-        /*
+        
         if (! isLoad) {
         JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
         int index = sourceTabbedPane.getSelectedIndex();
-        if (index == 1 && ddpart != null && ddpart.getItemCount() > 0) {
-            ddpart.setSelectedIndex(0);
+            if (index == 4) {
+                tanotes.setText("");
+                ArrayList<String> notes = getSOMetaNotes(tbkey.getText());
+                for (String n : notes) {
+                    tanotes.append(n);
+                    tanotes.append("\n");
+                }
+            }
         }
-        }
-        */
+        
     }//GEN-LAST:event_jTabbedPane1StateChanged
 
     private void btinvoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btinvoiceActionPerformed
@@ -4336,6 +4387,15 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
     }//GEN-LAST:event_tbitemActionPerformed
 
+    private void btnotesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnotesActionPerformed
+        String[] x = null;
+        String text = tanotes.getText();
+        if (text != null && ! text.isBlank()) {
+            x = text.split("\n");
+        }
+        addUpdateSOMetaNotes(tbkey.getText(), x);  
+    }//GEN-LAST:event_btnotesActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btLookUpBillTo;
     private javax.swing.JButton btLookUpItemDesc;
@@ -4352,6 +4412,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btinvoice;
     private javax.swing.JButton btlookup;
     private javax.swing.JButton btnew;
+    private javax.swing.JButton btnotes;
     private javax.swing.JButton btprintinvoice;
     private javax.swing.JButton btprintorder;
     private javax.swing.JButton btprintps;
@@ -4436,6 +4497,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JPanel jPanelLines;
     private javax.swing.JPanel jPanelMain;
     private javax.swing.JPanel jPanelSched;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
@@ -4459,6 +4521,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private com.toedter.calendar.JDateChooser orddate;
     private javax.swing.JTable orddet;
     private javax.swing.JPanel panelAttachment;
+    private javax.swing.JPanel panelNotes;
     private javax.swing.JLabel percentlabel;
     private javax.swing.JTextField ponbr;
     private javax.swing.JTextField qtyshipped;
@@ -4466,6 +4529,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JTable sactable;
     private javax.swing.JTable tableattachment;
     private javax.swing.JTable tablesched;
+    private javax.swing.JTextArea tanotes;
     private javax.swing.JTextField tbaddr1;
     private javax.swing.JTextField tbaddr2;
     private javax.swing.JTextField tbcity;
