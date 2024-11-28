@@ -2457,7 +2457,7 @@ public class apiUtils {
         logdet.add(new String[]{parentkey, "info", "Source Directory: " + sourceDir});
         logdet.add(new String[]{parentkey, "info", "Encryption Cert file: " + tp[11]});
         logdet.add(new String[]{parentkey, "info", "Signing Key ID: " + signkeyid});
-        
+        logdet.add(new String[]{parentkey, "info", "Encryption Algo: " + tp[18]});
        
        // System.out.println("here->" + as2To + "/" +  as2From + "/" + internalURL + "/" + sourceDir + "/" + signkeyid);
         
