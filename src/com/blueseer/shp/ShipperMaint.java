@@ -151,8 +151,8 @@ public class ShipperMaint extends javax.swing.JPanel {
                 getGlobalColumnTag("discount"), 
                 getGlobalColumnTag("listprice"), 
                 getGlobalColumnTag("tax"), 
-                getGlobalColumnTag("cont"), 
-                getGlobalColumnTag("serial"),
+                getGlobalColumnTag("serial"), 
+                getGlobalColumnTag("cont"),
                 getGlobalColumnTag("bom"),
                 getGlobalColumnTag("contqty"),
                 getGlobalColumnTag("uom")
