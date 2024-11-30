@@ -674,7 +674,10 @@ public class ProdEntryMaint extends javax.swing.JPanel {
         for (String c : comps) {
             String serial = bsmf.MainFrame.input("Enter Serial Number of component: " + c);
             String[] v = getWHLOCfromSerialNumber(c,serial);
-            String[] values = new String[]{serial,v[0],v[1]};
+            String[] values = new String[]{serial, "", ""};  // defaults to blank wh / loc
+            if (v != null) {
+                values = new String[]{serial,v[0],v[1]};
+            }             
             if (serialkeys.containsKey(c)) {
                 serialkeys.replace(c, values);
             } else {
