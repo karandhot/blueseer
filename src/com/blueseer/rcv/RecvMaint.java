@@ -706,19 +706,19 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerT {
     public boolean validateInput(dbaction x) {
        
         boolean requireWHLoc = BlueSeerUtils.ConvertStringToBool(getSysMetaValue("system", "inventorycontrol", "operation_whloc_required"));
-        
+        boolean isInventorySerialized = (OVData.isInvCtrlSerialize()) ? true : false;
         
         Map<String,Integer> f = OVData.getTableInfo(new String[]{"recv_mstr","recv_det"});
         int fc;
         
-        if (ddvend.getSelectedItem() == null || ddvend.getSelectedItem().toString().isEmpty()) {
+        if (ddvend.getSelectedItem() == null || ddvend.getSelectedItem().toString().isBlank()) {
             bsmf.MainFrame.show(getMessageTag(1024));
             ddvend.requestFocus();
             return false;
         }
         
         fc = checkLength(f,"rv_packingslip");
-        if (tbpackingslip.getText().length() > fc || tbpackingslip.getText().isEmpty()) {
+        if (tbpackingslip.getText().length() > fc || tbpackingslip.getText().isBlank()) {
         bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
         tbpackingslip.requestFocus();
         return false;
@@ -738,23 +738,29 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerT {
         return false;
         } 
         
-        if (requireWHLoc && ddwh.getSelectedItem().toString().isEmpty()) {
+        if (requireWHLoc && ddwh.getSelectedItem().toString().isBlank()) {
            // ddwh.setBackground(Color.yellow);
             bsmf.MainFrame.show(getMessageTag(1190));
             ddwh.requestFocus();
             return false;
         }
         
-        if (requireWHLoc && ddloc.getSelectedItem().toString().isEmpty()) {
+        if (requireWHLoc && ddloc.getSelectedItem().toString().isBlank()) {
            // ddwh.setBackground(Color.yellow);
             bsmf.MainFrame.show(getMessageTag(1190));
             ddloc.requestFocus();
             return false;
         }
         
+        if (isInventorySerialized && tbserial.getText().isBlank()) {
+            bsmf.MainFrame.show(getMessageTag(1193));
+            tbserial.requestFocus();
+            return false;
+        }
+        
         
                 if (! x.name().equals("update")) {  // if adjusting fields in the table....this validation is not necessary as they cannot change the PO
-                    if (ddpo.getSelectedItem() == null || ddpo.getSelectedItem().toString().isEmpty()) {
+                    if (ddpo.getSelectedItem() == null || ddpo.getSelectedItem().toString().isBlank()) {
                         bsmf.MainFrame.show(getMessageTag(1026));
                         ddpo.requestFocus();
                         return false;
@@ -1842,7 +1848,7 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btlookupActionPerformed
 
     private void btgenerateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btgenerateActionPerformed
-        tbserial.setText(String.valueOf(OVData.getNextNbr("serial")));
+        tbserial.setText(String.valueOf(OVData.getNextNbr("receiverserial")));
     }//GEN-LAST:event_btgenerateActionPerformed
 
     private void btaddattachmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddattachmentActionPerformed
