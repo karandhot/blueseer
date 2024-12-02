@@ -627,7 +627,7 @@ public class ProdEntryMaint extends javax.swing.JPanel {
 
     private void btsubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btsubmitActionPerformed
         
-        
+        boolean isInventorySerialized = (OVData.isInvCtrlSerialize()) ? true : false;
         
         if (! BlueSeerUtils.isParsableToDouble(tbqty.getText()) ) {
             bsmf.MainFrame.show(getMessageTag(1028));
@@ -643,6 +643,12 @@ public class ProdEntryMaint extends javax.swing.JPanel {
         if ( OVData.isGLPeriodClosed(BlueSeerUtils.mysqlDateFormat.format(dcdate.getDate()))) {
                     bsmf.MainFrame.show(getMessageTag(1035));
                     return;
+        }
+        
+        if (isInventorySerialized && tbserialno.getText().isBlank()) {
+            bsmf.MainFrame.show(getMessageTag(1193));
+            tbserialno.requestFocus();
+            return;
         }
         
         Map<String,Integer> f = OVData.getTableInfo(new String[]{"tran_mstr"});

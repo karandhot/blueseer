@@ -362,6 +362,9 @@ public class SerialBrowse extends javax.swing.JPanel {
         dcto.setDate(now);
         tbserialfrom.setText("");
         tbserialto.setText("");
+        tbfromitem.setText("");
+        tbtoitem.setText("");
+        
         mymodel.setNumRows(0);
         modeldetail.setNumRows(0);
         tablereport.setModel(mymodel);
@@ -377,7 +380,17 @@ public class SerialBrowse extends javax.swing.JPanel {
         for (Object site : sites) {
             ddsite.addItem(site);
         }
+        
+        ddtype.removeAllItems();
+        ArrayList<String> mycode = OVData.getCodeMstr("trantype");
+        for (int i = 0; i < mycode.size(); i++) {
+            ddtype.addItem(mycode.get(i));
+        }
+        ddtype.insertItemAt("ALL", 0);
+        ddtype.setSelectedIndex(0);
     }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -410,6 +423,13 @@ public class SerialBrowse extends javax.swing.JPanel {
         tbcsv = new javax.swing.JButton();
         dcfrom = new com.toedter.calendar.JDateChooser();
         dcto = new com.toedter.calendar.JDateChooser();
+        tbfromitem = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        tbtoitem = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
+        ddtype = new javax.swing.JComboBox<>();
+        jLabel8 = new javax.swing.JLabel();
+        btclear = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
 
         setBackground(new java.awt.Color(0, 102, 204));
@@ -520,6 +540,19 @@ public class SerialBrowse extends javax.swing.JPanel {
 
         dcto.setDateFormatString("yyyy-MM-dd");
 
+        jLabel2.setText("From Item");
+
+        jLabel7.setText("To Item");
+
+        jLabel8.setText("Type");
+
+        btclear.setText("Clear");
+        btclear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btclearActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -533,29 +566,44 @@ public class SerialBrowse extends javax.swing.JPanel {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(tbserialto, javax.swing.GroupLayout.DEFAULT_SIZE, 94, Short.MAX_VALUE)
                     .addComponent(tbserialfrom))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addGap(17, 17, 17)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel7)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(tbtoitem, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel4))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(tbfromitem, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel1)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(dcfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel5)
-                        .addGap(4, 4, 4)
-                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(btRun)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btdetail)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tbcsv)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btprint))
+                        .addComponent(jLabel5))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel8)))
+                .addGap(4, 4, 4)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(ddsite, 0, 95, Short.MAX_VALUE)
+                    .addComponent(ddtype, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(btRun)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btclear)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btdetail)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(tbcsv)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btprint)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -572,17 +620,27 @@ public class SerialBrowse extends javax.swing.JPanel {
                         .addComponent(tbserialfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel6)
                         .addComponent(btprint)
-                        .addComponent(tbcsv))
+                        .addComponent(tbcsv)
+                        .addComponent(tbfromitem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel2)
+                        .addComponent(btclear))
                     .addComponent(dcfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel3)
+                            .addComponent(tbserialto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel4))
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(tbtoitem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel7)))
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel3)
-                        .addComponent(tbserialto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel4)))
-                .addContainerGap(12, Short.MAX_VALUE))
+                        .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel8)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
@@ -649,6 +707,9 @@ try {
               
                  String fromserial = "";
                  String toserial = "";
+                 String fromitem = "";
+                 String toitem = "";
+                 
                  if (! tbserialfrom.getText().isBlank()) {
                      fromserial = tbserialfrom.getText();
                  } else {
@@ -660,13 +721,41 @@ try {
                      toserial = bsmf.MainFrame.hichar;
                  }
                  
-                res = st.executeQuery("SELECT tr_id, tr_op, tr_cost,  tr_item, tr_type, tr_wh, tr_loc, tr_qty, tr_base_qty, tr_uom, tr_eff_date, tr_timestamp, tr_ref, tr_serial, tr_program , tr_userid, tr_lot " +
+                 if (! tbfromitem.getText().isBlank()) {
+                     fromitem = tbfromitem.getText();
+                 } else {
+                     fromitem = bsmf.MainFrame.lowchar;
+                 }
+                 if (! tbtoitem.getText().isBlank()) {
+                     toitem = tbtoitem.getText();
+                 } else {
+                     toitem = bsmf.MainFrame.hichar;
+                 }
+                
+                if (ddtype.getSelectedItem().toString().equals("ALL")) {
+                    res = st.executeQuery("SELECT tr_id, tr_op, tr_cost, tr_item, tr_type, tr_wh, tr_loc, tr_qty, tr_base_qty, tr_uom, tr_eff_date, tr_timestamp, tr_ref, tr_serial, tr_program , tr_userid, tr_lot " +
                         " FROM  tran_mstr  " +
                         " where tr_eff_date >= " + "'" + dfdate.format(dcfrom.getDate())  + "'" + 
                         " AND tr_eff_date <= " + "'" + dfdate.format(dcto.getDate()) + "'" + 
                         " AND tr_serial >= " + "'" + fromserial + "'" + 
                         " AND tr_serial <= " + "'" + toserial + "'" + 
+                        " AND tr_item >= " + "'" + fromitem + "'" + 
+                        " AND tr_item <= " + "'" + toitem + "'" + 
                          " order by tr_ent_date desc ;");   
+                } else {
+                    res = st.executeQuery("SELECT tr_id, tr_op, tr_cost, tr_item, tr_type, tr_wh, tr_loc, tr_qty, tr_base_qty, tr_uom, tr_eff_date, tr_timestamp, tr_ref, tr_serial, tr_program , tr_userid, tr_lot " +
+                        " FROM  tran_mstr  " +
+                        " where tr_eff_date >= " + "'" + dfdate.format(dcfrom.getDate())  + "'" + 
+                        " AND tr_eff_date <= " + "'" + dfdate.format(dcto.getDate()) + "'" + 
+                        " AND tr_serial >= " + "'" + fromserial + "'" + 
+                        " AND tr_serial <= " + "'" + toserial + "'" + 
+                        " AND tr_item >= " + "'" + fromitem + "'" + 
+                        " AND tr_item <= " + "'" + toitem + "'" +         
+                        " AND tr_type = " + "'" + ddtype.getSelectedItem().toString() + "'" +
+                               
+                         " order by tr_ent_date desc ;");    
+                }
+                
                 while (res.next()) {
                     i++;
                    
@@ -750,20 +839,38 @@ try {
         }
     }//GEN-LAST:event_tabledetailMouseClicked
 
+    private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
+        java.util.Date now = new java.util.Date();
+        dcfrom.setDate(now);
+        dcto.setDate(now);
+        tbserialfrom.setText("");
+        tbserialto.setText("");
+        tbfromitem.setText("");
+        tbtoitem.setText("");
+        ddtype.setSelectedIndex(0);
+        mymodel.setNumRows(0);
+        modeldetail.setNumRows(0);
+    }//GEN-LAST:event_btclearActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btRun;
+    private javax.swing.JButton btclear;
     private javax.swing.JButton btdetail;
     private javax.swing.JButton btprint;
     private com.toedter.calendar.JDateChooser dcfrom;
     private com.toedter.calendar.JDateChooser dcto;
     private javax.swing.JComboBox ddsite;
+    private javax.swing.JComboBox<String> ddtype;
     private javax.swing.JPanel detailpanel;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -774,7 +881,9 @@ try {
     private javax.swing.JPanel tablepanel;
     private javax.swing.JTable tablereport;
     private javax.swing.JButton tbcsv;
+    private javax.swing.JTextField tbfromitem;
     private javax.swing.JTextField tbserialfrom;
     private javax.swing.JTextField tbserialto;
+    private javax.swing.JTextField tbtoitem;
     // End of variables declaration//GEN-END:variables
 }
