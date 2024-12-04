@@ -676,10 +676,16 @@ public class ProdEntryMaint extends javax.swing.JPanel {
         
         // need to iterate through all components that are serialized
         ArrayList<String> comps = getpsmstrcompSerialized(tbitem.getText());
+        boolean error = false;
         serialkeys = new LinkedHashMap<String,String[]>();
         for (String c : comps) {
             String serial = bsmf.MainFrame.input("Enter Serial Number of component: " + c);
             String[] v = getWHLOCfromSerialNumber(c,serial);
+            if (v == null || serial.isBlank()) {
+              error = true;
+              bsmf.MainFrame.show("serial number does not exist for this item: " + c);
+              break;
+            }
             String[] values = new String[]{serial, "", ""};  // defaults to blank wh / loc
             if (v != null) {
                 values = new String[]{serial,v[0],v[1]};
@@ -692,9 +698,11 @@ public class ProdEntryMaint extends javax.swing.JPanel {
         }
         
         
-        
+        if (! error) {
         setPanelComponentState(this, false);
         executeTask(dbaction.run, new String[]{""});
+        }
+        
         
     }//GEN-LAST:event_btsubmitActionPerformed
 

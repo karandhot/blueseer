@@ -635,14 +635,14 @@ public class LocationTransfer extends javax.swing.JPanel {
             tbitem.requestFocus();
             return;
         }
-        
+        /*
         if (qty > invData.getItemQtyByWarehouseAndLocation(tbitem.getText(), sitefrom, whfrom, locfrom) ) {
             proceed = false;
             bsmf.MainFrame.show(getMessageTag(1074));
             tbqty.requestFocus();
             return;
         }
-        
+        */
         if (proceed) {    
             //Date effdate, String part, int qty, String type, double price, double cost, String site, 
             //  String loc, String cust, String nbr, String order, int line, String po, String terms, String lot, String rmks, 
@@ -686,6 +686,8 @@ public class LocationTransfer extends javax.swing.JPanel {
        rtn = OVData.UpdateInventoryLocationTransfer(tbitem.getText(), sitefrom, ddlocfrom.getSelectedItem().toString(), whfrom, tbfromserial.getText(), "", qty);
        }
        
+       // clean up zero inventory records
+       invData.deleteZeroInventoryRecs();
       
        if (! rtn)
            bsmf.MainFrame.show("Transfer Complete");

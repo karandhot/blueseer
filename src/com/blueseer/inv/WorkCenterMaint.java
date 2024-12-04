@@ -289,7 +289,9 @@ public class WorkCenterMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbruncrewsize.setText("1");
         tbsetupcrewsize.setText("1");
         
+        ddcc.removeAllItems();
         fglData.getGLCCList().stream().forEach((s) -> ddcc.addItem(s));
+        ddcc.setSelectedItem(OVData.getDefaultCC());
         
         ddsite.removeAllItems();
         OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));

@@ -13746,8 +13746,9 @@ return mystring;
 
             // update InventoryBalance
             _updateInventoryBalance(item, site, String.valueOf(org.threeten.bp.LocalDate.now().getYear()), String.valueOf(org.threeten.bp.LocalDate.now().getMonthValue()), qty, con);
-                    
-
+                
+            // cleanup zero inventory records
+            invData._deleteZeroInventoryRecs(con); 
 
        }
         catch (SQLException s){

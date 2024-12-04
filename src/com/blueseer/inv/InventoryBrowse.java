@@ -223,6 +223,7 @@ public class InventoryBrowse extends javax.swing.JPanel {
         ddclass.addItem("M");
         ddclass.addItem("P");
         ddclass.setSelectedIndex(0);
+        cbzero.setSelected(false);
         
         ArrayList<String> sites = new ArrayList();
         ddsite.removeAllItems();
@@ -293,6 +294,7 @@ public class InventoryBrowse extends javax.swing.JPanel {
         jLabel6 = new javax.swing.JLabel();
         tbcsv = new javax.swing.JButton();
         btprint = new javax.swing.JButton();
+        cbzero = new javax.swing.JCheckBox();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -366,6 +368,8 @@ public class InventoryBrowse extends javax.swing.JPanel {
             }
         });
 
+        cbzero.setText("Suppress Zero Inventory");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -398,11 +402,14 @@ public class InventoryBrowse extends javax.swing.JPanel {
                     .addComponent(ddfromloc, 0, 138, Short.MAX_VALUE)
                     .addComponent(ddfromwh, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(28, 28, 28)
-                .addComponent(btRun)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tbcsv)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btprint)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(btRun)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(tbcsv)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btprint))
+                    .addComponent(cbzero))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 283, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
@@ -441,7 +448,8 @@ public class InventoryBrowse extends javax.swing.JPanel {
                             .addComponent(ddfromloc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel5)
                             .addComponent(ddclass, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel6)))
+                            .addComponent(jLabel6)
+                            .addComponent(cbzero)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel7)
@@ -450,7 +458,7 @@ public class InventoryBrowse extends javax.swing.JPanel {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel8)
                             .addComponent(labelqty, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addGap(21, 21, 21)
+                .addGap(20, 20, 20)
                 .addComponent(tablepanel, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
                 .addContainerGap())
         );
@@ -533,6 +541,9 @@ try {
                     if (! res.getString("loc").equals(loc) && ! loc.isBlank()) {
                         continue;
                     }
+                    if (cbzero.isSelected() && res.getDouble("qoh") == 0) {
+                        continue;
+                    }
                     
                     qty = qty + res.getDouble("qoh");
                     i++;
@@ -581,6 +592,7 @@ try {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btRun;
     private javax.swing.JButton btprint;
+    private javax.swing.JCheckBox cbzero;
     private javax.swing.JComboBox<String> ddclass;
     private javax.swing.JComboBox<String> ddfromitem;
     private javax.swing.JComboBox<String> ddfromloc;

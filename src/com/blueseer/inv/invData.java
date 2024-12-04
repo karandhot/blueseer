@@ -1973,6 +1973,24 @@ public class invData {
         return r;
     }
     
+    public static void _deleteZeroInventoryRecs(Connection con) throws SQLException { 
+        PreparedStatement ps = null;   
+        String sql = "delete from in_mstr where in_qoh = '0';";
+        ps = con.prepareStatement(sql);
+        ps.executeUpdate();
+        ps.close();
+    }
+    
+    public static void deleteZeroInventoryRecs() { 
+        String sql = "delete from in_mstr where in_qoh = '0'; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql)) {
+        int rows = ps.executeUpdate();
+        } catch (SQLException s) {
+	       MainFrame.bslog(s); 
+        }
+    }
+    
     
     public static String[] inventoryAdjustmentTransaction(tran_mstr tm, in_mstr in, gl_pair gv) {
         String[] m = new String[2];
@@ -2004,7 +2022,11 @@ public class invData {
                      
             /* do glEntryXPv2 */
             fglData.glEntryXPpair(bscon, gv);
-                        
+             
+            
+            /* clean up zero inventory records */
+            _deleteZeroInventoryRecs(bscon);
+            
             bscon.commit();
             m = new String[] {BlueSeerUtils.SuccessBit, getMessageTag(1125)};
         } catch (SQLException s) {

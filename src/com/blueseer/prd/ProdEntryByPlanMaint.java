@@ -52,6 +52,7 @@ import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.inv.invData;
+import static com.blueseer.inv.invData.getWHLOCfromSerialNumber;
 import com.blueseer.inv.invData.inv_ctrl;
 import com.blueseer.sch.schData;
 import static com.blueseer.sch.schData.getPlanDetHistory;
@@ -59,10 +60,12 @@ import com.blueseer.sch.schData.plan_mstr;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.OVData.getSysMetaValue;
+import static com.blueseer.utl.OVData.getpsmstrcompSerialized;
 import java.awt.Component;
 import java.sql.Connection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -91,6 +94,8 @@ String sitename = "";
 String siteaddr = "";
 String sitephone = "";
 String sitecitystatezip = "";
+
+LinkedHashMap<String,String[]> serialkeys = null; 
 
 javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
             new String[]{
@@ -292,7 +297,7 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
     }
     
     public void validateScan(String scan) {
-       
+        boolean checkBOMSerial = true;
         boolean requireOpScan = BlueSeerUtils.ConvertStringToBool(getSysMetaValue("system", "inventorycontrol", "operation_scan_required"));
         if (requireOpScan) {
             btcommit.setEnabled(false);
@@ -345,6 +350,7 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
             lblmessage.setText(getMessageTag(1071,tbscan.getText()));
             lblmessage.setForeground(Color.red);
             btcommit.setEnabled(false);
+            checkBOMSerial = false;
             } else {
                 btcommit.setEnabled(true);
           }
@@ -353,11 +359,51 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
             lblmessage.setText(getMessageTag(1182,tbscan.getText()));
             lblmessage.setForeground(Color.red);
             btcommit.setEnabled(false);
+            checkBOMSerial = false;
             } else {
                 btcommit.setEnabled(true);
           }
           
        }
+       
+       
+       // scan components with bom serial flag set
+       // need to iterate through all components that are serialized
+       boolean bomserialerror = false;
+        if (checkBOMSerial) { // make sure is not closed or otherwise bad ticket before requesting BOM serial numbers
+        ArrayList<String> comps = getpsmstrcompSerialized(schData.getPlanItem(scan));
+        
+        serialkeys = new LinkedHashMap<String,String[]>();
+        for (String c : comps) {
+            String serial = bsmf.MainFrame.input("Enter Serial Number of component: " + c);
+            String[] v = getWHLOCfromSerialNumber(c,serial);
+            if (v == null || serial.isBlank()) {
+              bomserialerror = true;
+              bsmf.MainFrame.show("serial number does not exist for this item: " + c);
+              break;
+            }
+            String[] values = new String[]{serial, "", ""};  // defaults to blank wh / loc
+            if (v != null) {
+                values = new String[]{serial,v[0],v[1]};
+            }             
+            if (serialkeys.containsKey(c)) {
+                serialkeys.replace(c, values);
+            } else {
+                serialkeys.put(c, values);
+            }
+        }
+        }
+        
+        
+        if (bomserialerror) {
+              btcommit.setEnabled(false);
+              tbscan.setText("");
+              qtylabel.setText("Unknown BOM serial number");
+              qtylabel.setForeground(Color.red);
+              tbscan.requestFocusInWindow();
+              return;
+        }
+       
        
        // now get history of plan jobid (scan)
        getScanHistory(tbscan.getText());
@@ -522,8 +568,11 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
             
             
             // OK...we should have a JTable with the necessary info to create the tran_mstr table
+            if (serialkeys.size() == 0) {
+                serialkeys = null;
+            }
             
-             if (! OVData.loadTranHistByTable(mytable, null)) {
+             if (! OVData.loadTranHistByTable(mytable, serialkeys)) {
             return new String[]{"1", getMessageTag(1010,"loadTranHist")};
             } else {
                  //must have successfully enter tran_mstr...now lets create pland_mstr...and update plan_mstr if closing
