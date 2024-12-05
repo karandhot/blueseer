@@ -350,8 +350,8 @@ public class PurRptPicker extends javax.swing.JPanel {
            resetVariables();
            hidePanels();
            showPanels(new String[]{"dc"});
-           lbdate1.setText(getClassLabelTag("lblfrompodate", this.getClass().getSimpleName()));
-           lbdate2.setText(getClassLabelTag("lbltopodate", this.getClass().getSimpleName()));
+           lbdate1.setText(getClassLabelTag("lblfromdate", this.getClass().getSimpleName()));
+           lbdate2.setText(getClassLabelTag("lbltodate", this.getClass().getSimpleName()));
            java.util.Date now = new java.util.Date();
            dcdate1.setDate(now);
            dcdate2.setDate(now);
@@ -460,8 +460,8 @@ public class PurRptPicker extends javax.swing.JPanel {
            resetVariables();
            hidePanels();
            showPanels(new String[]{"tb1"});
-           lbdate1.setText(getClassLabelTag("lblfromvend", this.getClass().getSimpleName()));
-           lbdate2.setText(getClassLabelTag("lbltovend", this.getClass().getSimpleName()));
+           lbkey1.setText(getClassLabelTag("lblfromvend", this.getClass().getSimpleName()));
+           lbkey2.setText(getClassLabelTag("lbltovend", this.getClass().getSimpleName()));
          } else { // output...fill report
             // colect variables from input
             String fromvend = tbkey1.getText();
@@ -566,10 +566,10 @@ public class PurRptPicker extends javax.swing.JPanel {
            resetVariables();
            hidePanels();
            showPanels(new String[]{"dc", "tb1"});
-           lbdate1.setText(getClassLabelTag("lblfrompodate", this.getClass().getSimpleName()));
-           lbdate2.setText(getClassLabelTag("lbltopodate", this.getClass().getSimpleName()));
-           lbdate1.setText(getClassLabelTag("lblfromvend", this.getClass().getSimpleName()));
-           lbdate2.setText(getClassLabelTag("lbltovend", this.getClass().getSimpleName()));
+           lbdate1.setText(getClassLabelTag("lblfromdate", this.getClass().getSimpleName()));
+           lbdate2.setText(getClassLabelTag("lbltodate", this.getClass().getSimpleName()));
+           lbkey1.setText(getClassLabelTag("lblfromvend", this.getClass().getSimpleName()));
+           lbkey2.setText(getClassLabelTag("lbltovend", this.getClass().getSimpleName()));
            java.util.Date now = new java.util.Date();
            dcdate1.setDate(now);
            dcdate2.setDate(now);
@@ -687,8 +687,8 @@ public class PurRptPicker extends javax.swing.JPanel {
            resetVariables();
            hidePanels();
            showPanels(new String[]{"tb1"});
-           lbdate1.setText(getClassLabelTag("lblfromvend", this.getClass().getSimpleName()));
-           lbdate2.setText(getClassLabelTag("lbltovend", this.getClass().getSimpleName()));
+           lbkey1.setText(getClassLabelTag("lblfromvend", this.getClass().getSimpleName()));
+           lbkey2.setText(getClassLabelTag("lbltovend", this.getClass().getSimpleName()));
          } else { // output...fill report
             // colect variables from input
             String fromvend = tbkey1.getText();
@@ -793,10 +793,10 @@ public class PurRptPicker extends javax.swing.JPanel {
            resetVariables();
            hidePanels();
            showPanels(new String[]{"dc", "tb1"});
-           lbdate1.setText(getClassLabelTag("lblfrompodate", this.getClass().getSimpleName()));
-           lbdate2.setText(getClassLabelTag("lbltopodate", this.getClass().getSimpleName()));
-           lbdate1.setText(getClassLabelTag("lblfromvend", this.getClass().getSimpleName()));
-           lbdate2.setText(getClassLabelTag("lbltovend", this.getClass().getSimpleName()));
+           lbdate1.setText(getClassLabelTag("lblfromdate", this.getClass().getSimpleName()));
+           lbdate2.setText(getClassLabelTag("lbltodate", this.getClass().getSimpleName()));
+           lbkey1.setText(getClassLabelTag("lblfromvend", this.getClass().getSimpleName()));
+           lbkey2.setText(getClassLabelTag("lbltovend", this.getClass().getSimpleName()));
            java.util.Date now = new java.util.Date();
            dcdate1.setDate(now);
            dcdate2.setDate(now);
@@ -874,6 +874,270 @@ public class PurRptPicker extends javax.swing.JPanel {
                                    res.getString("tr_type"),
                                    res.getString("tr_eff_date"),
                                    res.getDouble("tr_qty")
+                        });
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+              } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               if (con != null) con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+      
+      // now assign tablemodel to table
+            tablereport.setModel(mymodel);
+            tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+            Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
+              while (en.hasMoreElements()) {
+                 TableColumn tc = en.nextElement();
+                 if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+                     continue;
+                 }
+                 tc.setCellRenderer(new PurRptPicker.renderer1());
+             }
+        } // else run report
+               
+    }
+   
+    /* POs by item / Date / Vendor range */
+    public void poByItemDateVendorRange (boolean input) {
+        
+        if (input) { // input...draw variable input panel
+           resetVariables();
+           hidePanels();
+           showPanels(new String[]{"dc", "tb1", "tb2"});
+           lbdate1.setText(getClassLabelTag("lblfromdate", this.getClass().getSimpleName()));
+           lbdate2.setText(getClassLabelTag("lbltodate", this.getClass().getSimpleName()));
+           lbkey1.setText(getClassLabelTag("lblfromvend", this.getClass().getSimpleName()));
+           lbkey2.setText(getClassLabelTag("lbltovend", this.getClass().getSimpleName()));
+           lbkey3.setText(getClassLabelTag("lblfromitem", this.getClass().getSimpleName()));
+           lbkey4.setText(getClassLabelTag("lbltoitem", this.getClass().getSimpleName()));
+           java.util.Date now = new java.util.Date();
+           dcdate1.setDate(now);
+           dcdate2.setDate(now);
+         } else { // output...fill report
+            // colect variables from input
+            String fromvend = tbkey1.getText();
+            String tovend = tbkey2.getText();
+            String fromitem = tbkey3.getText();
+            String toitem = tbkey4.getText();
+            String fromdate = BlueSeerUtils.setDateFormat(dcdate1.getDate());
+            String todate = BlueSeerUtils.setDateFormat(dcdate2.getDate());
+            // cleanup variables
+          
+            if (fromvend.isEmpty()) {
+                  fromvend = bsmf.MainFrame.lowchar;
+            }
+            if (tovend.isEmpty()) {
+                  tovend = bsmf.MainFrame.hichar;
+            }
+            if (fromitem.isEmpty()) {
+                  fromitem = bsmf.MainFrame.lowchar;
+            }
+            if (toitem.isEmpty()) {
+                  toitem = bsmf.MainFrame.hichar;
+            }
+            if (fromdate.isEmpty()) {
+                  fromdate = bsmf.MainFrame.lowdate;
+            }
+            if (todate.isEmpty()) {
+                  todate = bsmf.MainFrame.hidate;
+            }
+            
+            
+            // create and fill tablemodel
+            // column 1 is always 'select' and always type ImageIcon
+            // the remaining columns are whatever you require
+             javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+              new String[]{getGlobalColumnTag("po"),
+                  getGlobalColumnTag("name"),
+                  getGlobalColumnTag("item"), 
+                  getGlobalColumnTag("description"), 
+                  getGlobalColumnTag("date"), 
+                  getGlobalColumnTag("orderqty"),
+                  getGlobalColumnTag("recvqty"),
+                  getGlobalColumnTag("price")})
+              {
+              @Override  
+              public Class getColumnClass(int col) {  
+                if (col == 7)       
+                    return Double.class;  
+                else return String.class;  //other columns accept String values  
+              }  
+                }; 
+            
+      try{
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try{   
+                res = st.executeQuery(" select pod_nbr, vd_addr, pod_item, it_desc, pod_ord_date, pod_ord_qty, pod_rcvd_qty, pod_netprice, " +
+                        " vd_name " +
+                        " FROM  pod_mstr inner join po_mstr on pod_nbr = po_nbr " +
+                        " inner join vd_mstr on vd_addr = po_vend " +
+                        " inner join item_mstr on it_item = pod_item " +
+                        " where pod_ord_date >= " + "'" + fromdate + "'" + 
+                        " and pod_ord_date <= " + "'" + todate + "'" +
+                        " and vd_addr >= " + "'" + fromvend + "'" +   
+                        " and vd_addr <= " + "'" + tovend + "'" + 
+                        " and pod_item >= " + "'" + fromitem + "'" +   
+                        " and pod_item <= " + "'" + toitem + "'" +         
+                        " order by pod_nbr desc ;");
+               
+                
+                    while (res.next()) {
+                        mymodel.addRow(new Object[] {
+                                   res.getString("pod_nbr"),
+                                   res.getString("vd_name"),
+                                   res.getString("pod_item"),
+                                   res.getString("it_desc"),
+                                   res.getString("pod_ord_date"),
+                                   res.getDouble("pod_ord_qty"),
+                                   res.getDouble("pod_rcvd_qty"),
+                                   res.getDouble("pod_netprice")
+                        });
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+              } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               if (con != null) con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+      
+      // now assign tablemodel to table
+            tablereport.setModel(mymodel);
+            tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+            Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
+              while (en.hasMoreElements()) {
+                 TableColumn tc = en.nextElement();
+                 if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+                     continue;
+                 }
+                 tc.setCellRenderer(new PurRptPicker.renderer1());
+             }
+        } // else run report
+               
+    }
+   
+    /* Receivers by item / Date / Vendor range */
+    public void receiversByItemDateVendorRange (boolean input) {
+        
+        if (input) { // input...draw variable input panel
+           resetVariables();
+           hidePanels();
+           showPanels(new String[]{"dc", "tb1", "tb2"});
+           lbdate1.setText(getClassLabelTag("lblfromdate", this.getClass().getSimpleName()));
+           lbdate2.setText(getClassLabelTag("lbltodate", this.getClass().getSimpleName()));
+           lbkey1.setText(getClassLabelTag("lblfromvend", this.getClass().getSimpleName()));
+           lbkey2.setText(getClassLabelTag("lbltovend", this.getClass().getSimpleName()));
+           lbkey3.setText(getClassLabelTag("lblfromitem", this.getClass().getSimpleName()));
+           lbkey4.setText(getClassLabelTag("lbltoitem", this.getClass().getSimpleName()));
+           java.util.Date now = new java.util.Date();
+           dcdate1.setDate(now);
+           dcdate2.setDate(now);
+         } else { // output...fill report
+            // colect variables from input
+            String fromvend = tbkey1.getText();
+            String tovend = tbkey2.getText();
+            String fromitem = tbkey3.getText();
+            String toitem = tbkey4.getText();
+            String fromdate = BlueSeerUtils.setDateFormat(dcdate1.getDate());
+            String todate = BlueSeerUtils.setDateFormat(dcdate2.getDate());
+            // cleanup variables
+          
+            if (fromvend.isEmpty()) {
+                  fromvend = bsmf.MainFrame.lowchar;
+            }
+            if (tovend.isEmpty()) {
+                  tovend = bsmf.MainFrame.hichar;
+            }
+            if (fromitem.isEmpty()) {
+                  fromitem = bsmf.MainFrame.lowchar;
+            }
+            if (toitem.isEmpty()) {
+                  toitem = bsmf.MainFrame.hichar;
+            }
+            if (fromdate.isEmpty()) {
+                  fromdate = bsmf.MainFrame.lowdate;
+            }
+            if (todate.isEmpty()) {
+                  todate = bsmf.MainFrame.hidate;
+            }
+            
+            
+            // create and fill tablemodel
+            // column 1 is always 'select' and always type ImageIcon
+            // the remaining columns are whatever you require
+             javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+              new String[]{getGlobalColumnTag("id"),
+                  getGlobalColumnTag("name"),
+                  getGlobalColumnTag("item"), 
+                  getGlobalColumnTag("description"), 
+                  getGlobalColumnTag("po"),
+                  getGlobalColumnTag("recvdate"), 
+                  getGlobalColumnTag("qty"),
+                  getGlobalColumnTag("price")})
+              {
+              @Override  
+              public Class getColumnClass(int col) {  
+                if (col == 7)       
+                    return Double.class;  
+                else return String.class;  //other columns accept String values  
+              }  
+                }; 
+            
+      try{
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try{   
+                res = st.executeQuery(" select rvd_id, vd_addr, rvd_item, rvd_po, it_desc, rvd_date, rvd_qty, rvd_netprice, " +
+                        " vd_name " +
+                        " FROM  recv_det inner join recv_mstr on rvd_id = rv_id " +
+                        " inner join vd_mstr on vd_addr = rv_vend " +
+                        " inner join item_mstr on it_item = rvd_item " +
+                        " where rvd_date >= " + "'" + fromdate + "'" + 
+                        " and rvd_date <= " + "'" + todate + "'" +
+                        " and vd_addr >= " + "'" + fromvend + "'" +   
+                        " and vd_addr <= " + "'" + tovend + "'" + 
+                        " and rvd_item >= " + "'" + fromitem + "'" +   
+                        " and rvd_item <= " + "'" + toitem + "'" +         
+                        " order by rvd_id desc ;");
+               
+                
+                    while (res.next()) {
+                        mymodel.addRow(new Object[] {
+                                   res.getString("rvd_id"),
+                                   res.getString("vd_name"),
+                                   res.getString("rvd_item"),
+                                   res.getString("it_desc"),
+                                   res.getString("rvd_po"),
+                                   res.getString("rvd_date"),
+                                   res.getDouble("rvd_qty"),
+                                   res.getDouble("rvd_netprice")
                         });
                     }
            }
