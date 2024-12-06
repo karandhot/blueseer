@@ -13677,26 +13677,30 @@ return mystring;
             DateFormat dftime = new SimpleDateFormat("HH:mm:ss");
             String mydate = dfdate.format(now);
 
+            double sum = 0.00;
+            boolean serialized = OVData.isInvCtrlSerialize();
+                    
+                    
             // Skip item code "S" when adjusting inventory -- service item
             String itemcode = invData.getItemCode(item);
             if (itemcode.equals("S")) {  
                 return false;
             }
 
+            
+            
             if (expire != null && expire.isBlank()) {
                 expire = null;
             }
-            
-            // check for serialized inventory flag...if not...prevent serial from entry into in_mstr
-            if (! OVData.isInvCtrlSerialize()) {
-                serial = "";
+             
+            if (! serialized) {
                 expire = null;
             }
-
-                    double sum = 0.00;
+                               
 
                     // check if in_mstr record exists for this part, loc, wh, site, serial, expire combo
                     // if not add it
+                if (qty > 0) {   
                     nres = st2.executeQuery("select in_qoh from in_mstr where "
                             + " in_item = " + "'" + item + "'" 
                             + " and in_loc = " + "'" + loc + "'"
@@ -13743,6 +13747,99 @@ return mystring;
                             + " and in_serial = " + "'" + serial + "'"       
                             + ";");
                     }
+                } else { 
+                    
+                    int z = 0;
+                    if (! serialized) {  // if not serialized
+                    OVData._updateNonSerializedInventory(con, item, site, wh, loc, qty, setDateDB(now));
+                    } else if (serialized && ! serial.isEmpty()) {
+                    res = st.executeQuery("select in_qoh, in_serial from in_mstr where "
+                            + " in_item = " + "'" + item + "'" 
+                            + " and in_loc = " + "'" + loc + "'"
+                            + " and in_wh = " + "'" + wh + "'"
+                            + " and in_site = " + "'" + site + "'"  
+                            + " and in_serial = " + "'" + serial + "'"         
+                            + ";");
+                    ArrayList<String[]> serialinventory = new ArrayList<String[]>();
+                    double diff = 0;
+                    while (res.next()) {
+                      diff = res.getDouble("in_qoh") + qty;  // app logic must always insure diff >= 0....qty is negative in this case
+                      if (diff <= 0) { 
+                          st2.executeUpdate("delete from in_mstr where " 
+                            + " in_item = " + "'" + item + "'" 
+                            + " and in_loc = " + "'" + loc + "'"
+                            + " and in_wh = " + "'" + wh + "'"
+                            + " and in_site = " + "'" + site + "'"
+                            + " and in_serial = " + "'" + serial + "'"             
+                            + ";");
+                      } else {
+                          st2.executeUpdate("update in_mstr "
+                            + " set in_qoh = " + "'" + diff + "'" + "," +
+                              " in_date = " + "'" + setDateDB(now) + "'"
+                            + " where in_item = " + "'" + item + "'" 
+                            + " and in_loc = " + "'" + loc + "'"
+                            + " and in_wh = " + "'" + wh + "'"
+                            + " and in_site = " + "'" + site + "'"
+                            + " and in_serial = " + "'" + serial + "'"             
+                            + ";");
+                      }
+                        
+                    }
+                    res.close();   
+                   } else { // must be serialized...yet no serial inventory specifically chosen...relieve oldest inventory first by serial / expire
+                    res = st.executeQuery("select in_qoh, in_serial, in_wh, in_loc from in_mstr where "
+                            + " in_item = " + "'" + item + "'" 
+                                    /*
+                            + " and in_loc = " + "'" + loc + "'"
+                            + " and in_wh = " + "'" + wh + "'"
+                            */
+                            + " and in_site = " + "'" + site + "'"  
+                            + " and in_qoh > '0' "        
+                            + " order by in_date asc ;");
+                    ArrayList<String[]> serialinventory = new ArrayList<String[]>();
+                    while (res.next()) {
+                        z++;
+                        serialinventory.add(new String[]{res.getString("in_serial"), res.getString("in_qoh"), res.getString("in_wh"), res.getString("in_loc")});
+                    }
+                    res.close();
+                    double remaining = -1 * qty; // qty is negative in this case...convert to absolute value so that 'remaining' is positive
+                    for (String[] s : serialinventory) {
+                        if (remaining == 0) break;
+                        if (Double.valueOf(s[1]) <= remaining) {
+                            remaining = remaining - Double.valueOf(s[1]);
+                            // delete serial in_mstr record
+                            st2.executeUpdate("delete from in_mstr where " 
+                            + " in_item = " + "'" + item + "'" 
+                            + " and in_loc = " + "'" + s[3] + "'"
+                            + " and in_wh = " + "'" + s[2] + "'"
+                            + " and in_site = " + "'" + site + "'"
+                            + " and in_serial = " + "'" + s[0] + "'"             
+                            + ";");
+                        } else {
+                            // update serial in_mstr with Double.valueOf(s[1]) - remaining
+                            sum = Double.valueOf(s[1]) - remaining;
+                            st2.executeUpdate("update in_mstr "
+                            + " set in_qoh = " + "'" + sum + "'" + "," +
+                              " in_date = " + "'" + setDateDB(now) + "'"
+                            + " where in_item = " + "'" + item + "'" 
+                            + " and in_loc = " + "'" + s[3] + "'"
+                            + " and in_wh = " + "'" + s[2] + "'"
+                            + " and in_site = " + "'" + site + "'"
+                            + " and in_serial = " + "'" + s[0] + "'"             
+                            + ";");
+                            remaining = 0;
+                            break;
+                        }
+                    }
+                    if (remaining > 0) {
+                        // no inventory to remove
+                        OVData._updateNonSerializedInventory(con, item, site, wh, loc, (-1 * remaining), setDateDB(now));
+                    }
+                   } //  serialized logic
+                    
+                }  // else
+                    
+                    
 
             // update InventoryBalance
             _updateInventoryBalance(item, site, String.valueOf(org.threeten.bp.LocalDate.now().getYear()), String.valueOf(org.threeten.bp.LocalDate.now().getMonthValue()), qty, con);

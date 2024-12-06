@@ -103,7 +103,7 @@ public class PayRollBrowse extends javax.swing.JPanel {
      public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
      //pyd_empnbr, pyd_emplname, pyd_empfname, pyd_empdept, pyd_emptype, pyd_paydate, pyd_checknbr, pyd_payamt
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
-                        new String[]{"Detail", "EmpNbr", "LastName", "FirstName", "Dept", "Type", "PayDate", "CheckNbr", "GrossAmt", "Deduct", "NetAmt"})
+                        new String[]{"Detail", "Batch", "EmpNbr", "LastName", "FirstName", "Dept", "Type", "PayDate", "CheckNbr", "GrossAmt", "Deduct", "NetAmt"})
             {
                       @Override  
                       public Class getColumnClass(int col) {  
@@ -425,9 +425,9 @@ public class PayRollBrowse extends javax.swing.JPanel {
         tabledetail.setModel(modeldetail);
         
            tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-           tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
            tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
            tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+           tablereport.getColumnModel().getColumn(11).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
          
        
           
@@ -642,8 +642,10 @@ public class PayRollBrowse extends javax.swing.JPanel {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(dcFrom, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(dcTo, javax.swing.GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE))
+                            .addComponent(dcTo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(dcFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -703,7 +705,7 @@ public class PayRollBrowse extends javax.swing.JPanel {
         jLabel2.setName("lblcount"); // NOI18N
 
         jLabel7.setText("Total Net");
-        jLabel7.setName("lbltotal"); // NOI18N
+        jLabel7.setName("lbltotalnet"); // NOI18N
 
         jLabel8.setText("Total Gross");
         jLabel8.setName("lbltotal"); // NOI18N
@@ -817,7 +819,7 @@ try {
                  
             
         
-             res = st.executeQuery("select pyd_empnbr, pyd_emplname, pyd_empfname, pyd_empdept, pyd_emptype, pyd_paydate, pyd_checknbr, pyd_payamt, " +
+             res = st.executeQuery("select pyd_id, pyd_empnbr, pyd_emplname, pyd_empfname, pyd_empdept, pyd_emptype, pyd_paydate, pyd_checknbr, pyd_payamt, " +
                          " (select sum(pyl_amt) from pay_line where pyl_id = pyd_id and pyl_checknbr = pyd_checknbr and pyl_type = 'deduction' ) as 'deductions' " +
                          " from pay_det where " +
                         " pyd_empnbr >= " + "'" + empfrom + "'" + " AND " +
@@ -841,7 +843,9 @@ try {
                       continue;
                   }
                  
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickbasket, res.getString("pyd_empnbr"),
+                    mymodel.addRow(new Object[]{BlueSeerUtils.clickbasket, 
+                                res.getString("pyd_id"),
+                                res.getString("pyd_empnbr"),
                                 res.getString("pyd_emplname"),
                                 res.getString("pyd_empfname"),
                                 res.getString("pyd_empdept"),
