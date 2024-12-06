@@ -1,5 +1,5 @@
-<img src="https://github.com/blueseerERP/blueseer/blob/master/src/images/bs65image.png" alt="Free ERP">
-<!-- <img class="logo" width="100px" height="100px" src="https://www.blueseer.com/img/bs.png" alt="Free ERP"> -->
+![ScreenShot](/blueseer/src/images/bs65image.png)
+<!--<img src="https://github.com/blueseerERP/blueseer/blob/master/src/images/bs65image.png" alt="Free ERP"> -->
 <a href="https://foojay.io/today/works-with-openjdk"><img align="right" src="https://github.com/foojayio/badges/raw/main/works_with_openjdk/Works-with-OpenJDK.png" width="100"></a>
 <h3>Developer: Terry Vaughn</h3>
 <h3>latest release version: 7.0</h3>
