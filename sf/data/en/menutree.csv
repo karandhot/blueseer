@@ -73,10 +73,11 @@ Purchasing,POMaintMenu,1,JMenuItem,Purchase Order Maintenance,,,,1,1
 Purchasing,POBrowse,2,JMenuItem,Purchase Order Browse,,1,,1,1
 Purchasing,ReceiverMaintMenu,3,JMenuItem,Receiver Maintenance,,,,1,1
 Purchasing,RecvBrowse,4,JMenuItem,Receiver Browse,,1,,1,1
-Purchasing,RecvByPOBrowse,5,JMenuItem,Receiver By PO Browse,,1,,1,1
-Purchasing,PurRptPicker,6,JMenuItem,Purchasing Report Selector,,1,,1,1
-Purchasing,RequisitionMenu,7,JMenu,Requisition Menu,,,,1,1
-Purchasing,POControl,8,JMenuItem,PO Control,,1,,1,1
+Purchasing,RecvItemBrowse,5,JMenuItem,Receiver Item Browse,,1,,1,1
+Purchasing,RecvByPOBrowse,6,JMenuItem,Receiver By PO Browse,,1,,1,1
+Purchasing,PurRptPicker,7,JMenuItem,Purchasing Report Selector,,1,,1,1
+Purchasing,RequisitionMenu,8,JMenu,Requisition Menu,,,,1,1
+Purchasing,POControl,9,JMenuItem,PO Control,,1,,1,1
 RequisitionMenu,ReqMaint,1,JMenuItem,Requisition Maintenance,,,,1,1
 RequisitionMenu,ReqBrowseAll,2,JMenuItem,Requisition Browse,,1,,1,1
 RequisitionMenu,PendReqRpt1,5,JMenuItem,Pending Requisitions,,1,,1,1

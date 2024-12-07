@@ -237,3 +237,4 @@ com.blueseer.ord.BillBrowse,,1
 com.blueseer.inv.InventoryBrowse,,1
 com.blueseer.inv.InventoryValuation,,1
 com.blueseer.prd.SerialBrowse,,1
+com.blueseer.rcv.RecvItemBrowse,,1
