@@ -391,3 +391,6 @@ edi,PlantDirectoryMenu,0
 edi,NavCodeBrowse,0
 edi,menuscreen,0
 admin,RecvItemBrowse,0
+admin,POItemBrowse,0
+admin,OrderItemBrowse,0
+admin,ShipperItemBrowse,0

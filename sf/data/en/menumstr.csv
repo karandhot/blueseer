@@ -339,3 +339,6 @@ InventoryValuation,,com.blueseer.inv.InventoryValuation,JMenuItem,invv
 test,,com.blueseer.utl.test,JMenuItem,testx
 SerialBrowse,,com.blueseer.prd.SerialBrowse,JMenuItem,serb
 RecvItemBrowse,,com.blueseer.rcv.RecvItemBrowse,JMenuItem,rcvi
+POItemBrowse,,com.blueseer.pur.POItemBrowse,JMenuItem,puri
+OrderItemBrowse,,com.blueseer.ord.OrderItemBrowse,JMenuItem,ordi
+ShipperItemBrowse,,com.blueseer.shp.ShipperItemBrowse,JMenuItem,shpi

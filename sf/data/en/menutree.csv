@@ -71,13 +71,14 @@ LabelMenu,LabelFileMaint,4,JMenuItem,Label File Maintenance,,,,1,1
 LabelMenu,LabelFileBrowse,5,JMenuItem,Label File Browse,,1,,1,1
 Purchasing,POMaintMenu,1,JMenuItem,Purchase Order Maintenance,,,,1,1
 Purchasing,POBrowse,2,JMenuItem,Purchase Order Browse,,1,,1,1
-Purchasing,ReceiverMaintMenu,3,JMenuItem,Receiver Maintenance,,,,1,1
-Purchasing,RecvBrowse,4,JMenuItem,Receiver Browse,,1,,1,1
-Purchasing,RecvItemBrowse,5,JMenuItem,Receiver Item Browse,,1,,1,1
-Purchasing,RecvByPOBrowse,6,JMenuItem,Receiver By PO Browse,,1,,1,1
-Purchasing,PurRptPicker,7,JMenuItem,Purchasing Report Selector,,1,,1,1
-Purchasing,RequisitionMenu,8,JMenu,Requisition Menu,,,,1,1
-Purchasing,POControl,9,JMenuItem,PO Control,,1,,1,1
+Purchasing,POItemBrowse,3,JMenuItem,PO Item Browse,,1,,1,1
+Purchasing,ReceiverMaintMenu,4,JMenuItem,Receiver Maintenance,,,,1,1
+Purchasing,RecvBrowse,5,JMenuItem,Receiver Browse,,1,,1,1
+Purchasing,RecvItemBrowse,6,JMenuItem,Receiver Item Browse,,1,,1,1
+Purchasing,RecvByPOBrowse,7,JMenuItem,Receiver By PO Browse,,1,,1,1
+Purchasing,PurRptPicker,8,JMenuItem,Purchasing Report Selector,,1,,1,1
+Purchasing,RequisitionMenu,9,JMenu,Requisition Menu,,,,1,1
+Purchasing,POControl,10,JMenuItem,PO Control,,1,,1,1
 RequisitionMenu,ReqMaint,1,JMenuItem,Requisition Maintenance,,,,1,1
 RequisitionMenu,ReqBrowseAll,2,JMenuItem,Requisition Browse,,1,,1,1
 RequisitionMenu,PendReqRpt1,5,JMenuItem,Pending Requisitions,,1,,1,1
@@ -88,31 +89,33 @@ RequisitionMenu,ReqChartsMenu,7,JMenu,Chart Menu,,,,1,1
 ReqChartsMenu,chart_requisition,1,JMenuItem,Chart Reporting,,1,,1,1
 Order,OrderMaint,1,JMenuItem,Order Maintenance,,,,1,1
 Order,OrderBrowse,2,JMenuItem,Order Browse,,1,,1,1
-Order,ServiceOrderMaint,3,JMenuItem,Service Order Maintenance,,,,1,1
-Order,ServiceOrderBrowse,4,JMenuItem,Service Order Browse,,,,1,1
-Order,QuoteMaint,5,JMenuItem,Quote Maintenance,,,,1,1
-Order,QuoteBrowse,6,JMenuItem,Quote Browse,,,,1,1
-Order,BillMaint,7,JMenuItem,Billing Maintenance,,,,1,1
-Order,BillBrowse,8,JMenuItem,Billing Browse,,,,1,1
-Order,OrderSourceBrowse,9,JMenuItem,Order Source Browse,,1,,1,1
-Order,OrdLineBrowse,10,JMenuItem,Order Line Browse,,1,,1,1
-Order,SchedOrdBrowse,11,JMenuItem,Sched Order Browse,,1,,1,1
-Order,OrdRptPicker,12,JMenuItem,Order Report Selector,,,,1,1
-Order,OrderReports,13,JMenu,Other Reports,,,,1,1
-Order,POSMenu,14,JMenu,POS Menu,,,,1,1
-Order,DOMenu,15,JMenu,Distribution Menu,,,,1,1
-Order,OrderSource,16,JMenuItem,Order Source,,,,1,1
-Order,OrderControl,17,JMenuItem,Order Control,,,,1,1
+Order,OrderItemBrowse,3,JMenuItem,Order Item Browse,,1,,1,1
+Order,ServiceOrderMaint,4,JMenuItem,Service Order Maintenance,,,,1,1
+Order,ServiceOrderBrowse,5,JMenuItem,Service Order Browse,,,,1,1
+Order,QuoteMaint,6,JMenuItem,Quote Maintenance,,,,1,1
+Order,QuoteBrowse,7,JMenuItem,Quote Browse,,,,1,1
+Order,BillMaint,8,JMenuItem,Billing Maintenance,,,,1,1
+Order,BillBrowse,9,JMenuItem,Billing Browse,,,,1,1
+Order,OrderSourceBrowse,10,JMenuItem,Order Source Browse,,1,,1,1
+Order,OrdLineBrowse,11,JMenuItem,Order Line Browse,,1,,1,1
+Order,SchedOrdBrowse,12,JMenuItem,Sched Order Browse,,1,,1,1
+Order,OrdRptPicker,13,JMenuItem,Order Report Selector,,,,1,1
+Order,OrderReports,14,JMenu,Other Reports,,,,1,1
+Order,POSMenu,15,JMenu,POS Menu,,,,1,1
+Order,DOMenu,16,JMenu,Distribution Menu,,,,1,1
+Order,OrderSource,17,JMenuItem,Order Source,,,,1,1
+Order,OrderControl,18,JMenuItem,Order Control,,,,1,1
 OrderReports,chart_order,1,JMenuItem,Chart Reporting,,1,,1,1
 Shipping,ShipMaint,1,JMenuItem,Shipper Maintenance,,,,1,1
 Shipping,ShipMaintSerial,2,JMenuItem,Shipper Maintenance (Serialized),,,,1,1
 Shipping,ShipperBrowse,3,JMenuItem,Shipper Browse ,,1,,1,1
 Shipping,ShipperBrowseDet,4,JMenuItem,Shipper Detail Browse,,1,,1,1
-Shipping,ShipConfirm,5,JMenuItem,Shipper Confirm,,,,1,1
-Shipping,ShipUnconfirm,6,JMenuItem,Shipper UnConfirm,,,,1,1
-Shipping,ShpRptPicker,7,JMenuItem,Shipping Report Selector,,,,1,1
-Shipping,ShipReports,8,JMenu,Other Reports,,,,1,1
-Shipping,ShipperControl,9,JMenuItem,Shipper Control,,,,1,1
+Shipping,ShipperItemBrowse,5,JMenuItem,Shipper Item Browse ,,1,,1,1
+Shipping,ShipConfirm,6,JMenuItem,Shipper Confirm,,,,1,1
+Shipping,ShipUnconfirm,7,JMenuItem,Shipper UnConfirm,,,,1,1
+Shipping,ShpRptPicker,8,JMenuItem,Shipping Report Selector,,,,1,1
+Shipping,ShipReports,9,JMenu,Other Reports,,,,1,1
+Shipping,ShipperControl,10,JMenuItem,Shipper Control,,,,1,1
 ShipReports,chart_shipping,1,JMenuItem,Chart Reporting,,1,,1,1
 Finance,LedgerSetupMenu,1,JMenu,Ledger Setup,,,,1,1
 LedgerSetupMenu,AcctMaint,1,JMenuItem,Account Maintenance,,,,1,1

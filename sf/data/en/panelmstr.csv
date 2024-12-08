@@ -238,3 +238,6 @@ com.blueseer.inv.InventoryBrowse,,1
 com.blueseer.inv.InventoryValuation,,1
 com.blueseer.prd.SerialBrowse,,1
 com.blueseer.rcv.RecvItemBrowse,,1
+com.blueseer.pur.POItemBrowse,,1
+com.blueseer.ord.OrderItemBrowse,,1
+com.blueseer.shp.ShipperItemBrowse,,1
