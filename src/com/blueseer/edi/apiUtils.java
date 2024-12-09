@@ -2692,9 +2692,9 @@ public class apiUtils {
         HttpEntity entity = response.getEntity();
         byte[] indata = EntityUtils.toByteArray(entity);
         String result = new String(indata); 
-        if (isDebug && response.getStatusLine().getStatusCode() != 200) {
+        if (isDebug) {
                 String filename = "response." + now + "." + Long.toHexString(System.currentTimeMillis());
-                Path path = FileSystems.getDefault().getPath("edi/mdn" + "/" + filename);
+                Path path = FileSystems.getDefault().getPath("temp" + "/" + filename);
                 BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path.toFile())));
                 output.write(result);
                 output.close();
@@ -2739,7 +2739,7 @@ public class apiUtils {
         
         
         } catch (MessagingException ex) {
-           logdet.add(new String[]{parentkey, "error", " Messaging error; Bad MDN Boundary " + ex.getMessage()}); 
+          logdet.add(new String[]{parentkey, "error", " Messaging error; Bad MDN Boundary " + ex.getMessage()}); 
           writeAS2LogDetail(logdet);
           return "Messaging error; Bad MDN Boundary " + ex.getMessage(); 
         }   

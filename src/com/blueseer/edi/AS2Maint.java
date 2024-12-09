@@ -180,6 +180,8 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
              tbkey.requestFocus();
            } else if (this.type.equals("run")) {
              processRunPostAfter(); 
+           } else if (this.type.equals("update")) {
+             initvars(key);     
            } else {
              initvars(null);  
            }
