@@ -58,6 +58,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
@@ -575,7 +576,7 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
            ReadableByteChannel readableByteChannel;
             try {
                 readableByteChannel = Channels.newChannel(new URL(url).openStream());
-            } catch (MalformedURLException ex) {
+            } catch (MalformedURLException | UnknownHostException ex) {
                 return new String[]{"1", "unknown host or no internet connection"};
             }
             FileOutputStream fileOutputStream = new FileOutputStream(patch.toFile());
