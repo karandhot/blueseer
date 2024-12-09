@@ -2692,7 +2692,13 @@ public class apiUtils {
         HttpEntity entity = response.getEntity();
         byte[] indata = EntityUtils.toByteArray(entity);
         String result = new String(indata); 
-        
+        if (isDebug && response.getStatusLine().getStatusCode() != 200) {
+                String filename = "response." + now + "." + Long.toHexString(System.currentTimeMillis());
+                Path path = FileSystems.getDefault().getPath("edi/mdn" + "/" + filename);
+                BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path.toFile())));
+                output.write(result);
+                output.close();
+        }
         
         // save MDN file if present
         try {
