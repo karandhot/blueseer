@@ -53,6 +53,7 @@ import java.awt.Component;
 import java.awt.Window;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -554,7 +555,7 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
 	    return destFile;
 	}
     
-    public static String[] getPatch(String majorVersion) throws MalformedURLException, IOException {
+    public static String[] getPatch(String majorVersion) throws FileNotFoundException, IOException {
         String[] m = new String[]{"",""};
         Path patch = null;
         if (majorVersion.isBlank()) {
@@ -571,7 +572,12 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
         if (Files.exists(patchdir) && Files.isDirectory(patchdir)) {
            patchfile = s + "/patches/patch.zip";
            patch = FileSystems.getDefault().getPath(patchfile); 
-           ReadableByteChannel readableByteChannel = Channels.newChannel(new URL(url).openStream());
+           ReadableByteChannel readableByteChannel;
+            try {
+                readableByteChannel = Channels.newChannel(new URL(url).openStream());
+            } catch (MalformedURLException ex) {
+                return new String[]{"1", "unknown host or no internet connection"};
+            }
             FileOutputStream fileOutputStream = new FileOutputStream(patch.toFile());
             FileChannel fileChannel = fileOutputStream.getChannel();
             fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
