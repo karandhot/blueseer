@@ -2376,7 +2376,9 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
     }//GEN-LAST:event_ddimageActionPerformed
 
     private void btaddimageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddimageActionPerformed
-          
+        if (! validateInput(dbaction.add)) {
+           return;
+        }  
         DateFormat dfdate = new SimpleDateFormat("yyyyMMddHHmmss");
         Date now = new Date();
         File file = null;
@@ -2421,6 +2423,9 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
     }//GEN-LAST:event_btaddimageActionPerformed
 
     private void btdeleteimageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteimageActionPerformed
+        if (! validateInput(dbaction.delete)) {
+           return;
+        }
         boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
         
         if (ddimage.getSelectedItem() == null || ddimage.getSelectedItem().toString().isEmpty()) {
@@ -2728,11 +2733,17 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
     }//GEN-LAST:event_btimageprintActionPerformed
 
     private void btaddattachmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddattachmentActionPerformed
+        if (! validateInput(dbaction.add)) {
+           return;
+        }
         OVData.addFileAttachment(tbkey.getText(), this.getClass().getSimpleName(), this );
         getAttachments(tbkey.getText());
     }//GEN-LAST:event_btaddattachmentActionPerformed
 
     private void btdeleteattachmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteattachmentActionPerformed
+        if (! validateInput(dbaction.delete)) {
+           return;
+        }
         boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
         if (proceed) {
             int[] rows = tableattachment.getSelectedRows();

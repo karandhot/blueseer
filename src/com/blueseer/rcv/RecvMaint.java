@@ -90,6 +90,7 @@ import javax.swing.JTable;
 import javax.swing.SwingWorker;
 import com.blueseer.utl.IBlueSeer;
 import com.blueseer.utl.IBlueSeerT;
+import static com.blueseer.utl.OVData.canUpdate;
 import static com.blueseer.utl.OVData.getSysMetaValue;
 import static com.blueseer.utl.OVData.getSystemAttachmentDirectory;
 import com.blueseer.vdr.venData;
@@ -705,6 +706,11 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerT {
            
     public boolean validateInput(dbaction x) {
        
+        if (! canUpdate(this.getClass().getName())) {
+            bsmf.MainFrame.show(getMessageTag(1185));
+            return false;
+        }
+        
         boolean requireWHLoc = BlueSeerUtils.ConvertStringToBool(getSysMetaValue("system", "inventorycontrol", "operation_whloc_required"));
         boolean isInventorySerialized = (OVData.isInvCtrlSerialize()) ? true : false;
         
@@ -1852,11 +1858,17 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btgenerateActionPerformed
 
     private void btaddattachmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddattachmentActionPerformed
+        if (! validateInput(dbaction.add)) {
+           return;
+        }
         OVData.addFileAttachment(tbkey.getText(), this.getClass().getSimpleName(), this ); 
         getAttachments(tbkey.getText()); 
     }//GEN-LAST:event_btaddattachmentActionPerformed
 
     private void btdeleteattachmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteattachmentActionPerformed
+        if (! validateInput(dbaction.delete)) {
+           return;
+        }
         boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
         if (proceed) {
             int[] rows = tableattachment.getSelectedRows();

@@ -3178,11 +3178,17 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_ddtaxActionPerformed
 
     private void btaddattachmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddattachmentActionPerformed
+        if (! validateInput(dbaction.add)) {
+           return;
+        }
         OVData.addFileAttachment(tbkey.getText(), this.getClass().getSimpleName(), this );
         getAttachments(tbkey.getText());
     }//GEN-LAST:event_btaddattachmentActionPerformed
 
     private void btdeleteattachmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteattachmentActionPerformed
+        if (! validateInput(dbaction.delete)) {
+           return;
+        }
         boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
         if (proceed) {
             int[] rows = tableattachment.getSelectedRows();

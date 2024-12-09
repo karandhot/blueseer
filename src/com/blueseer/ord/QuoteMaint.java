@@ -91,6 +91,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.callChangeDialog;
+import static com.blueseer.utl.BlueSeerUtils.checkLength;
 import static com.blueseer.utl.BlueSeerUtils.clog;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
@@ -100,12 +101,14 @@ import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import static com.blueseer.utl.BlueSeerUtils.setDateFormatNull;
 import static com.blueseer.utl.OVData.addCustPriceList;
+import static com.blueseer.utl.OVData.canUpdate;
 import java.awt.Color;
 import java.awt.Component;
 import java.sql.Connection;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -559,30 +562,51 @@ public class QuoteMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public boolean validateInput(dbaction x) {
-        boolean b = true;
+        
+        if (! canUpdate(this.getClass().getName())) {
+            bsmf.MainFrame.show(getMessageTag(1185));
+            return false;
+        }
+        
+        Map<String,Integer> f = OVData.getTableInfo(new String[]{"quo_mstr"});
+        int fc;
+
+        fc = checkLength(f,"quo_nbr");
+        if (tbkey.getText().length() > fc || tbkey.getText().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
+            tbkey.requestFocus();
+            return false;
+        }
+        
+        fc = checkLength(f,"quo_rmks");
+        if (tarmks.getText().length() > fc) {
+            bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
+            tarmks.requestFocus();
+            return false;
+        }
+        
+        fc = checkLength(f,"quo_ref");
+        if (tbref.getText().length() > fc) {
+            bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
+            tbref.requestFocus();
+            return false;
+        }
+              
                 
-                
-                if (tbkey.getText().isEmpty()) {
-                    b = false;
-                    bsmf.MainFrame.show(getMessageTag(1024, "ID"));
-                    tbkey.requestFocus();
-                    return b;
-                }
-                
-                if (ddcust.getSelectedItem() == null || ddcust.getSelectedItem().toString().isEmpty()) {
-                    b = false;
-                    bsmf.MainFrame.show(getMessageTag(1024, "Customer"));
-                    return b;
-                }
-                
-                if (ddsite.getSelectedItem() == null || ddsite.getSelectedItem().toString().isEmpty()) {
-                    b = false;
-                    bsmf.MainFrame.show(getMessageTag(1024, "Site"));
-                    return b;
-                }
+        if (ddcust.getSelectedItem() == null || ddcust.getSelectedItem().toString().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1024));
+            ddcust.requestFocus();
+            return false; 
+        }
+
+        if (ddsite.getSelectedItem() == null || ddsite.getSelectedItem().toString().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1024));
+            ddsite.requestFocus();
+            return false;
+        }
                
                
-        return b;
+        return true;
     }
     
     public void initvars(String[] arg) {
@@ -2186,11 +2210,17 @@ public class QuoteMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btchangelogActionPerformed
 
     private void btaddattachmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddattachmentActionPerformed
+        if (! validateInput(dbaction.add)) {
+           return;
+        }
         OVData.addFileAttachment(tbkey.getText(), this.getClass().getSimpleName(), this );
         getAttachments(tbkey.getText());
     }//GEN-LAST:event_btaddattachmentActionPerformed
 
     private void btdeleteattachmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteattachmentActionPerformed
+        if (! validateInput(dbaction.delete)) {
+           return;
+        }
         boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
         if (proceed) {
             int[] rows = tableattachment.getSelectedRows();

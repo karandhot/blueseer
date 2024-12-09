@@ -820,6 +820,10 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
      }
     
     public boolean validateInputShipTo(dbaction action) {
+        if (! canUpdate(this.getClass().getName())) {
+            bsmf.MainFrame.show(getMessageTag(1185));
+            return false;
+        }
         
         Map<String,Integer> f = OVData.getTableInfo(new String[]{"cms_det"});
         int fc;
@@ -2189,9 +2193,9 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btdeletecontactActionPerformed
 
     private void btupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateActionPerformed
-         if (! validateInput(dbaction.update)) {
+        if (! validateInput(dbaction.update)) {
            return;
-       }
+        }
         setPanelComponentState(this, false);
         executeTask(dbaction.update, new String[]{tbkey.getText()});
     }//GEN-LAST:event_btupdateActionPerformed
@@ -2245,6 +2249,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btshipnewActionPerformed
 
     private void bteditcontactActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bteditcontactActionPerformed
+               
         int[] rows = contacttable.getSelectedRows();
         for (int i : rows) {
            editContact(tbkey.getText(), contacttable.getValueAt(i, 0).toString());
@@ -2308,11 +2313,17 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_tbcreditlimitFocusLost
 
     private void btaddattachmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddattachmentActionPerformed
+        if (! validateInput(dbaction.add)) {
+           return;
+        }
         OVData.addFileAttachment(tbkey.getText(), this.getClass().getSimpleName(), this );
         getAttachments(tbkey.getText());
     }//GEN-LAST:event_btaddattachmentActionPerformed
 
     private void btdeleteattachmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteattachmentActionPerformed
+        if (! validateInput(dbaction.delete)) {
+           return;
+        }
         boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
         if (proceed) {
             int[] rows = tableattachment.getSelectedRows();

@@ -722,22 +722,17 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="dduom" alignment="0" min="-2" pref="86" max="-2" attributes="0"/>
-                                  <Component id="qtyshipped" alignment="0" min="-2" pref="117" max="-2" attributes="0"/>
-                                  <Component id="tbdesc" alignment="0" min="-2" pref="203" max="-2" attributes="0"/>
-                                  <Component id="vendnumber" min="-2" pref="203" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                          </Group>
+                          <Component id="dduom" alignment="0" min="-2" pref="86" max="-2" attributes="0"/>
+                          <Component id="qtyshipped" alignment="0" min="-2" pref="117" max="-2" attributes="0"/>
+                          <Component id="tbdesc" alignment="0" min="-2" pref="203" max="-2" attributes="0"/>
+                          <Component id="vendnumber" min="-2" pref="203" max="-2" attributes="0"/>
                           <Group type="102" attributes="0">
                               <Component id="tbitem" min="-2" pref="179" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="btLookUpItemDesc" min="-2" pref="28" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

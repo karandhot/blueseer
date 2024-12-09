@@ -53,6 +53,7 @@ import static com.blueseer.utl.BlueSeerUtils.lurb2;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeer;
 import com.blueseer.utl.IBlueSeerT;
+import static com.blueseer.utl.OVData.canUpdate;
 import static com.blueseer.vdr.venData.addVDSDet;
 import static com.blueseer.vdr.venData.addVendMstr;
 import static com.blueseer.vdr.venData.deleteVendMstr;
@@ -483,7 +484,13 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
      
     public boolean validateInput(dbaction x) {
-       Map<String,Integer> f = OVData.getTableInfo(new String[]{"vd_mstr"});
+       
+        if (! canUpdate(this.getClass().getName())) {
+            bsmf.MainFrame.show(getMessageTag(1185));
+            return false;
+        }
+        
+        Map<String,Integer> f = OVData.getTableInfo(new String[]{"vd_mstr"});
         int fc;
 
         fc = checkLength(f,"vd_addr");
@@ -843,6 +850,12 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     // custom functions
     public boolean validateInputShipTo(dbaction action) {
+        
+        if (! canUpdate(this.getClass().getName())) {
+            bsmf.MainFrame.show(getMessageTag(1185));
+            return false;
+        }
+        
         
         Map<String,Integer> f = OVData.getTableInfo(new String[]{"vds_det"});
         int fc;
@@ -2076,9 +2089,9 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btaddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddActionPerformed
-          if (! validateInput(dbaction.add)) {
+        if (! validateInput(dbaction.add)) {
            return;
-       }
+        }
         setPanelComponentState(this, false);
         executeTask(dbaction.add, new String[]{tbkey.getText()});
     }//GEN-LAST:event_btaddActionPerformed
@@ -2198,11 +2211,17 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btlookupShipToActionPerformed
 
     private void btaddattachmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddattachmentActionPerformed
+        if (! validateInput(dbaction.add)) {
+           return;
+        }
         OVData.addFileAttachment(tbkey.getText(), this.getClass().getSimpleName(), this );
         getAttachments(tbkey.getText());
     }//GEN-LAST:event_btaddattachmentActionPerformed
 
     private void btdeleteattachmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteattachmentActionPerformed
+        if (! validateInput(dbaction.delete)) {
+           return;
+        }
         boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
         if (proceed) {
             int[] rows = tableattachment.getSelectedRows();

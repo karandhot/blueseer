@@ -71,6 +71,7 @@ import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import static com.blueseer.utl.BlueSeerUtils.xZero;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeer;
+import static com.blueseer.utl.OVData.canUpdate;
 import static com.blueseer.utl.OVData.createPlanFromServiceOrder;
 import java.awt.Color;
 import java.awt.Component;
@@ -497,6 +498,11 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
     }
     
     public boolean validateInput(String key) {
+        
+        if (! canUpdate(this.getClass().getName())) {
+            bsmf.MainFrame.show(getMessageTag(1185));
+            return false;
+        }
         
         Map<String,Integer> f = OVData.getTableInfo(new String[]{"sv_mstr"});
         int fc;
