@@ -703,7 +703,6 @@
                   <Group type="102" attributes="0">
                       <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="jLabel77" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel101" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel110" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel102" alignment="1" min="-2" max="-2" attributes="0"/>
@@ -711,22 +710,25 @@
                           <Component id="jLabel111" alignment="1" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="tbcity" alignment="0" min="-2" pref="192" max="-2" attributes="0"/>
-                          <Component id="tbaddr2" alignment="0" min="-2" pref="260" max="-2" attributes="0"/>
-                          <Component id="tbaddr1" alignment="0" min="-2" pref="260" max="-2" attributes="0"/>
-                          <Component id="tbname" alignment="0" min="-2" pref="260" max="-2" attributes="0"/>
-                          <Component id="tbshiptocode" alignment="0" min="-2" pref="109" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="ddstate" min="-2" pref="68" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                               <Component id="jLabel12" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="ddcountry" min="-2" pref="89" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="59" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="tbcity" alignment="0" min="-2" pref="192" max="-2" attributes="0"/>
+                                  <Component id="tbaddr2" alignment="0" min="-2" pref="260" max="-2" attributes="0"/>
+                                  <Component id="tbaddr1" alignment="0" min="-2" pref="260" max="-2" attributes="0"/>
+                                  <Component id="tbname" alignment="0" min="-2" pref="260" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="47" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="47" max="-2" attributes="0"/>
                       <Component id="jLabel11" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -746,28 +748,15 @@
                               </Group>
                           </Group>
                           <Component id="tbzip" min="-2" pref="106" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="207" max="-2" attributes="0"/>
-                              <Component id="btaddshipto" min="-2" max="-2" attributes="0"/>
-                          </Group>
                       </Group>
-                      <EmptySpace pref="75" max="32767" attributes="0"/>
+                      <EmptySpace pref="89" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
-                              <Component id="jLabel77" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="tbshiptocode" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="3" attributes="0">
@@ -829,14 +818,13 @@
                                   <Group type="103" alignment="0" groupAlignment="3" attributes="0">
                                       <Component id="tbzip" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="jLabel11" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="btaddshipto" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="ddcountry" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="jLabel12" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
                       </Group>
-                      <EmptySpace pref="82" max="32767" attributes="0"/>
+                      <EmptySpace pref="40" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -896,12 +884,6 @@
                 <Property name="name" type="java.lang.String" value="lblemail" noResource="true"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JLabel" name="jLabel77">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Code"/>
-                <Property name="name" type="java.lang.String" value="lblcode" noResource="true"/>
-              </Properties>
-            </Component>
             <Component class="javax.swing.JComboBox" name="ddstate">
               <Properties>
                 <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
@@ -932,17 +914,6 @@
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="tbaddr2">
-            </Component>
-            <Component class="javax.swing.JTextField" name="tbshiptocode">
-            </Component>
-            <Component class="javax.swing.JButton" name="btaddshipto">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Add ShipTo"/>
-                <Property name="name" type="java.lang.String" value="btaddshipto" noResource="true"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btaddshiptoActionPerformed"/>
-              </Events>
             </Component>
             <Component class="javax.swing.JComboBox" name="ddcountry">
               <Properties>

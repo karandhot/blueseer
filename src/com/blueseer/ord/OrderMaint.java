@@ -688,7 +688,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                    ddcust.setEnabled(false);
                    tbkey.setEditable(false);
                    tbkey.setForeground(Color.blue);
-                   
+                   disableShipAddress();
                     // custom set
                     
                     refreshDisplayTotals();
@@ -1690,7 +1690,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
    
     
     public void clearShipAddress() {
-        tbshiptocode.setText("");
         tbname.setText("");
         tbaddr1.setText("");
         tbaddr2.setText("");
@@ -1723,7 +1722,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public void enableShipAddress() {
-          tbshiptocode.setEnabled(true);
         tbname.setEnabled(true);
         tbaddr1.setEnabled(true);
         tbaddr2.setEnabled(true);
@@ -1735,11 +1733,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbmisc1.setEnabled(true);
         ddstate.setEnabled(true);
         ddcountry.setEnabled(true);
-        btaddshipto.setEnabled(true);
     }
     
     public void disableShipAddress() {
-        tbshiptocode.setEnabled(false);
         tbname.setEnabled(false);
         tbaddr1.setEnabled(false);
         tbaddr2.setEnabled(false);
@@ -1751,7 +1747,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbmisc1.setEnabled(false);
         ddstate.setEnabled(false);
         ddcountry.setEnabled(false);
-        btaddshipto.setEnabled(false);
     }
         
     public void getSchedRecords(String order, String po, String part, String line) {
@@ -2177,81 +2172,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         return list;
     }
-   
-    public void ddshipscrap() {
-        if (! isLoad )  {
-            clearShipAddress();
-            
-            if (bsmf.MainFrame.debug) {
-            System.out.println("ddship fired: " + timediff(start));
-           }
-            
-              if (tbshipto.equals("<new>")) {
-              enableShipAddress();
-              } else {
-                    try {
-                        Connection con = null;
-                        if (ds != null) {
-                          con = ds.getConnection();
-                        } else {
-                          con = DriverManager.getConnection(url + db, user, pass);  
-                        }
-                        Statement st = con.createStatement();
-                        ResultSet res = null;
-                        try {
-
-                            res = st.executeQuery("select * from cms_det where cms_code = " + "'" + ddcust.getSelectedItem().toString() + "'" +
-                                    " AND cms_shipto = " + "'" + tbshipto.getText() + "'" + ";");
-                            while (res.next()) {
-                                tbname.setText(res.getString("cms_name"));
-                                tbaddr1.setText(res.getString("cms_line1"));
-                                tbaddr2.setText(res.getString("cms_line2"));
-                                tbcity.setText(res.getString("cms_city"));
-                                tbzip.setText(res.getString("cms_zip"));
-                                tbcontact.setText(res.getString("cms_contact"));
-                                tbphone.setText(res.getString("cms_phone"));
-                                tbemail.setText(res.getString("cms_email"));
-                                tbmisc1.setText(res.getString("cms_misc"));
-                                ddstate.setSelectedItem(res.getString("cms_state"));
-                                ddcountry.setSelectedItem(res.getString("cms_country"));
-                            }
-
-                        } catch (SQLException s) {
-                            MainFrame.bslog(s);
-                        } finally {
-                            if (res != null) {
-                                res.close();
-                            }
-                            if (st != null) {
-                                st.close();
-                            }
-                            con.close();
-                        }
-                    } catch (Exception e) {
-                        MainFrame.bslog(e);
-                    }
-              disableShipAddress();
-              }
-           
-           if (tbshipto.getText().isEmpty()) {
-               jTabbedPane1.setEnabledAt(1, false);
-              // ddship.setBackground(Color.red);
-           } else {
-               jTabbedPane1.setEnabledAt(1, true);
-              // ddship.setBackground(null);
-           }
-            
-       
-        }
-    }
-    
-    public void dditemshipscrap() {
-        if (! isLoad ) {
-           String[] addr = getShipAddressInfo(ddcust.getSelectedItem().toString(), tbitemshipto.getText());
-           itemshipaddrlbl.setText(addr[1] + "..." + addr[2] + "..." + addr[5] + ", " + addr[6] + " " + addr[7]);
-          
-       }
-    }
+      
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -2323,7 +2244,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbname = new javax.swing.JTextField();
         tbzip = new javax.swing.JTextField();
         jLabel106 = new javax.swing.JLabel();
-        jLabel77 = new javax.swing.JLabel();
         ddstate = new javax.swing.JComboBox();
         tbaddr1 = new javax.swing.JTextField();
         jLabel109 = new javax.swing.JLabel();
@@ -2331,8 +2251,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbmisc1 = new javax.swing.JTextField();
         jLabel111 = new javax.swing.JLabel();
         tbaddr2 = new javax.swing.JTextField();
-        tbshiptocode = new javax.swing.JTextField();
-        btaddshipto = new javax.swing.JButton();
         ddcountry = new javax.swing.JComboBox<>();
         jLabel12 = new javax.swing.JLabel();
         btinvoice = new javax.swing.JButton();
@@ -2748,9 +2666,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel106.setText("Email");
         jLabel106.setName("lblemail"); // NOI18N
 
-        jLabel77.setText("Code");
-        jLabel77.setName("lblcode"); // NOI18N
-
         jLabel109.setText("Contact");
         jLabel109.setName("lblcontact"); // NOI18N
 
@@ -2759,14 +2674,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
 
         jLabel111.setText("State");
         jLabel111.setName("lblstate"); // NOI18N
-
-        btaddshipto.setText("Add ShipTo");
-        btaddshipto.setName("btaddshipto"); // NOI18N
-        btaddshipto.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btaddshiptoActionPerformed(evt);
-            }
-        });
 
         jLabel12.setText("Country");
         jLabel12.setName("lblcountry"); // NOI18N
@@ -2778,27 +2685,27 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(25, 25, 25)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel77)
                     .addComponent(jLabel101)
                     .addComponent(jLabel110)
                     .addComponent(jLabel102)
                     .addComponent(jLabel99)
                     .addComponent(jLabel111))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(tbcity, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbaddr2, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbaddr1, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbname, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbshiptocode, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(ddstate, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jLabel12)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(ddcountry, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(12, 12, 12)))
-                .addGap(47, 47, 47)
+                        .addGap(59, 59, 59))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(tbcity, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbaddr2, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbaddr1, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbname, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(47, 47, 47)))
                 .addComponent(jLabel11)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2814,22 +2721,13 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                             .addComponent(tbcontact, javax.swing.GroupLayout.PREFERRED_SIZE, 238, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(tbphone, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(tbmisc1, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(tbzip, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(207, 207, 207)
-                        .addComponent(btaddshipto)))
-                .addContainerGap(75, Short.MAX_VALUE))
+                    .addComponent(tbzip, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(89, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(16, 16, 16)
-                        .addComponent(jLabel77))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(tbshiptocode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -2878,10 +2776,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(tbzip, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(jLabel11)
-                                .addComponent(btaddshipto)
                                 .addComponent(ddcountry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(jLabel12)))))
-                .addContainerGap(82, Short.MAX_VALUE))
+                .addContainerGap(40, Short.MAX_VALUE))
         );
 
         btinvoice.setText("Invoice");
@@ -3975,63 +3872,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
        }
     }//GEN-LAST:event_ddlocActionPerformed
 
-    private void btaddshiptoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddshiptoActionPerformed
-        // + "(cms_code, cms_shipto, cms_name, cms_line1, cms_line2, cms_line3, cms_city, cms_state, cms_zip, cms_country, cms_plantcode, cms_contact, cms_phone, cms_email, cms_misc ) " 
-       
-        boolean error = false;
-        
-        if (tbshiptocode.getText().isEmpty()) {
-            bsmf.MainFrame.show(getMessageTag(1024));
-            tbshiptocode.requestFocus();
-            return;
-        }
-        if (tbshiptocode.getText().length() > 10) {
-            bsmf.MainFrame.show(getMessageTag(1080, "10"));
-            tbshiptocode.requestFocus();
-            return;
-        }
-        if (tbzip.getText().length() > 10) {
-            bsmf.MainFrame.show(getMessageTag(1080, "10"));
-            tbzip.requestFocus();
-            return;
-        }
-        if (tbname.getText().length() > 50) {
-            bsmf.MainFrame.show(getMessageTag(1080, "50"));
-            tbname.requestFocus();
-            return;
-        }
-        
-        if (OVData.isValidCustShipTo(ddcust.getSelectedItem().toString(), tbshiptocode.getText())) {
-            bsmf.MainFrame.show(getMessageTag(1022));
-        } else {
-            ArrayList<String> st = new ArrayList<String>();
-            String list = "";
-            
-            list = ddcust.getSelectedItem().toString() + ":" +
-                   tbshiptocode.getText() + ":" + 
-                   tbname.getText().replace("'", "") + ":" + 
-                   tbaddr1.getText().replace("'", "") + ":" + 
-                   tbaddr2.getText().replace("'", "") + ":" + 
-                   "" + ":" + 
-                   tbcity.getText().replace("'", "") + ":" + 
-                   ddstate.getSelectedItem().toString() + ":" + 
-                   tbzip.getText() + ":" + 
-                   ddcountry.getSelectedItem().toString() + ":" + 
-                   "" + ":" + 
-                   tbcontact.getText().replace("'", "") + ":" + 
-                   tbphone.getText().replace("'", "") + ":" + 
-                   tbemail.getText().replace("'", "") + ":" + 
-                   tbmisc1.getText().replace("'", "");
-            
-            st.add(list);
-           
-           error = OVData.addCustShipToMstr(st, ":");
-           if (! error) {
-            bsmf.MainFrame.show(getMessageTag(1007));
-           }
-        }
-    }//GEN-LAST:event_btaddshiptoActionPerformed
-
     private void btsacdeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btsacdeleteActionPerformed
          int[] rows = sactable.getSelectedRows();
         for (int i : rows) {
@@ -4413,7 +4253,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btadd;
     private javax.swing.JButton btaddattachment;
     private javax.swing.JButton btadditem;
-    private javax.swing.JButton btaddshipto;
     private javax.swing.JButton btclear;
     private javax.swing.JButton btdelete;
     private javax.swing.JButton btdeleteattachment;
@@ -4472,7 +4311,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel76;
-    private javax.swing.JLabel jLabel77;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel80;
     private javax.swing.JLabel jLabel81;
@@ -4556,7 +4394,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JTextField tbsacamt;
     private javax.swing.JTextField tbsacdesc;
     private javax.swing.JTextField tbshipto;
-    private javax.swing.JTextField tbshiptocode;
     private javax.swing.JTextField tbtotdollars;
     private javax.swing.JTextField tbtotqty;
     private javax.swing.JTextField tbtottax;

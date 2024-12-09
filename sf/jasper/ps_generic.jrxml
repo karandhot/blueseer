@@ -20,7 +20,7 @@
 	<parameter name="bill_csz" class="java.lang.String"/>
 	<parameter name="ship_csz" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[select shd_id, it_desc, sh_cust, sh_shipvia, sh_ref, sh_bol, sh_rmks, 
+		<![CDATA[select shd_id, it_desc, sh_cust, sh_shipvia, sh_ref, sh_bol, sh_rmks, sh_trailer,
 sh_boxes, sh_pallets, shd_po, shd_item, shd_custitem, shd_qty, 
 shd_netprice, shd_serial, shd_cont, 
 cm_code, cm_name, cm_terms, cm_line1, cm_line2, 
@@ -91,6 +91,7 @@ inner join site_mstr on site_site = sh_site where shd_id =  $P{myid};]]>
 	<field name="sh_bol" class="java.lang.String"/>
 	<field name="shd_serial" class="java.lang.String"/>
 	<field name="shd_cont" class="java.lang.String"/>
+	<field name="sh_trailer" class="java.lang.String"/>
 	<variable name="mysum" class="java.lang.Double" calculation="Sum">
 		<variableExpression><![CDATA[$F{shd_qty}]]></variableExpression>
 	</variable>
@@ -263,7 +264,7 @@ inner join site_mstr on site_site = sh_site where shd_id =  $P{myid};]]>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{jasper.ps.lblterms}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{jasper.ps.lbltrack}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="58" width="52" height="20" uuid="7ede510d-7107-4740-a958-6a45ea1ac7d7"/>
@@ -285,7 +286,7 @@ inner join site_mstr on site_site = sh_site where shd_id =  $P{myid};]]>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{cm_terms}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{sh_trailer}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="332" y="90" width="73" height="16" uuid="859bc279-8ac0-4e87-a3f8-7f0b9fed9786"/>

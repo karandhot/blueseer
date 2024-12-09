@@ -25,7 +25,7 @@
 	<parameter name="ship_csz" class="java.lang.String"/>
 	<parameter name="curr" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[select shd_id, sh_curr, it_desc, cm_terms,
+		<![CDATA[select shd_id, sh_curr, it_desc, cm_terms, sh_trailer,
 (select case when sum(shs_amt) is null then 0 else sum(shs_amt) end 
 	from shs_det where shs_nbr = $P{myid} and shs_amttype = 'amount' and shs_type <> 'tax'  and shs_type <> 'passive' and shs_type <> 'shipping BIL' and shs_type <> 'shipping PPD'
 ) as charges, 
@@ -80,6 +80,7 @@ where shd_id =  $P{myid}]]>
 	<field name="cm_terms" class="java.lang.String"/>
 	<field name="shd_serial" class="java.lang.String"/>
 	<field name="shd_uom" class="java.lang.String"/>
+	<field name="sh_trailer" class="java.lang.String"/>
 	<variable name="mysum" class="java.lang.Double" calculation="Sum">
 		<variableExpression><![CDATA[$F{shd_qty}]]></variableExpression>
 	</variable>
@@ -222,10 +223,10 @@ where shd_id =  $P{myid}]]>
 				<reportElement x="218" y="79" width="102" height="30" uuid="32f41927-cfcd-4724-9eb1-b985fe5fce23"/>
 			</rectangle>
 			<rectangle>
-				<reportElement x="320" y="79" width="110" height="30" uuid="d577085f-2bdf-4c2f-a130-29132ba1e927"/>
+				<reportElement x="320" y="79" width="150" height="30" uuid="d577085f-2bdf-4c2f-a130-29132ba1e927"/>
 			</rectangle>
 			<rectangle>
-				<reportElement x="430" y="79" width="125" height="30" uuid="7f25945d-ab08-4b5f-a20d-63a887879f9d"/>
+				<reportElement x="470" y="79" width="85" height="30" uuid="7f25945d-ab08-4b5f-a20d-63a887879f9d"/>
 			</rectangle>
 			<textField>
 				<reportElement x="120" y="79" width="40" height="11" uuid="18d2e738-da05-49d7-87cc-ec79aace1926"/>
@@ -242,14 +243,14 @@ where shd_id =  $P{myid}]]>
 				<textFieldExpression><![CDATA[$R{jasper.invoice.lblbol}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="327" y="79" width="40" height="11" uuid="607b08c2-a675-45c1-98f7-a35e5146ff42"/>
+				<reportElement x="327" y="79" width="113" height="11" uuid="607b08c2-a675-45c1-98f7-a35e5146ff42"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{jasper.invoice.lblcustomer}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{jasper.invoice.lbltrack}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="437" y="79" width="52" height="11" uuid="b05fddee-613d-478f-a4e5-a1d3c5db265c"/>
+				<reportElement x="473" y="79" width="77" height="11" uuid="b05fddee-613d-478f-a4e5-a1d3c5db265c"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
@@ -282,18 +283,18 @@ where shd_id =  $P{myid}]]>
 				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("yyyy-MM-dd", $P{REPORT_LOCALE}).format(new java.text.SimpleDateFormat("yyyy-MM-dd").parse($F{sh_confdate}))]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="437" y="90" width="110" height="20" uuid="9b894070-83ea-4531-b608-e3bb34be614e"/>
+				<reportElement x="473" y="90" width="77" height="20" uuid="9b894070-83ea-4531-b608-e3bb34be614e"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{cm_terms}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="327" y="89" width="97" height="20" uuid="802049ad-6fe8-4919-93f9-4bf08c8ac8c7"/>
+				<reportElement x="327" y="89" width="143" height="20" uuid="802049ad-6fe8-4919-93f9-4bf08c8ac8c7"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{sh_cust}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{sh_trailer}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="228" y="90" width="92" height="20" uuid="474db820-d56c-4c60-8006-db1d704c6bb8"/>

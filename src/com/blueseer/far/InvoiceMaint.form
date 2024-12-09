@@ -63,7 +63,7 @@
                           <Component id="ddexport" min="-2" pref="56" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="btexport" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="separate" pref="22" max="32767" attributes="0"/>
+                          <EmptySpace type="separate" pref="42" max="32767" attributes="0"/>
                           <Component id="lbmessage" min="-2" pref="484" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
@@ -516,8 +516,8 @@
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel40">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Trailer"/>
-                <Property name="name" type="java.lang.String" value="lbltrailer" noResource="true"/>
+                <Property name="text" type="java.lang.String" value="Tracking Number"/>
+                <Property name="name" type="java.lang.String" value="lbltrack" noResource="true"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="tbuserid">

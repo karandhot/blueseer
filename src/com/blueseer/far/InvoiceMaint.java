@@ -795,6 +795,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
                     tbpo.setText(po);
                     ddcurr.setSelectedItem(res.getString("sh_curr"));
                     tbref.setText(res.getString("sh_ref"));
+                    tbtrailer.setText(res.getString("sh_trailer"));
                     tbuserid.setText(res.getString("sh_userid"));
                     tbremarks.setText(res.getString("sh_rmks"));
                    // ddpo.setSelectedItem(res.getString("sh_po"));
@@ -1144,8 +1145,8 @@ public class InvoiceMaint extends javax.swing.JPanel {
         jLabel39.setText("ShipVia");
         jLabel39.setName("lblshipvia"); // NOI18N
 
-        jLabel40.setText("Trailer");
-        jLabel40.setName("lbltrailer"); // NOI18N
+        jLabel40.setText("Tracking Number");
+        jLabel40.setName("lbltrack"); // NOI18N
 
         jLabel27.setText("Ref");
         jLabel27.setName("lblref"); // NOI18N
@@ -1481,7 +1482,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
                         .addComponent(ddexport, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btexport)
-                        .addGap(18, 22, Short.MAX_VALUE)
+                        .addGap(18, 42, Short.MAX_VALUE)
                         .addComponent(lbmessage, javax.swing.GroupLayout.PREFERRED_SIZE, 484, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelMainLayout.createSequentialGroup()
                         .addContainerGap()
