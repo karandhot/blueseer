@@ -23,7 +23,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-package com.blueseer.pur;
+package com.blueseer.shp;
 
 import com.blueseer.rcv.*;
 import com.blueseer.ord.*;
@@ -109,19 +109,19 @@ import net.sf.jasperreports.view.JasperViewer;
  *
  * @author vaughnte
  */
-public class POItemBrowse extends javax.swing.JPanel {
+public class ShipperItemBrowse extends javax.swing.JPanel {
  
     boolean sending = false;
     
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("select"), 
-                            getGlobalColumnTag("po"),
-                            getGlobalColumnTag("vendor"), 
-                            getGlobalColumnTag("name"), 
+                            getGlobalColumnTag("shipper"),
+                            getGlobalColumnTag("order"), 
+                            getGlobalColumnTag("customer"), 
                             getGlobalColumnTag("date"), 
                             getGlobalColumnTag("item"), 
-                            getGlobalColumnTag("orderqty"),
-                            getGlobalColumnTag("recvqty"), 
+                            getGlobalColumnTag("serial"),
+                            getGlobalColumnTag("qty"), 
                             getGlobalColumnTag("price")})
             {
                       @Override  
@@ -190,7 +190,7 @@ public class POItemBrowse extends javax.swing.JPanel {
     /**
      * Creates new form ScrapReportPanel
      */
-    public POItemBrowse() {
+    public ShipperItemBrowse() {
         initComponents();
         setLanguageTags(this);
     }
@@ -282,16 +282,15 @@ public class POItemBrowse extends javax.swing.JPanel {
     }
      
     public void clearAll() {
-        tbtotordqty.setText("0");
-        tbtotrcvqty.setText("0");
+         tbtotqty.setText("0");
         tbtotlines.setText("0");
        
         tbfromitem.setText("");
         tbtoitem.setText("");
         tbfromnbr.setText("");
         tbtonbr.setText("");
-        tbfromvend.setText("");
-        tbtovend.setText("");
+        tbfromcust.setText("");
+        tbtocust.setText("");
         
         java.util.Date now = new java.util.Date();
         Calendar cal = new GregorianCalendar();
@@ -307,6 +306,10 @@ public class POItemBrowse extends javax.swing.JPanel {
     public void initvars(String[] arg) {
         
         detailpanel.setVisible(false);
+        
+        
+        tbtotqty.setText("0");
+        tbtotlines.setText("0");
        
         clearAll();
         
@@ -347,8 +350,8 @@ public class POItemBrowse extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         tbfromnbr = new javax.swing.JTextField();
         tbtonbr = new javax.swing.JTextField();
-        tbfromvend = new javax.swing.JTextField();
-        tbtovend = new javax.swing.JTextField();
+        tbfromcust = new javax.swing.JTextField();
+        tbtocust = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         dcfrom = new com.toedter.calendar.JDateChooser();
@@ -364,15 +367,13 @@ public class POItemBrowse extends javax.swing.JPanel {
         jLabel8 = new javax.swing.JLabel();
         tbtotlines = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
-        tbtotordqty = new javax.swing.JLabel();
-        tbtotrcvqty = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
+        tbtotqty = new javax.swing.JLabel();
 
         jLabel9.setText("jLabel9");
 
         setBackground(new java.awt.Color(0, 102, 204));
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("PO Item Browse"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Shipper Item Browse"));
         jPanel1.setName("panelmain"); // NOI18N
 
         tablepanel.setLayout(new javax.swing.BoxLayout(tablepanel, javax.swing.BoxLayout.LINE_AXIS));
@@ -421,7 +422,7 @@ public class POItemBrowse extends javax.swing.JPanel {
 
         tablepanel.add(detailpanel);
 
-        jLabel4.setText("To Vendor:");
+        jLabel4.setText("To Customer:");
         jLabel4.setName("lbltovend"); // NOI18N
 
         btRun.setText("Run");
@@ -432,13 +433,13 @@ public class POItemBrowse extends javax.swing.JPanel {
             }
         });
 
-        jLabel1.setText("From Vendor:");
+        jLabel1.setText("From Customer:");
         jLabel1.setName("lblfromvend"); // NOI18N
 
-        jLabel3.setText("To PO:");
+        jLabel3.setText("To Shipper:");
         jLabel3.setName("lbltopo"); // NOI18N
 
-        jLabel2.setText("From PO:");
+        jLabel2.setText("From Shipper:");
         jLabel2.setName("lblfrompo"); // NOI18N
 
         jLabel5.setText("From Date:");
@@ -514,8 +515,8 @@ public class POItemBrowse extends javax.swing.JPanel {
                     .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tbfromvend, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbtovend, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(tbfromcust, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tbtocust, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
@@ -539,7 +540,7 @@ public class POItemBrowse extends javax.swing.JPanel {
                         .addComponent(jLabel2)
                         .addComponent(btRun)
                         .addComponent(tbfromnbr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(tbfromvend, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(tbfromcust, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel5)
                         .addComponent(tbcsv)
                         .addComponent(btprint)
@@ -552,7 +553,7 @@ public class POItemBrowse extends javax.swing.JPanel {
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel3)
                             .addComponent(tbtonbr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tbtovend, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbtocust, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel4)
                             .addComponent(btclear))
                         .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -568,14 +569,10 @@ public class POItemBrowse extends javax.swing.JPanel {
 
         tbtotlines.setText("0");
 
-        jLabel7.setText("Total OrderQty:");
+        jLabel7.setText("Total Qty:");
         jLabel7.setName("lbltotalqty"); // NOI18N
 
-        tbtotordqty.setText("0");
-
-        tbtotrcvqty.setText("0");
-
-        jLabel12.setText("Total Received Qty:");
+        tbtotqty.setText("0");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -585,13 +582,11 @@ public class POItemBrowse extends javax.swing.JPanel {
                 .addGap(13, 13, 13)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel8)
-                    .addComponent(jLabel7)
-                    .addComponent(jLabel12))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(jLabel7))
+                .addGap(27, 27, 27)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tbtotordqty, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbtotrcvqty, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbtotlines, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(tbtotlines, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tbtotqty, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -599,17 +594,13 @@ public class POItemBrowse extends javax.swing.JPanel {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tbtotordqty, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tbtotqty, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel7))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tbtotrcvqty, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel12))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbtotlines, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel8))
-                .addContainerGap(37, Short.MAX_VALUE))
+                .addContainerGap(63, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -669,7 +660,7 @@ public class POItemBrowse extends javax.swing.JPanel {
                  
               //  tablereport.getColumnModel().getColumn(10).setCellRenderer(new InvoiceBrowsePanel.SomeRenderer());
                 
-                 double totrcvqty = 0;
+                 double totsales = 0;
                  double totqty = 0;
                  
             
@@ -677,8 +668,8 @@ public class POItemBrowse extends javax.swing.JPanel {
                                   
                  String nbrfrom = tbfromnbr.getText();
                  String nbrto = tbtonbr.getText();
-                 String vendto = tbtovend.getText();
-                 String vendfrom = tbfromvend.getText();
+                 String custto = tbtocust.getText();
+                 String custfrom = tbfromcust.getText();
                  String itemfrom = tbfromitem.getText();
                  String itemto = tbtoitem.getText();                
                  
@@ -688,11 +679,11 @@ public class POItemBrowse extends javax.swing.JPanel {
                  if (nbrto.isEmpty()) {
                      nbrto = "ZZZZZZZZ";
                  }
-                 if (vendfrom.isEmpty()) {
-                     vendfrom = "0";
+                 if (custfrom.isEmpty()) {
+                     custfrom = "0";
                  }
-                 if (vendto.isEmpty()) {
-                     vendto = "ZZZZZZZZ";
+                 if (custto.isEmpty()) {
+                     custto = "ZZZZZZZZ";
                  }
                  if (itemfrom.isEmpty()) {
                      itemfrom = "0";
@@ -701,40 +692,37 @@ public class POItemBrowse extends javax.swing.JPanel {
                      itemto = "ZZZZZZZZ";
                  }
                                    
-                res = st.executeQuery("select pod_item, pod_nbr, pod_ord_date, pod_ord_qty, pod_rcvd_qty, pod_netprice, po_vend, vd_name from pod_mstr " +
-                        " inner join po_mstr on po_nbr = pod_nbr " +
-                        " inner join vd_mstr on vd_addr = po_vend where " +
-                        " pod_nbr >= " + "'" + nbrfrom + "'" + " AND " +
-                        " pod_nbr <= " + "'" + nbrto + "'" + " AND " +
-                        " pod_item >= " + "'" + itemfrom + "'" + " AND " +
-                        " pod_item <= " + "'" + itemto + "'" + " AND " +        
-                        " pod_ord_date >= " + "'" + setDateDB(dcfrom.getDate()) + "'" + " AND " +
-                        " pod_ord_date <= " + "'" + setDateDB(dcto.getDate()) + "'" + " AND " +
-                        " po_vend >= " + "'" + vendfrom + "'" + " AND " +
-                        " po_vend <= " + "'" + vendto + "'" + 
-                        " order by pod_nbr desc;");
+                  res = st.executeQuery("select shd_item, shd_so, shd_date, shd_qty, shd_netprice, shd_serial, sh_cust, shd_id from ship_det " +
+                        " inner join ship_mstr on sh_id = shd_id where " +
+                        " shd_id >= " + "'" + nbrfrom + "'" + " AND " +
+                        " shd_id <= " + "'" + nbrto + "'" + " AND " +
+                        " shd_item >= " + "'" + itemfrom + "'" + " AND " +
+                        " shd_item <= " + "'" + itemto + "'" + " AND " +        
+                        " shd_date >= " + "'" + setDateDB(dcfrom.getDate()) + "'" + " AND " +
+                        " shd_date <= " + "'" + setDateDB(dcto.getDate()) + "'" + " AND " +
+                        " sh_cust >= " + "'" + custfrom + "'" + " AND " +
+                        " sh_cust <= " + "'" + custto + "'" + 
+                        " order by shd_id desc;");
                  
                        int i = 0;
                        while (res.next()) {
                          i++;  
-                         totqty = totqty + res.getDouble("pod_ord_qty");
-                         totrcvqty = totrcvqty + res.getDouble("pod_rcvd_qty");
+                         totqty = totqty + res.getDouble("shd_qty");
                         
                          mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, 
-                                bsNumber(res.getString("pod_nbr")),
-                                res.getString("po_vend"),
-                                res.getString("vd_name"),
-                                getDateDB(res.getString("pod_ord_date")),
-                                res.getString("pod_item"),
-                                bsNumber(res.getDouble("pod_ord_qty")),
-                                bsNumber(res.getDouble("pod_rcvd_qty")),
-                                bsParseDouble(currformatDouble(res.getDouble("pod_netprice")))
+                                bsNumber(res.getString("shd_id")),
+                                res.getString("shd_so"),
+                                res.getString("sh_cust"),
+                                getDateDB(res.getString("shd_date")),
+                                res.getString("shd_item"),
+                                res.getString("shd_serial"),
+                                bsNumber(res.getDouble("shd_qty")),
+                                bsParseDouble(currformatDouble(res.getDouble("shd_netprice")))
                             });
                                 
                        }
               
-                tbtotordqty.setText(currformatDouble(totqty));
-                tbtotrcvqty.setText(currformatDouble(totrcvqty));
+                tbtotqty.setText(currformatDouble(totqty));
                 tbtotlines.setText(String.valueOf(i));
                 
             } catch (SQLException s) {
@@ -761,9 +749,9 @@ public class POItemBrowse extends javax.swing.JPanel {
         int col = tablereport.columnAtPoint(evt.getPoint());
        
         if ( col == 0) {
-                String mypanel = "POMaintMenu";
+                String mypanel = "ShipMaint";
                if (! checkperms(mypanel)) { return; }
-               String[] args = new String[]{bsNumberToUS(tablereport.getValueAt(row, 1).toString())};
+               String[] args = new String[]{bsNumberToUS(tablereport.getValueAt(row, 2).toString())};
                reinitpanels(mypanel, true, args);
         }
     }//GEN-LAST:event_tablereportMouseClicked
@@ -774,7 +762,7 @@ public class POItemBrowse extends javax.swing.JPanel {
     }//GEN-LAST:event_tbcsvActionPerformed
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
-        OVData.printJTableToJasper("PO Item Report", tablereport, "genericJTableL8.jasper" );
+        OVData.printJTableToJasper("Shipper Item Report", tablereport, "genericJTableL8.jasper" );
     }//GEN-LAST:event_btprintActionPerformed
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
@@ -792,7 +780,6 @@ public class POItemBrowse extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -811,14 +798,13 @@ public class POItemBrowse extends javax.swing.JPanel {
     private javax.swing.JPanel tablepanel;
     private javax.swing.JTable tablereport;
     private javax.swing.JButton tbcsv;
+    private javax.swing.JTextField tbfromcust;
     private javax.swing.JTextField tbfromitem;
     private javax.swing.JTextField tbfromnbr;
-    private javax.swing.JTextField tbfromvend;
+    private javax.swing.JTextField tbtocust;
     private javax.swing.JTextField tbtoitem;
     private javax.swing.JTextField tbtonbr;
     private javax.swing.JLabel tbtotlines;
-    private javax.swing.JLabel tbtotordqty;
-    private javax.swing.JLabel tbtotrcvqty;
-    private javax.swing.JTextField tbtovend;
+    private javax.swing.JLabel tbtotqty;
     // End of variables declaration//GEN-END:variables
 }
