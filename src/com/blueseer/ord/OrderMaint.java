@@ -773,25 +773,25 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
 
 
         if (ddsite.getSelectedItem() == null || ddsite.getSelectedItem().toString().isEmpty()) {
-            bsmf.MainFrame.show(getMessageTag(1024));
+            bsmf.MainFrame.show(getMessageTag(1024, "site"));
             ddsite.requestFocus();
             return false;
         }
 
         if ( ddcust.getSelectedItem() == null || ddcust.getSelectedItem().toString().isEmpty() ) {
-            bsmf.MainFrame.show(getMessageTag(1024));
+            bsmf.MainFrame.show(getMessageTag(1024, "bill-to"));
             ddcust.requestFocus();
             return false;
         }
         if (tbshipto.getText().isEmpty()) {
-            bsmf.MainFrame.show(getMessageTag(1024));
+            bsmf.MainFrame.show(getMessageTag(1024, "ship-to"));
             tbshipto.requestFocus();
             return false;
         }
 
 
         if (ddcurr.getSelectedItem() == null || ddcurr.getSelectedItem().toString().isEmpty()) {
-            bsmf.MainFrame.show(getMessageTag(1024));
+            bsmf.MainFrame.show(getMessageTag(1024, "currency"));
             return false;
         }
 
@@ -3626,6 +3626,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btnewActionPerformed
 
     private void btadditemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btadditemActionPerformed
+        if (! validateInput(dbaction.add)) {
+           return;
+        }
         double np = 0;
         double qty = 0;
         np = bsParseDouble(netprice.getText());
@@ -3695,6 +3698,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_ddcustActionPerformed
 
     private void btdelitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdelitemActionPerformed
+        if (! validateInput(dbaction.delete)) {
+           return;
+        }
         int[] rows = orddet.getSelectedRows();
         for (int i : rows) {
             if (orddet.getValueAt(i, 11).toString().equals(getGlobalProgTag("closed")) || orddet.getValueAt(i, 11).toString().equals(getGlobalProgTag("partial"))) {
@@ -4095,6 +4101,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_ddsiteActionPerformed
 
     private void btupdateitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateitemActionPerformed
+        if (! validateInput(dbaction.update)) {
+           return;
+        }
         int line = 0;
         String bom = "";
         if (ddbom.getSelectedItem() != null) {
