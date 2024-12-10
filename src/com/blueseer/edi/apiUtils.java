@@ -2671,9 +2671,7 @@ public class apiUtils {
         
         try (CloseableHttpResponse response = client.execute(request)) {
         if (response.getStatusLine().getStatusCode() != 200) {
-                r.append(response.getStatusLine().getStatusCode() + ": " + response.getStatusLine().getReasonPhrase());
-                //throw new RuntimeException("Failed : HTTP error code : "
-                //		+ conn.getResponseCode());
+            r.append(response.getStatusLine().getStatusCode() + ": " + response.getStatusLine().getReasonPhrase());
         } else {
             r.append("SUCCESS: " + response.getStatusLine().getStatusCode() + ": " + response.getStatusLine().getReasonPhrase() + "\n");
         }
@@ -2744,7 +2742,8 @@ public class apiUtils {
         } catch (MessagingException ex) {
           logdet.add(new String[]{parentkey, "error", " Messaging error; Bad MDN Boundary " + ex.getMessage()}); 
           writeAS2LogDetail(logdet);
-          return "Messaging error; Bad MDN Boundary " + ex.getMessage(); 
+          r.append("Messaging error; Bad MDN Boundary ").append(ex.getMessage());
+          return r.toString(); 
         }   
         
         
@@ -2752,15 +2751,18 @@ public class apiUtils {
         } catch (HttpHostConnectException | ConnectTimeoutException  ex) {
           logdet.add(new String[]{parentkey, "error", " Connection refused or timeout from server "}); 
           writeAS2LogDetail(logdet);
-          return "Connection refused or timeout from server ";
+          r.append("Connection refused or timeout from server ");
+          return r.toString();
         } catch ( UnknownHostException ex) {
           logdet.add(new String[]{parentkey, "error", " Unknown host server " + request.getURI()}); 
           writeAS2LogDetail(logdet);
-          return " Unknown host server " + request.getURI();
+          r.append("Unknown host server ").append(request.getURI());
+          return r.toString();
         } catch ( SocketException ex) {
           logdet.add(new String[]{parentkey, "error", " Socket exception connection reset " + request.getURI()}); 
           writeAS2LogDetail(logdet);
-          return " Socket exception connection reset " + request.getURI();
+          r.append("Socket exception connection reset ").append(request.getURI());
+          return r.toString();
         }
         
       // remove file if successful
