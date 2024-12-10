@@ -2676,17 +2676,6 @@ public class apiUtils {
                 //		+ conn.getResponseCode());
         } else {
             r.append("SUCCESS: " + response.getStatusLine().getStatusCode() + ": " + response.getStatusLine().getReasonPhrase() + "\n");
-            if (isDebug) { 
-            String debugfile = "debugAS2responseHeaders." + now + "." + Long.toHexString(System.currentTimeMillis());
-            Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
-            Header[] headers = response.getAllHeaders();
-             try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
-                for (Header x : headers) {
-                    String h = x.getName() + ": " + x.getValue() + "\n";
-                    stream.write(h.getBytes());
-                }
-             }  
-            }
         }
         
         HttpEntity entity = response.getEntity();
@@ -2698,6 +2687,18 @@ public class apiUtils {
                 BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path.toFile())));
                 output.write(result);
                 output.close();
+        }
+        
+        if (isDebug) { 
+            String debugfile = "debugAS2responseHeaders." + now + "." + Long.toHexString(System.currentTimeMillis());
+            Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
+            Header[] headers = response.getAllHeaders();
+             try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
+                for (Header x : headers) {
+                    String h = x.getName() + ": " + x.getValue() + "\n";
+                    stream.write(h.getBytes());
+                }
+             }  
         }
         
         // save MDN file if present
