@@ -2694,7 +2694,9 @@ public class apiUtils {
             Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
             Header[] headers = response.getAllHeaders();
              try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
-                for (Header x : headers) {
+                 
+                 stream.write(r.toString().getBytes());
+                 for (Header x : headers) {
                     String h = x.getName() + ": " + x.getValue() + "\n";
                     stream.write(h.getBytes());
                 }
