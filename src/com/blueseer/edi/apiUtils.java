@@ -2576,6 +2576,8 @@ public class apiUtils {
        
                     
         String messageid = setMessageID();
+        logdet.add(new String[]{parentkey, "info", "Message ID: " + messageid});
+       
         
         CloseableHttpClient client = HttpClients.createDefault();
            

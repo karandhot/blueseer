@@ -217,7 +217,10 @@ public class AS2Serv extends HttpServlet {
         HashMap<String, String> inHM = new HashMap<>();
         HashMap<String, String> outHM = new HashMap<>();
         
-       
+        if (isDebug) {
+            System.out.println("SENDING IP: " + request.getRemoteAddr() + " / " + request.getRemoteHost());
+        }
+        
         
         Enumeration<String> headerNames = request.getHeaderNames();
         if (headerNames != null) {
@@ -226,7 +229,7 @@ public class AS2Serv extends HttpServlet {
                         inHM.putIfAbsent(key.toLowerCase(), request.getHeader(key));
                         
                         if (isDebug)
-                        System.out.println("here--> Header: " + key +  "=" + request.getHeader(key));
+                        System.out.println("Header: " + key +  "=" + request.getHeader(key));
                 }
         } else {
             // header info unrecognizable...bail out
