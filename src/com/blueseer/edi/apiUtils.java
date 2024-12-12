@@ -2715,6 +2715,7 @@ public class apiUtils {
         HttpEntity entity = response.getEntity();
         byte[] indata = EntityUtils.toByteArray(entity);
         String result = new String(indata); 
+        
         if (isDebug) {
                 String filename = "response." + now + "." + Long.toHexString(System.currentTimeMillis());
                 Path path = FileSystems.getDefault().getPath("temp" + "/" + filename);
@@ -2737,53 +2738,55 @@ public class apiUtils {
              }  
         }
         
-        // save MDN file if present
-        try {
-        Header h = entity.getContentType();
-        String mdncontenttype = "multipart/form-data";
-        if (h != null) {
-            mdncontenttype = h.getValue();
-        }
-        MimeMultipart mpr  = new MimeMultipart(new ByteArrayDataSource(indata, mdncontenttype));
-        for (int z = 0; z < mpr.getCount(); z++) {
-            MimeBodyPart mbpr = (MimeBodyPart) mpr.getBodyPart(z);
-            if (mbpr.getContentType().contains("disposition")) {
-                String filename = "mdn." + now + "." + Long.toHexString(System.currentTimeMillis());
-                Path path = FileSystems.getDefault().getPath("edi/mdn" + "/" + filename);
-                BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path.toFile())));
-                String datastring = new String(mbpr.getInputStream().readAllBytes());   
-                output.write(datastring);
-                output.close();
-                
-                // verify signature if applicable
-                // mbpr should be mimemulitpart containing two sub parts....the mdn and the signature
-                boolean isValidMDNSignature = verifyMDNSignature(indata, "multipart/signed; protocol=\"application/pkcs7-signature\"; micalg=sha-1;");
-                
-                // log mdn filename into parent log entry
-                updateAS2LogMDNFile(parentkey, filename);
-                
-                Pattern p = Pattern.compile("Disposition:.*(error|failed).*");
-		Matcher m = p.matcher(datastring);
-		if (m.find()) {
-                    logdet.add(new String[]{parentkey, "error", "MDN error: " + filename});
-                } else {
-                   logdet.add(new String[]{parentkey, "info", "MDN processed: " + filename}); 
-                   logdet.add(new String[]{parentkey, "info", "MDN valid signature: " + isValidMDNSignature});
-                   isSuccess = true;
+        if (! result.isBlank()) {
+            // save MDN file if present
+            try {
+            Header h = entity.getContentType();
+            String mdncontenttype = "multipart/form-data";
+            if (h != null) {
+                mdncontenttype = h.getValue();
+            }
+            MimeMultipart mpr  = new MimeMultipart(new ByteArrayDataSource(indata, mdncontenttype));
+            for (int z = 0; z < mpr.getCount(); z++) {
+                MimeBodyPart mbpr = (MimeBodyPart) mpr.getBodyPart(z);
+                if (mbpr.getContentType().contains("disposition")) {
+                    String filename = "mdn." + now + "." + Long.toHexString(System.currentTimeMillis());
+                    Path path = FileSystems.getDefault().getPath("edi/mdn" + "/" + filename);
+                    BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path.toFile())));
+                    String datastring = new String(mbpr.getInputStream().readAllBytes());   
+                    output.write(datastring);
+                    output.close();
+
+                    // verify signature if applicable
+                    // mbpr should be mimemulitpart containing two sub parts....the mdn and the signature
+                    boolean isValidMDNSignature = verifyMDNSignature(indata, "multipart/signed; protocol=\"application/pkcs7-signature\"; micalg=sha-1;");
+
+                    // log mdn filename into parent log entry
+                    updateAS2LogMDNFile(parentkey, filename);
+
+                    Pattern p = Pattern.compile("Disposition:.*(error|failed).*");
+                    Matcher m = p.matcher(datastring);
+                    if (m.find()) {
+                        logdet.add(new String[]{parentkey, "error", "MDN error: " + filename});
+                    } else {
+                       logdet.add(new String[]{parentkey, "info", "MDN processed: " + filename}); 
+                       logdet.add(new String[]{parentkey, "info", "MDN valid signature: " + isValidMDNSignature});
+                       isSuccess = true;
+                    }
                 }
             }
-        }
-        
-        
-        } catch (MessagingException ex) {
-          logdet.add(new String[]{parentkey, "error", " Messaging error; Bad MDN Boundary " + ex.getMessage()}); 
-          writeAS2LogDetail(logdet);
-          r.append("Messaging error; Bad MDN Boundary ").append(ex.getMessage());
-          return r.toString(); 
-        }   
-        
+
+
+            } catch (MessagingException ex) {
+              logdet.add(new String[]{parentkey, "error", " Messaging error; Bad MDN Boundary " + ex.getMessage()}); 
+              writeAS2LogDetail(logdet);
+              r.append("Messaging error; Bad MDN Boundary ").append(ex.getMessage());
+              return r.toString(); 
+            }   
+        } // if result is not blank
         
         r.append(result);
+        
         } catch (HttpHostConnectException | ConnectTimeoutException  ex) {
           logdet.add(new String[]{parentkey, "error", " Connection refused or timeout from server "}); 
           writeAS2LogDetail(logdet);
