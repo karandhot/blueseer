@@ -1096,11 +1096,11 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
 
         cbforcesigning.setText("Force Inbound Signing");
 
-        ddencalgo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "AES128_CBC", "AES192_CBC", "AES256_CBC", "DES_CBC", "DES_EDE3_CBC" }));
+        ddencalgo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "AES128_CBC", "AES192_CBC", "AES256_CBC", "DES_CBC", "DES_EDE3_CBC", "DES_EDE3_WRAP" }));
 
         jLabel3.setText("Encryption Algorithm");
 
-        ddsignalgo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "RSA" }));
+        ddsignalgo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "SHA1withRSA", "SHA256withRSA" }));
 
         ddmicalgo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "SHA-1", "SHA-256", "MD5" }));
 

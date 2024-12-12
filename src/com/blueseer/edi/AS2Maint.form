@@ -838,12 +838,13 @@
             <Component class="javax.swing.JComboBox" name="ddencalgo">
               <Properties>
                 <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                  <StringArray count="5">
+                  <StringArray count="6">
                     <StringItem index="0" value="AES128_CBC"/>
                     <StringItem index="1" value="AES192_CBC"/>
                     <StringItem index="2" value="AES256_CBC"/>
                     <StringItem index="3" value="DES_CBC"/>
                     <StringItem index="4" value="DES_EDE3_CBC"/>
+                    <StringItem index="5" value="DES_EDE3_WRAP"/>
                   </StringArray>
                 </Property>
               </Properties>
@@ -859,8 +860,9 @@
             <Component class="javax.swing.JComboBox" name="ddsignalgo">
               <Properties>
                 <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                  <StringArray count="1">
-                    <StringItem index="0" value="RSA"/>
+                  <StringArray count="2">
+                    <StringItem index="0" value="SHA1withRSA"/>
+                    <StringItem index="1" value="SHA256withRSA"/>
                   </StringArray>
                 </Property>
               </Properties>

@@ -100,6 +100,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.LocalDateTime;
@@ -149,6 +150,8 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.CMSAttributes;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.RFC4519Style;
@@ -235,6 +238,7 @@ import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 import org.bouncycastle.openpgp.operator.jcajce.JcePGPDataEncryptorBuilder;
 import org.bouncycastle.openpgp.operator.jcajce.JcePublicKeyDataDecryptorFactoryBuilder;
 import org.bouncycastle.openpgp.operator.jcajce.JcePublicKeyKeyEncryptionMethodGenerator;
+import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.operator.ContentSigner;
@@ -558,6 +562,18 @@ public class apiUtils {
         }
         return key;
     }
+    
+    public static PrivateKey readPrivateKeyFromFile(String file) throws Exception {
+       byte[] privKeyByteArray = Files.readAllBytes(new File(file).toPath());
+
+    PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privKeyByteArray);
+
+    KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+
+    PrivateKey key = keyFactory.generatePrivate(keySpec);
+    return key;
+    }
+       
     
     // redo or scrap
     public static PGPPrivateKey getPGPPrivateKeyFromKeyStore(String user)  {
@@ -1326,6 +1342,10 @@ public class apiUtils {
         builder.addRDN(RFC4519Style.o, siteinfo[1]);  // site ID
         builder.addRDN(RFC4519Style.l, siteinfo[5]);  // site city
         builder.addRDN(RFC4519Style.st, siteinfo[6]);  // site state
+        builder.addRDN(RFC4519Style.cn, "BlueSeer Software");
+        builder.addRDN(RFC4519Style.ou, "Communications");
+        builder.addRDN(PKCSObjectIdentifiers.pkcs_9_at_emailAddress, "services@blueseer.com");
+        
         
         ContentSigner contentSigner = new JcaContentSignerBuilder(x).build(prv);
         JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(dnName, certSerialNumber, startDate, endDate, builder.build(), pub);
@@ -1404,9 +1424,11 @@ public class apiUtils {
         } else if (algo.equals("DES_CBC")) {
             x = CMSAlgorithm.DES_CBC;  
         } else if (algo.equals("DES_EDE3_CBC")) {
-            x = CMSAlgorithm.DES_EDE3_CBC;    
+            x = CMSAlgorithm.DES_EDE3_CBC; 
+        } else if (algo.equals("DES_EDE3_WRAP")) {
+            x = CMSAlgorithm.DES_EDE3_WRAP;
         } else {
-           x = CMSAlgorithm.AES128_CBC;  
+           x = CMSAlgorithm.DES_EDE3_CBC;  
         }
         byte[] encryptedData = null;
         if (null != data && null != encryptionCertificate) {
@@ -2176,16 +2198,22 @@ public class apiUtils {
     }
     
     public static MimeBodyPart signData(
-          byte[] data, 
+          byte[] data,
+          String signalgo,
           X509Certificate signingCertificate,
           PrivateKey signingKey, String filename, String[] tp, String contenttype) throws Exception {
+            
+          if (signalgo.isBlank()) {
+              signalgo = "SHA1withRSA";
+          }
+        
             List<X509Certificate> certList = new ArrayList<X509Certificate>();
             certList.add(signingCertificate);
             certs = new JcaCertStore(certList);
 
             SMIMESignedGenerator sGen = new SMIMESignedGenerator(false ? SMIMESignedGenerator.RFC3851_MICALGS : SMIMESignedGenerator.RFC5751_MICALGS);
             JcaSimpleSignerInfoGeneratorBuilder jSig = new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC");
-            SignerInfoGenerator sig = jSig.build("SHA1withRSA", signingKey, signingCertificate);
+            SignerInfoGenerator sig = jSig.build(signalgo, signingKey, signingCertificate);
             sGen.addSignerInfoGenerator(sig);
             sGen.addCertificates(certs);
             MimeBodyPart dataPart = new MimeBodyPart();
@@ -2250,7 +2278,7 @@ public class apiUtils {
 	}
 
    
-    public static MimeMultipart signMDN(byte[] messg, String keyuser, String boundary) throws Exception {
+    public static MimeMultipart signMDN(byte[] messg, String keyuser, String signalgo, String boundary) throws Exception {
        // MimeBodyPart messagePart = new MimeBodyPart();
       //  messagePart.removeHeader("Content-Type");
       //  messagePart.removeHeader("Content-Disposition");
@@ -2279,8 +2307,11 @@ public class apiUtils {
         System.out.println("HERE IS privatekey algorithm: " + keyuser + "->"  + privateKey.getAlgorithm());
         System.out.println("HERE IS privatekey format: "  + keyuser + "->" + privateKey.getFormat());
        */
+        if (signalgo.isBlank()) {
+              signalgo = "SHA1withRSA";
+        }
         JcaSimpleSignerInfoGeneratorBuilder jSig = new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC");
-        SignerInfoGenerator sig = jSig.build("SHA1WithRSA", privateKey, certificate);
+        SignerInfoGenerator sig = jSig.build(signalgo, privateKey, certificate);
         gen.addCertificates(certs);
         gen.addSignerInfoGenerator(sig);
      //   messagePart.setHeader("Content-Type", "text/plain");
@@ -2458,6 +2489,7 @@ public class apiUtils {
         logdet.add(new String[]{parentkey, "info", "Encryption Cert file: " + tp[11]});
         logdet.add(new String[]{parentkey, "info", "Signing Key ID: " + signkeyid});
         logdet.add(new String[]{parentkey, "info", "Encryption Algo: " + tp[18]});
+        logdet.add(new String[]{parentkey, "info", "Signing Algo: " + tp[19]});
        
        // System.out.println("here->" + as2To + "/" +  as2From + "/" + internalURL + "/" + sourceDir + "/" + signkeyid);
         
@@ -2481,6 +2513,8 @@ public class apiUtils {
           logdet.add(new String[]{parentkey, "error", "Using non-user signing key " + signkeyid}); 
           writeAS2LogDetail(logdet);
           return "Using non-user signing key  " + signkeyid; 
+        } else if (pks.pks_type().equals("privatekey")) {
+           key = readPrivateKeyFromFile(pks.pks_file());
         } else {
         k = getKeyStoreByUser(signkeyid); // store, storeuser, storepass, user, pass
         k[2] = bsmf.MainFrame.PassWord("1", k[2].toCharArray());
@@ -2565,7 +2599,7 @@ public class apiUtils {
         if (filecontent != null) {    
                 try {
                     // mbp = signData(filecontent.getBytes(StandardCharsets.UTF_8),signcertificate,key,listOfFiles[i].getName());
-                    mbp = signData(filecontent,signcertificate,key,listOfFiles[i].getName(),tp,contenttype);
+                    mbp = signData(filecontent,tp[19],signcertificate,key,listOfFiles[i].getName(),tp,contenttype);
                     
                 } catch (Exception ex) {
                     bslog(ex);
@@ -2634,7 +2668,7 @@ public class apiUtils {
         rb.addHeader("Recipient-Address", url.toString());
         rb.addHeader("EDIINT-Features", "CEM, multiple-attachments, AS2-Reliability");
         rb.addHeader("Content-Type", "application/pkcs7-mime; smime-type=enveloped-data; name=smime.p7m");
-        rb.addHeader("Content-Transfer-Encoding", "binary");
+      //  rb.addHeader("Content-Transfer-Encoding", "binary");
         rb.addHeader("Content-Disposition", "attachment; filename=smime.p7m");
         }
         
@@ -2823,7 +2857,7 @@ public class apiUtils {
             
             
             try {
-               mpInner = signMDN(data, getSystemSignKey(), boundary); 
+               mpInner = signMDN(data, getSystemSignKey(), "", boundary); // need to get tp[19] here for signing algo
              // mbp3.setContent(mpInner);
              // mpInner = signMDNexp(mbp3, getSystemSignKey(), boundary); 
             } catch (Exception ex) {
