@@ -140,10 +140,13 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.HttpHostConnectException;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
@@ -2579,8 +2582,14 @@ public class apiUtils {
         logdet.add(new String[]{parentkey, "info", "Message ID: " + messageid});
        
         
-        CloseableHttpClient client = HttpClients.createDefault();
-           
+        CloseableHttpClient client;
+        if (tp[15].equals("HTTPS")) {
+           client = HttpClientBuilder.create()
+                    .setSSLSocketFactory(new SSLConnectionSocketFactory(SSLContexts.custom().build(), new String[] { "TLSv1.2" }, null, SSLConnectionSocketFactory.getDefaultHostnameVerifier()))
+                    .build(); 
+        } else {
+          client = HttpClients.createDefault();
+        }
         byte[] filecontent;
         // String filecontent;
         try {
