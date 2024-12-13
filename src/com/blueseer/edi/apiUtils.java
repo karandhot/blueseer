@@ -2638,6 +2638,7 @@ public class apiUtils {
           //mbp2.setContent(mp);
           //mbp2.addHeader("Content-Type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");
           //mbp2.addHeader("Content-Disposition", "attachment; filename=smime.p7m");
+          mbp.addHeader("Content-Type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");
           mbp2 = mbp;
           
           
