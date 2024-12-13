@@ -2475,7 +2475,12 @@ public class apiUtils {
        
         // gather pertinent info for this AS2 ID / Partner
         String[] tp = ediData.getAS2Info(as2id);
-        String url = tp[15] + "://" + tp[1] + ":" + tp[2] + "/" + tp[3];
+        String url = "";
+        if (tp[2].isBlank()) {
+           url = tp[15] + "://" + tp[1] + "/" + tp[3]; 
+        } else {
+           url = tp[15] + "://" + tp[1] + ":" + tp[2] + "/" + tp[3];
+        }
         String as2To = tp[4];
         String as2From = tp[5];
         String internalURL = tp[6];
@@ -2668,6 +2673,7 @@ public class apiUtils {
         } else {
         rb.addHeader("User-Agent", "java/app (BlueSeer Software; +http://www.blueseer.com/)"); 
         rb.addHeader("AS2-To", as2To);
+        rb.addHeader("from", as2From + "@company.com");
         rb.addHeader("AS2-From", as2From); 
         rb.addHeader("AS2-Version", "1.2"); 
         rb.addHeader("Mime-Version", "1.0");
@@ -2680,7 +2686,8 @@ public class apiUtils {
         rb.addHeader("EDIINT-Features", "CEM, multiple-attachments, AS2-Reliability");
         rb.addHeader("Content-Type", "application/pkcs7-mime; smime-type=enveloped-data; name=smime.p7m");
       //  rb.addHeader("Content-Transfer-Encoding", "binary");
-        rb.addHeader("Content-Disposition", "attachment; filename=smime.p7m");
+        rb.addHeader("Content-Disposition", "attachment; filename=" + "\"" + "smime.p7m" + "\"");
+        rb.addHeader("connection", "close, TE");
         }
         
         // add custom headers
