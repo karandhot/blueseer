@@ -2611,6 +2611,9 @@ public class apiUtils {
         
         
         boolean isSignedAndEncrypted = true;
+        boolean isSigned = true;
+        boolean isEncrypted = true;
+        
         // need signed, signed+enc, enc, none ....condition logic here
         if (filecontent != null) {    
                 try {
@@ -2671,22 +2674,23 @@ public class apiUtils {
         rb.addHeader("Content-Type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");
         rb.addHeader("Content-Disposition", "attachment; filename=smime.p7m");
         } else {
-        rb.addHeader("User-Agent", "java/app (BlueSeer Software; +http://www.blueseer.com/)"); 
-        rb.addHeader("AS2-To", as2To);
+        rb.addHeader("user-agent", "java/app (BlueSeer Software; +http://www.blueseer.com/)"); 
+        rb.addHeader("as2-to", as2To);
         rb.addHeader("from", as2From + "@company.com");
-        rb.addHeader("AS2-From", as2From); 
-        rb.addHeader("AS2-Version", "1.2"); 
-        rb.addHeader("Mime-Version", "1.0");
-        rb.addHeader("Subject", "as2");
-        rb.addHeader("Accept-Encoding", "deflate, gzip, x-gzip, compress, x-compress");
-        rb.addHeader("Disposition-Notification-Options", "signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha1");
-        rb.addHeader("Disposition-Notification-To", internalURL);
-        rb.addHeader("Message-ID", messageid);
-        rb.addHeader("Recipient-Address", url.toString());
-        rb.addHeader("EDIINT-Features", "CEM, multiple-attachments, AS2-Reliability");
-        rb.addHeader("Content-Type", "application/pkcs7-mime; smime-type=enveloped-data; name=smime.p7m");
-      //  rb.addHeader("Content-Transfer-Encoding", "binary");
-        rb.addHeader("Content-Disposition", "attachment; filename=" + "\"" + "smime.p7m" + "\"");
+        rb.addHeader("as2-from", as2From); 
+        rb.addHeader("as2-version", "1.2"); 
+        rb.addHeader("mime-version", "1.0");
+        rb.addHeader("ubject", "as2");
+        rb.addHeader("accept-encoding", "deflate, gzip, x-gzip, compress, x-compress");
+        rb.addHeader("disposition-notification-options", "signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha1");
+        rb.addHeader("disposition-notification-to", internalURL);
+        rb.addHeader("message-id", messageid);
+        rb.addHeader("recipient-address", url.toString());
+       // rb.addHeader("EDIINT-Features", "CEM, multiple-attachments, AS2-Reliability");
+        rb.addHeader("ediint-features", "multiple-attachments");
+        rb.addHeader("content-type", "application/pkcs7-mime; smime-type=enveloped-data; name=smime.p7m");
+        // rb.addHeader("Content-Transfer-Encoding", "binary");
+        rb.addHeader("content-disposition", "attachment; filename=" + "\"" + "smime.p7m" + "\"");
         rb.addHeader("connection", "close, TE");
         }
         
