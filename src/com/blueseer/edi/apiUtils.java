@@ -2674,13 +2674,13 @@ public class apiUtils {
         rb.addHeader("Content-Type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");
         rb.addHeader("Content-Disposition", "attachment; filename=smime.p7m");
         } else {
-        rb.addHeader("user-agent", "java/app (BlueSeer Software; +http://www.blueseer.com/)"); 
+        rb.addHeader("user-agent", "application (BlueSeer Software; +http://www.blueseer.com/)"); 
         rb.addHeader("as2-to", as2To);
         rb.addHeader("from", as2From + "@company.com");
         rb.addHeader("as2-from", as2From); 
         rb.addHeader("as2-version", "1.2"); 
         rb.addHeader("mime-version", "1.0");
-        rb.addHeader("ubject", "as2");
+        rb.addHeader("subject", "as2");
         rb.addHeader("accept-encoding", "deflate, gzip, x-gzip, compress, x-compress");
         rb.addHeader("disposition-notification-options", "signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha1");
         rb.addHeader("disposition-notification-to", internalURL);
