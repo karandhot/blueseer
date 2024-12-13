@@ -2229,7 +2229,7 @@ public class apiUtils {
             dataPart.setDataHandler(new DataHandler(ds));
             
             // dataPart.setText(new String(data, StandardCharsets.UTF_8), "UTF-8");
-            dataPart.setHeader("Content-Type", contenttype + "; file=" + filename);
+            dataPart.setHeader("Content-Type", contenttype);
             dataPart.setHeader("Content-Disposition", "attachment; filename=" + filename);
             dataPart.setHeader("Content-Transfer-Encoding", "binary");
             /*
@@ -2276,7 +2276,7 @@ public class apiUtils {
             
             MimeBodyPart tmpBody = new MimeBodyPart();
             tmpBody.setContent(signedData);
-            tmpBody.setHeader("Content-Type", signedData.getContentType());
+            tmpBody.setHeader("Content-Type", signedData.getContentType().replace("sha-1", "sha1"));
             return tmpBody;
 	}
 

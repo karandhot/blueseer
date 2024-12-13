@@ -594,24 +594,25 @@
             <Component class="javax.swing.JComboBox" name="ddcontenttype">
               <Properties>
                 <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                  <StringArray count="17">
+                  <StringArray count="18">
                     <StringItem index="0" value="application/edi-x12"/>
-                    <StringItem index="1" value="application/edifact"/>
-                    <StringItem index="2" value="application/pdf"/>
-                    <StringItem index="3" value="application/json"/>
-                    <StringItem index="4" value="application/xml"/>
-                    <StringItem index="5" value="application/zip"/>
-                    <StringItem index="6" value="application/x-www-form-urlencoded"/>
-                    <StringItem index="7" value="image/gif"/>
-                    <StringItem index="8" value="image/jpeg"/>
-                    <StringItem index="9" value="image/png"/>
-                    <StringItem index="10" value="image/tiff"/>
-                    <StringItem index="11" value="multipart/mixed"/>
-                    <StringItem index="12" value="multipart/alternative"/>
-                    <StringItem index="13" value="text/csv"/>
-                    <StringItem index="14" value="text/html"/>
-                    <StringItem index="15" value="text/plain"/>
-                    <StringItem index="16" value="text/xml"/>
+                    <StringItem index="1" value="application/edi-consent"/>
+                    <StringItem index="2" value="application/edifact"/>
+                    <StringItem index="3" value="application/pdf"/>
+                    <StringItem index="4" value="application/json"/>
+                    <StringItem index="5" value="application/xml"/>
+                    <StringItem index="6" value="application/zip"/>
+                    <StringItem index="7" value="application/x-www-form-urlencoded"/>
+                    <StringItem index="8" value="image/gif"/>
+                    <StringItem index="9" value="image/jpeg"/>
+                    <StringItem index="10" value="image/png"/>
+                    <StringItem index="11" value="image/tiff"/>
+                    <StringItem index="12" value="multipart/mixed"/>
+                    <StringItem index="13" value="multipart/alternative"/>
+                    <StringItem index="14" value="text/csv"/>
+                    <StringItem index="15" value="text/html"/>
+                    <StringItem index="16" value="text/plain"/>
+                    <StringItem index="17" value="text/xml"/>
                   </StringArray>
                 </Property>
               </Properties>

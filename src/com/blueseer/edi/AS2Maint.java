@@ -939,7 +939,7 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
 
         cbdebug.setText("Debug");
 
-        ddcontenttype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "application/edi-x12", "application/edifact", "application/pdf", "application/json", "application/xml", "application/zip", "application/x-www-form-urlencoded", "image/gif", "image/jpeg", "image/png", "image/tiff", "multipart/mixed", "multipart/alternative", "text/csv", "text/html", "text/plain", "text/xml" }));
+        ddcontenttype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "application/edi-x12", "application/edi-consent", "application/edifact", "application/pdf", "application/json", "application/xml", "application/zip", "application/x-www-form-urlencoded", "image/gif", "image/jpeg", "image/png", "image/tiff", "multipart/mixed", "multipart/alternative", "text/csv", "text/html", "text/plain", "text/xml" }));
 
         jLabel15.setText("Content-Type");
         jLabel15.setName("lblcontenttype"); // NOI18N
