@@ -2830,8 +2830,13 @@ public class apiUtils {
         
       // remove file if successful
       if (isSuccess) {
-        Files.deleteIfExists(as2filepath);
-        r.append("\n").append("status__pass");
+          if (! isDebug) {
+            Files.deleteIfExists(as2filepath);
+            r.append("\n").append("status__pass");
+          } else {
+            r.append("\n").append("status__pass  ...debug mode file not deleted");  
+          }
+        
       } 
         
     } // for each file
