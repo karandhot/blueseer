@@ -2590,7 +2590,7 @@ public class apiUtils {
         CloseableHttpClient client;
         if (tp[15].equals("HTTPS")) {
            client = HttpClientBuilder.create()
-                    .setSSLSocketFactory(new SSLConnectionSocketFactory(SSLContexts.custom().build(), new String[] { "TLSv1.2" }, null, SSLConnectionSocketFactory.getDefaultHostnameVerifier()))
+                    .setSSLSocketFactory(new SSLConnectionSocketFactory(SSLContexts.custom().build(), new String[] { "TLSv1.1", "TLSv1.2", "TLSv1.3" }, null, SSLConnectionSocketFactory.getDefaultHostnameVerifier()))
                     .build(); 
         } else {
           client = HttpClients.createDefault();
