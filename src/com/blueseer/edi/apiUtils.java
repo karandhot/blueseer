@@ -141,11 +141,13 @@ import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -2589,9 +2591,13 @@ public class apiUtils {
         
         CloseableHttpClient client;
         if (tp[15].equals("HTTPS")) {
-           client = HttpClientBuilder.create()
-                    .setSSLSocketFactory(new SSLConnectionSocketFactory(SSLContexts.custom().build(), new String[] { "TLSv1.1", "TLSv1.2", "TLSv1.3" }, null, SSLConnectionSocketFactory.getDefaultHostnameVerifier()))
-                    .build(); 
+          // client = HttpClientBuilder.create()
+           //         .setSSLSocketFactory(new SSLConnectionSocketFactory(SSLContexts.custom().build(), new String[] { "SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3" }, null, SSLConnectionSocketFactory.getDefaultHostnameVerifier()))
+          //          .build(); 
+            SSLContextBuilder sslContextBuilder = new SSLContextBuilder();
+            sslContextBuilder.loadTrustMaterial(null, new TrustAllStrategy());
+            SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContextBuilder.build());
+            client = HttpClients.custom().setSSLSocketFactory(socketFactory).build();
         } else {
           client = HttpClients.createDefault();
         }
