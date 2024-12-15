@@ -2680,14 +2680,15 @@ public class apiUtils {
           mbp.addHeader("Content-type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");
          // mbp2 = mbp;
           
-          
+          /*
           if (isDebug) { 
             String debugfile = "debugAS2post." + now + "." + Long.toHexString(System.currentTimeMillis());
             Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
             try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
             stream.write(mbp2.getInputStream().readAllBytes());
             }
-        }
+          }
+          */
           
          if (isDebug) { 
             String debugfile = "debugAS2mbp." + now + "." + Long.toHexString(System.currentTimeMillis());
