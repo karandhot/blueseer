@@ -115,6 +115,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -2689,16 +2690,29 @@ public class apiUtils {
             }
           }
           */
-          
+         Properties props = System.getProperties();
+         Session session = Session.getDefaultInstance(props, null); 
+         MimeMessage mm = new MimeMessage(session);
+         Enumeration headers = mbp.getAllHeaderLines();
+        while (headers.hasMoreElements())
+        {
+            mm.addHeaderLine((String)headers.nextElement());
+        }
+        mm.setContent(mp);
+         
+         
+         
+         
+         
          if (isDebug) { 
-            String debugfile = "debugAS2mbp." + now + "." + Long.toHexString(System.currentTimeMillis());
+            String debugfile = "debugAS2mm." + now + "." + Long.toHexString(System.currentTimeMillis());
             Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
             try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
-            stream.write(mbp.getInputStream().readAllBytes());
+            stream.write(mm.getInputStream().readAllBytes());
             }
         }  
           
-          signedAndEncrypteddata = encryptData(mbp.getInputStream().readAllBytes(), encryptcertificate, tp[18]);
+          signedAndEncrypteddata = encryptData(mm.getInputStream().readAllBytes(), encryptcertificate, tp[18]);
           
         }
         
