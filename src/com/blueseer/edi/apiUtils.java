@@ -137,6 +137,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
@@ -2606,6 +2607,7 @@ public class apiUtils {
        
         
         CloseableHttpClient client;
+        
         if (tp[15].toLowerCase().equals("https")) {
           // client = HttpClientBuilder.create()
            //         .setSSLSocketFactory(new SSLConnectionSocketFactory(SSLContexts.custom().build(), new String[] { "SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3" }, null, SSLConnectionSocketFactory.getDefaultHostnameVerifier()))
@@ -2685,6 +2687,14 @@ public class apiUtils {
             stream.write(mbp2.getInputStream().readAllBytes());
             }
         }
+          
+         if (isDebug) { 
+            String debugfile = "debugAS2mbp." + now + "." + Long.toHexString(System.currentTimeMillis());
+            Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
+            try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
+            stream.write(mbp.getInputStream().readAllBytes());
+            }
+        }  
           
           signedAndEncrypteddata = encryptData(mbp2.getInputStream().readAllBytes(), encryptcertificate, tp[18]);
           
