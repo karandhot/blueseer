@@ -2606,7 +2606,7 @@ public class apiUtils {
        
         
         CloseableHttpClient client;
-        if (tp[15].equals("HTTPS")) {
+        if (tp[15].toLowerCase().equals("https")) {
           // client = HttpClientBuilder.create()
            //         .setSSLSocketFactory(new SSLConnectionSocketFactory(SSLContexts.custom().build(), new String[] { "SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3" }, null, SSLConnectionSocketFactory.getDefaultHostnameVerifier()))
           //          .build(); 
@@ -2614,6 +2614,7 @@ public class apiUtils {
          //   sslContextBuilder.loadTrustMaterial(null, new TrustAllStrategy());
          //   SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContextBuilder.build());
          //   client = HttpClients.custom().setSSLSocketFactory(socketFactory).build();
+         System.out.println("here:  must be https");
          Map<String, Object> options = new HashMap<String, Object>();
          SSLConnectionSocketFactory sslCsf = buildSslFactory(new URL(url), options);
          client = HttpClientBuilder.create().setSSLSocketFactory(sslCsf).build();
@@ -2894,6 +2895,7 @@ public class apiUtils {
         // The original method where hostnames to be trusted can be passed in a system property
         String selfSignedCN = System.getProperty("org.openas2.cert.TrustSelfSignedCN");
         selfSignedCN = "spsas2.commercevan.com";
+        selfSignedCN = "";
         boolean isTrustSelfSignedCNHandling = (selfSignedCN != null && selfSignedCN.contains(urlObj.getHost()))?true:false;
          // Find a keystore to verify the self signed certs against if required
         // Even if TrustSelfSignedCN is passed, use the custom keystore if it is defined
@@ -2960,6 +2962,7 @@ public class apiUtils {
             kmf.init(selfsignedCertsKeystore, null);
             // Now add the custom trust manager to the SSL context
             sslcontext.init(kmf.getKeyManagers(), new TrustManager[]{tm}, null);
+            System.out.println("here:  adding custom trust manager");
         }
         SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext, null, null, hnv);
         return sslsf;
