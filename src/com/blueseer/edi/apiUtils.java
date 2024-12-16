@@ -2930,7 +2930,7 @@ public class apiUtils {
         
         
        
-        File file = new File("edi/certs/bscerts.p12");
+        File file = new File("jre17/lib/security/cacerts");
          try (InputStream in = new FileInputStream(file)) {
             selfsignedCertsKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
             selfsignedCertsKeystore.load(in, "changeit".toCharArray());   // passwd for java cacerts
