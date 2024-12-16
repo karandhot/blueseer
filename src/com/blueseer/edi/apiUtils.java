@@ -2672,13 +2672,14 @@ public class apiUtils {
         MimeMultipart mp = new MimeMultipart();
         String newboundary = getPackagedBoundary(mbp);  
         if (isSignedAndEncrypted) {
+          mbp.addHeader("Content-type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");  
           mp.addBodyPart(mbp);
         
        //   mbp2.setContent(mp);
        //   mbp2.addHeader("Content-Type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");
        
          //  mbp2.addHeader("Content-Disposition", "attachment; filename=smime.p7m");
-          mbp.addHeader("Content-type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");
+          
          // mbp2 = mbp;
           
           /*
@@ -2694,10 +2695,10 @@ public class apiUtils {
          Session session = Session.getDefaultInstance(props, null); 
          MimeMessage mm = new MimeMessage(session);
          Enumeration headers = mbp.getAllHeaderLines();
-        while (headers.hasMoreElements())
-        {
-            mm.addHeaderLine((String)headers.nextElement());
-        }
+       // while (headers.hasMoreElements())
+       // {
+       //     mm.addHeaderLine((String)headers.nextElement());
+       // }
         mm.setContent(mp);
          
          
@@ -2928,10 +2929,11 @@ public class apiUtils {
         KeyStore selfsignedCertsKeystore = null;
         
         
-        File file = new File("jre17/lib/security/cacerts");
+       
+        File file = new File("edi/certs/bscerts.p12");
          try (InputStream in = new FileInputStream(file)) {
             selfsignedCertsKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
-            selfsignedCertsKeystore.load(in, "changeit".toCharArray());
+            selfsignedCertsKeystore.load(in, "changeit".toCharArray());   // passwd for java cacerts
         } catch (Exception e) {
             bslog("failed to load Java keystore file: " + file.getAbsolutePath());
         }
