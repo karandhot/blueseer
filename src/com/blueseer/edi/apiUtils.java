@@ -2672,7 +2672,7 @@ public class apiUtils {
         MimeMultipart mp = new MimeMultipart();
         String newboundary = getPackagedBoundary(mbp);  
         if (isSignedAndEncrypted) {
-          mbp.addHeader("Content-type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");  
+         // mbp.addHeader("Content-type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");  
           mp.addBodyPart(mbp);
         
        //   mbp2.setContent(mp);
