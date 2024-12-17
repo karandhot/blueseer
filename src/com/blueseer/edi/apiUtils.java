@@ -2670,9 +2670,7 @@ public class apiUtils {
                         if (BlueSeerUtils.ConvertStringToBool(as2m.as2_signed())) {
                            mbp = signData(filecontent,as2m.as2_signalgo(),signcertificate,key,listOfFiles[i].getName(),as2m,contenttype);
                         } else {
-                           InputStream targetStream = new ByteArrayInputStream(filecontent);
-                            ByteArrayDataSource ds = new ByteArrayDataSource(targetStream, contenttype); 
-                            mbp.setDataHandler(new DataHandler(ds));
+                            mbp = new MimeBodyPart(new ByteArrayInputStream(filecontent));
                             mbp.setHeader("Content-Type", contenttype);
                             mbp.setHeader("Content-Disposition", "attachment; filename=" + listOfFiles[i].getName());
                             mbp.setHeader("Content-Transfer-Encoding", "binary");
