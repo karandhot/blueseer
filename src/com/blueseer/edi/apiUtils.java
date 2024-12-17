@@ -2655,13 +2655,12 @@ public class apiUtils {
         }
         
         MimeBodyPart mbp = null;
-        byte[] signedAndEncrypteddata = null;
+        byte[] sendbytes = null;
         
         
-        boolean isSignedAndEncrypted = true;
+        
         boolean isSigned = BlueSeerUtils.ConvertStringToBool(as2m.as2_signed())  ;
         boolean isEncrypted = BlueSeerUtils.ConvertStringToBool(as2m.as2_encrypted());
-        
         // need signed, signed+enc, enc, none ....condition logic here
         
             if (filecontent != null ) {    
@@ -2671,9 +2670,9 @@ public class apiUtils {
                            mbp = signData(filecontent,as2m.as2_signalgo(),signcertificate,key,listOfFiles[i].getName(),as2m,contenttype);
                         } else {
                             mbp = new MimeBodyPart(new ByteArrayInputStream(filecontent));
-                            mbp.setHeader("Content-Type", contenttype);
-                            mbp.setHeader("Content-Disposition", "attachment; filename=" + listOfFiles[i].getName());
-                            mbp.setHeader("Content-Transfer-Encoding", "binary");
+                           // mbp.setHeader("Content-Type", contenttype);
+                           // mbp.setHeader("Content-Disposition", "attachment; filename=" + listOfFiles[i].getName());
+                           // mbp.setHeader("Content-Transfer-Encoding", "binary");
                         }
 
                     } catch (Exception ex) {
@@ -2689,41 +2688,13 @@ public class apiUtils {
        // MimeBodyPart mbp2 = new MimeBodyPart();
         MimeMultipart mp = new MimeMultipart();
         String newboundary = getPackagedBoundary(mbp);  
-        if (isSignedAndEncrypted) {
-         // mbp.addHeader("Content-type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");  
-          mp.addBodyPart(mbp);
-        
-       //   mbp2.setContent(mp);
-       //   mbp2.addHeader("Content-Type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");
-       
-         //  mbp2.addHeader("Content-Disposition", "attachment; filename=smime.p7m");
-          
-         // mbp2 = mbp;
-          
-          /*
-          if (isDebug) { 
-            String debugfile = "debugAS2post." + now + "." + Long.toHexString(System.currentTimeMillis());
-            Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
-            try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
-            stream.write(mbp2.getInputStream().readAllBytes());
-            }
-          }
-          */
-         Properties props = System.getProperties();
+        Properties props = System.getProperties();
          Session session = Session.getDefaultInstance(props, null); 
          MimeMessage mm = new MimeMessage(session);
-         Enumeration headers = mbp.getAllHeaderLines();
-       // while (headers.hasMoreElements())
-       // {
-       //     mm.addHeaderLine((String)headers.nextElement());
-       // }
-        mm.setContent(mp);
+         mp.addBodyPart(mbp);
+         mm.setContent(mp);
          
-         
-         
-         
-         
-         if (isDebug) { 
+          if (isDebug) { 
             String debugfile = "debugAS2mm." + now + "." + Long.toHexString(System.currentTimeMillis());
             Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
             try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
@@ -2731,8 +2702,10 @@ public class apiUtils {
             }
         }  
           
-          signedAndEncrypteddata = encryptData(mm.getInputStream().readAllBytes(), encryptcertificate, as2m.as2_encalgo());
-          
+        if (isEncrypted) {
+          sendbytes = encryptData(mm.getInputStream().readAllBytes(), encryptcertificate, as2m.as2_encalgo());
+        } else {
+          sendbytes = mm.getInputStream().readAllBytes();
         }
         
        
@@ -2741,9 +2714,6 @@ public class apiUtils {
         RequestBuilder rb = RequestBuilder.post();
         rb.setUri(urlObj.toURI());
         
-        
-        
-        if (! isSignedAndEncrypted) {
         rb.addHeader("User-Agent", "java/app (BlueSeer Software; +http://www.blueseer.com/)"); 
         rb.addHeader("AS2-To", as2To);
         rb.addHeader("AS2-From", as2From); 
@@ -2756,25 +2726,18 @@ public class apiUtils {
         rb.addHeader("Message-ID", messageid);
         rb.addHeader("Recipient-Address", url.toString());
         rb.addHeader("EDIINT-Features", "CEM, multiple-attachments, AS2-Reliability");
-        rb.addHeader("Content-Type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");
-        rb.addHeader("Content-Disposition", "attachment; filename=smime.p7m");
-        } else {
-        rb.addHeader("user-agent", "application (BlueSeer Software; +http://www.blueseer.com/)"); 
-        rb.addHeader("as2-to", as2To);
-        rb.addHeader("from", as2From + "@company.com");
-        rb.addHeader("as2-from", as2From); 
-        rb.addHeader("as2-version", "1.2"); 
-        rb.addHeader("mime-version", "1.0");
-        rb.addHeader("subject", "as2");
-        rb.addHeader("accept-encoding", "deflate, gzip, x-gzip, compress, x-compress");
-        rb.addHeader("disposition-notification-options", "signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha1");
-        rb.addHeader("disposition-notification-to", internalURL);
-        rb.addHeader("message-id", messageid);
-        rb.addHeader("recipient-address", url.toString());
-       // rb.addHeader("EDIINT-Features", "CEM, multiple-attachments, AS2-Reliability");
-        rb.addHeader("ediint-features", "multiple-attachments");
+        
+        if (! isSigned) {
+          rb.addHeader("Content-Type", "multipart/mixed; boundary=" + "\"" + newboundary + "\"" );
+        }        
+       
+        if (isSigned && ! isEncrypted) {
+          rb.addHeader("Content-Type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");
+        }
+        
+        if (isSigned && isEncrypted) {
         rb.addHeader("content-type", "application/pkcs7-mime; smime-type=enveloped-data; name=smime.p7m");
-        // rb.addHeader("Content-Transfer-Encoding", "binary");
+        rb.addHeader("Content-Transfer-Encoding", "binary");
         rb.addHeader("content-disposition", "attachment; filename=" + "\"" + "smime.p7m" + "\"");
         rb.addHeader("connection", "close, TE");
         }
@@ -2788,9 +2751,9 @@ public class apiUtils {
                 }
             }
         
-        InputStreamEntity ise = new InputStreamEntity(new ByteArrayInputStream(signedAndEncrypteddata));
+        InputStreamEntity ise = new InputStreamEntity(new ByteArrayInputStream(sendbytes));
         
-        String mic = hashdigest(signedAndEncrypteddata, as2m.as2_micalgo()); // calc the mic for debugging
+        String mic = hashdigest(sendbytes, as2m.as2_micalgo()); // calc the mic for debugging
         
         
           rb.setEntity(new BufferedHttpEntity(ise));
@@ -3186,14 +3149,7 @@ public class apiUtils {
         MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        /*
-        String z = """
-                The message <%s> with subject <%s> has been received.  
-                Message was sent from: <%s>  to:  <%s>
-                Message was received at <%s>
-                Note: The origin and integrity of the message have been verified.
-                """.formatted(filename, subject, sender, receiver, now);
-        */
+       
         StringBuilder zb = new StringBuilder();
             zb.append("The message ").append(filename).append(" with subject ").append(subject).append(" has been received.").append("\r").append("\n");
             zb.append("Message ").append(filename).append(" was sent from: ").append(sender).append(" to: ").append(receiver).append("\r").append("\n");
@@ -3201,23 +3157,9 @@ public class apiUtils {
             zb.append("Note: The origin and integrity of the message have been verified.");
             
         try {
-           
-         
            mpInner = bundleit(zb.toString(), receiver, messageid, mic, "processed");
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
-           
-         /*
-           mymmpx = bundleitNew(z, receiver, messageid, mic, "processed");
-           mpInner = mymmpx.mmp();
-         */
-           
-           // mbp.setContent(mpInner);
-           // mbp.addHeader("Content-Type", "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");
-           //  mbp.setHeader("Content-Type", "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");
-           // mp.addBodyPart(mbp);
-           
-            
         } catch (Exception ex) {
             bslog(ex);
         }
@@ -3230,6 +3172,7 @@ public class apiUtils {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mp = new MimeMultipart();
+        MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         StringBuilder zb = new StringBuilder();
@@ -3237,15 +3180,10 @@ public class apiUtils {
             zb.append(" at ").append(now).append("\r").append("\n");
             zb.append("was not signed.");
         try {
-           // mbp.setText(z);
-           MimeMultipart mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
-            mbp.setContent(mpInner);
-            mbp.addHeader("Content-Type", "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");
-            mp.addBodyPart(mbp);
-            
-        } catch (MessagingException ex) {
+        } catch (Exception ex) {
             bslog(ex);
         }
         
@@ -3256,15 +3194,10 @@ public class apiUtils {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mp = new MimeMultipart();
+        MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        /*
-        String z = """
-                The message <%s> sent from: <%s> to: <%s>
-                at %s failed.
-                Error: MimeMultipart is incomplete   
-                """.formatted(filename, sender, receiver, now);
-        */
+      
         StringBuilder zb = new StringBuilder();
             zb.append("The message ").append(filename).append(" sent from: ").append(sender).append(" to: ").append(receiver).append("\n");
             zb.append(" at ").append(now).append(" failed.").append("\n");
@@ -3272,15 +3205,10 @@ public class apiUtils {
              
                
         try {
-           // mbp.setText(z);
-           MimeMultipart mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
-            mbp.setContent(mpInner);
-            mbp.addHeader("Content-Type", "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");
-            mp.addBodyPart(mbp);
-            
-        } catch (MessagingException ex) {
+        } catch (Exception ex) {
             bslog(ex);
         }
         
@@ -3291,6 +3219,7 @@ public class apiUtils {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mp = new MimeMultipart();
+        MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
        
@@ -3299,15 +3228,10 @@ public class apiUtils {
             zb.append(" at ").append(now).append("\r").append("\n");
             zb.append("failed. Error: unable to retrieve contents of File. Error:  FileBytesRead is null  ");
         try {
-           // mbp.setText(z);
-           MimeMultipart mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
-            mbp.setContent(mpInner);
-            mbp.addHeader("Content-Type", "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");
-            mp.addBodyPart(mbp);
-            
-        } catch (MessagingException ex) {
+        } catch (Exception ex) {
             bslog(ex);
         }
         
@@ -3318,6 +3242,7 @@ public class apiUtils {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mp = new MimeMultipart();
+        MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         StringBuilder zb = new StringBuilder();
@@ -3325,15 +3250,10 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: Signature content is null  ");
         try {
-           // mbp.setText(z);
-           MimeMultipart mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
-            mbp.setContent(mpInner);
-            mbp.addHeader("Content-Type", "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");
-            mp.addBodyPart(mbp);
-            
-        } catch (MessagingException ex) {
+        } catch (Exception ex) {
             bslog(ex);
         }
         
@@ -3344,6 +3264,7 @@ public class apiUtils {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mp = new MimeMultipart();
+        MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         
@@ -3352,15 +3273,10 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: Invalid Signature  ");
         try {
-           // mbp.setText(z);
-           MimeMultipart mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
-            mbp.setContent(mpInner);
-            mbp.addHeader("Content-Type", "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");
-            mp.addBodyPart(mbp);
-            
-        } catch (MessagingException ex) {
+        } catch (Exception ex) {
             bslog(ex);
         }
         
@@ -3371,6 +3287,7 @@ public class apiUtils {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mp = new MimeMultipart();
+        MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         
@@ -3380,15 +3297,10 @@ public class apiUtils {
             zb.append("Error: The message was transmitted with null content.  ");
         
         try {
-           // mbp.setText(z);
-           MimeMultipart mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
-            mbp.setContent(mpInner);
-            mbp.addHeader("Content-Type", "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");
-            mp.addBodyPart(mbp);
-            
-        } catch (MessagingException ex) {
+        } catch (Exception ex) {
             bslog(ex);
         }
         
@@ -3399,6 +3311,7 @@ public class apiUtils {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mp = new MimeMultipart();
+        MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         
@@ -3407,15 +3320,10 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: Unable to decrypt message transmitted at <%s>.  Potential bad public key.  ");
         try {
-           // mbp.setText(z);
-           MimeMultipart mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
-            mbp.setContent(mpInner);
-            mbp.addHeader("Content-Type", "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");
-            mp.addBodyPart(mbp);
-            
-        } catch (MessagingException ex) {
+        } catch (Exception ex) {
             bslog(ex);
         }
         
@@ -3426,6 +3334,7 @@ public class apiUtils {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mp = new MimeMultipart();
+        MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
        
@@ -3434,15 +3343,10 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: The message had unrecognizable HTTP headers.  ");
         try {
-           // mbp.setText(z);
-           MimeMultipart mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
-            mbp.setContent(mpInner);
-            mbp.addHeader("Content-Type", "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");
-            mp.addBodyPart(mbp);
-            
-        } catch (MessagingException ex) {
+        } catch (Exception ex) {
             bslog(ex);
         }
         
@@ -3453,6 +3357,7 @@ public class apiUtils {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mp = new MimeMultipart();
+        MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         
@@ -3461,15 +3366,10 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: The message had zero HTTP headers.  ");
         try {
-           // mbp.setText(z);
-           MimeMultipart mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
-            mbp.setContent(mpInner);
-            mbp.addHeader("Content-Type", "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");
-            mp.addBodyPart(mbp);
-            
-        } catch (MessagingException ex) {
+        } catch (Exception ex) {
             bslog(ex);
         }
         
@@ -3480,6 +3380,7 @@ public class apiUtils {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mp = new MimeMultipart();
+        MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         
@@ -3488,15 +3389,10 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: The message was transmitted to unknown receiver ID.  ");
         try {
-           // mbp.setText(z);
-           MimeMultipart mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
-            mbp.setContent(mpInner);
-            mbp.addHeader("Content-Type", "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");
-            mp.addBodyPart(mbp);
-            
-        } catch (MessagingException ex) {
+        } catch (Exception ex) {
             bslog(ex);
         }
         
@@ -3507,6 +3403,7 @@ public class apiUtils {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mp = new MimeMultipart();
+        MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         
@@ -3514,17 +3411,11 @@ public class apiUtils {
             zb.append("The Message ").append(filename).append(" sent from: ").append(sender).append(" to: ").append(receiver).append("\r").append("\n");
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: The message was transmitted by unknown sender ID.  ");
-        try {
-           // mbp.setText(z);
-           MimeMultipart mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+       try {
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
-            mbp.setContent(mpInner);
-            mbp.addHeader("Content-Type", "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");
-            mp.addBodyPart(mbp);
-           
-            
-        } catch (MessagingException ex) {
+        } catch (Exception ex) {
             bslog(ex);
         }
         
@@ -3535,6 +3426,7 @@ public class apiUtils {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mp = new MimeMultipart();
+        MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         
@@ -3543,15 +3435,10 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: unable to determine sender / receiver keys  ");
         try {
-           // mbp.setText(z);
-           MimeMultipart mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
-            mbp.setContent(mpInner);
-            mbp.addHeader("Content-Type", "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");
-            mp.addBodyPart(mbp);
-            
-        } catch (MessagingException ex) {
+        } catch (Exception ex) {
             bslog(ex);
         }
         
@@ -3562,6 +3449,7 @@ public class apiUtils {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mp = new MimeMultipart();
+        MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         
@@ -3570,15 +3458,10 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: encryption is required  ");
         try {
-           // mbp.setText(z);
-           MimeMultipart mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
-            mbp.setContent(mpInner);
-            mbp.addHeader("Content-Type", "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");
-            mp.addBodyPart(mbp);
-            
-        } catch (MessagingException ex) {
+        } catch (Exception ex) {
             bslog(ex);
         }
         
@@ -3589,6 +3472,7 @@ public class apiUtils {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mp = new MimeMultipart();
+        MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_DATE);
         
@@ -3597,15 +3481,10 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: Internal server error 9999 ");
         try {
-           // mbp.setText(z);
-           MimeMultipart mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
-            mbp.setContent(mpInner);
-            mbp.addHeader("Content-Type", "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");
-            mp.addBodyPart(mbp);
-            
-        } catch (MessagingException ex) {
+        } catch (Exception ex) {
             bslog(ex);
         }
         

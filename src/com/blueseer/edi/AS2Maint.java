@@ -327,10 +327,10 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
            lblurl.setText("");
            lblstatus.setText("");
            lblstatus.setForeground(Color.black);
-           cboutputencryption.setSelected(false);
-           cboutputsign.setSelected(false);
-           cbforceencryption.setSelected(false);
-           cbforcesigning.setSelected(false);
+           cboutputencryption.setSelected(true);
+           cboutputsign.setSelected(true);
+           cbforceencryption.setSelected(true);
+           cbforcesigning.setSelected(true);
            cbdebug.setSelected(false);
            
            ddsigncert.removeAllItems();
