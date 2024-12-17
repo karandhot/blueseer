@@ -2265,6 +2265,49 @@ public class ediData {
         return r;
     }
     
+    public static edi_ctrl getEDICtrl() {
+        edi_ctrl r = null;
+        String[] m = new String[2];
+        String sql = "select * from edi_ctrl ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new edi_ctrl(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new edi_ctrl(m, res.getString("edic_indir"), 
+                            res.getString("edic_outdir"),
+                            res.getString("edic_scriptdir"),
+                            res.getString("edic_inarch"),
+                            res.getString("edic_outarch"),
+                            res.getString("edic_batch"),
+                            res.getString("edic_structure"),
+                            res.getString("edic_errordir"),
+                            res.getString("edic_mapdir"),
+                            res.getString("edic_archyesno"),
+                            res.getString("edic_delete"),
+                            res.getString("edic_tpid"),
+                            res.getString("edic_gsid"),
+                            res.getString("edic_as2id"),
+                            res.getString("edic_as2url"),
+                            res.getString("edic_signkey"),
+                            res.getString("edic_enckey"),
+                            res.getString("edic_varchar")
+                        );
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new edi_ctrl(m);
+        }
+        return r;
+    }
+    
     
     public static as2_mstr getAS2Mstr(String[] x) {
         as2_mstr r = null;
@@ -4859,6 +4902,15 @@ public class ediData {
         }
     }
     
+    public record edi_ctrl(String[] m, String edic_indir, String edic_outdir, String edic_scriptdir,
+        String edic_inarch, String edic_outarch, String edic_batch, String edic_structure, String edic_errordir,
+        String edic_mapdir, String edic_archyesno, String edic_delete, String edic_tpid, String edic_gsid,
+        String edic_as2id, String edic_as2url, String edic_signkey, String edic_enckey, String edic_varchar) {
+        public edi_ctrl(String[] m) {
+            this(m, "", "", "", "", "", "", "", "", "", "",
+                    "", "", "", "", "", "", "", "");
+        }
+    }
     
     public record as2_mstr(String[] m, String as2_id, String as2_desc, String as2_version,
         String as2_url, String as2_port, String as2_path, String as2_user ,

@@ -34,10 +34,15 @@ import static com.blueseer.edi.APIMaint.apidm;
 import static com.blueseer.edi.AS2Maint.certs;
 import com.blueseer.edi.ediData.api_det;
 import com.blueseer.edi.ediData.api_mstr;
+import com.blueseer.edi.ediData.as2_mstr;
+import com.blueseer.edi.ediData.edi_ctrl;
 import static com.blueseer.edi.ediData.getAPIDMeta;
 import static com.blueseer.edi.ediData.getAPIDet;
 import static com.blueseer.edi.ediData.getAPIMstr;
+import static com.blueseer.edi.ediData.getAS2Mstr;
+import static com.blueseer.edi.ediData.getEDICtrl;
 import static com.blueseer.edi.ediData.getKeyStoreByUser;
+import com.blueseer.utl.BlueSeerUtils;
 import com.blueseer.utl.BlueSeerUtils.bsr;
 import com.blueseer.utl.EDData;
 import static com.blueseer.utl.EDData.getSystemSignKey;
@@ -2224,7 +2229,7 @@ public class apiUtils {
           byte[] data,
           String signalgo,
           X509Certificate signingCertificate,
-          PrivateKey signingKey, String filename, String[] tp, String contenttype) throws Exception {
+          PrivateKey signingKey, String filename, as2_mstr as2m, String contenttype) throws Exception {
             
           if (signalgo.isBlank()) {
               signalgo = "SHA1withRSA";
@@ -2494,38 +2499,42 @@ public class apiUtils {
         
        
         // gather pertinent info for this AS2 ID / Partner
-        String[] tp = ediData.getAS2Info(as2id);
+        as2_mstr as2m = getAS2Mstr(new String[]{as2id});
+        edi_ctrl edic = getEDICtrl();
+        
+        
+      //  String[] tp = ediData.getAS2Info(as2id);
         String url = "";
-        if (tp[2].isBlank()) {
-           url = tp[15] + "://" + tp[1] + "/" + tp[3]; 
+        if (as2m.as2_port().isBlank()) {
+           url = as2m.as2_protocol() + "://" + as2m.as2_url() + "/" + as2m.as2_path(); 
         } else {
-           url = tp[15] + "://" + tp[1] + ":" + tp[2] + "/" + tp[3];
+           url = as2m.as2_protocol() + "://" + as2m.as2_url() + ":" + as2m.as2_port() + "/" + as2m.as2_path();
         }
-        String as2To = tp[4];
-        String as2From = tp[5];
-        String internalURL = tp[6];
-        String sourceDir = tp[16];
-        String signkeyid = tp[7];  // was tp[7]
-        String contenttype = tp[21];
+        String as2To = as2m.as2_user();
+        String as2From = as2m.as2_sysas2id();
+        String internalURL = edic.edic_as2url();
+        String sourceDir = as2m.as2_outdir();
+        String signkeyid = edic.edic_signkey();  
+        String contenttype = as2m.as2_contenttype();
         
         
-        int parent = writeAS2Log(new String[]{"0",as2id,"out",""," Init as2 outbound for partner: " + as2id + "/" + as2From + "/" + as2To,now,"",tp[23]}); 
+        int parent = writeAS2Log(new String[]{"0",as2id,"out",""," Init as2 outbound for partner: " + as2id + "/" + as2From + "/" + as2To,now,"",as2m.as2_site()}); 
         String parentkey = String.valueOf(parent);
         logdet.add(new String[]{parentkey, "info", "processing as2 for relationship " + as2From + "/" + as2To});
         logdet.add(new String[]{parentkey, "info", "Sending to URL / Port / Path = " + url});
         logdet.add(new String[]{parentkey, "info", "Source Directory: " + sourceDir});
-        logdet.add(new String[]{parentkey, "info", "Encryption Cert file: " + tp[11]});
+        logdet.add(new String[]{parentkey, "info", "Encryption Cert file: " + as2m.as2_enccert()});
         logdet.add(new String[]{parentkey, "info", "Signing Key ID: " + signkeyid});
-        logdet.add(new String[]{parentkey, "info", "Encryption Algo: " + tp[18]});
-        logdet.add(new String[]{parentkey, "info", "Signing Algo: " + tp[19]});
+        logdet.add(new String[]{parentkey, "info", "Encryption Algo: " + as2m.as2_encalgo()});
+        logdet.add(new String[]{parentkey, "info", "Signing Algo: " + as2m.as2_signalgo()});
        
        // System.out.println("here->" + as2To + "/" +  as2From + "/" + internalURL + "/" + sourceDir + "/" + signkeyid);
         
-        X509Certificate encryptcertificate = getPublicKeyAsCert(tp[11]);
+        X509Certificate encryptcertificate = getPublicKeyAsCert(as2m.as2_enccert());
         if (encryptcertificate == null) {
-          logdet.add(new String[]{parentkey, "error", "Unable to retrieve encryption cert for " + tp[11]}); 
+          logdet.add(new String[]{parentkey, "error", "Unable to retrieve encryption cert for " + as2m.as2_enccert()}); 
           writeAS2LogDetail(logdet);
-          return "Unable to retrieve encryption cert for " + tp[11];
+          return "Unable to retrieve encryption cert for " + as2m.as2_enccert();
         }
         
         logdet.add(new String[]{parentkey, "info", "Encryption with: " + encryptcertificate.getIssuerX500Principal().getName() + "/" + encryptcertificate.getSigAlgName()});
@@ -2609,7 +2618,7 @@ public class apiUtils {
         
         CloseableHttpClient client;
         
-        if (tp[15].toLowerCase().equals("https")) {
+        if (as2m.as2_protocol().toLowerCase().equals("https")) {
           // client = HttpClientBuilder.create()
            //         .setSSLSocketFactory(new SSLConnectionSocketFactory(SSLContexts.custom().build(), new String[] { "SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3" }, null, SSLConnectionSocketFactory.getDefaultHostnameVerifier()))
           //          .build(); 
@@ -2645,30 +2654,41 @@ public class apiUtils {
             continue;
         }
         
-        MimeBodyPart mbp;
+        MimeBodyPart mbp = null;
         byte[] signedAndEncrypteddata = null;
         
         
         boolean isSignedAndEncrypted = true;
-        boolean isSigned = true;
-        boolean isEncrypted = true;
+        boolean isSigned = BlueSeerUtils.ConvertStringToBool(as2m.as2_signed())  ;
+        boolean isEncrypted = BlueSeerUtils.ConvertStringToBool(as2m.as2_encrypted());
         
         // need signed, signed+enc, enc, none ....condition logic here
-        if (filecontent != null) {    
-                try {
-                    // mbp = signData(filecontent.getBytes(StandardCharsets.UTF_8),signcertificate,key,listOfFiles[i].getName());
-                    mbp = signData(filecontent,tp[19],signcertificate,key,listOfFiles[i].getName(),tp,contenttype);
-                    
-                } catch (Exception ex) {
-                    bslog(ex);
-                    continue;
-                }
-        } else {
-           bslog("file content is null in AS2Post");
-           continue; 
-        }
         
-        MimeBodyPart mbp2 = new MimeBodyPart();
+            if (filecontent != null ) {    
+                    try {
+                        // mbp = signData(filecontent.getBytes(StandardCharsets.UTF_8),signcertificate,key,listOfFiles[i].getName());
+                        if (BlueSeerUtils.ConvertStringToBool(as2m.as2_signed())) {
+                           mbp = signData(filecontent,as2m.as2_signalgo(),signcertificate,key,listOfFiles[i].getName(),as2m,contenttype);
+                        } else {
+                           InputStream targetStream = new ByteArrayInputStream(filecontent);
+                            ByteArrayDataSource ds = new ByteArrayDataSource(targetStream, contenttype); 
+                            mbp.setDataHandler(new DataHandler(ds));
+                            mbp.setHeader("Content-Type", contenttype);
+                            mbp.setHeader("Content-Disposition", "attachment; filename=" + listOfFiles[i].getName());
+                            mbp.setHeader("Content-Transfer-Encoding", "binary");
+                        }
+
+                    } catch (Exception ex) {
+                        bslog(ex);
+                        continue;
+                    }
+            } else {
+               bslog("file content is null in AS2Post");
+               continue; 
+            }
+        
+        
+       // MimeBodyPart mbp2 = new MimeBodyPart();
         MimeMultipart mp = new MimeMultipart();
         String newboundary = getPackagedBoundary(mbp);  
         if (isSignedAndEncrypted) {
@@ -2713,7 +2733,7 @@ public class apiUtils {
             }
         }  
           
-          signedAndEncrypteddata = encryptData(mm.getInputStream().readAllBytes(), encryptcertificate, tp[18]);
+          signedAndEncrypteddata = encryptData(mm.getInputStream().readAllBytes(), encryptcertificate, as2m.as2_encalgo());
           
         }
         
@@ -2762,7 +2782,7 @@ public class apiUtils {
         }
         
         // add custom headers
-        ArrayList<String> list = EDData.getAS2AttributesList(tp[0], "httpheader");
+        ArrayList<String> list = EDData.getAS2AttributesList(as2m.as2_id(), "httpheader");
         for (String x : list) {
                 String[] h = x.split(":",-1);
                 if (h != null && h.length > 1) {
@@ -2772,7 +2792,7 @@ public class apiUtils {
         
         InputStreamEntity ise = new InputStreamEntity(new ByteArrayInputStream(signedAndEncrypteddata));
         
-        String mic = hashdigest(signedAndEncrypteddata, tp[20]); // calc the mic for debugging
+        String mic = hashdigest(signedAndEncrypteddata, as2m.as2_micalgo()); // calc the mic for debugging
         
         
           rb.setEntity(new BufferedHttpEntity(ise));
