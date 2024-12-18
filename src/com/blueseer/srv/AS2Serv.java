@@ -347,7 +347,7 @@ public class AS2Serv extends HttpServlet {
         // check for encryption if forced usage
         boolean isEncrypted = apiUtils.isEncrypted(content);
         
-        if (! isEncrypted && info[9].equals("1")) {
+        if (! isEncrypted && info[12].equals("1")) {
            writeAS2LogStop(new String[]{"0","unknown","in","error","Encryption is required for this partner " + sender + "/" + receiver,now,"", info[22]}); 
            return createMDN("3400", elementals, returnheaders, isDebug);
         }
@@ -428,7 +428,7 @@ public class AS2Serv extends HttpServlet {
             // if signed...mpsub should have two parts (one the file and the other the sig)
             MimeMultipart mpsub = new MimeMultipart(new ByteArrayDataSource(finalContent, contentType));
             
-            if (mpsub.getCount() < 2 && info[10].equals("1") ) { // info[10] sig required
+            if (mpsub.getCount() < 2 && info[13].equals("1") ) { // info[10] sig required
             //  return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "Signature is required for this partner " + sender + "/" + receiver);    
               return createMDN("2000", elementals, returnheaders, isDebug);
             }
@@ -437,7 +437,11 @@ public class AS2Serv extends HttpServlet {
                for (int j = 0; j < mpsub.getCount(); j++) {
                     MimeBodyPart mbp = (MimeBodyPart) mpsub.getBodyPart(j); 
                     
-                    if (! mbp.getFileName().equals("smime.p7s")) { // must be non sig file
+                    if (mbp == null) {
+                        continue;
+                    }
+                    
+                    if (mbp.getFileName() != null && ! mbp.getFileName().equals("smime.p7s")) { // must be non sig file
                       // writing mpbsub part 0 (file) out to byte_stream is necessary to verify sig
                       // because the headers in mpbsub part 0 are used during the creation of the sig
                       //  .getContent apparently drops the headers so the entire byte stream must be 'verfied'
@@ -469,7 +473,7 @@ public class AS2Serv extends HttpServlet {
                       */
                     }
                     
-                    if (mbp.getFileName().equals("smime.p7s")) { // must be sig
+                    if (mbp.getFileName() != null && mbp.getFileName().equals("smime.p7s")) { // must be sig
                         Signature = IOUtils.toByteArray((InputStream) mbp.getContent());
                     }
                     
@@ -480,46 +484,65 @@ public class AS2Serv extends HttpServlet {
                } // for each mpsub (should be two if signed) 
                
            if (FileWHeadersBytes == null || FileBytes == null) {
-            //  return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "unable to retrieve contents of File " + sender + "/" + receiver); 
-              writeAS2LogStop(new String[]{"0","unknown","in","error","Null content in FileBytes or FileWHeader Bytes " + sender + "/" + receiver,now,"", info[22]});
-              return createMDN("2010", elementals, returnheaders, isDebug);
+            // must be unsigned regular mime body part
+             for (int j = 0; j < mpsub.getCount(); j++) { // only getting last mime body part if not normal signed document
+                    MimeBodyPart mbp = (MimeBodyPart) mpsub.getBodyPart(j); 
+                    InputStream ins = mbp.getInputStream();
+                    FileBytes = ins.readAllBytes();
+                    ins.close();
+                    
+                    ByteArrayOutputStream aos = new ByteArrayOutputStream();
+                    mpsub.getBodyPart(0).writeTo(aos);
+                    aos.close(); 
+                    FileWHeadersBytes = aos.toByteArray();
+             }
+              
+              if (FileBytes == null) { // if neither normal signed nor non-signed mimebody content...then null it
+                writeAS2LogStop(new String[]{"0","unknown","in","error","Null content in FileBytes or FileWHeader Bytes " + sender + "/" + receiver,now,"", info[22]});
+                return createMDN("2010", elementals, returnheaders, isDebug);
+              }
+              
            }
 
-           if (Signature == null) {
-               // return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "Signature content is null" + sender + "/" + receiver);
-               writeAS2LogStop(new String[]{"0","unknown","in","error","Signature mp content is null " + sender + "/" + receiver,now,"", info[22]});
-               return createMDN("2015", elementals, returnheaders, isDebug);
-           } else {
-             validSignature = verifySignature(FileWHeadersBytes, Signature); 
+           if (info[13].equals("1")) {  // if signing required
+            if (Signature == null) {
+                // return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "Signature content is null" + sender + "/" + receiver);
+                writeAS2LogStop(new String[]{"0","unknown","in","error","Signature mp content is null " + sender + "/" + receiver,now,"", info[22]});
+                return createMDN("2015", elementals, returnheaders, isDebug);
+            } else {
+              validSignature = verifySignature(FileWHeadersBytes, Signature); 
+            }
+            
+            if (! validSignature) {
+             // return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "Signature could not be validated " + sender + "/" + receiver); 
+              writeAS2LogStop(new String[]{"0","unknown","in","error","invalid signature " + sender + "/" + receiver,now,"", info[22]});
+              return createMDN("2020", elementals, returnheaders, isDebug);
+            } 
+            
            }
 
 
            if (isDebug) {
             System.out.println("validSignature: " + validSignature);
-            System.out.println("ByteCount FileWHeadersBytes: " + String.valueOf(FileWHeadersBytes.length)); 
-            System.out.println("ByteCount Signature: " + String.valueOf(Signature.length)); 
-            
-            String debugfile = "FileWHeadersBytes." + now + "." + Long.toHexString(System.currentTimeMillis());
-            Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
-            try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
-            stream.write(FileWHeadersBytes);
+            if (FileWHeadersBytes != null) {
+                System.out.println("ByteCount FileWHeadersBytes: " + String.valueOf(FileWHeadersBytes.length)); 
+                String debugfile = "FileWHeadersBytes." + now + "." + Long.toHexString(System.currentTimeMillis());
+                Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
+                try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
+                stream.write(FileWHeadersBytes);
+                }
             }
-            
-            debugfile = "Signature." + now + "." + Long.toHexString(System.currentTimeMillis());
-            pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
-            try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
-            stream.write( new String(Base64.encode(Signature)).getBytes());
+            if (Signature != null) {
+                System.out.println("ByteCount Signature: " + String.valueOf(Signature.length)); 
+                String debugfile = "Signature." + now + "." + Long.toHexString(System.currentTimeMillis());
+                Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
+                try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
+                stream.write( new String(Base64.encode(Signature)).getBytes());
+                }
             }
-            
-            
-            
            }
 
-           if (! validSignature) {
-             // return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "Signature could not be validated " + sender + "/" + receiver); 
-              writeAS2LogStop(new String[]{"0","unknown","in","error","invalid signature " + sender + "/" + receiver,now,"", info[22]});
-              return createMDN("2020", elementals, returnheaders, isDebug);
-           } 
+           
               
         }  // for parent mp ...should be just one
         

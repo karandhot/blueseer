@@ -2669,10 +2669,11 @@ public class apiUtils {
                         if (BlueSeerUtils.ConvertStringToBool(as2m.as2_signed())) {
                            mbp = signData(filecontent,as2m.as2_signalgo(),signcertificate,key,listOfFiles[i].getName(),as2m,contenttype);
                         } else {
-                            mbp = new MimeBodyPart(new ByteArrayInputStream(filecontent));
-                           // mbp.setHeader("Content-Type", contenttype);
-                           // mbp.setHeader("Content-Disposition", "attachment; filename=" + listOfFiles[i].getName());
-                           // mbp.setHeader("Content-Transfer-Encoding", "binary");
+                            InternetHeaders headers = new InternetHeaders();
+                            headers.addHeader("Content-Type", contenttype);
+                            headers.addHeader("Content-Disposition", "attachment; filename=" + listOfFiles[i].getName());
+                            headers.addHeader("Content-Transfer-Encoding", "binary");
+                            mbp = new MimeBodyPart(headers, filecontent);
                         }
 
                     } catch (Exception ex) {
@@ -2693,6 +2694,8 @@ public class apiUtils {
          MimeMessage mm = new MimeMessage(session);
          mp.addBodyPart(mbp);
          mm.setContent(mp);
+         
+         
          
           if (isDebug) { 
             String debugfile = "debugAS2mm." + now + "." + Long.toHexString(System.currentTimeMillis());
@@ -3171,7 +3174,6 @@ public class apiUtils {
     public static mmpx code2000(String sender, String receiver, String subject, String filename, String messageid, String mic) {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
-        MimeMultipart mp = new MimeMultipart();
         MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -3187,13 +3189,12 @@ public class apiUtils {
             bslog(ex);
         }
         
-        return new mmpx(mp, boundary);
+        return new mmpx(mpInner, boundary);
     }
         
     public static mmpx code2005(String sender, String receiver, String subject, String filename, String messageid, String mic) {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
-        MimeMultipart mp = new MimeMultipart();
         MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -3212,13 +3213,12 @@ public class apiUtils {
             bslog(ex);
         }
         
-        return new mmpx(mp, boundary);
+        return new mmpx(mpInner, boundary);
     }
     
     public static mmpx code2010(String sender, String receiver, String subject, String filename, String messageid, String mic) {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
-        MimeMultipart mp = new MimeMultipart();
         MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -3235,13 +3235,12 @@ public class apiUtils {
             bslog(ex);
         }
         
-        return new mmpx(mp, boundary);
+        return new mmpx(mpInner, boundary);
     }
     
     public static mmpx code2015(String sender, String receiver, String subject, String filename, String messageid, String mic) {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
-        MimeMultipart mp = new MimeMultipart();
         MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -3257,13 +3256,12 @@ public class apiUtils {
             bslog(ex);
         }
         
-        return new mmpx(mp, boundary);
+        return new mmpx(mpInner, boundary);
     }
     
     public static mmpx code2020(String sender, String receiver, String subject, String filename, String messageid, String mic) {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
-        MimeMultipart mp = new MimeMultipart();
         MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -3280,13 +3278,12 @@ public class apiUtils {
             bslog(ex);
         }
         
-        return new mmpx(mp, boundary);
+        return new mmpx(mpInner, boundary);
     }
     
     public static mmpx code3000(String sender, String receiver, String subject, String filename, String messageid, String mic) {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
-        MimeMultipart mp = new MimeMultipart();
         MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -3304,13 +3301,12 @@ public class apiUtils {
             bslog(ex);
         }
         
-        return new mmpx(mp, boundary);
+        return new mmpx(mpInner, boundary);
     }
      
     public static mmpx code3003(String sender, String receiver, String subject, String filename, String messageid, String mic) {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
-        MimeMultipart mp = new MimeMultipart();
         MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -3327,13 +3323,12 @@ public class apiUtils {
             bslog(ex);
         }
         
-        return new mmpx(mp, boundary);
+        return new mmpx(mpInner, boundary);
     }
         
     public static mmpx code3005(String sender, String receiver, String subject, String filename, String messageid, String mic) {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
-        MimeMultipart mp = new MimeMultipart();
         MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -3350,13 +3345,12 @@ public class apiUtils {
             bslog(ex);
         }
         
-        return new mmpx(mp, boundary);
+        return new mmpx(mpInner, boundary);
     }
     
     public static mmpx code3007(String sender, String receiver, String subject, String filename, String messageid, String mic) {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
-        MimeMultipart mp = new MimeMultipart();
         MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -3373,13 +3367,12 @@ public class apiUtils {
             bslog(ex);
         }
         
-        return new mmpx(mp, boundary);
+        return new mmpx(mpInner, boundary);
     }
    
     public static mmpx code3100(String sender, String receiver, String subject, String filename, String messageid, String mic) {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
-        MimeMultipart mp = new MimeMultipart();
         MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -3396,13 +3389,12 @@ public class apiUtils {
             bslog(ex);
         }
         
-        return new mmpx(mp, boundary);
+        return new mmpx(mpInner, boundary);
     }
     
     public static mmpx code3200(String sender, String receiver, String subject, String filename, String messageid, String mic) {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
-        MimeMultipart mp = new MimeMultipart();
         MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -3419,13 +3411,12 @@ public class apiUtils {
             bslog(ex);
         }
         
-        return new mmpx(mp, boundary);
+        return new mmpx(mpInner, boundary);
     }
     
     public static mmpx code3300(String sender, String receiver, String subject, String filename, String messageid, String mic) {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
-        MimeMultipart mp = new MimeMultipart();
         MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -3442,13 +3433,12 @@ public class apiUtils {
             bslog(ex);
         }
         
-        return new mmpx(mp, boundary);
+        return new mmpx(mpInner, boundary);
     }
     
     public static mmpx code3400(String sender, String receiver, String subject, String filename, String messageid, String mic) {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
-        MimeMultipart mp = new MimeMultipart();
         MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -3465,13 +3455,12 @@ public class apiUtils {
             bslog(ex);
         }
         
-        return new mmpx(mp, boundary);
+        return new mmpx(mpInner, boundary);
     }
         
     public static mmpx code9999(String sender, String receiver, String subject, String filename, String messageid, String mic) {
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
-        MimeMultipart mp = new MimeMultipart();
         MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_DATE);
@@ -3488,7 +3477,7 @@ public class apiUtils {
             bslog(ex);
         }
         
-        return new mmpx(mp, boundary);
+        return new mmpx(mpInner, boundary);
     }
         
     public static mdn createMDN(String code, String[] e, HashMap<String, String> headers, boolean isDebug) throws IOException, MessagingException {
