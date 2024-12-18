@@ -4914,7 +4914,7 @@ public class EDI {
                     Files.setPosixFilePermissions(FileSystems.getDefault().getPath(filepath), PosixFilePermissions.fromString("rw-rw-rw-"));
                 }
             }
-            return "";
+            return filepath;
     }
     
     public static String deleteFile(String filepathstr) {

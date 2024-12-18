@@ -1319,12 +1319,26 @@ public class BlueSeerUtils {
     }
     
     public static boolean isFile(String filepath) {
-        Path mypath = FileSystems.getDefault().getPath(filepath);
+        
+        if (bsmf.MainFrame.remoteDB) {
+                        ArrayList<String[]> arrx = new ArrayList<String[]>();
+                        arrx.add(new String[]{"id","FileExists"});
+                        arrx.add(new String[]{"filepath", filepath});
+                        String s = "false";  
+                        try {
+                            s = sendServerPost(arrx, "", null);
+                        } catch (IOException ex) {
+                            bslog(ex);
+                        }
+                        return BlueSeerUtils.ConvertStringToBool(s);
+        } else { // local
+           Path mypath = FileSystems.getDefault().getPath(filepath);
             if (! mypath.toFile().exists()) {
                 return false;
             } else {
                 return true;
-            }
+            } 
+        }
     }
     
     public static boolean isSet(ArrayList list, Integer index) {

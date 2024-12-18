@@ -273,7 +273,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                   response.getWriter().println(deleteFile(filepath));   
                 } else if (id.equals("uploadFileExists")) { 
                   String filepath = request.getHeader("filepath");
-                  response.getWriter().println(fileExists(filepath));   
+                  response.getWriter().println(fileExists(filepath)); 
+                  } else if (id.equals("FileExists")) { 
+                  String filepath = request.getHeader("filepath");
+                  response.getWriter().println(fileExists(filepath));
                 } else {
                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                   response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": unknown ID " + "\n" + getHeaders(request));  
