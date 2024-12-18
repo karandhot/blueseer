@@ -274,7 +274,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                 } else if (id.equals("uploadFileExists")) { 
                   String filepath = request.getHeader("filepath");
                   response.getWriter().println(fileExists(filepath)); 
-                  } else if (id.equals("FileExists")) { 
+                } else if (id.equals("FileExists")) { 
                   String filepath = request.getHeader("filepath");
                   response.getWriter().println(fileExists(filepath));
                 } else {

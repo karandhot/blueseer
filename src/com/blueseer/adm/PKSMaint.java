@@ -737,7 +737,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                 }
 
                 String Sourcefile = file.getName();
-                String filepath = cleanDirString(getSystemEDIDirectory() + "/certs/") + Sourcefile;
+                String filepath = cleanDirString(getSystemEDIDirectory() + "/certs") + Sourcefile;
                 // first check if cert file name already exists...if so bale...they will need to rename it first. 
                 if (isFile(filepath)) {
                    bsmf.MainFrame.show(getMessageTag(1196));
@@ -748,11 +748,11 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                 byte[] b = getFileContentBytes(file.getAbsolutePath());
                 ArrayList<String[]> arrx = new ArrayList<String[]>();
                 arrx.add(new String[]{"id","uploadFile"});
-                arrx.add(new String[]{"filepath", cleanDirString(getSystemEDIDirectory() + "/certs/") + Sourcefile});
+                arrx.add(new String[]{"filepath", filepath});
                 r = sendServerPost(arrx, "", b);
                 bsmf.MainFrame.show(getMessageTag(1194));
                 } else {
-                Files.copy(file.toPath(), new File(cleanDirString(getSystemEDIDirectory() + "/certs/") + Sourcefile).toPath(), StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(file.toPath(), new File(filepath).toPath(), StandardCopyOption.REPLACE_EXISTING);
                 bsmf.MainFrame.show(getMessageTag(1194));
                 r = getSystemEDIDirectory() + "/certs/" + Sourcefile;
                 }
