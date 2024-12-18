@@ -1318,7 +1318,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btuploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btuploadActionPerformed
         String r = uploadCert(this);
-        tbfile.setText(r);
+        tbfile.setText(r.trim());
     }//GEN-LAST:event_btuploadActionPerformed
 
 
