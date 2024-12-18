@@ -1332,7 +1332,7 @@ public class BlueSeerUtils {
                         }
                         System.out.println("here: " + s);
                         System.out.println("here: " + filepath);
-                        return BlueSeerUtils.ConvertStringToBool(s);
+                        return BlueSeerUtils.ConvertStringToBool(s.trim());
         } else { // local
            Path mypath = FileSystems.getDefault().getPath(filepath);
             if (! mypath.toFile().exists()) {
