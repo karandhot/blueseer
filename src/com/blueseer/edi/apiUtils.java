@@ -2258,7 +2258,7 @@ public class apiUtils {
             // dataPart.setText(new String(data, StandardCharsets.UTF_8), "UTF-8");
             dataPart.setHeader("Content-Type", contenttype);
             dataPart.setHeader("Content-Disposition", "attachment; filename=" + filename);
-            dataPart.setHeader("Content-Transfer-Encoding", "binary");
+           // dataPart.setHeader("Content-Transfer-Encoding", "binary");
             /*
             ArrayList<String> list = EDData.getAS2AttributesList(tp[0], "httpheader");
             for (String x : list) {
@@ -2656,7 +2656,6 @@ public class apiUtils {
                             InternetHeaders headers = new InternetHeaders();
                             headers.addHeader("Content-Type", contenttype);
                             headers.addHeader("Content-Disposition", "attachment; filename=" + listOfFiles[i].getName());
-                            headers.addHeader("Content-Transfer-Encoding", "binary");
                             mbp = new MimeBodyPart(headers, filecontent);
                         }
 
