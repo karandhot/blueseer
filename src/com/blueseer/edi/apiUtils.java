@@ -108,6 +108,7 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -2300,10 +2301,11 @@ public class apiUtils {
             */
             // HERE...to here
             
-            
+            Date date = new Date();
             MimeBodyPart tmpBody = new MimeBodyPart();
             tmpBody.setContent(signedData);
             tmpBody.setHeader("Content-Type", signedData.getContentType().replace("sha-1", "sha1"));
+            tmpBody.setHeader("Date", date.toString());
             return tmpBody;
 	}
 
