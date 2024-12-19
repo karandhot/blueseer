@@ -2668,47 +2668,18 @@ public class apiUtils {
                bslog("file content is null in AS2Post");
                continue; 
             }
+       
+        String newboundary = getPackagedBoundary(mbp);
         
+        byte[] bytesToBeEncrypted = buildMIMEStructure(mbp, as2m, isDebug);    
+       
         
-       // MimeBodyPart mbp2 = new MimeBodyPart();
-        MimeMultipart mp = new MimeMultipart();
-        String newboundary = getPackagedBoundary(mbp);  
-        Properties props = System.getProperties();
-         Session session = Session.getDefaultInstance(props, null); 
-         MimeMessage mm = new MimeMessage(session);
-         mp.addBodyPart(mbp);
-         System.out.println("HERE mp count = " + mp.getCount());
-         mm.setContent(mp);
-         
-        
-         byte[] byteheader = null;
-         byte[] bytestream = null;
-         byte[] combined = null; 
-
-
-        if (isDebug) { 
-            String debugfile = "debugAS2mm." + now + "." + Long.toHexString(System.currentTimeMillis());
-            Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
-            try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
-            String h = "Content-Type: " + mp.getBodyPart(0).getHeader("content-type")[0].toString() + "\n\r";
-            byteheader = h.getBytes();
-            stream.write(byteheader);
-            bytestream = mp.getBodyPart(0).getInputStream().readAllBytes();
-            stream.write(bytestream);
-            //stream.write(mp.writeTo(stream));
-            combined = new byte[h.getBytes().length + bytestream.length];
-            }
-            
-            for (int j = 0; j < combined.length; ++j) {
-                combined[j] = j < byteheader.length ? byteheader[j] : bytestream[j - byteheader.length];
-            }
-        }  
-          
         if (isEncrypted) {
         //  sendbytes = encryptData(mm.getInputStream().readAllBytes(), encryptcertificate, as2m.as2_encalgo());
-          sendbytes = encryptData(combined, encryptcertificate, as2m.as2_encalgo());
+          sendbytes = encryptData(bytesToBeEncrypted, encryptcertificate, as2m.as2_encalgo());
         } else {
-          sendbytes = mm.getInputStream().readAllBytes();
+           // sendbytes = mm.getInputStream().readAllBytes();
+           sendbytes = bytesToBeEncrypted;
         }
         
        
@@ -2896,6 +2867,69 @@ public class apiUtils {
         return r.toString();
     }
     
+    public static byte[] buildMIMEStructure(MimeBodyPart mbp, as2_mstr as2m, boolean isDebug) throws FileNotFoundException, IOException, MessagingException {
+        byte[] r = null;
+        
+       // MimeBodyPart mbp2 = new MimeBodyPart();
+        MimeMultipart mp = new MimeMultipart(); 
+        Properties props = System.getProperties();
+        Session session = Session.getDefaultInstance(props, null); 
+        MimeMessage mm = new MimeMessage(session);
+        mp.addBodyPart(mbp);
+        mm.setContent(mp);
+        r = mm.getInputStream().readAllBytes();
+         
+        String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
+
+        if (isDebug) { 
+            String debugfile = "debugAS2mm." + now + "." + Long.toHexString(System.currentTimeMillis());
+            Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
+            try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
+              stream.write(r);
+            }
+        }  
+        
+        return r;
+    }
+    
+    public static byte[] buildMIMEStructureExp(MimeBodyPart mbp, as2_mstr as2m, boolean isDebug) throws FileNotFoundException, IOException, MessagingException {
+        byte[] r = null;
+        
+       // MimeBodyPart mbp2 = new MimeBodyPart();
+        MimeMultipart mp = new MimeMultipart();
+        String newboundary = getPackagedBoundary(mbp);  
+        Properties props = System.getProperties();
+         Session session = Session.getDefaultInstance(props, null); 
+         MimeMessage mm = new MimeMessage(session);
+         mp.addBodyPart(mbp);
+         mm.setContent(mp);
+         
+        
+         byte[] byteheader = null;
+         byte[] bytestream = null;
+
+         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
+
+        if (isDebug) { 
+            String debugfile = "debugAS2mm." + now + "." + Long.toHexString(System.currentTimeMillis());
+            Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
+            try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
+            String h = "Content-Type: " + mp.getBodyPart(0).getHeader("content-type")[0].toString() + "\n\r";
+            byteheader = h.getBytes();
+            stream.write(byteheader);
+            bytestream = mp.getBodyPart(0).getInputStream().readAllBytes();
+            stream.write(bytestream);
+            //stream.write(mp.writeTo(stream));
+            r = new byte[h.getBytes().length + bytestream.length];
+            }
+            
+            for (int j = 0; j < r.length; ++j) {
+                r[j] = j < byteheader.length ? byteheader[j] : bytestream[j - byteheader.length];
+            }
+        }  
+        return r;
+    }
+        
     public static SSLConnectionSocketFactory buildCustomSSLFactory(pks_mstr pks) throws Exception {
         SSLConnectionSocketFactory sslcsf = null;
         
