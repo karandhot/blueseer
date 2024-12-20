@@ -2260,15 +2260,15 @@ public class apiUtils {
             dataPart.setHeader("Content-Type", contenttype);
             dataPart.setHeader("Content-Disposition", "attachment; filename=" + filename);
             // dataPart.setHeader("Content-Transfer-Encoding", "binary");
-            /*
-            ArrayList<String> list = EDData.getAS2AttributesList(tp[0], "httpheader");
+            
+            ArrayList<String> list = EDData.getAS2AttributesList(as2m.as2_id(), "httpheader");
             for (String x : list) {
                 String[] h = x.split(":",-1);
                 if (h != null && h.length > 1) {
                  dataPart.setHeader(h[0], h[1]);
                 }
             }
-            */
+            
            /* 
         System.out.println("HERE IS certificate serial number: "  + "->"  + signingCertificate.getSerialNumber());
         System.out.println("HERE IS certificate signature: "  + "->"  + signingCertificate.getSignature());
