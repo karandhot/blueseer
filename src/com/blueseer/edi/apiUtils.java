@@ -2269,6 +2269,10 @@ public class apiUtils {
                 }
             }
             
+            if (dataPart.getHeader("content-transfer-encoding") == null) {
+              dataPart.setHeader("Content-Transfer-Encoding", "binary");  
+            }
+            
            /* 
         System.out.println("HERE IS certificate serial number: "  + "->"  + signingCertificate.getSerialNumber());
         System.out.println("HERE IS certificate signature: "  + "->"  + signingCertificate.getSignature());
@@ -2958,7 +2962,7 @@ public class apiUtils {
         try {
             mbp.setText(z);
             mbp.setHeader("Content-Type", "text/plain");
-            mbp.setHeader("Content-Transfer-Encoding", "7bit");
+            mbp.setHeader("Content-Transfer-Encoding", "binary");
             
             StringBuilder yb = new StringBuilder();
             yb.append("Reporting-UA: BlueSeer Software").append("\r").append("\n");
@@ -2979,7 +2983,7 @@ public class apiUtils {
             */
             mbp2.setText(yb.toString());
             mbp2.setHeader("Content-Type", "message/disposition-notification");
-            mbp2.setHeader("Content-Transfer-Encoding", "7bit");
+            mbp2.setHeader("Content-Transfer-Encoding", "binary");
             
             mpInner.addBodyPart(mbp);
             mpInner.addBodyPart(mbp2);
