@@ -2259,7 +2259,7 @@ public class apiUtils {
             // dataPart.setText(new String(data, StandardCharsets.UTF_8), "UTF-8");
             dataPart.setHeader("Content-Type", contenttype);
             dataPart.setHeader("Content-Disposition", "attachment; filename=" + filename);
-           // dataPart.setHeader("Content-Transfer-Encoding", "binary");
+            // dataPart.setHeader("Content-Transfer-Encoding", "binary");
             /*
             ArrayList<String> list = EDData.getAS2AttributesList(tp[0], "httpheader");
             for (String x : list) {
@@ -2269,46 +2269,22 @@ public class apiUtils {
                 }
             }
             */
+           /* 
         System.out.println("HERE IS certificate serial number: "  + "->"  + signingCertificate.getSerialNumber());
         System.out.println("HERE IS certificate signature: "  + "->"  + signingCertificate.getSignature());
         System.out.println("HERE IS certificate AlgName: "  + "->"  + signingCertificate.getSigAlgName());
         System.out.println("HERE IS privatekey algorithm: " + "->"  + signingKey.getAlgorithm());
         System.out.println("HERE IS privatekey format: "   + "->" + signingKey.getFormat());
-         
+         */
         
             byte[] dataPartBytes = dataPart.getInputStream().readAllBytes();
         
             MimeMultipart signedData = sGen.generate(dataPart);
             
             
-                        
-            // HERE...take this out
-            /*
-            ByteArrayOutputStream yy = new ByteArrayOutputStream();
-            signedData.writeTo(yy);
-            yy.flush();
-            yy.close();
-            System.out.println("messg byte length: " + data.length);
-            System.out.println("messagePart byte length: " + dataPartBytes.length);
-            System.out.println("signedContent byte length: " + yy.toByteArray().length);
-            String contentType = "multipart/signed; protocol=\"application/pkcs7-signature\"; micalg=sha-1;";
-            String[] jj = verifySignatureView(yy.toByteArray(), contentType);
-            int ji = 0;
-            System.out.println("MY TEST signedContent: content type = " + contentType);
-            for (String j : jj) {
-                System.out.println("MY TEST signedContent: " + ji + " = " + j);
-                ji++;
-            }
-            */
-            // HERE...to here
-            
-            
             MimeBodyPart tmpBody = new MimeBodyPart();
             tmpBody.setContent(signedData);
             tmpBody.setHeader("Content-Type", signedData.getContentType().replace("sha-1", "sha1"));
-            
-
-            
             
             return tmpBody;
 	}
@@ -2676,7 +2652,7 @@ public class apiUtils {
        
         String newboundary = getPackagedBoundary(mbp);
         
-        byte[] bytesToBeEncrypted = buildMIMEtest2(mbp);  // buildMIMEStructure(mbp, as2m, isDebug);  // buildMIMEStructure(mbp, as2m, isDebug);    
+        byte[] bytesToBeEncrypted = buildMIME(mbp, isDebug);   
        
         
         if (isEncrypted) {
@@ -2872,42 +2848,7 @@ public class apiUtils {
         return r.toString();
     }
     
-    public static byte[] buildMIMEStructure(MimeBodyPart mbp, as2_mstr as2m, boolean isDebug) throws FileNotFoundException, IOException, MessagingException {
-        byte[] r = null;
-        
-       // MimeBodyPart mbp2 = new MimeBodyPart();
-        MimeMultipart mp = new MimeMultipart(); 
-        Properties props = System.getProperties();
-        Session session = Session.getDefaultInstance(props, null); 
-        MimeMessage mm = new MimeMessage(session);
-        mp.addBodyPart(mbp);
-        mm.setContent(mp);
-        r = mm.getInputStream().readAllBytes();
-         
-        String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
-
-        if (isDebug) { 
-            String debugfile = "debugAS2mm." + now + "." + Long.toHexString(System.currentTimeMillis());
-            Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
-            try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
-              stream.write(r);
-            }
-        }  
-        
-        return r;
-    }
-    
-    public static byte[] buildMIMEtest() {
-        byte[] r = null;
-        try {
-            r = Files.readAllBytes(FileSystems.getDefault().getPath("temp/test.dat"));
-        } catch (IOException ex) {
-            bslog(ex);
-        }
-        return r;
-    }
-    
-    public static byte[] buildMIMEtest2(MimeBodyPart tmpBody) throws MessagingException, IOException {
+    public static byte[] buildMIME(MimeBodyPart tmpBody, boolean isDebug) throws MessagingException, IOException {
             String h = "Content-Type: " + tmpBody.getHeader("content-type")[0] + "\n\n";
             byte[] byteheader = h.getBytes();
             byte[] bytestream = tmpBody.getInputStream().readAllBytes();
@@ -2916,60 +2857,17 @@ public class apiUtils {
                 r[j] = j < byteheader.length ? byteheader[j] : bytestream[j - byteheader.length];
             }
             
-            
-            
-            String debugfile = "debugsigned" + "." + Long.toHexString(System.currentTimeMillis()) + ".txt";
-            Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
-            try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
-              //stream.write("Content-Type: ".getBytes());
-             // stream.write(tmpBody.getHeader("content-type")[0].getBytes());
-             // stream.write("\n".getBytes());
-             // stream.write("\n".getBytes());
-             // stream.write(tmpBody.getInputStream().readAllBytes());
-              //signedData.writeTo(stream);
-              stream.write(r);
+            if (isDebug) {
+                String debugfile = "debugsigned" + "." + Long.toHexString(System.currentTimeMillis()) + ".txt";
+                Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
+                try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
+                  stream.write(r);
+                }
             }
+            
             return r;
     }
-    
-    public static byte[] buildMIMEStructureExp(MimeBodyPart mbp, as2_mstr as2m, boolean isDebug) throws FileNotFoundException, IOException, MessagingException {
-        byte[] r = null;
-        
-       // MimeBodyPart mbp2 = new MimeBodyPart();
-        MimeMultipart mp = new MimeMultipart();
-        String newboundary = getPackagedBoundary(mbp);  
-        Properties props = System.getProperties();
-         Session session = Session.getDefaultInstance(props, null); 
-         MimeMessage mm = new MimeMessage(session);
-         mp.addBodyPart(mbp);
-         mm.setContent(mp);
-         
-        
-         byte[] byteheader = null;
-         byte[] bytestream = null;
-
-         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
-
-        if (isDebug) { 
-            String debugfile = "debugAS2mm." + now + "." + Long.toHexString(System.currentTimeMillis());
-            Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
-            try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
-            String h = "Content-Type: " + mp.getBodyPart(0).getHeader("content-type")[0].toString() + "\n\r";
-            byteheader = h.getBytes();
-            stream.write(byteheader);
-            bytestream = mp.getBodyPart(0).getInputStream().readAllBytes();
-            stream.write(bytestream);
-            //stream.write(mp.writeTo(stream));
-            r = new byte[h.getBytes().length + bytestream.length];
-            }
-            
-            for (int j = 0; j < r.length; ++j) {
-                r[j] = j < byteheader.length ? byteheader[j] : bytestream[j - byteheader.length];
-            }
-        }  
-        return r;
-    }
-        
+       
     public static SSLConnectionSocketFactory buildCustomSSLFactory(pks_mstr pks) throws Exception {
         SSLConnectionSocketFactory sslcsf = null;
         
