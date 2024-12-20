@@ -2672,7 +2672,7 @@ public class apiUtils {
        
         String newboundary = getPackagedBoundary(mbp);
         
-        byte[] bytesToBeEncrypted = buildMIMEStructure(mbp, as2m, isDebug);    
+        byte[] bytesToBeEncrypted = buildMIMEtest(); // buildMIMEStructure(mbp, as2m, isDebug);    
        
         
         if (isEncrypted) {
@@ -2890,6 +2890,16 @@ public class apiUtils {
             }
         }  
         
+        return r;
+    }
+    
+    public static byte[] buildMIMEtest() {
+        byte[] r = null;
+        try {
+            r = Files.readAllBytes(FileSystems.getDefault().getPath("temp/test.dat"));
+        } catch (IOException ex) {
+            bslog(ex);
+        }
         return r;
     }
     
