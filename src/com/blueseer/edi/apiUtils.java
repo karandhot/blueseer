@@ -2970,7 +2970,7 @@ public class apiUtils {
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
         KeyStore ks = KeyStore.getInstance("pkcs12");
         ks.load(new FileInputStream(pks.pks_file()), bsmf.MainFrame.PassWord("1", pks.pks_storepass().toCharArray()).toCharArray()); //my_cert.p12 is my cerfificate file 
-        kmf.init(ks, bsmf.MainFrame.PassWord("1", pks.pks_storepass().toCharArray()).toCharArray());
+        kmf.init(ks, "bstest".toCharArray());
         keyManagers = kmf.getKeyManagers();
         
         
