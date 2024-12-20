@@ -2673,14 +2673,16 @@ public class apiUtils {
         RequestBuilder rb = RequestBuilder.post();
         rb.setUri(urlObj.toURI());
         
-        rb.addHeader("User-Agent", "java/app (BlueSeer Software; +http://www.blueseer.com/)"); 
+        rb.addHeader("User-Agent", "java/application (BlueSeer Software; +http://www.blueseer.com/)"); 
         rb.addHeader("AS2-To", as2To);
         rb.addHeader("AS2-From", as2From); 
         rb.addHeader("AS2-Version", "1.2"); 
         rb.addHeader("Mime-Version", "1.0");
         rb.addHeader("Subject", "as2");
        // rb.addHeader("Accept-Encoding", "deflate, gzip, x-gzip, compress, x-compress");
-      //  rb.addHeader("Disposition-Notification-Options", "signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha1");
+        if (as2m.as2_forcesigned().equals("1")) {
+        rb.addHeader("Disposition-Notification-Options", "signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha1");
+        }
         rb.addHeader("Disposition-Notification-To", internalURL);
         rb.addHeader("Message-ID", messageid);
         rb.addHeader("Recipient-Address", url.toString());
