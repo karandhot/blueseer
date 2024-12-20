@@ -2890,8 +2890,7 @@ public class apiUtils {
             }
         }
         
-        System.out.println("HERE:  " + pks.pks_id() + ": " + " file: " + pks.pks_file() + "  pass: " + bsmf.MainFrame.PassWord("1", pks.pks_storepass().toCharArray()) );
-        
+        // TrustManagerFactory
         X509TrustManager myTrustManager = null;
         try (FileInputStream myKeys = new FileInputStream(pks.pks_file())) {
         KeyStore myStore = KeyStore.getInstance("pkcs12");
@@ -2899,20 +2898,36 @@ public class apiUtils {
         trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(myStore);
 
-        // create custom java keystore here as well....both keystore and custom truststore are from same .p12        
-       // KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-       // KeyStore ks = KeyStore.getInstance("pkcs12");
-       // ks.load(new FileInputStream(pks.pks_file()), bsmf.MainFrame.PassWord("1", pks.pks_storepass().toCharArray()).toCharArray()); //my_cert.p12 is my cerfificate file 
-       // kmf.init(ks, "bstest".toCharArray());
-      //  keyManagers = kmf.getKeyManagers();
-        
-        
-            for (TrustManager tm : trustManagerFactory.getTrustManagers()) {
+        for (TrustManager tm : trustManagerFactory.getTrustManagers()) {
                 if (tm instanceof X509TrustManager x509TrustManager) {
                     myTrustManager = x509TrustManager;
                     break;
                 }
-            }
+        }
+        
+
+        // KeyManagerFactory
+        // Long story short... KeyManagerFactory blows chunks.   Apparently you can't use a .p12 file with more than one key in it if
+        // those keys have different passwords....and if said key passwords are different than store password.
+        // The only way I can get this to work is to create a .p12 with a store password of 'x' and one or more private keys
+        // within store that also have password 'x'...all of them!  All keys with same password that also equals store password.
+        // ...yeah...a huge crock of crap...way to go Java.  :(
+        // so...on the outside chance that I need a 'KeyManager'...there will need to be a pks_id of 'kmfstore' with a keystore with the above
+        // password requirements.
+        // NOTE:   this kfmstore is a separate entity from the 'normal' key stores that are used to filter for edi as2 partner enc/sign certs and as2 system keypairs
+        // NOTE:  I suspect t his will only be useful for BlueSeer HTTPS server side...which is not offered at this time.   I can't imagine a scenario where 
+        //   this would be used on the client AS2 post side...i.e...why would the foreign server need my private key.  ;)
+        pks_mstr pk_kmf = getPksMstr(new String[]{"kmfstore"});
+        if (! pk_kmf.pks_file().isBlank() && ! pk_kmf.pks_storepass().isBlank()) {
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            KeyStore ks = KeyStore.getInstance("pkcs12");
+            ks.load(new FileInputStream(pk_kmf.pks_file()), bsmf.MainFrame.PassWord("1", pk_kmf.pks_storepass().toCharArray()).toCharArray()); //my_cert.p12 is my cerfificate file 
+            kmf.init(ks, bsmf.MainFrame.PassWord("1", pk_kmf.pks_storepass().toCharArray()).toCharArray());
+            keyManagers = kmf.getKeyManagers();
+        }
+        
+        
+            
         }
 
         X509TrustManager finalDefaultTm = defaultX509CertificateTrustManager;
