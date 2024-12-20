@@ -2957,17 +2957,17 @@ public class apiUtils {
             }
         }
         
-        System.out.println("HERE:  " + pks.pks_id() + ": " + " file: " + pks.pks_file() + "  pass: " + bsmf.MainFrame.PassWord("1", pks.pks_storepass().toCharArray()) );
+      //  System.out.println("HERE:  " + pks.pks_id() + ": " + " file: " + pks.pks_file() + "  pass: " + bsmf.MainFrame.PassWord("1", pks.pks_storepass().toCharArray()) );
         
         X509TrustManager myTrustManager = null;
         try (FileInputStream myKeys = new FileInputStream(pks.pks_file())) {
-        KeyStore myStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        KeyStore myStore = KeyStore.getInstance("pkcs12");
         myStore.load(myKeys, bsmf.MainFrame.PassWord("1", pks.pks_storepass().toCharArray()).toCharArray());
         trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(myStore);
 
         // create custom java keystore here as well....both keystore and custom truststore are from same .p12
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
         kmf.init(myStore, bsmf.MainFrame.PassWord("1", pks.pks_storepass().toCharArray()).toCharArray());
         keyManagers = kmf.getKeyManagers();
         
