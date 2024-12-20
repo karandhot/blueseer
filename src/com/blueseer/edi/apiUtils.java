@@ -2281,6 +2281,7 @@ public class apiUtils {
             MimeMultipart signedData = sGen.generate(dataPart);
             
             
+                        
             // HERE...take this out
             /*
             ByteArrayOutputStream yy = new ByteArrayOutputStream();
@@ -2301,11 +2302,14 @@ public class apiUtils {
             */
             // HERE...to here
             
-            Date date = new Date();
+            
             MimeBodyPart tmpBody = new MimeBodyPart();
             tmpBody.setContent(signedData);
             tmpBody.setHeader("Content-Type", signedData.getContentType().replace("sha-1", "sha1"));
-            tmpBody.setHeader("Date", date.toString());
+            
+
+            
+            
             return tmpBody;
 	}
 
@@ -2672,7 +2676,7 @@ public class apiUtils {
        
         String newboundary = getPackagedBoundary(mbp);
         
-        byte[] bytesToBeEncrypted = buildMIMEtest(); // buildMIMEStructure(mbp, as2m, isDebug);    
+        byte[] bytesToBeEncrypted = buildMIMEtest2(mbp);  // buildMIMEStructure(mbp, as2m, isDebug);  // buildMIMEStructure(mbp, as2m, isDebug);    
        
         
         if (isEncrypted) {
@@ -2903,6 +2907,31 @@ public class apiUtils {
         return r;
     }
     
+    public static byte[] buildMIMEtest2(MimeBodyPart tmpBody) throws MessagingException, IOException {
+            String h = "Content-Type: " + tmpBody.getHeader("content-type")[0] + "\n\n";
+            byte[] byteheader = h.getBytes();
+            byte[] bytestream = tmpBody.getInputStream().readAllBytes();
+            byte[] r = new byte[byteheader.length + bytestream.length];
+            for (int j = 0; j < r.length; ++j) {
+                r[j] = j < byteheader.length ? byteheader[j] : bytestream[j - byteheader.length];
+            }
+            
+            
+            
+            String debugfile = "debugsigned" + "." + Long.toHexString(System.currentTimeMillis()) + ".txt";
+            Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
+            try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
+              //stream.write("Content-Type: ".getBytes());
+             // stream.write(tmpBody.getHeader("content-type")[0].getBytes());
+             // stream.write("\n".getBytes());
+             // stream.write("\n".getBytes());
+             // stream.write(tmpBody.getInputStream().readAllBytes());
+              //signedData.writeTo(stream);
+              stream.write(r);
+            }
+            return r;
+    }
+    
     public static byte[] buildMIMEStructureExp(MimeBodyPart mbp, as2_mstr as2m, boolean isDebug) throws FileNotFoundException, IOException, MessagingException {
         byte[] r = null;
         
@@ -2957,7 +2986,7 @@ public class apiUtils {
             }
         }
         
-      //  System.out.println("HERE:  " + pks.pks_id() + ": " + " file: " + pks.pks_file() + "  pass: " + bsmf.MainFrame.PassWord("1", pks.pks_storepass().toCharArray()) );
+        System.out.println("HERE:  " + pks.pks_id() + ": " + " file: " + pks.pks_file() + "  pass: " + bsmf.MainFrame.PassWord("1", pks.pks_storepass().toCharArray()) );
         
         X509TrustManager myTrustManager = null;
         try (FileInputStream myKeys = new FileInputStream(pks.pks_file())) {
@@ -2967,7 +2996,7 @@ public class apiUtils {
         trustManagerFactory.init(myStore);
 
         // create custom java keystore here as well....both keystore and custom truststore are from same .p12
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         KeyStore ks = KeyStore.getInstance("pkcs12");
         ks.load(new FileInputStream(pks.pks_file()), bsmf.MainFrame.PassWord("1", pks.pks_storepass().toCharArray()).toCharArray()); //my_cert.p12 is my cerfificate file 
         kmf.init(ks, "bstest".toCharArray());
