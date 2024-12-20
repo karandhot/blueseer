@@ -2957,6 +2957,8 @@ public class apiUtils {
             }
         }
         
+        System.out.println("HERE:  " + pks.pks_id() + ": " + " file: " + pks.pks_file() + "  pass: " + pks.pks_storepass());
+        
         X509TrustManager myTrustManager = null;
         try (FileInputStream myKeys = new FileInputStream(pks.pks_file())) {
         KeyStore myStore = KeyStore.getInstance(KeyStore.getDefaultType());
