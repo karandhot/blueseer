@@ -2695,8 +2695,8 @@ public class apiUtils {
         rb.addHeader("AS2-Version", "1.2"); 
         rb.addHeader("Mime-Version", "1.0");
         rb.addHeader("Subject", "as2");
-        rb.addHeader("Accept-Encoding", "deflate, gzip, x-gzip, compress, x-compress");
-        rb.addHeader("Disposition-Notification-Options", "signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha1");
+       // rb.addHeader("Accept-Encoding", "deflate, gzip, x-gzip, compress, x-compress");
+      //  rb.addHeader("Disposition-Notification-Options", "signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha1");
         rb.addHeader("Disposition-Notification-To", internalURL);
         rb.addHeader("Message-ID", messageid);
         rb.addHeader("Recipient-Address", url.toString());
