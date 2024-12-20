@@ -2968,7 +2968,9 @@ public class apiUtils {
 
         // create custom java keystore here as well....both keystore and custom truststore are from same .p12
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-        kmf.init(myStore, bsmf.MainFrame.PassWord("1", pks.pks_storepass().toCharArray()).toCharArray());
+        KeyStore ks = KeyStore.getInstance("pkcs12");
+        ks.load(new FileInputStream(pks.pks_file()), bsmf.MainFrame.PassWord("1", pks.pks_storepass().toCharArray()).toCharArray()); //my_cert.p12 is my cerfificate file 
+        kmf.init(ks, bsmf.MainFrame.PassWord("1", pks.pks_storepass().toCharArray()).toCharArray());
         keyManagers = kmf.getKeyManagers();
         
         
