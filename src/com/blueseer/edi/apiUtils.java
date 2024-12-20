@@ -2957,7 +2957,7 @@ public class apiUtils {
             }
         }
         
-        System.out.println("HERE:  " + pks.pks_id() + ": " + " file: " + pks.pks_file() + "  pass: " + pks.pks_storepass());
+        System.out.println("HERE:  " + pks.pks_id() + ": " + " file: " + pks.pks_file() + "  pass: " + bsmf.MainFrame.PassWord("1", pks.pks_storepass().toCharArray()) );
         
         X509TrustManager myTrustManager = null;
         try (FileInputStream myKeys = new FileInputStream(pks.pks_file())) {
