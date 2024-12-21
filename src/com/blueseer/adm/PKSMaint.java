@@ -43,6 +43,7 @@ import static com.blueseer.edi.apiUtils.createNewKeyPair;
 import static com.blueseer.edi.apiUtils.exportPGPKeyFiles;
 import static com.blueseer.edi.apiUtils.genereatePGPKeyPair;
 import static com.blueseer.edi.apiUtils.getAsciiDumpPGPKey;
+import static com.blueseer.edi.apiUtils.getCertInfo;
 
 import static com.blueseer.edi.apiUtils.getPublicKeyAsOPENSSH;
 import static com.blueseer.edi.apiUtils.getPublicKeyAsPEM;
@@ -74,6 +75,9 @@ import javax.swing.SwingWorker;
 import com.blueseer.utl.IBlueSeerT;
 import static com.blueseer.utl.OVData.exportCertToFile;
 import static com.blueseer.utl.OVData.getSystemEDIDirectory;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -87,6 +91,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.security.NoSuchProviderException;
+import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.text.DateFormat;
@@ -95,11 +100,13 @@ import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
 
 /**
@@ -427,6 +434,8 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public void initvars(String[] arg) {
+        
+       Security.addProvider(new BouncyCastleProvider());
        
        setPanelComponentState(this, false); 
        setComponentDefaultValues();
@@ -766,6 +775,50 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
         return r;
     }
     
+    public void showCertInfo(String key) {
+        javax.swing.JTextArea ta = new javax.swing.JTextArea();
+        
+        JScrollPane scroll = new JScrollPane(ta);
+        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+       
+        String[] info = getCertInfo(key);
+        
+        if (info != null) {
+        ta.setText("  " + "\n\n");
+        ta.append("Subject:\t\t" + info[0] + "  \n");
+        ta.append("Issuer:\t\t" + info[1] + "  \n");
+        ta.append("Sig Algorithm:\t\t" + info[2] + "  \n");
+        ta.append("Serial Number:\t\t" + info[3] + "  \n");
+        ta.append("From Date:\t\t" + info[4] + "  \n");
+        ta.append("To Date:\t\t" + info[5] + "  \n");
+        
+        
+        ta.setCaretPosition(0);
+        ta.setEditable(false);
+        
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Certificate Information for: " + key);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints panelGBC = new GridBagConstraints();
+
+        panelGBC.weightx = 1;                    //I want to fill whole panel with JTextArea
+        panelGBC.weighty = 1;                    //so both weights =1
+        panelGBC.fill = GridBagConstraints.BOTH; //and fill is set to BOTH
+        
+        panel.add(scroll, panelGBC);
+        dialog.add(panel);
+        dialog.setPreferredSize(new Dimension(600, 400));
+        dialog.pack();
+        dialog.setLocationRelativeTo( null );
+        dialog.setResizable(false);
+        dialog.setVisible(true);
+        } else {
+            bsmf.MainFrame.show("unable to get cert info for key: " + key);
+        }
+    }
+    
     
     public void test() throws CertificateException, NoSuchProviderException, CertificateEncodingException, CMSException, IOException {
         taoutput.removeAll();
@@ -838,6 +891,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddparent = new javax.swing.JComboBox<>();
         jLabel13 = new javax.swing.JLabel();
         btupload = new javax.swing.JButton();
+        btcertinfo = new javax.swing.JButton();
 
         jTextField1.setText("jTextField1");
 
@@ -980,6 +1034,13 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
+        btcertinfo.setText("Cert Info");
+        btcertinfo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btcertinfoActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -1049,7 +1110,9 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(btviewkey)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btexport))
+                                .addComponent(btexport)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(btcertinfo))
                             .addComponent(ddformat, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 291, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(27, 27, 27))))
@@ -1131,7 +1194,8 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btexport)
-                    .addComponent(btviewkey))
+                    .addComponent(btviewkey)
+                    .addComponent(btcertinfo))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
@@ -1246,6 +1310,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                 tbfile.setEnabled(false);
                 ddparent.setEnabled(true);
                 ddstandard.setEnabled(true);
+                btcertinfo.setEnabled(true);
             break;
             
             case "privatekey" :
@@ -1259,6 +1324,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                 tbfile.setEnabled(true);
                 ddstandard.setEnabled(true);
                 ddparent.setEnabled(false);
+                btcertinfo.setEnabled(false);
             break;
             
             case "store" :
@@ -1272,6 +1338,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                 tbfile.setEnabled(true);
                 ddstandard.setEnabled(false);
                 ddparent.setEnabled(false);
+                btcertinfo.setEnabled(false);
             break; 
             
             case "publickey" :
@@ -1285,6 +1352,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                 tbfile.setEnabled(true);
                 ddstandard.setEnabled(true);
                 ddparent.setEnabled(false);
+                btcertinfo.setEnabled(true);
             break; 
             
             default:
@@ -1321,9 +1389,14 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbfile.setText(r.trim());
     }//GEN-LAST:event_btuploadActionPerformed
 
+    private void btcertinfoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcertinfoActionPerformed
+        showCertInfo(tbkey.getText());
+    }//GEN-LAST:event_btcertinfoActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btadd;
+    private javax.swing.JButton btcertinfo;
     private javax.swing.JButton btclear;
     private javax.swing.JButton btdelete;
     private javax.swing.JButton btexport;

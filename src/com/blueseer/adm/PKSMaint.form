@@ -121,6 +121,8 @@
                                   <Component id="btviewkey" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="btexport" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Component id="btcertinfo" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <Component id="ddformat" alignment="0" min="-2" pref="95" max="-2" attributes="0"/>
                               <Component id="jScrollPane1" min="-2" pref="291" max="-2" attributes="0"/>
@@ -229,6 +231,7 @@
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="btexport" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="btviewkey" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="btcertinfo" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
               </Group>
@@ -534,6 +537,14 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btuploadActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="btcertinfo">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Cert Info"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btcertinfoActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>
