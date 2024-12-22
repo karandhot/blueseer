@@ -1,7 +1,15 @@
 @echo off
+SET HOUR=%TIME:~0,2%
+IF "%HOUR:~0,1%" == " " SET HOUR=0%HOUR:~1,1%
+set mydate=%date:~10,4%%date:~4,2%%date:~7,2%%HOUR%%time:~3,2%
+echo %mydate%
+
 
 set /a "errors=0"
-echo "patch log report" >patch.log
+@echo "" >>patch.log
+@echo "" >>patch.log
+echo "patch log report for SQL update" >>patch.log
+echo "patch execution timestamp: %mydate%" >>patch.log
 
 cls
 @echo ""
@@ -116,8 +124,8 @@ if /I "%DBTYPE%"=="1" (
 )
 if /I "%DBTYPE%"=="1" (
 @echo "  executing sqlite sql schema updates"
-..\..\data\sqlite3.exe ..\..\data\bsdb.db <.patchsqlv68 >>patch.log 2>&1
-ping -n 7 127.0.0.1 > nul
+..\..\data\sqlite3.exe ..\..\data\bsdb.db <.patchsqlv70 >>patch.log 2>&1
+ping -n 3 127.0.0.1 > nul
 @echo "return code: %ERRORLEVEL%" >>patch.log 2>&1
 ) else (
 goto mysqlinstall
@@ -146,21 +154,24 @@ del mybs.cnf >nul 2>&1
 @echo local_infile = ON >>mybs.cnf 
 @echo "updating schema....."
 @echo "updating schema....." >>patch.log 
-mysql --defaults-extra-file=mybs.cnf -D bsdb -e "source .patchsqlv68;" >>patch.log 2>&1
+mysql --defaults-extra-file=mybs.cnf -D bsdb -e "source .patchsqlv70;" --skip-column-names >>patch.log 2>&1
 if %errorlevel% NEQ 0 set /a "errors=%errors%+1"
 @echo "done with mysql changes....."
-ping -n 7 127.0.0.1 > nul
+ping -n 3 127.0.0.1 > nul
 rem clean up mybs.cnf
 del mybs.cnf >nul 2>&1
 goto eof
 
 
 :eof
+echo "patch execution END...%mydate%" >>patch.log
 @echo ""
 @echo ""
 @echo ""
 @echo "  patch update completed with %errors% error"
-ping -n 7 127.0.0.1 > nul
+@echo ""
+@echo "  see details in patch.log (appended)"
+ping -n 4 127.0.0.1 > nul
 @echo ""
 @echo ""
 @echo ""

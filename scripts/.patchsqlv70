@@ -1,0 +1,64 @@
+/* sql updates for v7.0  */
+
+select '*** ALTER SCHEMA SECTION ***';
+select '';
+
+
+set @field = 'as2_sysenccert'; set @table = 'as2_mstr';
+set @sql = concat('Alter table ', @table, ' add column ' ,@field, ' varchar(120) not null default \'\' ' );
+SELECT count(*) into @Cnt FROM information_schema.columns WHERE table_name = @table AND column_name = @field and table_schema = DATABASE();
+set @query = IF(@Cnt <= 0, @sql, 'set @noreturnjunk = \'\'');
+prepare stmt from @query; EXECUTE stmt;
+select @field, case when @Cnt > 0 then 'Exists' else 'Inserting' end as status;
+
+set @field = 'as2_syssigncert'; set @table = 'as2_mstr';
+set @sql = concat('Alter table ', @table, ' add column ' ,@field, ' varchar(120) not null default \'\' ' );
+SELECT count(*) into @Cnt FROM information_schema.columns WHERE table_name = @table AND column_name = @field and table_schema = DATABASE();
+set @query = IF(@Cnt <= 0, @sql, 'set @noreturnjunk = \'\'');
+prepare stmt from @query; EXECUTE stmt;
+select @field, case when @Cnt > 0 then 'Exists' else 'Inserting' end as status;
+
+set @field = 'as2_syscert_bool'; set @table = 'as2_mstr';
+set @sql = concat('Alter table ', @table, ' add column ' ,@field, ' tinyint(1) not null default \'0\' ' );
+SELECT count(*) into @Cnt FROM information_schema.columns WHERE table_name = @table AND column_name = @field and table_schema = DATABASE();
+set @query = IF(@Cnt <= 0, @sql, 'set @noreturnjunk = \'\'');
+prepare stmt from @query; EXECUTE stmt;
+select @field, case when @Cnt > 0 then 'Exists' else 'Inserting' end as status;
+
+/* alter table pod_mstr modify pod_ord_qty decimal(14,5); */
+
+
+/* drop table if exists map_struct; */
+
+
+select '*** ADD TABLE IF NOT EXISTS SECTION ***';
+select '';
+
+
+/*
+CREATE TABLE IF NOT EXISTS `wkfd_log` (
+  `wkfdl_id` int(12) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  `wkfdl_parentid` int(12) NOT NULL DEFAULT '0',
+  `wkfdl_action` varchar(30) NOT NULL  DEFAULT '',
+  `wkfdl_ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `wkfdl_ref` varchar(30) NOT NULL  DEFAULT '',
+  `wkfdl_status` varchar(10) NOT NULL  DEFAULT '',
+  `wkfdl_messg` varchar(200) NOT NULL  DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+*/
+
+select '*** UPDATE RECORDS SECTION ***';
+select '';
+/*
+update ov_ctrl set ov_version = '6.5';
+*/
+
+select '*** INSERT RECORDS SECTION ***';
+select '';
+
+insert into loc_mstr (loc_loc) select 'MAINLOC' where not exists(select 1 from loc_mstr where loc_loc = 'MAINLOC');
+select 'record count for loc_mstr with key MAINLOC is ', count(*) from loc_mstr where loc_loc = 'MAINLOC';
+
+select '';
+select concat("sql schema version is : ", ov_version) from ov_ctrl;
+select '*** SQL UPDATE ENDS ***';
