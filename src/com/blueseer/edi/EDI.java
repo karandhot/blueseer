@@ -45,6 +45,7 @@ import static com.blueseer.frt.frtData.addCFOTransaction;
 import com.blueseer.frt.frtData.cfo_mstr;
 import static com.blueseer.frt.frtData.getCFOPrevious;
 import com.blueseer.ord.ordData;
+import static com.blueseer.ord.ordData.addOrderChangeTransaction;
 import static com.blueseer.ord.ordData.addOrderTransaction;
 import com.blueseer.ord.ordData.so_mstr;
 import com.blueseer.pur.purData;
@@ -3580,6 +3581,82 @@ public class EDI {
         return m;
     }
     
+    public static String[] createSOCFrom860(edi860 e, String[] control) {
+        String[] m = new String[]{"",""};
+        String shipto;
+        
+        if (e.ov_shipto.isEmpty())
+            shipto = OVData.CreateShipTo(e.ov_billto, e.st_name, e.st_line1, e.st_line2, e.st_line3, e.st_city, e.st_state, e.st_zip, e.st_country, e.shipto);
+        else
+            shipto = e.ov_shipto;
+    
+        String[] custinfo = cusData.getCustInfo(e.ov_billto);
+     
+        ordData.so_chg soc = new ordData.so_chg(null, 
+                 e.changeid,  // unique id
+                 e.po,  // po
+                 "", // type
+                 bsmf.MainFrame.dfdate.format(new Date()), // change date
+                 e.duedate,
+                 e.ov_billto,
+                 shipto,
+                 "", // ref
+                "", // misc1
+                "", // misc2
+                "", // misc3
+                "open", // status
+                bsmf.MainFrame.userid,
+                null // apply date
+                );
+        // detail
+        ArrayList<ordData.sod_chg> detail = new ArrayList<ordData.sod_chg>();
+        String uom;
+        for (int j = 0; j < e.getDetCount(); j++ ) {
+           if (e.getDetUOM(j).isBlank()) {
+               uom = OVData.getUOMByItem(e.getDetItem(j));  
+           } else { 
+               uom = e.getDetUOM(j);
+           }
+          // System.out.println("HERE: " + uom + "/" + e.getDetItem(j) + "/" + e.getDetUOM(j));
+      
+        ordData.sod_chg sod = new ordData.sod_chg(null, 
+                e.changeid,
+                e.po,
+                e.getDetLine(j),
+                "", // type
+                e.getDetItem(j), 
+                e.getDetCustItem(j), 
+                bsParseDouble(e.getDetQty(j).replace(defaultDecimalSeparator, '.')), 
+                bsParseDouble(e.getDetListPrice(j).replace(defaultDecimalSeparator, '.')),
+                e.duedate,  
+                ""
+                );  
+                detail.add(sod);
+        }
+        
+        m = addOrderChangeTransaction(detail, soc);
+        if (m[0].equals("0")) {
+            m[0] = "success";
+            m[1] = m[1] + ": " + e.po;
+        } else {
+            m[0] = "error";
+        }
+        
+        if (OVData.getSysMetaValue("system", "emailkey", "orderchange").equals("1")) {
+           
+            String to = OVData.getSysMetaValue("system", "emailrecipient", "orderchange");
+            String[] creds = getSMTPCredentials();
+            if (! to.isBlank() && ! creds[1].isBlank()) {
+                sendEmail(to,"Sales Order Entry Event", "A new sales order change has been created for PO: " + e.po, "");
+               // Session sessionmail = setEmailSession();
+               // sendEmailwSession(sessionmail, creds[1], to, "Sales Order Entry Event", "A new sales order has been created for PO: " + e.po, "");
+            }
+        } 
+        
+        return m;
+    }
+    
+    
     public static void createShipperFrom945(edi945 e, String[] control) {
         
         int shipperid = 0;
@@ -6571,6 +6648,288 @@ public class EDI {
         }
         public String getPO() {
            return this.po;
+        }
+        public String getPODate() {
+           return this.podate;
+        }
+        public String getShipTo() {
+           return this.shipto;
+        }
+          public String getRemarks() {
+           return this.remarks;
+        }
+            public String getShipVia() {
+           return this.shipmethod;
+        }
+        public String getShipToName() {
+           return this.st_name;
+        }
+        public String getShipToLine1() {
+           return this.st_line1;
+        }
+        public String getShipToLine2() {
+           return this.st_line2;
+        }
+        public String getShipToLine3() {
+           return this.st_line3;
+        }
+        public String getShipToCity() {
+           return this.st_city;
+        }
+        public String getShipToState() {
+           return this.st_state;
+        }
+        public String getShipToZip() {
+           return this.st_zip;
+        }
+        public String getShipToCountry() {
+           return this.st_country;
+        }
+        public String getBillTo() {
+           return this.billto;
+        }
+        public String getOVShipTo() {
+           return this.ov_shipto;
+        }
+        public String getOVBillTo() {
+           return this.ov_billto;
+        }
+        public String getISASenderID() {
+           return this.isaSenderID;
+        }
+        public String getISAReceiverID() {
+           return this.isaReceiverID;
+        }
+        public String getDocType() {
+           return this.doctype;
+        }
+        public String getDocID() {
+           return this.docid;
+        }
+         public String getHdrDueDate() {
+           return this.duedate;
+        }
+
+        public String getIsaSenderID() {
+            return isaSenderID;
+        }
+
+        public String getDetItem(int i) {
+            return detitem.get(i);
+        }
+        public String getDetUOM(int i) {
+            return detuom.get(i);
+        }
+        public String getDetCustItem(int i) {
+           return detcustitem.get(i);
+        }
+        public String getDetSku(int i) {
+          return detsku.get(i);
+        }
+        public String getDetRef(int i) {
+           return detref.get(i);
+        }
+        public String getDetPO(int i) {
+           return detpo.get(i);
+        }
+        public String getDetLine(int i) {
+           return detline.get(i);
+        }
+        public String getDetQty(int i) {
+           return detqty.get(i);
+        }
+        public String getDetListPrice(int i) {
+           return detlistprice.get(i);
+        }
+        public String getDetNetPrice(int i) {
+           return detnetprice.get(i);
+        }
+        public String getDetDisc(int i) {
+           return detdisc.get(i);
+        }
+        
+        
+        public int getDetCount() {
+            return detitem.size();
+        }
+       
+        
+    }
+    
+    public static class edi860 {
+    // Header fields
+    public String isaSenderID = "";
+    public String isaReceiverID = "";
+    public String gsSenderID = "";
+    public String gsReceiverID = "";
+    public String isaCtrlNum = "";
+    public String isaDate = "";
+    public String doctype = "";
+    public String docid = "";
+    public String changeid = "";
+    public String po = "";
+    public String billto = "";
+    public String shipto = "";
+    public String ov_billto = "";
+    public String ov_shipto = "";
+    public String remarks = "";
+    public String shipmethod = "";
+    public String duedate = "";
+    public String podate = "";
+    public String st_name = "";
+    public String st_line1 = "";
+    public String st_line2 = "";
+    public String st_line3 = "";
+    public String st_city = "";
+    public String st_state = "";
+    public String st_zip = "";
+    public String st_country = "";
+    public String ref = "";
+    
+    // Detail fields      
+    public ArrayList<String> detsku = new ArrayList<String>();
+    public ArrayList<String> detcustitem = new ArrayList<String>();
+    public ArrayList<String> detitem = new ArrayList<String>();
+    public ArrayList<String> detuom = new ArrayList<String>();
+    public ArrayList<String> detqty = new ArrayList<String>();
+    public ArrayList<String> detref = new ArrayList<String>();
+    public ArrayList<String> detpo = new ArrayList<String>();
+    public ArrayList<String> detline = new ArrayList<String>();
+    public ArrayList<String> detlistprice = new ArrayList<String>();
+    public ArrayList<String> detnetprice = new ArrayList<String>();
+    public ArrayList<String> detdisc = new ArrayList<String>();
+        
+        public edi860() {
+            
+        }
+        
+        public edi860(String isasenderid, String isareceiverid, 
+                      String gssenderid, String gsreceiverid,
+                      String isactrlnum, String isadate, 
+                      String doctype, String docid) {
+            this.isaSenderID = isasenderid;
+            this.isaReceiverID = isareceiverid;
+            this.gsSenderID = gssenderid;
+            this.gsReceiverID = gsreceiverid;
+            this.isaCtrlNum = isactrlnum;
+            this.isaDate = isadate;
+            this.docid = docid;
+            this.doctype = doctype;
+        }
+        
+        
+        public void addDetail() {
+            this.detitem.add("");
+            this.detuom.add("");
+            this.detcustitem.add("");
+            this.detsku.add("");
+            this.detref.add("");
+            this.detpo.add("");
+            this.detline.add("");
+            this.detqty.add("0");
+            this.detlistprice.add("0");
+            this.detnetprice.add("0");
+            this.detdisc.add("0");
+        }
+        
+        public void setDetItem(int i, String v) {
+           this.detitem.set(i,v);
+        }
+        public void setDetUOM(int i, String v) {
+           this.detuom.set(i,v);
+        }
+        public void setDetCustItem(int i, String v) {
+           this.detcustitem.set(i,v);
+        }
+        public void setDetSku(int i, String v) {
+           this.detsku.set(i,v);
+        }
+        public void setDetRef(int i, String v) {
+           this.detref.set(i,v);
+        }
+        public void setDetPO(int i, String v) {
+           this.detpo.set(i,v);
+        }
+        public void setDetLine(int i, String v) {
+           this.detline.set(i,v);
+        }
+        public void setDetQty(int i, String v) {
+           this.detqty.set(i,v);
+        }
+        public void setDetListPrice(int i, String v) {
+           this.detlistprice.set(i,v);
+        }
+         public void setDetNetPrice(int i, String v) {
+           this.detnetprice.set(i,v);
+        }
+          public void setDetDisc(int i, String v) {
+           this.detdisc.set(i,v);
+        }
+        public void setPO(String v) {
+           this.po = v;
+        }
+        public void setChangeID(String v) {
+           this.changeid = v;
+        }
+        public void setRef(String v) {
+           this.ref = v;
+        }
+        public void setPODate(String v) {
+           this.podate = v;
+        }
+         public void setDueDate(String v) {
+           this.duedate = v;
+        }
+        public void setShipTo(String v) {
+           this.shipto = v;
+        }
+         public void setShipVia(String v) {
+           this.shipmethod = v;
+        }
+          public void setRemarks(String v) {
+           this.remarks = v;
+        }
+        public void setShipToName(String v) {
+           this.st_name = v;
+        }
+        public void setShipToLine1(String v) {
+           this.st_line1 = v;
+        }
+        public void setShipToLine2(String v) {
+           this.st_line2 = v;
+        }
+        public void setShipToLine3(String v) {
+           this.st_line3 = v;
+        }
+        public void setShipToCity(String v) {
+           this.st_city = v;
+        }
+        public void setShipToState(String v) {
+           this.st_state = v;
+        }
+        public void setShipToZip(String v) {
+           this.st_zip = v;
+        }
+        public void setShipToCountry(String v) {
+           this.st_country = v;
+        }
+        public void setBillTo(String v) {
+           this.billto = v;
+        }
+        public void setOVShipTo(String v) {
+            this.ov_shipto = v;
+        }
+        public void setOVBillTo(String v) {
+            this.ov_billto = v;
+        }
+        public String getPO() {
+           return this.po;
+        }
+        public String getChangeID() {
+           return this.changeid;
+        }
+        public String getRef() {
+           return this.ref;
         }
         public String getPODate() {
            return this.podate;

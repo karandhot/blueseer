@@ -173,6 +173,121 @@ public class ordData {
             return rows;
     }
         
+    private static int _addOrderChange(so_chg x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        int rows = 0;
+        String sqlSelect = "select * from so_chg where soc_id = ? and soc_po = ?";
+        String sqlInsert = "insert into so_chg (soc_id, soc_po, soc_type, " 
+                        + "soc_chgdate, soc_duedate, soc_billto, soc_shipto, soc_ref, "
+                        + "soc_misc1, soc_misc2, soc_misc3, soc_status, soc_userid, soc_applydate ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+       
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x.soc_id);
+          ps.setString(2, x.soc_po);
+          res = ps.executeQuery();
+          ps = con.prepareStatement(sqlInsert);
+            if (! res.isBeforeFirst()) {
+            ps.setString(1, x.soc_id);
+            ps.setString(2, x.soc_po);
+            ps.setString(3, x.soc_type);
+            ps.setString(4, x.soc_chgdate);
+            ps.setString(5, x.soc_duedate);
+            ps.setString(6, x.soc_billto);
+            ps.setString(7, x.soc_shipto);
+            ps.setString(8, x.soc_ref);
+            ps.setString(9, x.soc_misc1);
+            ps.setString(10, x.soc_misc2);
+            ps.setString(11, x.soc_misc3);
+            ps.setString(12, x.soc_status);
+            ps.setString(13, x.soc_userid);
+            ps.setString(14, x.soc_applydate);
+            rows = ps.executeUpdate();
+            } 
+            return rows;
+    }
+    
+    private static int _addOrderDetChange(sod_chg x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        int rows = 0;
+        String sqlSelect = "select * from sod_chg where sodc_id = ? and sodc_po = ? and and sodc_line = ?";
+        String sqlInsert = "insert into sod_chg (sodc_id, sodc_po, sodc_line, " 
+                        + "sodc_type, sodc_item, sodc_custitem, sodc_qty, sodc_price, sodc_duedate, sodc_misc ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?); "; 
+       
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x.sodc_id);
+          ps.setString(2, x.sodc_po);
+          ps.setString(3, x.sodc_line);
+          res = ps.executeQuery();
+          ps = con.prepareStatement(sqlInsert);
+            if (! res.isBeforeFirst()) {
+            ps.setString(1, x.sodc_id);
+            ps.setString(2, x.sodc_po);
+            ps.setString(3, x.sodc_line);
+            ps.setString(4, x.sodc_type);
+            ps.setString(5, x.sodc_item);
+            ps.setString(6, x.sodc_custitem);
+            ps.setDouble(7, x.sodc_qty);
+            ps.setDouble(8, x.sodc_price);
+            ps.setString(9, x.sodc_duedate);
+            ps.setString(10, x.sodc_misc);
+            rows = ps.executeUpdate();
+            } 
+            return rows;
+    }
+    
+    public static String[] addOrderChangeTransaction(ArrayList<sod_chg> sodc, so_chg soc) {
+        String[] m = new String[2];
+        Connection bscon = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            if (ds != null) {
+              bscon = ds.getConnection();
+            } else {
+              bscon = DriverManager.getConnection(url + db, user, pass);  
+            }
+            bscon.setAutoCommit(false);
+            _addOrderChange(soc, bscon, ps, res);  
+            for (sod_chg z : sodc) {
+                _addOrderDetChange(z, bscon, ps, res);
+            }
+            bscon.commit();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             try {
+                 bscon.rollback();
+                 m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordError};
+             } catch (SQLException rb) {
+                 MainFrame.bslog(rb);
+             }
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.setAutoCommit(true);
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+    
      // add order master.... multiple table transaction function
     public static String[] addOrderTransaction(ArrayList<sod_det> sod, so_mstr so, ArrayList<so_tax> sot, ArrayList<sod_tax> sotd, ArrayList<sos_det> sos) {
         String[] m = new String[2];
@@ -4490,6 +4605,22 @@ public class ordData {
         }
     }
     
+    public record so_chg(String[] m, String soc_id, String soc_po, String soc_type,
+    String soc_chgdate, String soc_duedate, String soc_billto, String soc_shipto, String soc_ref,
+    String soc_misc1, String soc_misc2, String soc_misc3, String soc_status, String soc_userid,
+    String soc_applydate ) {
+        public so_chg(String[] m) {
+            this(m, "", "", "", "", "", "", "", "", "", "",
+                    "", "", "", "");
+        }
+    }
     
+    public record sod_chg(String[] m, String sodc_id, String sodc_po, String sodc_line,
+    String sodc_type, String sodc_item, String sodc_custitem, double sodc_qty, double sodc_price,
+    String sodc_duedate, String sodc_misc) {
+        public sod_chg(String[] m) {
+            this(m, "", "", "", "", "", "", 0, 0, "", "");
+        }
+    }
     
 }
