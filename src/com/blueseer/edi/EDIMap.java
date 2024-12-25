@@ -989,7 +989,7 @@ public abstract class EDIMap {  // took out the implements EDIMapi
         c[23] = m[0];  // set return status
         c[38] = m[1];
         // set turn around if return status = '0' and ta != null
-        if (m[0].equals("0") && ta != null) {
+        if (m[0].equals("success") && ta != null) {
             addUpdateEDIMetaMulti(ta);
         }
     }

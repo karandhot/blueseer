@@ -19,6 +19,7 @@ import com.blueseer.utl.EDData;
     double listprice;
     double netprice;
     boolean useInternalPrice = false;
+    ArrayList<String[]> ta = new ArrayList<String[]>();
 
     // begin mapping
     
@@ -33,7 +34,10 @@ import com.blueseer.utl.EDData;
     e.setDueDate(now);    
     }   
 
-   
+    // store turnaround
+    ta.add(new String[]{po,"header","vendcode", getInput("REF","1:IA","e02")});
+    ta.add(new String[]{po,"header","shipcode", getInput("N1","1:ST","e04")});
+    ta.add(new String[]{po,"header","billcode", getInput("N1","1:BT","e04")});
     
     int n1count = getGroupCount("N1");
     boolean isN1ST = false;
@@ -84,9 +88,23 @@ import com.blueseer.utl.EDData;
          e.setDetItem(i-1,"UNKNOWN");   
         }
         item = e.getDetItem(i-1);
-       // e.setDetCustItem(i,getInput("PO1",9,i));
+       // e.setDetCustItem(i,getInput(i,"PO1",9));
         e.setDetPO(i-1,po);
         e.setDetLine(i-1,getInput(i,"PO1",1));
+
+        // detail turn around (ta)
+        ta.add(new String[]{po,("detail:"+snum(i)),"custline", getInput(i,"PO1",1)});
+        if (getInput(i,"PO1",6).equals("BP") || getInput(i,"PO1",6).equals("SK")) {
+         ta.add(new String[]{po,("detail:"+snum(i)),"sku", getInput(i,"PO1",7)});
+        }
+        if (getInput(i,"PO1",8).equals("BP") || getInput(i,"PO1",8).equals("SK")) {
+         ta.add(new String[]{po,("detail:"+snum(i)),"sku", getInput(i,"PO1",9)});
+        }
+        if (getInput(i,"PO1",10).equals("UP")) {
+         ta.add(new String[]{po,("detail:"+snum(i)),"upc", getInput(i,"PO1",11)});
+        }
+
+        e.setDetDesc(i-1,getInput(i,"PO1:PID",5));
 
         //override incoming UOM with what is available in UOM Maintenance
         if (getInput(i,"PO1",3).equals("CS")) {
@@ -129,5 +147,5 @@ import com.blueseer.utl.EDData;
 
      /* Load Sales Order */
      /* call processDB ONLY if the output is database write */
-    processDB(c,com.blueseer.edi.EDI.createSOFrom850(e, c), null);
+    processDB(c,com.blueseer.edi.EDI.createSOFrom850(e, c), ta);
 

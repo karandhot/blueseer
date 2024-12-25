@@ -3550,7 +3550,7 @@ public class EDI {
                 "open", // status
                 "", // wh
                 "", // location
-                "",  // desc
+                e.getDetDesc(j),  // desc
                 0, // tax 
                 site,  
                 "", // bom
@@ -6528,6 +6528,7 @@ public class EDI {
     public ArrayList<String> detlistprice = new ArrayList<String>();
     public ArrayList<String> detnetprice = new ArrayList<String>();
     public ArrayList<String> detdisc = new ArrayList<String>();
+    public ArrayList<String> detdesc = new ArrayList<String>();
         
         public edi850() {
             
@@ -6560,6 +6561,7 @@ public class EDI {
             this.detlistprice.add("0");
             this.detnetprice.add("0");
             this.detdisc.add("0");
+            this.detdesc.add("");
         }
         
         public void setDetItem(int i, String v) {
@@ -6589,11 +6591,14 @@ public class EDI {
         public void setDetListPrice(int i, String v) {
            this.detlistprice.set(i,v);
         }
-         public void setDetNetPrice(int i, String v) {
+        public void setDetNetPrice(int i, String v) {
            this.detnetprice.set(i,v);
         }
-          public void setDetDisc(int i, String v) {
+        public void setDetDisc(int i, String v) {
            this.detdisc.set(i,v);
+        }
+        public void setDetDesc(int i, String v) {
+           this.detdesc.set(i,v);
         }
         public void setPO(String v) {
            this.po = v;
@@ -6746,6 +6751,9 @@ public class EDI {
         }
         public String getDetDisc(int i) {
            return detdisc.get(i);
+        }
+        public String getDetDesc(int i) {
+           return detdesc.get(i);
         }
         
         
