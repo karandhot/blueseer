@@ -2139,8 +2139,8 @@ public class shpData {
                
                   res = st.executeQuery("select * from ship_det where shd_id = " + "'" + shipper + "'" +";");
                 while (res.next()) {
-                    String[] d = new String[10];
-                    for (int z = 0; z < 10; z++) {
+                    String[] d = new String[12];
+                    for (int z = 0; z < 12; z++) {
                         d[z] = "";
                     }
                     d[0] = res.getString("shd_item");
@@ -2153,6 +2153,8 @@ public class shpData {
                     d[7] = res.getString("shd_ref");
                     d[8] = res.getString("shd_sku");
                     d[9] = res.getString("shd_desc");
+                    d[10] = res.getString("shd_soline");
+                    d[11] = res.getString("shd_line");
                     mylist.add(d);
                 }
        }
