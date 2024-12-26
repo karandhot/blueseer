@@ -773,7 +773,7 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                                 Path inpath = FileSystems.getDefault().getPath(homeIn + "/" + le.getFilename());
 	              		in = new FileOutputStream(inpath.toFile());
                                     try {
-                                    csftp.rm(x);
+                                    csftp.rm(le.getFilename());
                                     talog.append("deleted from server: " + le.getFilename() + "\n");
                                     } catch(SftpException e){
                                     talog.append("Could not delete the file: "+ le.getFilename() + "\n");
