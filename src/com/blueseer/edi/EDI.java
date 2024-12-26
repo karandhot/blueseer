@@ -4026,9 +4026,10 @@ public class EDI {
         messages.add(new String[]{"info","edi_xref: " + ids[0] + "/" + ids[1] + "/" + ids[2] + "/" + ids[3] + "/" + ids[4]});
         }  
         
-        String[] defaults = EDData.getEDITPDefaults(doctype, EDData.getEDIgsid(), ids[1]  ); //810, ourGS, theirsGS
+        String[] defaults = EDData.getEDITPDefaults(doctype, ids[0], ids[1]  ); //856db, ourGS, theirsGS
+        
         if (defaults[19].isBlank()) { // if edi_doc is blank...no default found
-        messages.add(new String[]{"error","no EDITPDefaults found for (doctype/senderGS/receiverGS): " + doctype + "/" + EDData.getEDIgsid() + "/" + ids[1]} );
+        messages.add(new String[]{"error","no EDITPDefaults found for (doctype/senderGS/receiverGS): " + doctype + "/" + ids[0] + "/" + ids[1]} );
         EDData.writeEDILogMulti(c, messages);
         messages.clear();  // clear message here
         return 1;   
@@ -4169,9 +4170,9 @@ public class EDI {
         }        
         // tpid, gsid, tpaddr, ovaddr, type
         
-        String[] defaults = EDData.getEDITPDefaults(doctype, EDData.getEDIgsid(), ids[1]  ); //810, ourGS, theirsGS
+        String[] defaults = EDData.getEDITPDefaults(doctype, ids[0], ids[1]  ); //810, ourGS, theirsGS
         if (defaults[19].isBlank()) { // if edi_doc is blank...no default found
-        messages.add(new String[]{"error","no EDITPDefaults found for (doctype/senderGS/receiverGS): " + doctype + "/" + EDData.getEDIgsid() + "/" + ids[1]} );
+        messages.add(new String[]{"error","no EDITPDefaults found for (doctype/senderGS/receiverGS): " + doctype + "/" + ids[0] + "/" + ids[1]} );
         EDData.writeEDILogMulti(c, messages);
         messages.clear();  // clear message here
         return 1;   
@@ -4301,7 +4302,7 @@ public class EDI {
         c[16] = String.valueOf(idxnbr);
         
         // get Delimiters from Cust Defaults
-        String[] ids = EDData.getEDIXrefOut(sh.sh_cust(), "PY");
+        String[] ids = EDData.getEDIXrefOut(sh.sh_cust(), "PY"); // bsgs, tpgs, tpaddr, bsaddr, type
         if (ids[0].isBlank()) {
         messages.add(new String[]{"error","810 no edi_xref found for keys(billto/type): " + sh.sh_cust() + "/" + "PY"} );
         EDData.writeEDILogMulti(c, messages);
@@ -4311,9 +4312,9 @@ public class EDI {
         messages.add(new String[]{"info","edi_xref: " + ids[0] + "/" + ids[1] + "/" + ids[2] + "/" + ids[3] + "/" + ids[4]});
         }    
         
-        String[] defaults = EDData.getEDITPDefaults(doctype, EDData.getEDIgsid(), ids[1]  ); //810, ourGS, theirsGS
+        String[] defaults = EDData.getEDITPDefaults(doctype, ids[0], ids[1]  ); //810, ourGS, theirsGS
         if (defaults[19].isBlank()) { // if edi_doc is blank...no default found
-        messages.add(new String[]{"error","no EDITPDefaults found for (doctype/senderGS/receiverGS): " + doctype + "/" + EDData.getEDIgsid() + "/" + ids[1]} );
+        messages.add(new String[]{"error","no EDITPDefaults found for (doctype/senderGS/receiverGS): " + doctype + "/" + ids[0] + "/" + ids[1]} );
         EDData.writeEDILogMulti(c, messages);
         messages.clear();  // clear message here
         return 1;   
@@ -4451,9 +4452,9 @@ public class EDI {
         } else {
         messages.add(new String[]{"info","edi_xref: " + ids[0] + "/" + ids[1] + "/" + ids[2] + "/" + ids[3] + "/" + ids[4]});
         }  
-        String[] defaults = EDData.getEDITPDefaults(doctype, EDData.getEDIgsid(), ids[1]  ); //810, ourGS, theirsGS
+        String[] defaults = EDData.getEDITPDefaults(doctype, ids[0], ids[1]  ); //810, ourGS, theirsGS
         if (defaults[19].isBlank()) { // if edi_doc is blank...no default found
-        messages.add(new String[]{"error","no EDITPDefaults found for (doctype/senderGS/receiverGS): " + doctype + "/" + EDData.getEDIgsid() + "/" + ids[1]} );
+        messages.add(new String[]{"error","no EDITPDefaults found for (doctype/senderGS/receiverGS): " + doctype + "/" + ids[0] + "/" + ids[1]} );
         EDData.writeEDILogMulti(c, messages);
         messages.clear();  // clear message here
         return 1;   
@@ -4591,7 +4592,7 @@ public class EDI {
         }        
         // tpid, gsid, tpaddr, ovaddr, type
         
-        String[] defaults = EDData.getEDITPDefaults(doctype, EDData.getEDIgsid(), ids[1]  ); //810, ourGS, theirsGS
+        String[] defaults = EDData.getEDITPDefaults(doctype, ids[0], ids[1]  ); //810, ourGS, theirsGS
         messages.add(new String[]{"info","edi_mstr (id,doc): " + defaults[18] + "/" + defaults[19]});
         messages.add(new String[]{"info","edi_mstr (sndISA/GS,rcvISA/GS): " + defaults[0] + "/" + defaults[2] + "/" + defaults[3] + "/" + defaults[5]});
         
@@ -4726,7 +4727,7 @@ public class EDI {
         }        
         // tpid, gsid, tpaddr, ovaddr, type
         
-        String[] defaults = EDData.getEDITPDefaults(doctype, EDData.getEDIgsid(), ids[1]  ); //810, ourGS, theirsGS
+        String[] defaults = EDData.getEDITPDefaults(doctype, ids[0], ids[1]  ); //810, ourGS, theirsGS
         messages.add(new String[]{"info","edi_mstr (id,doc): " + defaults[18] + "/" + defaults[19]});
         messages.add(new String[]{"info","edi_mstr (sndISA/GS,rcvISA/GS): " + defaults[0] + "/" + defaults[2] + "/" + defaults[3] + "/" + defaults[5]});
         
@@ -4858,7 +4859,7 @@ public class EDI {
         messages.add(new String[]{"info","edi_xref: " + ids[0] + "/" + ids[1] + "/" + ids[2] + "/" + ids[3] + "/" + ids[4]});
         }    
         
-        String[] defaults = EDData.getEDITPDefaults(doctype, EDData.getEDIgsid(), ids[1]  ); //810, ourGS, theirsGS
+        String[] defaults = EDData.getEDITPDefaults(doctype, ids[0], ids[1]  ); //810, ourGS, theirsGS
         messages.add(new String[]{"info","edi_mstr (id,doc): " + defaults[18] + "/" + defaults[19]});
         messages.add(new String[]{"info","edi_mstr (sndISA/GS,rcvISA/GS): " + defaults[0] + "/" + defaults[2] + "/" + defaults[3] + "/" + defaults[5]});
         

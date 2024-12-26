@@ -23,7 +23,12 @@ import com.blueseer.utl.EDData;
 
     // begin mapping
     
-    e.setOVBillTo(EDData.getEDIXrefIn(getInputISA(6).trim(), getInputGS(2), "BT", getInputISA(8).trim())); 
+    // first try finding internal Billto with N1 BT ....then fall back to ISA receiver
+    e.setOVBillTo(EDData.getEDIXrefIn(getInputGS(3), getInputGS(2), "BT", getInput("N1","1:BT","e04"))); 
+    
+    if (e.getOVBillTo().isEmpty()) {
+     e.setOVBillTo(EDData.getEDIXrefIn(getInputGS(3), getInputGS(2), "BT", getInputGS(2))); 
+    }
     po = getInput("BEG","e03");
     e.setPO(po);  
     e.setPODate(convertDate("yyyyMMdd", getInput("BEG","e05")));

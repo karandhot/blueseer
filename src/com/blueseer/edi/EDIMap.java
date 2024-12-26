@@ -4177,6 +4177,16 @@ public abstract class EDIMap {  // took out the implements EDIMapi
         throw new UserDefinedException(messg);
     }
  
+          @EDI.AnnoDoc(desc = {"method retrieves turn around data stored in table edi_meta during processing of inbound document",
+                     "NOTE: JSON, XML compatible ",
+                     "NOTE: The keys are defined as unique identifier tags for each occurence of the repeating segment.",
+                     "Example:  getMeta(\"ponumber\", \"header\", \"shipcode\") returns: N1 ST code of inbound 850 for use on outbound documents ",
+                     "Example:  getMeta(\"ponumber\", \"detail:1\", \"custline\") returns original line number in inbound 850 for item 1 "},
+                 params = {"String segment", "Integer TagPosition"}) 
+    public static String getMeta(String refnumber, String mtype, String key) {
+         return ediData.getEDIMetaValue(refnumber, mtype, key);
+     }
+  
     public class UserDefinedException extends Exception  
     {  
         public UserDefinedException(String str)  

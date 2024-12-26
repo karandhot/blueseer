@@ -96,24 +96,24 @@ public class ediData {
     
     public static String[] addEDIXref(edi_xref x) {
         String[] m = new String[2];
-        String sqlSelect = "SELECT * FROM  edi_xref where exr_tpid = ? and exr_tpaddr = ? " +
-                " and exr_ovaddr = ? and exr_gsid = ? and exr_type = ?";
-        String sqlInsert = "insert into edi_xref (exr_tpid, exr_tpaddr, exr_ovaddr, exr_gsid, exr_type, exr_site) " 
+        String sqlSelect = "SELECT * FROM  edi_xref where exr_bsgs = ? and exr_tpaddr = ? " +
+                " and exr_bsaddr = ? and exr_tpgs = ? and exr_type = ?";
+        String sqlInsert = "insert into edi_xref (exr_bsgs, exr_tpaddr, exr_bsaddr, exr_tpgs, exr_type, exr_site) " 
                         + " values (?,?,?,?,?,?); "; 
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
              PreparedStatement ps = con.prepareStatement(sqlSelect);) {
-             ps.setString(1, x.exr_tpid);
+             ps.setString(1, x.exr_bsgs);
              ps.setString(2, x.exr_tpaddr);
-             ps.setString(3, x.exr_ovaddr);
-             ps.setString(4, x.exr_gsid);
+             ps.setString(3, x.exr_bsaddr);
+             ps.setString(4, x.exr_tpgs);
              ps.setString(5, x.exr_type);
           try (ResultSet res = ps.executeQuery();
                PreparedStatement psi = con.prepareStatement(sqlInsert);) {  
             if (! res.isBeforeFirst()) {
-            psi.setString(1, x.exr_tpid);
+            psi.setString(1, x.exr_bsgs);
              psi.setString(2, x.exr_tpaddr);
-             psi.setString(3, x.exr_ovaddr);
-             psi.setString(4, x.exr_gsid);
+             psi.setString(3, x.exr_bsaddr);
+             psi.setString(4, x.exr_tpgs);
              psi.setString(5, x.exr_type);
              psi.setString(6, x.exr_site);
             int rows = psi.executeUpdate();
@@ -134,36 +134,36 @@ public class ediData {
 
     public static String[] addOrUpdateEDIXref(edi_xref x) {
         String[] m = new String[2];
-        String sqlSelect = "SELECT * FROM  edi_xref where exr_tpid = ? and exr_tpaddr = ? " +
-                " and exr_ovaddr = ? and exr_gsid = ? and exr_type = ?";
-        String sqlInsert = "insert into edi_xref (exr_tpid, exr_tpaddr, exr_ovaddr, exr_gsid, exr_type, exr_site) " 
+        String sqlSelect = "SELECT * FROM  edi_xref where exr_bsgs = ? and exr_tpaddr = ? " +
+                " and exr_bsaddr = ? and exr_tpgs = ? and exr_type = ?";
+        String sqlInsert = "insert into edi_xref (exr_bsgs, exr_tpaddr, exr_bsaddr, exr_tpgs, exr_type, exr_site) " 
                         + " values (?,?,?,?,?,?); "; 
-        String sqlUpdate = "update edi_xref set exr_tpaddr = ?, exr_ovaddr = ? " +
-                           " where exr_tpid = ? and exr_gsid = ? and exr_type = ? ; "; 
+        String sqlUpdate = "update edi_xref set exr_tpaddr = ?, exr_bsaddr = ? " +
+                           " where exr_bsgs = ? and exr_tpgs = ? and exr_type = ? ; "; 
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
              PreparedStatement ps = con.prepareStatement(sqlSelect);) {
-             ps.setString(1, x.exr_tpid);
+             ps.setString(1, x.exr_bsgs);
              ps.setString(2, x.exr_tpaddr);
-             ps.setString(3, x.exr_ovaddr);
-             ps.setString(4, x.exr_gsid);
+             ps.setString(3, x.exr_bsaddr);
+             ps.setString(4, x.exr_tpgs);
              ps.setString(5, x.exr_type); 
           try (ResultSet res = ps.executeQuery();
                PreparedStatement psi = con.prepareStatement(sqlInsert);
                PreparedStatement psu = con.prepareStatement(sqlUpdate);) {  
             if (! res.isBeforeFirst()) {
-            psi.setString(1, x.exr_tpid);
+            psi.setString(1, x.exr_bsgs);
              psi.setString(2, x.exr_tpaddr);
-             psi.setString(3, x.exr_ovaddr);
-             psi.setString(4, x.exr_gsid);
+             psi.setString(3, x.exr_bsaddr);
+             psi.setString(4, x.exr_tpgs);
              psi.setString(5, x.exr_type); 
              psi.setString(6, x.exr_site);
             int rows = psi.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
             } else {
              psu.setString(1, x.exr_tpaddr);
-             psu.setString(2, x.exr_ovaddr);
-             psu.setString(3, x.exr_tpid);
-             psu.setString(4, x.exr_gsid);
+             psu.setString(2, x.exr_bsaddr);
+             psu.setString(3, x.exr_bsgs);
+             psu.setString(4, x.exr_tpgs);
              psu.setString(5, x.exr_type); 
             int rows = psu.executeUpdate();    
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};    
@@ -181,14 +181,14 @@ public class ediData {
 
     public static String[] updateEDIXref(edi_xref x) {
         String[] m = new String[2];
-        String sqlUpdate = "update edi_xref set exr_tpaddr = ?, exr_ovaddr = ? " +
-                           " where exr_tpid = ? and exr_gsid = ? and exr_type = ? ; "; 
+        String sqlUpdate = "update edi_xref set exr_tpaddr = ?, exr_bsaddr = ? " +
+                           " where exr_bsgs = ? and exr_tpgs = ? and exr_type = ? ; "; 
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sqlUpdate)) {
              ps.setString(1, x.exr_tpaddr);
-             ps.setString(2, x.exr_ovaddr);
-             ps.setString(3, x.exr_tpid);
-             ps.setString(4, x.exr_gsid);
+             ps.setString(2, x.exr_bsaddr);
+             ps.setString(3, x.exr_bsgs);
+             ps.setString(4, x.exr_tpgs);
              ps.setString(5, x.exr_type);  
         int rows = ps.executeUpdate();
         m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
@@ -202,14 +202,14 @@ public class ediData {
     
     public static String[] deleteEDIXref(edi_xref x) { 
        String[] m = new String[2];
-        String sql = "delete from edi_xref where exr_tpid = ? and exr_tpaddr = ? " +
-                " and exr_ovaddr = ? and exr_gsid = ? and exr_type = ?";
+        String sql = "delete from edi_xref where exr_bsgs = ? and exr_tpaddr = ? " +
+                " and exr_bsaddr = ? and exr_tpgs = ? and exr_type = ?";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql)) {
-         ps.setString(1, x.exr_tpid);
+         ps.setString(1, x.exr_bsgs);
          ps.setString(2, x.exr_tpaddr);
-         ps.setString(3, x.exr_ovaddr);
-         ps.setString(4, x.exr_gsid);
+         ps.setString(3, x.exr_bsaddr);
+         ps.setString(4, x.exr_tpgs);
          ps.setString(5, x.exr_type);  
         int rows = ps.executeUpdate();
         m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
@@ -223,8 +223,8 @@ public class ediData {
     public static edi_xref getEDIXref(String[] x) {
         edi_xref r = null;
         String[] m = new String[2];       
-        String sqlSelect = "SELECT * FROM  edi_xref where exr_tpid = ? and exr_gsid = ? " +
-                " and exr_type = ? and exr_tpaddr = ? and exr_ovaddr = ?";
+        String sqlSelect = "SELECT * FROM  edi_xref where exr_bsgs = ? and exr_tpgs = ? " +
+                " and exr_type = ? and exr_tpaddr = ? and exr_bsaddr = ?";
         
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sqlSelect);) {
@@ -243,10 +243,10 @@ public class ediData {
                     while(res.next()) {
                         m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
                         r = new edi_xref(m, 
-                            res.getString("exr_tpid"), 
+                            res.getString("exr_bsgs"), 
                             res.getString("exr_tpaddr"),
-                            res.getString("exr_ovaddr"),
-                            res.getString("exr_gsid"),
+                            res.getString("exr_bsaddr"),
+                            res.getString("exr_tpgs"),
                             res.getString("exr_type"),
                             res.getString("exr_site")
                         );
@@ -4834,8 +4834,8 @@ public class ediData {
     }
     
     
-    public record edi_xref(String[] m, String exr_tpid, String exr_tpaddr, String exr_ovaddr,
-        String exr_gsid, String exr_type, String exr_site ) {
+    public record edi_xref(String[] m, String exr_bsgs, String exr_tpaddr, String exr_bsaddr,
+        String exr_tpgs, String exr_type, String exr_site ) {
         public edi_xref(String[] m) {
             this(m, "", "", "", "", "", "");
         }

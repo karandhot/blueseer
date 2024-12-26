@@ -3325,24 +3325,24 @@ public class DTData {
                 if (state == 1) { // begins
                     res = st.executeQuery(" select * " +
                         " FROM  edi_xref where " + myfield + " like " + "'" + str + "%'" +
-                        " order by exr_tpid ;");
+                        " order by exr_bsgs ;");
                 }
                 if (state == 2) { // ends
                     res = st.executeQuery(" select * " +
                         " FROM  edi_xref where " + myfield + " like " + "'%" + str + "'" +
-                        " order by exr_tpid ;");
+                        " order by exr_bsgs ;");
                 }
                  if (state == 0) { // match
                  res = st.executeQuery(" select * " +
                         " FROM  edi_xref where " + myfield + " like " + "'%" + str + "%'" +
-                        " order by exr_tpid ;");
+                        " order by exr_bsgs ;");
                  }
                     while (res.next()) {
-                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("exr_tpid"),
-                                   res.getString("exr_gsid"),
+                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("exr_bsgs"),
+                                   res.getString("exr_tpgs"),
                                    res.getString("exr_type"),
                                    res.getString("exr_tpaddr"),
-                                   res.getString("exr_ovaddr")
+                                   res.getString("exr_bsaddr")
                         });
                     }
            }
@@ -9180,17 +9180,17 @@ return mymodel;
         ResultSet res = null;
         try{
                 if (site.equals("all")) {
-                  res = st.executeQuery("select * from edi_xref order by exr_tpid;");
+                  res = st.executeQuery("select * from edi_xref order by exr_bsgs;");
                 } else {
                   res = st.executeQuery("select * from edi_xref " + 
-                          " where exr_site = " + "'" + site + "'" + " order by exr_tpid;");  
+                          " where exr_site = " + "'" + site + "'" + " order by exr_bsgs;");  
                 }
                 while (res.next()) {
-                    mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("exr_tpid"),
-                               res.getString("exr_gsid"),
+                    mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("exr_bsgs"),
+                               res.getString("exr_tpgs"),
                                res.getString("exr_type"),
                                res.getString("exr_tpaddr"),
-                               res.getString("exr_ovaddr")
+                               res.getString("exr_bsaddr")
                     });
                 }
        }

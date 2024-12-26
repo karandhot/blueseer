@@ -958,6 +958,7 @@ public class MassLoad extends javax.swing.JPanel {
         
             boolean proceed = true;
             boolean temp = true;
+            ArrayList<String> checklist = defineEDIPartners();
             ArrayList<String> list = new ArrayList<String>();
             BufferedReader fsr = new BufferedReader(new FileReader(myfile, StandardCharsets.UTF_8));
             String line = "";
@@ -981,7 +982,8 @@ public class MassLoad extends javax.swing.JPanel {
                 if (cbignoreheader.isSelected()) {
                     i--; // reduce line count by 1 if ignore header
                    } 
-                   if(! EDData.addEDIPartner(list))
+                   ArrayList<String> newlist = cleanList(list, checklist, tbdelimiter.getText().trim());
+                   if(! EDData.addEDIPartner(newlist, tbdelimiter.getText().trim()))
                        m = new String[] {BlueSeerUtils.SuccessBit, getMessageTag(1151,String.valueOf(i))};
                    } else {
                   m = new String[] {BlueSeerUtils.ErrorBit, getMessageTag(1150)}; 
@@ -1081,6 +1083,86 @@ public class MassLoad extends javax.swing.JPanel {
             
     }
     
+     // EDI XREF
+    public ArrayList<String> defineEDIXref() {
+        ArrayList<String> list = new ArrayList<String>();
+        list.add("exr_bsgs,s,15,mandatory,unvalidated");
+        list.add("exr_tpaddr,s,30,mandatory,unvalidated");
+        list.add("exr_bsaddr,s,30,mandatory,unvalidated");
+        list.add("exr_tpgs,s,15,mandatory,unvalidated");
+        list.add("exr_type,s,15,mandatory,unvalidated");
+        list.add("exr_site,s,10,mandatory,unvalidated");
+        return list;
+    }
+    
+    public boolean checkEDIXref(String[] rs, int i) {
+        boolean proceed = true;
+        ArrayList<String> list = defineEDIXref();
+        // first check for correct number of fields
+        if (rs.length != list.size()) {
+                   tacomments.append("line " + i + " does not have correct number of fields. " + String.valueOf(rs.length) + " ...should have " + String.valueOf(list.size()) + " fields \n" );
+                   proceed = false;
+        }
+        
+       
+        
+        if (rs.length == list.size()) {
+            // now check individual fields
+            String[] ld = null;
+            int j = 0;
+            for (String rec : list) {
+            ld = rec.split(",", -1);
+                if (rs[j].length() > Integer.valueOf(ld[2])) {
+                    tacomments.append("line:field " + i + ":" + j + " " + String.valueOf(rs[j]) + " field length too long" + "\n" );
+                       proceed = false;
+                }
+                j++;
+            } 
+        }
+        
+        
+        return proceed;
+    }
+    
+    public String[] processEDIXref(File myfile) throws FileNotFoundException, IOException {
+        String[] m = new String[2]; 
+        
+            boolean proceed = true;
+            boolean temp = true;
+            ArrayList<String> checklist = defineEDIXref();
+            ArrayList<String> list = new ArrayList<String>();
+            BufferedReader fsr = new BufferedReader(new FileReader(myfile, StandardCharsets.UTF_8));
+            String line = "";
+            int i = 0;
+            while ((line = fsr.readLine()) != null) {
+                if (cbignoreheader.isSelected() && i == 0) {
+                    i++;
+                    continue;
+                } 
+                list.add(line);
+               String[] recs = line.split(tbdelimiter.getText().trim(), -1);
+               temp = checkEDIXref(recs, i);
+                   if (! temp) {
+                       proceed = false;
+                       m = new String[] {BlueSeerUtils.ErrorBit, getMessageTag(1150)}; 
+                   }
+              i++; 
+            }
+            fsr.close();
+            if (proceed) {
+                if (cbignoreheader.isSelected()) {
+                    i--; // reduce line count by 1 if ignore header
+                   } 
+                   ArrayList<String> newlist = cleanList(list, checklist, tbdelimiter.getText().trim());
+                   if(! EDData.addEDIXref(newlist, tbdelimiter.getText().trim()))
+                       m = new String[] {BlueSeerUtils.SuccessBit, getMessageTag(1151,String.valueOf(i))};
+                   } else {
+                  m = new String[] {BlueSeerUtils.ErrorBit, getMessageTag(1150)}; 
+            }
+             return m;
+           
+    }
+    
     
     
   
@@ -1089,7 +1171,9 @@ public class MassLoad extends javax.swing.JPanel {
         ArrayList<String> list = new ArrayList<String>();
         list.add("edi_id,s,30,mandatory,unvalidated");
         list.add("edi_doc,s,10,mandatory,unvalidated");
+        list.add("edi_filetype,s,10,mandatory,unvalidated");
         list.add("edi_sndisa,s,15,mandatory,unvalidated");
+        list.add("edi_dir,b,1,mandatory,unvalidated");
         list.add("edi_map,s,30,mandatory,unvalidated");
         list.add("edi_sndisaq,s,2,mandatory,unvalidated");
         list.add("edi_sndgs,s,15,mandatory,unvalidated");
@@ -1109,6 +1193,10 @@ public class MassLoad extends javax.swing.JPanel {
         list.add("edi_ifs,s,50,mandatory,unvalidated");
         list.add("edi_ofs,s,50,mandatory,unvalidated");
         list.add("edi_fa_required,b,1,mandatory,unvalidated");
+        list.add("edi_envelopeall,b,1,mandatory,unvalidated");
+        list.add("edi_una,b,1,mandatory,unvalidated");
+        list.add("edi_ung,b,1,mandatory,unvalidated");
+        list.add("edi_site,s,10,mandatory,unvalidated");
         return list;
     }
     
@@ -1146,6 +1234,7 @@ public class MassLoad extends javax.swing.JPanel {
         
             boolean proceed = true;
             boolean temp = true;
+            ArrayList<String> checklist = defineEDIPartnerTransactions();
             ArrayList<String> list = new ArrayList<String>();
             BufferedReader fsr = new BufferedReader(new FileReader(myfile, StandardCharsets.UTF_8));
             String line = "";
@@ -1169,7 +1258,8 @@ public class MassLoad extends javax.swing.JPanel {
                 if (cbignoreheader.isSelected()) {
                     i--; // reduce line count by 1 if ignore header
                    } 
-                   if(! EDData.addEDIMstrRecord(list))
+                   ArrayList<String> newlist = cleanList(list, checklist, tbdelimiter.getText().trim());
+                   if(! EDData.addEDIMstrRecord(newlist, tbdelimiter.getText().trim()))
                        m = new String[] {BlueSeerUtils.SuccessBit, getMessageTag(1151,String.valueOf(i))};
                    } else {
                   m = new String[] {BlueSeerUtils.ErrorBit, getMessageTag(1150)}; 
@@ -2810,6 +2900,9 @@ public class MassLoad extends javax.swing.JPanel {
                if (x.compareTo("EDI Document Structures") == 0) {
                  m = processEDIDocumentStructures(myfile);
                }
+               if (x.compareTo("EDI Xref") == 0) {
+                 m = processEDIXref(myfile);
+               }
                if (x.compareTo("EDI Partner Transactions") == 0) {
                  m = processEDIPartnerTransactions(myfile);
                }
@@ -3122,7 +3215,7 @@ public class MassLoad extends javax.swing.JPanel {
         jLabel1.setText("Master Table:");
         jLabel1.setName("lblid"); // NOI18N
 
-        ddtable.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item Master", "BOM Master", "Customer Master", "Customer ShipTo Master", "Customer Xref", "Customer Price List", "Vendor Master", "Vendor Xref", "Vendor Price List", "Inventory Adjustment", "GL Account Balances", "Generic Code", "EDI Partners", "EDI Partner Transactions", "EDI Document Structures", "Carrier Master", "Routing Master", "WorkCenter Master", "Order - Shopify", "Fulfillment - Shopify", "SQL Code" }));
+        ddtable.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item Master", "BOM Master", "Customer Master", "Customer ShipTo Master", "Customer Xref", "Customer Price List", "Vendor Master", "Vendor Xref", "Vendor Price List", "Inventory Adjustment", "GL Account Balances", "Generic Code", "EDI Partners", "EDI Partner Transactions", "EDI Document Structures", "EDI Xref", "Carrier Master", "Routing Master", "WorkCenter Master", "Order - Shopify", "Fulfillment - Shopify", "SQL Code" }));
         ddtable.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ddtableActionPerformed(evt);

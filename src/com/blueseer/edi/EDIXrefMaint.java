@@ -423,15 +423,15 @@ public class EDIXrefMaint extends javax.swing.JPanel implements IBlueSeerT    {
         lual = new ActionListener() {
         public void actionPerformed(ActionEvent event) {
         if (lurb1.isSelected()) {  
-         luModel = DTData.getEDIXrefBrowseUtil(luinput.getText(),0, "exr_tpid");
+         luModel = DTData.getEDIXrefBrowseUtil(luinput.getText(),0, "exr_bsgs");
         } else if (lurb2.isSelected()) {
-         luModel = DTData.getEDIXrefBrowseUtil(luinput.getText(),0, "exr_gsid");   
+         luModel = DTData.getEDIXrefBrowseUtil(luinput.getText(),0, "exr_tpgs");   
         } else if (lurb3.isSelected()) {
          luModel = DTData.getEDIXrefBrowseUtil(luinput.getText(),0, "exr_type");
         } else if (lurb4.isSelected()) {
          luModel = DTData.getEDIXrefBrowseUtil(luinput.getText(),0, "exr_tpaddr"); 
         } else {
-         luModel = DTData.getEDIXrefBrowseUtil(luinput.getText(),0, "exr_ovaddr");  
+         luModel = DTData.getEDIXrefBrowseUtil(luinput.getText(),0, "exr_bsaddr");  
         }
         luTable.setModel(luModel);
         luTable.getColumnModel().getColumn(0).setMaxWidth(50);
@@ -467,10 +467,10 @@ public class EDIXrefMaint extends javax.swing.JPanel implements IBlueSeerT    {
     }
 
     public void updateForm() {
-        tbgsid.setText(x.exr_gsid());
-        tbtpid.setText(x.exr_tpid());
+        tbgsid.setText(x.exr_tpgs());
+        tbtpid.setText(x.exr_bsgs());
         tbtpaddr.setText(x.exr_tpaddr());
-        tbbsaddr.setText(x.exr_ovaddr());
+        tbbsaddr.setText(x.exr_bsaddr());
         ddtype.setSelectedItem(x.exr_type());
         ddsite.setSelectedItem((x.exr_site()));
         setAction(x.m());

@@ -181,7 +181,7 @@ public class EDData {
              } 
     
     
-    public static boolean addEDIPartner(ArrayList<String> list) {
+    public static boolean addEDIPartner(ArrayList<String> list, String delim) {
                  boolean myreturn = false;
                   try {
             Connection con = null;
@@ -200,7 +200,7 @@ public class EDData {
                 // now loop through comma delimited list and insert into item master table
                 // skip if already in table.....keys are cust (cup_cust) and custitem (cup_citem)
                 for (String rec : list) {
-                    ld = rec.split(":", -1);
+                    ld = rec.split(delim, -1);
                     
                     
                    /* edp_partner */ 
@@ -256,7 +256,75 @@ public class EDData {
         }  
                   return myreturn;
              } 
-     
+    
+    public static boolean addEDIXref(ArrayList<String> list, String delim) {
+                 boolean myreturn = false;
+                  try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                int i = 0;
+                String[] ld = null;
+                             
+                               
+                // now loop through comma delimited list and insert into item master table
+                // skip if already in table.....keys are cust (cup_cust) and custitem (cup_citem)
+                for (String rec : list) {
+                    ld = rec.split(delim, -1);
+                    
+                    
+                   /* edp_partner */ 
+                   res =  st.executeQuery("select exr_bsgs from edi_xref where " +
+                                           " exr_bsgs = " + "'" + ld[0] + "'" + " AND " + 
+                                           " exr_tpgs = " + "'" + ld[1] + "'" +  " AND " +        
+                                           " exr_tpaddr = " + "'" + ld[2] + "'"  + " AND " + 
+                                           " exr_bsaddr = " + "'" + ld[3] + "'" +  " AND " +
+                                           " exr_type = " + "'" + ld[4] + "'" +  " AND " +
+                                           " exr_site = " + "'" + ld[5] + "'" +         
+                                           ";");
+                    int j = 0;
+                    while (res.next()) {
+                        j++;
+                    }
+                    if (j == 0) {
+                    st.executeUpdate(" insert into edi_xref " 
+                      + "(exr_bsgs, exr_tpgs, exr_tpaddr, exr_bsaddr, exr_type, exr_site ) " 
+                   + " values ( " + 
+                    "'" +  ld[0] + "'" + "," + 
+                    "'" +  ld[1] + "'" + "," +
+                    "'" +  ld[2] + "'" + "," +
+                    "'" +  ld[3] + "'" + "," +
+                    "'" +  ld[4] + "'" + "," +        
+                    "'" +  ld[5] + "'"  
+                             +  ");"
+                           );     
+                   }
+                    
+                 
+                }    
+            } // if proceed
+            catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                myreturn = true;
+           } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               if (con != null) con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }  
+                  return myreturn;
+             } 
+    
+    
     public static boolean addEDIDocumentStructures(ArrayList<String> list) {
                  boolean myreturn = false;
                   try {
@@ -351,7 +419,7 @@ public class EDData {
                   return myreturn;
              } 
         
-    public static boolean addEDIMstrRecord(ArrayList<String> list) {
+    public static boolean addEDIMstrRecord(ArrayList<String> list, String delim) {
                  boolean myreturn = false;
                   try {
             Class.forName(driver).newInstance();
@@ -368,13 +436,13 @@ public class EDData {
                 String[] ld = null;
                
                 for (String rec : list) {
-                    ld = rec.split(":", -1);
+                    ld = rec.split(delim, -1);
                     
                    res =  st.executeQuery("select edi_id from edi_mstr where " +
                                            " edi_id = " + "'" + ld[0] + "'" + 
                                            " and edi_doc = " + "'" + ld[1] + "'" +
-                                           " and edi_sndgs = " + "'" + ld[5] + "'" +
-                                           " and edi_rcvgs = " + "'" + ld[8] + "'" +
+                                           " and edi_sndgs = " + "'" + ld[7] + "'" +
+                                           " and edi_rcvgs = " + "'" + ld[10] + "'" +
                                            ";");
                     int j = 0;
                     while (res.next()) {
@@ -384,9 +452,10 @@ public class EDData {
                     
                     if (j == 0) {
                     st.executeUpdate(" insert into edi_mstr " 
-                      + "(edi_id, edi_doc, edi_sndisa, edi_map, edi_sndq, edi_sndgs, edi_rcvisa, edi_rcvq, edi_rcvgs, " +
+                      + "(edi_id, edi_doc, edi_filetype, edi_sndisa, edi_dir, edi_map, edi_sndq, edi_sndgs, edi_rcvisa, edi_rcvq, edi_rcvgs, " +
                         " edi_eledelim, edi_segdelim, edi_subdelim, edi_fileprefix, " +
-                        " edi_filesuffix, edi_filepath, edi_version, edi_supcode, edi_doctypeout, edi_filetypeout, edi_ifs, edi_ofs, edi_fa_required ) "
+                        " edi_filesuffix, edi_filepath, edi_version, edi_supcode, edi_doctypeout, edi_filetypeout, edi_ifs, edi_ofs, edi_fa_required, " +
+                        " edi_envelopeall, edi_una, edi_ung, edi_site ) "
                    + " values ( " + 
                     "'" +  ld[0] + "'" + "," + 
                     "'" +  ld[1] + "'" + "," +
@@ -408,8 +477,14 @@ public class EDData {
                     "'" +  ld[17] + "'" + "," + 
                     "'" +  ld[18] + "'" + "," + 
                     "'" +  ld[19] + "'" + "," + 
-                    "'" +  ld[20] + "'" + "," +         
-                    "'" +  ld[21] + "'"  
+                    "'" +  ld[20] + "'" + "," + 
+                    "'" +  ld[21] + "'" + "," +
+                    "'" +  ld[22] + "'" + "," +
+                    "'" +  ld[23] + "'" + "," +
+                    "'" +  ld[24] + "'" + "," +
+                    "'" +  ld[25] + "'" + "," +
+                    "'" +  ld[26] + "'" + "," +        
+                    "'" +  ld[27] + "'"  
                              +  ");"
                            );     
                    }
@@ -2350,7 +2425,7 @@ public class EDData {
         
     }
         
-    public static String getEDIXrefIn(String isaid, String gsid, String editype, String addrcode) {
+    public static String getEDIXrefIn(String bsgs, String tpgs, String editype, String addrcode) {
              String mystring = "";
         try{
             Class.forName(driver);
@@ -2364,13 +2439,13 @@ public class EDData {
             ResultSet res = null;
             try{
                       res = st.executeQuery("select * from edi_xref where " +
-                              " exr_tpid = " + "'" + isaid + "'" + 
-                              " AND exr_gsid = " + "'" + gsid + "'" +
+                              " exr_bsgs = " + "'" + bsgs + "'" + 
+                              " AND exr_tpgs = " + "'" + tpgs + "'" +
                               " AND exr_tpaddr = " + "'" + addrcode + "'" + 
                               " AND exr_type = " + "'" + editype + "'" +        
                                 ";");
                     while (res.next()) {
-                       mystring = res.getString("exr_ovaddr");
+                       mystring = res.getString("exr_bsaddr");
                     }
            }
             catch (SQLException s) {
@@ -2403,14 +2478,14 @@ public class EDData {
             ResultSet res = null;
             try{
                       res = st.executeQuery("select * from edi_xref where " +
-                              " exr_ovaddr = " + "'" + bsaddr + "'" + 
+                              " exr_bsaddr = " + "'" + bsaddr + "'" + 
                               " AND exr_type = " + "'" + editype + "'" +        
                                 ";");
                     while (res.next()) {
-                       mystring[0] = res.getString("exr_tpid");
-                       mystring[1] = res.getString("exr_gsid");
+                       mystring[0] = res.getString("exr_bsgs");
+                       mystring[1] = res.getString("exr_tpgs");
                        mystring[2] = res.getString("exr_tpaddr");
-                       mystring[3] = res.getString("exr_ovaddr");
+                       mystring[3] = res.getString("exr_bsaddr");
                        mystring[4] = res.getString("exr_type");
                     }
            }
@@ -2444,7 +2519,7 @@ public class EDData {
             ResultSet res = null;
             try{
                       res = st.executeQuery("select * from edi_xref where " +
-                              " exr_ovaddr = " + "'" + bsaddr + "'" + 
+                              " exr_bsaddr = " + "'" + bsaddr + "'" + 
                               " AND exr_type = " + "'" + editype + "'" +        
                                 ";");
                     while (res.next()) {
@@ -2939,42 +3014,6 @@ public class EDData {
            segments = EDData.parseFile(cbuf, file.getName());
        }
        return segments;
-    }
-       
-    public static String getEDIgsid() {
-       String mystring = "";
-        try{
-            Class.forName(driver);
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-                
-
-                res = st.executeQuery("select edic_gsid from edi_ctrl ;");
-               while (res.next()) {
-                   mystring = res.getString("edic_gsid");
-                }
-               
-           }
-            catch (SQLException s) {
-                MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
-            }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
-        return mystring;
-        
     }
     
     
