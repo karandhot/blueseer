@@ -72,6 +72,7 @@ import static com.blueseer.utl.EDData.getEDIFFSubType;
 import static com.blueseer.utl.EDData.getEDIFileTypeDocType;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.getSMTPCredentials;
+import static com.blueseer.utl.OVData.getSysMetaValue;
 import static com.blueseer.utl.OVData.sendEmail;
 import static com.blueseer.utl.OVData.sendEmailwSession;
 import static com.blueseer.utl.OVData.setEmailSession;
@@ -3518,7 +3519,7 @@ public class EDI {
                  "DISCRETE",
                  "", // tax
                 "0", // isSourced
-                "0", // isConfirmed
+                getSysMetaValue("system", "ordercontrol", "autoconfirm"), // isConfirmed
                 "0", // isPlanned
                 "edi"
                 );

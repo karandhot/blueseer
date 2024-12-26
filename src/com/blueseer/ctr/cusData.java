@@ -186,7 +186,9 @@ public class cusData {
                 cm_mstr x = new cm_mstr(null, 
                 ld[0], ld[1], ld[2], ld[3],
                     ld[4], ld[5], ld[6], ld[7],
-                    ld[8], BlueSeerUtils.setDateFormat(new java.util.Date()), BlueSeerUtils.setDateFormat(new java.util.Date()), 
+                    ld[8], 
+                    BlueSeerUtils.setDateFormat(new java.util.Date()), 
+                    BlueSeerUtils.setDateFormat(new java.util.Date()), 
                     bsmf.MainFrame.userid, ld[10], ld[11], ld[12], ld[13], 
                     ld[14], (ld[15].isBlank()) ? "N30" : ld[15], ld[16], ld[17], 
                     ld[18], ld[19], ld[20], 
@@ -198,6 +200,7 @@ public class cusData {
                     ld[30], ld[28], ld[29], ld[31], ld[32],
                     ld[33], ld[34], ld[35], (ld[9].isBlank()) ? "1000" : ld[9], ""
                 );
+     
                 _addCustMstr(x, con, ps, res, true);
                 cms_det y = new cms_det(null, 
                 ld[0], ld[0], ld[1], ld[2], ld[3],

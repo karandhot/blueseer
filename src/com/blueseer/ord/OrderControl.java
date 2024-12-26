@@ -281,6 +281,9 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
             if (s[0].equals("browse_end_date")) {
                 tbenddate.setText(s[1]);
             }
+            if (s[0].equals("autoconfirm")) {
+                cbautoconfirm.setSelected(BlueSeerUtils.ConvertStringToBool(s[1]));  
+            }
         } 
     }
     
@@ -291,6 +294,9 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
       }
       if (! tbenddate.getText().isBlank() && BlueSeerUtils.isParsableToInt(tbenddate.getText())) {
           OVData.addUpdateSysMeta("system", "ordercontrol", "browse_end_date", tbenddate.getText());  
+      }
+      if (! tbenddate.getText().isBlank() && BlueSeerUtils.isParsableToInt(tbenddate.getText())) {
+          OVData.addUpdateSysMeta("system", "ordercontrol", "autoconfirm", BlueSeerUtils.boolToString(cbautoconfirm.isSelected()));  
       }
     }
     
@@ -322,6 +328,7 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
         tbenddate = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         btbilling = new javax.swing.JButton();
+        cbautoconfirm = new javax.swing.JCheckBox();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -430,6 +437,8 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
             }
         });
 
+        cbautoconfirm.setText("Auto Confirm Order?");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -447,7 +456,8 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
                             .addComponent(cbautosource)
                             .addComponent(cbautoinvoice)
                             .addComponent(cbcustitem)
-                            .addComponent(cbvouchershipping))
+                            .addComponent(cbvouchershipping)
+                            .addComponent(cbautoconfirm))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -463,7 +473,7 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(5, 5, 5)
-                        .addComponent(cbautosource, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cbautosource)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cbautoinvoice)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -473,7 +483,10 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cbexceedQOHU)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbvouchershipping))
+                        .addComponent(cbvouchershipping)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cbautoconfirm)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -531,6 +544,7 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
     private javax.swing.JButton btjson;
     private javax.swing.JButton btupdate;
     private javax.swing.JCheckBox cballocate;
+    private javax.swing.JCheckBox cbautoconfirm;
     private javax.swing.JCheckBox cbautoinvoice;
     private javax.swing.JCheckBox cbautosource;
     private javax.swing.JCheckBox cbcustitem;

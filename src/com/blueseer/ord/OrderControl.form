@@ -49,6 +49,7 @@
                               <Component id="cbautoinvoice" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Component id="cbcustitem" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Component id="cbvouchershipping" min="-2" max="-2" attributes="0"/>
+                              <Component id="cbautoconfirm" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace pref="59" max="32767" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
@@ -70,8 +71,8 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                          <Component id="cbautosource" min="-2" pref="34" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="cbautosource" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Component id="cbautoinvoice" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="cbcustitem" min="-2" max="-2" attributes="0"/>
@@ -81,6 +82,9 @@
                           <Component id="cbexceedQOHU" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="cbvouchershipping" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="cbautoconfirm" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
@@ -264,6 +268,11 @@
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btbillingActionPerformed"/>
           </Events>
+        </Component>
+        <Component class="javax.swing.JCheckBox" name="cbautoconfirm">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Auto Confirm Order?"/>
+          </Properties>
         </Component>
       </SubComponents>
     </Container>

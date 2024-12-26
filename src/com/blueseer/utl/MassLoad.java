@@ -1876,7 +1876,7 @@ public class MassLoad extends javax.swing.JPanel {
         list.add("cm_zip,s,10,mandatory,unvalidated");
         list.add("cm_country,s,50,mandatory,validated");
         list.add("cm_site,s,10,optional,validated");
-        list.add("cm_group,s,50,optional,unvalidated");
+        list.add("cm_group,s,50,optional,unvalidated");   // 10
         list.add("cm_market,s,50,optional,unvalidated");
         list.add("cm_creditlimit,i,8,optional,validated");
         list.add("cm_onhold,i,1,optional,validated");
@@ -1886,7 +1886,7 @@ public class MassLoad extends javax.swing.JPanel {
         list.add("cm_price_code,s,10,optional,unvalidated");
         list.add("cm_disc_code,s,10,optional,unvalidated");
         list.add("cm_tax_code,s,10,optional,unvalidated");
-        list.add("cm_salesperson,s,50,optional,unvalidated");
+        list.add("cm_salesperson,s,50,optional,unvalidated");  // 20
         list.add("cm_ar_acct,s,10,optional,validated");
         list.add("cm_ar_cc,s,4,optional,validated");
         list.add("cm_remarks,s,500,optional,unvalidated");
@@ -1896,7 +1896,7 @@ public class MassLoad extends javax.swing.JPanel {
         list.add("cm_logo,s,100,optional,unvalidated");
         list.add("cm_ps_jasper,s,100,optional,unvalidated");
         list.add("cm_iv_jasper,s,100,optional,unvalidated");
-        list.add("cm_label,s,100,optional,unvalidated");
+        list.add("cm_label,s,100,optional,unvalidated");  // 30
         list.add("cm_phone,s,15,optional,unvalidated");
         list.add("cm_email,s,60,optional,unvalidated");
         list.add("cm_is855export,i,1,optional,unvalidated");
