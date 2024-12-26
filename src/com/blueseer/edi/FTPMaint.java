@@ -762,6 +762,29 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                             }
 		        }
                     } // if get
+                    if (splitLine.length > 1 && splitLine[0].equals("delete") || splitLine.length > 1 && splitLine[0].equals("rm")) {
+                        // first capture list of available files...
+                        java.util.List ftpFiles = csftp.ls("."); 
+                        if (ftpFiles != null) {
+                            for (Object f : ftpFiles) {
+                                LsEntry le = (LsEntry) f;
+                                String x = ("\\Q" + splitLine[1] + "\\E").replace("*", "\\E.*\\Q");
+                                if (le.getFilename().matches(x)) {
+                                Path inpath = FileSystems.getDefault().getPath(homeIn + "/" + le.getFilename());
+	              		in = new FileOutputStream(inpath.toFile());
+                                    try {
+                                    csftp.rm(x);
+                                    talog.append("deleted from server: " + le.getFilename() + "\n");
+                                    } catch(SftpException e){
+                                    talog.append("Could not delete the file: "+ le.getFilename() + "\n");
+                                    talog.append(e.toString() + "\n");
+                                    }
+                                in.close();
+                                talog.append("server file deleted: " + le.getFilename() + "\n");
+                                }
+                            }
+		        }
+                    } // if delete
                 } // for commands
                 
              } catch (Exception e) {
