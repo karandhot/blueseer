@@ -18316,6 +18316,7 @@ MainFrame.bslog(e);
              PrintService[] services = PrinterJob.lookupPrintServices();
               
                 for (int index = 0; service == null && index < services.length; index++) {
+                    System.out.println("printers: " + services[index].getName());
                     if (services[index].getName().equalsIgnoreCase(prt[0])) {
                         service = services[index];
                     }
