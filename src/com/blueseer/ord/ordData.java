@@ -208,7 +208,7 @@ public class ordData {
     
     private static int _addOrderDetChange(sod_chg x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
         int rows = 0;
-        String sqlSelect = "select * from sod_chg where sodc_id = ? and sodc_po = ? and and sodc_line = ?";
+        String sqlSelect = "select * from sod_chg where sodc_id = ? and sodc_po = ? and sodc_line = ?";
         String sqlInsert = "insert into sod_chg (sodc_id, sodc_po, sodc_line, " 
                         + "sodc_type, sodc_item, sodc_custitem, sodc_qty, sodc_price, sodc_duedate, sodc_misc ) "
                         + " values (?,?,?,?,?,?,?,?,?,?); "; 
@@ -3928,6 +3928,52 @@ public class ordData {
 
 
                   res = st.executeQuery("select so_cust from so_mstr where so_nbr = " + "'" + order + "'" +";");
+                while (res.next()) {
+                    billto = res.getString("so_cust");
+                }
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+
+        } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+
+    }
+         return billto;
+     }
+
+    public static String getSOOrderBilltoByPO(String po) {
+         String billto = "";
+          try{
+
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+            
+           java.util.Date now = new java.util.Date();
+            DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+            DateFormat dftime = new SimpleDateFormat("HH:mm:ss");
+            String mydate = dfdate.format(now);
+
+
+
+                  res = st.executeQuery("select so_cust from so_mstr where so_po = " + "'" + po + "'" +";");
                 while (res.next()) {
                     billto = res.getString("so_cust");
                 }

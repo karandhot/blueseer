@@ -2097,7 +2097,7 @@ public class admData {
                     String[] splitLine = line.trim().split("\\s+");
                     if (splitLine.length > 1 && splitLine[0].equals("cd")) {
                         try{
-                            logdata.add("changing directory...");
+                            logdata.add("changing directory..." + splitLine[1]);
                         csftp.cd(splitLine[1]); 
                         } catch(SftpException e){
                             logdata.add(e.toString());
@@ -2297,6 +2297,7 @@ public class admData {
                 for (String line : fm.ftp_commands().split("\\n"))   {
                     String[] splitLine = line.trim().split("\\s+");
                     if (splitLine.length > 1 && splitLine[0].equals("cd")) {
+                        logdata.add("changing directory..." + splitLine[1]);
                         client.changeWorkingDirectory(splitLine[1]);
                         showServerReply(client, logdata);
                     }
@@ -2338,6 +2339,7 @@ public class admData {
                                     if (isLocalDelete && isSuccess && ! localFiles[i].getName().isBlank()) {
                                         Path filepath = FileSystems.getDefault().getPath(homeOut + localFiles[i].getName());
                                         Files.deleteIfExists(filepath);
+                                        logdata.add("deleting local file: " + localFiles[i].getName());
                                     }    
                                 }
                           } 

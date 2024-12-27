@@ -3492,8 +3492,8 @@ CREATE TABLE "so_chg" (
   "soc_id" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
   "soc_po" varchar(50) NOT NULL COLLATE NOCASE DEFAULT '',
   "soc_type" varchar(80) NOT NULL COLLATE NOCASE DEFAULT '',
-  "soc_chgdate" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
-  "soc_duedate" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
+  "soc_chgdate" date DEFAULT '0000-00-00',
+  "soc_duedate" date DEFAULT '0000-00-00',
   "soc_billto" varchar(200) NOT NULL COLLATE NOCASE DEFAULT '',
   "soc_shipto" varchar(200) NOT NULL COLLATE NOCASE DEFAULT '',
   "soc_ref" varchar(80) NOT NULL COLLATE NOCASE DEFAULT '',
@@ -3504,7 +3504,7 @@ CREATE TABLE "so_chg" (
   "soc_misc3" varchar(80) NOT NULL COLLATE NOCASE DEFAULT '',
   "soc_status" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
   "soc_userid" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
-  "soc_applydate" varchar(10) NOT NULL COLLATE NOCASE DEFAULT ''
+  "soc_applydate" date DEFAULT '0000-00-00'
 ); 
 CREATE TABLE "sod_chg" (
   "sodc_id" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
@@ -3515,7 +3515,7 @@ CREATE TABLE "sod_chg" (
   "sodc_custitem" varchar(80) NOT NULL COLLATE NOCASE DEFAULT '',
   "sodc_qty" decimal(14,5) NOT NULL DEFAULT '0',
   "sodc_price" decimal(14,5) NOT NULL DEFAULT '0',
-  "sodc_duedate" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
+  "sodc_duedate" date DEFAULT '0000-00-00',
   "sodc_misc" varchar(200) NOT NULL COLLATE NOCASE DEFAULT ''
 );
 

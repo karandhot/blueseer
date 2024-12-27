@@ -40,14 +40,17 @@ freighteqptype,Reefer,Refrigerated trailer,1
 freighteqptype,Specialized,Specialized trailer,1
 edidoctype,generic,Generic Document Type,1
 edidoctype,850csv,CSV Order,1
+edidoctype,860csv,CSV Order Change,1
 edidoctype,856csv,CSV Shipping Notice,1
 edidoctype,810csv,CSV Invoice,1
 edidoctype,855csv,CSV Order Ack,1
 edidoctype,850xml,XML Order,1
+edidoctype,860xml,XML Order Change,1
 edidoctype,856xml,XML Shipping Notice,1
 edidoctype,810xml,XML Invoice,1
 edidoctype,855xml,XML Order Ack,1
 edidoctype,850json,JSON Order,1
+edidoctype,860json,JSON Order Change,1
 edidoctype,856json,JSON Shipping Notice,1
 edidoctype,810json,JSON Invoice,1
 edidoctype,855json,JSON Order Ack,1
@@ -56,6 +59,7 @@ edidoctype,856une,Edifact DESADV,1
 edidoctype,810une,Edifact INVOIC,1
 edidoctype,855une,Edifact ORDRSP,1
 edidoctype,850db,Database Order,1
+edidoctype,860db,Database Order Change,1
 edidoctype,856db,Database Shipping Notice,1
 edidoctype,855db,Database Order Ack,1
 edidoctype,810db,Database Invoice,1

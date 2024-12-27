@@ -9,6 +9,7 @@ X12820,X12 Payment Order/Remittance Advice,generic,820x12,X12,0,,0,1000
 X12824,X12 Application Advice,generic,824x12,X12,0,,0,1000
 X12864,X12 Text Message,generic,864x12,X12,0,,0,1000
 X12830,X12 Planning Schedule,generic,830x12,X12,0,,0,1000
+X12860,X12 Purchase Order Change,generic,860x12,X12,0,,0,1000
 X12862,X12 Shipping Schedule,generic,862x12,X12,0,,0,1000
 X12204,X12 Motor Carrier Load Tender,generic,204x12,X12,0,,0,1000
 X12214,X12 Carrier Shipment Status,generic,214x12,X12,0,,0,1000

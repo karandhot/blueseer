@@ -3037,8 +3037,8 @@ CREATE TABLE IF NOT EXISTS `so_chg` (
   `soc_id` varchar(30) NOT NULL DEFAULT '',
   `soc_po` varchar(50) NOT NULL DEFAULT '',
   `soc_type` varchar(80) NOT NULL DEFAULT '',
-  `soc_chgdate` varchar(10) NOT NULL DEFAULT '',
-  `soc_duedate` varchar(10) NOT NULL DEFAULT '',
+  `soc_chgdate` date DEFAULT NULL,
+  `soc_duedate` date DEFAULT NULL,
   `soc_billto` varchar(200) NOT NULL DEFAULT '',
   `soc_shipto` varchar(200) NOT NULL DEFAULT '',
   `soc_ref` varchar(80) NOT NULL DEFAULT '',
@@ -3049,7 +3049,7 @@ CREATE TABLE IF NOT EXISTS `so_chg` (
   `soc_misc3` varchar(80) NOT NULL DEFAULT '',
   `soc_status` varchar(10) NOT NULL DEFAULT '',
   `soc_userid` varchar(30) NOT NULL DEFAULT '',
-  `soc_applydate` varchar(10) NOT NULL DEFAULT ''
+  `soc_applydate` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `sod_chg` (
   `sodc_id` varchar(30) NOT NULL DEFAULT '',
@@ -3060,6 +3060,6 @@ CREATE TABLE IF NOT EXISTS `sod_chg` (
   `sodc_custitem` varchar(80) NOT NULL DEFAULT '',
   `sodc_qty` decimal(14,5) NOT NULL DEFAULT '0',
   `sodc_price` decimal(14,5) NOT NULL DEFAULT '0',
-  `sodc_duedate` varchar(10) NOT NULL DEFAULT '',
+  `sodc_duedate` date DEFAULT NULL,
   `sodc_misc` varchar(200) NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
