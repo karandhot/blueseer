@@ -53,17 +53,12 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="btprint" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Group type="102" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="tblot" alignment="0" min="-2" pref="139" max="-2" attributes="0"/>
-                              <Component id="tbqty" alignment="0" min="-2" pref="63" max="-2" attributes="0"/>
-                              <Component id="tbref" alignment="0" min="-2" pref="139" max="-2" attributes="0"/>
-                              <Component id="ddprinter" alignment="0" min="-2" pref="136" max="-2" attributes="0"/>
-                              <Component id="tbline" alignment="0" min="-2" pref="64" max="-2" attributes="0"/>
-                              <Component id="tblblqty" alignment="0" min="-2" pref="63" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="3" max="32767" attributes="0"/>
-                      </Group>
+                      <Component id="tblot" alignment="0" min="-2" pref="139" max="-2" attributes="0"/>
+                      <Component id="tbqty" alignment="0" min="-2" pref="63" max="-2" attributes="0"/>
+                      <Component id="tbref" alignment="0" min="-2" pref="139" max="-2" attributes="0"/>
+                      <Component id="ddprinter" alignment="0" min="-2" pref="136" max="-2" attributes="0"/>
+                      <Component id="tbline" alignment="0" min="-2" pref="64" max="-2" attributes="0"/>
+                      <Component id="tblblqty" alignment="0" min="-2" pref="63" max="-2" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="tbordnbr" min="-2" pref="114" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>

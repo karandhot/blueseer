@@ -135,6 +135,7 @@ String shipcity = "";
 String shipstate = "";
 String shipzip = "";
 String shipcountry = "";
+String shipcsz = "";
 
     
     
@@ -248,6 +249,7 @@ String shipcountry = "";
                  shipstate = res.getString("cms_state").replace("'", "");
                  shipzip = res.getString("cms_zip").replace("'", "");
                  shipcountry = res.getString("cms_country").replace("'", "");
+                 shipcsz = shipcity + ", " + shipstate + " " + shipzip;
                  }
 
             } catch (SQLException s) {
@@ -695,6 +697,12 @@ concatline = concatline.replace("$SITENAME", sitename);
 concatline = concatline.replace("$SITEADDR", siteaddr);
 concatline = concatline.replace("$SITEPHONE", sitephone);
 concatline = concatline.replace("$SITECSZ", sitecitystatezip);
+
+concatline = concatline.replace("$SHIPNAME", shipname);
+concatline = concatline.replace("$SHIPADDR1", shipaddr1);
+concatline = concatline.replace("$SHIPADDR2", shipaddr2);
+concatline = concatline.replace("$SHIPZIP", shipzip);
+concatline = concatline.replace("$SHIPCSZ", shipcsz);
 
 concatline = concatline.replace("$TODAYDATE", dfdate.format(now));
 concatline = concatline.replace("$TODAYTIME", dftime.format(now));

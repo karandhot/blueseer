@@ -742,22 +742,22 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                             for (Object f : ftpFiles) {
                                 LsEntry le = (LsEntry) f;
                                 String x = ("\\Q" + splitLine[1] + "\\E").replace("*", "\\E.*\\Q");
-                                if (le.getFilename().matches(x)) {
+                                if (! le.getAttrs().isDir() && le.getFilename().matches(x)) {
                                 Path inpath = FileSystems.getDefault().getPath(homeIn + "/" + le.getFilename());
 	              		in = new FileOutputStream(inpath.toFile());
-                                talog.append("retrieving file: " + le.getFilename() + " size:" + le.getAttrs() + "\n");
+                                talog.append("retrieving file: " + le.getFilename() + " size:" + le.getAttrs().getSize() + "\n");
                                 csftp.get(le.getFilename(), in);
                                 in.close();
                                 talog.append("file retrieved: " + le.getFilename() + "\n");
-                                    if (BlueSeerUtils.ConvertStringToBool(String.valueOf(fm.ftp_delete()))) {
-                                        try {
-                                        csftp.rm(le.getFilename());
-                                        talog.append("deleted from server: " + le.getFilename() + "\n");
-                                        } catch(SftpException e){
-                                        talog.append("Could not delete the file: "+ le.getFilename() + "\n");
-                                        talog.append(e.toString() + "\n");
-                                        }
+                                if (BlueSeerUtils.ConvertStringToBool(String.valueOf(fm.ftp_delete()))) {
+                                    try {
+                                    csftp.rm(le.getFilename());
+                                    talog.append("deleted from server: " + le.getFilename() + "\n");
+                                    } catch(SftpException e){
+                                    talog.append("Could not delete the file: "+ le.getFilename() + "\n");
+                                    talog.append(e.toString() + "\n");
                                     }
+                                }
                                 }
                             }
 		        }

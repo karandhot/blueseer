@@ -3626,8 +3626,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btnewActionPerformed
 
     private void btadditemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btadditemActionPerformed
-        if (! validateInput(dbaction.add)) {
-           return;
+        if (! canupdate) {
+            bsmf.MainFrame.show(getMessageTag(1185));
+            return;
         }
         double np = 0;
         double qty = 0;
@@ -3698,8 +3699,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_ddcustActionPerformed
 
     private void btdelitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdelitemActionPerformed
-        if (! validateInput(dbaction.delete)) {
-           return;
+        if (! canupdate) {
+            bsmf.MainFrame.show(getMessageTag(1185));
+            return;
         }
         int[] rows = orddet.getSelectedRows();
         for (int i : rows) {
@@ -4101,8 +4103,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_ddsiteActionPerformed
 
     private void btupdateitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateitemActionPerformed
-        if (! validateInput(dbaction.update)) {
-           return;
+        if (! canupdate) {
+            bsmf.MainFrame.show(getMessageTag(1185));
+            return;
         }
         int line = 0;
         String bom = "";
