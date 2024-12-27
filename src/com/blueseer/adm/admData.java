@@ -39,6 +39,7 @@ import static com.blueseer.utl.BlueSeerUtils.log;
 import com.blueseer.utl.EDData;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
@@ -2084,7 +2085,7 @@ public class admData {
                 
                 session.setConfig(config);
                 
-                logdata.add("***   Attempting sftp connection to " + fm.ftp_ip() + "   ***" + "\n");
+                logdata.add("***   Attempting sftp connection to " + fm.ftp_ip() + "   ***");
                 
                 session.connect();
                 channel = session.openChannel("sftp");
@@ -2096,10 +2097,10 @@ public class admData {
                     String[] splitLine = line.trim().split("\\s+");
                     if (splitLine.length > 1 && splitLine[0].equals("cd")) {
                         try{
-                            logdata.add("changing directory...\n");
+                            logdata.add("changing directory...");
                         csftp.cd(splitLine[1]); 
                         } catch(SftpException e){
-                            logdata.add(e.toString() + "\n");
+                            logdata.add(e.toString());
                         }
                         
                     }
@@ -2110,17 +2111,17 @@ public class admData {
                         }
                         
                         try{
-                        logdata.add("listing contents...\n");
+                        logdata.add("listing contents...");
                         java.util.List ftpFiles = csftp.ls(x); 
-                        logdata.add("file count..." + ftpFiles.size() + "\n");
+                        logdata.add("file count..." + ftpFiles.size() );
                         if (ftpFiles != null) {
                             for (Object f : ftpFiles) {
                                 ChannelSftp.LsEntry le = (ChannelSftp.LsEntry) f;
-                                logdata.add(le.getLongname() + "\n");
+                                logdata.add(le.getLongname() );
                             }
 		        }
                         } catch(SftpException e){
-                            logdata.add(e.toString() + "\n");
+                            logdata.add(e.toString() );
                         }
                     }
                     if (splitLine.length > 1 && splitLine[0].equals("put")) {
@@ -2137,14 +2138,14 @@ public class admData {
                               String x = ("\\Q" + splitLine[splitLine.length - 1] + "\\E").replace("*", "\\E.*\\Q");
                                 if (localFiles[i].getName().matches(x)) {
                                     InputStream inputStream = new FileInputStream(localFiles[i]);
-                                    logdata.add("storing file: " + localFiles[i].getName() + " size: " + localFiles[i].length() + "\n");
+                                    logdata.add("storing file: " + localFiles[i].getName() + " size: " + localFiles[i].length() );
                                     try {
                                     csftp.put(inputStream, localFiles[i].getName());
-                                    logdata.add("file stored: " + localFiles[i].getName() + "\n");
+                                    logdata.add("file stored: " + localFiles[i].getName() );
                                     isSuccess = true;
                                     } catch(SftpException e){
-                                    logdata.add("unable to store file: " + localFiles[i].getName() + "\n");
-                                    logdata.add(e.toString() + "\n");
+                                    logdata.add("unable to store file: " + localFiles[i].getName() );
+                                    logdata.add(e.toString() );
                                     isSuccess = false;
                                     } finally {
                                       if (inputStream != null) {
@@ -2164,53 +2165,74 @@ public class admData {
                         java.util.List ftpFiles = csftp.ls("."); 
                         if (ftpFiles != null) {
                             for (Object f : ftpFiles) {
-                                ChannelSftp.LsEntry le = (ChannelSftp.LsEntry) f;
+                                LsEntry le = (LsEntry) f;
                                 String x = ("\\Q" + splitLine[1] + "\\E").replace("*", "\\E.*\\Q");
-                                if (le.getFilename().matches(x)) {
+                                if (! le.getAttrs().isDir() && le.getFilename().matches(x)) {
                                 Path inpath = FileSystems.getDefault().getPath(homeIn + "/" + le.getFilename());
 	              		in = new FileOutputStream(inpath.toFile());
-                                logdata.add("retrieving file: " + le.getFilename() + " size:" + le.getAttrs() + "\n");
+                                logdata.add("retrieving file: " + le.getFilename() + " size:" + le.getAttrs().getSize() );
                                 csftp.get(le.getFilename(), in);
                                 in.close();
-                                logdata.add("file retrieved: " + le.getFilename() + "\n");
+                                logdata.add("file retrieved: " + le.getFilename() );
                                     if (BlueSeerUtils.ConvertStringToBool(String.valueOf(fm.ftp_delete()))) {
                                         try {
                                         csftp.rm(le.getFilename());
-                                        logdata.add("deleted from server: " + le.getFilename() + "\n");
+                                        logdata.add("deleted from server: " + le.getFilename() );
                                         } catch(SftpException e){
-                                        logdata.add("Could not delete the file: "+ le.getFilename() + "\n");
-                                        logdata.add(e.toString() + "\n");
+                                        logdata.add("Could not delete the file: "+ le.getFilename() );
+                                        logdata.add(e.toString() );
                                         }
                                     }
                                 }
                             }
 		        }
                     } // if get
+                    if (splitLine.length > 1 && splitLine[0].equals("delete") || splitLine.length > 1 && splitLine[0].equals("rm")) {
+                        // first capture list of available files...
+                        java.util.List ftpFiles = csftp.ls("."); 
+                        if (ftpFiles != null) {
+                            for (Object f : ftpFiles) {
+                                LsEntry le = (LsEntry) f;
+                                String x = ("\\Q" + splitLine[1] + "\\E").replace("*", "\\E.*\\Q");
+                                if (! le.getAttrs().isDir() && le.getFilename().matches(x)) {
+                                    try {
+                                    csftp.rm(le.getFilename());
+                                    logdata.add("deleted from server: " + le.getFilename());
+                                    } catch(SftpException e){
+                                    logdata.add("Could not delete the file: "+ le.getFilename() );
+                                    logdata.add(e.toString());
+                                    }
+                                in.close();
+                                }
+                            }
+		        }
+                    } // if delete
+                    
                 } // for commands
                 
              } catch (Exception e) {
-                logdata.add("***   Unable to connect to FTP server. " + e.toString() + "   ***" + "\n");
+                logdata.add("***   Unable to connect to FTP server. " + e.toString() + "   ***" + "");
             } finally {
                 try {
                     if(session != null) {
                         session.disconnect();
-                        logdata.add("disconnect session...\n");
+                        logdata.add("disconnect session...");
                     }
 
                     if(channel != null) {
                         channel.disconnect();
-                        logdata.add("disconnect channel...\n");
+                        logdata.add("disconnect channel...");
                     }
 
                     if(csftp != null) {
                         csftp.quit();
-                        logdata.add("quit...\n");
+                        logdata.add("quit...");
                     }
                    
                   log("ftp", logdata);  
             
                 } catch (Exception exc) {
-                    logdata.add("***   Unable to disconnect from sFTP server. " + exc.toString()+"   ***" + "\n");
+                    logdata.add("***   Unable to disconnect from sFTP server. " + exc.toString()+"   ***" );
                     log("ftp", logdata);  
                 }  
             }
@@ -2307,10 +2329,10 @@ public class admData {
                                     boolean done = client.storeFile(localFiles[i].getName(), inputStream);
                                     inputStream.close();
                                     if (done) {
-                                        logdata.add("file stored: " + localFiles[i].getName() + "\n");
+                                        logdata.add("file stored: " + localFiles[i].getName());
                                         isSuccess = true;
                                     } else {
-                                        logdata.add("unable to store file: " + localFiles[i].getName() + "\n");
+                                        logdata.add("unable to store file: " + localFiles[i].getName());
                                         isSuccess = false;
                                     }   
                                     if (isLocalDelete && isSuccess && ! localFiles[i].getName().isBlank()) {
@@ -2327,7 +2349,7 @@ public class admData {
                         if (ftpFiles != null) {
                             for (FTPFile f : ftpFiles) {
                                 String x = ("\\Q" + splitLine[1] + "\\E").replace("*", "\\E.*\\Q");
-                                if (f.getName().matches(x)) {
+                                if (! f.isDirectory() && f.getName().matches(x)) {
                                 Path inpath = Paths.get(homeIn + "\\" + f.getName());
 	              		in = new FileOutputStream(inpath.toFile());
                                 client.retrieveFile(f.getName(), in);
@@ -2342,6 +2364,23 @@ public class admData {
                                         logdata.add("Could not delete the file: "+ f.getName());
                                     }
                                 }
+                                }
+                            }
+		        }
+                    }
+                    if (splitLine.length > 1 && splitLine[0].equals("delete") || splitLine.length > 1 && splitLine[0].equals("rm")) {
+                        // first capture list of available files...
+                        FTPFile[] ftpFiles = client.listFiles();
+                        if (ftpFiles != null) {
+                            for (FTPFile f : ftpFiles) {
+                                String x = ("\\Q" + splitLine[1] + "\\E").replace("*", "\\E.*\\Q");
+                               // if (! le.getAttrs().isDir() && le.getFilename().matches(x)) {
+                                if (! f.isDirectory() && f.getName().matches(x)) {
+                                logdata.add("deleting file: " + f.getName() + " size:" + f.getSize());
+                                client.deleteFile(f.getName());
+                                in.close();
+                                logdata.add("file deleted: " + f.getName());
+                                showServerReply(client, logdata);
                                 }
                             }
 		        }

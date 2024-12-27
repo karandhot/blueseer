@@ -769,9 +769,7 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                             for (Object f : ftpFiles) {
                                 LsEntry le = (LsEntry) f;
                                 String x = ("\\Q" + splitLine[1] + "\\E").replace("*", "\\E.*\\Q");
-                                if (le.getFilename().matches(x)) {
-                                Path inpath = FileSystems.getDefault().getPath(homeIn + "/" + le.getFilename());
-	              		in = new FileOutputStream(inpath.toFile());
+                                if (! le.getAttrs().isDir() && le.getFilename().matches(x)) {
                                     try {
                                     csftp.rm(le.getFilename());
                                     talog.append("deleted from server: " + le.getFilename() + "\n");
@@ -780,7 +778,6 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                                     talog.append(e.toString() + "\n");
                                     }
                                 in.close();
-                                talog.append("server file deleted: " + le.getFilename() + "\n");
                                 }
                             }
 		        }
@@ -926,7 +923,8 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                         if (ftpFiles != null) {
                             for (FTPFile f : ftpFiles) {
                                 String x = ("\\Q" + splitLine[1] + "\\E").replace("*", "\\E.*\\Q");
-                                if (f.getName().matches(x)) {
+                               // if (! le.getAttrs().isDir() && le.getFilename().matches(x)) {
+                                if (! f.isDirectory() && f.getName().matches(x)) {
                                 Path inpath = FileSystems.getDefault().getPath(homeIn + "/" + f.getName());
 	              		in = new FileOutputStream(inpath.toFile());
                                 talog.append("retrieving file: " + f.getName() + " size:" + f.getSize() + "\n");
@@ -942,6 +940,23 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                                         talog.append("Could not delete the file: "+ f.getName() + "\n");
                                     }
                                 }
+                                }
+                            }
+		        }
+                    }
+                    if (splitLine.length > 1 && splitLine[0].equals("delete") || splitLine.length > 1 && splitLine[0].equals("rm")) {
+                        // first capture list of available files...
+                        FTPFile[] ftpFiles = client.listFiles();
+                        if (ftpFiles != null) {
+                            for (FTPFile f : ftpFiles) {
+                                String x = ("\\Q" + splitLine[1] + "\\E").replace("*", "\\E.*\\Q");
+                               // if (! le.getAttrs().isDir() && le.getFilename().matches(x)) {
+                                if (! f.isDirectory() && f.getName().matches(x)) {
+                                talog.append("deleting file: " + f.getName() + " size:" + f.getSize() + "\n");
+                                client.deleteFile(f.getName());
+                                in.close();
+                                talog.append("file deleted: " + f.getName() + "\n");
+                                showServerReply(client);
                                 }
                             }
 		        }
