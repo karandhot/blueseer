@@ -1589,7 +1589,7 @@ public class cusData {
                lines.add(s);
             }
             
-            res = st.executeQuery("select lblz_code from label_zebra where lblz_type = 'cont' order by lblz_code ;");
+            res = st.executeQuery("select lblz_code from label_zebra order by lblz_code ;");
             while (res.next()) {
                 String[] s = new String[2];
                s[0] = "labels";
