@@ -1,0 +1,126 @@
+{"asn" : 
+  {"asnid":"po12345",
+   "site":"1000",
+   "asndate":"2021-01-06",
+   "duedate":"2021-01-06",
+   "remarks":"test of remarks",
+   "reference":"12345",
+   "doctype":"bs-json",
+   "asntype":"Standard Order",
+   "senderid":"999999999",
+   "receiverid":"BLUESEER",
+   "currency":"USD",
+   "shipvia":"",
+   "transportmethod":"",
+   "status":"open",
+   "addresses" :
+   {"address" : [ {"type":"billto",
+   	 "addrid":"222",
+   	 "name":"ACME Co.",
+   	 "line1":"Route 1 Frontage Rd",
+   	 "line2":"",
+   	 "line3":"",
+	 "city":"Dillon",
+	 "state":"SC",
+	 "zip":"29536",
+	 "country":"USA",
+	 "phone":"",
+	 "email":"",
+	 "url":""
+	 },
+	 {"type":"shipto",
+   	 "addrid":"333",
+	 "name":"ACME Warehouse",
+	 "line1":"BR549 Highway SE",
+   	 "line2":"",
+   	 "line3":"",
+	 "city":"Dillon",
+	 "state":"SC",
+	 "zip":"29536",
+	 "country":"USA",
+	 "phone":"",
+	 "email":"",
+	 "url":"" }]},
+   "orders" : 
+   { "order" : [ {"orderline":"1",
+	 "ordernumber":"PO111",
+         "packs" : 
+         { "pack" : [ {"packline":"1",
+                  "packnumber":"pack111",
+                  "items" :
+                  { "item" : [ { "itemnumber":"5000001",
+	 			"line":1,
+	 			"uom":"EA",
+	 			"description":"Bicycle Huffy",
+	 			"skunumber":"custitem6543",
+	 			"upcnumber":"0000000000000",
+	 			"asnquantity":6,
+	 			"shippedquantity":0,
+	 			"status":"open",
+	 			"listprice":127.00,
+	 			"netprice":127.00,
+	 			"discount":0,
+	 			"location":"",
+	 			"warehouse":""},	 
+                           { "itemnumber":"5000002",
+	 			"line":2,
+	 			"uom":"EA",
+	 			"description":"Bicycle Huffy",
+	 			"skunumber":"custitem6543",
+	 			"upcnumber":"0000000000000",
+	 			"asnquantity":6,
+	 			"shippedquantity":0,
+	 			"status":"open",
+	 			"listprice":127.00,
+	 			"netprice":127.00,
+	 			"discount":0,
+	 			"location":"",
+	 			"warehouse":""}	 
+                    ]
+          }
+       }]}
+      },{"orderline":"2",
+	 "ordernumber":"PO222",
+         "packs" : 
+         { "pack" : [ {"packline":"2",
+                  "packnumber":"pack321",
+                  "items" :
+                  { "item" : [ { "itemnumber":"5000003",
+	 			"line":3,
+	 			"uom":"EA",
+	 			"description":"Bicycle HORNET",
+	 			"skunumber":"custitem999",
+	 			"upcnumber":"0000000000000",
+	 			"asnquantity":6,
+	 			"shippedquantity":0,
+	 			"status":"open",
+	 			"listprice":127.00,
+	 			"netprice":127.00,
+	 			"discount":0,
+	 			"location":"",
+	 			"warehouse":""},	 
+                           { "itemnumber":"5000004",
+	 			"line":4,
+	 			"uom":"EA",
+	 			"description":"Bicycle Huffy",
+	 			"skunumber":"custitem6543",
+	 			"upcnumber":"0000000000000",
+	 			"asnquantity":6,
+	 			"shippedquantity":0,
+	 			"status":"open",
+	 			"listprice":127.00,
+	 			"netprice":127.00,
+	 			"discount":0,
+	 			"location":"",
+	 			"warehouse":""}	 
+                     ] 
+                  } } 
+                  ] 
+                  } 
+                  }
+            ]
+          }
+  }
+
+}}
+

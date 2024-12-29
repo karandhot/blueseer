@@ -32,6 +32,8 @@ CSVD365Order,Comma Delimited Order,generic,850csv,CSV,44,,0,1000
 XMLGenericOrder,XML Generic Order,generic,850xml,XML,0,,0,1000
 cXMLOrder,cXML Business Order,generic,850xml,XML,0,,0,1000
 JSONGenericOrder,JSON Generic Order,generic,850json,JSON,0,,0,1000
+JSONGenericASN,JSON Generic ASN,generic,856json,JSON,0,,0,1000
+JSONGenericInvoice,JSON Generic Invoice,generic,810json,JSON,0,,0,1000
 UNEorders,EDIFACT Purchase Order,generic,850une,UNE,0,,0,1000
 UNEdesadv,EDIFACT Shipping Advice,generic,856une,UNE,0,,0,1000
 UNEinvoic,EDIFACT Invoice,generic,810une,UNE,0,,0,1000

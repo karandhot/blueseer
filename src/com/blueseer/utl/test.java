@@ -36,6 +36,7 @@ import com.blueseer.adm.admData.ov_mstr;
 import static com.blueseer.edi.EDI.uploadFile;
 import com.blueseer.ord.ordData;
 import static com.blueseer.ord.ordData.getOrderMstrSet;
+import static com.blueseer.utl.BlueSeerUtils.checkDigitUCC18;
 import static com.blueseer.utl.BlueSeerUtils.timediff;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -101,6 +102,7 @@ public class test extends javax.swing.JPanel {
         btjobticket = new javax.swing.JButton();
         btupload = new javax.swing.JButton();
         btbandwidth = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
 
         btjasper.setText("jasper");
         btjasper.addActionListener(new java.awt.event.ActionListener() {
@@ -144,12 +146,21 @@ public class test extends javax.swing.JPanel {
             }
         });
 
+        jButton1.setText("checkdigit");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(152, 152, 152)
+                .addGap(34, 34, 34)
+                .addComponent(jButton1)
+                .addGap(45, 45, 45)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -158,10 +169,10 @@ public class test extends javax.swing.JPanel {
                                 .addComponent(btjasper)
                                 .addGap(46, 46, 46)
                                 .addComponent(btupload)))
-                        .addContainerGap(69, Short.MAX_VALUE))
+                        .addContainerGap(63, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(testmail)
-                        .addGap(0, 174, Short.MAX_VALUE))
+                        .addGap(0, 168, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(btjobticket)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -178,7 +189,9 @@ public class test extends javax.swing.JPanel {
                     .addComponent(btjasper)
                     .addComponent(btupload))
                 .addGap(18, 18, 18)
-                .addComponent(btlabelprint)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btlabelprint)
+                    .addComponent(jButton1))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(18, 18, 18)
@@ -335,6 +348,10 @@ MainFrame.bslog(e);
         System.out.println("DEF main: " + timediff(start));
     }//GEN-LAST:event_btbandwidthActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        bsmf.MainFrame.show(checkDigitUCC18(10000222)); 
+    }//GEN-LAST:event_jButton1ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btbandwidth;
@@ -342,6 +359,7 @@ MainFrame.bslog(e);
     private javax.swing.JButton btjobticket;
     private javax.swing.JButton btlabelprint;
     private javax.swing.JButton btupload;
+    private javax.swing.JButton jButton1;
     private javax.swing.JButton testmail;
     // End of variables declaration//GEN-END:variables
 }

@@ -1315,6 +1315,7 @@ CREATE TABLE "label_mstr" (
   "lbl_custitem" varchar(50) NOT NULL COLLATE NOCASE DEFAULT '',
   "lbl_id_str" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
   "lbl_conttype" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
+  "lbl_label" varchar(40) NOT NULL COLLATE NOCASE DEFAULT '',
   "lbl_qty" decimal(14,5) NOT NULL DEFAULT '0',
   "lbl_po" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
   "lbl_order" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',

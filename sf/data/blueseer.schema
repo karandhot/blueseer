@@ -1108,6 +1108,7 @@ CREATE TABLE IF NOT EXISTS `label_mstr` (
   `lbl_custitem` varchar(50) NOT NULL  DEFAULT '',
   `lbl_id_str` varchar(30) NOT NULL  DEFAULT '',
   `lbl_conttype` varchar(30) NOT NULL  DEFAULT '',
+  `lbl_label` varchar(40) NOT NULL  DEFAULT '',
   `lbl_qty` int(11) NOT NULL DEFAULT '0',
   `lbl_po` varchar(30) NOT NULL  DEFAULT '',
   `lbl_order` varchar(30) NOT NULL  DEFAULT '',
@@ -1134,7 +1135,8 @@ CREATE TABLE IF NOT EXISTS `label_mstr` (
   `lbl_prog` varchar(30) NOT NULL  DEFAULT '',
   `lbl_site` varchar(10) NOT NULL  DEFAULT '',
   `lbl_loc` varchar(30) NOT NULL  DEFAULT '',
-  `lbl_trantype` varchar(10) NOT NULL  DEFAULT '') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `lbl_trantype` varchar(10) NOT NULL  DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `loc_mstr` (
   `loc_loc` varchar(10) NOT NULL,
   `loc_desc` varchar(50)  DEFAULT '',

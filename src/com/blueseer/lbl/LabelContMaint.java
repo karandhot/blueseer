@@ -35,8 +35,11 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
 import static com.blueseer.lbl.lblData.addLabelMstr;
+import static com.blueseer.lbl.lblData.getLabelZebraMstr;
 import com.blueseer.lbl.lblData.label_mstr;
+import com.blueseer.lbl.lblData.label_zebra;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
+import static com.blueseer.utl.BlueSeerUtils.checkDigitUCC18;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
@@ -121,7 +124,9 @@ String linenbr = "";
 String ponbr = "";
 int serialno = 0;
 String serialno_str = "";
+String serialno_display = "";
 String quantity = "";
+String labelname = "";
 
 String sitename = "";
 String siteaddr = "";
@@ -398,8 +403,9 @@ String shipcsz = "";
                  serialno_str, 
                  item, 
                  custitem, 
-                 serialno_str, 
+                 serialno_display, 
                  "XX", 
+                 labelname,
                  quantity, 
                  ponbr, 
                  ordernbr, 
@@ -593,8 +599,8 @@ String shipcsz = "";
         
         getOrderInfo(tbordnbr.getText(), tbline.getText());
         
-        serialno = OVData.getNextNbr("label");
-        serialno_str = String.valueOf(serialno);
+        
+        
         
         quantity = tbqty.getText();
         
@@ -655,9 +661,22 @@ String cust = cusData.getCustFromOrder(tbordnbr.getText());
 String label = cusData.getCustLabel(cust);
 
 label  = (label.isBlank()) ? "generic" : label; 
-label = label + ".prn";
+
+label_zebra lz = getLabelZebraMstr(new String[]{label});
+
+labelname = label;
+
+serialno = OVData.getNextNbr("label");
+serialno_str = String.valueOf(serialno);
+
+if (lz.lblz_type().toLowerCase().equals("ucc")) {
+    serialno_display = checkDigitUCC18(serialno);
+} else {
+    serialno_display = serialno_str;
+}
+
 //Path template = FileSystems.getDefault().getPath(cleanDirString(getSystemLabelDirectory()) + label);
-Path template = checkForCustomPath(getSystemLabelDirectory(), label);
+Path template = checkForCustomPath(getSystemLabelDirectory(), lz.lblz_file());
 File f = template.toFile();
 if(f.exists() && !f.isDirectory()) { 
     
@@ -678,7 +697,9 @@ fsr.close();
 
 concatline = concatline.replace("$PART", item);
 concatline = concatline.replace("$CUSTPART", custitem);
-concatline = concatline.replace("$SERIALNO", serialno_str);
+
+
+concatline = concatline.replace("$SERIALNO", serialno_display);
 concatline = concatline.replace("$QUANTITY", quantity);
 
 

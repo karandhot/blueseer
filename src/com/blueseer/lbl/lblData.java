@@ -51,11 +51,11 @@ public class lblData {
     public static String[] addLabelMstr(label_mstr x) {
         String[] m = new String[2];
         String sqlSelect = "select * from label_mstr where lbl_id = ?";
-        String sqlInsert = "insert into label_mstr (lbl_id, lbl_item, lbl_custitem, lbl_id_str, lbl_conttype, lbl_qty, lbl_po, "
+        String sqlInsert = "insert into label_mstr (lbl_id, lbl_item, lbl_custitem, lbl_id_str, lbl_conttype, lbl_name, lbl_qty, lbl_po, "
                         + "lbl_order, lbl_line, lbl_ref, lbl_lot, lbl_parent, lbl_parent_str, "
                         + "lbl_addrcode, lbl_addrname, lbl_addr1, lbl_addr2, lbl_addrcity, lbl_addrstate, lbl_addrzip, lbl_addrcountry, "
                         + "lbl_crt_date, lbl_ship_date, lbl_userid, lbl_printer, lbl_prog, lbl_site, lbl_loc, lbl_trantype)  " +
-                " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
              PreparedStatement ps = con.prepareStatement(sqlSelect);) {
              ps.setString(1, x.lbl_id);
@@ -67,30 +67,31 @@ public class lblData {
             psi.setString(3, x.lbl_custitem);
             psi.setString(4, x.lbl_id_str);
             psi.setString(5, x.lbl_conttype);
-            psi.setString(6, x.lbl_qty);
-            psi.setString(7, x.lbl_po);
-            psi.setString(8, x.lbl_order);
-            psi.setString(9, x.lbl_line);
-            psi.setString(10, x.lbl_ref);
-            psi.setString(11, x.lbl_lot);
-            psi.setString(12, x.lbl_parent);
-            psi.setString(13, x.lbl_parent_str);
-            psi.setString(14, x.lbl_addrcode);
-            psi.setString(15, x.lbl_addrname);
-            psi.setString(16, x.lbl_addr1);
-            psi.setString(17, x.lbl_addr2);
-            psi.setString(18, x.lbl_addrcity);
-            psi.setString(19, x.lbl_addrstate);
-            psi.setString(20, x.lbl_addrzip);
-            psi.setString(21, x.lbl_addrcountry);
-            psi.setString(22, x.lbl_crt_date);
-            psi.setString(23, x.lbl_ship_date);
-            psi.setString(24, x.lbl_userid);
-            psi.setString(25, x.lbl_printer);
-            psi.setString(26, x.lbl_prog);
-            psi.setString(27, x.lbl_site);
-            psi.setString(28, x.lbl_loc);
-            psi.setString(29, x.lbl_trantype);
+            psi.setString(6, x.lbl_name);
+            psi.setString(7, x.lbl_qty);
+            psi.setString(8, x.lbl_po);
+            psi.setString(9, x.lbl_order);
+            psi.setString(10, x.lbl_line);
+            psi.setString(11, x.lbl_ref);
+            psi.setString(12, x.lbl_lot);
+            psi.setString(13, x.lbl_parent);
+            psi.setString(14, x.lbl_parent_str);
+            psi.setString(15, x.lbl_addrcode);
+            psi.setString(16, x.lbl_addrname);
+            psi.setString(17, x.lbl_addr1);
+            psi.setString(18, x.lbl_addr2);
+            psi.setString(19, x.lbl_addrcity);
+            psi.setString(20, x.lbl_addrstate);
+            psi.setString(21, x.lbl_addrzip);
+            psi.setString(22, x.lbl_addrcountry);
+            psi.setString(23, x.lbl_crt_date);
+            psi.setString(24, x.lbl_ship_date);
+            psi.setString(25, x.lbl_userid);
+            psi.setString(26, x.lbl_printer);
+            psi.setString(27, x.lbl_prog);
+            psi.setString(28, x.lbl_site);
+            psi.setString(29, x.lbl_loc);
+            psi.setString(30, x.lbl_trantype);
             int rows = psi.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
             } else {
@@ -483,7 +484,7 @@ public class lblData {
     }
      
     public record label_mstr(String[] m, String lbl_id, String lbl_item, String lbl_custitem, 
-        String lbl_id_str, String lbl_conttype, String lbl_qty, String lbl_po,
+        String lbl_id_str, String lbl_conttype, String lbl_name, String lbl_qty, String lbl_po,
         String lbl_order, String lbl_line, String lbl_ref, String lbl_lot, 
         String lbl_parent, String lbl_parent_str, String lbl_addrcode, String lbl_addrname, 
         String lbl_addr1, String lbl_addr2, String lbl_addrcity, String lbl_addrstate, 
@@ -493,7 +494,7 @@ public class lblData {
         public label_mstr(String[]m) {
             this(m, "", "", "", "", "", "", "", "", "", "",
                     "", "", "", "", "", "", "", "", "", "",
-                    "", "", "", "", "", "", "", "", "");
+                    "", "", "", "", "", "", "", "", "", "");
         }
     }
     

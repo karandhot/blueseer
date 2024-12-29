@@ -2629,8 +2629,7 @@ public class BlueSeerUtils {
         
         return false;
     }
-    
-    
+        
     public static boolean confirmServerLogin(HttpServletRequest httpRequest, String sessionid) {
         final String authorization = httpRequest.getHeader("Authorization");
         if (authorization != null && authorization.toLowerCase().startsWith("basic")) {
@@ -2646,6 +2645,37 @@ public class BlueSeerUtils {
         return false;
     }
     
+    public static String checkDigitUCC18(int serialno) throws NumberFormatException {
+        int evenSum = 0;
+        int oddSum = 0;
+
+        // method returns a 20 character UCC or SSCC type serial number.
+        // incoming key can be of any length and will be converted to a 17 character string padded to the right with zeros
+        // a checksum will be calculated over the 17 characters and appended to the end to give an 18 character string
+        // a '00' is preprending as the application identifier to give a total of 20 chars
+        
+        String key = String.format("%-17s", serialno ).replace(' ', '0');  // pad to the right with zeros
+        	
+        //Loop through all the data, summing up the evens and odds
+        for(int i = 0; i < key.length(); i++) {
+            //Offset since the SSCC standard starts it's index at 1
+            if((i + 1) % 2 == 0){
+                evenSum += Integer.parseInt(String.valueOf(key.charAt(i)));
+            } else {
+                oddSum += Integer.parseInt(String.valueOf(key.charAt(i)));
+            }
+        }
+
+        int oddsTotal = oddSum * 3;
+        int bothTotal = oddsTotal + evenSum;
+        int remainder = bothTotal % 10;
+        int checksum = 10 - remainder;
+        
+        return "00" + key + String.valueOf(checksum);
+       
+		
+    }
+
 }
 
 
