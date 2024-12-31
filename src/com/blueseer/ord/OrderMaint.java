@@ -1002,7 +1002,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 String.valueOf(BlueSeerUtils.boolToInt(cbissourced.isSelected())),
                 String.valueOf(BlueSeerUtils.boolToInt(cbconfirm.isSelected())),
                 String.valueOf(BlueSeerUtils.boolToInt(cbplan.isSelected())),
-                "" // entrytype...blank for manual; 'edi' for EDI entry
+                "", // entrytype...blank for manual; 'edi' for EDI entry
+                "0"
                 );
         return x;
     }

@@ -3521,7 +3521,8 @@ public class EDI {
                 "0", // isSourced
                 getSysMetaValue("system", "ordercontrol", "autoconfirm"), // isConfirmed
                 "0", // isPlanned
-                "edi"
+                "edi",
+                "0"
                 );
         // detail
         ArrayList<ordData.sod_det> detail = new ArrayList<ordData.sod_det>();

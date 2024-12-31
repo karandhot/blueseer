@@ -824,7 +824,8 @@ public class QuoteMaint extends javax.swing.JPanel implements IBlueSeerT {
                 "0", // confirmed
                 "1", // is sourced
                 "1", // is planned
-                "" // entrytype...blank for manual; 'edi' for EDI entry
+                "", // entrytype...blank for manual; 'edi' for EDI entry
+                "0"
                 );
         
         // now detail

@@ -91,21 +91,22 @@ ReqChartsMenu,chart_requisition,1,JMenuItem,Chart Reporting,,1,,1,1
 Order,OrderMaint,1,JMenuItem,Order Maintenance,,,,1,1
 Order,OrderBrowse,2,JMenuItem,Order Browse,,1,,1,1
 Order,OrderItemBrowse,3,JMenuItem,Order Item Browse,,1,,1,1
-Order,ServiceOrderMaint,4,JMenuItem,Service Order Maintenance,,,,1,1
-Order,ServiceOrderBrowse,5,JMenuItem,Service Order Browse,,,,1,1
-Order,QuoteMaint,6,JMenuItem,Quote Maintenance,,,,1,1
-Order,QuoteBrowse,7,JMenuItem,Quote Browse,,,,1,1
-Order,BillMaint,8,JMenuItem,Billing Maintenance,,,,1,1
-Order,BillBrowse,9,JMenuItem,Billing Browse,,,,1,1
-Order,OrderSourceBrowse,10,JMenuItem,Order Source Browse,,1,,1,1
-Order,OrdLineBrowse,11,JMenuItem,Order Line Browse,,1,,1,1
-Order,SchedOrdBrowse,12,JMenuItem,Sched Order Browse,,1,,1,1
-Order,OrdRptPicker,13,JMenuItem,Order Report Selector,,,,1,1
-Order,OrderReports,14,JMenu,Other Reports,,,,1,1
-Order,POSMenu,15,JMenu,POS Menu,,,,1,1
-Order,DOMenu,16,JMenu,Distribution Menu,,,,1,1
-Order,OrderSource,17,JMenuItem,Order Source,,,,1,1
-Order,OrderControl,18,JMenuItem,Order Control,,,,1,1
+Order,OrderChangeBrowse,4,JMenuItem,Order Change Browse,,1,,1,1
+Order,ServiceOrderMaint,5,JMenuItem,Service Order Maintenance,,,,1,1
+Order,ServiceOrderBrowse,6,JMenuItem,Service Order Browse,,,,1,1
+Order,QuoteMaint,7,JMenuItem,Quote Maintenance,,,,1,1
+Order,QuoteBrowse,8,JMenuItem,Quote Browse,,,,1,1
+Order,BillMaint,9,JMenuItem,Billing Maintenance,,,,1,1
+Order,BillBrowse,10,JMenuItem,Billing Browse,,,,1,1
+Order,OrderSourceBrowse,11,JMenuItem,Order Source Browse,,1,,1,1
+Order,OrdLineBrowse,12,JMenuItem,Order Line Browse,,1,,1,1
+Order,SchedOrdBrowse,13,JMenuItem,Sched Order Browse,,1,,1,1
+Order,OrdRptPicker,14,JMenuItem,Order Report Selector,,,,1,1
+Order,OrderReports,15,JMenu,Other Reports,,,,1,1
+Order,POSMenu,16,JMenu,POS Menu,,,,1,1
+Order,DOMenu,17,JMenu,Distribution Menu,,,,1,1
+Order,OrderSource,18,JMenuItem,Order Source,,,,1,1
+Order,OrderControl,19,JMenuItem,Order Control,,,,1,1
 OrderReports,chart_order,1,JMenuItem,Chart Reporting,,1,,1,1
 Shipping,ShipMaint,1,JMenuItem,Shipper Maintenance,,,,1,1
 Shipping,ShipMaintSerial,2,JMenuItem,Shipper Maintenance (Serialized),,,,1,1

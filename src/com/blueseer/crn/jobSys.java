@@ -96,6 +96,11 @@ public class jobSys implements Job {
                 exportASNs(asns);
                 break;
             }
+            case "edi855o": {
+                ArrayList<String> acks = EDData.getEDIACKsAutoExport();
+                exportACKs(acks);
+                break;
+            }
             
             default: 
                 System.out.println("Unkown paramter: " + param + " time: " + now);
@@ -128,6 +133,17 @@ public class jobSys implements Job {
           l_error = EDI.Create856(x); 
           if (l_error == 0) { // success
             EDData.updateEDIASNStatus(x);  // set export success 
+          } 
+        }
+        packageEnvelopes();
+    }
+    
+    public void exportACKs(ArrayList<String> list) {
+        int l_error;
+        for (String x : list) {
+          l_error = EDI.Create855(x); 
+          if (l_error == 0) { // success
+            EDData.updateEDIOrderStatus(x);  // set export success 
           } 
         }
         packageEnvelopes();

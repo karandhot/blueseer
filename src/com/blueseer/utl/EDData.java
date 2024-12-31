@@ -1912,7 +1912,7 @@ public class EDData {
         
     }
     
-    
+        
     public static ArrayList<String> getEDIPOs(String fromnbr, String tonbr, String fromdate, String todate, boolean override) {
        ArrayList mylist = new ArrayList();
         try{
@@ -1999,6 +1999,48 @@ public class EDData {
                         " and so_confirm = '1' and cm_is855export = '1' " +          
                         " and so_export_855 = '0' ;");   
                 }
+                
+               while (res.next()) {
+                   mylist.add(res.getString("so_nbr"));
+                }
+           }
+            catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               if (con != null) con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return mylist;
+        
+    }
+    
+    public static ArrayList<String> getEDIACKsAutoExport() {
+       ArrayList mylist = new ArrayList();
+        try{
+            Class.forName(driver);
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try{
+                
+               
+                 res = st.executeQuery("select so_nbr from so_mstr  " +
+                        " inner join cm_mstr on cm_code = so_cust " +  
+                        " where so_export_855 = '0'  "  + 
+                        " and so_confirm = '1' " +
+                        " and cm_is855export = '1'  " +
+                        ";");   
+                
                 
                while (res.next()) {
                    mylist.add(res.getString("so_nbr"));

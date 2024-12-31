@@ -625,7 +625,7 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
        
         buttonGroup1.add(rbDocLog);
         buttonGroup1.add(rbFileLog);
-        rbFileLog.setSelected(true);
+        rbDocLog.setSelected(true);
         
         dddoc.removeAllItems();
         ddoutdoctype.removeAllItems();

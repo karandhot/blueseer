@@ -396,3 +396,4 @@ admin,OrderItemBrowse,0
 admin,ShipperItemBrowse,0
 admin,LabelMixedContMaint,0
 admin,ShipBuildMaint,0
+admin,OrderChangeBrowse,0
