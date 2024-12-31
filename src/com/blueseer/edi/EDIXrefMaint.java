@@ -423,9 +423,9 @@ public class EDIXrefMaint extends javax.swing.JPanel implements IBlueSeerT    {
         lual = new ActionListener() {
         public void actionPerformed(ActionEvent event) {
         if (lurb1.isSelected()) {  
-         luModel = DTData.getEDIXrefBrowseUtil(luinput.getText(),0, "exr_bsgs");
+         luModel = DTData.getEDIXrefBrowseUtil(luinput.getText(),0, "exr_tpgs");
         } else if (lurb2.isSelected()) {
-         luModel = DTData.getEDIXrefBrowseUtil(luinput.getText(),0, "exr_tpgs");   
+         luModel = DTData.getEDIXrefBrowseUtil(luinput.getText(),0, "exr_bsgs");   
         } else if (lurb3.isSelected()) {
          luModel = DTData.getEDIXrefBrowseUtil(luinput.getText(),0, "exr_type");
         } else if (lurb4.isSelected()) {

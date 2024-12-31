@@ -223,7 +223,7 @@ public class ediData {
     public static edi_xref getEDIXref(String[] x) {
         edi_xref r = null;
         String[] m = new String[2];       
-        String sqlSelect = "SELECT * FROM  edi_xref where exr_bsgs = ? and exr_tpgs = ? " +
+        String sqlSelect = "SELECT * FROM  edi_xref where exr_tpgs = ? and exr_bsgs = ? " +
                 " and exr_type = ? and exr_tpaddr = ? and exr_bsaddr = ?";
         
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());

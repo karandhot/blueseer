@@ -3301,7 +3301,7 @@ public class DTData {
     
     public static DefaultTableModel getEDIXrefBrowseUtil( String str, int state, String myfield) {
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
-                      new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("tpid"), getGlobalColumnTag("gsid"), getGlobalColumnTag("type"), getGlobalColumnTag("tpaddr"), getGlobalColumnTag("bsaddr")})
+                      new String[]{getGlobalColumnTag("select"), "partner GSID", "system GSID", getGlobalColumnTag("type"), getGlobalColumnTag("partner addrid"), getGlobalColumnTag("system addrid")})
                 {
                       @Override  
                       public Class getColumnClass(int col) {  
@@ -3338,8 +3338,8 @@ public class DTData {
                         " order by exr_bsgs ;");
                  }
                     while (res.next()) {
-                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("exr_bsgs"),
-                                   res.getString("exr_tpgs"),
+                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("exr_tpgs"),
+                                   res.getString("exr_bsgs"),
                                    res.getString("exr_type"),
                                    res.getString("exr_tpaddr"),
                                    res.getString("exr_bsaddr")
@@ -9213,8 +9213,8 @@ return mymodel;
      public static DefaultTableModel getEDIXrefAll(String site) {
           javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                   new String[]{getGlobalColumnTag("select"), 
-                      getGlobalColumnTag("tpid"), 
-                      getGlobalColumnTag("gsid"),
+                      "Partner GSID", 
+                      "System GSID",
                       getGlobalColumnTag("type"), 
                       getGlobalColumnTag("tpaddr"), 
                       getGlobalColumnTag("bsaddr")})
@@ -9245,8 +9245,8 @@ return mymodel;
                           " where exr_site = " + "'" + site + "'" + " order by exr_bsgs;");  
                 }
                 while (res.next()) {
-                    mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("exr_bsgs"),
-                               res.getString("exr_tpgs"),
+                    mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("exr_tpgs"),
+                               res.getString("exr_bsgs"),
                                res.getString("exr_type"),
                                res.getString("exr_tpaddr"),
                                res.getString("exr_bsaddr")
