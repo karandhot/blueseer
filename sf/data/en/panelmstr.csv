@@ -241,3 +241,5 @@ com.blueseer.rcv.RecvItemBrowse,,1
 com.blueseer.pur.POItemBrowse,,1
 com.blueseer.ord.OrderItemBrowse,,1
 com.blueseer.shp.ShipperItemBrowse,,1
+com.blueseer.lbl.LabelMixedContMaint,,1
+com.blueseer.shp.ShipBuildMaint,,1

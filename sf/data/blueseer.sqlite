@@ -1315,9 +1315,10 @@ CREATE TABLE "label_mstr" (
   "lbl_custitem" varchar(50) NOT NULL COLLATE NOCASE DEFAULT '',
   "lbl_id_str" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
   "lbl_conttype" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
-  "lbl_label" varchar(40) NOT NULL COLLATE NOCASE DEFAULT '',
+  "lbl_name" varchar(40) NOT NULL COLLATE NOCASE DEFAULT '',
   "lbl_qty" decimal(14,5) NOT NULL DEFAULT '0',
   "lbl_po" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
+  "lbl_billto" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
   "lbl_order" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
   "lbl_line" int(11) NOT NULL DEFAULT '0',
   "lbl_ref" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
@@ -1342,7 +1343,20 @@ CREATE TABLE "label_mstr" (
   "lbl_prog" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
   "lbl_site" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
   "lbl_loc" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
-  "lbl_trantype" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '');
+  "lbl_trantype" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
+  "lbl_type" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '');
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE "label_det" (
+  "lbld_id" int(8) NOT NULL DEFAULT '0',
+  "lbld_order" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
+  "lbld_line" int(11) NOT NULL DEFAULT '0',
+  "lbld_item" varchar(36) NOT NULL COLLATE NOCASE DEFAULT '',
+  "lbld_desc" varchar(80) NOT NULL COLLATE NOCASE DEFAULT '',
+  "lbld_qty" int(11) NOT NULL DEFAULT '0'
+); 
+
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -2131,23 +2145,19 @@ CREATE TABLE "ship_mstr" (
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE "ship_tree" (
-  "ship_id" varchar(30) COLLATE NOCASE DEFAULT '',
-  "ship_site" varchar(10) COLLATE NOCASE DEFAULT '',
-  "ship_billto" varchar(10) COLLATE NOCASE DEFAULT '',
-  "ship_shipto" varchar(10) COLLATE NOCASE DEFAULT '',
-  "ship_isroot" tinyint(1) COLLATE NOCASE DEFAULT '',
-  "ship_so" varchar(10) COLLATE NOCASE DEFAULT '',
-  "ship_po" varchar(30) COLLATE NOCASE DEFAULT '',
-  "ship_item" varchar(36) COLLATE NOCASE DEFAULT '',
-  "ship_type" varchar(10) COLLATE NOCASE DEFAULT '',
-  "ship_ship_date" date DEFAULT '0000-00-00',
-  "ship_create_date" date DEFAULT '0000-00-00',
-  "ship_qty" decimal(14,5) COLLATE NOCASE DEFAULT '',
-  "ship_shipvia" varchar(30) COLLATE NOCASE DEFAULT '',
-  "ship_reference" varchar(30) COLLATE NOCASE DEFAULT '',
-  "ship_confirmed" tinyint(1) COLLATE NOCASE DEFAULT '',
-  "ship_line" int(4) COLLATE NOCASE DEFAULT '',
-  "ship_pid" varchar(30) COLLATE NOCASE DEFAULT '');
+  "ship_parent" varchar(40)  NOT NULL DEFAULT '',
+  "ship_child" varchar(40)  NOT NULL DEFAULT '',
+  "ship_site" varchar(10)  NOT NULL DEFAULT '',
+  "ship_type" varchar(10)  NOT NULL DEFAULT '',
+  "ship_sh" varchar(10)  NOT NULL DEFAULT '',
+  "ship_shline" varchar(8)  NOT NULL DEFAULT '',
+  "ship_so" varchar(10)  NOT NULL DEFAULT '',
+  "ship_soline" varchar(8)  NOT NULL DEFAULT '',
+  "ship_po" varchar(30)  NOT NULL DEFAULT '',
+  "ship_item" varchar(36)  NOT NULL DEFAULT '',
+  "ship_qty" decimal(14,5)  NOT NULL DEFAULT '0',
+  "ship_serial" varchar(30)  NOT NULL DEFAULT ''
+);
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;

@@ -4271,6 +4271,39 @@ public class ordData {
              return item;
     }
     
+    public static String[] getOrderLineInfo(String order, String line) {
+        String[] x = null;  // returns item, desc, ordqty
+        try{
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+            try{
+                res = st.executeQuery("select sod_item, sod_desc, sod_ord_qty from sod_det where sod_nbr = " + "'" + order + "'" + 
+                        " and sod_line = " + "'" + line + "'" + ";");
+                while (res.next()) {
+                    x = new String[]{res.getString("sod_item"), res.getString("sod_desc"), String.valueOf(res.getDouble("sod_ord_qty"))};
+                }
+            }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+             return x;
+    }
+    
+    
     public static ArrayList<String> getOrderLines(String order) {
         ArrayList<String> lines = new ArrayList<String>();
         try{

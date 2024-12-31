@@ -1108,9 +1108,10 @@ CREATE TABLE IF NOT EXISTS `label_mstr` (
   `lbl_custitem` varchar(50) NOT NULL  DEFAULT '',
   `lbl_id_str` varchar(30) NOT NULL  DEFAULT '',
   `lbl_conttype` varchar(30) NOT NULL  DEFAULT '',
-  `lbl_label` varchar(40) NOT NULL  DEFAULT '',
+  `lbl_name` varchar(40) NOT NULL  DEFAULT '',
   `lbl_qty` int(11) NOT NULL DEFAULT '0',
   `lbl_po` varchar(30) NOT NULL  DEFAULT '',
+  `lbl_billto` varchar(30) NOT NULL  DEFAULT '',
   `lbl_order` varchar(30) NOT NULL  DEFAULT '',
   `lbl_line` int(11) NOT NULL DEFAULT '0',
   `lbl_ref` varchar(30) NOT NULL  DEFAULT '',
@@ -1135,7 +1136,16 @@ CREATE TABLE IF NOT EXISTS `label_mstr` (
   `lbl_prog` varchar(30) NOT NULL  DEFAULT '',
   `lbl_site` varchar(10) NOT NULL  DEFAULT '',
   `lbl_loc` varchar(30) NOT NULL  DEFAULT '',
-  `lbl_trantype` varchar(10) NOT NULL  DEFAULT ''
+  `lbl_trantype` varchar(10) NOT NULL  DEFAULT '',
+  `lbl_type` varchar(10) NOT NULL  DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS `label_det` (
+  `lbld_id` int(8) NOT NULL DEFAULT '0',
+  `lbld_order` varchar(30) NOT NULL  DEFAULT '',
+  `lbld_line` int(11) NOT NULL DEFAULT '0',
+  `lbld_item` varchar(36) NOT NULL  DEFAULT '',
+  `lbld_desc` varchar(80) NOT NULL  DEFAULT '',
+  `lbld_qty` int(11) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `loc_mstr` (
   `loc_loc` varchar(10) NOT NULL,
@@ -1863,23 +1873,19 @@ CREATE TABLE IF NOT EXISTS `ship_mstr` (
   `sh_duedate` date  DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `ship_tree` (
-  `ship_id` varchar(30)  NOT NULL DEFAULT '',
+  `ship_parent` varchar(40)  NOT NULL DEFAULT '',
+  `ship_child` varchar(40)  NOT NULL DEFAULT '',
   `ship_site` varchar(10)  NOT NULL DEFAULT '',
-  `ship_billto` varchar(10)  NOT NULL DEFAULT '',
-  `ship_shipto` varchar(10)  NOT NULL DEFAULT '',
-  `ship_isroot` tinyint(1)  NOT NULL DEFAULT '0',
+  `ship_type` varchar(10)  NOT NULL DEFAULT '',
+  `ship_sh` varchar(10)  NOT NULL DEFAULT '',
+  `ship_shline` varchar(8)  NOT NULL DEFAULT '',
   `ship_so` varchar(10)  NOT NULL DEFAULT '',
+  `ship_soline` varchar(8)  NOT NULL DEFAULT '',
   `ship_po` varchar(30)  NOT NULL DEFAULT '',
   `ship_item` varchar(36)  NOT NULL DEFAULT '',
-  `ship_type` varchar(10)  NOT NULL DEFAULT '',
-  `ship_ship_date` date  DEFAULT NULL,
-  `ship_create_date` date  DEFAULT NULL,
   `ship_qty` decimal(14,5)  NOT NULL DEFAULT '0',
-  `ship_shipvia` varchar(30)  NOT NULL DEFAULT '',
-  `ship_reference` varchar(30)  NOT NULL DEFAULT '',
-  `ship_confirmed` tinyint(1)  NOT NULL DEFAULT '0',
-  `ship_line` int(4)  NOT NULL DEFAULT '0',
-  `ship_pid` varchar(30)  NOT NULL DEFAULT '') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `ship_serial` varchar(30)  NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `site_mstr` (
   `site_site` varchar(10) NOT NULL,
   `site_desc` varchar(50)  DEFAULT '',

@@ -170,6 +170,39 @@ public class shpData {
             return rows;
     }
    
+    private static int _addShipTree(ship_tree x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        int rows = 0;
+        String sqlSelect = "select * from ship_tree where ship_parent = ? and ship_child = ? and ship_sh = ?";
+        String sqlInsert = "insert into ship_tree (ship_parent, ship_child, ship_site, ship_type, ship_sh, ship_shline, ship_so, ship_soline, ship_po, ship_item, "
+                        + "ship_qty, ship_serial) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?); "; 
+       
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x.ship_parent);
+          ps.setString(2, x.ship_child);
+          ps.setString(3, x.ship_sh);
+          res = ps.executeQuery();
+          ps = con.prepareStatement(sqlInsert);  
+            if (! res.isBeforeFirst()) {
+            ps.setString(1, x.ship_parent);
+            ps.setString(2, x.ship_child);
+            ps.setString(3, x.ship_site);
+            ps.setString(4, x.ship_type);
+            ps.setString(5, x.ship_sh);
+            ps.setString(6, x.ship_shline);
+            ps.setString(7, x.ship_so);
+            ps.setString(8, x.ship_soline);
+            ps.setString(9, x.ship_po);
+            ps.setString(10, x.ship_item);
+            ps.setDouble(11, x.ship_qty);
+            ps.setString(12, x.ship_serial);
+            
+            rows = ps.executeUpdate();
+            } 
+            return rows;
+    }
+   
+    
     private static int _addShipSummaryDet(shs_det x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
         int rows = 0;
         String sqlSelect = "select * from shs_det where shs_nbr = ?";
@@ -192,7 +225,7 @@ public class shpData {
             return rows;
     }
    
-    public static String[] addShipperTransaction(ArrayList<ship_det> shd, ship_mstr sh) {
+    public static String[] addShipperTransaction(ArrayList<ship_det> shd, ship_mstr sh, ArrayList<ship_tree> sht) {
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -207,6 +240,11 @@ public class shpData {
             _addShipMstr(sh, bscon, ps, res);  
             for (ship_det z : shd) {
                 _addShipDet(z, bscon, ps, res);
+            }
+            if (sht != null) {
+                for (ship_tree z : sht) {
+                _addShipTree(z, bscon, ps, res);
+                }
             }
            
             bscon.commit();
@@ -2179,6 +2217,163 @@ public class shpData {
 
      }
 
+    public static HashSet<String> getShipperTreeUniquePOs(String shipper) {
+          HashSet<String> set = new HashSet();  
+
+    try{
+
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+            
+           java.util.Date now = new java.util.Date();
+            DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+            DateFormat dftime = new SimpleDateFormat("HH:mm:ss");
+            String mydate = dfdate.format(now);
+
+
+               
+                  res = st.executeQuery("select ship_po from ship_tree where ship_sh = " + "'" + shipper + "'" +";");
+                while (res.next()) {
+                    if (! res.getString("ship_po").isBlank() && ! set.contains(res.getString("ship_po"))) {
+                        set.add(res.getString("ship_po"));
+                    }
+                }
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+
+        } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+
+    }
+    return set;
+
+     }
+
+    public static HashSet<String> getShipperTreePackOfPO(String shipper, String po) {
+          HashSet<String> set = new HashSet();  
+
+    try{
+
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+            
+           java.util.Date now = new java.util.Date();
+            DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+            DateFormat dftime = new SimpleDateFormat("HH:mm:ss");
+            String mydate = dfdate.format(now);
+
+
+               
+                  res = st.executeQuery("select ship_parent from ship_tree where ship_sh = " + "'" + shipper + "'" + 
+                          " AND ship_po = " + "'" + po + "'" +
+                          ";");
+                while (res.next()) {
+                    if (! res.getString("ship_parent").isBlank() && ! set.contains(res.getString("ship_parent"))) {
+                        set.add(res.getString("ship_parent"));
+                    }
+                }
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+
+        } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+
+    }
+    return set;
+
+     }
+
+    public static ArrayList<String[]> getShipperTreeLinesOfPack(String serial, String shipper) {
+          ArrayList<String[]> mylist = new ArrayList();  
+
+    try{
+
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+            
+          
+                  res = st.executeQuery("select ship_item, ship_qty, shd_custitem, shd_desc from ship_tree " +
+                          " inner join ship_det on shd_id = ship_sh and shd_line = ship_shline " +
+                          " where ship_parent = " + "'" + serial + "'" + 
+                          " AND ship_sh = " + "'" + shipper + "'" +
+                          ";");
+                while (res.next()) {
+                    String[] d = new String[4];
+                    for (int z = 0; z < 4; z++) {
+                        d[z] = "";
+                    }
+                    d[0] = res.getString("ship_item");
+                    d[1] = res.getString("ship_qty");
+                    d[2] = res.getString("shd_custitem");
+                    d[3] = res.getString("shd_desc");
+                    mylist.add(d);
+                }
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+
+        } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+
+    }
+    return mylist;
+
+     }
+
+    
     public static ArrayList getShippersOpenListForFreight() {
           ArrayList mylist = new ArrayList();  
     try{
@@ -3044,4 +3239,14 @@ public class shpData {
         }
     }
 
+    public record ship_tree(String[] m, String ship_parent, String ship_child, String ship_site, 
+        String ship_type, String ship_sh, String ship_shline, String ship_so, String ship_soline,
+        String ship_po, String ship_item, Double ship_qty, String ship_serial) {
+        public ship_tree(String[] m) {
+            this(m, "", "", "", "", "", "", "", "", "", "",
+                    0.0, "" );
+        }
+    }
+
+    
 }

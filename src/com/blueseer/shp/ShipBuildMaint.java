@@ -41,6 +41,9 @@ import com.blueseer.far.farData.ar_mstr;
 import com.blueseer.far.farData.ard_mstr;
 import com.blueseer.fgl.fglData;
 import com.blueseer.inv.invData;
+import static com.blueseer.lbl.lblData.getLabelSerialDisplay;
+import static com.blueseer.lbl.lblData.getLabelTableRecs;
+import static com.blueseer.lbl.lblData.updateLabelStatus;
 import static com.blueseer.shp.shpData.addShipperTransaction;
 import static com.blueseer.shp.shpData.confirmShipperTransaction;
 import com.blueseer.utl.BlueSeerUtils;
@@ -78,6 +81,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -97,7 +103,7 @@ import javax.swing.table.DefaultTableModel;
  *
  * @author vaughnte
  */
-public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer {
+public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
 
     // global variable declarations
                 boolean isLoad = false;
@@ -111,32 +117,37 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
                 String curr = "";
                 String basecurr = "";
                 int j = 0;
-                
+                HashSet<String> assignedlabels = new HashSet<String>();
     
     // global datatablemodel declarations 
-    javax.swing.table.DefaultTableModel inventorymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+    javax.swing.table.DefaultTableModel serialmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
             new String[]{
+                getGlobalColumnTag("label"),
+                getGlobalColumnTag("order"),
+                getGlobalColumnTag("line"),
                 getGlobalColumnTag("item"), 
                 getGlobalColumnTag("description"), 
-                getGlobalColumnTag("serial"), 
+                getGlobalColumnTag("custitem"),
                 getGlobalColumnTag("warehouse"), 
-                getGlobalColumnTag("location"), 
-                getGlobalColumnTag("expiredate"),
+                getGlobalColumnTag("location"),
                 getGlobalColumnTag("qty"),
                 getGlobalColumnTag("uom"),
-                getGlobalColumnTag("price")});
+                getGlobalColumnTag("price"),
+                getGlobalColumnTag("po")});
     ShipTableModel shipmodel = new ShipTableModel(new Object[][]{},
             new String[]{
-                getGlobalColumnTag("line"), 
+                getGlobalColumnTag("label"), // label serial
+                getGlobalColumnTag("order"),
+                getGlobalColumnTag("line"),
                 getGlobalColumnTag("item"), 
                 getGlobalColumnTag("description"), 
-                getGlobalColumnTag("serial"), 
+                getGlobalColumnTag("custitem"), 
                 getGlobalColumnTag("warehouse"), 
                 getGlobalColumnTag("location"), 
                 getGlobalColumnTag("qty"),
                 getGlobalColumnTag("uom"),
                 getGlobalColumnTag("price"),
-                getGlobalColumnTag("bom")
+                getGlobalColumnTag("po")
             });
     
     class ShipTableModel extends DefaultTableModel {  
@@ -171,7 +182,7 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
                     }
                 };            
   
-    public ShipperMaintSerial() {
+    public ShipBuildMaint() {
         initComponents();
         setLanguageTags(this);     
     }
@@ -365,6 +376,8 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
          actamt = 0.00;
          rcvamt = 0.00;
         
+        assignedlabels.clear();
+         
         lbcust.setText("");
         lbmessage.setText("");
         lbmessage.setForeground(Color.blue);
@@ -375,10 +388,10 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
         tbtotal.setText("0");
         tbtotal.setBackground(Color.white);
         tbtotal.setEditable(false);
-        inventorymodel.setRowCount(0);
+        serialmodel.setRowCount(0);
         shipmodel.setRowCount(0);
         shipmodel.addTableModelListener(ml);
-        inventorydet.setModel(inventorymodel);
+        serialdet.setModel(serialmodel);
         shipdet.setModel(shipmodel);
         
        
@@ -404,13 +417,7 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
         ddsite.setSelectedItem(OVData.getDefaultSite());
         
       
-        dditem.removeAllItems();
-        ArrayList<String> items = invData.getItemMasterListBySite(ddsite.getSelectedItem().toString()); 
-        for (String item : items) {
-        dditem.addItem(item);
-        }  
-        dditem.insertItemAt("", 0);
-        dditem.setSelectedIndex(0);
+        
         
          
         
@@ -455,12 +462,12 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
     
     public boolean validateInput(String x) {
         boolean b = true;
-                String line = checkqty();
-                if (! line.isEmpty()) {
-                    b = false;
-                    bsmf.MainFrame.show(getMessageTag(1169,line));
-                    return b;  
-                }
+                //String line = checkqty();
+               // if (! line.isEmpty()) {
+               //     b = false;
+               //     bsmf.MainFrame.show(getMessageTag(1169,line));
+              //      return b;  
+              //  }
         
                 if (ddsite.getSelectedItem() == null || ddsite.getSelectedItem().toString().isEmpty()) {
                     b = false;
@@ -515,7 +522,10 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
     }
     
     public String[] addRecord(String[] x) {
-        String[] m = addShipperTransaction(createDetRecord(), createRecord(), null);
+        String[] m = addShipperTransaction(createDetRecord(), createRecord(), createTreeRecord());
+        for (String label : assignedlabels) {
+            updateLabelStatus(label, "1");
+        }
         shpData.updateShipperSAC(tbkey.getText());
         confirmShipperTransaction("", tbkey.getText(), dcdate.getDate());
         return m;
@@ -637,33 +647,81 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
         for (int j = 0; j < shipdet.getRowCount(); j++) { 
             shpData.ship_det x = new shpData.ship_det(null, 
                 tbkey.getText(), // shipper
-                bsParseInt(shipdet.getValueAt(j, 0).toString()), //shline
-                shipdet.getValueAt(j, 1).toString(), // item
-                shipdet.getValueAt(j, 1).toString(), // custimtem
-                "",  // order
-                bsParseInt(String.valueOf(j + 1)), //soline    
+                j, //shline
+                shipdet.getValueAt(j, 3).toString(), // item
+                shipdet.getValueAt(j, 5).toString(), // custimtem
+                shipdet.getValueAt(j, 1).toString(),  // order
+                bsParseInt(shipdet.getValueAt(j, 2).toString()), //soline    
                 setDateDB(dcdate.getDate()),
-                "", // po
-                bsParseDouble(shipdet.getValueAt(j, 6).toString().replace(defaultDecimalSeparator, '.')), // qty
-                shipdet.getValueAt(j, 7).toString(), //uom
+                shipdet.getValueAt(j, 11).toString(), // po
+                bsParseDouble(shipdet.getValueAt(j, 8).toString().replace(defaultDecimalSeparator, '.')), // qty
+                shipdet.getValueAt(j, 9).toString(), //uom
                 curr, //currency
-                bsParseDouble(shipdet.getValueAt(j, 8).toString().replace(defaultDecimalSeparator, '.')), // net price
+                bsParseDouble(shipdet.getValueAt(j, 10).toString().replace(defaultDecimalSeparator, '.')), // net price
                 0, // disc
-                bsParseDouble(shipdet.getValueAt(j, 8).toString().replace(defaultDecimalSeparator, '.')), // list price
-                shipdet.getValueAt(j, 2).toString(), // desc
-                shipdet.getValueAt(j, 4).toString(), // wh
-                shipdet.getValueAt(j, 5).toString(), // loc
+                bsParseDouble(shipdet.getValueAt(j, 10).toString().replace(defaultDecimalSeparator, '.')), // list price
+                shipdet.getValueAt(j, 4).toString(), // desc
+                shipdet.getValueAt(j, 6).toString(), // wh
+                shipdet.getValueAt(j, 7).toString(), // loc
                 0, // taxamt
                 "0", // cont
-                "", // ref
-                shipdet.getValueAt(j, 3).toString(), // serial   
+                tbref.getText(), // ref
+                shipdet.getValueAt(j, 5).toString(), // serial   
                 ddsite.getSelectedItem().toString(),
-                shipdet.getValueAt(j, 9).toString() // bom
+                "" // bom
                 );
         list.add(x);
         }      
         return list;        
     }
+    
+    public ArrayList<shpData.ship_tree> createTreeRecord() {
+        ArrayList<shpData.ship_tree> list = new ArrayList<shpData.ship_tree>();
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        
+        // create shipper parent node with child containers
+        for (String s : assignedlabels) {
+            shpData.ship_tree x = new shpData.ship_tree(null,
+            tbkey.getText(),
+            s,
+            ddsite.getSelectedItem().toString(),
+            "c",
+            tbkey.getText(),
+            "",
+            "",
+            "",
+            "",
+            "container",
+            1.0,
+            getLabelSerialDisplay(s) // get display serial
+            );
+            
+            list.add(x);
+            // now items of container
+            for (int j = 0; j < shipdet.getRowCount(); j++) { 
+                if (shipdet.getValueAt(j, 0).toString().equals(s)) {
+                    shpData.ship_tree y = new shpData.ship_tree(null,
+                    s,
+                    shipdet.getValueAt(j, 1).toString() + "," + shipdet.getValueAt(j, 2).toString() + "," + shipdet.getValueAt(j, 3).toString(),
+                    ddsite.getSelectedItem().toString(),
+                    "i",
+                    tbkey.getText(),
+                    String.valueOf(j),
+                    shipdet.getValueAt(j, 1).toString(),
+                    shipdet.getValueAt(j, 2).toString(),
+                    shipdet.getValueAt(j, 11).toString(),
+                    shipdet.getValueAt(j, 3).toString(),
+                    bsParseDouble(shipdet.getValueAt(j, 8).toString().replace(defaultDecimalSeparator, '.')),
+                    "" // get display serial
+                    );
+                    list.add(y);
+                }
+            }
+        }
+       
+        return list;        
+    }
+    
     
      public void lookUpFrame() {
         
@@ -801,7 +859,7 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
        
         actamt = 0;
          for (int j = 0; j < shipdet.getRowCount(); j++) {
-             actamt += ( bsParseDouble(shipdet.getModel().getValueAt(j,6).toString()) * bsParseDouble(shipdet.getModel().getValueAt(j,8).toString()) );
+             actamt += ( bsParseDouble(shipdet.getModel().getValueAt(j,8).toString()) * bsParseDouble(shipdet.getModel().getValueAt(j,10).toString()) );
          }
         
         tbtotal.setText(currformatDouble(actamt));
@@ -811,7 +869,7 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
     public String checkqty() {
         String x = "";
         for (int j = 0; j < shipdet.getRowCount(); j++) {
-            if (bsParseDouble(shipdet.getModel().getValueAt(j,6).toString()) > invData.getItemQOHBySerial(shipdet.getModel().getValueAt(j,1).toString(), ddsite.getSelectedItem().toString(), shipdet.getModel().getValueAt(j,3).toString()) ) {
+            if (bsParseDouble(shipdet.getModel().getValueAt(j,8).toString()) > invData.getItemQOHBySerial(shipdet.getModel().getValueAt(j,1).toString(), ddsite.getSelectedItem().toString(), shipdet.getModel().getValueAt(j,3).toString()) ) {
              return shipdet.getModel().getValueAt(j,0).toString();   
             }
          }
@@ -830,55 +888,28 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
         return max;
     }
         
-    public void getItemInfo(String item) {
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+    public void refreshList() {
+        serialmodel.setRowCount(0);
+        ArrayList<String[]> list = getLabelTableRecs(ddcust.getSelectedItem().toString());
+        for (String[] s : list) {
+            if (! assignedlabels.contains(s[0])) {
+            serialmodel.addRow(new Object[] { 
+                s[0], // serial
+                s[1], // order
+                s[2], // line
+                s[3], // item
+                s[4], // desc
+                s[5], // custitem
+                s[6], //warehouse
+                s[7], // location
+                s[8], // qty
+                s[9], // uom
+                s[10], // price
+                s[11] // po
+                });
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-               int i = 0;
-                    
-                res = st.executeQuery("select * from in_mstr inner join item_mstr on it_item = in_item where in_item = " + "'" + item + "'" 
-                        + ";");
-                while (res.next()) {
-                    i++;
-                    inventorymodel.addRow(new Object[]{
-                      res.getString("in_item"), 
-                      res.getString("it_desc"),  
-                      res.getString("in_serial"), 
-                      res.getString("in_wh"), 
-                      res.getString("in_loc"), 
-                      res.getString("in_expire"),
-                      currformatDouble(res.getDouble("in_qoh")), 
-                      res.getString("it_uom"), 
-                      res.getString("it_sell_price")});
-                    if (i == 1) {
-                        lbitemdesc.setText(res.getString("it_desc"));
-                    }
-                    
-                }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
         }
     }
-    
     
     
     /**
@@ -906,7 +937,7 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
         dcdate = new com.toedter.calendar.JDateChooser();
         jLabel35 = new javax.swing.JLabel();
         jScrollPane8 = new javax.swing.JScrollPane();
-        inventorydet = new javax.swing.JTable();
+        serialdet = new javax.swing.JTable();
         tbref = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         tbtotal = new javax.swing.JTextField();
@@ -921,21 +952,19 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
         btclear = new javax.swing.JButton();
         btdelete = new javax.swing.JButton();
         btlookup = new javax.swing.JButton();
-        dditem = new javax.swing.JComboBox<>();
-        lbitemdesc = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
         ddship = new javax.swing.JComboBox<>();
         lbship = new javax.swing.JLabel();
         btPrintInv = new javax.swing.JButton();
         btPrintShp = new javax.swing.JButton();
         tbtracking = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
+        btlist = new javax.swing.JButton();
 
         jLabel1.setText("jLabel1");
 
         setBackground(new java.awt.Color(0, 102, 204));
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Shipper Maintenance (Serialized Inventory)"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Shipper Build"));
         jPanel1.setName("panelmain"); // NOI18N
 
         tbkey.addActionListener(new java.awt.event.ActionListener() {
@@ -1014,7 +1043,7 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
         jLabel35.setText("EffDate");
         jLabel35.setName("lbleffdate"); // NOI18N
 
-        inventorydet.setModel(new javax.swing.table.DefaultTableModel(
+        serialdet.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -1025,7 +1054,7 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane8.setViewportView(inventorydet);
+        jScrollPane8.setViewportView(serialdet);
 
         jLabel2.setText("reference");
         jLabel2.setName("lblref"); // NOI18N
@@ -1071,15 +1100,6 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
             }
         });
 
-        dditem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dditemActionPerformed(evt);
-            }
-        });
-
-        jLabel3.setText("Item");
-        jLabel3.setName("lblitem"); // NOI18N
-
         ddship.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ddshipActionPerformed(evt);
@@ -1104,37 +1124,43 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
 
         jLabel6.setText("Tracking");
 
+        btlist.setText("List");
+        btlist.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btlistActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(btadditem)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btdeleteitem))
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(jScrollPane7, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jScrollPane8, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
-                                    .addGap(9, 9, 9)
-                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addComponent(jLabel24)
-                                        .addComponent(jLabel36)
-                                        .addComponent(jLabel4)
-                                        .addComponent(jLabel37)
-                                        .addComponent(jLabel38)
-                                        .addComponent(jLabel3))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addContainerGap()
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(jPanel1Layout.createSequentialGroup()
+                                    .addComponent(btadditem)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(jPanel1Layout.createSequentialGroup()
-                                            .addComponent(tbrmks)
-                                            .addGap(215, 215, 215))
+                                    .addComponent(btdeleteitem))
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(jScrollPane7, javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jScrollPane8, javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
+                                        .addGap(26, 26, 26)
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(jLabel24)
+                                            .addComponent(jLabel36)
+                                            .addComponent(jLabel4)
+                                            .addComponent(jLabel37)
+                                            .addComponent(jLabel38))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addComponent(tbrmks)
+                                                .addGap(215, 215, 215))
                                             .addGroup(jPanel1Layout.createSequentialGroup()
                                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                     .addGroup(jPanel1Layout.createSequentialGroup()
@@ -1178,22 +1204,21 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
                                                                 .addComponent(jLabel6)
                                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addComponent(tbtracking, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE))))
-                                                    .addComponent(lbmessage, javax.swing.GroupLayout.PREFERRED_SIZE, 307, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                                .addComponent(dditem, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                                .addComponent(lbitemdesc, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE))))))))
+                                                    .addComponent(lbmessage, javax.swing.GroupLayout.PREFERRED_SIZE, 307, javax.swing.GroupLayout.PREFERRED_SIZE))))))))
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addGap(192, 192, 192)
+                            .addComponent(btPrintInv)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(btPrintShp)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btdelete)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(btupdate)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(btadd)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(192, 192, 192)
-                        .addComponent(btPrintInv)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btPrintShp)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btdelete)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btupdate)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btadd)))
+                        .addContainerGap()
+                        .addComponent(btlist)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -1247,11 +1272,8 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
                     .addComponent(jLabel4)
                     .addComponent(tbrmks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(dditem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lbitemdesc, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3))
-                .addGap(25, 25, 25)
+                .addComponent(btlist)
+                .addGap(4, 4, 4)
                 .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(33, 33, 33)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1277,28 +1299,37 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
     }//GEN-LAST:event_btnewActionPerformed
 
     private void btadditemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btadditemActionPerformed
-        boolean canproceed = true;
-     
-        int[] rows = inventorydet.getSelectedRows();
-        int line = 0;
-        line = getmaxline();
+        
+        int[] rows = serialdet.getSelectedRows();
+        String targetlabel = "";
         for (int i : rows) {
-           line++;   
-          
-                        
-           shipmodel.addRow(new Object[] { 
-                String.valueOf(line),
-                inventorydet.getModel().getValueAt(i, 0),
-                inventorydet.getModel().getValueAt(i, 1), 
-                inventorydet.getModel().getValueAt(i, 2),
-                inventorydet.getModel().getValueAt(i, 3),
-                inventorydet.getModel().getValueAt(i, 4),
-                inventorydet.getModel().getValueAt(i, 6),
-                inventorydet.getModel().getValueAt(i, 7),
-                inventorydet.getModel().getValueAt(i, 8),
-                "" // bom
-                });
+            targetlabel = serialdet.getModel().getValueAt(i, 0).toString();
         }
+        
+        
+        for (int i = 0; i < serialdet.getRowCount(); i++) {
+           if (! assignedlabels.contains(targetlabel) && serialdet.getModel().getValueAt(i, 0).toString().equals(targetlabel)) {
+                shipmodel.addRow(new Object[] { 
+                serialdet.getModel().getValueAt(i, 0), // serial
+                serialdet.getModel().getValueAt(i, 1), // order
+                serialdet.getModel().getValueAt(i, 2), // orderline
+                serialdet.getModel().getValueAt(i, 3), // item
+                serialdet.getModel().getValueAt(i, 4), // desc
+                serialdet.getModel().getValueAt(i, 5), // custitem
+                serialdet.getModel().getValueAt(i, 6), // wh
+                serialdet.getModel().getValueAt(i, 7), // loc
+                serialdet.getModel().getValueAt(i, 8), // qty
+                serialdet.getModel().getValueAt(i, 9), // uom
+                serialdet.getModel().getValueAt(i, 10), // price
+                serialdet.getModel().getValueAt(i, 11) // po
+                });
+                            
+           }
+        }
+      
+        
+        assignedlabels.add(targetlabel);
+        refreshList();
         
         sumdollars();
         
@@ -1314,7 +1345,7 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
 
     private void ddcustActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddcustActionPerformed
         // clean slate
-        inventorymodel.setRowCount(0);
+        serialmodel.setRowCount(0);
         shipmodel.setRowCount(0);
         lbcust.setText("");
         if ( ddcust.getSelectedItem() != null && ! ddcust.getSelectedItem().toString().isEmpty()  && ! isLoad) {
@@ -1325,12 +1356,28 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
 
     private void btdeleteitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteitemActionPerformed
         int[] rows = shipdet.getSelectedRows();
+        String targetlabel = "";
         for (int i : rows) {
-            bsmf.MainFrame.show(getMessageTag(1031,String.valueOf(i)));
-             actamt -= bsParseDouble(shipdet.getModel().getValueAt(i,1).toString());
-            ((javax.swing.table.DefaultTableModel) shipdet.getModel()).removeRow(i);
+            targetlabel = shipdet.getModel().getValueAt(i, 0).toString();
         }
-        tbtotal.setText(String.valueOf(actamt));
+        
+       
+        ArrayList<Integer> rowsToDelete = new ArrayList<Integer>();
+        for (int i = 0; i < shipdet.getRowCount(); i++) {
+           if (shipdet.getModel().getValueAt(i, 0).toString().equals(targetlabel)) {
+                 rowsToDelete.add(i);
+                               
+           }
+        }
+        Collections.reverse(rowsToDelete);
+        for (int j : rowsToDelete) {
+            ((javax.swing.table.DefaultTableModel) shipdet.getModel()).removeRow(j); 
+        }
+        
+        assignedlabels.remove(targetlabel);
+        refreshList();
+        sumdollars();
+       
     }//GEN-LAST:event_btdeleteitemActionPerformed
 
     private void btupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateActionPerformed
@@ -1366,11 +1413,6 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
         lookUpFrame();
     }//GEN-LAST:event_btlookupActionPerformed
 
-    private void dditemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dditemActionPerformed
-         if (dditem.getSelectedItem() != null && ! isLoad)
-        getItemInfo(dditem.getSelectedItem().toString());
-    }//GEN-LAST:event_dditemActionPerformed
-
     private void ddshipActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddshipActionPerformed
        if (! isLoad && ddship != null && ddship.getItemCount() > 0)  {
         lbship.setText(cusData.getShipName(ddcust.getSelectedItem().toString(), ddship.getSelectedItem().toString()));
@@ -1386,6 +1428,10 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
         // OVData.printJTableToJasper("Shipper Report", tabledetail );
     }//GEN-LAST:event_btPrintShpActionPerformed
 
+    private void btlistActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlistActionPerformed
+        refreshList();
+    }//GEN-LAST:event_btlistActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btPrintInv;
     private javax.swing.JButton btPrintShp;
@@ -1394,19 +1440,17 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
     private javax.swing.JButton btclear;
     private javax.swing.JButton btdelete;
     private javax.swing.JButton btdeleteitem;
+    private javax.swing.JButton btlist;
     private javax.swing.JButton btlookup;
     private javax.swing.JButton btnew;
     private javax.swing.JButton btupdate;
     private com.toedter.calendar.JDateChooser dcdate;
     private javax.swing.JComboBox ddcust;
-    private javax.swing.JComboBox<String> dditem;
     private javax.swing.JComboBox<String> ddship;
     private javax.swing.JComboBox ddsite;
-    private javax.swing.JTable inventorydet;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel24;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel35;
     private javax.swing.JLabel jLabel36;
     private javax.swing.JLabel jLabel37;
@@ -1418,9 +1462,9 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
     private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JLabel lbcust;
-    private javax.swing.JLabel lbitemdesc;
     private javax.swing.JLabel lbmessage;
     private javax.swing.JLabel lbship;
+    private javax.swing.JTable serialdet;
     private javax.swing.JTable shipdet;
     private javax.swing.JTextField tbkey;
     private javax.swing.JTextField tbref;

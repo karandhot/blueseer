@@ -2665,7 +2665,7 @@ public class ShipperMaint extends javax.swing.JPanel {
                 return;
         } 
         String[] m = new String[2];
-        m = addShipperTransaction(createDetRecord(), createRecord());
+        m = addShipperTransaction(createDetRecord(), createRecord(), null);
         shpData.updateShipperSAC(tbkey.getText());
         initvars(new String[]{tbkey.getText()});
         

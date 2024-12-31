@@ -4384,6 +4384,65 @@ public class DTData {
         
          } 
     
+    public static DefaultTableModel getOrderLineBrowseUtil( String str, String myfield, String order) {
+        javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+                      new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("line"), getGlobalColumnTag("item"), getGlobalColumnTag("description"), getGlobalColumnTag("orderqty"), getGlobalColumnTag("shipqty")})
+                {
+                      @Override  
+                      public Class getColumnClass(int col) {  
+                        if (col == 0)       
+                            return ImageIcon.class;  
+                        else return String.class;  //other columns accept String values  
+                      }  
+                        }; 
+              
+       try{
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try{
+                 res = st.executeQuery(" select so_nbr, so_po, sod_line, sod_item, sod_desc, sod_ord_qty, sod_shipped_qty  " +
+                        " FROM so_mstr " +
+                        " inner join sod_Det on sod_nbr = so_nbr " +
+                        " where " + 
+                        " so_nbr = " + "'" + order + "'" + 
+                        " AND sod_status <> " + "'" + getGlobalProgTag("closed") + "'" +
+                        " AND " + myfield + " like " + "'%" + str + "%'" +
+                        " order by sod_line asc ;");
+                
+                    while (res.next()) {
+                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, 
+                                   res.getString("sod_line"),
+                                   res.getString("sod_item"),
+                                   res.getString("sod_desc"),
+                                   res.getString("sod_ord_qty"),
+                                   res.getString("sod_shipped_qty")
+                        });
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+                } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               if (con != null) con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+        return mymodel;
+        
+         } 
+    
+    
     public static DefaultTableModel getPOBrowseUtil( String str, int state, String myfield) {
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                       new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("po"), getGlobalColumnTag("vendor"), getGlobalColumnTag("site"), getGlobalColumnTag("remarks"), getGlobalColumnTag("orderdate"), getGlobalColumnTag("duedate"), getGlobalColumnTag("status")})

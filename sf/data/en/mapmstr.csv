@@ -14,6 +14,7 @@ bs204ToDB,Freight Order to Database,generic,X12204,204db,204x12,X12,204x12,DB,ed
 bs855ToDB,Acknowledgment Order to Database,generic,X12855,855db,855x12,X12,855x12,DB,edi/maps/bs855ToDB.java,,1,1000
 bsDBTo850,Database to Purchase Order,generic,DB,X12850,850db,DB,850x12,X12,edi/maps/bsDBTo850.java,,1,1000
 bsDBTo856,Database to ASN,generic,DB,X12856,856db,DB,856x12,X12,edi/maps/bsDBTo856.java,,1,1000
+bsDBtreeTo856,Database (tree) to ASN,generic,DB,X12856,856db,DB,856x12,X12,edi/maps/bsDBtreeTo856.java,,1,1000
 bsDBTo810,Database to Invoice,generic,DB,X12810,810db,DB,810x12,X12,edi/maps/bsDBTo810.java,,1,1000
 bsDBTo210,Database to Freight Invoice,generic,DB,X12210,210db,DB,210x12,X12,edi/maps/bsDBTo210.java,,1,1000
 bsDBTo855,Database to Acknowledgement,generic,DB,X12855,855db,DB,855x12,X12,edi/maps/bsDBTo855.java,,1,1000

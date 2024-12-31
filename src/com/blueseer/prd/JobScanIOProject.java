@@ -973,7 +973,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
         }
         
         ArrayList<shpData.ship_det> shd = shpData.createShipDetJRTmin(detail, String.valueOf(shipperid), sv.sv_create_date(), sv.sv_site());
-        shpData.addShipperTransaction(shd, sh);
+        shpData.addShipperTransaction(shd, sh, null);
         shpData.updateShipperSAC(String.valueOf(shipperid));
         schData.updatePlanOrderStatus(tbkey.getText(),"closed");
         // now confirm shipment

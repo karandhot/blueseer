@@ -65,10 +65,11 @@ EDICommMenu,AS2Browse,5,JMenuItem,AS2 Browse,,1,,1,1
 EDICommMenu,AS2Log,6,JMenuItem,AS2 Log,,,,1,1
 EDICommMenu,FTPMaint,7,JMenuItem,FTP/sFTP Maintenance,,,,1,1
 LabelMenu,LabelsContGeneric,1,JMenuItem,Container Labels,,,,1,1
-LabelMenu,AddrLabel,2,JMenuItem,Address Labels,,,,1,1
-LabelMenu,LabelBrowse,3,JMenuItem,Label Browse,,1,,1,1
-LabelMenu,LabelFileMaint,4,JMenuItem,Label File Maintenance,,,,1,1
-LabelMenu,LabelFileBrowse,5,JMenuItem,Label File Browse,,1,,1,1
+LabelMenu,LabelMixedContMaint,2,JMenuItem,Container Mixed Labels,,,,1,1
+LabelMenu,AddrLabel,3,JMenuItem,Address Labels,,,,1,1
+LabelMenu,LabelBrowse,4,JMenuItem,Label Browse,,1,,1,1
+LabelMenu,LabelFileMaint,5,JMenuItem,Label File Maintenance,,,,1,1
+LabelMenu,LabelFileBrowse,6,JMenuItem,Label File Browse,,1,,1,1
 Purchasing,POMaintMenu,1,JMenuItem,Purchase Order Maintenance,,,,1,1
 Purchasing,POBrowse,2,JMenuItem,Purchase Order Browse,,1,,1,1
 Purchasing,POItemBrowse,3,JMenuItem,PO Item Browse,,1,,1,1
@@ -108,14 +109,15 @@ Order,OrderControl,18,JMenuItem,Order Control,,,,1,1
 OrderReports,chart_order,1,JMenuItem,Chart Reporting,,1,,1,1
 Shipping,ShipMaint,1,JMenuItem,Shipper Maintenance,,,,1,1
 Shipping,ShipMaintSerial,2,JMenuItem,Shipper Maintenance (Serialized),,,,1,1
-Shipping,ShipperBrowse,3,JMenuItem,Shipper Browse ,,1,,1,1
-Shipping,ShipperBrowseDet,4,JMenuItem,Shipper Detail Browse,,1,,1,1
-Shipping,ShipperItemBrowse,5,JMenuItem,Shipper Item Browse ,,1,,1,1
-Shipping,ShipConfirm,6,JMenuItem,Shipper Confirm,,,,1,1
-Shipping,ShipUnconfirm,7,JMenuItem,Shipper UnConfirm,,,,1,1
-Shipping,ShpRptPicker,8,JMenuItem,Shipping Report Selector,,,,1,1
-Shipping,ShipReports,9,JMenu,Other Reports,,,,1,1
-Shipping,ShipperControl,10,JMenuItem,Shipper Control,,,,1,1
+Shipping,ShipBuildMaint,3,JMenuItem,Shipper Build Maintenance,,,,1,1
+Shipping,ShipperBrowse,4,JMenuItem,Shipper Browse ,,1,,1,1
+Shipping,ShipperBrowseDet,5,JMenuItem,Shipper Detail Browse,,1,,1,1
+Shipping,ShipperItemBrowse,6,JMenuItem,Shipper Item Browse ,,1,,1,1
+Shipping,ShipConfirm,7,JMenuItem,Shipper Confirm,,,,1,1
+Shipping,ShipUnconfirm,8,JMenuItem,Shipper UnConfirm,,,,1,1
+Shipping,ShpRptPicker,9,JMenuItem,Shipping Report Selector,,,,1,1
+Shipping,ShipReports,10,JMenu,Other Reports,,,,1,1
+Shipping,ShipperControl,11,JMenuItem,Shipper Control,,,,1,1
 ShipReports,chart_shipping,1,JMenuItem,Chart Reporting,,1,,1,1
 Finance,LedgerSetupMenu,1,JMenu,Ledger Setup,,,,1,1
 LedgerSetupMenu,AcctMaint,1,JMenuItem,Account Maintenance,,,,1,1

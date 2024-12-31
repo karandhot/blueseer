@@ -958,7 +958,7 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
                               "S", ddtax.getSelectedItem().toString(), ddsite.getSelectedItem().toString() ); 
         ArrayList<String[]> detail = tableToArrayList();
         ArrayList<shpData.ship_det> shd = shpData.createShipDetJRTmin(detail, String.valueOf(shipperid), dfdate.format(createdate.getDate()).toString(), ddsite.getSelectedItem().toString());
-        shpData.addShipperTransaction(shd, sh);
+        shpData.addShipperTransaction(shd, sh, null);
         shpData.updateShipperSAC(String.valueOf(shipperid));
         // now confirm shipment
         String[] message = confirmShipperTransaction("serviceorder", String.valueOf(shipperid), now);

@@ -3271,7 +3271,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                               ddsite.getSelectedItem().toString()); 
         ArrayList<String[]> detail = costToDetail();
         ArrayList<shpData.ship_det> shd = shpData.createShipDetFreight(detail, String.valueOf(shipperid), dfdate.format(bsmf.MainFrame.now), ddsite.getSelectedItem().toString());
-        shpData.addShipperTransaction(shd, sh);
+        shpData.addShipperTransaction(shd, sh, null);
        // shpData.updateShipperSAC(String.valueOf(shipperid));
         
         String[] m = confirmShipperTransaction("freight", String.valueOf(shipperid), now);

@@ -410,7 +410,8 @@ String carrier = "";
                  "XX", 
                  labelname,
                  quantity, 
-                 ponbr, 
+                 ponbr,
+                 billto,
                  ordernbr, 
                  linenbr, 
                  ref, 
@@ -432,7 +433,8 @@ String carrier = "";
                  "LabelContPanel", 
                  OVData.getDefaultSite(), 
                  "", 
-                 "CONT"
+                 "CONT",
+                 "flat"
                 );
         return x;
     }

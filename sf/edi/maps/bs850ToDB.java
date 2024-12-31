@@ -43,6 +43,7 @@ import com.blueseer.utl.EDData;
     ta.add(new String[]{po,"header","vendcode", getInput("REF","1:IA","e02")});
     ta.add(new String[]{po,"header","shipcode", getInput("N1","1:ST","e04")});
     ta.add(new String[]{po,"header","billcode", getInput("N1","1:BT","e04")});
+    ta.add(new String[]{po,"header","duedate", getInput("DTM","1:002","e02")});
     
     int n1count = getGroupCount("N1");
     boolean isN1ST = false;
@@ -87,6 +88,7 @@ import com.blueseer.utl.EDData;
         e.setDetQty(i-1, getInput(i,"PO1",2));
         if (getInput(i,"PO1",6).equals("VP") || getInput(i,"PO1",6).equals("VN")) {
          e.setDetItem(i-1,getInput(i,"PO1",7));
+         ta.add(new String[]{po,("detail:"+snum(i)),"item", getInput(i,"PO1",7)});
         } else if (getInput(i,"PO1",8).equals("BP") || getInput(i,"PO1",8).equals("SK")) {
          e.setDetItem(i-1,getInput(i,"PO1",9));   
         } else {
@@ -99,6 +101,9 @@ import com.blueseer.utl.EDData;
 
         // detail turn around (ta)
         ta.add(new String[]{po,("detail:"+snum(i)),"custline", getInput(i,"PO1",1)});
+        ta.add(new String[]{po,("detail:"+snum(i)),"qty", getInput(i,"PO1",2)});
+        ta.add(new String[]{po,("detail:"+snum(i)),"price", getInput(i,"PO1",4)});
+        
         if (getInput(i,"PO1",6).equals("BP") || getInput(i,"PO1",6).equals("SK")) {
          ta.add(new String[]{po,("detail:"+snum(i)),"sku", getInput(i,"PO1",7)});
         }
