@@ -54,6 +54,7 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.ord.ordData.applyOrderChange;
 import static com.blueseer.ord.ordData.updateOrderChangeStatus;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
@@ -383,6 +384,7 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         cbclose = new javax.swing.JCheckBox();
         cbopen = new javax.swing.JCheckBox();
         btprint = new javax.swing.JButton();
+        cbapplied = new javax.swing.JCheckBox();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         lblqtytot = new javax.swing.JLabel();
@@ -486,6 +488,8 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
             }
         });
 
+        cbapplied.setText("Applied");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -515,7 +519,9 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                         .addComponent(cbopen)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(cbclose)
-                        .addGap(58, 58, 58))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(cbapplied)
+                        .addContainerGap())
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel5)
@@ -550,7 +556,8 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                         .addComponent(jLabel3)
                         .addComponent(tbtoorder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(cbclose)
-                        .addComponent(cbopen)))
+                        .addComponent(cbopen)
+                        .addComponent(cbapplied)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -707,6 +714,8 @@ try {
                              continue;
                              if (! cbclose.isSelected() && res.getString("soc_status").equals("closed"))
                              continue;
+                             if (! cbapplied.isSelected() && res.getString("soc_status").equals("applied"))
+                             continue;
                                               
                     mymodel.addRow(new Object[]{ BlueSeerUtils.clickbasket, 
                                 res.getString("soc_id"),
@@ -759,11 +768,13 @@ try {
                 detailpanel.setVisible(true);
               
         }
-        if ( col == 9 && ! tablereport.getValueAt(row, 1).toString().equals("closed")) {
-                commitChange(tablereport.getValueAt(row, 1).toString());
+        if ( col == 9 && ! tablereport.getValueAt(row, 1).toString().equals("closed") &&
+                 ! tablereport.getValueAt(row, 1).toString().equals("applied")) {
+                applyOrderChange(tablereport.getValueAt(row, 1).toString(), tablereport.getValueAt(row, 3).toString());
                 bsmf.MainFrame.show("Order Change Committed");
         }
-        if ( col == 10 && ! tablereport.getValueAt(row, 1).toString().equals("closed")) {
+        if ( col == 10 && ! tablereport.getValueAt(row, 1).toString().equals("closed") &&
+                ! tablereport.getValueAt(row, 1).toString().equals("applied")) {
                 updateOrderChangeStatus(tablereport.getValueAt(row, 1).toString(), "closed");
                 bsmf.MainFrame.show("Order Change Closed");
         }
@@ -780,6 +791,7 @@ try {
     private javax.swing.JButton btRun;
     private javax.swing.JButton btdetail;
     private javax.swing.JButton btprint;
+    private javax.swing.JCheckBox cbapplied;
     private javax.swing.JCheckBox cbclose;
     private javax.swing.JCheckBox cbopen;
     private javax.swing.JComboBox ddcustfrom;

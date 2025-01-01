@@ -215,7 +215,9 @@
                               <Component id="cbopen" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="cbclose" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="58" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="cbapplied" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
@@ -257,6 +259,7 @@
                               <Component id="tbtoorder" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="cbclose" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="cbopen" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="cbapplied" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="32767" attributes="0"/>
@@ -357,6 +360,11 @@
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btprintActionPerformed"/>
               </Events>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="cbapplied">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Applied"/>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>

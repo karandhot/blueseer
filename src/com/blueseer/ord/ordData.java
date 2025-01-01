@@ -4536,6 +4536,73 @@ public class ordData {
     }
     }
     
+    public static void applyOrderChange(String changeID, String po) {
+       try{
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        LocalDate now = LocalDate.now();
+        now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        int i = 0;
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        try{
+                res = st.executeQuery("select * from sod_chg inner join so_chg on sodc_id = soc_id " +
+                    " where sodc_id = " + "'" + changeID + "'" +
+                    " and sodc_po = " + "'" + po + "'");
+                while (res.next()) {
+                    list.add(new String[]{res.getString("soc_duedate"),
+                    res.getString("sodc_po"),
+                    res.getString("sodc_line"),
+                    res.getString("sodc_item"),
+                    res.getString("sodc_price"),
+                    res.getString("sodc_qty")});
+                }
+                for (String[] s : list) {
+                    if (i == 0) {
+                      st.executeUpdate(
+                        " update so_chg set soc_status = " + "'applied'" + "," + " soc_applydate = " + "'" + now + "'" + 
+                        " where soc_id = " + "'" + changeID + "'" + " and soc_po = " + "'" + po + "'" + ";" );  
+                      st.executeUpdate(
+                        " update so_mstr set so_due_date = " + "'" + s[0] + "'" +
+                         " where so_po = " + "'" + po + "'" + ";" );    
+                    }
+                      st.executeUpdate(
+                        " update sod_det set sod_ord_qty = " + "'" + s[5] + "'" + "," +
+                        " sod_listprice = " + "'" + s[4] + "'" + "," +
+                        " sod_due_date = " + "'" + s[0] + "'" +        
+                        " where sod_po = " + "'" + s[1] + "'" + 
+                                " and sod_line = " + "'" + s[2] + "'" +
+                                " and sod_item = " + "'" + s[3] + "'" +
+                                ";" );
+                    i++;
+                }
+                
+           
+         
+           
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+            if (st != null) {
+                st.close();
+            }
+            if (res != null) {
+                res.close();
+            }
+            con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    }
+    
     
     public record salesOrder(String[] m, so_mstr so, ArrayList<sod_det> sod,
         ArrayList<sos_det> sos, ArrayList<sod_tax> sodtax, ArrayList<so_tax> sotax, cms_det cms) {
