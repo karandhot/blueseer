@@ -5,7 +5,7 @@ import com.blueseer.utl.EDData;
 
 setReference(getInput("order","orderid")); //optional...but must be ran after mappedInput
  
-mapSegment("BEG","e05",getInput("order","orderdate").replace("-",""));
+
   
     isDBWrite(c);// optional...unless this map is writing to internal database tables (orders, etc)
     
@@ -19,9 +19,9 @@ mapSegment("BEG","e05",getInput("order","orderdate").replace("-",""));
     ArrayList<String[]> ta = new ArrayList<String[]>();
 
     // begin mapping
-    
+
     // first try finding internal Billto with N1 BT ....then fall back to ISA receiver
-    e.setOVBillTo(EDData.getEDIXrefIn(getInput("order","receiverid"), getInput("order","senderid"), "BT", getInput("order:addresses:address","type:BT","addrid"))); 
+    e.setOVBillTo(EDData.getEDIXrefIn(getInput("order","receiverid"), getInput("order","senderid"), "BT", getTag("addresses:address","type:billto","addrid"))); 
     
     if (e.getOVBillTo().isEmpty()) {
      e.setOVBillTo(EDData.getEDIXrefIn(getInput("order","receiverid"), getInput("order","senderid"), "BT", getInput("order","senderid"))); 

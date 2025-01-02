@@ -2075,7 +2075,7 @@ public class shpData {
 
     public static String[] getShipperHeader(String shipper) {
 
-          String[] H = new String[28];
+          String[] H = new String[35];
     try{
 
         Connection con = null;
@@ -2097,6 +2097,8 @@ public class shpData {
                 res = st.executeQuery("select * from ship_mstr " +
                         " inner join cm_mstr on cm_code = sh_cust " +
                         " inner join cms_det on cms_det.cms_shipto = sh_ship and cms_det.cms_code = sh_cust " +
+                        " inner join cust_term on cm_terms = cut_code " +
+                        " inner join ar_mstr on ar_nbr = sh_id and ar_type = 'I' " +
                         " where sh_id = " + "'" + shipper + "'" +";");
                 while (res.next()) {
                     H[0] = res.getString("sh_cust");
@@ -2127,9 +2129,13 @@ public class shpData {
                     H[25] = res.getString("cms_state");
                     H[26] = res.getString("cms_zip");
                     H[27] = res.getString("cms_country");
-                    
-                    
-
+                    H[28] = res.getString("sh_site");
+                    H[29] = res.getString("cut_code");
+                    H[30] = res.getString("cut_desc");
+                    H[31] = res.getString("cut_discpercent");
+                    H[32] = res.getString("cut_days");
+                    H[33] = res.getString("ar_duedate");
+                    H[34] = res.getString("sh_confdate");
                 }
        }
         catch (SQLException s){
@@ -2335,20 +2341,21 @@ public class shpData {
         try{
             
           
-                  res = st.executeQuery("select ship_item, ship_qty, shd_custitem, shd_desc from ship_tree " +
+                  res = st.executeQuery("select ship_item, ship_qty, shd_custitem, shd_desc, shd_line from ship_tree " +
                           " inner join ship_det on shd_id = ship_sh and shd_line = ship_shline " +
                           " where ship_parent = " + "'" + serial + "'" + 
                           " AND ship_sh = " + "'" + shipper + "'" +
                           ";");
                 while (res.next()) {
                     String[] d = new String[4];
-                    for (int z = 0; z < 4; z++) {
+                    for (int z = 0; z < 5; z++) {
                         d[z] = "";
                     }
                     d[0] = res.getString("ship_item");
                     d[1] = res.getString("ship_qty");
                     d[2] = res.getString("shd_custitem");
                     d[3] = res.getString("shd_desc");
+                    d[4] = res.getString("shd_line");
                     mylist.add(d);
                 }
        }

@@ -1757,6 +1757,50 @@ public class admData {
     
     
     // misc
+    public static String[] getSiteAddressInfo(String site) {
+       String[] address = new String[9];
+         try{
+
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+            res = st.executeQuery("select site_site, site_desc, site_line1, site_line2, site_line3, site_city, site_state, site_zip, site_country from site_mstr where site_site = " + "'" + site + 
+                                  "';" );
+           while (res.next()) {
+            address[0] = res.getString("site_site"); 
+            address[1] = res.getString("site_desc");
+            address[2] = res.getString("site_line1"); 
+            address[3] = res.getString("site_line2");
+            address[4] = res.getString("site_line3");
+            address[5] = res.getString("site_city"); 
+            address[6] = res.getString("site_state"); 
+            address[7] = res.getString("site_zip"); 
+            address[8] = res.getString("site_country"); 
+            }
+
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+
+        return address;
+    }  
+
     public static ArrayList<ftp_attr> getFTPAttr(String[] x) {
         ftp_attr r = null;
         ArrayList<ftp_attr> list = new ArrayList<ftp_attr>();

@@ -1677,9 +1677,8 @@ public class cusData {
     }
     
     public static String[] getCustAddressInfo(String cust) {
-           // get billto specific data
-            // aracct, arcc, currency, bank, terms, carrier, onhold, site
-        String[] custinfo = new String[]{"","","","","","","",""};
+          
+        String[] custinfo = new String[]{"","","","","","","","",""};
         String sql = "select cm_name, cm_line1, cm_line2, cm_line3, cm_city, cm_state, cm_zip, cm_country, cm_email from cm_mstr where cm_code = ?;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -1692,8 +1691,9 @@ public class cusData {
                custinfo[3] = res.getString("cm_line3");
                custinfo[4] = res.getString("cm_city");
                custinfo[5] = res.getString("cm_state");
-               custinfo[6] = res.getString("cm_country");
-               custinfo[7] = res.getString("cm_email");                   
+               custinfo[6] = res.getString("cm_zip");
+               custinfo[7] = res.getString("cm_country");
+               custinfo[8] = res.getString("cm_email"); 
                }
             }
         }

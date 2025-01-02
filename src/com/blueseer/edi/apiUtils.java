@@ -1423,7 +1423,7 @@ public class apiUtils {
         
         KeyPairGenerator rsaGen;
         
-        String[] siteinfo = OVData.getSiteAddressArray(OVData.getDefaultSite());
+        String[] siteinfo = admData.getSiteAddressInfo(OVData.getDefaultSite());
         X500Name dnName = new X500Name("CN=BlueSeer Software"); 
         BigInteger certSerialNumber = new BigInteger(Long.toString(System.currentTimeMillis()));
 

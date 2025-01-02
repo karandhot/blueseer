@@ -36,6 +36,7 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import com.blueseer.ctr.cusData;
 import com.blueseer.fap.fapData;
 import static com.blueseer.fap.fapData.VouchAndPayTransaction;
@@ -5010,7 +5011,7 @@ public class CashTran extends javax.swing.JPanel {
 
     private void ddrexpsiteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddrexpsiteActionPerformed
         if (! isLoad) {
-        String[] siteinfo = OVData.getSiteAddressArray(ddrexpsite.getSelectedItem().toString());
+        String[] siteinfo = admData.getSiteAddressInfo(ddrexpsite.getSelectedItem().toString());
         lbrexpsitename.setText(siteinfo[1]);
         getRecurringExpense(cbrexpshowall.isSelected());
         calcdiff();

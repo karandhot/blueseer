@@ -64,9 +64,12 @@ JSONGenericOrder,sac,sacs,1,0,0,sacamt,SAC Amount,1,80,-,O,F
 JSONGenericOrder,sac,sacs,1,0,0,sacdesc,SAC Description,1,80,-,O,F
 JSONGenericInvoice,invoice,,1,0,1,landmark,landmark,5,5,-,M,F
 JSONGenericInvoice,invoice,,1,0,0,invoiceid,Invoice Number,1,40,-,O,F
+JSONGenericInvoice,invoice,,1,0,0,ponumber,PO Number,1,40,-,O,F
+JSONGenericInvoice,invoice,,1,0,0,podate,PO Date,1,40,-,O,F
+JSONGenericInvoice,invoice,,1,0,0,vendorcode,Vendor Code,1,40,-,O,F
 JSONGenericInvoice,invoice,,1,0,0,site,Site Code,1,40,-,O,F
 JSONGenericInvoice,invoice,,1,0,0,invoicedate,Invoice Date,1,40,-,O,F
-JSONGenericInvoice,invoice,,1,0,0,duedate,Due Date,1,40,-,O,F
+JSONGenericInvoice,invoice,,1,0,0,shipdate,Ship Date,1,40,-,O,F
 JSONGenericInvoice,invoice,,1,0,0,remarks,Remarks,1,40,-,O,F
 JSONGenericInvoice,invoice,,1,0,0,reference,Reference,1,40,-,O,F
 JSONGenericInvoice,invoice,,1,0,0,doctype,Document Type,1,40,-,O,F
@@ -175,16 +178,15 @@ JSONGenericASN,order,orders,1,0,0,orderreference,Order Reference,1,40,-,O,F
 JSONGenericASN,order,orders,1,0,0,ordertype,Order Type,1,40,-,O,F
 JSONGenericASN,order,orders,1,0,0,orderaddrtype,Address Type,1,40,-,O,F
 JSONGenericASN,order,orders,1,0,0,orderaddrname,Address Name,1,40,-,O,F
-JSONGenericASN,packs,order,100,1,1,landmark,landmark,9,9,-,M,F
-JSONGenericASN,pack,packs,100,1,1,landmark,landmark,9,9,-,M,F
-JSONGenericASN,pack,packs,1,0,0,packline,Pack Line,1,40,-,O,F
-JSONGenericASN,pack,packs,1,0,0,packitem,Pack Item,1,40,-,O,F
-JSONGenericASN,pack,packs,1,0,0,packaltname,Pack Alternate Name,1,40,-,O,F
-JSONGenericASN,pack,packs,1,0,0,packtype,Pack Type,1,40,-,O,F
-JSONGenericASN,pack,packs,1,0,0,packqty,Pack qty,1,40,-,O,F
-JSONGenericASN,pack,packs,1,0,0,packserial,Pack Serial,1,40,-,O,F
-JSONGenericASN,items,pack,100,1,1,landmark,landmark,9,9,-,M,F
+JSONGenericASN,items,asn,100,1,1,landmark,landmark,9,9,-,M,F
 JSONGenericASN,item,items,100,1,1,landmark,landmark,9,9,-,M,F
+JSONGenericASN,item,items,1,0,0,packline,Pack Line,1,40,-,O,F
+JSONGenericASN,item,items,1,0,0,packitem,Pack Item,1,40,-,O,F
+JSONGenericASN,item,items,1,0,0,packaltname,Pack Alternate Name,1,40,-,O,F
+JSONGenericASN,item,items,1,0,0,packtype,Pack Type,1,40,-,O,F
+JSONGenericASN,item,items,1,0,0,packqty,Pack qty,1,40,-,O,F
+JSONGenericASN,item,items,1,0,0,packserial,Pack Serial,1,40,-,O,F
+JSONGenericASN,item,items,1,0,0,order,Order,1,40,-,O,F
 JSONGenericASN,item,items,1,0,0,itemnumber,Item Number,1,40,-,O,F
 JSONGenericASN,item,items,1,0,0,line,Line Number,1,40,-,O,F
 JSONGenericASN,item,items,1,0,0,uom,Unit of Measure,1,40,-,O,F
@@ -201,12 +203,6 @@ JSONGenericASN,item,items,1,0,0,netprice,Net Price,1,40,-,O,F
 JSONGenericASN,item,items,1,0,0,discount,Discount Percent,1,40,-,O,F
 JSONGenericASN,item,items,1,0,0,location,Location,1,40,-,O,F
 JSONGenericASN,item,items,1,0,0,warehouse,Warehouse,1,40,-,O,F
-JSONGenericASN,summarysacs,asn,5,1,1,landmark,landmark,9,9,-,M,F
-JSONGenericASN,sac,summarysacs,5,1,1,landmark,landmark,9,9,-,M,F
-JSONGenericASN,sac,summarysacs,1,0,0,sactype,SAC Type,1,40,-,O,F
-JSONGenericASN,sac,summarysacs,1,0,0,saccode,SAC Code,1,80,-,O,F
-JSONGenericASN,sac,summarysacs,1,0,0,sacamt,SAC Amount,1,80,-,O,F
-JSONGenericASN,sac,summarysacs,1,0,0,sacdesc,SAC Description,1,80,-,O,F
 XMLGenericOrder,order,,1,0,1,landmark,landmark,10,10,-,M,N
 XMLGenericOrder,header,order,1,0,1,landmark,landmark,6,6,-,M,N
 XMLGenericOrder,header,order,1,0,0,type,type,1,40,-,O,A

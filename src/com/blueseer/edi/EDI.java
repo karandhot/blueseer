@@ -4011,7 +4011,6 @@ public class EDI {
         c[18] = "999999";
         c[19] = "0";
         c[20] = "999999";
-        c[29] = "X12";
         c[39] = sh.sh_site();
         
         int idxnbr = EDData.writeEDIIDX(c);
@@ -4047,6 +4046,8 @@ public class EDI {
         c[0] = defaults[2];
         c[21] = defaults[5];
         
+        c[29] = defaults[15]; // outfiletype
+        c[15] = defaults[14]; // outdoctype
         
         map = defaults[24];         
         c[2] = map;
@@ -4152,7 +4153,6 @@ public class EDI {
         c[18] = "999999";
         c[19] = "0";
         c[20] = "999999";
-        c[29] = "X12";
         c[39] = so.so_site();
         
         
@@ -4189,7 +4189,8 @@ public class EDI {
         c[0] = defaults[2];
         c[21] = defaults[5];
         
-        
+        c[29] = defaults[15]; // outfiletype
+        c[15] = defaults[14]; // outdoctype
         
        map = defaults[24];         
         c[2] = map;
@@ -4289,7 +4290,7 @@ public class EDI {
         c[5] = "";
         c[6] = "";
         c[7] = shipper;
-        c[15] = "0"; // dir out
+        
         c[12] = ""; // is override
         c[22] = String.valueOf(comkey);
         c[28] = "DB";
@@ -4297,7 +4298,6 @@ public class EDI {
         c[18] = "999999";
         c[19] = "0";
         c[20] = "999999";
-        c[29] = "X12";
         c[39] = sh.sh_site();
         
         int idxnbr = EDData.writeEDIIDX(c);
@@ -4330,8 +4330,9 @@ public class EDI {
         
         c[0] = defaults[2];
         c[21] = defaults[5];
+        c[29] = defaults[15]; // outfiletype
+        c[15] = defaults[14]; // outdoctype
         
-               
         map = defaults[24];         
         c[2] = map;
         
@@ -4437,7 +4438,6 @@ public class EDI {
         c[18] = "999999";
         c[19] = "0";
         c[20] = "999999";
-        c[29] = "X12";
         c[39] = pom.po_site();
         
         int idxnbr = EDData.writeEDIIDX(c);
@@ -4470,6 +4470,9 @@ public class EDI {
         
         c[0] = defaults[2];
         c[21] = defaults[5];
+        
+        c[29] = defaults[15]; // outfiletype
+        c[15] = defaults[14]; // outdoctype
         
         map = defaults[24];         
         c[2] = map;

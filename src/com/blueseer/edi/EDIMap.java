@@ -3187,7 +3187,7 @@ public abstract class EDIMap {  // took out the implements EDIMapi
     int maxallowed = CountLMLoopsOFS(s.getKey()); 
     
     int limit = 0;
-  //  System.out.println("here preloopcount: " + s.getKey() + "/" + actual + "/" + maxallowed + "/" + limit); 
+   // System.out.println("here preloopcount: " + s.getKey() + "/" + actual + "/" + maxallowed + "/" + limit); 
     if (actual >= maxallowed) {
         limit = maxallowed;
     } else {
@@ -3229,7 +3229,7 @@ public abstract class EDIMap {  // took out the implements EDIMapi
                                         elementNode.put(x[5], v);
                                 }
                 arN.add(elementNode);
-           //     System.out.println("here limit > 1: " + node.getData() + "/" +  elementNode.toString());
+              //  System.out.println("here limit > 1: " + node.getData() + "/" +  elementNode.toString());
             } 
         } else {
             ObjectNode elementNode = new ObjectMapper().createObjectNode();
@@ -3258,12 +3258,12 @@ public abstract class EDIMap {  // took out the implements EDIMapi
                             }
             if (elementNode.size() > 0) {
             arN.add(elementNode);
-          //  System.out.println("here limit <= 1: " + node.getData() + "/" +  elementNode.toString());
+           // System.out.println("here limit <= 1: " + node.getData() + "/" +  elementNode.toString());
             }
         }  
     }  // if fields != null
     } // for each s.getKey
-    if (arN.size() > 1) {
+    if (arN.size() >= 1) {   // adjusted this to include empty tags
        // obN.set(node.getData(), arN);
         ObjectNode en = new ObjectMapper().createObjectNode();
         en.set(node.getData(), arN);
@@ -3294,20 +3294,20 @@ public abstract class EDIMap {  // took out the implements EDIMapi
     
     // now do children
     Iterator<bsNode<String>> it = node.getChildren().iterator();
-  //  System.out.println("here children: " + node.getData() + "/" +  node.getChildren().size() + "/" + it.hasNext());
- //   System.out.println("root node name: " + rootnodename);
+   // System.out.println("here children: " + node.getData() + "/" +  node.getChildren().size() + "/" + it.hasNext());
+   // System.out.println("root node name: " + rootnodename);
     /*
     if (! it.hasNext() && node.getData().equals(rootnodename)) {
        obN.set(node.getData(), jr.on()); 
     }
     */
     while (it.hasNext()) {  
-    //    System.out.println("hasNext=" + node.getData() + "/" + obN.toString());
+     //   System.out.println("hasNext=" + node.getData() + "/" + obN.toString());
     	bsNode<String> nextNode = it.next();
     //    System.out.println("hasNextnode=" + node.getData() + "/" + nextNode.getData());
         int mylevel = level;
         mylevel++;
-      //  System.out.println("recursive: " + "parent=" + node.getData() + "child:" + nextNode.getData());
+    //    System.out.println("recursive: " + "parent=" + node.getData() + "child:" + nextNode.getData());
         jsonRecord jrNode = generateJSONx(nextNode, node.getData(), obN, mylevel, OSF, MD);
         /*
         if (jrNode.isArray()) { 
@@ -4090,6 +4090,7 @@ public abstract class EDIMap {  // took out the implements EDIMapi
          }
          if (GlobalDebug) {
          System.out.println("getElementNumber: " + segment + "/" + element + "/" + r);
+         System.out.println("getElementNumberparseg: " + parent + "/" + seg + "/" + r);
          }
          return r;
      }
@@ -4187,6 +4188,64 @@ public abstract class EDIMap {  // took out the implements EDIMapi
          return ediData.getEDIMetaValue(refnumber, mtype, key);
      }
   
+    @EDI.AnnoDoc(desc = {"Method used to retrieve a tag value if a sibling tag matches a qualifier value.", 
+                     "NOTE:  used only for json and xml file processing ",
+                     "Example:  getTag(\"addresses:address\",\"type:billto\",\"addrid\") returns: specific value of field named addrid of looping tag address2...if qualf fieldname = billto"},
+            params = {"String segment","String position:qualifier","Integer ElementName"})  
+    public static String getTag(String segment, String qual, String elementName) {
+        String x = "";
+         
+         String newkey = "";
+         
+         String[] q = qual.split(":",-1);
+         if (q.length < 2) {
+             return "";
+         }
+            for (Map.Entry<String, String[]> z : mappedInput.entrySet()) {
+                String[] v = z.getKey().split("\\+");   // v[0] contains segment:parentsegment:field   v[1] contains loop counters    z.getKeyValue contains 'value'
+                if (v[0].contains(segment + ":" + q[0]) && z.getValue()[0].equals(q[1])) {
+                    if (v[0].contains(":")) {
+                        String[] h = v[0].split(":",-1);
+                        String[] newh = Arrays.copyOfRange(h, 0, h.length - 1);  //   copyOfRange is exclusive of last index...(if 4 elements) length - 1 gives 0,1,2...doesnt include index 3
+                        newkey = String.join(":", newh) + ":" + elementName + "+" + v[1];
+                        break;
+                    }
+                }
+               // System.out.println("z.getKey(): " + z.getKey().toString() + "  z.getValue() length: " + z.getValue().length);
+                          
+            }
+            for (Map.Entry<String, String[]> z : mappedInput.entrySet()) {
+                if (z.getKey().equals(newkey)) {
+                    x = z.getValue()[0];
+                    break;
+                }
+            }
+     
+         return x;
+     }
+    
+    @EDI.AnnoDoc(desc = {"Method used to retrieve a tag value if inbound segment matches tag.", 
+                     "NOTE:  used only for json and xml file processing ",
+                     "Example:  getTag(\"order\",\"senderid\")" },
+            params = {"String segment","String position:qualifier","Integer ElementName"})  
+    public static String getTag(String segment, String elementName) {
+        String x = "";
+         
+         String newkey = "";
+         
+            for (Map.Entry<String, String[]> z : mappedInput.entrySet()) {
+                String[] v = z.getKey().split("\\+");   // v[0] contains segment:parentsegment:field   v[1] contains loop counters    z.getKeyValue contains 'value'
+                if (v[0].contains(segment + ":" + elementName)) {  // contains...not exact match ...the more precise the segment headers the more precise the target
+                    x = z.getValue()[0];
+                    break;
+                }
+               // System.out.println("z.getKey(): " + z.getKey().toString() + "  z.getValue() length: " + z.getValue().length);
+            }
+     
+         return x;
+     }
+    
+    
     public class UserDefinedException extends Exception  
     {  
         public UserDefinedException(String str)  
