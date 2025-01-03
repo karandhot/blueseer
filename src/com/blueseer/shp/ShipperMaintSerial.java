@@ -515,7 +515,7 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
     }
     
     public String[] addRecord(String[] x) {
-        String[] m = addShipperTransaction(createDetRecord(), createRecord(), null);
+        String[] m = addShipperTransaction(createDetRecord(), createRecord(), createTreeRecord());
         shpData.updateShipperSAC(tbkey.getText());
         confirmShipperTransaction("", tbkey.getText(), dcdate.getDate());
         return m;
@@ -665,6 +665,54 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
         return list;        
     }
     
+     public ArrayList<shpData.ship_tree> createTreeRecord() {
+        ArrayList<shpData.ship_tree> list = new ArrayList<shpData.ship_tree>();
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        
+        // create shipper parent node with child containers
+        
+            shpData.ship_tree x = new shpData.ship_tree(null,
+            tbkey.getText(),
+            "", // ... no labels
+            ddsite.getSelectedItem().toString(),
+            "f", // flat ...no labels
+            tbkey.getText(),
+            "",
+            "",
+            "",
+            "",
+            "",
+            1.0,
+            "" // get display serial
+            );
+            
+            list.add(x);
+            // now items of container
+            for (int j = 0; j < shipdet.getRowCount(); j++) { 
+                
+                    shpData.ship_tree y = new shpData.ship_tree(null,
+                    tbkey.getText(), 
+                    "" + "," + shipdet.getValueAt(j, 1).toString() + "," + shipdet.getValueAt(j, 0).toString(),
+                    ddsite.getSelectedItem().toString(),
+                    "i",
+                    tbkey.getText(),
+                    shipdet.getValueAt(j, 0).toString(),
+                    "", // so
+                    shipdet.getValueAt(j, 0).toString(),
+                    "", // po
+                    shipdet.getValueAt(j, 1).toString(),
+                    bsParseDouble(shipdet.getValueAt(j, 6).toString().replace(defaultDecimalSeparator, '.')),
+                    "" // get display serial
+                    );
+                    list.add(y);
+                
+            }
+       
+       
+        return list;        
+    }
+    
+     
      public void lookUpFrame() {
         
         luinput.removeActionListener(lual);

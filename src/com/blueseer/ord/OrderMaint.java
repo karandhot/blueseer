@@ -1116,6 +1116,51 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         return list;
     }
     
+    public ArrayList<shpData.ship_tree> createTreeRecord(String shipper) {
+        ArrayList<shpData.ship_tree> list = new ArrayList<shpData.ship_tree>();
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        
+        // create shipper parent node with child containers
+        
+            shpData.ship_tree x = new shpData.ship_tree(null,
+            shipper,
+            "", // label serial number ... no labels
+            ddsite.getSelectedItem().toString(),
+            "f", // flat ...no labels
+            shipper,
+            "",
+            "",
+            "",
+            "",
+            "", // empty item
+            1.0,
+            "" // get display serial
+            );
+            
+            list.add(x);
+            // now items of container
+            for (int j = 0; j < orddet.getRowCount(); j++) {
+                shpData.ship_tree y = new shpData.ship_tree(null,
+                shipper,
+                orddet.getValueAt(j, 3).toString() + "," + orddet.getValueAt(j, 1).toString() + "," + orddet.getValueAt(j, 0).toString(),
+                ddsite.getSelectedItem().toString(),
+                "i",
+                shipper,
+                orddet.getValueAt(j, 0).toString(),
+                orddet.getValueAt(j, 3).toString(),
+                orddet.getValueAt(j, 0).toString(),
+                orddet.getValueAt(j, 4).toString(),
+                orddet.getValueAt(j, 1).toString(),
+                bsParseDouble(orddet.getValueAt(j, 5).toString().replace(defaultDecimalSeparator, '.')),
+                "" // get display serial
+                );
+                list.add(y);
+            }
+       
+       
+        return list;        
+    }
+    
     
     public void lookUpFrame() {
         
@@ -1558,10 +1603,11 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 ddsite.getSelectedItem().toString()); 
         ArrayList<String[]> detail = tableToArrayList();
         ArrayList<shpData.ship_det> shd = shpData.createShipDetJRT(detail, String.valueOf(shipperid), setDateDB(orddate.getDate()), ddsite.getSelectedItem().toString());
+        ArrayList<shpData.ship_tree> sht = createTreeRecord(sh.sh_id());
         
         bscon.setAutoCommit(false);    
                         
-        _addShipperTransaction(shd, sh, bscon);
+        _addShipperTransaction(shd, sh, sht, bscon);
         _updateShipperSAC(sh.sh_id(), bscon);
         m = _confirmShipperTransaction("order", String.valueOf(shipperid), new java.util.Date(), bscon);
         

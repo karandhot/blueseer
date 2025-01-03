@@ -110,7 +110,7 @@ commitSegment("addresses:address");
                 // get original info
                 detline = "detail:" + i;
                 mapSegment("items:item","originalquantity",getMeta(h[1],detline,"qty"));
-		mapSegment("items:item","originalprice",getMeta(h[1],detline,"price"));
+		mapSegment("items:item","originalprice",formatNumber(BlueSeerUtils.bsParseDouble(getMeta(h[1],detline,"price")),"4"));
 
                 mapSegment("items:item","line",d[7]);
 		mapSegment("items:item","itemnumber",d[1]);

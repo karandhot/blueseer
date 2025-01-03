@@ -343,5 +343,5 @@ POItemBrowse,,com.blueseer.pur.POItemBrowse,JMenuItem,puri
 OrderItemBrowse,,com.blueseer.ord.OrderItemBrowse,JMenuItem,ordi
 ShipperItemBrowse,,com.blueseer.shp.ShipperItemBrowse,JMenuItem,shpi
 LabelMixedContMaint,,com.blueseer.lbl.LabelMixedContMaint,JMenuItem,lblx
-ShipBuildMaint,,com.blueseer.shp.ShipBuildMaint,JMenuItem,shpz
+ShipBuildMaint,,com.blueseer.shp.ShipBuildMaint,JMenuItem,shpx
 OrderChangeBrowse,,com.blueseer.ord.OrderChangeBrowse,JMenuItem,orch

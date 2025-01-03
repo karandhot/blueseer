@@ -3155,7 +3155,7 @@ public class ordData {
        
         bscon.setAutoCommit(false);    
         try {                
-        _addShipperTransaction(shd, sh, bscon);
+        _addShipperTransaction(shd, sh, null, bscon);
         _updateShipperSAC(sh.sh_id(), bscon);
         m = _confirmShipperTransaction("bill", String.valueOf(shipperid), new java.util.Date(), bscon);
         bslog(m[0] + " " + m[1]);

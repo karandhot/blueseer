@@ -1549,6 +1549,54 @@ public class ShipperMaint extends javax.swing.JPanel {
         return list;        
     }
     
+    public ArrayList<shpData.ship_tree> createTreeRecord() {
+        ArrayList<shpData.ship_tree> list = new ArrayList<shpData.ship_tree>();
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        
+        // create shipper parent node with child containers
+        
+            shpData.ship_tree x = new shpData.ship_tree(null,
+            tbkey.getText(),
+            "", // ... no labels
+            ddsite.getSelectedItem().toString(),
+            "f", // flat ...no labels
+            tbkey.getText(),
+            "",
+            "",
+            "",
+            "",
+            "",
+            1.0,
+            "" // get display serial
+            );
+            
+            list.add(x);
+            // now items of container
+            for (int j = 0; j < tabledetail.getRowCount(); j++) { 
+                
+                    shpData.ship_tree y = new shpData.ship_tree(null,
+                    tbkey.getText(), 
+                    tabledetail.getValueAt(j, 2).toString() + "," + tabledetail.getValueAt(j, 1).toString() + "," + tabledetail.getValueAt(j, 0).toString(),
+                    ddsite.getSelectedItem().toString(),
+                    "i",
+                    tbkey.getText(),
+                    tabledetail.getValueAt(j, 0).toString(),
+                    tabledetail.getValueAt(j, 2).toString(),
+                    tabledetail.getValueAt(j, 0).toString(),
+                    tabledetail.getValueAt(j, 4).toString(),
+                    tabledetail.getValueAt(j, 1).toString(),
+                    bsParseDouble(tabledetail.getValueAt(j, 5).toString().replace(defaultDecimalSeparator, '.')),
+                    "" // get display serial
+                    );
+                    list.add(y);
+                
+            }
+       
+       
+        return list;        
+    }
+    
+    
     public void getAttachments(String id) {
         attachmentmodel.setNumRows(0);
         ArrayList<String> list = OVData.getSysMetaData(id, this.getClass().getSimpleName(), "attachments");
@@ -2665,7 +2713,7 @@ public class ShipperMaint extends javax.swing.JPanel {
                 return;
         } 
         String[] m = new String[2];
-        m = addShipperTransaction(createDetRecord(), createRecord(), null);
+        m = addShipperTransaction(createDetRecord(), createRecord(), createTreeRecord());
         shpData.updateShipperSAC(tbkey.getText());
         initvars(new String[]{tbkey.getText()});
         

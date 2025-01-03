@@ -27,7 +27,7 @@ import java.util.HashSet;
 mapSegment("asn","remarks",h[6]);
 mapSegment("asn","reference",h[7]);
 mapSegment("asn","doctype","810");
-mapSegment("asn","asntype","");
+mapSegment("asn","asntype",shpData.getShipperTreeRootType(shipper));
 mapSegment("asn","senderid",c[0]);
 mapSegment("asn","receiverid",c[21]);
 mapSegment("asn","currency",h[13]);
@@ -106,7 +106,7 @@ commitSegment("addresses:address");
 	  
 
 		HashSet<String> packing = shpData.getShipperTreePackOfPO(shipper, po);
-              
+                
                 for (String pack : packing) {
                  
                         ArrayList<String[]> lines = shpData.getShipperTreeLinesOfPack(pack, shipper);
@@ -114,7 +114,7 @@ commitSegment("addresses:address");
 			mapSegment("items:item","packline","");
                         mapSegment("items:item","packitem","");
 			mapSegment("items:item","packaltname","");
-			mapSegment("items:item","packtype","GM");
+			mapSegment("items:item","packtype",line[6]);
 			mapSegment("items:item","packserial",line[5]);
 			mapSegment("items:item","order",po);
                         mapSegment("items:item","itemnumber",line[0]);

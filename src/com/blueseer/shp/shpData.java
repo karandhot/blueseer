@@ -284,7 +284,7 @@ public class shpData {
     return m;
     }
     
-    public static String[] _addShipperTransaction(ArrayList<ship_det> shd, ship_mstr sh, Connection bscon) {
+    public static String[] _addShipperTransaction(ArrayList<ship_det> shd, ship_mstr sh, ArrayList<ship_tree> sht, Connection bscon) {
         String[] m = new String[2];
         PreparedStatement ps = null;
         ResultSet res = null;
@@ -293,6 +293,11 @@ public class shpData {
             _addShipMstr(sh, bscon, ps, res);  
             for (ship_det z : shd) {
                 _addShipDet(z, bscon, ps, res);
+            }
+            if (sht != null) {
+                for (ship_tree z : sht) {
+                _addShipTree(z, bscon, ps, res);
+                }
             }
            
             bscon.commit();
@@ -2341,16 +2346,23 @@ public class shpData {
         try{
             
           
-                  res = st.executeQuery("select ship_item, ship_qty, shd_custitem, shd_desc, shd_line, lbl_id_str from ship_tree " +
+                  res = st.executeQuery("select ship_item, ship_qty, shd_custitem, shd_desc, shd_line, coalesce(lbl_id_str,'') as 'lbl_id_str' from ship_tree " +
                           " inner join ship_det on shd_id = ship_sh and shd_line = ship_shline " +
                           " left outer join label_mstr on lbl_id = ship_parent " +
                           " where ship_parent = " + "'" + serial + "'" + 
                           " AND ship_sh = " + "'" + shipper + "'" +
                           ";");
-                while (res.next()) {
-                    String[] d = new String[6];
-                    for (int z = 0; z < 6; z++) {
+                  
+                  String packtype = "none";
+                  
+                  while (res.next()) {
+                    String[] d = new String[7];
+                    for (int z = 0; z < 7; z++) {
                         d[z] = "";
+                    }
+                    packtype = "none";
+                    if (! res.getString("lbl_id_str").isEmpty()) {
+                        packtype = "GM";
                     }
                     d[0] = res.getString("ship_item");
                     d[1] = res.getString("ship_qty");
@@ -2358,6 +2370,7 @@ public class shpData {
                     d[3] = res.getString("shd_desc");
                     d[4] = res.getString("shd_line");
                     d[5] = res.getString("lbl_id_str");
+                    d[6] = packtype;
                     mylist.add(d);
                 }
        }
@@ -2379,6 +2392,55 @@ public class shpData {
 
     }
     return mylist;
+
+     }
+
+    public static String getShipperTreeRootType(String shipper) {
+          String r = "";
+    try{
+
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+            
+           java.util.Date now = new java.util.Date();
+            DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+            DateFormat dftime = new SimpleDateFormat("HH:mm:ss");
+            String mydate = dfdate.format(now);
+
+
+               
+                  res = st.executeQuery("select ship_type from ship_tree where ship_sh = " + "'" + shipper + "'" + 
+                          " and ship_type <> 'i' " +    
+                          ";");
+                while (res.next()) {
+                    r = res.getString("ship_type");
+                }
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+
+        } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+
+    }
+    return r;
 
      }
 

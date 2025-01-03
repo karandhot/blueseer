@@ -647,7 +647,7 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
         for (int j = 0; j < shipdet.getRowCount(); j++) { 
             shpData.ship_det x = new shpData.ship_det(null, 
                 tbkey.getText(), // shipper
-                j, //shline
+                j + 1, //shline
                 shipdet.getValueAt(j, 3).toString(), // item
                 shipdet.getValueAt(j, 5).toString(), // custimtem
                 shipdet.getValueAt(j, 1).toString(),  // order
@@ -706,7 +706,7 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
                     ddsite.getSelectedItem().toString(),
                     "i",
                     tbkey.getText(),
-                    String.valueOf(j),
+                    String.valueOf(j + 1),
                     shipdet.getValueAt(j, 1).toString(),
                     shipdet.getValueAt(j, 2).toString(),
                     shipdet.getValueAt(j, 11).toString(),
