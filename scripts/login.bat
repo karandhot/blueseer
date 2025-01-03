@@ -56,6 +56,10 @@ if exist %PATCHDIR%\zebra (
    xcopy %PATCHDIR%\zebra zebra /E /I /Y /Q 2>&1
    @echo "%mydate% copying zebra folder content" >>patchlog.txt
 ) 
+if exist %PATCHDIR%\maps (
+   xcopy %PATCHDIR%\maps edi\maps /E /I /Y /Q 2>&1
+   @echo "%mydate% copying edi maps folder content" >>patchlog.txt
+) 
 @echo "%mydate% done with patchInstall...deleting .update file" >>patchlog.txt
 del /F /Q .update
 exit /b
