@@ -101,6 +101,15 @@ public class jobSys implements Job {
                 exportACKs(acks);
                 break;
             }
+            case "edioutall": {
+                ArrayList<String> invoices = EDData.getEDIInvoicesAutoExport();
+                exportInvoices(invoices);
+                ArrayList<String> asns = EDData.getEDIASNsAutoExport();
+                exportASNs(asns);
+                ArrayList<String> acks = EDData.getEDIACKsAutoExport();
+                exportACKs(acks);
+                break;
+            }
             
             default: 
                 System.out.println("Unkown paramter: " + param + " time: " + now);
