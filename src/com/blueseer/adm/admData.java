@@ -2058,12 +2058,18 @@ public class admData {
         HashMap<String, String> ftpa = getFTPAttrHash(new String[]{c});
         
         String homeIn = cleanDirString(EDData.getEDIInDir());
-               String homeOut = cleanDirString(EDData.getEDIOutDir());
-               int timeout = 0;
-               if (! fm.ftp_timeout().isEmpty()) {
-                   timeout = Integer.valueOf(fm.ftp_timeout());
-               }
-               timeout *= 1000;
+        String homeOut = cleanDirString(EDData.getEDIOutDir());
+        if (! fm.ftp_indir().isEmpty()) {
+         homeIn = cleanDirString(fm.ftp_indir());
+        }
+        if (! fm.ftp_outdir().isEmpty()) {
+         homeOut = cleanDirString(fm.ftp_outdir());
+        }
+        int timeout = 0;
+        if (! fm.ftp_timeout().isEmpty()) {
+           timeout = Integer.valueOf(fm.ftp_timeout());
+        }
+        timeout *= 1000;
                
         if (fm.m[0].equals(BlueSeerUtils.ErrorBit)) {
             log("ftp", fm.m[1]);
@@ -2294,14 +2300,14 @@ public class admData {
                client.setDefaultTimeout(timeout);
                client.setDataTimeout(timeout);
                
-                if (! fm.ftp_indir().isEmpty()) {
-                 homeIn = fm.ftp_indir();
-                }
-                if (! fm.ftp_outdir().isEmpty()) {
-                 homeOut = fm.ftp_outdir();
-                }
+              
              //  client.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out), true));
-		client.connect(fm.ftp_ip());
+                if (fm.ftp_port().isEmpty()) {
+                    client.connect(fm.ftp_ip());
+                } else {
+                client.connect(fm.ftp_ip(),Integer.valueOf(fm.ftp_port()));
+                }
+             
 		showServerReply(client, logdata);
                 
                 int replyCode = client.getReplyCode();
