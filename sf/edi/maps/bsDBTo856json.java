@@ -5,7 +5,6 @@ import com.blueseer.utl.BlueSeerUtils;
 import com.blueseer.utl.OVData;
 import java.util.HashSet;
 
-GlobalDebug = true;
 
      com.blueseer.edi.EDI edi = new com.blueseer.edi.EDI();
      String doctype = c[1];
@@ -109,13 +108,14 @@ commitSegment("addresses:address");
 		HashSet<String> packing = shpData.getShipperTreePackOfPO(shipper, po);
               
                 for (String pack : packing) {
+                 
                         ArrayList<String[]> lines = shpData.getShipperTreeLinesOfPack(pack, shipper);
                         for (String[] line : lines) {
 			mapSegment("items:item","packline","");
                         mapSegment("items:item","packitem","");
 			mapSegment("items:item","packaltname","");
 			mapSegment("items:item","packtype","GM");
-			mapSegment("items:item","packserial",pack);
+			mapSegment("items:item","packserial",line[5]);
 			mapSegment("items:item","order",po);
                         mapSegment("items:item","itemnumber",line[0]);
                         mapSegment("items:item","line",line[4]);

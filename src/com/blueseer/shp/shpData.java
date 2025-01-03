@@ -2341,14 +2341,15 @@ public class shpData {
         try{
             
           
-                  res = st.executeQuery("select ship_item, ship_qty, shd_custitem, shd_desc, shd_line from ship_tree " +
+                  res = st.executeQuery("select ship_item, ship_qty, shd_custitem, shd_desc, shd_line, lbl_id_str from ship_tree " +
                           " inner join ship_det on shd_id = ship_sh and shd_line = ship_shline " +
+                          " left outer join label_mstr on lbl_id = ship_parent " +
                           " where ship_parent = " + "'" + serial + "'" + 
                           " AND ship_sh = " + "'" + shipper + "'" +
                           ";");
                 while (res.next()) {
-                    String[] d = new String[4];
-                    for (int z = 0; z < 5; z++) {
+                    String[] d = new String[6];
+                    for (int z = 0; z < 6; z++) {
                         d[z] = "";
                     }
                     d[0] = res.getString("ship_item");
@@ -2356,6 +2357,7 @@ public class shpData {
                     d[2] = res.getString("shd_custitem");
                     d[3] = res.getString("shd_desc");
                     d[4] = res.getString("shd_line");
+                    d[5] = res.getString("lbl_id_str");
                     mylist.add(d);
                 }
        }

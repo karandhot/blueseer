@@ -1,5 +1,6 @@
 JSONGenericOrder,order,,1,0,1,landmark,landmark,5,5,-,M,F
 JSONGenericOrder,order,,1,0,0,orderid,Order Number,1,40,-,O,F
+JSONGenericOrder,order,,1,0,0,po,PO Number,1,40,-,O,F
 JSONGenericOrder,order,,1,0,0,site,Site Code,1,40,-,O,F
 JSONGenericOrder,order,,1,0,0,orderdate,Order Date,1,40,-,O,F
 JSONGenericOrder,order,,1,0,0,duedate,Due Date,1,40,-,O,F
@@ -48,10 +49,10 @@ JSONGenericOrder,item,items,1,0,0,skunumber,Sku Number,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,upcnumber,UPC Number,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,orderquantity,Quantity Ordered,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,shippedquantity,Quantity Shipped,1,40,-,O,F
-JSONGenericOrder,item,items,1,0,0,changequantity,Quantity Changed,1,40,-,O,F
+JSONGenericOrder,item,items,1,0,0,originalquantity,Quantity Original,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,status,Status,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,listprice,List Price,1,40,-,O,F
-JSONGenericOrder,item,items,1,0,0,changeprice,Change List Price,1,40,-,O,F
+JSONGenericOrder,item,items,1,0,0,originalprice,Original List Price,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,netprice,Net Price,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,discount,Discount Percent,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,location,Location,1,40,-,O,F

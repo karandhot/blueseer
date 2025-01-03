@@ -918,6 +918,7 @@ String carrier = "";
         labelname = label;
         serialno = OVData.getNextNbr("label");
         serialno_str = String.valueOf(serialno);
+        bsmf.MainFrame.show(lz.lblz_code() + "/" + lz.lblz_type());
         if (lz.lblz_type().toLowerCase().equals("ucc")) {
             serialno_display = checkDigitUCC18(serialno);
         } else {

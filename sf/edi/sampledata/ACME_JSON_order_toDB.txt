@@ -9,6 +9,7 @@
    "ordertype":"Standard Order",
    "senderid":"7777777",
    "receiverid":"BLUESEER",
+   "vendcode":"VEND123",
    "currency":"USD",
    "shipvia":"",
    "transportmethod":"",

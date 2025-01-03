@@ -159,6 +159,7 @@ trantype,RCT-FG,,1
 labeltype,cont,,1
 labeltype,pouch,,1
 labeltype,addr,,1
+labeltype,ucc,,1
 SCRAP,AB1,Scrap Code AB,1
 SCRAP,VB1,Scrap Code VB,1
 CELL,CELL1,100,1

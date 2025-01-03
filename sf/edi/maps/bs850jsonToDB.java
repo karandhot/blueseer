@@ -28,12 +28,12 @@ setReference(getInput("order","orderid")); //optional...but must be ran after ma
     }
     po = getInput("order","orderid");
     e.setPO(po);  
-    e.setPODate(convertDate("yyyyMMdd", getInput("order","orderdate")));
-    e.setDueDate(convertDate("yyyyMMdd", getInput("order","duedate")));
-    ta.add(new String[]{po,"header","duedate", getInput("DTM","1:002","e02")}); 
+    e.setPODate(getInput("order","orderdate"));
+    e.setDueDate(getInput("order","duedate"));
+    ta.add(new String[]{po,"header","duedate", getInput("order","duedate")}); 
 
    
-    ta.add(new String[]{po,"header","vendcode", getInput("order","vendorcode")});
+    ta.add(new String[]{po,"header","vendcode", getInput("order","vendcode")});
    
     
     

@@ -1,18 +1,14 @@
 import com.blueseer.ctr.cusData;
-import java.util.ArrayList;
+import com.blueseer.adm.admData;
 import com.blueseer.edi.EDI;
 import static com.blueseer.ord.ordData.getSOMstrHeaderEDI;
 import static com.blueseer.ord.ordData.getSOMstrdetailsEDI;
-import com.blueseer.pur.purData;
 import com.blueseer.shp.shpData;
-import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
-import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
+import com.blueseer.utl.BlueSeerUtils;
 import com.blueseer.utl.OVData;
-import java.io.IOException;
-import java.text.DecimalFormat;
 
 
-     com.blueseer.edi.EDI edi = new com.blueseer.edi.EDI();
+     
      String doctype = c[1];
      String key = doc.get(0).toString();
     
@@ -25,84 +21,107 @@ import java.text.DecimalFormat;
     setError("Cannot find order number:" + key);
     return error; 
     }
+
+mapSegment("order","orderid",key);
+mapSegment("order","po",h[1]);
+mapSegment("order","orderdate",h[6]);
+mapSegment("order","vendorcode","");
+mapSegment("order","site",h[4]);
+mapSegment("order","duedate",h[7]);
+mapSegment("order","remarks",h[9]);
+mapSegment("order","reference","");
+mapSegment("order","doctype","855");
+mapSegment("order","ordertype","");
+mapSegment("order","senderid",c[0]);
+mapSegment("order","receiverid",c[21]);
+mapSegment("order","currency",h[10]);
+mapSegment("order","shipvia",h[8]);
+mapSegment("order","transportmethod","");
+mapSegment("order","status",h[11]);
+mapSegment("order","vendcode",getMeta(h[1],"header","vendcode"));
+mapSegment("order","isanumber","");
+mapSegment("order","gsnumber","");
+mapSegment("order","transdatetime","");
+commitSegment("order");
+
+
+mapSegment("references:reference","qualifier","vendcode");
+if (! getMeta(h[1],"header","vendcode").isBlank()) {
+mapSegment("references:reference","value",getMeta(h[1],"header","vendcode"));
+} else {
+mapSegment("references:reference","value",c[0]);
+}
+commitSegment("references:reference");
+
+mapSegment("references:reference","qualifier","originalduedate");
+mapSegment("references:reference","value",getMeta(h[1],"header","duedate"));
+commitSegment("references:reference");
+
+String[] bt = cusData.getCustAddressInfo(h[2]);
+mapSegment("addresses:address","type","BT"); 
+mapSegment("addresses:address","addrid",getMeta(h[1],"header","billcode"));    
+mapSegment("addresses:address","name",bt[0]);
+mapSegment("addresses:address","line1",bt[1]);
+mapSegment("addresses:address","line2",bt[2]);
+mapSegment("addresses:address","line3",bt[3]);
+mapSegment("addresses:address","city",bt[4]);
+mapSegment("addresses:address","state",bt[5]);
+mapSegment("addresses:address","zip",bt[6]);
+mapSegment("addresses:address","country",bt[7]);
+mapSegment("addresses:address","email",bt[8]);
+commitSegment("addresses:address");
+
+String[] st = cusData.getShipAddressInfo(h[2],h[3]);
+mapSegment("addresses:address","type","ST"); 
+mapSegment("addresses:address","addrid",getMeta(h[1],"header","shipcode"));    
+mapSegment("addresses:address","name",st[1]);
+mapSegment("addresses:address","line1",st[2]);
+mapSegment("addresses:address","line2",st[3]);
+mapSegment("addresses:address","line3",st[4]);
+mapSegment("addresses:address","city",st[5]);
+mapSegment("addresses:address","state",st[6]);
+mapSegment("addresses:address","zip",st[7]);
+mapSegment("addresses:address","country",st[8]);
+commitSegment("addresses:address");
+
+String[] re = admData.getSiteAddressInfo(h[4]);
+mapSegment("addresses:address","type","RE"); 
+mapSegment("addresses:address","addrid",re[0]);    
+mapSegment("addresses:address","name",re[1]);
+mapSegment("addresses:address","line1",st[2]);
+mapSegment("addresses:address","line2",st[3]);
+mapSegment("addresses:address","line3",st[4]);
+mapSegment("addresses:address","city",st[5]);
+mapSegment("addresses:address","state",st[6]);
+mapSegment("addresses:address","zip",st[7]);
+mapSegment("addresses:address","country",st[8]);
+commitSegment("addresses:address");
     
-     /* Begin Mapping Segments */ 
-    String status = "AD";  // accept by default
-    String itemstatus = "IA"; // accept by default
-    if (h[11].equals("rejected")) {
-        status = "RJ";
-        itemstatus = "IR";  // if one then all
-    }
-    mapSegment("BAK","e01","00");
-    mapSegment("BAK","e02",status);
-    mapSegment("BAK","e03",h[1]);
-    mapSegment("BAK","e05",h[6].replace("-", ""));
-    commitSegment("BAK");
-    
-    mapSegment("REF","e01","OR");
-    mapSegment("REF","e02",h[0]);
-    commitSegment("REF");
-    
-    String[] shipaddr = cusData.getShipAddressInfo(h[2], h[3]);
-    mapSegment("N1","e01", "ST");
-    mapSegment("N1","e02",shipaddr[1]);
-    mapSegment("N1","e03","92");
-    mapSegment("N1","e04",shipaddr[0]);
-    commitSegment("N1");
-    mapSegment("N3","e01",shipaddr[2]);
-    commitSegment("N3");
-    mapSegment("N4","e01",shipaddr[5]);
-    mapSegment("N4","e02",shipaddr[6]);
-    mapSegment("N4","e03",shipaddr[7]);
-    commitSegment("N4");
-    
-    mapSegment("N1","e01","VN");
-    mapSegment("N1","e02",OVData.getDefaultSiteName());
-    mapSegment("N1","e03","92");
-    mapSegment("N1","e04",h[4]);
-    commitSegment("N1");
-    
-    mapSegment("DTM","e01","067");
-    mapSegment("DTM","e02",h[7].replace("-", ""));
-    commitSegment("DTM");    
+  
     
                
         // detail
          int i = 0;
-         int sumqty = 0;
-         double sumamt = 0;
+         String detline;
          // line, item, custitem, qty, price, uom, desc, custline, custuom, custprice
          ArrayList<String[]> lines = getSOMstrdetailsEDI(key);
-              for (String[] d : lines) {
-                  i++;
-                                    
-                  sumqty = sumqty + Integer.valueOf(d[3]);
-                  sumamt = sumamt + (bsParseDouble(d[3]) * bsParseDouble(d[4]));
-                  
-                mapSegment("PO1","e01",d[7]);
-                mapSegment("PO1","e02",d[3]);
-                mapSegment("PO1","e03",d[5]);
-                mapSegment("PO1","e04",currformatDouble(bsParseDouble(d[4])));
-                mapSegment("PO1","e06","BP");
-                mapSegment("PO1","e07",d[1]);
-                if (! d[2].isEmpty()) {
-                mapSegment("PO1","e08","VP");
-                mapSegment("PO1","e09",d[2]);
-                }
-                commitSegment("PO1");
+              for (String[] d : lines) {	
+                i++;
+                // get original info
+                detline = "detail:" + i;
+                mapSegment("items:item","originalquantity",getMeta(h[1],detline,"qty"));
+		mapSegment("items:item","originalprice",getMeta(h[1],detline,"price"));
+
+                mapSegment("items:item","line",d[7]);
+		mapSegment("items:item","itemnumber",d[1]);
+                mapSegment("items:item","orderquantity",d[3]);
+		
+                mapSegment("items:item","uom",d[5]);
+                mapSegment("items:item","description",d[6]);
+                mapSegment("items:item","listprice",formatNumber(BlueSeerUtils.bsParseDouble(d[4]),"4"));
+                mapSegment("items:item","netprice",formatNumber(BlueSeerUtils.bsParseDouble(d[4]),"4"));
                 
-                mapSegment("PID","e01","F");
-                mapSegment("PID","e05",d[6]);
-                commitSegment("PID");
-                
-                mapSegment("ACK","e01",itemstatus);
-                mapSegment("ACK","e02",d[3]);
-                mapSegment("ACK","e03",d[5]);
-                mapSegment("ACK","e04","076");
-                mapSegment("ACK","e05",h[7].replace("-", ""));
-                commitSegment("ACK");
+                mapSegment("items:item","skunumber",d[2]);
+                mapSegment("items:item","upcnumber","");
+                commitSegment("items:item");
               }
-         
-         mapSegment("CTT","e01",String.valueOf(i));
-         commitSegment("CTT");
-        
