@@ -1,14 +1,16 @@
+import com.blueseer.utl.BlueSeerUtils;
+
 String  now = now();
 
 mapSegment("order","po",getInput("BEG",3));
 mapSegment("order","site",c[39]);
-mapSegment("order","orderdate",getInput("BEG",5));
+mapSegment("order","orderdate",BlueSeerUtils.convertDateFormat("yyyyMMdd",getInput("BEG",5)));
 mapSegment("order","ordertype","EDI");
 mapSegment("order","doctype","bs-json");
 mapSegment("order","currency","USD");
 mapSegment("order","senderid",c[0]);
 mapSegment("order","receiverid",c[21]);
-mapSegment("order","duedate",getInput("DTM","1:002",2));
+mapSegment("order","duedate",BlueSeerUtils.convertDateFormat("yyyyMMdd",getInput("DTM","1:002",2)));
 mapSegment("order","vendcode",getInput("REF","1:IA",2));
 mapSegment("order","transdatetime",now);
 mapSegment("order","isanumber",c[4]);

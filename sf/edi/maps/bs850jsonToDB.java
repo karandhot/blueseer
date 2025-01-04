@@ -2,8 +2,9 @@ import com.blueseer.ctr.cusData;
 import com.blueseer.utl.OVData;
 import com.blueseer.inv.invData;
 import com.blueseer.utl.EDData;
+import com.blueseer.utl.BlueSeerUtils;
 
-setReference(getInput("order","orderid")); //optional...but must be ran after mappedInput
+setReference(getInput("order","po")); //optional...but must be ran after mappedInput
  
 
   
@@ -26,8 +27,9 @@ setReference(getInput("order","orderid")); //optional...but must be ran after ma
     if (e.getOVBillTo().isEmpty()) {
      e.setOVBillTo(EDData.getEDIXrefIn(getInput("order","receiverid"), getInput("order","senderid"), "BT", getInput("order","senderid"))); 
     }
-    po = getInput("order","orderid");
+    po = getInput("order","po");
     e.setPO(po);  
+    
     e.setPODate(getInput("order","orderdate"));
     e.setDueDate(getInput("order","duedate"));
     ta.add(new String[]{po,"header","duedate", getInput("order","duedate")}); 
