@@ -4,7 +4,7 @@ mapSegment("order","po",getInput("BEG",3));
 mapSegment("order","site",c[39]);
 mapSegment("order","orderdate",getInput("BEG",5));
 mapSegment("order","ordertype","EDI");
-mapSegment("order","doctype","850");
+mapSegment("order","doctype","bs-json");
 mapSegment("order","currency","USD");
 mapSegment("order","senderid",c[0]);
 mapSegment("order","receiverid",c[21]);

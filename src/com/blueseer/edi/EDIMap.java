@@ -3263,7 +3263,7 @@ public abstract class EDIMap {  // took out the implements EDIMapi
         }  
     }  // if fields != null
     } // for each s.getKey
-    if (arN.size() >= 1) {   // adjusted this to include empty tags
+    if (arN.size() > 1) {   // needs redoing...if >= ...then root tag is created as array....if > then empty tags do not get generated
        // obN.set(node.getData(), arN);
         ObjectNode en = new ObjectMapper().createObjectNode();
         en.set(node.getData(), arN);
