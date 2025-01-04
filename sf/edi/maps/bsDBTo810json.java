@@ -14,11 +14,11 @@ import com.blueseer.utl.BlueSeerUtils;
      /* Begin Mapping Segments */ 
 mapSegment("invoice","invoiceid",key);
 mapSegment("invoice","ponumber",h[3]);
-mapSegment("invoice","podate",h[4].replace("-", ""));
+mapSegment("invoice","podate",h[4]);
 mapSegment("invoice","vendorcode","");
 mapSegment("invoice","site",h[28]);
-mapSegment("invoice","invoicedate",h[34].replace("-", ""));
-mapSegment("invoice","shipdate",h[34].replace("-", ""));
+mapSegment("invoice","invoicedate",h[34]);
+mapSegment("invoice","shipdate",h[34]);
 mapSegment("invoice","remarks",h[6]);
 mapSegment("invoice","reference",h[7]);
 mapSegment("invoice","doctype","810");
@@ -34,7 +34,7 @@ mapSegment("invoice","trackingnumber",h[11]);
 mapSegment("invoice","termscode",h[29]);
 mapSegment("invoice","termsdiscpct",h[31]);
 mapSegment("invoice","termsdescription",h[30]);
-mapSegment("invoice","termsnetduedate",h[33].replace("-",""));
+mapSegment("invoice","termsnetduedate",h[33]);
 commitSegment("invoice");
     
 mapSegment("references:reference","qualifier","vendcode");
