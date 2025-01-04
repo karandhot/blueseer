@@ -1,10 +1,24 @@
-mapSegment("order","orderid",getInput("BEG",3));
-mapSegment("order","site","MYSITE");
+String  now = now();
+
+mapSegment("order","po",getInput("BEG",3));
+mapSegment("order","site",c[39]);
 mapSegment("order","orderdate",getInput("BEG",5));
-mapSegment("order","type","EDI");
+mapSegment("order","ordertype","EDI");
+mapSegment("order","doctype","850");
 mapSegment("order","currency","USD");
+mapSegment("order","senderid",c[0]);
+mapSegment("order","receiverid",c[21]);
 mapSegment("order","duedate",getInput("DTM","1:002",2));
+mapSegment("order","vendcode",getInput("REF","1:IA",2));
+mapSegment("order","transdatetime",now);
+mapSegment("order","isanumber",c[4]);
+mapSegment("order","gsnumber",c[5]);
+mapSegment("order","stnumber",c[6]);
 commitSegment("order");
+
+mapSegment("references:reference","qualifier","IA");
+mapSegment("references:reference","value",getInput("REF","1:IA",2));
+commitSegment("references:reference");
 
 int addrcount = getGroupCount("N1");
 for (int i = 1; i <= addrcount; i++) {
