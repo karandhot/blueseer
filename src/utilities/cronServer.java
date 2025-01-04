@@ -60,7 +60,6 @@ public class cronServer {
 	bsmf.MainFrame.setConfig();	
 	tags = ResourceBundle.getBundle("resources.bs", Locale.getDefault());
         
-        System.out.println("config info:  " + bsmf.MainFrame.db + " / " + bsmf.MainFrame.dbname + " / " + bsmf.MainFrame.user + " / " + bsmf.MainFrame.pass);
         
         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
        
