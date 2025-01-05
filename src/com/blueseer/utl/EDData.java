@@ -3963,8 +3963,8 @@ public class EDData {
 
                      ArrayList<String[]> list = new ArrayList<String[]>();
                      ArrayList<String[]> maillist = new ArrayList<String[]>();
-                     res = st.executeQuery("select edx_indoctype, edx_sender, edx_receiver, edx_outdoctype, " +
-                             " edx_gsctrlnum, edx_ref, edx_status, edx_site, edx_ts from edi_idx " +
+                     res = st.executeQuery("select edx_id, edx_indoctype, edx_sender, edx_receiver, edx_outdoctype, " +
+                             "  edx_ref, edx_status, edx_site, edx_ts from edi_idx " +
                           //   " inner join edi_mstr on edi_sndgs = edx_sender and edi_rcvgs = edx_receiver and edi_mflag = '1' " +
                              " where " +
                             " edx_mflag = '0'" + 
