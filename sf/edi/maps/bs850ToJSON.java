@@ -1,6 +1,7 @@
 import com.blueseer.utl.BlueSeerUtils;
 
 String  now = now();
+setReference(getInput("BEG","e03"));
 
 mapSegment("order","po",getInput("BEG",3));
 mapSegment("order","site",c[39]);
