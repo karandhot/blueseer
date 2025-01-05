@@ -985,7 +985,7 @@ public class EDI {
         System.out.println("processFile: entering function with file :" + infile);
         }
         
-        // always need a site
+        // always need a site ...will eventually be overwrote with edi_mstr lookup
         if (site.isBlank()) {
             site = OVData.getDefaultSite();
             if (GlobalDebug) {
@@ -2195,7 +2195,7 @@ public class EDI {
                 String[] defaults = EDData.getEDITPDefaultsX(x[0], x[3], x[1], c[2]);
             
                 c[29] = defaults[15]; // defines outputfiletype
-
+                c[39] = defaults[25]; // assign site from edi_mstr
                 // governs inbound only ...for outbound file...let postmap delimiters kick in
                 c[9] = defaults[7].isBlank() ? "10" : defaults[7];
                 c[10] = defaults[6].isBlank() ? "" : defaults[6];
@@ -2344,7 +2344,7 @@ public class EDI {
                
                 c[2] = map;  // override c2 with newly found map
                 String[] defaults = EDData.getEDITPDefaultsX(x[0], x[3], x[1], c[2]);
-            
+                c[39] = defaults[25]; // assign site from edi_mstr
                 c[29] = defaults[15]; // defines outputfiletype
 
                 // governs inbound only ...for outbound file...let postmap delimiters kick in
@@ -2500,7 +2500,7 @@ public class EDI {
                     }
 
                     c[29] = defaults[15]; // defines outputfiletype
-                    
+                    c[39] = defaults[25]; // assign site from edi_mstr
                     
                     
                    // at this point I should have a doc set (ST to SE) and a map ...now call map to operate on doc 
@@ -2768,6 +2768,7 @@ public class EDI {
             // should have partner by now
             String[] defaults = EDData.getEDITPDefaultsX(c[1], c[0], c[21], c[2]);
             c[29] = defaults[15]; // defines outputfiletype   
+            c[39] = defaults[25]; // assign site from edi_mstr
             if (GlobalDebug)   
             System.out.println("Entering Map " + map + " with: " +  c[1] +  "/" + c[21]);    
 
@@ -3016,7 +3017,7 @@ public class EDI {
             // should have partner by now
             String[] defaults = EDData.getEDITPDefaultsX(c[1], gs02, gs03, c[2]);
             c[29] = defaults[15]; // defines outputfiletype
-            
+            c[39] = defaults[25]; // assign site from edi_mstr
             if (GlobalDebug)  { 
             System.out.println("Entering Map " + map + " with: " +  c[1] + "/" + gs02 + "/" + gs03);    
             }
@@ -3182,7 +3183,8 @@ public class EDI {
                 String[] defaults = EDData.getEDITPDefaultsX(x[0], x[3], x[1], c[2]);
             
                 c[29] = defaults[15]; // defines outputfiletype
-
+                c[39] = defaults[25]; // assign site from edi_mstr
+                
                 // governs inbound only ...for outbound file...let postmap delimiters kick in
                 c[9] = defaults[7].isBlank() ? "10" : defaults[7];
                 c[10] = defaults[6].isBlank() ? "" : defaults[6];

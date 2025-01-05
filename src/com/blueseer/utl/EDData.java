@@ -1021,7 +1021,7 @@ public class EDData {
     public static String[] getEDITPDefaultsX(String doctype, String gssndid, String gsrcvid, String map) {
            
                     
-             String[] mystring = new String[]{"","","","","","","0","0","0","","","","","","","","","","","","0","","","",""};
+             String[] mystring = new String[]{"","","","","","","0","0","0","","","","","","","","","","","","0","","","","",""};
         try{
             Class.forName(driver);
             Connection con = null;
@@ -1067,6 +1067,7 @@ public class EDData {
                         mystring[22] = res.getString("edi_una");
                         mystring[23] = res.getString("edi_ung");
                         mystring[24] = res.getString("edi_map");
+                        mystring[25] = res.getString("edi_site");
                     }
            }
             catch (SQLException s) {
