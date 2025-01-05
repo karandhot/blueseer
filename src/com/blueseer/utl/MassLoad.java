@@ -921,6 +921,7 @@ public class MassLoad extends javax.swing.JPanel {
         list.add("edp_desc,s,50,mandatory,unvalidated");
         list.add("edpd_alias,s,15,mandatory,unvalidated");
         list.add("edpd_default,b,1,mandatory,unvalidated");
+        list.add("edp_site,s,10,mandatory,validated");
         return list;
     }
     

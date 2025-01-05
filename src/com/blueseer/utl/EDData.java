@@ -65,6 +65,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jcifs.smb.NtlmPasswordAuthentication;
@@ -215,10 +216,11 @@ public class EDData {
                     }
                     if (j == 0) {
                     st.executeUpdate(" insert into edp_partner " 
-                      + "(edp_id, edp_desc ) " 
+                      + "(edp_id, edp_desc, edp_site ) " 
                    + " values ( " + 
                     "'" +  ld[0] + "'" + "," + 
-                    "'" +  ld[1] + "'"  
+                    "'" +  ld[1] + "'" + "," +
+                    "'" +  ld[4] + "'"
                              +  ");"
                            );     
                    }
@@ -4009,19 +4011,28 @@ public class EDData {
                              " edx_id = " + "'" + s[0] + "'" );
                    }
 
-                      if (maillist != null && maillist.size() > 0) {
-                        String to = OVData.getSysMetaValue("system", "emailrecipient", "edimail");
-                        String[] creds = getSMTPCredentials();
+                   // reduce list by site
+                   if (maillist != null && maillist.size() > 0) {
+                    LinkedHashMap<String, String> lhm = new LinkedHashMap<String, String>();
+                    for (String[] s : maillist) {
+                       if (lhm.containsKey(s[7])) {
+                           String x = lhm.get(s[7]);
+                           x = x + "sender: " + s[1] + "    doctype: " + s[3] + "     reference: " + s[5] + "\n";
+                           lhm.replace(s[7], x);
+                       } else {
+                           lhm.put(s[7], "sender: " + s[1] + "    doctype: " + s[3] + "     reference: " + s[5] + "\n");
+                       }
+                    }
+                    String to = "";
+                    String[] creds = getSMTPCredentials();
+                    for (Map.Entry<String, String> sitekey : lhm.entrySet()) {
+                        to = OVData.getSysMetaValue("system", "edimail", sitekey.getKey());
                         if (! to.isBlank() && ! creds[1].isBlank()) {
-                            StringBuilder sb = new StringBuilder();
-                            sb.append("The following transactions have occurred: ").append("\n").append("\n");
-                            for (String[] s : maillist) {
-                                sb.append(String.join(" ", s)).append("\n");
-                            }
-                            
-                            sendEmail(to,"BlueSeer EDI transaction events",sb.toString(), "");
-                        }      
-                      }
+                          sendEmail(to, "BlueSeer EDI transaction events for sitecode: " + sitekey.getKey(), sitekey.getValue(), "");
+                        }
+                    }
+                   }
+                      
 
 
                 } catch (SQLException s) {
