@@ -38,6 +38,8 @@ import com.blueseer.ord.ordData;
 import static com.blueseer.ord.ordData.getOrderMstrSet;
 import static com.blueseer.utl.BlueSeerUtils.checkDigitUCC18;
 import static com.blueseer.utl.BlueSeerUtils.timediff;
+import static com.blueseer.utl.OVData.getSMTPCredentials;
+import static com.blueseer.utl.OVData.sendEmail;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
@@ -303,7 +305,10 @@ MainFrame.bslog(e);
     }//GEN-LAST:event_btlabelprintActionPerformed
 
     private void testmailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testmailActionPerformed
-        OVData.sendEmailByID("vaughnte", "test", "testbody", "");
+        String[] creds = getSMTPCredentials();
+        if (! creds[1].isBlank()) {
+            sendEmail("support@blueseer.com","BlueSeer test","this is a test mail transmission", "");
+        }  
     }//GEN-LAST:event_testmailActionPerformed
 
     private void btjobticketActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btjobticketActionPerformed
