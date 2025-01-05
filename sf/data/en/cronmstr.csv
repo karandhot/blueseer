@@ -1,5 +1,5 @@
-ediload,EDI loader task/job,edigroup,com.blueseer.crn.jobSys,edi,1,0 0/5 * * * ?,0,0,,202301010000,admin,1000
-ediexport,EDI Export Task,edigroup,com.blueseer.crn.jobSys,edioutall,1,0 1/5 * * * ?,0,0,,202301010000,admin,1000
+ediload,EDI loader task/job,edigroup,com.blueseer.crn.jobSys,edi,1,0 3/5 * * * ?,0,0,,202301010000,admin,1000
+ediexport,EDI Export Task,edigroup,com.blueseer.crn.jobSys,edioutall,1,0 2/5 * * * ?,0,0,,202301010000,admin,1000
 ftpjob,FTP client connect,edigroup,com.blueseer.crn.jobFTP,,1,0 3/5 * * * ?,0,0,,202301010000,admin,1000
 billjob,Billing Processor task/job,sysgroup,com.blueseer.crn.jobSys,billing,1,0 00 23 * * ?,0,0,,202301010000,admin,1000
 as2outcron,AS2 outbound push job,edigroup,com.blueseer.crn.jobWkf,AS2outbound,0,0 0/2 * * * ?,0,0,,202301010000,admin,1000

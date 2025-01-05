@@ -41,11 +41,11 @@ setReference(getInput("order","po")); //optional...but must be ran after mappedI
     
 int addrcount = getLoopCount("order:addresses:address",2);
 for (int i = 1; i <= addrcount; i++) {
-if (getInput(i,"order:addresses:address","type").equals("billto")) {
+if (getInput(i,"order:addresses:address","type").equals("bill-to")) {
     ta.add(new String[]{po,"header","billcode", getInput(i,"order:addresses:address","addrid")});
 } // if billto
 
-if (getInput(i,"order:addresses:address","type").equals("shipto")) {
+if (getInput(i,"order:addresses:address","type").equals("ship-to")) {
 	    e.setShipTo(getInput(i,"order:addresses:address","addrid"));
             e.setShipToName(getInput(i,"order:addresses:address","name"));
             e.setShipToLine1(getInput(i,"order:addresses:address","line1"));
