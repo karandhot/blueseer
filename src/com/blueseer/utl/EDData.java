@@ -4005,8 +4005,8 @@ public class EDData {
                    }
                    
                    for (String[] s : list) {
-                     st.executeUpdate("update edi_mstr set edi_mflag = '1' where " +
-                             " edi_id = " + "'" + s[0] + "'" );
+                     st.executeUpdate("update edi_idx set edx_mflag = '1' where " +
+                             " edx_id = " + "'" + s[0] + "'" );
                    }
 
                       if (maillist != null && maillist.size() > 0) {
