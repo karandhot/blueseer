@@ -18686,8 +18686,9 @@ MainFrame.bslog(e);
 
     message.setFrom(new InternetAddress(from));
 
-    message.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
-
+  //  message.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
+    message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+    
     message.setSubject(subject);
 
     message.setSentDate(new Date());
