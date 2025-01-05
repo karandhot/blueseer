@@ -33,6 +33,7 @@ import com.blueseer.edi.EDILoad;
 import com.blueseer.fgl.fglData;
 import com.blueseer.ord.ordData;
 import com.blueseer.utl.EDData;
+import static com.blueseer.utl.EDData.getEDIIDXmail;
 import static com.blueseer.utl.OVData.canReadDB;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -108,6 +109,10 @@ public class jobSys implements Job {
                 exportASNs(asns);
                 ArrayList<String> acks = EDData.getEDIACKsAutoExport();
                 exportACKs(acks);
+                break;
+            }
+            case "edimail": {
+                getEDIIDXmail();
                 break;
             }
             

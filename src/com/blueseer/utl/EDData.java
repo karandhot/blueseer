@@ -39,6 +39,8 @@ import static com.blueseer.edi.EDI.escapeDelimiter;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import static com.blueseer.utl.OVData.getSMTPCredentials;
+import static com.blueseer.utl.OVData.sendEmail;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -3942,6 +3944,91 @@ public class EDData {
         }
         return x;
     }
+    
+    public static void getEDIIDXmail() {
+        
+        if (OVData.getSysMetaValue("system", "emailkey", "edimail").equals("1")) {
+            try {
+                Class.forName(driver);
+                Connection con = null;
+                if (ds != null) {
+                  con = ds.getConnection();
+                } else {
+                  con = DriverManager.getConnection(url + db, user, pass);  
+                }
+                Statement st = con.createStatement();
+                ResultSet res = null;
+                try {
+
+
+                     ArrayList<String[]> list = new ArrayList<String[]>();
+                     ArrayList<String[]> maillist = new ArrayList<String[]>();
+                     res = st.executeQuery("select edx_indoctype, edx_sender, edx_receiver, edx_outdoctype, " +
+                             " edx_gsctrlnum, edx_ref, edx_status, edx_site, edx_ts from edi_idx " +
+                          //   " inner join edi_mstr on edi_sndgs = edx_sender and edi_rcvgs = edx_receiver and edi_mflag = '1' " +
+                             " where " +
+                            " edx_mflag = '0'" + 
+                            ";" );
+                   while (res.next()) {
+                       list.add(new String[]{
+                           res.getString("edx_id"),
+                           res.getString("edx_sender"),
+                           res.getString("edx_receiver"),
+                           res.getString("edx_indoctype"),
+                           res.getString("edx_outdoctype"),                       
+                           res.getString("edx_ref"),
+                           res.getString("edx_status"),
+                           res.getString("edx_site"),
+                           res.getString("edx_ts")
+                       });
+                    }
+                   for (String[] s : list) {
+                     res = st.executeQuery("select edi_mflag from edi_mstr " +
+                          " where edi_sndgs = " + "'" + s[1] + "'" + 
+                          " and edi_rcvgs = " + "'" + s[2] + "'" +
+                          " and edi_indoctype = " + "'" + s[3] + "'" +        
+                            ";" );  
+                     while (res.next()) {
+                         if (res.getString("edi_mflag").equals("1")) {
+                             maillist.add(s);
+                         }
+                     }
+                   }
+                   for (String[] s : list) {
+                     st.executeUpdate("update edi_mstr set edi_mflag = '1' where " +
+                             " edi_id = " + "'" + s[0] + "'" );
+                   }
+
+                      if (maillist != null && maillist.size() > 0) {
+                        String to = OVData.getSysMetaValue("system", "emailrecipient", "edimail");
+                        String[] creds = getSMTPCredentials();
+                        if (! to.isBlank() && ! creds[1].isBlank()) {
+                            StringBuilder sb = new StringBuilder();
+                            sb.append("The following transactions have occurred: ").append("\n").append("\n");
+                            for (String[] s : maillist) {
+                                sb.append(String.join(" ", s)).append("\n");
+                            }
+                            
+                            sendEmail(to,"BlueSeer EDI transaction events",sb.toString(), "");
+                        }      
+                      }
+
+
+                } catch (SQLException s) {
+                    MainFrame.bslog(s);
+                } finally {
+                   if (res != null) res.close();
+                   if (st != null) st.close();
+                   con.close();
+                }
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            }
+        
+         
+        } 
+    }
+    
     
     public static int writeAS2Log(String[] c) {
             int returnkey = 0;

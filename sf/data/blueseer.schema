@@ -391,7 +391,8 @@ CREATE TABLE IF NOT EXISTS `edi_mstr` (
   `edi_envelopeall` tinyint(1) NOT NULL DEFAULT '0',
   `edi_una` tinyint(1) NOT NULL DEFAULT '0',
   `edi_ung` tinyint(1) NOT NULL DEFAULT '0',
-  `edi_site` varchar(10) NOT NULL  DEFAULT ''
+  `edi_site` varchar(10) NOT NULL  DEFAULT '',
+  `edi_mflag` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `cms_det` (
   `cms_code` varchar(10) NOT NULL  DEFAULT '',
@@ -718,7 +719,8 @@ CREATE TABLE IF NOT EXISTS `edi_idx` (
   `edx_outelmdelim` int(9) NOT NULL DEFAULT '0',
   `edx_outsubdelim` int(9) NOT NULL DEFAULT '0',
   `edx_status` varchar(10) NOT NULL DEFAULT '',
-  `edx_site` varchar(10) NOT NULL DEFAULT ''
+  `edx_site` varchar(10) NOT NULL DEFAULT '',
+  `edx_mflag` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `edi_stds` (
   `eds_doc` varchar(15) NOT NULL  DEFAULT '',

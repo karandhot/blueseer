@@ -305,7 +305,8 @@ CREATE TABLE "edi_mstr" (
   "edi_envelopeall" tinyint(1) NOT NULL DEFAULT '0',
   "edi_una" tinyint(1) NOT NULL DEFAULT '0',
   "edi_ung" tinyint(1) NOT NULL DEFAULT '0',
-  "edi_site" varchar(10) NOT NULL COLLATE NOCASE DEFAULT ''
+  "edi_site" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
+  "edi_mflag" tinyint(1) NOT NULL DEFAULT '0'
 );
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -850,7 +851,8 @@ CREATE TABLE "edi_idx" (
   "edx_outelmdelim" int(9) NOT NULL COLLATE NOCASE DEFAULT '0',
   "edx_outsubdelim" int(9) NOT NULL COLLATE NOCASE DEFAULT '0',
   "edx_status" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
-  "edx_site" varchar(10) NOT NULL COLLATE NOCASE DEFAULT ''
+  "edx_site" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
+  "edx_mflag" tinyint(1) NOT NULL COLLATE NOCASE DEFAULT '0'
 );
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
