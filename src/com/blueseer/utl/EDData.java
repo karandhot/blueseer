@@ -3982,6 +3982,11 @@ public class EDData {
                            res.getString("edx_ts")
                        });
                     }
+                   
+                   if (list.size() == 0) {
+                       return;
+                   }
+                   
                    for (String[] s : list) {
                      res = st.executeQuery("select edi_mflag from edi_mstr " +
                           " where edi_sndgs = " + "'" + s[1] + "'" + 
@@ -3994,6 +3999,11 @@ public class EDData {
                          }
                      }
                    }
+                   
+                   if (maillist.size() == 0) {
+                       return;
+                   }
+                   
                    for (String[] s : list) {
                      st.executeUpdate("update edi_mstr set edi_mflag = '1' where " +
                              " edi_id = " + "'" + s[0] + "'" );
