@@ -3991,7 +3991,7 @@ public class EDData {
                      res = st.executeQuery("select edi_mflag from edi_mstr " +
                           " where edi_sndgs = " + "'" + s[1] + "'" + 
                           " and edi_rcvgs = " + "'" + s[2] + "'" +
-                          " and edi_indoctype = " + "'" + s[3] + "'" +        
+                          " and edi_doc = " + "'" + s[3] + "'" +        
                             ";" );  
                      while (res.next()) {
                          if (res.getString("edi_mflag").equals("1")) {
