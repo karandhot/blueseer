@@ -36,7 +36,9 @@ import static com.blueseer.edi.EDIMap.OMD;
 import static com.blueseer.edi.EDIMap.OSF;
 import static com.blueseer.edi.EDIMap.clearStaticVariables;
 import static com.blueseer.edi.EDIMap.delimConvertIntToStr;
+import static com.blueseer.edi.ediData.addOrUpdateEDIXref;
 import com.blueseer.edi.ediData.dfs_mstr;
+import com.blueseer.edi.ediData.edi_xref;
 import static com.blueseer.edi.ediData.getDFSMstr;
 import com.blueseer.fap.fapData;
 import static com.blueseer.fap.fapData.VoucherTransaction;
@@ -3490,11 +3492,12 @@ public class EDI {
         int sonbr = OVData.getNextNbr("order");
         String shipto;
         
-        if (e.ov_shipto.isEmpty())
+        if (e.ov_shipto.isEmpty()) {
             shipto = OVData.CreateShipTo(e.ov_billto, e.st_name, e.st_line1, e.st_line2, e.st_line3, e.st_city, e.st_state, e.st_zip, e.st_country, e.shipto);
-        else
+            addOrUpdateEDIXref(new edi_xref(null, e.gsReceiverID, e.shipto, shipto, e.gsSenderID, "ST", control[39]));
+        } else {
             shipto = e.ov_shipto;
-    
+        }
         String[] custinfo = cusData.getCustInfo(e.ov_billto);
         String site = OVData.getDefaultSite();
         ordData.so_mstr so = new ordData.so_mstr(null, 
