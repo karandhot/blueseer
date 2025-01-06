@@ -26,7 +26,7 @@ import java.util.HashSet;
     mapSegment("asn","asndate",now);
 mapSegment("asn","remarks",h[6]);
 mapSegment("asn","reference",h[7]);
-mapSegment("asn","doctype","810");
+mapSegment("asn","doctype","856");
 mapSegment("asn","asntype",shpData.getShipperTreeRootType(shipper));
 mapSegment("asn","senderid",c[0]);
 mapSegment("asn","receiverid",c[21]);

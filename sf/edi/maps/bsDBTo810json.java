@@ -15,7 +15,7 @@ import com.blueseer.utl.BlueSeerUtils;
 mapSegment("invoice","invoiceid",key);
 mapSegment("invoice","ponumber",h[3]);
 mapSegment("invoice","podate",h[4]);
-mapSegment("invoice","vendorcode","");
+mapSegment("invoice","vendorcode",getMeta(po,"header","vendcode"));
 mapSegment("invoice","site",h[28]);
 mapSegment("invoice","invoicedate",h[34]);
 mapSegment("invoice","shipdate",h[34]);

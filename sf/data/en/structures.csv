@@ -92,6 +92,7 @@ JSONGenericInvoice,invoice,,1,0,0,termsdiscdate,Terms Discount Date,1,40,-,O,F
 JSONGenericInvoice,invoice,,1,0,0,termsdiscduedays,Terms Discount Due Days,1,40,-,O,F
 JSONGenericInvoice,invoice,,1,0,0,termsnetduedays,Terms Net Due Days,1,40,-,O,F
 JSONGenericInvoice,invoice,,1,0,0,termsdescription,Terms Description,1,40,-,O,F
+JSONGenericInvoice,invoice,,1,0,0,ta_kv,Key Value pairing,1,200,-,O,F
 JSONGenericInvoice,references,invoice,5,1,1,landmark,landmark,9,9,-,M,F
 JSONGenericInvoice,reference,references,5,1,1,landmark,landmark,9,9,-,M,F
 JSONGenericInvoice,reference,references,1,0,0,qualifier,Qualifier,1,40,-,O,F
@@ -146,12 +147,17 @@ JSONGenericASN,asn,,1,0,0,doctype,Document Type,1,40,-,O,F
 JSONGenericASN,asn,,1,0,0,asntype,Invoice Type,1,40,-,O,F
 JSONGenericASN,asn,,1,0,0,senderid,Sender ID,1,40,-,O,F
 JSONGenericASN,asn,,1,0,0,receiverid,Receiver ID,1,40,-,O,F
+JSONGenericASN,asn,,1,0,0,vendorcode,Vendor Code,1,40,-,O,F
+JSONGenericASN,asn,,1,0,0,trackingnumber,Tracking Number,1,40,-,O,F
+JSONGenericASN,asn,,1,0,0,ordernumber,Sales Order Number,1,40,-,O,F
 JSONGenericASN,asn,,1,0,0,currency,Currency,1,40,-,O,F
 JSONGenericASN,asn,,1,0,0,shipvia,Ship Via,1,40,-,O,F
 JSONGenericASN,asn,,1,0,0,transportmethod,Method Of Transport,1,40,-,O,F
+JSONGenericASN,asn,,1,0,0,servicetype,Service Type,1,40,-,O,F
 JSONGenericASN,asn,,1,0,0,status,Status,1,40,-,O,F
 JSONGenericASN,asn,,1,0,0,termscode,Terms Code,1,40,-,O,F
 JSONGenericASN,asn,,1,0,0,termsdescription,Terms Description,1,40,-,O,F
+JSONGenericASN,asn,,1,0,0,ta_kv,Key Value pairing,1,200,-,O,F
 JSONGenericASN,references,asn,5,1,1,landmark,landmark,9,9,-,M,F
 JSONGenericASN,reference,references,5,1,1,landmark,landmark,9,9,-,M,F
 JSONGenericASN,reference,references,1,0,0,qualifier,Qualifier,1,40,-,O,F
