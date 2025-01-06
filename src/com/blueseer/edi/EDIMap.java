@@ -3323,7 +3323,7 @@ public abstract class EDIMap {  // took out the implements EDIMapi
         int mylevel = level;
         mylevel++;
     //    System.out.println("recursive: " + "parent=" + node.getData() + "child:" + nextNode.getData());
-        jsonRecord jrNode = generateJSONx(nextNode, node.getData(), obN, mylevel, OSF, MD);
+        jsonRecord jrNode = generateJSONy(nextNode, node.getData(), obN, mylevel, OSF, MD);
         /*
         if (jrNode.isArray()) { 
              System.out.println("obN before: " + obN.toString());
