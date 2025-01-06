@@ -4,6 +4,7 @@ import com.blueseer.adm.admData;
 import com.blueseer.utl.BlueSeerUtils;
 import com.blueseer.utl.OVData;
 import java.util.HashSet;
+import com.blueseer.utl.EDData;
 
 
      com.blueseer.edi.EDI edi = new com.blueseer.edi.EDI();
@@ -19,6 +20,11 @@ import java.util.HashSet;
 		    double totalqty = 0;    
     String[] h = shpData.getShipperHeader(shipper);  // 13 elements...see declaration
     String ponum = h[3];
+    String vendcode = getMeta(ponum,"header","vendcode");
+    if (vendcode.isBlank()) {
+     String[] t = EDData.getEDIXrefOut(h[0],"VN");
+        vendcode = t[2];
+    }
 
      /* Begin Mapping Segments */ 
     mapSegment("asn","asnid",shipper);
@@ -36,6 +42,10 @@ mapSegment("asn","transportmethod","");
 mapSegment("asn","status","");
 mapSegment("asn","termscode",h[29]);
 mapSegment("asn","termsdescription",h[30]);
+mapSegment("asn","vendorcode",vendcode);
+mapSegment("asn","trackingnumber",h[11]);
+mapSegment("asn","ordernumber",h[2]);
+mapSegment("asn","servicetype","");
  commitSegment("asn");
 
 
