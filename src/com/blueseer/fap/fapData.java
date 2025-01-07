@@ -682,6 +682,31 @@ public class fapData {
             return rows;
     }
     
+    public static ArrayList<vod_mstr> _getVodMstr(String[] x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        ArrayList<vod_mstr> list = new ArrayList<vod_mstr>();
+        vod_mstr r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from vod_mstr where vod_id = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x[0]);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new vod_mstr(m);
+            } else {
+                while(res.next()) {
+                    m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                    r = new vod_mstr(m, res.getString("vod_id"), res.getString("vod_rvdid"), res.getInt("vod_rvdline"), res.getString("vod_item"),
+                    res.getDouble("vod_qty"), res.getDouble("vod_voprice"), 
+                    res.getString("vod_date"), res.getString("vod_vend"), res.getString("vod_invoice"), 
+                    res.getString("vod_expense_acct"), res.getString("vod_expense_cc") , res.getString("vod_po") , 
+                            res.getInt("vod_poline") , res.getString("vod_approved")  );
+                    list.add(r);
+                    }
+            }
+            return list;
+    }
+    
     
     private static ArrayList<String[]> _getUniqueAPRecords(String batchid, String basecurr, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
         ArrayList<String[]> list = new ArrayList<String[]>(); // vend, site, currency, amount, baseamount

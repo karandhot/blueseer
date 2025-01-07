@@ -34,7 +34,10 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
+import com.blueseer.fap.fapData;
+import static com.blueseer.fap.fapData._getVodMstr;
 import com.blueseer.fap.fapData.ap_mstr;
+import com.blueseer.fap.fapData.vod_mstr;
 import static com.blueseer.far.farData.getARTaxMaterialOnly;
 import static com.blueseer.ord.ordData.getServiceOrderMstr;
 import com.blueseer.ord.ordData.sv_mstr;
@@ -1861,7 +1864,8 @@ public class fglData {
           
                 Statement st = bscon.createStatement();
                 ResultSet res = null;
-               
+                ResultSet nres = null;
+                PreparedStatement ps = null;
                 
                java.util.Date now = new java.util.Date();
                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
@@ -1879,8 +1883,8 @@ public class fglData {
                     ArrayList site =   new ArrayList();
                     ArrayList<Double> cost =  new ArrayList();   
                     ArrayList<Double> basecost =  new ArrayList();
-                    ArrayList curr =  new ArrayList();
-                    ArrayList basecurr =  new ArrayList();
+                    ArrayList currarray =  new ArrayList();
+                    ArrayList basecurrarray =  new ArrayList();
                     ArrayList doc =  new ArrayList();
                    
                     String thistype = "RCT-VOUCH";
@@ -1888,10 +1892,12 @@ public class fglData {
                 
                     // set parent GL doc number
                     String gldoc = fglData.setGLRecNbr("AP");
-                   
+                    String unvouchacct = "";
+                    
                     res = st.executeQuery("select * from po_ctrl;");
                     while (res.next()) {
                      // credit vendor AP Acct (AP Voucher) and debit unvouchered receipts (po_rcpts acct)
+                    unvouchacct = res.getString("poc_rcpt_acct"); 
                     acct_cr.add(ap.ap_acct());
                     acct_dr.add(res.getString("poc_rcpt_acct"));
                     cc_cr.add(ap.ap_cc());
@@ -1903,8 +1909,8 @@ public class fglData {
                     cost.add(ap.ap_amt());
                     basecost.add(ap.ap_base_amt());   
                     }
-                    curr.add(ap.ap_curr());
-                    basecurr.add(ap.ap_base_curr());
+                    currarray.add(ap.ap_curr());
+                    basecurrarray.add(ap.ap_base_curr());
                     site.add(ap.ap_site());
                     ref.add(ap.ap_ref());
                     doc.add(gldoc);
@@ -1913,11 +1919,63 @@ public class fglData {
           
                     // need to do discounts ..credit sales, debit disc, debit AR (-$4.00, $.02, $3.98)
                     }
+                    
+                    
+                    
+                    
+                    // now price var
+                    double thiscost = 0;
+                    double costtot = 0;
+                    double variance = 0;
+                    double variancetot = 0;
+                    
+                    ArrayList<vod_mstr> vod = _getVodMstr(new String[]{ap.ap_nbr()}, bscon, ps, res);
                     res.close();
-                    st.close();
-                      for (int j = 0; j < acct_cr.size(); j++) {
-                      glEntryXP(bscon, acct_cr.get(j).toString(), cc_cr.get(j).toString(), acct_dr.get(j).toString(), cc_dr.get(j).toString(), setDateDB(parseDate(ap.ap_effdate())), bsParseDouble(cost.get(j).toString()), bsParseDouble(basecost.get(j).toString()), curr.get(j).toString(), basecurr.get(j).toString(), ref.get(j).toString(), site.get(j).toString(), type.get(j).toString(), desc.get(j).toString(), doc.get(j).toString());  
+                    
+                    if (ps != null) {
+                      ps.close();
                     }
+                    
+                     for (vod_mstr z : vod) { 
+                        nres = st.executeQuery("select itc_total, pl_po_rcpt, pl_po_ovh, pl_line, pl_inventory, pl_po_pricevar, " +
+                       " itc_mtl_top, itc_mtl_low  " +
+                       " from item_mstr  " + 
+                       " inner join pl_mstr on pl_line = it_prodline " +
+                       " inner join item_cost on itc_item = it_item and itc_set = 'standard' where it_item = " + "'" + z.vod_item() + "'" + ";"
+                        );
+                    while (nres.next()) {
+                    thiscost = nres.getDouble("itc_mtl_top") + nres.getDouble("itc_mtl_low");
+                    costtot = thiscost * z.vod_qty();
+                    variance = thiscost - z.vod_voprice();
+                      if (! ap.ap_curr().toUpperCase().equals(ap.ap_base_curr().toUpperCase())) {
+                          variance = thiscost - (OVData.getExchangeBaseValue(ap.ap_base_curr(), ap.ap_curr(), z.vod_voprice()));
+                      }
+                    variancetot = variance * z.vod_qty();
+          
+                    // ppv 
+                    acct_cr.add(nres.getString("pl_po_pricevar"));
+                    acct_dr.add(unvouchacct);
+                    cc_cr.add(nres.getString("pl_line"));
+                    cc_dr.add(nres.getString("pl_line"));
+                    cost.add(variancetot);
+                    basecost.add(variancetot);
+                    site.add(ap.ap_site());
+                    currarray.add(ap.ap_curr());
+                    basecurrarray.add(ap.ap_base_curr());
+                    ref.add(ap.ap_id());
+                    type.add(thistype);
+                    desc.add(ap.ap_rmks()); 
+                    doc.add(gldoc);
+          
+                    }
+                    nres.close();
+                  }  // for each vod_mstr
+                  st.close();
+                    
+                    
+                for (int j = 0; j < acct_cr.size(); j++) {
+                  glEntryXP(bscon, acct_cr.get(j).toString(), cc_cr.get(j).toString(), acct_dr.get(j).toString(), cc_dr.get(j).toString(), setDateDB(parseDate(ap.ap_effdate())), bsParseDouble(cost.get(j).toString()), bsParseDouble(basecost.get(j).toString()), currarray.get(j).toString(), basecurrarray.get(j).toString(), ref.get(j).toString(), site.get(j).toString(), type.get(j).toString(), desc.get(j).toString(), doc.get(j).toString());  
+                }
           
         return myerror;
         
@@ -2881,7 +2939,8 @@ public class fglData {
           
                    
           
-                    // ppv 
+                    // ppv   ...moved to voucher process 20250106 TEV  variance should be actual pay price vs itc_cost ...and not po price vs itc_cost
+                    /*  
                     acct_cr.add(nres.getString("pl_po_pricevar"));
                     acct_dr.add(unvouchacct);
                     cc_cr.add(nres.getString("pl_line"));
@@ -2895,7 +2954,7 @@ public class fglData {
                     type.add(thistype);
                     desc.add("Receipts"); 
                     doc.add(gldoc);
-          
+                  */
                     // overhead cost
                     acct_cr.add(unvouchacct);
                     acct_dr.add(nres.getString("pl_po_ovh"));

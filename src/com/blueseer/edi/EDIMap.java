@@ -2427,6 +2427,18 @@ public abstract class EDIMap {  // took out the implements EDIMapi
         return root;
     }
     
+    public static String getRootOFS(LinkedHashMap<String, ArrayList<String[]>> k) {
+        String root = "";
+        for (Map.Entry<String, ArrayList<String[]>> z : k.entrySet()) {
+            ArrayList<String[]> x = z.getValue();
+            root = x.get(0)[0];
+            break;
+        }
+       
+        return root;
+    }
+    
+    
     public static String[] writeOMD(String[] c, String[] tp) {
          String[] r = new String[2];
     	 String segment = "";
@@ -2772,11 +2784,9 @@ public abstract class EDIMap {  // took out the implements EDIMapi
             phantomroot.addChild(treeFromFile(rootNode, rootname));
             tree.setRootElement(rootNode);
           //  root.set(rootname, generateJSONx(tree.getRootElement(), mapper.createArrayNode(), mapper.createObjectNode(), OSF, MD).on());
-            if (rootname.equals("order")) {
-                root.set(rootname, generateJSONx(tree.getRootElement(), rootname, null, 0, OSF, MD).on()); 
-            } else {
-                root.set(rootname, generateJSONy(tree.getRootElement(), rootname, null, 0, OSF, MD).on()); 
-            }
+            
+            root.set(rootname, generateJSONy(tree.getRootElement(), rootname, null, 0, OSF, MD).on()); 
+           
             
             
             if (GlobalDebug) {
@@ -2981,193 +2991,7 @@ public abstract class EDIMap {  // took out the implements EDIMapi
             }
         }
     }
-        
-    public static jsonRecord generateJSONx(bsNode<String> node, String pnode, ObjectNode obNx, int level, LinkedHashMap<String, ArrayList<String[]>> osf, Map<String, HashMap<String,String>> MD) {
-    
-    ObjectNode obN = new ObjectMapper().createObjectNode(); 
-    if (obNx != null) {
-        obN = obNx;
-    }
-    ArrayNode arN = new ObjectMapper().createArrayNode();
-    jsonRecord jr = null;
-    if (node == null) {
-        return jr;
-    }
-
-    
-    
-    String thiskey = "";
-    String tag = "";
-    
-    // collect fields here
-    
-    for (Map.Entry<String, ArrayList<String[]>> s : osf.entrySet()) {
-    thiskey = s.getKey();    
-    if (thiskey.contains(":")) {
-        tag = thiskey.substring(thiskey.lastIndexOf(":") + 1);
-    } else {
-        tag = thiskey;
-    }    
-  //  System.out.println("here tag: " + s.getKey() + "/" + tag + "/" + node.getData());    
-    if (! tag.equals(node.getData())) {
-        continue;
-    }
-    int actual = CountOMD(s.getKey());  // get actual loopcount  
-    int maxallowed = CountLMLoopsOFS(s.getKey()); 
-    
-    int limit = 0;
-   // System.out.println("here preloopcount: " + s.getKey() + "/" + actual + "/" + maxallowed + "/" + limit); 
-    if (actual >= maxallowed) {
-        limit = maxallowed;
-    } else {
-        limit = actual;
-    }
-   if (limit <= 0) {
-        limit = 1;
-    }
-  // System.out.println("here postloopcount: " + s.getKey() + "/" + actual + "/" + maxallowed); 
-    String v = "";
-    String parent = "";
-    String parentChildKey = "";
-    
-    ArrayList<String[]> fields = osf.get(s.getKey());
-    
-    
-  //  System.out.println("entering fields: " + s.getKey() + "/" + limit );
-    if (fields != null) {
-        if (limit > 1) {
-            for (int k = 1; k <= limit; k++) {
-                ObjectNode elementNode = new ObjectMapper().createObjectNode(); 
-            for (int i = 0; i < fields.size(); i++) {
-                                        String[] x = fields.get(i);
-                                        if (x[4].toLowerCase().equals("yes")) {
-                                            parent = x[1];
-                                                continue;                                        
-                                        }
-                                        if (! parent.isEmpty()) {
-                                            parentChildKey = parent + ":";
-                                        } else {
-                                            parentChildKey = "";
-                                        }
-                                        HashMap<String,String> mapValues = MD.get(parentChildKey + tag + ":" + k);
-                                        if (mapValues != null && mapValues.containsKey(x[5])) {
-                                          v = mapValues.get(x[5]);
-                                        } else {
-                                            v = "";
-                                        }
-                                        elementNode.put(x[5], v);
-                                }
-                arN.add(elementNode);
-              //  System.out.println("here limit > 1: " + node.getData() + "/" +  elementNode.toString());
-            } 
-        } else {
-            ObjectNode elementNode = new ObjectMapper().createObjectNode();
-            for (int i = 0; i < fields.size(); i++) {
-                        
-                                    String[] x = fields.get(i);
-                                    if (x[4].toLowerCase().equals("yes")) {
-                                            parent = x[1];
-                                            continue;
-                                    }
-                                    
-                                    
-                                    if (! parent.isEmpty()) {
-                                        parentChildKey = parent + ":";
-                                    } else {
-                                        parentChildKey = "";
-                                    }
-                                    HashMap<String,String> mapValues = MD.get(parentChildKey + tag + ":" + "1");
-                                    if (mapValues != null && mapValues.containsKey(x[5])) {
-                                      v = mapValues.get(x[5]);
-                                    } else {
-                                        v = "";
-                                    }
-                                    elementNode.put(x[5], v);
-                                     
-                            }
-            if (elementNode.size() > 0) {
-            arN.add(elementNode);
-           // System.out.println("here limit <= 1: " + node.getData() + "/" +  elementNode.toString());
-            }
-        }  
-    }  // if fields != null
-    } // for each s.getKey
-    if (arN.size() > 1) {   // needs redoing...if >= ...then root tag is created as array....if > then empty tags do not get generated
-       // obN.set(node.getData(), arN);
-        ObjectNode en = new ObjectMapper().createObjectNode();
-        en.set(node.getData(), arN);
-        // obN.set(pnode, arN.get(node.getData()));
-        
-        if (obN.has(pnode) && obN.get(pnode).isNull()) {
-         obN.set(pnode, en);
-        } else {
-         obN.set(node.getData(), arN);   
-        }
-        
-       // obN.putIfAbsent(node.getData(), arN);
-        jr = new jsonRecord(obN, true);
-     //   System.out.println("level=" + level + " arN > 1 " + node.getData() + "/"  + pnode);
-        
-      //  System.out.println("here: arN > 1 " + node.getData() + "/" + jr.toString() + "/" + obN.toString());
-    } else if (arN.size() == 1) {
-        obN = (ObjectNode) arN.get(0);
-       // System.out.println("obN " + obN.toString());
-        jr = new jsonRecord(obN, false);
-      //  System.out.println("level=" + level + " arN == 1 " +  node.getData() + "/"  + pnode);
-     //   System.out.println("here: arN == 1" + node.getData() + "/" + jr.toString() + "/" + obN.toString());    
-    } else {
-        obN.set(node.getData(), null);
-        jr = new jsonRecord(obN, false);
-      //  System.out.println("level=" + level + " arN < 1 " + node.getData() + "/"  + pnode);
-    }
-    
-    // now do children
-    Iterator<bsNode<String>> it = node.getChildren().iterator();
-   // System.out.println("here children: " + node.getData() + "/" +  node.getChildren().size() + "/" + it.hasNext());
-   // System.out.println("root node name: " + rootnodename);
-    /*
-    if (! it.hasNext() && node.getData().equals(rootnodename)) {
-       obN.set(node.getData(), jr.on()); 
-    }
-    */
-    while (it.hasNext()) {  
-     //   System.out.println("hasNext=" + node.getData() + "/" + obN.toString());
-    	bsNode<String> nextNode = it.next();
-    //    System.out.println("hasNextnode=" + node.getData() + "/" + nextNode.getData());
-        int mylevel = level;
-        mylevel++;
-    //    System.out.println("recursive: " + "parent=" + node.getData() + "child:" + nextNode.getData());
-        jsonRecord jrNode = generateJSONx(nextNode, node.getData(), obN, mylevel, OSF, MD);
-        /*
-        if (jrNode.isArray()) { 
-             System.out.println("obN before: " + obN.toString());
-                if (obN.has(nextNode.getData())) {
-                 obN.set(nextNode.getData(), jrNode.on().get(nextNode.getData()));
-                } else {
-                 obN.set(nextNode.getData(), jrNode.on());   
-                }
-             System.out.println("obN after: " + obN.toString());
-            jr = new jsonRecord(obN, true);
-            //jr = new jsonRecord(jrNode.on(), false);
-            System.out.println("jr is array=" + nextNode.getData() + "/" + jrNode.on());
-        } else {
-            if (obN.has(nextNode.getData())) {
-                 obN.set(nextNode.getData(), jrNode.on().get(nextNode.getData()));
-                } else {
-                 obN.set(nextNode.getData(), jrNode.on());   
-                }
-          //  System.out.println("obN Set=" + nextNode.getData() + "/" + jrNode.on() + "/" + obN.toString());
-        }
-        */
-      //  System.out.println("While children nextNode=" + nextNode.getData());
-      //  System.out.println("While children obN=" + obN.toString());
-     //   System.out.println("While children jr=" + jr.toString());
-    }
-    
-  //  System.out.println("jr=level:" + level + "value: " + jr.toString());  
-    return jr;
-}
-
+            
     public static jsonRecord generateJSONy(bsNode<String> node, String pnode, ObjectNode obNx, int level, LinkedHashMap<String, ArrayList<String[]>> osf, Map<String, HashMap<String,String>> MD) {
     
     ObjectNode obN = new ObjectMapper().createObjectNode(); 
@@ -3278,7 +3102,10 @@ public abstract class EDIMap {  // took out the implements EDIMapi
         }  
     }  // if fields != null
     } // for each s.getKey
-    if (arN.size() >= 1) {   // needs redoing...if >= ...then root tag is created as array....if > then empty tags do not get generated
+    
+    // CountLMLoopsOFS(node.getData()) > 1 
+    // ! node.getData().equals(getRootOFS(osf))
+    if (arN.size() >= 1 && ! node.getData().equals(getRootOFS(osf)) ) {   //man what a hack!!!   needs redoing...if >= ...then root tag is created as array....if > then empty tags do not get generated
        // obN.set(node.getData(), arN);
         ObjectNode en = new ObjectMapper().createObjectNode();
         en.set(node.getData(), arN);
@@ -3294,7 +3121,7 @@ public abstract class EDIMap {  // took out the implements EDIMapi
         jr = new jsonRecord(obN, true);
      //   System.out.println("level=" + level + " arN > 1 " + node.getData() + "/"  + pnode);
         
-      //  System.out.println("here: arN > 1 " + node.getData() + "/" + jr.toString() + "/" + obN.toString());
+     //   System.out.println("here: arN > 1 " + node.getData() + "/" + jr.toString() + "/" + obN.toString());
     } else if (arN.size() == 1) {
         obN = (ObjectNode) arN.get(0);
        // System.out.println("obN " + obN.toString());
@@ -3304,7 +3131,7 @@ public abstract class EDIMap {  // took out the implements EDIMapi
     } else {
         obN.set(node.getData(), null);
         jr = new jsonRecord(obN, false);
-      //  System.out.println("level=" + level + " arN < 1 " + node.getData() + "/"  + pnode);
+     //   System.out.println("here: arN else " + "level=" + level + " arN < 1 " + node.getData() + "/"  + pnode);
     }
     
     // now do children
