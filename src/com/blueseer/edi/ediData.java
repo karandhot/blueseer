@@ -1203,12 +1203,11 @@ public class ediData {
     
     private static int _addWkfDetlog(int parentid, wkfd_log x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
         int rows = 0;
-        String sqlInsert = "insert into wkfd_log (wkfdl_parentid, wkfdl_action, wkfdl_ts, wkfdl_ref, wkfdl_status, wkfdl_messg  )  " 
-                        + " values (?,?,?,?,?,?); ";
+        String sqlInsert = "insert into wkfd_log (wkfdl_parentid, wkfdl_action, wkfdl_ref, wkfdl_status, wkfdl_messg  )  " 
+                        + " values (?,?,?,?,?); ";
             ps = con.prepareStatement(sqlInsert);
             ps.setString(1, String.valueOf(parentid));
             ps.setString(2, x.wkfdl_action);
-            ps.setString(3, x.wkfdl_ts);
             ps.setString(4, x.wkfdl_ref);
             ps.setString(5, x.wkfdl_status);
             ps.setString(6, x.wkfdl_messg);
