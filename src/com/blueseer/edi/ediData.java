@@ -1208,9 +1208,9 @@ public class ediData {
             ps = con.prepareStatement(sqlInsert);
             ps.setString(1, String.valueOf(parentid));
             ps.setString(2, x.wkfdl_action);
-            ps.setString(4, x.wkfdl_ref);
-            ps.setString(5, x.wkfdl_status);
-            ps.setString(6, x.wkfdl_messg);
+            ps.setString(3, x.wkfdl_ref);
+            ps.setString(4, x.wkfdl_status);
+            ps.setString(5, x.wkfdl_messg);
             rows = ps.executeUpdate();
             return rows;
     }
