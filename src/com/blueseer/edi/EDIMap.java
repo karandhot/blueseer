@@ -30,6 +30,7 @@ import static com.blueseer.edi.EDI.edilog;
 import static com.blueseer.edi.EDI.hanoi;
 import static com.blueseer.edi.EDI.trimSegment;
 import static com.blueseer.edi.ediData.addUpdateEDIMetaMulti;
+import static com.blueseer.edi.ediData.getDFSMstrasArray;
 import static com.blueseer.edi.ediData.getDSFasString;
 import static com.blueseer.edi.ediData.getMapMstr;
 import static com.blueseer.edi.ediData.isSuppressEmptyTag;
@@ -2631,7 +2632,15 @@ public abstract class EDIMap {  // took out the implements EDIMapi
          } // if FF
          
           if (outputfiletype.toUpperCase().equals("CSV")) {
-    	 for (Map.Entry<String, HashMap<String,String>> z : MD.entrySet()) {
+              
+              String[] dfs = getDFSMstrasArray(ofsfile);
+              String delim = ",";
+              if (dfs != null && dfs.length > 4 && ! dfs[5].isEmpty()) {
+                  delim = delimConvertIntToStr(dfs[5]);
+              }
+              
+              
+    	  for (Map.Entry<String, HashMap<String,String>> z : MD.entrySet()) {
  		//	ArrayList<String[]> fields = z.getValue();
  			
                 // write out all fields of this segment
@@ -2660,13 +2669,13 @@ public abstract class EDIMap {  // took out the implements EDIMapi
                                 // overlay with values that were actually assigned...otherwise blanks
                                 if (mapValues.containsKey(f[5])) {
                                         if (mapValues.get(f[5]).length() > Integer.valueOf(f[8])) {
-                                                segment += mapValues.get(f[5]).substring(0, Integer.valueOf(f[8])).trim() + ","; // properly formatted
+                                                segment += mapValues.get(f[5]).substring(0, Integer.valueOf(f[8])).trim() + delim; // properly formatted
                                         } else {
-                                                segment += mapValues.get(f[5]).trim() + ","; // properly formatted
+                                                segment += mapValues.get(f[5]).trim() + delim; // properly formatted
                                         }
 
                                 } else {
-                                        segment += "" + ","; // properly formatted
+                                        segment += "" + delim; // properly formatted
                                 }
                                 
                         }
@@ -2677,7 +2686,7 @@ public abstract class EDIMap {  // took out the implements EDIMapi
                         }
                         
                         // trim off last ,
-                        if (segment.endsWith(",")) {
+                        if (segment.endsWith(delim)) {
                             segment = segment.substring(0, segment.length() - 1);
                         }
                          

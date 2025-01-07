@@ -65,8 +65,8 @@ import static com.blueseer.edi.ediData.deleteMapMstr;
 import com.blueseer.edi.ediData.dfs_det;
 import com.blueseer.edi.ediData.dfs_mstr;
 import static com.blueseer.edi.ediData.getDFSMstr;
-import static com.blueseer.edi.ediData.getDSFMstrasArray;
-import static com.blueseer.edi.ediData.getDSFasArray;
+import static com.blueseer.edi.ediData.getDFSMstrasArray;
+import static com.blueseer.edi.ediData.getDFSasArray;
 import static com.blueseer.edi.ediData.getDSFasString;
 import static com.blueseer.edi.ediData.getMapMstr;
 import static com.blueseer.edi.ediData.isValidDFSid;
@@ -3593,7 +3593,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
                 
         // IFS dfs file into Zip
         String ifsname = ddifs.getSelectedItem().toString();
-        String[] dfsmstr = getDSFMstrasArray(ddifs.getSelectedItem().toString());
+        String[] dfsmstr = getDFSMstrasArray(ddifs.getSelectedItem().toString());
         if (dfsmstr != null) {
             e = new ZipEntry(ifsname + ".dfs");
             out.putNextEntry(e);
@@ -3605,7 +3605,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         // IFS det file into Zip
         e = new ZipEntry(ifsname + ".det");
         out.putNextEntry(e);
-        ArrayList<String[]> list = getDSFasArray(ddifs.getSelectedItem().toString());
+        ArrayList<String[]> list = getDFSasArray(ddifs.getSelectedItem().toString());
         sb = new StringBuilder();
         for (String[] sarray : list) {
             sb.append(String.join(",",Arrays.copyOfRange(sarray, 1, sarray.length))).append("\n");
@@ -3616,7 +3616,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         
         // OFS dfs file into Zip
         String ofsname = ddofs.getSelectedItem().toString();
-        dfsmstr = getDSFMstrasArray(ddofs.getSelectedItem().toString()); 
+        dfsmstr = getDFSMstrasArray(ddofs.getSelectedItem().toString()); 
         if (dfsmstr != null) {
             e = new ZipEntry(ofsname + ".dfs");
             out.putNextEntry(e);
@@ -3628,7 +3628,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         // OFS det file into Zip
         e = new ZipEntry(ofsname + ".det");
         out.putNextEntry(e);
-        list = getDSFasArray(ddofs.getSelectedItem().toString());
+        list = getDFSasArray(ddofs.getSelectedItem().toString());
         sb = new StringBuilder();
         for (String[] sarray : list) {
             sb.append(String.join(",",Arrays.copyOfRange(sarray, 1, sarray.length))).append("\n");

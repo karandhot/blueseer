@@ -2965,7 +2965,7 @@ public class ediData {
         
     }
     
-    public static String[] getDSFMstrasArray(String code) {
+    public static String[] getDFSMstrasArray(String code) {
         
         String[] x = null;
         String sql = "select * from dfs_mstr where dfs_id = ? ;";
@@ -2992,7 +2992,7 @@ public class ediData {
         return x;
     }
     
-    public static ArrayList<String[]> getDSFasArray(String code) {
+    public static ArrayList<String[]> getDFSasArray(String code) {
         
         ArrayList<String[]> list = new ArrayList<String[]>();
         String sql = "select * from dfs_det where dfsd_id = ? ;";
