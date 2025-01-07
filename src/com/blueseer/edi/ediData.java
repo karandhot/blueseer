@@ -32,6 +32,8 @@ import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData.ftp_mstr;
+import static com.blueseer.adm.admData.getFTPMstr;
 import static com.blueseer.adm.admData.getPksMstr;
 import static com.blueseer.adm.admData.isValidKeyID;
 import com.blueseer.adm.admData.pks_mstr;
@@ -48,6 +50,9 @@ import static com.blueseer.utl.BlueSeerUtils.bsret;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.parseFileName;
+import com.blueseer.utl.EDData;
+import com.blueseer.utl.OVData;
+import static com.blueseer.utl.OVData.getSMTPCredentials;
 import static com.blueseer.utl.OVData.isSMTPServer;
 import static com.blueseer.utl.OVData.isSMTPServerBool;
 import static com.blueseer.utl.OVData.sendEmail;
@@ -3168,7 +3173,45 @@ public class ediData {
         return mylist;
         
     }
+    
+public static ArrayList<String> getFTPWkfl(String site) {
+       ArrayList<String> mylist = new ArrayList<String>();
+        try{
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try{
+                if (site.toLowerCase().equals("all")) {
+                res = st.executeQuery("select ftp_id from ftp_mstr where ftp_enabled = '1' order by ftp_id ; ");
+                } else {
+                 res = st.executeQuery("select ftp_id from ftp_mstr where ftp_enabled = '1' AND " +
+                         " ftp_site = " + "'" + site + "'" + " order by ftp_id ; ");   
+                }
+                while (res.next()) {
+                   mylist.add(res.getString("ftp_id"));
+                }
+           }
+            catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return mylist;
         
+    }
+         
+    
     public static String[] getAS2Info(String id) {
         String[] info = new String[]{"","","","","","","","","","","", "", "", "", "", "", "", "", "", "", "", "", "", ""};
         String sql = "select as2_id, as2_url, as2_port, as2_path, as2_user, as2_sysas2id, edic_as2id, edic_as2url, " +
@@ -3656,6 +3699,16 @@ public class ediData {
                 
                 case "AS2Outbound" :
                 r = wkfaction_as2outbound(wkf, wkd, getWkfdMeta(wkd.wkfd_id(), wkd.wkfd_line()));
+                lgd[3] = r[0];
+                lgd[4] = r[1];
+                if (! r[0].equals("0")) {
+                    logdetail.add(lgd);
+                    break forloop;
+                } 
+                break;
+                
+                case "FTPToTranslate" :
+                r = wkfaction_ftpToTranslate(wkf, wkd, getWkfdMeta(wkd.wkfd_id(), wkd.wkfd_line()));
                 lgd[3] = r[0];
                 lgd[4] = r[1];
                 if (! r[0].equals("0")) {
@@ -4414,6 +4467,77 @@ public class ediData {
         }
         return new String[]{"0", messg};  // overall...workflow suceeds even if individual internal actions do not...will be logged regardless
     }
+    
+    public static String[] wkfaction_ftpToTranslate(wkf_mstr wkf, wkf_det wkfd, ArrayList<wkfd_meta> list) {
+       
+        String[] r = new String[]{"0",""};
+        String site = "";
+        String direction = "";
+        String filter = null;
+        String destination = cleanDirString(EDData.getEDIInDir()); 
+        String source = "";
+        
+        String to = OVData.getSysMetaValue("system", "edimail", "1000");  // system site
+        String sendmail = OVData.getSysMetaValue("system", "emailkey", "edimail");
+        String[] creds = getSMTPCredentials();
+        
+        
+        
+        for (wkfd_meta m : list) {
+            if (m.wkfdm_key().equals("site") && ! m.wkfdm_value.isBlank()) {
+                site = m.wkfdm_value();
+            }
+            if (m.wkfdm_key().equals("direction") && ! m.wkfdm_value.isBlank()) {
+                direction = m.wkfdm_value();
+            }
+        }
+        if (site.equals("*")) {
+            site = "all";
+        }
+        ArrayList<String> ftplist = getFTPWkfl(site);  // list of all as2 that are 'enabled'
+        for (String s : ftplist) {
+        ftp_mstr ftp = getFTPMstr(new String[]{s});
+            if (direction.equals("out")) {  // if as2 ID is assigned this executing workflow id then fire
+             source = ftp.ftp_outdir();
+            } else {
+             source = ftp.ftp_indir();   
+            }
+            int count = 0;
+            
+                if (! source.isEmpty() && ! destination.isEmpty()) {
+                
+                Path sourcepath = FileSystems.getDefault().getPath(source);
+                    try (DirectoryStream<Path> stream = Files.newDirectoryStream(sourcepath, filter)) {
+                        int f = 0;
+                        for (Path path : stream) {
+                            if (! Files.isDirectory(path)) {
+                                count++;
+                                Path destinationpath = FileSystems.getDefault().getPath(destination + "/" + path.getFileName());    
+                                if (Files.exists(destinationpath)) {
+                                    destinationpath = FileSystems.getDefault().getPath(destination + "/" + path.getFileName() + "." + Long.toHexString(System.currentTimeMillis())); 
+                                    Files.move(path, destinationpath, StandardCopyOption.REPLACE_EXISTING);
+                                } else {
+                                    Files.move(path, destinationpath, StandardCopyOption.REPLACE_EXISTING); 
+                                }
+                            }
+                        }
+                        r[1] = "Moving " + count +  " files " + " from " + source + " to " + destination;
+                    } catch (IOException ex) {  
+                            r[0] = "1";
+                            r[1] = "ERROR WorkFlowID: " + wkfd.wkfd_id + " action: " + wkfd.wkfd_action + "->"  + ex.getMessage();
+                    }  
+                }
+                
+                if (count > 0 && sendmail.equals("1")) {
+                    if (! to.isBlank() && ! creds[1].isBlank()) {
+                      sendEmail(to, " BlueSeer sysmail wkfaction_ftpToTranslate: ", r[1], "");
+                    }
+                }
+            
+        }
+        return r;  // overall...workflow suceeds even if individual internal actions do not...will be logged regardless
+    }
+    
     
     public static String[] wkfaction_as2outbound(wkf_mstr wkf, wkf_det wkfd, ArrayList<wkfd_meta> list) {
        StringBuilder messg = new StringBuilder();

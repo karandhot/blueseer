@@ -72,6 +72,7 @@ import static com.blueseer.utl.EDData.getEDIDocTypeFromBSDoc;
 import static com.blueseer.utl.EDData.getEDIFFDocType;
 import static com.blueseer.utl.EDData.getEDIFFSubType;
 import static com.blueseer.utl.EDData.getEDIFileTypeDocType;
+import static com.blueseer.utl.EDData.getEDIPartnerSite;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.getSMTPCredentials;
 import static com.blueseer.utl.OVData.getSysMetaValue;
@@ -2966,6 +2967,8 @@ public class EDI {
           } else {
             messages.add(new String[]{"info","Found parent partner: " + parentPartner});  
           }
+          
+          c[39] = getEDIPartnerSite(parentPartner);
           
           
           // at this point...we need to log this doc in edi_idx table and use return ID for further logs against this doc idx.
