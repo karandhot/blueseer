@@ -4507,7 +4507,7 @@ public static ArrayList<String> getFTPWkfl(String site) {
                 if (! source.isEmpty() && ! destination.isEmpty()) {
                 
                 Path sourcepath = FileSystems.getDefault().getPath(source);
-                    try (DirectoryStream<Path> stream = Files.newDirectoryStream(sourcepath, filter)) {
+                    try (DirectoryStream<Path> stream = Files.newDirectoryStream(sourcepath, "*")) {
                         int f = 0;
                         for (Path path : stream) {
                             if (! Files.isDirectory(path)) {
