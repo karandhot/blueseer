@@ -30,7 +30,7 @@ mapSegment("order","site",h[4]);
 mapSegment("order","duedate",h[7]);
 mapSegment("order","remarks",h[9]);
 mapSegment("order","reference","");
-mapSegment("order","doctype","855");
+mapSegment("order","doctype","bs-json-855");
 mapSegment("order","ordertype","");
 mapSegment("order","senderid",c[0]);
 mapSegment("order","receiverid",c[21]);

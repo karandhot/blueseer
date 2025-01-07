@@ -7,7 +7,7 @@ mapSegment("order","po",getInput("BEG",3));
 mapSegment("order","site",c[39]);
 mapSegment("order","orderdate",BlueSeerUtils.convertDateFormat("yyyyMMdd",getInput("BEG",5)));
 mapSegment("order","ordertype","EDI");
-mapSegment("order","doctype","bs-json");
+mapSegment("order","doctype","bs-json-850");
 mapSegment("order","currency","USD");
 mapSegment("order","senderid",c[0]);
 mapSegment("order","receiverid",c[21]);

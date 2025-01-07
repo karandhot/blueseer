@@ -38,3 +38,6 @@ bs850ToD365XML,X12 850 to D365 composite V2 XML,,X12850,XMLD365OrderV2,850x12,X1
 bsCSVToD365XML,CSV data to D365 composite V2 XML,generic,CSVD365Order,XMLD365OrderV2,850csv,CSV,850xml,XML,edi/maps/bsCSVToD365XML.java,,0,1000
 bsCSVTo810,CSV to EDI X12 810 Invoice,generic,CSVGenericInvoice,X12810,810csv,CSV,810x12,X12,edi/maps/bsCSVTo810.java,,0,1000
 bs850To856,X12 850 to X12 856,,X12850,X12856,850x12,X12,856x12,X12,edi/maps/bs850To856.java,,0,1000
+bs856jsonTo856,json 856 to X12 856,,JSONGenericASN,X12856,856json,JSON,856x12,X12,edi/maps/bs856jsonTo856.java,,0,1000
+bs855jsonTo855,json 855 to X12 855,,JSONGenericOrder,X12855,855json,JSON,855x12,X12,edi/maps/bs855jsonTo855.java,,0,1000
+bs810jsonTo810,json 810 to X12 810,,JSONGenericInvoice,X12810,810json,JSON,810x12,X12,edi/maps/bs810jsonTo810.java,,0,1000

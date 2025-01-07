@@ -8,4 +8,8 @@
 856csv,CSV ASN,856csv,CSVGenericASN,10,44,1,,1
 810csv,CSV Invoice,810csv,CSVGenericInvoice,10,44,1,,1
 850json,JSON Generic Order,850json,JSONGenericOrder,10,0,1,,1
+855json,JSON Generic Order,855json,JSONGenericOrder,10,0,1,,1
+856json,JSON Generic ASN,856json,JSONGenericASN,10,0,1,,1
+810json,JSON Generic Invoice,810json,JSONGenericInvoice,10,0,1,,1
+860json,JSON Generic POChange,860json,JSONGenericOrder,10,0,1,,1
 850xml,XML Generic Order,850xml,XMLGenericOrder,10,0,1,,1

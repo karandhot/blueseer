@@ -21,7 +21,7 @@ mapSegment("invoice","invoicedate",h[34]);
 mapSegment("invoice","shipdate",h[34]);
 mapSegment("invoice","remarks",h[6]);
 mapSegment("invoice","reference",h[7]);
-mapSegment("invoice","doctype","810");
+mapSegment("invoice","doctype","bs-json-810");
 mapSegment("invoice","invoicetype","DR");
 mapSegment("invoice","senderid",c[0]);
 mapSegment("invoice","receiverid",c[21]);
