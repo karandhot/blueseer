@@ -797,7 +797,7 @@ CREATE TABLE "edi_log" (
   "elg_idxnbr" varchar(9) NOT NULL COLLATE NOCASE DEFAULT '',
   "elg_init" int(1) NOT NULL DEFAULT '0',
   "elg_severity" varchar(8) NOT NULL COLLATE NOCASE DEFAULT '',
-  "elg_desc" varchar(100) NOT NULL COLLATE NOCASE DEFAULT '',
+  "elg_desc" varchar(500) NOT NULL COLLATE NOCASE DEFAULT '',
   "elg_ts" timestamp NOT NULL DEFAULT (datetime('now','localtime')),
   "elg_isa" varchar(15) NOT NULL COLLATE NOCASE DEFAULT '',
   "elg_doc" varchar(15) NOT NULL COLLATE NOCASE DEFAULT '',

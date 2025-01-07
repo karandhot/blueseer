@@ -665,7 +665,7 @@ CREATE TABLE IF NOT EXISTS `edi_log` (
   `elg_idxnbr` varchar(9) NOT NULL  DEFAULT '',
   `elg_init` int(1) NOT NULL DEFAULT '0',
   `elg_severity` varchar(8) NOT NULL  DEFAULT '',
-  `elg_desc` varchar(100) NOT NULL  DEFAULT '',
+  `elg_desc` varchar(500) NOT NULL  DEFAULT '',
   `elg_ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `elg_isa` varchar(15) NOT NULL  DEFAULT '',
   `elg_doc` varchar(15) NOT NULL  DEFAULT '',

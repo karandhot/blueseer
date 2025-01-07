@@ -3641,7 +3641,7 @@ public class EDData {
                             ps.setString(1, c[22]);
                             ps.setString(2, c[16]);
                             ps.setString(3, s[0]);
-                            ps.setString(4, s[1]);
+                            ps.setString(4, (s[1].length() > 500) ? s[1].substring(0,500) : s[1]);
                             ps.setString(5, c[0]);
                             ps.setString(6, c[1]);
                             ps.setString(7, c[2]);
