@@ -194,6 +194,7 @@ import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaCertStore;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.cms.CMSEnvelopedData;
@@ -1424,7 +1425,14 @@ public class apiUtils {
         KeyPairGenerator rsaGen;
         
         String[] siteinfo = admData.getSiteAddressInfo(OVData.getDefaultSite());
-        X500Name dnName = new X500Name("CN=BlueSeer Software"); 
+        X500Name dnName = new X500Name(" CN=BlueSeer Software, " +
+"             E=services@blueseer.com, " +
+"             OU=EDI, " +
+"             O=BlueSeer Software," +
+"             L=Dillon," +
+"             ST=SC," +
+"             C=US"); 
+        // dnName = new JcaX509CertificateHolder((X509Certificate) caCert).getSubject();
         BigInteger certSerialNumber = new BigInteger(Long.toString(System.currentTimeMillis()));
 
         Date startDate = new Date(); // now
@@ -1434,14 +1442,17 @@ public class apiUtils {
         Date endDate = calendar.getTime();
 
         X500NameBuilder builder = new X500NameBuilder(RFC4519Style.INSTANCE);
-        
-        builder.addRDN(RFC4519Style.c, siteinfo[8]);  // site country
-        builder.addRDN(RFC4519Style.o, siteinfo[1]);  // site ID
-        builder.addRDN(RFC4519Style.l, siteinfo[5]);  // site city
-        builder.addRDN(RFC4519Style.st, siteinfo[6]);  // site state
         builder.addRDN(RFC4519Style.cn, "BlueSeer Software");
-        builder.addRDN(RFC4519Style.ou, "Communications");
-        builder.addRDN(PKCSObjectIdentifiers.pkcs_9_at_emailAddress, "services@blueseer.com");
+         builder.addRDN(PKCSObjectIdentifiers.pkcs_9_at_emailAddress, "services@blueseer.com");
+         builder.addRDN(RFC4519Style.ou, "EDI");
+         builder.addRDN(RFC4519Style.o, "BlueSeer Software");  // site ID
+         builder.addRDN(RFC4519Style.l, "Dillon");  // site city
+         builder.addRDN(RFC4519Style.st, "SC");  // site state
+        builder.addRDN(RFC4519Style.c, "US");  // site country
+        
+        
+        
+       
         
         
         ContentSigner contentSigner = new JcaContentSignerBuilder(x).build(prv);

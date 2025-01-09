@@ -49,6 +49,7 @@ import static com.blueseer.frt.frtData.getCFOPrevious;
 import com.blueseer.ord.ordData;
 import static com.blueseer.ord.ordData.addOrderChangeTransaction;
 import static com.blueseer.ord.ordData.addOrderTransaction;
+import static com.blueseer.ord.ordData.addUpdateSOMetaNotes;
 import com.blueseer.ord.ordData.so_mstr;
 import com.blueseer.pur.purData;
 import com.blueseer.pur.purData.po_mstr;
@@ -3569,6 +3570,10 @@ public class EDI {
                 detail.add(sod);
         }
         
+        // add order notes info to so_meta
+        addUpdateSOMetaNotes(String.valueOf(sonbr), e.getNotes().toArray(new String[0]));
+        
+        
         m = addOrderTransaction(detail, so, null, null, null);
         if (m[0].equals("0")) {
             m[0] = "success";
@@ -6530,6 +6535,8 @@ public class EDI {
     public String st_zip = "";
     public String st_country = "";
     
+    public ArrayList<String> notes = new ArrayList<String>();
+    
     // Detail fields      
     public ArrayList<String> detsku = new ArrayList<String>();
     public ArrayList<String> detcustitem = new ArrayList<String>();
@@ -6562,6 +6569,13 @@ public class EDI {
             this.doctype = doctype;
         }
         
+        public void addNotes(String j) {
+            this.notes.add(j);
+        }
+        
+        public ArrayList<String> getNotes() {
+           return this.notes;
+        }
         
         public void addDetail() {
             this.detitem.add("");

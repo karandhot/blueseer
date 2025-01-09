@@ -1,3 +1,4 @@
+DB,DB,,1,0,1,landmark,default record for DB type,2,2,-,M,F
 JSONGenericOrder,order,,1,0,1,landmark,landmark,5,5,-,M,F
 JSONGenericOrder,order,,1,0,0,orderid,Order Number,1,40,-,O,F
 JSONGenericOrder,order,,1,0,0,po,PO Number,1,40,-,O,F
@@ -708,6 +709,10 @@ X12850,MTX,N9,1,0,0,e03,Textual Data,1,4096,-,O,F
 X12850,MTX,N9,1,0,0,e04,Printer Carriage Control Code,2,2,-,X,F
 X12850,MTX,N9,1,0,0,e05,Number,1,9,-,O/Z,F
 X12850,MTX,N9,1,0,0,e06,Language Code,2,3,-,O,F
+X12850,MSG,N9,10,1,1,landmark,Message Text,3,3,-,M,F
+X12850,MSG,N9,1,0,0,e01,Free-form Message Text,1,264,-,M,F
+X12850,MSG,N9,1,0,0,e02,Printer Carriage Control Code,2,2,-,X,F
+X12850,MSG,N9,1,0,0,e03,Number,1,9,-,O/Z,F
 X12850,PWK,N9,99999,0,1,landmark,Paperwork,3,3,-,O,F
 X12850,PWK,N9,1,0,0,e01,Report Type Code,2,2,-,M,F
 X12850,PWK,N9,1,0,0,e02,Report Transmission Code,1,2,-,O,F

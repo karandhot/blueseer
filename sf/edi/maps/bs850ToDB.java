@@ -45,6 +45,12 @@ import com.blueseer.utl.EDData;
     ta.add(new String[]{po,"header","billcode", getInput("N1","1:BT","e04")});
     ta.add(new String[]{po,"header","duedate", getInput("DTM","1:002","e02")});
     
+    int msgcount = getGroupCount("N9:MSG");
+    for (i = 1; i <= msgcount; i++) {
+    e.addNotes(getInput(i,"N9:MSG",1));
+    }
+
+
     int n1count = getGroupCount("N1");
     boolean isN1ST = false;
     for (i = 1; i <= n1count; i++) {

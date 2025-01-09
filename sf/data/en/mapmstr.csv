@@ -7,11 +7,11 @@ EDIMaps.Generic850o,Database to Purchase Order,generic,850db,X12850,850db,DB,850
 EDIMaps.Generic856o,Database to ASN,generic,856db,X12856,856db,DB,856x12,X12,,,1,1000
 EDIMaps.Generic810o,Database to Invoice,generic,810db,X12810,810db,DB,810x12,X12,,,1,1000
 EDIMaps.Generic855o,Database to Acknowledgement,generic,855db,X12855,855db,DB,855x12,X12,,,1,1000
-bs850ToDB,Purchase Order to Database,generic,X12850,850db,850x12,X12,850x12,DB,edi/maps/bs850ToDB.java,,1,1000
-bs860ToDB,Purchase Order Change to Database,generic,X12860,860db,860x12,X12,860x12,DB,edi/maps/bs860ToDB.java,,1,1000
-bs810ToDB,Invoice to Database,generic,X12810,810db,810x12,X12,810x12,DB,edi/maps/bs810ToDB.java,,1,1000
-bs204ToDB,Freight Order to Database,generic,X12204,204db,204x12,X12,204x12,DB,edi/maps/bs204ToDB.java,,1,1000
-bs855ToDB,Acknowledgment Order to Database,generic,X12855,855db,855x12,X12,855x12,DB,edi/maps/bs855ToDB.java,,1,1000
+bs850ToDB,Purchase Order to Database,generic,X12850,DB,850x12,X12,850db,DB,edi/maps/bs850ToDB.java,,1,1000
+bs860ToDB,Purchase Order Change to Database,generic,X12860,DB,860x12,X12,860db,DB,edi/maps/bs860ToDB.java,,1,1000
+bs810ToDB,Invoice to Database,generic,X12810,DB,810x12,X12,810db,DB,edi/maps/bs810ToDB.java,,1,1000
+bs204ToDB,Freight Order to Database,generic,X12204,DB,204x12,X12,204db,DB,edi/maps/bs204ToDB.java,,1,1000
+bs855ToDB,Acknowledgment Order to Database,generic,X12855,DB,855x12,X12,855db,DB,edi/maps/bs855ToDB.java,,1,1000
 bsDBTo850,Database to Purchase Order,generic,DB,X12850,850db,DB,850x12,X12,edi/maps/bsDBTo850.java,,1,1000
 bsDBTo856,Database to ASN,generic,DB,X12856,856db,DB,856x12,X12,edi/maps/bsDBTo856.java,,1,1000
 bsDBTo856json,Database (tree) to JSON asn,generic,DB,JSONGenericASN,856db,DB,856json,JSON,edi/maps/bsDBTo856json.java,,1,1000
@@ -31,8 +31,8 @@ bs850ToJSON,X12 850 to JSON,,X12850,JSONGenericOrder,850x12,X12,850json,JSON,edi
 bs850ToXML,X12 850 to XML,,X12850,XMLGenericOrder,850x12,X12,850xml,XML,edi/maps/bs850ToXML.java,,0,1000
 bs850TocXML,X12 850 to cXML,,X12850,cXMLOrder,850x12,X12,850xml,XML,edi/maps/bs850TocXML.java,,0,1000
 bsJSONTo850,JSON Order to X12 850,,JSONGenericOrder,X12850,850json,JSON,850x12,X12,edi/maps/bsJSONTo850.java,,0,1000
-bs850jsonToDB,JSON Order to DB,,JSONGenericOrder,850db,850json,JSON,850x12,DB,edi/maps/bs850jsonToDB.java,,0,1000
-bs860jsonToDB,JSON Order Ack to DB,,JSONGenericOrder,860db,860json,JSON,860x12,DB,edi/maps/bs860jsonToDB.java,,0,1000
+bs850jsonToDB,JSON Order to DB,,JSONGenericOrder,DB,850json,JSON,850db,DB,edi/maps/bs850jsonToDB.java,,0,1000
+bs860jsonToDB,JSON Order Ack to DB,,JSONGenericOrder,DB,860json,JSON,860db,DB,edi/maps/bs860jsonToDB.java,,0,1000
 bsXMLTo850,XML Order to X12 850,,XMLGenericOrder,X12850,850xml,XML,850x12,X12,edi/maps/bsXMLTo850.java,,0,1000
 bs850ToD365XML,X12 850 to D365 composite V2 XML,,X12850,XMLD365OrderV2,850x12,X12,850xml,XML,edi/maps/bs850ToD365XML.java,,0,1000
 bsCSVToD365XML,CSV data to D365 composite V2 XML,generic,CSVD365Order,XMLD365OrderV2,850csv,CSV,850xml,XML,edi/maps/bsCSVToD365XML.java,,0,1000

@@ -5,7 +5,7 @@
    "duedate":"2021-01-06",
    "remarks":"test of remarks",
    "reference":"12345",
-   "doctype":"bs-json",
+   "doctype":"bs-json-856",
    "asntype":"Standard Order",
    "senderid":"999999999",
    "receiverid":"BLUESEER",
