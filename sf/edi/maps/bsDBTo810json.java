@@ -105,7 +105,7 @@ commitSegment("addresses:address");
                 mapSegment("items:item","itemnumber",d[0]);
                 mapSegment("items:item","line",String.valueOf(i));
                 mapSegment("items:item","invoicequantity",d[2]);
-                mapSegment("items:item","uom","EA");
+                mapSegment("items:item","uom",d[12]);
                 mapSegment("items:item","description",d[9]);
                 mapSegment("items:item","listprice",formatNumber(BlueSeerUtils.bsParseDouble(d[5]),"4"));
                 mapSegment("items:item","netprice",formatNumber(BlueSeerUtils.bsParseDouble(d[5]),"4"));

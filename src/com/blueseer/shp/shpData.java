@@ -2188,8 +2188,8 @@ public class shpData {
                
                   res = st.executeQuery("select * from ship_det where shd_id = " + "'" + shipper + "'" +";");
                 while (res.next()) {
-                    String[] d = new String[12];
-                    for (int z = 0; z < 12; z++) {
+                    String[] d = new String[13];
+                    for (int z = 0; z < 13; z++) {
                         d[z] = "";
                     }
                     d[0] = res.getString("shd_item");
@@ -2204,6 +2204,7 @@ public class shpData {
                     d[9] = res.getString("shd_desc");
                     d[10] = res.getString("shd_soline");
                     d[11] = res.getString("shd_line");
+                    d[12] = res.getString("shd_uom");
                     mylist.add(d);
                 }
        }
@@ -2346,7 +2347,7 @@ public class shpData {
         try{
             
           
-                  res = st.executeQuery("select ship_item, ship_qty, shd_custitem, shd_desc, shd_line, coalesce(lbl_id_str,'') as 'lbl_id_str' from ship_tree " +
+                  res = st.executeQuery("select ship_item, ship_qty, shd_uom, shd_custitem, shd_desc, shd_line, coalesce(lbl_id_str,'') as 'lbl_id_str' from ship_tree " +
                           " inner join ship_det on shd_id = ship_sh and shd_line = ship_shline " +
                           " left outer join label_mstr on lbl_id = ship_parent " +
                           " where ship_parent = " + "'" + serial + "'" + 
@@ -2356,8 +2357,8 @@ public class shpData {
                   String packtype = "none";
                   
                   while (res.next()) {
-                    String[] d = new String[7];
-                    for (int z = 0; z < 7; z++) {
+                    String[] d = new String[8];
+                    for (int z = 0; z < 8; z++) {
                         d[z] = "";
                     }
                     packtype = "none";
@@ -2371,6 +2372,7 @@ public class shpData {
                     d[4] = res.getString("shd_line");
                     d[5] = res.getString("lbl_id_str");
                     d[6] = packtype;
+                    d[7] = res.getString("shd_uom");
                     mylist.add(d);
                 }
        }

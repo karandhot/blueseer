@@ -104,6 +104,7 @@ for (int i = 1; i <= itemcount; i++) {
         ta.add(new String[]{po,("detail:"+snum(i)),"price", getInput(i, "order:items:item","listprice")});
         ta.add(new String[]{po,("detail:"+snum(i)),"sku", getInput(i, "order:items:item","skunumber")});
         ta.add(new String[]{po,("detail:"+snum(i)),"upc", getInput(i, "order:items:item","upcnumber")});
+        ta.add(new String[]{po,("detail:"+snum(i)),"uom", getInput(i, "order:items:item","uom")});
         
 
         if (useInternalPrice) {
