@@ -238,7 +238,7 @@
                       <Component id="lblshiptoname" alignment="1" min="-2" pref="30" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jPanel1" pref="249" max="32767" attributes="0"/>
+                  <Component id="jPanel1" pref="223" max="32767" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="jPanel3" max="32767" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -345,14 +345,15 @@
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="jLabel83" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel90" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel86" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel98" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="19" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jLabel83" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel90" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel13" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel98" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel86" alignment="1" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="remarks" min="-2" pref="520" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
@@ -375,6 +376,7 @@
                                       </Group>
                                   </Group>
                                   <Component id="ddcurr" min="-2" pref="95" max="-2" attributes="0"/>
+                                  <Component id="tbtracking" alignment="0" min="-2" pref="231" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -481,6 +483,11 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <EmptySpace max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="tbtracking" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jLabel13" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="ddcurr" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="jLabel98" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -674,6 +681,14 @@
                 <Property name="text" type="java.lang.String" value="EDI"/>
               </Properties>
             </Component>
+            <Component class="javax.swing.JTextField" name="tbtracking">
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel13">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Tracking"/>
+                <Property name="name" type="java.lang.String" value="lbltracking" noResource="true"/>
+              </Properties>
+            </Component>
           </SubComponents>
         </Container>
         <Component class="javax.swing.JButton" name="btdelete">
@@ -823,7 +838,7 @@
                               </Group>
                           </Group>
                       </Group>
-                      <EmptySpace pref="40" max="32767" attributes="0"/>
+                      <EmptySpace pref="82" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

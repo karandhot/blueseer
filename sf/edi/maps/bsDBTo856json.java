@@ -1,5 +1,6 @@
 import com.blueseer.ctr.cusData;
 import com.blueseer.shp.shpData;
+import com.blueseer.ord.ordData;
 import com.blueseer.adm.admData;
 import com.blueseer.utl.BlueSeerUtils;
 import com.blueseer.utl.OVData;
@@ -43,7 +44,12 @@ mapSegment("asn","status","");
 mapSegment("asn","termscode",h[29]);
 mapSegment("asn","termsdescription",h[30]);
 mapSegment("asn","vendorcode",vendcode);
+if (h[11].isBlank()) {
+mapSegment("asn","trackingnumber",ordData.getSOMetaValue(h[2],"header","trackingnumber")); // from Order Maint
+} else {
 mapSegment("asn","trackingnumber",h[11]);
+}
+
 mapSegment("asn","ordernumber",h[2]);
 mapSegment("asn","servicetype","");
  commitSegment("asn");
@@ -116,11 +122,13 @@ commitSegment("addresses:address");
 	  
 
 		HashSet<String> packing = shpData.getShipperTreePackOfPO(shipper, po);
-                
+                int k = 0;
+                String detline = "";
                 for (String pack : packing) {
-                 
+                        k = 0;
                         ArrayList<String[]> lines = shpData.getShipperTreeLinesOfPack(pack, shipper);
                         for (String[] line : lines) {
+                        detline = "detail:" + k;
 			mapSegment("items:item","packline","");
                         mapSegment("items:item","packitem","");
 			mapSegment("items:item","packaltname","");
@@ -132,6 +140,7 @@ commitSegment("addresses:address");
 			mapSegment("items:item","uom","EA");
 			mapSegment("items:item","description",line[3]);
 			mapSegment("items:item","skunumber",line[2]);
+                        mapSegment("items:item","upcnumber",getMeta(po,detline,"upc"));
 			mapSegment("items:item","asnquantity",formatNumber(Double.valueOf(line[1]),"0"));
 			commitSegment("items:item");
                         } // end of item loop

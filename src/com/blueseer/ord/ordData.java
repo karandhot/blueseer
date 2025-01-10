@@ -746,9 +746,10 @@ public class ordData {
             ArrayList<sod_tax> sotd = _getOrderDetTax(x, bscon, ps, res);
             ArrayList<so_tax> sot = _getOrderTax(x, bscon, ps, res);
             cms_det cms = _getCMSDet(so.so_cust, so.so_ship, bscon, ps, res );
+            ArrayList<String[]> someta = _getSOMeta(x[0], bscon, ps, res);
             
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
-            r = new salesOrder(m, so, sod, sos, sotd, sot, cms);
+            r = new salesOrder(m, so, sod, sos, sotd, sot, cms, someta);
             
         } catch (SQLException s) {
              MainFrame.bslog(s);
@@ -3228,7 +3229,7 @@ public class ordData {
                 int i = 0;
                 res = st.executeQuery("SELECT som_value FROM so_meta where som_id = " + "'" + id + "'"
                         + " AND som_type = " + "'" + type + "'"
-                        + " AND somm_key = " + "'" + key + "'"     
+                        + " AND som_key = " + "'" + key + "'"     
                         + " ;");
                 while (res.next()) {
                     i++;
@@ -3361,6 +3362,58 @@ public class ordData {
             MainFrame.bslog(e);
         }
              return r;
+    }
+    
+    public static String getSOMetaValue(String id, String type, String key) {
+         String x = "";
+         try{
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+                res = st.executeQuery("select som_value from so_meta where " +
+                        " som_id = " + "'" + id + "'" + " AND " +
+                        " som_type = " + "'" + type + "'" + " AND " +
+                        " som_key = " + "'" + key + "'" +
+                        " order by som_value;" );
+               while (res.next()) {
+                x = res.getString("som_value");                    
+                }
+               
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return x;
+        
+    }   
+    
+    private static ArrayList<String[]> _getSOMeta(String sonbr, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        String sqlSelect = "select * from so_meta where som_id = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setInt(1, bsParseInt(sonbr));
+          res = ps.executeQuery();
+            while(res.next()) {
+                list.add(new String[]{res.getString("som_id"), res.getString("som_type"), res.getString("som_key"), res.getString("som_value")});
+            }
+        return list;
     }
     
     
@@ -4605,9 +4658,9 @@ public class ordData {
     
     
     public record salesOrder(String[] m, so_mstr so, ArrayList<sod_det> sod,
-        ArrayList<sos_det> sos, ArrayList<sod_tax> sodtax, ArrayList<so_tax> sotax, cms_det cms) {
+        ArrayList<sos_det> sos, ArrayList<sod_tax> sodtax, ArrayList<so_tax> sotax, cms_det cms, ArrayList<String[]> someta) {
         public salesOrder(String[] m) {
-            this (m, null, null, null, null, null, null);
+            this (m, null, null, null, null, null, null, null);
         }
     }
     

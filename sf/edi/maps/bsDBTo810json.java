@@ -92,10 +92,12 @@ commitSegment("addresses:address");
         // detail
          int i = 0;
          String sku = "";
+         String detline = "";
          // item, custitem, qty, po, cumqty, listprice, netprice, reference, sku, desc
          ArrayList<String[]> lines = shpData.getShipperLines(key);
               for (String[] d : lines) {
                   i++;
+                  detline = "detail:" + i; // getMeta usage
                   if (d[8].isEmpty() && d[8] != null) {
                       sku = cusData.getCustAltItem(h[0], d[0]);
                   }
@@ -108,7 +110,7 @@ commitSegment("addresses:address");
                 mapSegment("items:item","listprice",formatNumber(BlueSeerUtils.bsParseDouble(d[5]),"4"));
                 mapSegment("items:item","netprice",formatNumber(BlueSeerUtils.bsParseDouble(d[5]),"4"));
                 mapSegment("items:item","skunumber",sku);
-                mapSegment("items:item","upcnumber","");
+                mapSegment("items:item","upcnumber",getMeta(po,detline,"upc"));
                 
                 commitSegment("items:item");
                   

@@ -58,6 +58,7 @@ mapSegment("items:item","orderquantity",getInput(i,"PO1",2));
 mapSegment("items:item","listprice",getInput(i,"PO1",4));
 mapSegment("items:item","netprice",getInput(i,"PO1",4));
 mapSegment("items:item","discount","0");
+mapSegment("items:item","skunumber",getInput(i,"PO1",11));
 commitSegment("items:item");
 }
 

@@ -44,6 +44,7 @@ import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.getItemDataInit;
 import static com.blueseer.inv.invData.getItemQOHTotal;
 import static com.blueseer.ord.ordData.addOrderTransaction;
+import static com.blueseer.ord.ordData.addUpdateSOMeta;
 import static com.blueseer.ord.ordData.addUpdateSOMetaNotes;
 import static com.blueseer.ord.ordData.getOrderItemAllocatedQty;
 import static com.blueseer.ord.ordData.getOrderLines;
@@ -161,6 +162,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 public static ArrayList<sod_tax> sodtaxlist = null;
                 public static ArrayList<so_tax> sotaxlist = null;
                 public static cms_det cms = null;
+                public static ArrayList<String[]> someta = null;
                 public static LocalDateTime start;
                 Map<Integer, ArrayList<String[]>> linetax = new HashMap<Integer, ArrayList<String[]>>();
                 ArrayList<String[]> headertax = new ArrayList<String[]>();
@@ -519,6 +521,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbhdrwh.setText("");
         lblIsSourced.setIcon(null);
         remarks.setText("");
+        tbtracking.setText("");
         tbtotqty.setText("");
         tbtotdollars.setText("");
         lbltotdollars.setText("0.00");
@@ -892,6 +895,11 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         // now update
         m = updateOrderTransaction(tbkey.getText(), badlines, createDetRecord(), createRecord(), createTaxRecord(), createTaxDetRecord(), createSOSRecord());
      
+        //  update someta
+        if (! tbtracking.getText().isBlank()) {
+            addUpdateSOMeta(tbkey.getText(), "header", "trackingnumber", tbtracking.getText());
+        }
+        
      return m;
      }
      
@@ -949,6 +957,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
       soslist = z.sos();
       sodtaxlist = z.sodtax();
       cms = z.cms();
+      someta = z.someta();
+      
       getAttachments(key[0]);
       if (bsmf.MainFrame.debug) {
        System.out.println("get return: " + timediff(start));
@@ -1500,6 +1510,17 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                     }
                 }
         }
+        }
+        
+        // now any someta 
+        if (someta != null) {
+            for (String[] s : someta) {
+                if (s != null && s.length > 3) {
+                    if (s[2].equals("trackingnumber")) {  // order, type, key, value  ...key = trackingnumber
+                        tbtracking.setText(s[3]);
+                    }
+                }
+            }
         }
         
         if (bsmf.MainFrame.debug) {
@@ -2276,6 +2297,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         cbconfirm = new javax.swing.JCheckBox();
         cbplan = new javax.swing.JCheckBox();
         cbedi = new javax.swing.JCheckBox();
+        tbtracking = new javax.swing.JTextField();
+        jLabel13 = new javax.swing.JLabel();
         btdelete = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jLabel11 = new javax.swing.JLabel();
@@ -2556,18 +2579,22 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
 
         cbedi.setText("EDI");
 
+        jLabel13.setText("Tracking");
+        jLabel13.setName("lbltracking"); // NOI18N
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(17, 17, 17)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel83)
-                    .addComponent(jLabel90)
-                    .addComponent(jLabel86)
-                    .addComponent(jLabel98))
-                .addGap(12, 12, 12)
+                .addGap(19, 19, 19)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel83, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel90, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel13, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel98, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel86, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addGap(10, 10, 10)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(remarks, javax.swing.GroupLayout.PREFERRED_SIZE, 520, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
@@ -2585,7 +2612,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                                     .addComponent(jLabel85, javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(jLabel97, javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(jLabel92, javax.swing.GroupLayout.Alignment.TRAILING)))
-                            .addComponent(ddcurr, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(ddcurr, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbtracking, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -2663,6 +2691,10 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(tbtracking, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel13))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(ddcurr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel98))
@@ -2793,7 +2825,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                             .addComponent(tbmisc1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel100)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(tbname, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel101))
@@ -4363,6 +4394,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JLabel jLabel110;
     private javax.swing.JLabel jLabel111;
     private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -4456,6 +4488,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JTextField tbtotdollars;
     private javax.swing.JTextField tbtotqty;
     private javax.swing.JTextField tbtottax;
+    private javax.swing.JTextField tbtracking;
     private javax.swing.JTextField tbzip;
     private javax.swing.JTextField totlines;
     // End of variables declaration//GEN-END:variables

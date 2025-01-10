@@ -122,6 +122,6 @@ commitSegment("addresses:address");
                 mapSegment("items:item","netprice",formatNumber(BlueSeerUtils.bsParseDouble(d[4]),"4"));
                 
                 mapSegment("items:item","skunumber",d[2]);
-                mapSegment("items:item","upcnumber","");
+                mapSegment("items:item","upcnumber",getMeta(h[1],detline,"upc"));
                 commitSegment("items:item");
               }
