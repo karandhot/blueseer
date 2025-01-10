@@ -2163,7 +2163,7 @@ public class EDI {
           c[19] = "0";
           c[20] = String.valueOf(content.length());
           
-          
+          c[39] = getEDIPartnerSite(x[2]);
           
           // at this point...we need to log this doc in edi_idx table and use return ID for further logs against this doc idx.
          
@@ -2313,7 +2313,7 @@ public class EDI {
           c[19] = "0";
           c[20] = String.valueOf(content.length());
           
-          
+          c[39] = getEDIPartnerSite(x[2]);
           
           // at this point...we need to log this doc in edi_idx table and use return ID for further logs against this doc idx.
          
@@ -2460,7 +2460,7 @@ public class EDI {
           c[19] = String.valueOf(positions[2]);
           c[20] = String.valueOf(positions[3]);
           
-          
+          c[39] = getEDIPartnerSite(x[2]);
           
           // at this point...we need to log this doc in edi_idx table and use return ID for further logs against this doc idx.
          
@@ -2723,6 +2723,7 @@ public class EDI {
             messages.add(new String[]{"info","Found parent partner: " + parentPartner});  
           }
           
+          c[39] = getEDIPartnerSite(parentPartner);
           
           // at this point...we need to log this doc in edi_idx table and use return ID for further logs against this doc idx.
           if (c[12].isEmpty() && callingidxnbr == 0) {   // if not override
@@ -3155,7 +3156,7 @@ public class EDI {
           c[19] = String.valueOf(positions[2]);
           c[20] = String.valueOf(positions[3]);
           
-          
+          c[39] = getEDIPartnerSite(x[2]);
           
           // at this point...we need to log this doc in edi_idx table and use return ID for further logs against this doc idx.
          

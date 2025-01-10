@@ -77,6 +77,7 @@ import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
 import javax.swing.BorderFactory;
@@ -344,6 +345,14 @@ public class ShipperBrowse extends javax.swing.JPanel {
         DateFormat dfyear = new SimpleDateFormat("yyyy");
         DateFormat dfperiod = new SimpleDateFormat("M");
         
+         dcfrom.setDate(now);
+         dcto.setDate(now);
+         Calendar calfrom = Calendar.getInstance();
+         Calendar calto = Calendar.getInstance();
+         calfrom.add(Calendar.DATE, -30);
+         dcfrom.setDate(calfrom.getTime());
+         calto.add(Calendar.DATE, 30);
+         dcto.setDate(calto.getTime());
                
         mymodel.setNumRows(0);
         modeldetail.setNumRows(0);

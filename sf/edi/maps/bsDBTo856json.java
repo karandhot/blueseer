@@ -128,6 +128,7 @@ commitSegment("addresses:address");
                         k = 0;
                         ArrayList<String[]> lines = shpData.getShipperTreeLinesOfPack(pack, shipper);
                         for (String[] line : lines) {
+                        k++;
                         detline = "detail:" + k;
 			mapSegment("items:item","packline","");
                         mapSegment("items:item","packitem","");
@@ -137,7 +138,7 @@ commitSegment("addresses:address");
 			mapSegment("items:item","order",po);
                         mapSegment("items:item","itemnumber",line[0]);
                         mapSegment("items:item","line",line[4]);
-			mapSegment("items:item","uom","EA");
+			mapSegment("items:item","uom",line[7]);
 			mapSegment("items:item","description",line[3]);
 			mapSegment("items:item","skunumber",line[2]);
                         mapSegment("items:item","upcnumber",getMeta(po,detline,"upc"));

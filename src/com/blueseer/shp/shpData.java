@@ -135,8 +135,8 @@ public class shpData {
         int rows = 0;
         String sqlSelect = "select * from ship_det where shd_id = ? and shd_line = ?";
         String sqlInsert = "insert into ship_det (shd_id, shd_line, shd_item, shd_so, shd_soline, shd_date, shd_po, shd_qty, shd_curr, shd_uom, "
-                        + "shd_netprice, shd_disc, shd_listprice, shd_desc, shd_wh, shd_loc, shd_taxamt, shd_cont, shd_serial, shd_site, shd_bom ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                        + "shd_netprice, shd_disc, shd_listprice, shd_desc, shd_wh, shd_loc, shd_taxamt, shd_cont, shd_serial, shd_site, shd_bom, shd_custitem ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
        
           ps = con.prepareStatement(sqlSelect); 
           ps.setString(1, x.shd_id);
@@ -165,6 +165,7 @@ public class shpData {
             ps.setString(19, x.shd_serial);
             ps.setString(20, x.shd_site);
             ps.setString(21, x.shd_bom);
+            ps.setString(22, x.shd_custitem);
             rows = ps.executeUpdate();
             } 
             return rows;
