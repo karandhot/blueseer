@@ -486,6 +486,7 @@ public class AS2Serv extends HttpServlet {
            if (FileWHeadersBytes == null || FileBytes == null) {
             // must be unsigned regular mime body part
              for (int j = 0; j < mpsub.getCount(); j++) { // only getting last mime body part if not normal signed document
+                    logdet.add(new String[]{parentkey, "info", "only getting last mime body part if not normal signed document " + sender + "/" + receiver,now,"" });
                     MimeBodyPart mbp = (MimeBodyPart) mpsub.getBodyPart(j); 
                     InputStream ins = mbp.getInputStream();
                     FileBytes = ins.readAllBytes();
@@ -498,7 +499,11 @@ public class AS2Serv extends HttpServlet {
              }
               
               if (FileBytes == null) { // if neither normal signed nor non-signed mimebody content...then null it
-                writeAS2LogStop(new String[]{"0","unknown","in","error","Null content in FileBytes or FileWHeader Bytes " + sender + "/" + receiver,now,"", info[22]});
+               // writeAS2LogStop(new String[]{"0","unknown","in","error","Null content in FileBytes or FileWHeader Bytes " + sender + "/" + receiver,now,"", info[22]});
+                logdet.add(new String[]{parentkey, "error", "Null content in FileBytes or FileWHeader Bytes " + sender + "/" + receiver,now,"" });
+              if (! logdet.isEmpty()) {
+                    writeAS2LogDetail(logdet);
+              }
                 return createMDN("2010", elementals, returnheaders, isDebug);
               }
               
@@ -507,18 +512,29 @@ public class AS2Serv extends HttpServlet {
             // if sig is null...then return fail mdn
             if (Signature == null && info[13].equals("1")) {
                 // return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "Signature content is null" + sender + "/" + receiver);
-                writeAS2LogStop(new String[]{"0","unknown","in","error","Signature mp content is null " + sender + "/" + receiver,now,"", info[22]});
+              //  writeAS2LogStop(new String[]{"0","unknown","in","error","Signature mp content is null " + sender + "/" + receiver,now,"", info[22]});
+              logdet.add(new String[]{parentkey, "error", "Signature mp content is null " + sender + "/" + receiver,now,"" });
+              if (! logdet.isEmpty()) {
+                    writeAS2LogDetail(logdet);
+              }
                 return createMDN("2015", elementals, returnheaders, isDebug);
             } 
             
             if (Signature != null) {
+              logdet.add(new String[]{parentkey, "error", "signature check " + sender + "/" + receiver,now,"" });  
               validSignature = verifySignature(FileWHeadersBytes, Signature); 
+              logdet.add(new String[]{parentkey, "error", "signature verification:  " + String.valueOf(validSignature),now,"" });
+              logdet.add(new String[]{parentkey, "error", "signature required:  " + info[13] ,now,"" });
             }
             
             // if it's not a valid signature and signing is required...then return fail mdn
             if (! validSignature && info[13].equals("1")) {
              // return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "Signature could not be validated " + sender + "/" + receiver); 
-              writeAS2LogStop(new String[]{"0","unknown","in","error","invalid signature " + sender + "/" + receiver,now,"", info[22]});
+             // writeAS2LogStop(new String[]{"0","unknown","in","error","invalid signature " + sender + "/" + receiver,now,"", info[22]});
+              logdet.add(new String[]{parentkey, "error", "invalid signature " + sender + "/" + receiver,now,"" });
+              if (! logdet.isEmpty()) {
+                    writeAS2LogDetail(logdet);
+              }
               return createMDN("2020", elementals, returnheaders, isDebug);
             } 
             
