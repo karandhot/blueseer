@@ -416,11 +416,12 @@ public class AS2Serv extends HttpServlet {
         }
         
         // if signed...should have a parent mp with two sub-mps (one the file and the other the sig)
+        logdet.add(new String[]{parentkey, "info", "MP count: " + mp.getCount() + " MP content-type: " + mp.getContentType()});
         for (int i = 0; i < mp.getCount(); i++) {
             BodyPart bodyPart = mp.getBodyPart(i);
             String contentType = bodyPart.getContentType();
            
-            if (i == 1) {
+            if (i == 0) {
                 // skip...need to remove outer mp ...because mpsub is exactly same content as mp
                 continue;
             }
@@ -445,7 +446,8 @@ public class AS2Serv extends HttpServlet {
                         continue;
                     }
                     
-                    if (mbp.getFileName() != null && ! mbp.getFileName().equals("smime.p7s")) { // must be non sig file
+                   // if (mbp.getFileName() != null && ! mbp.getFileName().equals("smime.p7s")) { // must be non sig file
+                      if (! mbp.getContentType().toLowerCase().startsWith("application/pkcs7-signature")) { // must be non sig file
                       // writing mpbsub part 0 (file) out to byte_stream is necessary to verify sig
                       // because the headers in mpbsub part 0 are used during the creation of the sig
                       //  .getContent apparently drops the headers so the entire byte stream must be 'verfied'
@@ -454,6 +456,12 @@ public class AS2Serv extends HttpServlet {
                       aos.close(); 
                       FileWHeadersBytes = aos.toByteArray();
                       
+                      if (mbp.getFileName() == null) {
+                          filename = "nofilename." + Long.toHexString(System.currentTimeMillis());
+                      } else {
+                          filename = mbp.getFileName();
+                      }
+                      logdet.add(new String[]{parentkey, "info", "inside non-pkcs7-signature bodypart: " + mbp.getContentType() + " filename: " + filename});
                       
                       //  mic = calculateMIC(FileWHeadersBytes, "SHA-1");
                      if (mic.isBlank()) { // do only once
@@ -466,7 +474,7 @@ public class AS2Serv extends HttpServlet {
                       FileBytes = is.readAllBytes();
                       is.close();
                       
-                      filename = mbp.getFileName();
+                      //filename = mbp.getFileName();
                       /*
                       String[] elements = mbp.getContentType().split(";");
                       for (String g : elements) {
@@ -525,10 +533,10 @@ public class AS2Serv extends HttpServlet {
             } 
             
             if (Signature != null) {
-              logdet.add(new String[]{parentkey, "error", "signature check " + sender + "/" + receiver,now,"" });  
+              logdet.add(new String[]{parentkey, "info", "signature check " + sender + "/" + receiver,now,"" });  
               validSignature = verifySignature(FileWHeadersBytes, Signature); 
-              logdet.add(new String[]{parentkey, "error", "signature verification:  " + String.valueOf(validSignature),now,"" });
-              logdet.add(new String[]{parentkey, "error", "signature required:  " + info[13] ,now,"" });
+              logdet.add(new String[]{parentkey, "info", "signature verification:  " + String.valueOf(validSignature),now,"" });
+              logdet.add(new String[]{parentkey, "info", "signature required:  " + info[13] ,now,"" });
             }
             
             // if it's not a valid signature and signing is required...then return fail mdn

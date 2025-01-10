@@ -2148,8 +2148,7 @@ public class apiUtils {
         }
         return r;
 }
-    
-    
+        
     public static boolean verifyMDNSignature(byte[] data, String contentType) throws MessagingException, IOException {
         boolean b = false;
         byte[] FileWHeadersBytes = null;
