@@ -420,6 +420,10 @@ public class AS2Serv extends HttpServlet {
             BodyPart bodyPart = mp.getBodyPart(i);
             String contentType = bodyPart.getContentType();
            
+            if (i == 1) {
+                // skip...need to remove outer mp ...because mpsub is exactly same content as mp
+                continue;
+            }
                       
             if (isDebug) {
             System.out.println("here--> level 1 mp count: " + i + " contentType: " + contentType);
