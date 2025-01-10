@@ -41,6 +41,7 @@ import static com.blueseer.utl.BlueSeerUtils.ConvertStringToBool;
 import static com.blueseer.utl.BlueSeerUtils.ConvertTrueFalseToBoolean;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
+import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.luModel;
 import static com.blueseer.utl.BlueSeerUtils.luTable;
@@ -675,6 +676,7 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
         btdeletealias = new javax.swing.JButton();
         tbaliasid = new javax.swing.JTextField();
         btaddalias = new javax.swing.JButton();
+        btupdatealias = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         btnew = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
@@ -744,6 +746,13 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
             }
         });
 
+        btupdatealias.setText("UpdateAlias");
+        btupdatealias.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btupdatealiasActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -765,6 +774,8 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(btaddalias)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btupdatealias)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btdeletealias)
                         .addGap(21, 21, 21))))
         );
@@ -780,7 +791,8 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
                 .addGap(4, 4, 4)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btaddalias)
-                    .addComponent(btdeletealias))
+                    .addComponent(btdeletealias)
+                    .addComponent(btupdatealias))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -1004,6 +1016,31 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
         cbdefault.setSelected(ConvertTrueFalseToBoolean(tablealias.getValueAt(row, 1).toString()));
     }//GEN-LAST:event_tablealiasMouseClicked
 
+    private void btupdatealiasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdatealiasActionPerformed
+        int[] rows = tablealias.getSelectedRows();
+        if (rows.length != 1) {
+            bsmf.MainFrame.show(getMessageTag(1095));
+                return;
+        }
+        int k = -1;
+        for (int i : rows) {
+            tablealias.setValueAt(tbaliasid.getText(), i, 0);
+            tablealias.setValueAt(BlueSeerUtils.ConvertIntToYesNo(BlueSeerUtils.boolToInt(cbdefault.isSelected())), i, 1);
+            if (cbdefault.isSelected()) {
+                k = i;
+            }
+        }
+        if (k >= 0) {
+           for (int j = 0; j < tablealias.getRowCount(); j++) {
+                if (j == k) {  // skip all but latest default...reset all others to '0'
+                    tablealias.setValueAt("YES", j, 1);
+                } else {
+                tablealias.setValueAt("NO", j, 1);
+                }
+            } 
+        }
+    }//GEN-LAST:event_btupdatealiasActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btadd;
@@ -1014,6 +1051,7 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
     private javax.swing.JButton btlookup;
     private javax.swing.JButton btnew;
     private javax.swing.JButton btupdate;
+    private javax.swing.JButton btupdatealias;
     private javax.swing.JCheckBox cbdefault;
     private javax.swing.JComboBox<String> ddsite;
     private javax.swing.JLabel jLabel1;

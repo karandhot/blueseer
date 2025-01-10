@@ -504,22 +504,25 @@ public class AS2Serv extends HttpServlet {
               
            }
 
-           if (info[13].equals("1")) {  // if signing required
-            if (Signature == null) {
+            // if sig is null...then return fail mdn
+            if (Signature == null && info[13].equals("1")) {
                 // return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "Signature content is null" + sender + "/" + receiver);
                 writeAS2LogStop(new String[]{"0","unknown","in","error","Signature mp content is null " + sender + "/" + receiver,now,"", info[22]});
                 return createMDN("2015", elementals, returnheaders, isDebug);
-            } else {
+            } 
+            
+            if (Signature != null) {
               validSignature = verifySignature(FileWHeadersBytes, Signature); 
             }
             
-            if (! validSignature) {
+            // if it's not a valid signature and signing is required...then return fail mdn
+            if (! validSignature && info[13].equals("1")) {
              // return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "Signature could not be validated " + sender + "/" + receiver); 
               writeAS2LogStop(new String[]{"0","unknown","in","error","invalid signature " + sender + "/" + receiver,now,"", info[22]});
               return createMDN("2020", elementals, returnheaders, isDebug);
             } 
             
-           }
+        
 
 
            if (isDebug) {
@@ -557,7 +560,7 @@ public class AS2Serv extends HttpServlet {
         // now save file
         elementals[3] = filename;
         if (info[17].isBlank()) {
-            info[17] = "edi/in";
+            info[17] = "edi/as2/in";
         }
         Path path = FileSystems.getDefault().getPath(info[17] + "/" + filename);
         if (Files.exists(path)) {
