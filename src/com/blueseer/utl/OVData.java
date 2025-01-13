@@ -16961,8 +16961,9 @@ return mystring;
                         " inner join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
                         " left outer join sod_chg on sodc_po = sod_po and sodc_line = sod_line " +
                         " left outer join so_chg on soc_id = sodc_id " +
-                        " where so_po = " + "'" + tablereport.getValueAt(i, 3).toString() + "'" +
+                        " where so_po = " + "'" + tablereport.getValueAt(i, 3).toString() + "'" + 
                         ";");
+                
                 while (res.next()) {
                      StringBuilder line = new StringBuilder();
                      for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
