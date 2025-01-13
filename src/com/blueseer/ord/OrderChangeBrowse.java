@@ -154,11 +154,12 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         Component c = super.getTableCellRendererComponent(table,
                 value, isSelected, hasFocus, row, column);
         
-        String status = (String)table.getModel().getValueAt(table.convertRowIndexToModel(row), 8);  
+        String change = (String)table.getModel().getValueAt(table.convertRowIndexToModel(row), 8);
+        String status = (String)table.getModel().getValueAt(table.convertRowIndexToModel(row), 9);
         
-         if (! "none".equals(status)) {
-            c.setBackground(Color.ORANGE);
-            c.setForeground(Color.WHITE);
+         if (! "none".equals(change) && column == 8 && status.equals("open")) {
+              c.setBackground(Color.ORANGE);
+              c.setForeground(Color.WHITE);
         } else {
             c.setBackground(table.getBackground());
             c.setForeground(table.getBackground());
@@ -384,13 +385,13 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         cbopen = new javax.swing.JCheckBox();
         btprint = new javax.swing.JButton();
         cbapplied = new javax.swing.JCheckBox();
+        btexport = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         lblqtytot = new javax.swing.JLabel();
         lblamttot = new javax.swing.JLabel();
         EndBal = new javax.swing.JLabel();
         labeldettotal = new javax.swing.JLabel();
-        btexport = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -490,6 +491,13 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
 
         cbapplied.setText("Applied");
 
+        btexport.setText("CSV Export");
+        btexport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btexportActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -521,7 +529,7 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                         .addComponent(cbclose)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(cbapplied)
-                        .addContainerGap())
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel5)
@@ -532,7 +540,10 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                         .addGap(18, 18, 18)
                         .addComponent(btdetail)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btprint))))
+                        .addComponent(btprint)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btexport)
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -547,7 +558,8 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                     .addComponent(jLabel5)
                     .addComponent(tbfromorder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6)
-                    .addComponent(btprint))
+                    .addComponent(btprint)
+                    .addComponent(btexport))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel4)
@@ -601,13 +613,6 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        btexport.setText("CSV Export");
-        btexport.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btexportActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -617,9 +622,7 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btexport)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 30, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(labeldettotal, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -629,15 +632,10 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(22, 22, 22)
-                        .addComponent(btexport)))
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(labeldettotal, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -805,7 +803,8 @@ try {
     }//GEN-LAST:event_btprintActionPerformed
 
     private void btexportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btexportActionPerformed
-        // TODO add your handling code here:
+       if (tablereport != null && mymodel.getRowCount() > 0)
+        OVData.exportOrderChange(tablereport);
     }//GEN-LAST:event_btexportActionPerformed
 
 

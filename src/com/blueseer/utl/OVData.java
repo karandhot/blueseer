@@ -134,6 +134,8 @@ import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.print.Doc;
 import javax.print.DocFlavor;
 import javax.print.DocPrintJob;
@@ -16790,13 +16792,13 @@ return mystring;
     }    
       
     public static void exportCSV(JTable tablereport) {
-          FileDialog fDialog;
-                fDialog = new FileDialog(new Frame(), "Save", FileDialog.SAVE);
-                fDialog.setVisible(true);
-               // fDialog.setFile("data.csv");
-                String path = fDialog.getDirectory() + fDialog.getFile();
-                File f = new File(path);
-                BufferedWriter output;
+        FileDialog fDialog;
+        fDialog = new FileDialog(new Frame(), "Save", FileDialog.SAVE);
+        fDialog.setVisible(true);
+       // fDialog.setFile("data.csv");
+        String path = fDialog.getDirectory() + fDialog.getFile();
+        File f = new File(path);
+        BufferedWriter output;
                 
                 
         try {
@@ -16928,6 +16930,66 @@ return mystring;
             MainFrame.bslog(e);
         }
          return hm;
+    }
+    
+    public static void exportOrderChange(JTable tablereport) {
+        FileDialog fDialog;
+        fDialog = new FileDialog(new Frame(), "Save", FileDialog.SAVE);
+        fDialog.setVisible(true);
+       // fDialog.setFile("data.csv");
+        String path = fDialog.getDirectory() + fDialog.getFile();
+        File f = new File(path);
+        BufferedWriter output = null;
+        
+         try{
+            output = new BufferedWriter(new FileWriter(f));
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                for (int i = 0; i < tablereport.getRowCount(); i++) {
+                res = st.executeQuery("select so_nbr, so_po, so_cust, so_ship, so_due_date, sod_item, sod_ord_qty, sod_listprice from so_mstr " + 
+                        " inner join sod_det on sod_nbr = so_nbr " +
+                        " left outer join sod_chg on sodc_po = so_po " +
+                        " where so_nbr = " + "'" + tablereport.getValueAt(i, 0).toString() + "'" +
+                        ";");
+                while (res.next()) {
+                     StringBuilder line = new StringBuilder();
+                     for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
+                       line .append(res.getString(j).replace(",","")).append(",");
+                     }
+                     output.write(line.deleteCharAt(line.length() - 1).toString() + "\n");                  
+                 }
+                }
+                
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        }
+        catch (IOException | SQLException e){
+            MainFrame.bslog(e);
+        } finally {
+          if (output != null) {
+              try {
+                  output.close();
+              } catch (IOException ex) {
+                  bslog(ex);
+              }
+          }   
+        }
     }
     
     
