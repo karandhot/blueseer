@@ -3752,6 +3752,30 @@ public abstract class EDIMap {  // took out the implements EDIMapi
          return x;
      }
     
+     @EDI.AnnoDoc(desc = {"method returns entire segment as a string from source for a Group/Loop Segment.",
+                      "NOTE: compatible only with x12 or UNE ",
+                      "Note:  this is typically used in a looping construct in conjunction with getGroupCount() or getLoopCount()",  
+                      "Example:  getInput(i,\"PO1\") returns: returns entire line of PO1 as string in loop index 'i' "},
+            params = {"Integer LoopIndex", "String segment"})  
+    public static String getInputAll(Integer gloop, String segment) {
+         String x = "";
+         int elementNbr = 0;
+         if (inputfiletype.equals("X12") || inputfiletype.equals("UNE")) {
+            for (Map.Entry<String, String[]> z : mappedInput.entrySet()) {
+             String[] v = z.getKey().split("\\+");
+             if (v.length < 2) {
+                 continue;
+             }
+             if (v[0].equals(segment) && v[1].equals(String.valueOf(gloop))) {
+                        return String.join(",", z.getValue());
+             }
+            }
+         }                 
+         
+         return x;
+     }
+    
+    
     @EDI.AnnoDoc(desc = {"method reads value from source at segment and element (by integer) for a Group Segment.",
                       "Note:  this is typically used in a looping construct in conjunction with getGroupCount()",  
                       "Example:  getInput(i,\"E2EDP19\",\"qualf:002\", 8) returns: 4th element/field of idoc segment 'E2EDP19' with fieldname 'qualf' value = '002' in loop index 'i' "},
