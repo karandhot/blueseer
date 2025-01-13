@@ -16957,13 +16957,13 @@ return mystring;
                 for (int i = 0; i < tablereport.getRowCount(); i++) {
                 res = st.executeQuery("select so_nbr, so_po, so_cust, so_ship, so_due_date, sod_item, sod_ord_qty, sod_listprice from so_mstr " + 
                         " inner join sod_det on sod_nbr = so_nbr " +
-                        " left outer join sod_chg on sodc_po = so_po " +
-                        " where so_nbr = " + "'" + tablereport.getValueAt(i, 0).toString() + "'" +
+                        " left outer join sod_chg on sodc_po = sod_po and sodc_line = sod_line " +
+                        " where so_po = " + "'" + tablereport.getValueAt(i, 3).toString() + "'" +
                         ";");
                 while (res.next()) {
                      StringBuilder line = new StringBuilder();
                      for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
-                       line .append(res.getString(j).replace(",","")).append(",");
+                       line.append(res.getString(j).replace(",","")).append(",");
                      }
                      output.write(line.deleteCharAt(line.length() - 1).toString() + "\n");                  
                  }
