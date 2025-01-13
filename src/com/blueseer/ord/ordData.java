@@ -4656,6 +4656,48 @@ public class ordData {
     }
     }
     
+    public static String _evaluateOrderChange(String changeID, String po, Connection con) throws SQLException {
+         String x = "none";
+         boolean isQtyChange = false;  
+         boolean isPriceChange = false;   
+ 
+         
+        String sql = "select sod_line, sod_item, sod_ord_qty, sod_listprice, sodc_qty, sodc_price from sod_chg " +
+                " inner join so_chg on soc_id = sodc_id " +
+                " inner join sod_det on sodc_po = sod_po and sodc_line = sod_line " +
+                " where sod_po = ? " +
+                " and sodc_id = ? " +
+                ";";
+                
+            PreparedStatement ps = con.prepareStatement(sql) ;
+            ps.setString(1, po);
+            ps.setString(2, changeID);
+            ResultSet res = ps.executeQuery();
+               while (res.next()) {
+                   if (bsParseDouble(res.getString("sod_ord_qty")) != bsParseDouble(res.getString("sodc_qty"))) {
+                       isQtyChange = true;
+                   }   
+                   if (bsParseDouble(res.getString("sod_listprice")) != bsParseDouble(res.getString("sodc_price"))) {
+                       isPriceChange = true;
+                   } 
+                }
+            
+               ps.close();
+               res.close();
+               
+               if (isQtyChange && isPriceChange) {
+                   x = "multi";
+               }
+               if (isQtyChange && ! isPriceChange) {
+                   x = "quantity";
+               }
+               if (! isQtyChange && isPriceChange) {
+                   x = "price";
+               }          
+        return x;
+        
+    }   
+    
     
     public record salesOrder(String[] m, so_mstr so, ArrayList<sod_det> sod,
         ArrayList<sos_det> sos, ArrayList<sod_tax> sodtax, ArrayList<so_tax> sotax, cms_det cms, ArrayList<String[]> someta) {

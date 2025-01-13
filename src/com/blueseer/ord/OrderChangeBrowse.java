@@ -54,6 +54,7 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.ord.ordData._evaluateOrderChange;
 import static com.blueseer.ord.ordData.applyOrderChange;
 import static com.blueseer.ord.ordData.updateOrderChangeStatus;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
@@ -95,13 +96,14 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                             getGlobalColumnTag("name"),                              
                             "old Due Date",
                             "new Due Date",
+                            "Changes",
                             getGlobalColumnTag("status"),
                             "commit",
                             getGlobalColumnTag("void")})
             {
                       @Override  
                       public Class getColumnClass(int col) {  
-                        if (col == 0 || col == 9 || col == 10)       
+                        if (col == 0 || col == 10 || col == 11)       
                             return ImageIcon.class;  
                         else return String.class;  //other columns accept String values  
                       }  
@@ -152,17 +154,14 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         Component c = super.getTableCellRendererComponent(table,
                 value, isSelected, hasFocus, row, column);
         
-        String status = (String)table.getModel().getValueAt(table.convertRowIndexToModel(row), 7);  
+        String status = (String)table.getModel().getValueAt(table.convertRowIndexToModel(row), 8);  
         
-         if ("error".equals(status)) {
-            c.setBackground(Color.red);
-            c.setForeground(Color.WHITE);
-        } else if ("closed".equals(status)) {
-            c.setBackground(Color.blue);
+         if (! "none".equals(status)) {
+            c.setBackground(Color.ORANGE);
             c.setForeground(Color.WHITE);
         } else {
             c.setBackground(table.getBackground());
-            c.setForeground(table.getForeground());
+            c.setForeground(table.getBackground());
         }       
         
         //c.setBackground(row % 2 == 0 ? Color.LIGHT_GRAY : Color.WHITE);
@@ -391,10 +390,11 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         lblamttot = new javax.swing.JLabel();
         EndBal = new javax.swing.JLabel();
         labeldettotal = new javax.swing.JLabel();
+        btexport = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("PO Browse"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("EDI Order Change Browse"));
         jPanel1.setName("panelmain"); // NOI18N
 
         tablepanel.setLayout(new javax.swing.BoxLayout(tablepanel, javax.swing.BoxLayout.LINE_AXIS));
@@ -601,6 +601,13 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        btexport.setText("CSV Export");
+        btexport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btexportActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -610,7 +617,9 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 123, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btexport)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 30, Short.MAX_VALUE)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(labeldettotal, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -620,10 +629,15 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(22, 22, 22)
+                        .addComponent(btexport)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(labeldettotal, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -659,11 +673,13 @@ try {
         
               tablereport.setModel(mymodel);
               tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-              tablereport.getColumnModel().getColumn(8).setMaxWidth(100);
+              tablereport.getColumnModel().getColumn(10).setMaxWidth(100);
+              tablereport.getColumnModel().getColumn(11).setMaxWidth(100);
                  DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
                 
                  double totqty = 0;
                  double totamt = 0;
+                 String change = "";
                  
                  String orderfrom = tbfromorder.getText();
                  String orderto = tbtoorder.getText();
@@ -696,6 +712,7 @@ try {
                  }
                 // tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
                  
+                
              res = st.executeQuery("select cm_name, so_nbr, so_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
                      " from so_mstr inner join so_chg on soc_po = so_po inner join cm_mstr on cm_code = so_cust where " +
                         " so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +
@@ -709,6 +726,7 @@ try {
                 
                        while (res.next()) {
                     
+                        change = _evaluateOrderChange(res.getString("soc_id"), res.getString("so_po"), con);    
                            
                              if (! cbopen.isSelected() && res.getString("soc_status").equals("open"))
                              continue;
@@ -725,6 +743,7 @@ try {
                                 res.getString("cm_name"),
                                 res.getString("so_due_date"),
                                 res.getString("soc_duedate"),
+                                change,
                                 res.getString("soc_status"),
                                 BlueSeerUtils.clickchange,
                                 BlueSeerUtils.clickvoid
@@ -768,12 +787,12 @@ try {
                 detailpanel.setVisible(true);
               
         }
-        if ( col == 9 && ! tablereport.getValueAt(row, 1).toString().equals("closed") &&
+        if ( col == 10 && ! tablereport.getValueAt(row, 1).toString().equals("closed") &&
                  ! tablereport.getValueAt(row, 1).toString().equals("applied")) {
                 applyOrderChange(tablereport.getValueAt(row, 1).toString(), tablereport.getValueAt(row, 3).toString());
                 bsmf.MainFrame.show("Order Change Committed");
         }
-        if ( col == 10 && ! tablereport.getValueAt(row, 1).toString().equals("closed") &&
+        if ( col == 11 && ! tablereport.getValueAt(row, 1).toString().equals("closed") &&
                 ! tablereport.getValueAt(row, 1).toString().equals("applied")) {
                 updateOrderChangeStatus(tablereport.getValueAt(row, 1).toString(), "closed");
                 bsmf.MainFrame.show("Order Change Closed");
@@ -785,11 +804,16 @@ try {
         OVData.printJTableToJasper("Order Change Report", tablereport, "genericJTableL8.jasper" );
     }//GEN-LAST:event_btprintActionPerformed
 
+    private void btexportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btexportActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btexportActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel EndBal;
     private javax.swing.JButton btRun;
     private javax.swing.JButton btdetail;
+    private javax.swing.JButton btexport;
     private javax.swing.JButton btprint;
     private javax.swing.JCheckBox cbapplied;
     private javax.swing.JCheckBox cbclose;
