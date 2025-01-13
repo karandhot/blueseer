@@ -28,6 +28,7 @@ bsUNEordersToIDOC,UNE EDIFACT ORDERS to IDOC,generic,UNEorders,IDOCorders05,850u
 bsIDOCToUNEorders,SAP IDOC ORDERS05 To EDIFACT orders,,IDOCorders05,UNEorders,850idoc,FF,850une,UNE,edi/maps/bsIDOCToUNEorders.java,,0,1000
 bs850ToCSV,X12 850 to CSV,,X12850,CSVGenericOrder,850x12,X12,850csv,CSV,edi/maps/bs850ToCSV.java,,0,1000
 bs850ToJSON,X12 850 to JSON,,X12850,JSONGenericOrder,850x12,X12,850json,JSON,edi/maps/bs850ToJSON.java,,0,1000
+bs860ToJSON,X12 860 to JSON,,X12860,JSONGenericOrder,860x12,X12,860json,JSON,edi/maps/bs860ToJSON.java,,0,1000
 bs850ToXML,X12 850 to XML,,X12850,XMLGenericOrder,850x12,X12,850xml,XML,edi/maps/bs850ToXML.java,,0,1000
 bs850TocXML,X12 850 to cXML,,X12850,cXMLOrder,850x12,X12,850xml,XML,edi/maps/bs850TocXML.java,,0,1000
 bsJSONTo850,JSON Order to X12 850,,JSONGenericOrder,X12850,850json,JSON,850x12,X12,edi/maps/bsJSONTo850.java,,0,1000

@@ -105,7 +105,11 @@ for (int i = 1; i <= itemcount; i++) {
         ta.add(new String[]{po,("detail:"+snum(i)),"sku", getInput(i, "order:items:item","skunumber")});
         ta.add(new String[]{po,("detail:"+snum(i)),"upc", getInput(i, "order:items:item","upcnumber")});
         ta.add(new String[]{po,("detail:"+snum(i)),"uom", getInput(i, "order:items:item","uom")});
-        
+        ta.add(new String[]{po,("detail:"+snum(i)),"subline", getInput(i, "order:items:item","subline")});
+        ta.add(new String[]{po,("detail:"+snum(i)),"reference", getInput(i, "order:items:item","reference")});
+        ta.add(new String[]{po,("detail:"+snum(i)),"altprice", getInput(i, "order:items:item","altprice")});
+        ta.add(new String[]{po,("detail:"+snum(i)),"rtlprice", getInput(i, "order:items:item","rtlprice")}); 
+
 
         if (useInternalPrice) {
         listprice = invData.getItemPriceFromCust(e.getOVBillTo(), item, uom, cusData.getCustCurrency(e.getOVBillTo()),"LIST",getInput(i, "order:items:item","orderquantity"));

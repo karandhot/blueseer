@@ -34,6 +34,7 @@ import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.adm.admData.getSiteName;
 import com.blueseer.edi.EDI;
 import static com.blueseer.edi.EDI.escapeDelimiter;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
@@ -4065,7 +4066,7 @@ public class EDData {
                     for (Map.Entry<String, String> sitekey : lhm.entrySet()) {
                         to = OVData.getSysMetaValue("system", "edimail", sitekey.getKey());
                         if (! to.isBlank() && ! creds[1].isBlank()) {
-                          sendEmail(to, "BlueSeer EDI transaction events for sitecode: " + sitekey.getKey(), sitekey.getValue(), "");
+                          sendEmail(to, "BlueSeer EDI transaction event(s) for entity: " + getSiteName(sitekey.getKey()), sitekey.getValue(), "");
                         }
                     }
                    }

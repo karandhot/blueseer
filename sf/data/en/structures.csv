@@ -58,6 +58,10 @@ JSONGenericOrder,item,items,1,0,0,netprice,Net Price,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,discount,Discount Percent,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,location,Location,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,warehouse,Warehouse,1,40,-,O,F
+JSONGenericOrder,item,items,1,0,0,subline,Sub Line,1,200,-,O,F
+JSONGenericOrder,item,items,1,0,0,reference,reference,1,100,-,O,F
+JSONGenericOrder,item,items,1,0,0,altprice,Alternate Price,1,40,-,O,F
+JSONGenericOrder,item,items,1,0,0,rtlprice,Retail Price,1,40,-,O,F
 JSONGenericOrder,sacs,order,5,1,1,landmark,landmark,9,9,-,M,F
 JSONGenericOrder,sac,sacs,5,1,1,landmark,landmark,9,9,-,M,F
 JSONGenericOrder,sac,sacs,1,0,0,sactype,SAC Type,1,40,-,O,F

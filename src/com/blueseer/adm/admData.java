@@ -1757,6 +1757,76 @@ public class admData {
     
     
     // misc
+    public static String getSiteEmail(String site) {
+       String myitem = "";
+     try{
+
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+            res = st.executeQuery("select site_sqeemail from site_mstr where site_site = " + "'" + site + "';" );
+           while (res.next()) {
+            myitem = res.getString("site_sqeemail");                    
+            }
+
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    return myitem;
+
+}
+
+    public static String getSiteName(String site) {
+       String myitem = "";
+     try{
+
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+            res = st.executeQuery("select site_desc from site_mstr where site_site = " + "'" + site + "';" );
+           while (res.next()) {
+            myitem = res.getString("site_desc");                    
+            }
+
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    return myitem;
+
+}
+
     public static String[] getSiteAddressInfo(String site) {
        String[] address = new String[9];
          try{
