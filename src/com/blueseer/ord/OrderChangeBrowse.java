@@ -803,8 +803,10 @@ try {
     }//GEN-LAST:event_btprintActionPerformed
 
     private void btexportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btexportActionPerformed
-       if (tablereport != null && mymodel.getRowCount() > 0)
+       if (tablereport != null && mymodel.getRowCount() > 0) {
         OVData.exportOrderChange(tablereport);
+        bsmf.MainFrame.show("export file created");
+       }
     }//GEN-LAST:event_btexportActionPerformed
 
 

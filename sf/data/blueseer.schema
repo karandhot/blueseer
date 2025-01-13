@@ -3071,5 +3071,6 @@ CREATE TABLE IF NOT EXISTS `sod_chg` (
   `sodc_qty` decimal(14,5) NOT NULL DEFAULT '0',
   `sodc_price` decimal(14,5) NOT NULL DEFAULT '0',
   `sodc_duedate` date DEFAULT NULL,
-  `sodc_misc` varchar(200) NOT NULL DEFAULT ''
+  `sodc_misc` varchar(200) NOT NULL DEFAULT '',
+  `sodc_change` varchar(50) NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

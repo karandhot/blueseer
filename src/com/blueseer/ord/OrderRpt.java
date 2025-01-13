@@ -989,8 +989,10 @@ try {
     }//GEN-LAST:event_tbprintActionPerformed
 
     private void btcsvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcsvActionPerformed
-        if (tableorder != null && mymodel.getRowCount() > 0)
+       if (tableorder != null && mymodel.getRowCount() > 0) {
         OVData.exportCSV(tableorder);
+        bsmf.MainFrame.show("export file created");
+       }
     }//GEN-LAST:event_btcsvActionPerformed
 
 

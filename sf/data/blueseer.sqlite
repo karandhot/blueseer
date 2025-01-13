@@ -3529,7 +3529,8 @@ CREATE TABLE "sod_chg" (
   "sodc_qty" decimal(14,5) NOT NULL DEFAULT '0',
   "sodc_price" decimal(14,5) NOT NULL DEFAULT '0',
   "sodc_duedate" date DEFAULT '0000-00-00',
-  "sodc_misc" varchar(200) NOT NULL COLLATE NOCASE DEFAULT ''
+  "sodc_misc" varchar(200) NOT NULL COLLATE NOCASE DEFAULT '',
+  "sodc_change" varchar(50) NOT NULL COLLATE NOCASE DEFAULT ''
 );
 
 End Transaction;

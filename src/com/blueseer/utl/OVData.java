@@ -16953,10 +16953,12 @@ return mystring;
             Statement st = con.createStatement();
             ResultSet res = null;
             try {
-                
+                output.write("Sales Order Number, PO Number, Order Date, Customer Name, Shipto Name, Shipto City, Shipto State, Shipto Zip, Change Date, Original DueDate, New DueDate, Remarks, Change Remarks, Order Line Number, Order Line Change Code, Item Number, Original Order Quantity, Change Quantity, Original Order Price, Change Price " + "\n");
                 for (int i = 0; i < tablereport.getRowCount(); i++) {
-                res = st.executeQuery("select so_nbr, so_po, so_cust, so_ship, so_due_date, sod_item, sod_ord_qty, sod_listprice from so_mstr " + 
+                res = st.executeQuery("select so_nbr, so_po, so_create_date, cm_name, cms_name, cms_city, cms_state, cms_zip, soc_chgdate, so_due_date, soc_duedate, so_rmks, soc_remarks, sod_line, sodc_change sod_item, sod_ord_qty, sodc_qty, sod_listprice, sodc_price from so_mstr " + 
                         " inner join sod_det on sod_nbr = so_nbr " +
+                        " inner join cm_mstr on cm_code = so_cust " +
+                        " inner join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
                         " left outer join sod_chg on sodc_po = sod_po and sodc_line = sod_line " +
                         " where so_po = " + "'" + tablereport.getValueAt(i, 3).toString() + "'" +
                         ";");
