@@ -1,4 +1,5 @@
 import com.blueseer.ctr.cusData;
+import com.blueseer.ord.ordData;
 import com.blueseer.utl.OVData;
 import com.blueseer.inv.invData;
 import com.blueseer.utl.EDData;
@@ -19,14 +20,27 @@ setReference(getInput("order","orderid")); //optional...but must be ran after ma
 
     // begin mapping
 
-    // first try finding internal Billto with N1 BT ....then fall back to ISA receiver
-    e.setOVBillTo(EDData.getEDIXrefIn(getInput("order","receiverid"), getInput("order","senderid"), "BT", getTag("addresses:address","type:billto","addrid"))); 
+       
+    po = getInput("order","po");
+    // changeid must be set as it is used for unique ID for so_chg and sod_chg
+    e.setChangeID(po + "-" + getInput("order","gsnumber")); 
+
+    e.setPO(po);  
+ 
+
+    // first try finding internal Billto with Original Purchase Order
+    e.setOVBillTo(ordData.getSOOrderBilltoByPO(po)); 
     
     if (e.getOVBillTo().isEmpty()) {
      e.setOVBillTo(EDData.getEDIXrefIn(getInput("order","receiverid"), getInput("order","senderid"), "BT", getInput("order","senderid"))); 
     }
-    po = getInput("order","orderid");
-    e.setPO(po);  
+
+    if (e.getPO().isEmpty()) {
+      setError("No internal PO found for this change: " + po);
+      return error; 
+    }
+
+
     e.setPODate(convertDate("yyyyMMdd", getInput("order","orderdate")));
     e.setDueDate(convertDate("yyyyMMdd", getInput("order","duedate")));
     ta.add(new String[]{po,"header","duedate", getInput("DTM","1:002","e02")}); 

@@ -54,6 +54,7 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.ctr.cusData;
 import static com.blueseer.ord.ordData._evaluateOrderChange;
 import static com.blueseer.ord.ordData.applyOrderChange;
 import static com.blueseer.ord.ordData.updateOrderChangeStatus;
@@ -333,13 +334,13 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         }
         
         ddcustfrom.removeAllItems();
-        ArrayList vends = venData.getVendMstrListMinusCarrier();
-        for (Object vend : vends) {
-            ddcustfrom.addItem(vend);
+        ArrayList custs = cusData.getcustmstrlist();
+        for (Object cust : custs) {
+            ddcustfrom.addItem(cust);
         }
         ddcustto.removeAllItems();
-        for (Object vend : vends) {
-            ddcustto.addItem(vend);
+        for (Object cust : custs) {
+            ddcustto.addItem(cust);
         }
         
         if (ddcustfrom.getItemCount() > 0)

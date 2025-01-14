@@ -467,8 +467,8 @@ public class EDIXrefMaint extends javax.swing.JPanel implements IBlueSeerT    {
     }
 
     public void updateForm() {
-        tbgsid.setText(x.exr_tpgs());
-        tbtpid.setText(x.exr_bsgs());
+        tbgsid.setText(x.exr_bsgs());
+        tbtpid.setText(x.exr_tpgs());
         tbtpaddr.setText(x.exr_tpaddr());
         tbbsaddr.setText(x.exr_bsaddr());
         ddtype.setSelectedItem(x.exr_type());
