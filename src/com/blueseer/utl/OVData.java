@@ -16940,6 +16940,7 @@ return mystring;
         String path = fDialog.getDirectory() + fDialog.getFile();
         File f = new File(path);
         BufferedWriter output = null;
+        HashSet<String> set = new HashSet<String>();
         
          try{
             output = new BufferedWriter(new FileWriter(f));
@@ -16955,14 +16956,18 @@ return mystring;
             try {
                 output.write("ChangeID, Sales Order Number, PO Number, Order Date, Change Date, Customer Name, Shipto Name, Shipto City, Shipto State, Shipto Zip,  Original DueDate, New DueDate, Remarks, Change Remarks, Order Line Number, Change Code, Item Number, Item Description, Sku Number, Original Order Quantity, Change Quantity, Original Order Price, Change Price " + "\n");
                 for (int i = 0; i < tablereport.getRowCount(); i++) {
-                res = st.executeQuery("select soc_id, so_nbr, so_po, so_create_date, soc_chgdate, cm_name, cms_name, cms_city, cms_state, cms_zip,  so_due_date, soc_duedate, so_rmks, soc_remarks, sod_line, sodc_change, sod_item, sod_desc, sod_custitem, sod_ord_qty, sodc_qty, sod_listprice, sodc_price from so_mstr " + 
+                if (! set.contains(tablereport.getValueAt(i, 3).toString())) {   // only want once incident of the primary PO  
+                res = st.executeQuery("select soc_id, so_nbr, so_po, so_create_date, soc_chgdate, " +
+                        " cm_name, cms_name, cms_city, cms_state, cms_zip,  so_due_date, soc_duedate, " +
+                        " so_rmks, soc_remarks, sod_line, sodc_change, sod_item, sod_desc, sod_custitem, " +
+                        " sod_ord_qty, sodc_qty, sod_listprice, sodc_price from so_mstr " + 
                         " inner join sod_det on sod_nbr = so_nbr " +
                         " inner join cm_mstr on cm_code = so_cust " +
                         " inner join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
                         " left outer join sod_chg on sodc_po = sod_po and sodc_line = sod_line " +
                         " left outer join so_chg on soc_id = sodc_id " +
                         " where so_po = " + "'" + tablereport.getValueAt(i, 3).toString() + "'" + 
-                        ";");
+                        " order by soc_id;");
                 
                 while (res.next()) {
                      StringBuilder line = new StringBuilder();
@@ -16971,7 +16976,9 @@ return mystring;
                      }
                      output.write(line.deleteCharAt(line.length() - 1).toString() + "\n");                  
                  }
-                }
+                } // if not set contains po
+                set.add(tablereport.getValueAt(i, 3).toString());
+                } // for each line in tablereport
                 
            }
             catch (SQLException s){
