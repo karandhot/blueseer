@@ -27,6 +27,15 @@ setReference(getInput("order","orderid")); //optional...but must be ran after ma
 
     e.setPO(po);  
  
+    // override changeID with reference field if not blank
+    int refcount = getLoopCount("order:references:reference",2);
+    for (int i = 1; i <= refcount; i++) {
+    if (getInput(i,"order:references:reference","qualifier").equals("changeid")) {
+       if (! getInput(i,"order:references:reference","value").isBlank()) {
+       e.setChangeID(getInput(i,"order:references:reference","value"));
+       }
+    } // if change id
+    } // for each ref
 
     // first try finding internal Billto with Original Purchase Order
     e.setOVBillTo(ordData.getSOOrderBilltoByPO(po)); 
