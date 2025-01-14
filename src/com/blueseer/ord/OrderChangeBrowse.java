@@ -65,8 +65,10 @@ import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.vdr.venData;
 import java.sql.Connection;
+import java.util.Calendar;
 import java.util.Enumeration;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -295,34 +297,32 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
        }
     }
     
-    public void initvars(String[] arg) {
+    public void clearAll() {
         lblamttot.setText("0");
         lblqtytot.setText("0");
         labeldettotal.setText("");
+        tbsearch.setText("");
+        tbfromorder.setText("");
+        tbtoorder.setText("");
+        
         
          cbopen.setSelected(true);
          cbclose.setSelected(false);
         
         java.util.Date now = new java.util.Date();
-        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-        DateFormat dfyear = new SimpleDateFormat("yyyy");
-        DateFormat dfperiod = new SimpleDateFormat("M");
+        Calendar calfrom = Calendar.getInstance();
+        Calendar calto = Calendar.getInstance();
         
+        calfrom.add(Calendar.DATE, -30);
+        dcfrom.setDate(calfrom.getTime()); 
+        
+        calto.add(Calendar.DATE, +30);
+        dcto.setDate(calto.getTime());
+         
         mymodel.setNumRows(0);
         modeldetail.setNumRows(0);
         tablereport.setModel(mymodel);
         tabledetail.setModel(modeldetail);
-        
-         
-         
-       
-          
-         
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
-        
-        
-        
         
         btdetail.setEnabled(false);
         detailpanel.setVisible(false);
@@ -348,9 +348,10 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         
         if (ddcustto.getItemCount() > 0)
         ddcustto.setSelectedIndex(ddcustto.getItemCount() - 1);
-        
-          
-          
+    }
+    
+    public void initvars(String[] arg) {
+        clearAll();          
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -387,6 +388,13 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         btprint = new javax.swing.JButton();
         cbapplied = new javax.swing.JCheckBox();
         btexport = new javax.swing.JButton();
+        tbsearch = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        btclear = new javax.swing.JButton();
+        dcfrom = new com.toedter.calendar.JDateChooser();
+        jLabel7 = new javax.swing.JLabel();
+        dcto = new com.toedter.calendar.JDateChooser();
+        jLabel9 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         lblqtytot = new javax.swing.JLabel();
@@ -499,18 +507,44 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
             }
         });
 
+        jLabel2.setText("PO Search");
+
+        btclear.setText("Clear");
+
+        dcfrom.setDateFormatString("yyyy-MM-dd");
+
+        jLabel7.setText("From Date");
+
+        dcto.setDateFormatString("yyyy-MM-dd");
+
+        jLabel9.setText("To Date");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel6)
-                    .addComponent(jLabel3))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel2))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel7)
+                            .addComponent(jLabel9))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                                .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel3))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                                .addComponent(dcfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jLabel6)))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(tbtoorder, javax.swing.GroupLayout.DEFAULT_SIZE, 94, Short.MAX_VALUE)
                             .addComponent(tbfromorder))
@@ -519,59 +553,74 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                             .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ddcustfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(ddcustto, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(165, 165, 165)
-                        .addComponent(cbopen)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(cbclose)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(cbapplied)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(ddcustfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(ddcustto, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGap(165, 165, 165)
+                                .addComponent(cbopen)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(cbclose)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(cbapplied))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jLabel5)
+                                .addGap(4, 4, 4)
+                                .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(btRun)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btclear)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btdetail)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(btprint)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel5)
-                        .addGap(4, 4, 4)
-                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(btRun)
-                        .addGap(18, 18, 18)
-                        .addComponent(btdetail)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btprint)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btexport)
+                        .addComponent(btexport))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(tbsearch, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(ddcustfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btRun)
-                    .addComponent(btdetail)
-                    .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel5)
-                    .addComponent(tbfromorder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel6)
-                    .addComponent(btprint)
-                    .addComponent(btexport))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel1)
+                        .addComponent(ddcustfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btRun)
+                        .addComponent(btdetail)
+                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel5)
+                        .addComponent(tbfromorder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel6)
+                        .addComponent(btprint)
+                        .addComponent(btexport)
+                        .addComponent(btclear))
+                    .addComponent(dcfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel7))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel4)
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(ddcustto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel4)
+                        .addComponent(ddcustto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel3)
                         .addComponent(tbtoorder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(cbclose)
                         .addComponent(cbopen)
-                        .addComponent(cbapplied)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(cbapplied))
+                    .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel9))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbsearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2))
+                .addContainerGap())
         );
 
         jLabel8.setText("Total Qty");
@@ -711,15 +760,26 @@ try {
                  }
                 // tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
                  
-                
-             res = st.executeQuery("select cm_name, so_nbr, so_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
+             if (! tbsearch.getText().isBlank()) {
+                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
+                     " from so_mstr inner join so_chg on soc_po = so_po inner join cm_mstr on cm_code = so_cust where " +
+                        " so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +
+                        " so_po like " + "'%" + tbsearch.getText() + "%'" +
+                        " order by so_nbr desc ;");
+                 
+             } else {
+                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
                      " from so_mstr inner join so_chg on soc_po = so_po inner join cm_mstr on cm_code = so_cust where " +
                         " so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +
                         " so_cust >= " + "'" + custfrom + "'" + " AND " +        
                         " so_cust <= " + "'" + custto + "'" + " AND " +
-                     " so_nbr >= " + "'" + orderfrom + "'" + " AND " +
+                        " so_create_date >= " + "'" + setDateDB(dcfrom.getDate()) + "'" + " AND " +
+                        " so_create_date <= " + "'" + setDateDB(dcto.getDate()) + "'" + " AND " +        
+                        " so_nbr >= " + "'" + orderfrom + "'" + " AND " +
                         " so_nbr <= " + "'" + orderto + "'" + 
                         " order by so_nbr desc ;");
+             }  
+             
                      
                   
                 
@@ -814,22 +874,28 @@ try {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel EndBal;
     private javax.swing.JButton btRun;
+    private javax.swing.JButton btclear;
     private javax.swing.JButton btdetail;
     private javax.swing.JButton btexport;
     private javax.swing.JButton btprint;
     private javax.swing.JCheckBox cbapplied;
     private javax.swing.JCheckBox cbclose;
     private javax.swing.JCheckBox cbopen;
+    private com.toedter.calendar.JDateChooser dcfrom;
+    private com.toedter.calendar.JDateChooser dcto;
     private javax.swing.JComboBox ddcustfrom;
     private javax.swing.JComboBox ddcustto;
     private javax.swing.JComboBox ddsite;
     private javax.swing.JPanel detailpanel;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -843,6 +909,7 @@ try {
     private javax.swing.JPanel tablepanel;
     private javax.swing.JTable tablereport;
     private javax.swing.JTextField tbfromorder;
+    private javax.swing.JTextField tbsearch;
     private javax.swing.JTextField tbtoorder;
     // End of variables declaration//GEN-END:variables
 }
