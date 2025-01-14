@@ -786,7 +786,14 @@ CREATE TABLE "edpd_partner" (
 CREATE TABLE "edp_partner" (
   "edp_id" varchar(15) NOT NULL COLLATE NOCASE DEFAULT '',
   "edp_desc" varchar(50) NOT NULL COLLATE NOCASE DEFAULT '',
-  "edp_site" varchar(10) NOT NULL COLLATE NOCASE DEFAULT ''
+  "edp_site" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
+  "edp_type" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
+  "edp_defoutdir" varchar(200) NOT NULL COLLATE NOCASE DEFAULT '',
+  "edp_defindir" varchar(200) NOT NULL COLLATE NOCASE DEFAULT '',
+  "edp_outwkfl" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
+  "edp_inwkfl" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
+  "edp_outenabled" tinyint(1) NOT NULL COLLATE NOCASE DEFAULT '0',
+  "edp_inenabled" tinyint(1) NOT NULL COLLATE NOCASE DEFAULT '0'
 );
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

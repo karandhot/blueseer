@@ -1092,6 +1092,60 @@ public class ediData {
         return r;
     }
     
+    public static ArrayList<String> getWkfMstrList() {
+        ArrayList<String> r = new ArrayList<String>();
+        String[] m = new String[2];
+        String sql = "select wkf_id from wkf_mstr order by wkf_id ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+             try (ResultSet res = ps.executeQuery();) {
+                
+                while(res.next()) {
+                    m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                    r.add(res.getString("wkf_id")); 
+                }
+                
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+        }
+        return r;
+    }
+    
+    public static ArrayList<String[]> getEDIPartners(String edptype) {
+        ArrayList<String[]> r = new ArrayList<String[]>();
+        String[] m = new String[2];
+        String sql = "select edp_id, edp_site, edp_type, edp_defoutdir, edp_defindir, edp_outwkfl, edp_inwkfl, edp_outenabled, edp_inenabled from edp_partner where edp_type = ? order by edp_id ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, edptype);
+             try (ResultSet res = ps.executeQuery();) {
+                
+                while(res.next()) {
+                    m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                    r.add(new String[]{
+                    res.getString("edp_id"),
+                    res.getString("edp_site"),
+                    res.getString("edp_type"),
+                    res.getString("edp_defoutdir"),
+                    res.getString("edp_defindir"),
+                    res.getString("edp_outwkfl"),
+                    res.getString("edp_inwkfl"),
+                    res.getString("edp_outenabled"),
+                    res.getString("edp_inenabled")
+                    }); 
+                }
+                
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+        }
+        return r;
+    }
+    
+    
     public static int writeWFLog(wkf_log wkfl, int origparentid, ArrayList<wkfd_log> wkfdl) {
         boolean isError = false;
         int parentid = -1;
@@ -2860,40 +2914,7 @@ public class ediData {
         return mylist;
         
     }
-    
-    public static ArrayList<String> getWkfMstrList() {
-       ArrayList mylist = new ArrayList();
-        try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-                res = st.executeQuery("select wkf_id from wkf_mstr order by wkf_id ; ");
-               while (res.next()) {
-                   mylist.add(res.getString("wkf_id"));
-                }
-           }
-            catch (SQLException s) {
-                MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               con.close();
-            }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
-        return mylist;
-        
-    }
-    
-    
+            
     public static ArrayList<String> getMapMstrList(String indoctype) {
        ArrayList mylist = new ArrayList();
         try{
@@ -3716,6 +3737,16 @@ public static ArrayList<String> getFTPWkfl(String site) {
                 } 
                 break;
                 
+                case "MBToTranslate" :
+                rr = wkfaction_mbToTranslate(wkf, wkd, getWkfdMeta(wkd.wkfd_id(), wkd.wkfd_line()));
+                lgd[3] = rr.status();
+                lgd[4] = rr.messg();
+                if (! rr.status().equals("0")) {
+                    logdetail.add(lgd);
+                    break forloop;
+                } 
+                break;
+                
             default:
                 return bsret("Unknown WorkFlow Action! " + " id: " + id + " action: " + wkd.wkfd_action());
           
@@ -4496,7 +4527,7 @@ public static ArrayList<String> getFTPWkfl(String site) {
         ArrayList<String> ftplist = getFTPWkfl(site);  // list of all as2 that are 'enabled'
         for (String s : ftplist) {
         ftp_mstr ftp = getFTPMstr(new String[]{s});
-            if (direction.equals("out")) {  // if as2 ID is assigned this executing workflow id then fire
+            if (direction.equals("out")) {  
              source = ftp.ftp_outdir();
             } else {
              source = ftp.ftp_indir();   
@@ -4535,6 +4566,65 @@ public static ArrayList<String> getFTPWkfl(String site) {
             
         }
         return r;  // overall...workflow suceeds even if individual internal actions do not...will be logged regardless
+    }
+    
+    public static JRRT wkfaction_mbToTranslate(wkf_mstr wkf, wkf_det wkfd, ArrayList<wkfd_meta> list) {
+        String[] r = new String[]{"0",""};
+        String messg = "";
+        String site = "";
+        String edptype = "";
+        String source = "";
+        String destination = "";
+        ArrayList<String> logdetails = new ArrayList<String>();
+        
+        for (wkfd_meta m : list) {
+            if (m.wkfdm_key().equals("site") && ! m.wkfdm_value.isBlank()) {
+                site = m.wkfdm_value();
+            }
+            if (m.wkfdm_key().equals("type") && ! m.wkfdm_value.isBlank()) {
+                edptype = m.wkfdm_value();
+            }
+            if (m.wkfdm_key().equals("destination") && ! m.wkfdm_value.isBlank()) {
+                destination = m.wkfdm_value();
+            }
+        }
+        if (site.equals("*")) {
+            site = "all";
+        }
+        
+        int count = 0;
+        
+        ArrayList<String[]> mblist = getEDIPartners(edptype);  // list of all internal edi partners that are 'enabled'
+        for (String[] s : mblist) {
+            if (s[5].equals(wkf.wkf_id) && s[7].equals("1")) {  // if edp_outwkfl = current workflow && edp_outenabled is true
+                source = s[3];
+                count = 0;
+                if (! source.isEmpty() && ! destination.isEmpty()) {
+                Path sourcepath = FileSystems.getDefault().getPath(source);
+                    try (DirectoryStream<Path> stream = Files.newDirectoryStream(sourcepath, "*")) {
+                        int f = 0;
+                        for (Path path : stream) {
+                            if (! Files.isDirectory(path)) {
+                                count++;
+                                Path destinationpath = FileSystems.getDefault().getPath(destination + "/" + path.getFileName());    
+                                if (Files.exists(destinationpath)) {
+                                    destinationpath = FileSystems.getDefault().getPath(destination + "/" + path.getFileName() + "." + Long.toHexString(System.currentTimeMillis())); 
+                                    Files.move(path, destinationpath, StandardCopyOption.REPLACE_EXISTING);
+                                } else {
+                                    Files.move(path, destinationpath, StandardCopyOption.REPLACE_EXISTING); 
+                                }
+                            }
+                        }
+                        logdetails.add("Moving " + count +  " files " + " from " + source + " to " + destination);
+                    } catch (IOException ex) {  
+                            r[0] = "1";
+                            logdetails.add("ERROR WorkFlowID: " + wkfd.wkfd_id + " action: " + wkfd.wkfd_action + "->"  + ex.getMessage());
+                    }  
+                }
+            }
+        }
+        return new JRRT(r[0], messg, logdetails);
+      //  return new String[]{"0", messg};  // overall...workflow suceeds even if individual internal actions do not...will be logged regardless
     }
     
     

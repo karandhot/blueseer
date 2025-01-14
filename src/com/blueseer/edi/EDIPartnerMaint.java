@@ -291,7 +291,19 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
        tbdesc.setText("");
        tbaliasid.setText("");
        cbdefault.setSelected(false);
-        
+       
+       tbindir.setText("");
+       tboutdir.setText("");
+       cbinenabled.setSelected(false);
+       cboutenabled.setSelected(false);
+       
+       ddinwkfl.removeAllItems();
+       ddoutwkfl.removeAllItems();
+       ediData.getWkfMstrList().stream().forEach((s) -> ddoutwkfl.addItem(s));
+       ediData.getWkfMstrList().stream().forEach((s) -> ddinwkfl.addItem(s));
+       ddoutwkfl.insertItemAt("",0);
+       ddinwkfl.insertItemAt("",0);
+       
        ddsite.removeAllItems();
        OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));  
        ddsite.insertItemAt("", 0);
@@ -408,10 +420,17 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
                         i++;
                     }
                     if (i == 0) {
-                        st.executeUpdate("insert into edp_partner (edp_id, edp_desc, edp_site) values (" + 
+                        st.executeUpdate("insert into edp_partner (edp_id, edp_desc, edp_site, edp_type, edp_defoutdir, edp_defindir, edp_outwkfl, edp_inwkfl, edp_outenabled, edp_inenabled) values (" + 
                             "'" + tbkey.getText() + "'" + "," +
                             "'" + tbdesc.getText() + "'"  + "," +
-                            "'" + ddsite.getSelectedItem().toString() + "'"  +
+                            "'" + ddsite.getSelectedItem().toString() + "'"  + "," +
+                            "'" + ddtype.getSelectedItem().toString() + "'"  + "," +     
+                            "'" + tboutdir.getText() + "'"  + "," +
+                            "'" + tbindir.getText() + "'"  + "," +
+                            "'" + ddoutwkfl.getSelectedItem().toString() + "'"  + "," +
+                            "'" + ddinwkfl.getSelectedItem().toString() + "'"  + "," + 
+                            "'" + BlueSeerUtils.boolToString(cboutenabled.isSelected()) + "'"  + "," +  
+                            "'" + BlueSeerUtils.boolToString(cbinenabled.isSelected()) + "'"  +    
                             ")" + ";");     
                 
                  String defaultvalue = "";
@@ -459,6 +478,7 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
     public String[] updateRecord(String[] x) {
      String[] m = new String[2];
      
+     
      try {
             boolean proceed = true;
             Connection con = null;
@@ -471,11 +491,18 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
             try {
                    
                proceed = validateInput("updateRecord");
-                
+                             
                 if (proceed) {
                        st.executeUpdate("update edp_partner set " + 
                            "edp_desc = " + "'" + tbdesc.getText() + "'" + ", " +
-                           " edp_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +       
+                           " edp_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + ", " + 
+                           " edp_type = " + "'" + ddtype.getSelectedItem().toString() + "'" + ", " +   
+                           "edp_defoutdir = " + "'" + tboutdir.getText() + "'" + ", " +
+                           "edp_defindir = " + "'" + tbindir.getText() + "'" + ", " +   
+                           " edp_outwkfl = " + "'" + ddoutwkfl.getSelectedItem().toString() + "'" + ", " +
+                           " edp_inwkfl = " + "'" + ddinwkfl.getSelectedItem().toString() + "'" + ", " + 
+                           " edp_outenabled = " + "'" + BlueSeerUtils.boolToString(cboutenabled.isSelected()) + "'" + ", " +  
+                           " edp_inenabled = " + "'" + BlueSeerUtils.boolToString(cbinenabled.isSelected()) + "'" +     
                            " where edp_id = " + "'" + tbkey.getText() + "'" +
                              ";");     
                 
@@ -576,6 +603,13 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
                         tbdesc.setText(res.getString("edp_desc"));
                         tbkey.setText(res.getString("edp_id"));
                         ddsite.setSelectedItem(res.getString("edp_site"));
+                        ddtype.setSelectedItem(res.getString("edp_type"));
+                        tboutdir.setText(res.getString("edp_defoutdir"));
+                        tbindir.setText(res.getString("edp_defindir"));
+                        ddoutwkfl.setSelectedItem(res.getString("edp_outwkfl"));
+                        ddinwkfl.setSelectedItem(res.getString("edp_inwkfl"));
+                        cboutenabled.setSelected(BlueSeerUtils.ConvertIntegerToBool(res.getInt("edp_outenabled")));
+                        cbinenabled.setSelected(BlueSeerUtils.ConvertIntegerToBool(res.getInt("edp_inenabled")));
                     }
                     res = st.executeQuery("SELECT * FROM  edpd_partner where " +
                             " edpd_parent = " + "'" + x[0] + "'" + ";");
@@ -687,6 +721,16 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
         btlookup = new javax.swing.JButton();
         ddsite = new javax.swing.JComboBox<>();
         jLabel1 = new javax.swing.JLabel();
+        tbindir = new javax.swing.JTextField();
+        tboutdir = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        ddtype = new javax.swing.JComboBox<>();
+        jLabel7 = new javax.swing.JLabel();
+        ddinwkfl = new javax.swing.JComboBox<>();
+        cbinenabled = new javax.swing.JCheckBox();
+        ddoutwkfl = new javax.swing.JComboBox<>();
+        cboutenabled = new javax.swing.JCheckBox();
         btadd = new javax.swing.JButton();
         btdelete = new javax.swing.JButton();
 
@@ -763,21 +807,19 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(cbdefault)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(tbaliasid)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE))
+                            .addComponent(jScrollPane1))
                         .addContainerGap())
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(cbdefault)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btaddalias)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btupdatealias)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btdeletealias)
-                        .addGap(21, 21, 21))))
+                        .addGap(25, 25, 25))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -787,13 +829,13 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
                     .addComponent(tbaliasid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(cbdefault)
-                .addGap(4, 4, 4)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btaddalias)
-                    .addComponent(btdeletealias)
-                    .addComponent(btupdatealias))
-                .addGap(18, 18, 18)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cbdefault)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(btaddalias)
+                        .addComponent(btdeletealias)
+                        .addComponent(btupdatealias)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -838,6 +880,18 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
 
         jLabel1.setText("Site");
 
+        jLabel2.setText("In Dir");
+
+        jLabel4.setText("Out Dir");
+
+        ddtype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Internal", "External" }));
+
+        jLabel7.setText("Type");
+
+        cbinenabled.setText("Enabled?");
+
+        cboutenabled.setText("Enabled?");
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -847,25 +901,45 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel6)
                     .addComponent(jLabel5)
-                    .addComponent(jLabel1))
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(50, 50, 50)
+                        .addComponent(jLabel7)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btlookup, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(13, 13, 13)
-                                .addComponent(btnew)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btclear)
-                                .addGap(0, 269, Short.MAX_VALUE))
-                            .addComponent(tbdesc))
-                        .addGap(38, 38, 38))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                .addComponent(tboutdir, javax.swing.GroupLayout.PREFERRED_SIZE, 360, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(ddoutwkfl, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGap(18, 18, 18)
+                                .addComponent(cboutenabled))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(jPanel3Layout.createSequentialGroup()
+                                        .addComponent(tbindir, javax.swing.GroupLayout.PREFERRED_SIZE, 360, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(ddinwkfl, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel3Layout.createSequentialGroup()
+                                        .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btlookup, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(13, 13, 13)
+                                        .addComponent(btnew)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btclear)
+                                        .addGap(0, 256, Short.MAX_VALUE))
+                                    .addComponent(tbdesc, javax.swing.GroupLayout.Alignment.LEADING))
+                                .addGap(18, 18, 18)
+                                .addComponent(cbinenabled)))
+                        .addGap(50, 50, 50))))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -882,11 +956,25 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
                 .addGap(5, 5, 5)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1))
+                    .addComponent(jLabel1)
+                    .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel7))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
                     .addComponent(tbdesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbindir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2)
+                    .addComponent(ddinwkfl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cbinenabled))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tboutdir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4)
+                    .addComponent(ddoutwkfl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cboutenabled))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -1053,11 +1141,19 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
     private javax.swing.JButton btupdate;
     private javax.swing.JButton btupdatealias;
     private javax.swing.JCheckBox cbdefault;
+    private javax.swing.JCheckBox cbinenabled;
+    private javax.swing.JCheckBox cboutenabled;
+    private javax.swing.JComboBox<String> ddinwkfl;
+    private javax.swing.JComboBox<String> ddoutwkfl;
     private javax.swing.JComboBox<String> ddsite;
+    private javax.swing.JComboBox<String> ddtype;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -1065,6 +1161,8 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
     private javax.swing.JTable tablealias;
     private javax.swing.JTextField tbaliasid;
     private javax.swing.JTextField tbdesc;
+    private javax.swing.JTextField tbindir;
     private javax.swing.JTextField tbkey;
+    private javax.swing.JTextField tboutdir;
     // End of variables declaration//GEN-END:variables
 }
