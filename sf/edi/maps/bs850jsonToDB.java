@@ -37,7 +37,11 @@ setReference(getInput("order","po")); //optional...but must be ran after mappedI
    
     ta.add(new String[]{po,"header","vendcode", getInput("order","vendcode")});
    
-    
+int refcount = getLoopCount("order:references:reference",2);    
+for (int i = 1; i <= refcount; i++) {
+ta.add(new String[]{po,"reference",getInput(i,"order:references:reference","qualifier"), getInput(i,"order:references:reference","value")});
+}
+
     
 int addrcount = getLoopCount("order:addresses:address",2);
 for (int i = 1; i <= addrcount; i++) {

@@ -4028,7 +4028,7 @@ public abstract class EDIMap {  // took out the implements EDIMapi
                      "Example:  getLoopCount(\"GPARENT:PARENT:CHILD:\", pos) returns: last count of tag position subelement(tag+,,,+) "},
                  params = {"String segment", "Integer TagPosition"}) 
     public static int getLoopCount(String segment, Integer g) {
-         int k = 0;
+        int k = 0;
        //  segment = ":" + segment; // preprend blank
          for (Map.Entry<String, String[]> z : mappedInput.entrySet()) {
              String[] v = z.getKey().split("\\+");
@@ -4063,6 +4063,17 @@ public abstract class EDIMap {  // took out the implements EDIMapi
          return ediData.getEDIMetaValue(refnumber, mtype, key);
      }
   
+            @EDI.AnnoDoc(desc = {"method retrieves turn around data stored in table edi_meta during processing of inbound document",
+                     "NOTE: JSON, XML compatible ",
+                     "NOTE: The keys are defined as unique identifier tags for each occurence of the repeating segment.",
+                     "Example:  getMeta(\"ponumber\", \"header\", \"shipcode\") returns: N1 ST code of inbound 850 for use on outbound documents ",
+                     "Example:  getMeta(\"ponumber\", \"detail:1\", \"custline\") returns original line number in inbound 850 for item 1 "},
+                 params = {"String segment", "Integer TagPosition"}) 
+    public static ArrayList<String[]> getMetaAll(String refnumber, String mtype) {
+         return ediData.getEDIMetaValueAll(refnumber, mtype);
+     }
+  
+    
     @EDI.AnnoDoc(desc = {"Method used to retrieve a tag value if a sibling tag matches a qualifier value.", 
                      "NOTE:  used only for json and xml file processing ",
                      "Example:  getTag(\"addresses:address\",\"type:billto\",\"addrid\") returns: specific value of field named addrid of looping tag address2...if qualf fieldname = billto"},

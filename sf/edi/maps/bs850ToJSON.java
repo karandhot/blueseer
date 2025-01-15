@@ -19,33 +19,41 @@ mapSegment("order","gsnumber",c[5]);
 mapSegment("order","stnumber",c[6]);
 commitSegment("order");
 
-mapSegment("references:reference","qualifier","IA");
-mapSegment("references:reference","value",getInput("REF","1:IA",2));
+// references
+
+var refloop = getLoopKeys("REF");
+for (var key : refloop) {
+mapSegment("references:reference","qualifier",getInput(key,1));
+mapSegment("references:reference","value",getInput(key,2));
 commitSegment("references:reference");
+}
+
+var dtmloop = getLoopKeys("DTM");
+for (var key : dtmloop) {
+mapSegment("references:reference","qualifier",getInput(key,1));
+mapSegment("references:reference","value",getInput(key,2));
+commitSegment("references:reference");
+}
+
 
 int addrcount = getGroupCount("N1");
 for (int i = 1; i <= addrcount; i++) {
   if (getInput(i,"N1",1).equals("ST")) {
   mapSegment("addresses:address","type","ship-to");
-  mapSegment("addresses:address","name",getInput(i,"N1",2));
-  mapSegment("addresses:address","addrid",getInput(i,"N1",4));
-  mapSegment("addresses:address","line1",getInput(i,"N1:N3",1));
-  mapSegment("addresses:address","city",getInput(i,"N1:N4",1));
-  mapSegment("addresses:address","state",getInput(i,"N1:N4",2));
-  mapSegment("addresses:address","zip",getInput(i,"N1:N4",3));
-  commitSegment("addresses:address");
-  }
-if (getInput(i,"N1",1).equals("BT")) {
+  } else if (getInput(i,"N1",1).equals("BT")) {
   mapSegment("addresses:address","type","bill-to");
+  } else {
+  mapSegment("addresses:address","type",getInput(i,"N1",1));
+  }
+
   mapSegment("addresses:address","name",getInput(i,"N1",2));
   mapSegment("addresses:address","addrid",getInput(i,"N1",4));
   mapSegment("addresses:address","line1",getInput(i,"N1:N3",1));
   mapSegment("addresses:address","city",getInput(i,"N1:N4",1));
   mapSegment("addresses:address","state",getInput(i,"N1:N4",2));
   mapSegment("addresses:address","zip",getInput(i,"N1:N4",3));
-  commitSegment("addresses:address");
-  }
-}
+  commitSegment("addresses:address"); 
+}  // for all N1 addresses
 
 int count = getGroupCount("PO1");
 for (int i = 1; i <= count; i++) {

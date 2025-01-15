@@ -45,6 +45,13 @@ mapSegment("references:reference","value",c[0]);
 }
 commitSegment("references:reference");
 
+ArrayList<String[]> reflist = getMetaAll(po,"reference");
+for (String[] s : reflist) {
+mapSegment("references:reference","qualifier",s[0]);
+mapSegment("references:reference","value",s[1]);
+commitSegment("references:reference");
+}
+
 
 String[] bt = cusData.getCustAddressInfo(h[0]);
 mapSegment("addresses:address","type","BT"); 
