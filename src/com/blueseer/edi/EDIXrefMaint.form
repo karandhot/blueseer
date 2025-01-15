@@ -212,6 +212,7 @@
         <Component class="javax.swing.JLabel" name="jLabel4">
           <Properties>
             <Property name="text" type="java.lang.String" value="BSAddr"/>
+            <Property name="name" type="java.lang.String" value="lblbsaddr" noResource="true"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JComboBox" name="ddtype">

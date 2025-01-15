@@ -567,6 +567,7 @@ public class EDIXrefMaint extends javax.swing.JPanel implements IBlueSeerT    {
         });
 
         jLabel4.setText("BSAddr");
+        jLabel4.setName("lblbsaddr"); // NOI18N
 
         jLabel5.setText("Type");
 

@@ -860,7 +860,7 @@ try {
     }//GEN-LAST:event_tablereportMouseClicked
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
-        OVData.printJTableToJasper("Order Change Report", tablereport, "genericJTableL8.jasper" );
+        OVData.printJTableToJasper("Order Change Report", tablereport, "genericJTableL9.jasper" );
     }//GEN-LAST:event_btprintActionPerformed
 
     private void btexportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btexportActionPerformed

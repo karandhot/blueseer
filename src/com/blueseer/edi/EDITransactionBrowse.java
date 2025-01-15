@@ -1350,7 +1350,15 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
         int row = tabledetail.rowAtPoint(evt.getPoint());
         int col = tabledetail.columnAtPoint(evt.getPoint());
         if (col == 3) {
-            tafile.setText(tabledetail.getValueAt(row, 3).toString());
+            StringBuilder sb = new StringBuilder();
+            int chunkSize = 60;
+            for (int i = 0; i < tabledetail.getValueAt(row, 3).toString().length(); i += chunkSize) {
+              sb.append(tabledetail.getValueAt(row, 3).toString().substring(i, Math.min(i + chunkSize, tabledetail.getValueAt(row, 3).toString().length()))).append("\n");
+            }
+            
+            tafile.setText(sb.toString());
+            
+            
             tafile.setCaretPosition(0);
             textpanel.setVisible(true);
             bthidetext.setEnabled(true);
