@@ -406,10 +406,10 @@ public class EDIXrefMaint extends javax.swing.JPanel implements IBlueSeerT    {
     
     public edi_xref createRecord() { 
         edi_xref x = new edi_xref(null, 
-                tbtpid.getText(),
+                tbgsid.getText(),
                 tbtpaddr.getText(),
                 tbbsaddr.getText(),
-                tbgsid.getText(),
+                tbtpid.getText(),
                 ddtype.getSelectedItem().toString(),
                 ddsite.getSelectedItem().toString()
                 );
