@@ -433,6 +433,7 @@ public class BOMMaint extends javax.swing.JPanel {
            tbkey.setForeground(Color.blue);
            btlookupbom.setEnabled(true);
            btadd.setEnabled(true);
+           btroll.setEnabled(true);
            bomexist = true;
           
         } else if (x[0].equals("1")) {
@@ -2139,26 +2140,26 @@ public class BOMMaint extends javax.swing.JPanel {
         if (parent != null && (level((TreeNode)jTree1.getModel().getRoot(), (TreeNode)o) == 1) && (parent.toString().equals(tbkey.getText()))) {
             String[] e = OVData.getBOMParentOpElements(parent.toString(), node.toString());
             if (e != null) {
-                double pph = Double.valueOf(e[5]);
+                double pph = bsParseDouble(e[5]);
                 pph = 1 / pph;
-                double pps = Double.valueOf(e[6]);
+                double pps = bsParseDouble(e[6]);
                 
                 if (pps != 0) 
                 pps = 1 / pps;
                 
                 lblopname.setText(e[8]);
-                tbrunrate.setText(String.valueOf(currformatDouble(Double.valueOf(e[0]))));
-                tbsetuprate.setText(String.valueOf(currformatDouble(Double.valueOf(e[1]))));
-                tbburdenrate.setText(String.valueOf(currformatDouble(Double.valueOf(e[2]))));
+                tbrunrate.setText(String.valueOf(currformatDouble(bsParseDouble(e[0]))));
+                tbsetuprate.setText(String.valueOf(currformatDouble(bsParseDouble(e[1]))));
+                tbburdenrate.setText(String.valueOf(currformatDouble(bsParseDouble(e[2]))));
                 tbcrewsize.setText(e[3]);
                 tbsetupsize.setText(e[4]);
                 tbpph.setText(String.valueOf(bsFormatDouble(pph)));
                 tbpps.setText(String.valueOf(bsFormatDouble(pps)));
                 
                 // init simulation
-                 tbrunratesim.setText(String.valueOf(currformatDouble(Double.valueOf(e[0]))));
-                tbsetupratesim.setText(String.valueOf(currformatDouble(Double.valueOf(e[1]))));
-                tbburdenratesim.setText(String.valueOf(currformatDouble(Double.valueOf(e[2]))));
+                 tbrunratesim.setText(String.valueOf(currformatDouble(bsParseDouble(e[0]))));
+                tbsetupratesim.setText(String.valueOf(currformatDouble(bsParseDouble(e[1]))));
+                tbburdenratesim.setText(String.valueOf(currformatDouble(bsParseDouble(e[2]))));
                 tbcrewsizesim.setText(e[3]);
                 tbsetupsizesim.setText(e[4]);
                 tbpphsim.setText(String.valueOf(bsFormatDouble(pph)));
@@ -2384,7 +2385,7 @@ public class BOMMaint extends javax.swing.JPanel {
         
         btlookupbom.setEnabled(true);
         btadd.setEnabled(true);
-        
+       // btroll.setEnabled(true);
         bsmf.MainFrame.show("BOM has been updated");
     }//GEN-LAST:event_btsaveActionPerformed
 
