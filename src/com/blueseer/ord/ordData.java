@@ -1415,7 +1415,7 @@ public class ordData {
                 "sv_po = ?, sv_due_date = ?, sv_crew = ?, sv_rmks = ?, sv_status = ?, sv_taxcode = ?  " +
                  " where sv_nbr = ? ; ";
 	ps = con.prepareStatement(sql) ;
-        ps.setString(8, x.sv_nbr);
+        ps.setString(9, x.sv_nbr);
             ps.setString(1, x.sv_cust);
             ps.setString(2, x.sv_ship);
             ps.setString(3, x.sv_po);
