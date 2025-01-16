@@ -3616,7 +3616,7 @@ public class EDI {
                  e.changeid,  // unique id
                  e.po,  // po
                  "", // type
-                 bsmf.MainFrame.dfdate.format(new Date()), // change date
+                 "2025-01-16", // change date
                  e.duedate,
                  e.ov_billto,
                  shipto,
