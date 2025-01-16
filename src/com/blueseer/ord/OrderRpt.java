@@ -910,7 +910,7 @@ try {
                                 getDateDB(res.getString("so_ord_date")),
                                 getDateDB(res.getString("so_due_date")),
                                 bsNumber(res.getDouble("totqty")),
-                                bsParseDouble(currformatDouble(total)),
+                                total,
                                 res.getString("so_curr"),
                                 res.getString("so_status") 
                                // planstatus
