@@ -3507,6 +3507,10 @@ public class EDI {
         }
         String[] custinfo = cusData.getCustInfo(e.ov_billto);
         String site = OVData.getDefaultSite();
+        String isconfirm = getSysMetaValue("system", "ordercontrol", "autoconfirm");
+        if (isconfirm.isBlank()) {
+            isconfirm = "0";
+        }
         ordData.so_mstr so = new ordData.so_mstr(null, 
                 String.valueOf(sonbr),
                  e.ov_billto,
@@ -3529,7 +3533,7 @@ public class EDI {
                  "DISCRETE",
                  "", // tax
                 "0", // isSourced
-                getSysMetaValue("system", "ordercontrol", "autoconfirm"), // isConfirmed
+                isconfirm, // isConfirmed
                 "0", // isPlanned
                 "edi",
                 "0"

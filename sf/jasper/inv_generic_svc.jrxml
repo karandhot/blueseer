@@ -451,24 +451,32 @@ where shd_id =  $P{myid}]]>
 				<textFieldExpression><![CDATA[$R{jasper.invoice.lblnettotal} + "(" +  $F{sh_curr} + "):"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="19" y="20" width="191" height="20" uuid="761b50dd-6459-40b5-9cbb-4459436e77b3"/>
+				<reportElement x="19" y="20" width="173" height="20" uuid="761b50dd-6459-40b5-9cbb-4459436e77b3"/>
 				<textElement>
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{jasper.invoice.lblpayableinfo}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="40" y="40" width="152" height="15" uuid="9f662613-b949-47dc-bcb7-81404d37bb2f"/>
+				<reportElement x="40" y="43" width="152" height="15" uuid="9f662613-b949-47dc-bcb7-81404d37bb2f"/>
 				<textFieldExpression><![CDATA[$F{site_desc}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="40" y="55" width="152" height="15" uuid="0ff12bec-f2d6-4f48-9096-2cab307f21df"/>
+				<reportElement x="40" y="58" width="152" height="15" uuid="0ff12bec-f2d6-4f48-9096-2cab307f21df"/>
 				<textFieldExpression><![CDATA[$F{site_line1}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="40" y="69" width="152" height="15" uuid="41a902b3-2046-4b7e-9ffd-cd9d1e35d1b8"/>
+				<reportElement x="40" y="72" width="152" height="15" uuid="41a902b3-2046-4b7e-9ffd-cd9d1e35d1b8"/>
 				<textFieldExpression><![CDATA[$P{site_csz}]]></textFieldExpression>
 			</textField>
+			<textField>
+				<reportElement x="200" y="23" width="128" height="15" uuid="12577fb7-3dab-4a69-a431-e890de4410ab"/>
+				<textFieldExpression><![CDATA[$F{site_desc}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="20" y="96" width="248" height="10" uuid="cc359769-ae6d-4d58-9512-e1e2ee520b70"/>
+				<text><![CDATA[Electronic payment options available.]]></text>
+			</staticText>
 		</band>
 	</lastPageFooter>
 	<summary>
