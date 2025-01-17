@@ -471,10 +471,6 @@ where shd_id =  $P{myid}]]>
 				<reportElement x="40" y="72" width="152" height="15" uuid="41a902b3-2046-4b7e-9ffd-cd9d1e35d1b8"/>
 				<textFieldExpression><![CDATA[$P{site_csz}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="150" y="23" width="128" height="15" uuid="12577fb7-3dab-4a69-a431-e890de4410ab"/>
-				<textFieldExpression><![CDATA[$F{site_desc}]]></textFieldExpression>
-			</textField>
 			<staticText>
 				<reportElement x="20" y="96" width="248" height="24" uuid="cc359769-ae6d-4d58-9512-e1e2ee520b70"/>
 				<text><![CDATA[Electronic payment options available.]]></text>
