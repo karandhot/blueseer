@@ -772,7 +772,7 @@ public class shpData {
                   shippernbr,
                   bsParseInt(d[0]), //shline
                   d[1], //item
-                  d[1], //custitem
+                  "", //custitem
                   d[4], // so
                   bsParseInt(d[0]), // soline = shline  
                   shipdate, //shipdate

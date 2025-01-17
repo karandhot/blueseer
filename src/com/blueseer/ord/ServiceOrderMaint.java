@@ -1019,7 +1019,8 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
                  orddet.getValueAt(j, 4).toString(),
                  orddet.getValueAt(j, 5).toString(),
                  orddet.getValueAt(j, 6).toString(),
-                 orddet.getValueAt(j, 7).toString()};
+                 orddet.getValueAt(j, 7).toString()
+             };
              list.add(s);
          }
         
