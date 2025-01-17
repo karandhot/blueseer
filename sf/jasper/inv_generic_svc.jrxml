@@ -284,7 +284,7 @@ where shd_id =  $P{myid}]]>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{sh_trailer}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{ar_duedate}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="228" y="90" width="92" height="20" uuid="474db820-d56c-4c60-8006-db1d704c6bb8"/>
