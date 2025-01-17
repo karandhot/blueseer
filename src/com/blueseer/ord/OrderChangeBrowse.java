@@ -181,6 +181,50 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
     }
     }
 
+    class DetailRenderer extends DefaultTableCellRenderer {
+        
+    public Component getTableCellRendererComponent(JTable table,
+            Object value, boolean isSelected, boolean hasFocus, int row,
+            int column) {
+
+        Component c = super.getTableCellRendererComponent(table,
+                value, isSelected, hasFocus, row, column);
+        
+         double oldprice = Double.valueOf((String) table.getModel().getValueAt(table.convertRowIndexToModel(row), 2).toString());
+         double newprice = Double.valueOf((String) table.getModel().getValueAt(table.convertRowIndexToModel(row), 3).toString());
+         double oldqty = Double.valueOf((String) table.getModel().getValueAt(table.convertRowIndexToModel(row), 4).toString());
+         double newqty = Double.valueOf((String) table.getModel().getValueAt(table.convertRowIndexToModel(row), 5).toString());
+         
+        c.setBackground(table.getBackground());
+        c.setForeground(table.getBackground()); 
+        
+        if (oldprice != newprice) {
+              if (column == 2 || column == 3) {
+                c.setBackground(Color.ORANGE);
+                c.setForeground(Color.WHITE);
+              }
+        }
+         
+        if (oldqty != newqty) {
+          if (column == 4 || column == 5) {
+            c.setBackground(Color.ORANGE);
+            c.setForeground(Color.WHITE);
+          }
+        }
+        
+        //c.setBackground(row % 2 == 0 ? Color.LIGHT_GRAY : Color.WHITE);
+      // c.setBackground(row % 2 == 0 ? Color.GREEN : Color.LIGHT_GRAY);
+      // c.setBackground(row % 3 == 0 ? new Color(245,245,220) : Color.LIGHT_GRAY);
+       /*
+            if (column == 3)
+            c.setForeground(Color.BLUE);
+            else
+                c.setBackground(table.getBackground());
+       */
+        return c;
+    }
+    }
+
     
     
     
@@ -210,6 +254,16 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
             try {
                 int i = 0;
                 String blanket = "";
+                
+                 Enumeration<TableColumn> en = tabledetail.getColumnModel().getColumns();
+                 while (en.hasMoreElements()) {
+                     TableColumn tc = en.nextElement();
+                     if (modeldetail.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+                         continue;
+                     }
+                     tc.setCellRenderer(new OrderChangeBrowse.DetailRenderer());
+                 }
+                
                 res = st.executeQuery("select sod_line, sod_item, sod_ord_qty, sod_listprice, sodc_qty, sodc_price from sod_chg " +
                         " inner join so_chg on soc_id = sodc_id " +
                         " inner join sod_det on sodc_po = sod_po and sodc_line = sod_line " +
@@ -227,8 +281,8 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                 }
               
                 tabledetail.setModel(modeldetail);
-                tabledetail.getColumnModel().getColumn(2).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                tabledetail.getColumnModel().getColumn(3).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              //  tabledetail.getColumnModel().getColumn(2).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              //  tabledetail.getColumnModel().getColumn(3).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
                  this.repaint();
 
             } catch (SQLException s) {

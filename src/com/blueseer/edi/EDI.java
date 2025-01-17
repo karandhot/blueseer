@@ -3604,19 +3604,22 @@ public class EDI {
     public static String[] createSOCFrom860(edi860 e, String[] control) {
         String[] m = new String[]{"",""};
         String shipto;
-        
+        String now = bsmf.MainFrame.dfdate.format(new Date());
         if (e.ov_shipto.isEmpty())
             shipto = OVData.CreateShipTo(e.ov_billto, e.st_name, e.st_line1, e.st_line2, e.st_line3, e.st_city, e.st_state, e.st_zip, e.st_country, e.shipto);
         else
             shipto = e.ov_shipto;
     
+        if (e.duedate.isBlank()) {
+           e.duedate = now; 
+        }
         String[] custinfo = cusData.getCustInfo(e.ov_billto);
-     
+        String changeid = e.po + "-" + Long.toHexString(System.currentTimeMillis());
         ordData.so_chg soc = new ordData.so_chg(null, 
-                 e.changeid,  // unique id
+                 changeid,  // unique id
                  e.po,  // po
                  "", // type
-                 "2025-01-16", // change date
+                 now, // change date
                  e.duedate,
                  e.ov_billto,
                  shipto,
@@ -3640,7 +3643,7 @@ public class EDI {
           // System.out.println("HERE: " + uom + "/" + e.getDetItem(j) + "/" + e.getDetUOM(j));
       
         ordData.sod_chg sod = new ordData.sod_chg(null, 
-                e.changeid,
+                changeid,
                 e.po,
                 e.getDetLine(j),
                 "", // type

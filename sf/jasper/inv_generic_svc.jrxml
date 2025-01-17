@@ -38,11 +38,12 @@ shd_serial, shd_cont, shd_qty, shd_netprice, shd_listprice, shd_uom,
 shd_taxamt, shd_taxpercent, cm_code, cm_name, cm_line1, 
 cm_line2, 
 cms_name, cms_line1, cms_line2, 
-site_desc, site_line1 
+site_desc, site_line1, ar_duedate 
 from ship_det 
 left outer join item_mstr on it_item = shd_item 
 inner join ship_mstr on sh_id = shd_id 
-inner join cm_mstr on cm_code = sh_cust 
+inner join ar_mstr on ar_nbr = sh_id 
+inner join cm_mstr on cm_code = sh_cust
 left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship 
 inner join site_mstr on site_site = sh_site 
 where shd_id =  $P{myid}]]>
@@ -81,6 +82,7 @@ where shd_id =  $P{myid}]]>
 	<field name="shd_serial" class="java.lang.String"/>
 	<field name="shd_uom" class="java.lang.String"/>
 	<field name="sh_trailer" class="java.lang.String"/>
+	<field name="ar_duedate" class="java.lang.String"/>
 	<variable name="mysum" class="java.lang.Double" calculation="Sum">
 		<variableExpression><![CDATA[$F{shd_qty}]]></variableExpression>
 	</variable>
@@ -235,7 +237,7 @@ where shd_id =  $P{myid}]]>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{jasper.invoice.lbltrack}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{jasper.invoice.lblduedate}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="473" y="79" width="77" height="11" uuid="b05fddee-613d-478f-a4e5-a1d3c5db265c"/>
