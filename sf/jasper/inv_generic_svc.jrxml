@@ -326,7 +326,7 @@ where shd_id =  $P{myid}]]>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{jasper.invoice.lblponbr}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{jasper.invoice.lblordernbr}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="360" y="0" width="46" height="20" uuid="12ce1677-b2d4-43ec-b1f6-59f93938354c"/>
