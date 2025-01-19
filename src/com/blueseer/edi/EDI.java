@@ -1007,7 +1007,7 @@ public class EDI {
         
         
         String[] m = new String[]{"0",""};
-        String[] c = null;  // control values to pass to map and log
+        
         File file = new File(infile);
         // need to research removing ^M characters here with possible solution...replaceAll("\\r$", "");
         BufferedReader f = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8));
@@ -1029,7 +1029,7 @@ public class EDI {
          // returns filetype, doctype
          String[] editype = getEDIType(cbuf, infile);
          String batchfile = "";
-         c = initEDIControl();
+         String[] c = initEDIControl();
                     c[0] = ""; // senderid
                     c[1] = editype[1];
                     c[21] = ""; // receiverid
