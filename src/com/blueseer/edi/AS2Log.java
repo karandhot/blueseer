@@ -37,6 +37,7 @@ import com.blueseer.utl.EDData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.EDData.updateEDIFileLogStatusManual;
 import com.blueseer.utl.OVData;
 import java.awt.Color;
@@ -704,8 +705,15 @@ public class AS2Log extends javax.swing.JPanel {
              try {
                  tafile.setText("");
                  Path mdnpath = FileSystems.getDefault().getPath("edi/mdn/" + tablereport.getValueAt(row, 6).toString()); 
-                 byte[] filecontent = Files.readAllBytes(mdnpath);
+                 if (! bsmf.MainFrame.remoteDB) {
+                    byte[] filecontent = Files.readAllBytes(mdnpath);
                     tafile.setText(new String(filecontent) + "\n");
+                 } else {
+                    ArrayList<String[]> arrx = new ArrayList<String[]>();
+                    arrx.add(new String[]{"id","getFileContent"});
+                    arrx.add(new String[]{"filepath", "edi/mdn/" + tablereport.getValueAt(row, 6).toString()});
+                    tafile.setText(sendServerPost(arrx, "", null));
+                 }
              } catch (MalformedURLException ex) {
                  MainFrame.bslog(ex);
              } catch (SmbException ex) {
