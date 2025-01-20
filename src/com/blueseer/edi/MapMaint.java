@@ -140,6 +140,8 @@ import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -892,6 +894,10 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         tbdesc.setText("");
         tbversion.setText("");
         tbpath.setText("");
+        
+         if (! bsmf.MainFrame.remoteDB) {
+             btupload.setEnabled(false);
+         }
         
         InputTabbedPane.removeAll();
         InputTabbedPane.add("Input", inScrollPaneInput);
@@ -2271,20 +2277,9 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
             addToJar(new File(fileclass), target);
             target.close();
             
-            // if remote...push jar file to server
-            if (bsmf.MainFrame.remoteDB) {
-                byte[] b = getFileContentBytes(path.toString());
-                ArrayList<String[]> arrx = new ArrayList<String[]>();
-                arrx.add(new String[]{"id","uploadFile"});
-                arrx.add(new String[]{"filepath", "edi/maps/" + jarname});  // assumes linux OS
-                String s = sendServerPost(arrx, "", b);
-                bsmf.MainFrame.show(getMessageTag(1194));
-            }
+            
             
          } catch (IOException ex) {
-             if (bsmf.MainFrame.remoteDB) {
-                bsmf.MainFrame.show(getMessageTag(1195)); 
-             }
              bslog(ex);
          }
     }
@@ -2554,6 +2549,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         btshiftright = new javax.swing.JButton();
         btzip = new javax.swing.JButton();
         btunzip = new javax.swing.JButton();
+        btupload = new javax.swing.JButton();
         tbkey = new javax.swing.JTextField();
         tbpath = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
@@ -2842,6 +2838,18 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
             }
         });
         toolbar.add(btunzip);
+
+        btupload.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/cloud.png"))); // NOI18N
+        btupload.setToolTipText("Upload");
+        btupload.setFocusable(false);
+        btupload.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btupload.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btupload.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btuploadActionPerformed(evt);
+            }
+        });
+        toolbar.add(btupload);
 
         tbkey.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
@@ -3765,6 +3773,33 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         }
     }//GEN-LAST:event_cbenvelopeActionPerformed
 
+    private void btuploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btuploadActionPerformed
+        // if remote...push jar file to server
+            if (bsmf.MainFrame.remoteDB) {
+                Path path = FileSystems.getDefault().getPath(tbpath.getText());
+                File file = path.toFile();
+                if (file.exists()) {
+                String filename = file.getName().split("\\.")[0].replace("\\", "").replace("/", "");  // strip leading dir backslash
+                String jarname = filename + ".jar";
+                Path jarpath = FileSystems.getDefault().getPath(cleanDirString(EDData.getEDIMapDir()) + jarname);
+                    if (jarpath.toFile().exists()) {
+                        byte[] b = getFileContentBytes(jarpath.toString());
+                        ArrayList<String[]> arrx = new ArrayList<String[]>();
+                        arrx.add(new String[]{"id","uploadFile"});
+                        arrx.add(new String[]{"filepath", "edi/maps/" + jarname});  // assumes linux OS
+                        try {
+                            String s = sendServerPost(arrx, "", b);
+                            bsmf.MainFrame.show(getMessageTag(1194));
+                        } catch (IOException ex) {
+                            bsmf.MainFrame.show(getMessageTag(1195));
+                            bslog(ex);
+                        }
+                        
+                    }
+                }
+            }
+    }//GEN-LAST:event_btuploadActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTabbedPane InputTabbedPane;
@@ -3783,6 +3818,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
     private javax.swing.JButton btunhide;
     private javax.swing.JButton btunzip;
     private javax.swing.JButton btupdate;
+    private javax.swing.JButton btupload;
     private javax.swing.JButton btzip;
     private javax.swing.JCheckBox cbenvelope;
     private javax.swing.JCheckBox cbinternal;
