@@ -58,6 +58,7 @@ import static com.blueseer.edi.EDI.createMAPUNE;
 import static com.blueseer.edi.EDI.edilog;
 import static com.blueseer.edi.EDI.escapeDelimiter;
 import static com.blueseer.edi.EDI.getEDIType;
+import static com.blueseer.edi.EDI.getFileContentBytes;
 import static com.blueseer.edi.ediData.addDFStructureTransaction;
 import static com.blueseer.edi.ediData.addMapMstr;
 import static com.blueseer.edi.ediData.deleteDFStructure;
@@ -87,6 +88,7 @@ import static com.blueseer.utl.BlueSeerUtils.ludialog;
 import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.EDData;
 import static com.blueseer.utl.EDData.cbufToList;
@@ -94,6 +96,8 @@ import static com.blueseer.utl.EDData.getBSDocTypeFromStds;
 import static com.blueseer.utl.EDData.getDelimiters;
 import static com.blueseer.utl.EDData.readEDIRawFileIntoCbuf;
 import com.blueseer.utl.IBlueSeerT;
+import static com.blueseer.utl.OVData.getSystemAttachmentDirectory;
+import static com.blueseer.utl.OVData.getSystemEDIDirectory;
 import static com.blueseer.utl.OVData.getSystemTempDirectory;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -1968,8 +1972,6 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
              BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path.toFile(), false)));
              output.write(tamap.getText());
              output.close();  
-         } catch (FileNotFoundException ex) {
-             bslog(ex);
          } catch (IOException ex) {
              bslog(ex);
          }
@@ -1982,7 +1984,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
                  if (! tamap.getText().isBlank()) {
                     BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path.toFile(), false)));
                     output.write(tamap.getText());
-                    output.close();  
+                    output.close(); 
                  } else {
                     path.toFile().createNewFile(); 
                  }
@@ -2268,9 +2270,21 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
             
             addToJar(new File(fileclass), target);
             target.close();
-         } catch (FileNotFoundException ex) {
-             bslog(ex);
+            
+            // if remote...push jar file to server
+            if (bsmf.MainFrame.remoteDB) {
+                byte[] b = getFileContentBytes(path.toString());
+                ArrayList<String[]> arrx = new ArrayList<String[]>();
+                arrx.add(new String[]{"id","uploadFile"});
+                arrx.add(new String[]{"filepath", path.toString()});
+                String s = sendServerPost(arrx, "", b);
+                bsmf.MainFrame.show(getMessageTag(1194));
+            }
+            
          } catch (IOException ex) {
+             if (bsmf.MainFrame.remoteDB) {
+                bsmf.MainFrame.show(getMessageTag(1195)); 
+             }
              bslog(ex);
          }
     }
