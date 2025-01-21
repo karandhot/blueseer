@@ -424,7 +424,7 @@ public int[] mywidth;
             if (TableReport.getName() != null && TableReport.getName().compareTo("RoutingBrowse") == 0) {
                 mypanel = "RoutingMaint";
                 if (! checkperms(mypanel)) { return; }
-               args = new String[]{TableReport.getValueAt(row, 1).toString(),TableReport.getValueAt(row, 2).toString()};
+               args = new String[]{TableReport.getValueAt(row, 1).toString()};
                reinitpanels(mypanel, true, args);
             }  
             

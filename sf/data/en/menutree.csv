@@ -207,8 +207,8 @@ ItemMenu,UOMConvMaint,4,JMenuItem,UOM Conversion Maintenance,,,,1,1
 ItemMenu,CostRoll,5,JMenuItem,Cost Maintenance,,,,1,1
 ItemMenu,CostRollRange,6,JMenuItem,Cost Roll By Range,,,,1,1
 ItemMenu,CostReports,7,JMenu,Cost Reports,,,,1,1
-RoutingMenu,WorkCellMaint,1,JMenuItem,Work Cell Maintenance,,,,1,1
-RoutingMenu,WorkCellBrowse,2,JMenuItem,Work Cell Browse,,1,,1,1
+RoutingMenu,WorkCellMaint,1,JMenuItem,Work Center Maintenance,,,,1,1
+RoutingMenu,WorkCellBrowse,2,JMenuItem,Work Center Browse,,1,,1,1
 RoutingMenu,RoutingMaint,3,JMenuItem,Routing Maintenance,,,,1,1
 RoutingMenu,RoutingBrowse,4,JMenuItem,Routing Browse,,1,,1,1
 RoutingMenu,ItemRoutingRpt,5,JMenuItem,Item Routing Report,,,,1,1

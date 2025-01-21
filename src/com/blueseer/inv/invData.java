@@ -1111,6 +1111,154 @@ public class invData {
         return r;
     }
     
+    public static String[] addRoutingMstr(ArrayList<wf_mstr> wfd) {
+         String[] m = new String[2];
+        Connection bscon = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            if (ds != null) {
+              bscon = ds.getConnection();
+            } else {
+              bscon = DriverManager.getConnection(url + db, user, pass);  
+            }
+            bscon.setAutoCommit(false);
+            for (wf_mstr z : wfd) {
+                _addRoutingMstr(z, bscon);
+            }
+            bscon.commit();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             try {
+                 bscon.rollback();
+                 m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordError};
+             } catch (SQLException rb) {
+                 MainFrame.bslog(rb);
+             }
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.setAutoCommit(true);
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+
+    public static String[] updateRoutingMstr(ArrayList<wf_mstr> wfd) {
+         String[] m = new String[2];
+        Connection bscon = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            if (ds != null) {
+              bscon = ds.getConnection();
+            } else {
+              bscon = DriverManager.getConnection(url + db, user, pass);  
+            }
+            bscon.setAutoCommit(false);
+            int i = 0;
+            for (wf_mstr z : wfd) {
+                i++;
+                if (i == 1) {
+                    _deleteRoutingMstr(z.wf_id, bscon, ps);
+                }
+                _addRoutingMstr(z, bscon);
+            }
+            bscon.commit();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             try {
+                 bscon.rollback();
+                 m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordError};
+             } catch (SQLException rb) {
+                 MainFrame.bslog(rb);
+             }
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.setAutoCommit(true);
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+
+    
+    private static int _addRoutingMstr(wf_mstr x, Connection con) throws SQLException {
+        int rows = 0;
+        String sqlSelect = "SELECT * FROM  wf_mstr where wf_id = ? and wf_op = ?";
+        String sqlInsert = "insert into wf_mstr (wf_id, wf_desc, wf_site, "
+                        + " wf_op, wf_op_desc, wf_assert, wf_cell, " +
+                          " wf_setup_hours, wf_run_hours ) " 
+                        + " values (?,?,?,?,?,?,?,?,?); "; 
+       
+            PreparedStatement ps = con.prepareStatement(sqlSelect);
+            ps.setString(1, x.wf_id);
+             ps.setString(2, x.wf_op);
+            ResultSet res = ps.executeQuery();
+            PreparedStatement psi = con.prepareStatement(sqlInsert);  
+            if (! res.isBeforeFirst()) {
+            psi.setString(1, x.wf_id);
+            psi.setString(2, x.wf_desc);
+            psi.setString(3, x.wf_site);
+            psi.setString(4, x.wf_op);
+            psi.setString(5, x.wf_assert);
+            psi.setString(6, x.wf_op_desc);
+            psi.setString(7, x.wf_cell);
+            psi.setString(8, x.wf_setup_hours);
+            psi.setString(9, x.wf_run_hours); 
+            rows = psi.executeUpdate();
+            } 
+            ps.close();
+            psi.close();
+            res.close();
+        return rows;
+    }
+    
+    private static void _deleteRoutingMstr(String wfid, Connection con, PreparedStatement ps) throws SQLException {
+        String sql = "delete from wf_mstr where wf_id = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, wfid);
+        ps.executeUpdate();
+    }
+    
     
     public static String[] addRoutingMstr(wf_mstr x) {
         String[] m = new String[2];
@@ -1215,13 +1363,50 @@ public class invData {
         return r;
     }
   
+    public static ArrayList<wf_mstr> getRoutingMstrList(String[] x) {
+        ArrayList<wf_mstr> r = new ArrayList<wf_mstr>();
+        String[] m = new String[2];
+        String sql = "";
+        if (x.length == 1) {
+            sql = "select * from wf_mstr where wf_id = ? order by wf_op;";
+        } else {
+            sql = "select * from wf_mstr where wf_id = ? and wf_op = ? ;";
+        }
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());   
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, x[0]);
+        if (x.length > 1) {
+        ps.setString(2, x[1]);
+        }
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};                        
+                        r.add(new wf_mstr(m, res.getString("wf_id"), res.getString("wf_desc"),
+                        res.getString("wf_site"), res.getString("wf_op"),
+                        res.getString("wf_assert"), res.getString("wf_op_desc"),
+                        res.getString("wf_cell"), res.getString("wf_setup_hours"),
+                        res.getString("wf_run_hours")));
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getClassName() + "." + Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               
+        }
+        return r;
+    }
+  
+    
     public static String[] deleteRoutingMstr(wf_mstr x) {
         String[] m;
-        String sqlDelete = "delete from wf_mstr where wf_id = ? and wf_op = ? ;"; 
+        String sqlDelete = "delete from wf_mstr where wf_id = ?;"; 
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
              PreparedStatement ps = con.prepareStatement(sqlDelete);) {
              ps.setString(1, x.wf_id);
-             ps.setString(2, x.wf_op);
              int rows = ps.executeUpdate();
              if (rows > 0) {
                 m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess}; 
@@ -1234,7 +1419,8 @@ public class invData {
         }
         return m;
     }
-        
+     
+    
     
     public static String[] addUOMMstr(uom_mstr x) {
         String[] m = new String[2];

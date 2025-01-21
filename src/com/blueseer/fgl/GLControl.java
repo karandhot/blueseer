@@ -289,8 +289,6 @@ public class GLControl extends javax.swing.JPanel implements IBlueSeerc {
                 tbbdnrate.setText(s[1]);
             }
         } 
-    
-    
     }
     
      // additional methods
@@ -369,7 +367,7 @@ public class GLControl extends javax.swing.JPanel implements IBlueSeerc {
             }
         });
 
-        jLabel7.setText("Burden Rate");
+        jLabel7.setText("Burden/Overhead Rate");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);

@@ -538,7 +538,7 @@ public class WorkCenterMaint extends javax.swing.JPanel implements IBlueSeerT {
 
         setBackground(new java.awt.Color(0, 102, 204));
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Work Cell Maintenance"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Work Center Maintenance"));
         jPanel1.setName("panelmain"); // NOI18N
 
         tbrunrate.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -562,7 +562,7 @@ public class WorkCenterMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel8.setText("Setup Rate");
         jLabel8.setName("lblsetuprate"); // NOI18N
 
-        jLabel4.setText("Work Cell");
+        jLabel4.setText("Work Center");
         jLabel4.setName("lblid"); // NOI18N
 
         jLabel7.setText("Run Crew Size");

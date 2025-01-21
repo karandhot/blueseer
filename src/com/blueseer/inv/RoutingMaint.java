@@ -44,9 +44,13 @@ import static com.blueseer.inv.invData.deleteInvMetaOperator;
 import static com.blueseer.inv.invData.deleteRoutingMstr;
 import static com.blueseer.inv.invData.getInvMetaOperators;
 import static com.blueseer.inv.invData.getRoutingMstr;
+import static com.blueseer.inv.invData.getRoutingMstrList;
 import static com.blueseer.inv.invData.updateRoutingMstr;
 import com.blueseer.inv.invData.wf_mstr;
+import static com.blueseer.utl.BlueSeerUtils.ConvertTrueFalseToBoolean;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
+import static com.blueseer.utl.BlueSeerUtils.bsFormatInt;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.checkLength;
@@ -103,11 +107,16 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     // global variable declarations
                 boolean isLoad = false;
-                public static wf_mstr x = null;
+               // public static wf_mstr x = null;
+                public static ArrayList<wf_mstr> x = null;
     
    // global datatablemodel declarations   
     DefaultListModel listmodel = new DefaultListModel();
     
+    javax.swing.table.DefaultTableModel operationmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+            new String[]{
+                "Operation", "Description", "Backflush", "WorkCenter", "SetUp Hours", "Labor Run Rate"
+            });
     
     public RoutingMaint() {
         initComponents();
@@ -294,10 +303,14 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void setComponentDefaultValues() {
        isLoad = true;
         tbkey.setText("");
-        ddop.removeAllItems();
+        tbop.setText("");
         tbopdesc.setText("");
         tbrunhoursinverted.setText("0");
         lbloperatorname.setText("");
+        
+        operationmodel.setRowCount(0);
+        tableoperation.setModel(operationmodel);
+        tableoperation.getTableHeader().setReorderingAllowed(false);
         
         listmodel.removeAllElements();
         listOperators.setModel(listmodel);
@@ -376,19 +389,6 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
             bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
             tbkey.requestFocus();
             return false;
-        }  
-        
-        fc = checkLength(f,"wf_op");
-        if (ddop.getSelectedItem().toString().length() > fc || ddop.getSelectedItem().toString().isEmpty()) {
-            bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
-            ddop.requestFocus();
-            return false;
-        } 
-        
-        if (! BlueSeerUtils.isParsableToInt(ddop.getSelectedItem().toString()) ) {
-            bsmf.MainFrame.show(getMessageTag(1028));
-            ddop.requestFocus();
-            return false;            
         }
         
         fc = checkLength(f,"wf_site");
@@ -396,6 +396,28 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
             bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
             ddsite.requestFocus();
             return false;
+        }        
+        
+        return true;
+    }
+    
+    public boolean validateOPInput(dbaction x) {
+       
+                
+        Map<String,Integer> f = OVData.getTableInfo(new String[]{"wf_mstr"});
+        int fc;
+        
+        fc = checkLength(f,"wf_op");
+        if (tbkey.getText().length() > fc || tbkey.getText().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
+            tbkey.requestFocus();
+            return false;
+        }
+        
+        if (! BlueSeerUtils.isParsableToInt(tbop.getText()) ) {
+            bsmf.MainFrame.show(getMessageTag(1028));
+            tbop.requestFocus();
+            return false;            
         }
         
         fc = checkLength(f,"wf_cell");
@@ -405,7 +427,7 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
             return false;
         }
         
-        fc = checkLength(f,"wf_desc");
+        fc = checkLength(f,"wf_op_desc");
         if (tbopdesc.getText().length() > fc) {
             bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
             tbopdesc.requestFocus();
@@ -416,6 +438,7 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         return true;
     }
+    
     
     public void initvars(String[] arg) {
        
@@ -434,12 +457,14 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public String[] addRecord(String[] x) {
-     String[] m = addRoutingMstr(createRecord());
+         // String[] m = addRoutingMstr(createRecord());
+         String[] m = addRoutingMstr(createRecordArray());
+        
      return m;
      }
      
     public String[] updateRecord(String[] x) {
-     String[] m = updateRoutingMstr(createRecord());
+     String[] m = updateRoutingMstr(createRecordArray());
      return m;
      }
      
@@ -457,8 +482,12 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
       
     public String[] getRecord(String[] key) {
         if (key == null && key.length < 1) { return new String[]{}; };
-        x = getRoutingMstr(key);
-        return x.m();
+        x = getRoutingMstrList(key);
+        if (x.size() > 0) {
+            return new String[]{"0",""};
+        } else {
+            return new String[]{"1","no records found"};
+        }
     }
     
     public wf_mstr createRecord() {
@@ -466,7 +495,7 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
            tbkey.getText(),
            tbopdesc.getText(),
             ddsite.getSelectedItem().toString(),
-            ddop.getSelectedItem().toString(),
+            tbop.getText(),
             String.valueOf(BlueSeerUtils.boolToInt(cbmilestone.isSelected())),
             tbopdesc.getText(),
             ddwc.getSelectedItem().toString(),    
@@ -474,6 +503,34 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
             tbrunhours.getText().replace(defaultDecimalSeparator, '.')
         );
         return x;
+    }
+    
+    public ArrayList<wf_mstr> createRecordArray() {
+        ArrayList<wf_mstr> list = new ArrayList<wf_mstr>();
+        double runhours = 0;
+        for (int j = 0; j < tableoperation.getRowCount(); j++) {
+        
+        if (! tableoperation.getValueAt(j, 5).toString().isBlank() && Double.valueOf(tableoperation.getValueAt(j, 5).toString()) > 0) {
+            runhours = (1 / Double.valueOf(tableoperation.getValueAt(j, 5).toString()));
+        } else {
+            runhours = 0;
+        }   
+            
+        wf_mstr x = new wf_mstr(null, 
+           tbkey.getText(),
+           tbopdesc.getText(),
+           ddsite.getSelectedItem().toString(),
+           tableoperation.getValueAt(j, 0).toString(),
+           tableoperation.getValueAt(j, 1).toString(),
+           tableoperation.getValueAt(j, 2).toString(),
+           tableoperation.getValueAt(j, 3).toString(),
+           tableoperation.getValueAt(j, 4).toString().replace(defaultDecimalSeparator, '.'),
+           bsNumber(runhours) 
+        );
+        list.add(x);
+        }
+        
+        return list;
     }
     
     
@@ -506,7 +563,7 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
                 int column = target.getSelectedColumn();
                 if ( column == 0) {
                 ludialog.dispose();
-                initvars(new String[]{target.getValueAt(row,1).toString(), target.getValueAt(row,2).toString()});
+                initvars(new String[]{target.getValueAt(row,1).toString()});
                 }
             }
         };
@@ -560,48 +617,94 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
 
     public void updateForm() {
-        if (x != null && ! x.wf_id().isBlank()) {
-        double runhours = 0;
-        assignOPs(x.wf_id());
-                 
-        if (! x.wf_run_hours().isBlank() && Double.valueOf(x.wf_run_hours()) > 0)
-            runhours = (1 / Double.valueOf(x.wf_run_hours()));
-        else
-            runhours = 0;
-        tbkey.setText(x.wf_id());
-        ddwc.setSelectedItem(x.wf_cell());
-        tbopdesc.setText(x.wf_desc());
-        ddsite.setSelectedItem(x.wf_site());
-        ddop.setSelectedItem(x.wf_op());
-        tbrunhours.setText(x.wf_run_hours().replace('.',defaultDecimalSeparator));
-        tbsetuphours.setText(x.wf_setup_hours().replace('.',defaultDecimalSeparator));
-        tbrunhoursinverted.setText(bsFormatDouble(runhours,"0").replace('.',defaultDecimalSeparator));
-        cbmilestone.setSelected(BlueSeerUtils.ConvertStringToBool(x.wf_assert()));
+        if (x != null && x.size() > 0) {
+        String runrate = "0";
+       
+        int i = 0;
+        for (wf_mstr wf : x) {
+        i++;
         
-        getOperators(tbkey.getText(), ddop.getSelectedItem().toString());
+        if (i == 1) {
+           tbkey.setText(wf.wf_id()); 
+           ddsite.setSelectedItem(wf.wf_site());
+        }
         
-        setAction(x.m());  
+        if (! wf.wf_run_hours().isBlank() && Double.valueOf(wf.wf_run_hours()) > 0) {
+            runrate = bsNumber((int) Math.round(1 / Double.valueOf(wf.wf_run_hours())));
+        } else {
+            runrate = "0";
+        }
+        
+        operationmodel.addRow(new Object[]{ wf.wf_op(), wf.wf_op_desc(), wf.wf_assert(), wf.wf_cell(), wf.wf_setup_hours(), runrate });
+        }
+        
+        //getOperators(tbkey.getText(), tbop.getText());
+        
+        setAction(new String[]{"0",""});  
         }
     }
     
     // custom funcs
-    public void assignOPs(String routing) {
-      
+    
+    public void getOperators(String routing, String op) {
+        listmodel.removeAllElements();
+        ArrayList<String> operators = getInvMetaOperators(routing, op);
+        for (String operator : operators) {
+            listmodel.addElement(operator);
+        } 
+    }
+    
+    public void opchange() {
+         String[] m = new String[2];
+        if (! tbop.getText().isBlank()) {
         try {
-            Connection con = DriverManager.getConnection(url + db, user, pass);
+           Connection con = DriverManager.getConnection(url + db, user, pass);
             Statement st = con.createStatement();
             ResultSet res = null;
             try {
-               
-                int i = 0;
-                res = st.executeQuery("select * from wf_mstr where wf_id = " + "'" + routing + "'"  + " order by wf_op;");
+              
+                double runhours = 0;
+                double setuphours = 0;
+                 int i = 0;
+                res = st.executeQuery("select * from wf_mstr where wf_id = " + "'" + tbkey.getText() + "'"  + " AND " +
+                        " wf_op = " + "'" + tbop.getText() + "'" + ";");
                         
                 while (res.next()) {
                     i++;
-                    ddop.addItem(res.getString("wf_op"));
+                    
+                    if (res.getDouble("wf_run_hours") > 0)
+                        runhours = 1 / res.getDouble("wf_run_hours");
+                    else
+                        runhours = 0;
+                    
+                    
+                    ddwc.setSelectedItem(res.getString("wf_cell"));
+                    tbopdesc.setText(res.getString("wf_desc"));
+                    ddsite.setSelectedItem(res.getString("wf_site"));
+                    tbrunhours.setText(res.getString("wf_run_hours"));
+                    tbsetuphours.setText(res.getString("wf_setup_hours"));
+                    tbrunhoursinverted.setText(String.valueOf(currformatDouble(runhours)));
+                    cbmilestone.setSelected(BlueSeerUtils.ConvertStringToBool(res.getString("wf_assert")));
                 }
-            } catch (SQLException s) {
+                // potentially new op...fields to defaults
+                if (i == 0) {
+                    ddwc.setSelectedIndex(0);
+                    tbopdesc.setText("");
+                    ddsite.setSelectedIndex(0);
+                    tbrunhours.setText("");
+                    tbsetuphours.setText("");
+                    tbrunhoursinverted.setText("");
+                    cbmilestone.setSelected(false);
+                    
+                    btadd.setEnabled(true);
+                    btupdate.setEnabled(false);
+                    btdelete.setEnabled(false);
+                    
+                }
+                
+           } catch (SQLException s) {
                 MainFrame.bslog(s);
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordSQLError};  
             } finally {
                 if (res != null) {
                     res.close();
@@ -613,17 +716,25 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         } catch (Exception e) {
             MainFrame.bslog(e);
+            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordConnError};  
         }
-
+        
+        getOperators(tbkey.getText(), tbop.getText());
+        
+        }
     }
     
-    public void getOperators(String routing, String op) {
-        listmodel.removeAllElements();
-        ArrayList<String> operators = getInvMetaOperators(routing, op);
-        for (String operator : operators) {
-            listmodel.addElement(operator);
-        } 
+    public boolean hasOperation(String op) {
+        boolean x = false;
+        for (int j = 0; j < tableoperation.getRowCount(); j++) {
+           if (tableoperation.getValueAt(j, 0).toString().toLowerCase().equals(op.toLowerCase())) {
+               x = true;
+               break;
+           }           
+        }
+        return x;
     }
+   
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -645,7 +756,6 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel1 = new javax.swing.JLabel();
         tbkey = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
-        ddop = new javax.swing.JComboBox();
         tbrunhoursinverted = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
@@ -667,6 +777,13 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
         btdeleteoperator = new javax.swing.JButton();
         lbloperatorname = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tableoperation = new javax.swing.JTable();
+        btaddop = new javax.swing.JButton();
+        btupdateop = new javax.swing.JButton();
+        btdeleteop = new javax.swing.JButton();
+        tbop = new javax.swing.JTextField();
+        btclearop = new javax.swing.JButton();
 
         jButton1.setText("jButton1");
 
@@ -717,13 +834,6 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
 
         jLabel6.setText("Operation:");
         jLabel6.setName("lbloperation"); // NOI18N
-
-        ddop.setEditable(true);
-        ddop.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ddopActionPerformed(evt);
-            }
-        });
 
         tbrunhoursinverted.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
@@ -809,66 +919,140 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel4.setText("Operator");
         jLabel4.setName("lbloperator"); // NOI18N
 
+        tableoperation.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        tableoperation.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tableoperationMouseClicked(evt);
+            }
+        });
+        jScrollPane2.setViewportView(tableoperation);
+
+        btaddop.setText("Add Operation");
+        btaddop.setName("btaddop"); // NOI18N
+        btaddop.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btaddopActionPerformed(evt);
+            }
+        });
+
+        btupdateop.setText("Update Operation");
+        btupdateop.setName("btupdateop"); // NOI18N
+        btupdateop.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btupdateopActionPerformed(evt);
+            }
+        });
+
+        btdeleteop.setText("Delete Operation");
+        btdeleteop.setName("btdeleteop"); // NOI18N
+        btdeleteop.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btdeleteopActionPerformed(evt);
+            }
+        });
+
+        tbop.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                tbopFocusLost(evt);
+            }
+        });
+
+        btclearop.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/newfile.png"))); // NOI18N
+        btclearop.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btclearopActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(18, 18, 18)
+                .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel6)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel7)
-                    .addComponent(jLabel10)
-                    .addComponent(jLabel9)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel4))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(cbmilestone, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(tbopdesc, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 273, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(tbrunhoursinverted, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
-                                .addComponent(tbsetuphours))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel12)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(tbrunhours, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addGroup(jPanel1Layout.createSequentialGroup()
-                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(btaddoperator, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(btdeleteoperator, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(jPanel1Layout.createSequentialGroup()
-                                    .addComponent(btdelete)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(btupdate)))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(btadd)))
-                    .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(ddop, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel6)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel7)
+                            .addComponent(jLabel10)
+                            .addComponent(jLabel9)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel1))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btlookup, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(13, 13, 13)
-                        .addComponent(btnew)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btclear))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addComponent(btdelete)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btupdate)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btadd))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btlookup, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(13, 13, 13)
+                                        .addComponent(btnew)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btclear))
+                                    .addComponent(cbmilestone, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(ddwc, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(tbsetuphours, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(tbrunhoursinverted, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addGap(26, 26, 26)
+                                                .addComponent(jLabel12)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(tbrunhours, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addGap(14, 14, 14)
+                                                .addComponent(btlookupWorkCenter, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                        .addGap(6, 6, 6)
+                                        .addComponent(jLabel4)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addComponent(ddoperator, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                                .addComponent(btaddoperator, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(btdeleteoperator, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addComponent(btaddop)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(btupdateop)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btdeleteop))
+                                    .addComponent(tbopdesc, javax.swing.GroupLayout.PREFERRED_SIZE, 273, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                            .addComponent(tbop)
+                                            .addComponent(ddsite, 0, 105, Short.MAX_VALUE))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btclearop, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(271, 271, 271)
+                                        .addComponent(lbloperatorname, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE))))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(ddwc, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btlookupWorkCenter, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(ddoperator, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(lbloperatorname, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 715, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(27, 27, 27)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -888,128 +1072,62 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(jLabel2)
                     .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel6)
-                    .addComponent(ddop, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tbopdesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cbmilestone)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel7)
-                        .addComponent(ddwc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(btlookupWorkCenter))
+                        .addComponent(jLabel6)
+                        .addComponent(tbop, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lbloperatorname, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btclearop, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel9)
-                    .addComponent(tbsetuphours, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(tbopdesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel3))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cbmilestone)
+                        .addGap(3, 3, 3)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jLabel7)
+                                .addComponent(ddwc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(btlookupWorkCenter))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel9)
+                            .addComponent(tbsetuphours, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(ddoperator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel4))
+                            .addComponent(btaddoperator, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btdeleteoperator, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbrunhoursinverted, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel10)
                     .addComponent(tbrunhours, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel12))
+                .addGap(7, 7, 7)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btaddop)
+                    .addComponent(btdeleteop)
+                    .addComponent(btupdateop))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(ddoperator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel4))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(4, 4, 4)
-                        .addComponent(lbloperatorname, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btdeleteoperator, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(btadd)
-                            .addComponent(btupdate)
-                            .addComponent(btdelete)))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(btaddoperator, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btadd)
+                    .addComponent(btupdate)
+                    .addComponent(btdelete))
                 .addContainerGap())
         );
 
         add(jPanel1);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void ddopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddopActionPerformed
-        String[] m = new String[2];
-        if (ddop != null && ddop.getItemCount() > 0) {
-        try {
-           Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-              
-                double runhours = 0;
-                double setuphours = 0;
-                 int i = 0;
-                res = st.executeQuery("select * from wf_mstr where wf_id = " + "'" + tbkey.getText() + "'"  + " AND " +
-                        " wf_op = " + "'" + ddop.getSelectedItem().toString() + "'" + ";");
-                        
-                while (res.next()) {
-                    i++;
-                    
-                    if (res.getDouble("wf_run_hours") > 0)
-                        runhours = 1 / res.getDouble("wf_run_hours");
-                    else
-                        runhours = 0;
-                    
-                    
-                    ddwc.setSelectedItem(res.getString("wf_cell"));
-                    tbopdesc.setText(res.getString("wf_desc"));
-                    ddsite.setSelectedItem(res.getString("wf_site"));
-                    tbrunhours.setText(res.getString("wf_run_hours"));
-                    tbsetuphours.setText(res.getString("wf_setup_hours"));
-                    tbrunhoursinverted.setText(String.valueOf(currformatDouble(runhours)));
-                    cbmilestone.setSelected(BlueSeerUtils.ConvertStringToBool(res.getString("wf_assert")));
-                }
-                // potentially new op...fields to defaults
-                if (i == 0) {
-                    ddwc.setSelectedIndex(0);
-                    tbopdesc.setText("");
-                    ddsite.setSelectedIndex(0);
-                    tbrunhours.setText("");
-                    tbsetuphours.setText("");
-                    tbrunhoursinverted.setText("");
-                    cbmilestone.setSelected(false);
-                    
-                    btadd.setEnabled(true);
-                    btupdate.setEnabled(false);
-                    btdelete.setEnabled(false);
-                    
-                }
-                
-           } catch (SQLException s) {
-                MainFrame.bslog(s);
-                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordSQLError};  
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordConnError};  
-        }
-        
-        getOperators(tbkey.getText(), ddop.getSelectedItem().toString());
-        
-        }
-    }//GEN-LAST:event_ddopActionPerformed
 
     private void btaddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddActionPerformed
        if (! validateInput(dbaction.add)) {
@@ -1024,12 +1142,12 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
            return;
        }
         setPanelComponentState(this, false);
-        executeTask(dbaction.update, new String[]{tbkey.getText(), ddop.getSelectedItem().toString()});
+        executeTask(dbaction.update, new String[]{tbkey.getText(), tbop.getText()});
     }//GEN-LAST:event_btupdateActionPerformed
 
     private void btdeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteActionPerformed
         setPanelComponentState(this, false);
-        executeTask(dbaction.delete, new String[]{tbkey.getText(), ddop.getSelectedItem().toString()});   
+        executeTask(dbaction.delete, new String[]{tbkey.getText(), tbop.getText()});   
     }//GEN-LAST:event_btdeleteActionPerformed
 
     private void tbrunhoursinvertedFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbrunhoursinvertedFocusLost
@@ -1077,9 +1195,9 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btlookupWorkCenterActionPerformed
 
     private void btaddoperatorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddoperatorActionPerformed
-        if (! lbloperatorname.getText().isBlank()) {
-        addInvMetaOperator(tbkey.getText(), ddop.getSelectedItem().toString(), lbloperatorname.getText());
-        getOperators(tbkey.getText(), ddop.getSelectedItem().toString());
+        if (! lbloperatorname.getText().isBlank() && ! tbop.getText().isBlank()) {
+        addInvMetaOperator(tbkey.getText(), tbop.getText(), lbloperatorname.getText());
+        getOperators(tbkey.getText(), tbop.getText());
         ddoperator.setSelectedIndex(0);
         }
     }//GEN-LAST:event_btaddoperatorActionPerformed
@@ -1093,9 +1211,9 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
         } else {
             proceed = bsmf.MainFrame.warn(getMessageTag(1004));
         }
-        if (proceed) {
-            deleteInvMetaOperator(tbkey.getText(), ddop.getSelectedItem().toString(), listOperators.getSelectedValue().toString());
-            getOperators(tbkey.getText(), ddop.getSelectedItem().toString());
+        if (proceed && ! tbop.getText().isBlank()) {
+            deleteInvMetaOperator(tbkey.getText(), tbop.getText(), listOperators.getSelectedValue().toString());
+            getOperators(tbkey.getText(), tbop.getText());
         }
     }//GEN-LAST:event_btdeleteoperatorActionPerformed
 
@@ -1109,19 +1227,121 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
     }//GEN-LAST:event_ddoperatorActionPerformed
 
+    private void tableoperationMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableoperationMouseClicked
+        int row = tableoperation.rowAtPoint(evt.getPoint());
+        int col = tableoperation.columnAtPoint(evt.getPoint());
+        // element, percent, type, enabled
+        tbop.setText(tableoperation.getValueAt(row, 0).toString());
+        tbopdesc.setText(tableoperation.getValueAt(row, 1).toString());
+        cbmilestone.setSelected(BlueSeerUtils.ConvertStringToBool(tableoperation.getValueAt(row, 2).toString()));
+        ddwc.setSelectedItem(tableoperation.getValueAt(row, 3).toString());
+        tbsetuphours.setText(tableoperation.getValueAt(row, 4).toString());
+        
+        tbrunhoursinverted.setText(tableoperation.getValueAt(row, 5).toString());
+        double runhours = 0;
+        if (! tableoperation.getValueAt(row, 5).toString().isBlank() && Double.valueOf(tableoperation.getValueAt(row, 5).toString()) > 0) {
+            runhours = (1 / Double.valueOf(tableoperation.getValueAt(row, 5).toString()));
+        } else {
+            runhours = 0;
+        }
+        tbrunhours.setText(bsNumber(runhours));
+        getOperators(tbkey.getText(), tableoperation.getValueAt(row, 0).toString());
+        
+    }//GEN-LAST:event_tableoperationMouseClicked
+
+    private void btaddopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddopActionPerformed
+        
+        if (! validateOPInput(dbaction.add)) {
+           return;
+       }
+        
+        String defaultvalue = String.valueOf(BlueSeerUtils.boolToInt(cbmilestone.isSelected()));
+       
+        if (! hasOperation(tbop.getText())) {
+        operationmodel.addRow(new Object[]{ tbop.getText(), tbopdesc.getText(), defaultvalue, ddwc.getSelectedItem().toString(), tbsetuphours.getText(), tbrunhoursinverted.getText() });
+        
+        tbop.setText("");
+        tbopdesc.setText("");
+        ddwc.setSelectedIndex(0);
+        tbsetuphours.setText("0");
+        tbrunhoursinverted.setText("0");
+        tbrunhours.setText("");
+        cbmilestone.setSelected(false);
+        } else {
+            bsmf.MainFrame.show("Operation already exists");
+        }
+        
+    }//GEN-LAST:event_btaddopActionPerformed
+
+    private void btupdateopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateopActionPerformed
+        int[] rows = tableoperation.getSelectedRows();
+        if (rows.length != 1) {
+            bsmf.MainFrame.show(getMessageTag(1095));
+            return;
+        }
+        for (int i : rows) {
+            tableoperation.setValueAt(tbopdesc.getText(), i, 1);
+            tableoperation.setValueAt(String.valueOf(BlueSeerUtils.boolToInt(cbmilestone.isSelected())), i, 2);
+            tableoperation.setValueAt(ddwc.getSelectedItem().toString(), i, 3);
+            tableoperation.setValueAt(tbsetuphours.getText(), i, 4);
+            tableoperation.setValueAt(tbrunhoursinverted.getText(), i, 5);
+        }
+        
+    }//GEN-LAST:event_btupdateopActionPerformed
+
+    private void btdeleteopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteopActionPerformed
+        int[] rows = tableoperation.getSelectedRows();
+        for (int i : rows) {
+            bsmf.MainFrame.show(getMessageTag(1031,String.valueOf(i)));
+            ((javax.swing.table.DefaultTableModel) tableoperation.getModel()).removeRow(i);
+
+        }
+    }//GEN-LAST:event_btdeleteopActionPerformed
+
+    private void btclearopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearopActionPerformed
+        tbop.setText("");
+        tbopdesc.setText("");
+        ddwc.setSelectedIndex(0);
+        tbsetuphours.setText("0");
+        tbrunhoursinverted.setText("0");
+        tbrunhours.setText("");
+        cbmilestone.setSelected(false);
+        
+        tbop.setBackground(Color.yellow);
+        tbop.requestFocus();
+        
+    }//GEN-LAST:event_btclearopActionPerformed
+
+    private void tbopFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbopFocusLost
+       
+        String x = BlueSeerUtils.bsformat("s", tbop.getText(), "0"); // updated to 5 decimal places 20220531
+        if (x.equals("error")) {
+            tbop.setText("");
+            tbop.setBackground(Color.yellow);
+            bsmf.MainFrame.show(getMessageTag(1000));
+            tbop.requestFocus();
+        } else {
+            tbop.setText(x);
+            tbop.setBackground(Color.white);
+        }
+    }//GEN-LAST:event_tbopFocusLost
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btadd;
+    private javax.swing.JButton btaddop;
     private javax.swing.JButton btaddoperator;
     private javax.swing.JButton btclear;
+    private javax.swing.JButton btclearop;
     private javax.swing.JButton btdelete;
+    private javax.swing.JButton btdeleteop;
     private javax.swing.JButton btdeleteoperator;
     private javax.swing.JButton btlookup;
     private javax.swing.JButton btlookupWorkCenter;
     private javax.swing.JButton btnew;
     private javax.swing.JButton btupdate;
+    private javax.swing.JButton btupdateop;
     private javax.swing.JCheckBox cbmilestone;
-    private javax.swing.JComboBox ddop;
     private javax.swing.JComboBox<String> ddoperator;
     private javax.swing.JComboBox<String> ddsite;
     private javax.swing.JComboBox<String> ddwc;
@@ -1137,9 +1357,12 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lbloperatorname;
     private javax.swing.JList<String> listOperators;
+    private javax.swing.JTable tableoperation;
     private javax.swing.JTextField tbkey;
+    private javax.swing.JTextField tbop;
     private javax.swing.JTextField tbopdesc;
     private javax.swing.JTextField tbrunhours;
     private javax.swing.JTextField tbrunhoursinverted;
