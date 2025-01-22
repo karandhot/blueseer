@@ -3235,7 +3235,7 @@ public class ediData {
         
     }
     
-public static ArrayList<String> getFTPWkfl(String site) {
+    public static ArrayList<String> getFTPWkfl(String site) {
        ArrayList<String> mylist = new ArrayList<String>();
         try{
             Connection con = null;
@@ -3780,6 +3780,16 @@ public static ArrayList<String> getFTPWkfl(String site) {
                 
                 case "MBToTranslate" :
                 rr = wkfaction_mbToTranslate(wkf, wkd, getWkfdMeta(wkd.wkfd_id(), wkd.wkfd_line()));
+                lgd[3] = rr.status();
+                lgd[4] = rr.messg();
+                if (! rr.status().equals("0")) {
+                    logdetail.add(lgd);
+                    break forloop;
+                } 
+                break;
+                
+                case "AS2ToEDIIn" :
+                rr = wkfaction_as2ToEDIIn(wkf, wkd, getWkfdMeta(wkd.wkfd_id(), wkd.wkfd_line()));
                 lgd[3] = rr.status();
                 lgd[4] = rr.messg();
                 if (! rr.status().equals("0")) {
@@ -4539,6 +4549,65 @@ public static ArrayList<String> getFTPWkfl(String site) {
         return new String[]{"0", messg};  // overall...workflow suceeds even if individual internal actions do not...will be logged regardless
     }
     
+    public static JRRT wkfaction_as2ToEDIIn(wkf_mstr wkf, wkf_det wkfd, ArrayList<wkfd_meta> list) {
+        String[] r = new String[]{"0",""};
+        String messg = "";
+        String site = "";
+        String source = "";
+        String destination = "";
+        ArrayList<String> logdetails = new ArrayList<String>();
+        
+        for (wkfd_meta m : list) {
+            if (m.wkfdm_key().equals("site") && ! m.wkfdm_value.isBlank()) {
+                site = m.wkfdm_value();
+            }
+            if (m.wkfdm_key().equals("destination") && ! m.wkfdm_value.isBlank()) {
+                destination = m.wkfdm_value();
+            }
+        }
+        if (site.equals("*")) {
+            site = "all";
+        }
+        
+        int count = 0;
+        
+      //  ArrayList<String[]> mblist = getEDIPartners(edptype);  // list of all internal edi partners that are 'enabled'
+        ArrayList<String> as2list = getAS2Wkfl(site);  // list of all as2 that are 'enabled'
+        for (String s : as2list) {
+            as2_mstr as2 = getAS2Mstr(new String[]{s});
+           if (as2.as2_inwkf().equals(wkf.wkf_id)) {  // if as2 ID is assigned this executing workflow id then fire
+                
+               source = as2.as2_indir();
+               
+                count = 0;
+                if (! source.isEmpty() && ! destination.isEmpty()) {
+                Path sourcepath = FileSystems.getDefault().getPath(source);
+                    try (DirectoryStream<Path> stream = Files.newDirectoryStream(sourcepath, "*")) {
+                        int f = 0;
+                        for (Path path : stream) {
+                            if (! Files.isDirectory(path)) {
+                                count++;
+                                Path destinationpath = FileSystems.getDefault().getPath(destination + "/" + path.getFileName());    
+                                if (Files.exists(destinationpath)) {
+                                    destinationpath = FileSystems.getDefault().getPath(destination + "/" + path.getFileName() + "." + Long.toHexString(System.currentTimeMillis())); 
+                                    Files.move(path, destinationpath, StandardCopyOption.REPLACE_EXISTING);
+                                } else {
+                                    Files.move(path, destinationpath, StandardCopyOption.REPLACE_EXISTING); 
+                                }
+                            }
+                        }
+                        logdetails.add("Moving " + count +  " files " + " from " + source + " to " + destination);
+                    } catch (IOException ex) {  
+                            r[0] = "1";
+                            logdetails.add("ERROR WorkFlowID: " + wkfd.wkfd_id + " action: " + wkfd.wkfd_action + "->"  + ex.getMessage());
+                    }  
+                }
+            }
+        }
+        return new JRRT(r[0], messg, logdetails);
+      //  return new String[]{"0", messg};  // overall...workflow suceeds even if individual internal actions do not...will be logged regardless
+    }
+    
     public static String[] wkfaction_ftpToTranslate(wkf_mstr wkf, wkf_det wkfd, ArrayList<wkfd_meta> list) {
        
         String[] r = new String[]{"0",""};
@@ -4667,6 +4736,7 @@ public static ArrayList<String> getFTPWkfl(String site) {
         return new JRRT(r[0], messg, logdetails);
       //  return new String[]{"0", messg};  // overall...workflow suceeds even if individual internal actions do not...will be logged regardless
     }
+    
     
     
     public static String[] wkfaction_as2outbound(wkf_mstr wkf, wkf_det wkfd, ArrayList<wkfd_meta> list) {

@@ -579,6 +579,7 @@ public class WorkFlowMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddactions.addItem("EmailDirList");
         ddactions.addItem("FTPToTranslate");
         ddactions.addItem("MBToTranslate");
+        ddactions.addItem("AS2ToEDIIn");
         
         for (int i = 0; i < ddactions.getItemCount(); i++) {
             
@@ -745,6 +746,12 @@ public class WorkFlowMaint extends javax.swing.JPanel implements IBlueSeerT {
                 x.add(new String[]{"type", ""});
                 x.add(new String[]{"destination", ""});
                 kvs.put("MBToTranslate", x);
+            }
+            if (i == 23) {
+                ArrayList<String[]> x = new ArrayList<String[]>();
+                x.add(new String[]{"site", ""});
+                x.add(new String[]{"destination", ""});
+                kvs.put("AS2ToEDIIn", x);
             }
         }
         
