@@ -3790,13 +3790,13 @@ public class ediData {
                 
                 case "AS2ToEDIIn" :
                 rr = wkfaction_as2ToEDIIn(wkf, wkd, getWkfdMeta(wkd.wkfd_id(), wkd.wkfd_line()));
-                lgd[3] = rr.status();
-                lgd[4] = rr.messg();
-                if (! rr.status().equals("0")) {
-                    logdetail.add(lgd);
-                    break forloop;
-                } 
-                break;
+                if (! rr.rarray.isEmpty()) {
+                    for (String k : rr.rarray()) {
+                     logdetail.add(new String[]{wkd.wkfd_action(), eventtime, "", rr.status(), k});   
+                    }
+                }
+                
+                break forloop;
                 
             default:
                 return bsret("Unknown WorkFlow Action! " + " id: " + id + " action: " + wkd.wkfd_action());
@@ -4555,6 +4555,8 @@ public class ediData {
         String site = "";
         String source = "";
         String destination = "";
+        String archivedir = "";
+        
         ArrayList<String> logdetails = new ArrayList<String>();
         
         for (wkfd_meta m : list) {
@@ -4563,6 +4565,9 @@ public class ediData {
             }
             if (m.wkfdm_key().equals("destination") && ! m.wkfdm_value.isBlank()) {
                 destination = m.wkfdm_value();
+            }
+            if (m.wkfdm_key().equals("archivedir") && ! m.wkfdm_value.isBlank()) {
+                archivedir = m.wkfdm_value();
             }
         }
         if (site.equals("*")) {
@@ -4575,6 +4580,9 @@ public class ediData {
         ArrayList<String> as2list = getAS2Wkfl(site);  // list of all as2 that are 'enabled'
         for (String s : as2list) {
             as2_mstr as2 = getAS2Mstr(new String[]{s});
+            
+            
+           // System.out.println(as2.as2_inwkf() + " / " + wkf.wkf_id + " / " + as2.as2_indir());
            if (as2.as2_inwkf().equals(wkf.wkf_id)) {  // if as2 ID is assigned this executing workflow id then fire
                 
                source = as2.as2_indir();
@@ -4587,7 +4595,15 @@ public class ediData {
                         for (Path path : stream) {
                             if (! Files.isDirectory(path)) {
                                 count++;
-                                Path destinationpath = FileSystems.getDefault().getPath(destination + "/" + path.getFileName());    
+                                Path destinationpath = FileSystems.getDefault().getPath(destination + "/" + path.getFileName()); 
+                                
+                                // archive before move if archivedir is not blank
+                                if (! archivedir.isBlank()) {
+                                 Path archivefilepath = FileSystems.getDefault().getPath(archivedir + "/" + path.getFileName());  
+                                 if (Files.isDirectory(FileSystems.getDefault().getPath(archivedir))) { // validate existing archivedir
+                                    Files.copy(path, archivefilepath, StandardCopyOption.REPLACE_EXISTING);
+                                 }
+                                }
                                 if (Files.exists(destinationpath)) {
                                     destinationpath = FileSystems.getDefault().getPath(destination + "/" + path.getFileName() + "." + Long.toHexString(System.currentTimeMillis())); 
                                     Files.move(path, destinationpath, StandardCopyOption.REPLACE_EXISTING);
@@ -4596,7 +4612,7 @@ public class ediData {
                                 }
                             }
                         }
-                        logdetails.add("Moving " + count +  " files " + " from " + source + " to " + destination);
+                        logdetails.add("AS2id= " + as2.as2_id() + " Moving " + count +  " files " + " from " + source + " to " + destination);
                     } catch (IOException ex) {  
                             r[0] = "1";
                             logdetails.add("ERROR WorkFlowID: " + wkfd.wkfd_id + " action: " + wkfd.wkfd_action + "->"  + ex.getMessage());
