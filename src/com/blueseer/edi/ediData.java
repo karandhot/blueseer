@@ -2817,7 +2817,7 @@ public class ediData {
             ResultSet res = null;
             try {
 
-                res = st.executeQuery("select edim_key, edim_value from edi_meta where " +
+                res = st.executeQuery("select * from edi_meta where " +
                         " edim_id = " + "'" + id + "'" + 
                         " order by edim_type;" );
                while (res.next()) {
