@@ -16835,6 +16835,89 @@ return mystring;
                 
       }
     
+    public static void exportOrderDetail(JTable tablereport) {
+        FileDialog fDialog;
+        fDialog = new FileDialog(new Frame(), "Save", FileDialog.SAVE);
+        fDialog.setVisible(true);
+       // fDialog.setFile("data.csv");
+        String path = fDialog.getDirectory() + fDialog.getFile();
+        File f = new File(path);
+        BufferedWriter output = null;
+        HashSet<String> set = new HashSet<String>();
+             
+        
+         try{
+            output = new BufferedWriter(new FileWriter(f));
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            String header = "ChangeID, Sales Order Number, PO Number, Order Date, Customer Name, Shipto Name, Shipto City, Shipto State, Shipto Zip,  DueDate, Remarks, Order Line Number, Item Number, Item Description, Sku Number, UPC Number, Order Quantity, Order Price";
+            try {
+                for (int i = 0; i < tablereport.getRowCount(); i++) {
+                res = st.executeQuery("select so_nbr, so_po, so_create_date, " +
+                        " cm_name, cms_name, cms_city, cms_state, cms_zip,  so_due_date, " +
+                        " so_rmks, sod_line, sod_item, sod_desc, sod_custitem, " +
+                        " sod_ord_qty, sod_netprice from so_mstr " + 
+                        " inner join sod_det on sod_nbr = so_nbr " +
+                        " inner join cm_mstr on cm_code = so_cust " +
+                        " inner join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
+                        " where so_po = " + "'" + tablereport.getValueAt(i, 3).toString() + "'" + 
+                        " order by soc_id;");
+                int k = 0;
+                while (res.next()) {
+                    k++;
+                     StringBuilder line = new StringBuilder();
+                     for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
+                       line.append(res.getString(j).replace(",","")).append(",");
+                     }
+                    // output.write(line.deleteCharAt(line.length() - 1).toString() + "\n");  
+                     // now append with edi ta
+                     String[] ta = getEDIMetaValueAsRow(tablereport.getValueAt(i, 3).toString(), true);
+                     String addheader = "";
+                     if (ta != null) {
+                         addheader = ta[0];
+                         line.append(ta[1]);
+                     }
+                     if (k == 1) {
+                     output.write(header + "," + addheader + "\n");
+                     }
+                     output.write(line.deleteCharAt(line.length() - 1).toString() + "\n");
+                                     
+                 }
+                
+                set.add(tablereport.getValueAt(i, 3).toString());
+                } // for each line in tablereport
+                
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        }
+        catch (IOException | SQLException e){
+            MainFrame.bslog(e);
+        } finally {
+          if (output != null) {
+              try {
+                  output.close();
+              } catch (IOException ex) {
+                  bslog(ex);
+              }
+          }   
+        }
+    }
+        
+    
     public static void exportCertToFile(String data, String filename) {
         FileDialog fDialog;
                 fDialog = new FileDialog(new Frame(), "Save", FileDialog.SAVE);
