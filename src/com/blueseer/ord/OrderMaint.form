@@ -238,7 +238,7 @@
                       <Component id="lblshiptoname" alignment="1" min="-2" pref="30" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jPanel1" pref="218" max="32767" attributes="0"/>
+                  <Component id="jPanel1" pref="219" max="32767" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="jPanel3" max="32767" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -1121,9 +1121,11 @@
                               <Component id="jPanel8" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="88" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="90" max="-2" attributes="0"/>
                               <Component id="itemshipaddrlbl" min="-2" pref="432" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
+                              <Component id="btitemkv" min="-2" pref="28" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="btadditem" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="btupdateitem" min="-2" max="-2" attributes="0"/>
@@ -1144,18 +1146,19 @@
                           <Component id="jPanel7" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="jPanel8" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="itemshipaddrlbl" max="32767" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="btdelitem" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="btadditem" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="btupdateitem" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="itemshipaddrlbl" alignment="0" min="-2" pref="14" max="-2" attributes="0"/>
+                          <Group type="103" alignment="0" groupAlignment="1" attributes="0">
+                              <Component id="btitemkv" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="btdelitem" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="btadditem" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="btupdateitem" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
                           </Group>
                       </Group>
+                      <EmptySpace pref="12" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1184,7 +1187,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="1" attributes="0">
                               <Component id="lblpart1" alignment="1" min="-2" max="-2" attributes="0"/>
@@ -1196,19 +1199,14 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="tbdesc" alignment="0" min="-2" pref="260" max="-2" attributes="0"/>
-                                      <Component id="custnumber" min="-2" pref="260" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace min="71" pref="105" max="32767" attributes="0"/>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
                                   <Component id="qtyshipped" min="-2" pref="80" max="-2" attributes="0"/>
                                   <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
                                   <Component id="lbqtyavailable" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="tbdesc" alignment="0" min="-2" pref="260" max="-2" attributes="0"/>
+                                      <Component id="custnumber" min="-2" pref="260" max="-2" attributes="0"/>
                                       <Component id="dduom" min="-2" pref="117" max="-2" attributes="0"/>
                                       <Group type="102" alignment="0" attributes="0">
                                           <Component id="tbitem" min="-2" pref="216" max="-2" attributes="0"/>
@@ -1216,7 +1214,7 @@
                                           <Component id="btLookUpItemDesc" min="-2" pref="28" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="105" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -1434,7 +1432,7 @@
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
-                          <EmptySpace pref="117" max="32767" attributes="0"/>
+                          <EmptySpace pref="101" max="32767" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="jLabel95" alignment="1" min="-2" max="-2" attributes="0"/>
                               <Component id="jLabel96" alignment="1" min="-2" max="-2" attributes="0"/>
@@ -1593,6 +1591,16 @@
               </Events>
             </Component>
             <Component class="javax.swing.JLabel" name="itemshipaddrlbl">
+            </Component>
+            <Component class="javax.swing.JButton" name="btitemkv">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/images/details.png"/>
+                </Property>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btitemkvActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>

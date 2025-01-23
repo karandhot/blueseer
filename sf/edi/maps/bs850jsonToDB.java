@@ -83,8 +83,10 @@ double discount;
 double listprice;
 double netprice;
 boolean useInternalPrice = false;
+String[] kvpairs = null;
 
 for (int i = 1; i <= itemcount; i++) {
+        kvpairs = null;
 	e.addDetail();  // INITIATE An ArrayList
         totalqty += Double.valueOf(getInput(i, "order:items:item","orderquantity"));
 
@@ -114,6 +116,17 @@ for (int i = 1; i <= itemcount; i++) {
         ta.add(new String[]{po,("detail:"+snum(i)),"altprice", getInput(i, "order:items:item","altprice")});
         ta.add(new String[]{po,("detail:"+snum(i)),"rtlprice", getInput(i, "order:items:item","rtlprice")}); 
 
+        kvpairs = getInput(i, "order:items:item","kvpair").split(":",-1);
+        if (kvpairs != null && kvpairs.length > 0) {
+          for (String kvpair : kvpairs) {
+            String[] kv = kvpair.split("=",-1);
+            System.out.println(kvpair);
+            if (kv != null && kv.length > 1) {
+            ta.add(new String[]{po,("detail:"+snum(i)),kv[0], kv[1]});
+            }
+          }
+        }
+        
 
         if (useInternalPrice) {
         listprice = invData.getItemPriceFromCust(e.getOVBillTo(), item, uom, cusData.getCustCurrency(e.getOVBillTo()),"LIST",getInput(i, "order:items:item","orderquantity"));

@@ -63,6 +63,7 @@ JSONGenericOrder,item,items,1,0,0,reference,reference,1,100,-,O,F
 JSONGenericOrder,item,items,1,0,0,altprice,Alternate Price,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,rtlprice,Retail Price,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,change,Item Change Type,1,50,-,O,F
+JSONGenericOrder,item,items,1,0,0,kvpair,Key Value field,1,500,-,O,F
 JSONGenericOrder,sacs,order,5,1,1,landmark,landmark,9,9,-,M,F
 JSONGenericOrder,sac,sacs,5,1,1,landmark,landmark,9,9,-,M,F
 JSONGenericOrder,sac,sacs,1,0,0,sactype,SAC Type,1,40,-,O,F

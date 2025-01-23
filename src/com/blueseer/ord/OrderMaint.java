@@ -40,6 +40,7 @@ import com.blueseer.ctr.cusData.cms_det;
 import static com.blueseer.ctr.cusData.getDiscCodeByCust;
 import static com.blueseer.ctr.cusData.getShipAddressInfo;
 import static com.blueseer.edi.ediData.getEDIMetaValueAll;
+import static com.blueseer.edi.ediData.getEDIMetaValueDetail;
 import com.blueseer.fgl.fglData;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.getItemDataInit;
@@ -99,6 +100,9 @@ import static com.blueseer.utl.OVData.isVoucherShippingSO;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -128,6 +132,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -157,6 +162,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 boolean autoallocate = false;
                 boolean canupdate = false;
                 String allocationStatus = "";
+                String currentline = "";
                 public static so_mstr so = null;
                 public static ArrayList<sod_det> sodlist = null;
                 public static ArrayList<sos_det> soslist = null;
@@ -454,6 +460,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
        // jTabbedPane1.setEnabledAt(1, false);
         jTabbedPane1.setEnabledAt(2, false);
         
+        currentline = "";
+        btitemkv.setEnabled(false);
         
         tbkey.setText("");
         tbkey.setEditable(true);
@@ -696,6 +704,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                    dccreate.setEnabled(false);
                    tbkey.setForeground(Color.blue);
                    disableShipAddress();
+                   btitemkv.setEnabled(false);
                     // custom set
                     
                     refreshDisplayTotals();
@@ -2245,6 +2254,48 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         return list;
     }
       
+    public void showEDIKV(String key, String line) {
+        javax.swing.JTextArea ta = new javax.swing.JTextArea();
+        
+        JScrollPane scroll = new JScrollPane(ta);
+        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        
+                
+        ArrayList<String[]> list = getEDIMetaValueDetail(key, line);
+        
+        if (list == null || list.isEmpty()) {
+            bsmf.MainFrame.show("no item level edi kv data to show");
+            return;
+        }
+        
+        ta.setText("  " + "\n\n");
+        for (String[] s : list) {
+          ta.append("Key: " + s[2] + " \t\t  Value: " + s[3] + "  \n");
+        }
+        
+        ta.setCaretPosition(0);
+        ta.setEditable(false);
+        
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Item level Key/Value Pair Information : " + key + " line: " + line);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints panelGBC = new GridBagConstraints();
+
+        panelGBC.weightx = 1;                    //I want to fill whole panel with JTextArea
+        panelGBC.weighty = 1;                    //so both weights =1
+        panelGBC.fill = GridBagConstraints.BOTH; //and fill is set to BOTH
+        
+        panel.add(scroll, panelGBC);
+        dialog.add(panel);
+        dialog.setPreferredSize(new Dimension(500, 400));
+        dialog.pack();
+        dialog.setLocationRelativeTo( null );
+        dialog.setResizable(false);
+        dialog.setVisible(true);
+    }
+    
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -2379,6 +2430,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         btLookUpItemShipTo = new javax.swing.JButton();
         btupdateitem = new javax.swing.JButton();
         itemshipaddrlbl = new javax.swing.JLabel();
+        btitemkv = new javax.swing.JButton();
         jScrollPane8 = new javax.swing.JScrollPane();
         orddet = new javax.swing.JTable();
         jPanel5 = new javax.swing.JPanel();
@@ -3048,7 +3100,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(btLookUpShipTo)
                     .addComponent(lblshiptoname, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
@@ -3143,22 +3195,19 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(tbdesc, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(custnumber, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(71, 105, Short.MAX_VALUE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(qtyshipped, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(17, 17, 17)
                         .addComponent(lbqtyavailable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(tbdesc, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(custnumber, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(dduom, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(tbitem, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btLookUpItemDesc, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 105, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -3312,7 +3361,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         jPanel8Layout.setHorizontalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel8Layout.createSequentialGroup()
-                .addContainerGap(117, Short.MAX_VALUE)
+                .addContainerGap(101, Short.MAX_VALUE)
                 .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel95, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel96, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -3367,6 +3416,13 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
+        btitemkv.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/details.png"))); // NOI18N
+        btitemkv.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btitemkvActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -3381,9 +3437,11 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGap(88, 88, 88)
+                        .addGap(90, 90, 90)
                         .addComponent(itemshipaddrlbl, javax.swing.GroupLayout.PREFERRED_SIZE, 432, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btitemkv, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btadditem)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btupdateitem)
@@ -3401,13 +3459,14 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(itemshipaddrlbl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(btdelitem)
-                        .addComponent(btadditem)
-                        .addComponent(btupdateitem))))
+                    .addComponent(itemshipaddrlbl, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(btitemkv)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btdelitem)
+                            .addComponent(btadditem)
+                            .addComponent(btupdateitem))))
+                .addContainerGap(12, Short.MAX_VALUE))
         );
 
         orddet.setModel(new javax.swing.table.DefaultTableModel(
@@ -4044,7 +4103,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         netprice.setText(orddet.getValueAt(row, 9).toString());
         discount.setText(orddet.getValueAt(row, 8).toString());
         
-        
+        currentline = orddet.getValueAt(row, 0).toString();
+         btitemkv.setEnabled(true);
         // ddbom.setSelectedIndex(0);
         
         ddbom.removeAllItems();
@@ -4368,6 +4428,10 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         addUpdateSOMetaNotes(tbkey.getText(), x);  
     }//GEN-LAST:event_btnotesActionPerformed
 
+    private void btitemkvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btitemkvActionPerformed
+        showEDIKV(ponbr.getText(), currentline);
+    }//GEN-LAST:event_btitemkvActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btLookUpBillTo;
     private javax.swing.JButton btLookUpItemDesc;
@@ -4381,6 +4445,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btdeleteattachment;
     private javax.swing.JButton btdelitem;
     private javax.swing.JButton btinvoice;
+    private javax.swing.JButton btitemkv;
     private javax.swing.JButton btlookup;
     private javax.swing.JButton btnew;
     private javax.swing.JButton btnotes;
