@@ -1574,8 +1574,16 @@ public abstract class EDIMap {  // took out the implements EDIMapi
                     boolean hasloop = false;
                     String groupparent = parenthead + x[0];
                     
+                    /* bullshit #3  ...add this bullshit to accomodate group tags that don't consistently loop together...i.e.  3 N1 with only 1 N2 */
+                    String parentheadless = "";
+                    if (parenthead.endsWith(":")) {
+                        parentheadless = parenthead.substring(0, parenthead.length() - 1);
+                    } else {
+                        parentheadless = parenthead;
+                    }
+                    /* end of new bullshit #3 */
                     
-                    
+                   
                     if (groupcount.containsKey(groupparent)) {
                             int g = groupcount.get(groupparent);
 
@@ -1589,13 +1597,12 @@ public abstract class EDIMap {  // took out the implements EDIMapi
                                     groupcount.put(groupparent, g);
                             }
                     } else {
-                           // groupcount.put(groupparent, 1);
-                           if (groupcount.get(parenthead) != null) {
-                              groupcount.put(groupparent, groupcount.get(parenthead)); 
+                              // change parentheadless to parenthead to revert back from bullshit #3 above
+                           if (groupcount.get(parentheadless) != null) {
+                              groupcount.put(groupparent, groupcount.get(parentheadless)); 
                            } else {
-                              groupcount.put(groupparent, 1); 
+                              groupcount.put(groupparent, 1);
                            }
-
                     }
 
                     previouskey = parenthead + x[0] + "+" + groupcount.get(groupparent);	
@@ -1625,6 +1632,10 @@ public abstract class EDIMap {  // took out the implements EDIMapi
               //  }
         }
         }
+        
+      //  for (Map.Entry<String,Integer> val : groupcount.entrySet()) {
+       //   System.out.println(val.getKey() + " === " + val.getValue());
+       // }
         return mappedData;
     }
   
