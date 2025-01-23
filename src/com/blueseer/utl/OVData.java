@@ -16843,8 +16843,6 @@ return mystring;
         String path = fDialog.getDirectory() + fDialog.getFile();
         File f = new File(path);
         BufferedWriter output = null;
-        HashSet<String> set = new HashSet<String>();
-             
         
          try{
             output = new BufferedWriter(new FileWriter(f));
@@ -16867,7 +16865,7 @@ return mystring;
                         " inner join sod_det on sod_nbr = so_nbr " +
                         " inner join cm_mstr on cm_code = so_cust " +
                         " inner join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
-                        " where so_po = " + "'" + tablereport.getValueAt(i, 3).toString() + "'" + 
+                        " where so_po = " + "'" + tablereport.getValueAt(i, 2).toString() + "'" + 
                         " order by so_nbr;");
                 int k = 0;
                 while (res.next()) {
@@ -16878,7 +16876,7 @@ return mystring;
                      }
                     // output.write(line.deleteCharAt(line.length() - 1).toString() + "\n");  
                      // now append with edi ta
-                     String[] ta = getEDIMetaValueAsRow(tablereport.getValueAt(i, 3).toString(), true);
+                     String[] ta = getEDIMetaValueAsRow(tablereport.getValueAt(i, 4).toString(), true);
                      String addheader = "";
                      if (ta != null) {
                          addheader = ta[0];
@@ -16891,7 +16889,6 @@ return mystring;
                                      
                  }
                 
-                set.add(tablereport.getValueAt(i, 3).toString());
                 } // for each line in tablereport
                 
            }
