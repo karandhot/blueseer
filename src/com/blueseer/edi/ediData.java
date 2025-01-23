@@ -2821,7 +2821,7 @@ public class ediData {
                         " edim_id = " + "'" + id + "'" + 
                         " order by edim_type;" );
                while (res.next()) {
-                r.add(new String[]{res.getString("edim_key"), res.getString("edim_value")});                    
+                r.add(new String[]{res.getString("edim_id"), res.getString("edim_type"), res.getString("edim_key"), res.getString("edim_value")});                    
                 }
                
            }

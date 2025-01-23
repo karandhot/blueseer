@@ -4119,7 +4119,10 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 if (OVData.getSysMetaValue("system", "ordercontrol", "edita_to_notes").equals("1")) {
                     ArrayList<String[]> edita = getEDIMetaValueAll(ponbr.getText());
                     for (String[] x : edita) {
-                        tanotes.append(x[0] + ":  " + x[1]);
+                        if (x[1].startsWith("detail")) {
+                            continue;
+                        }
+                        tanotes.append(x[1] + "  " + x[2] + ":  " + x[3]);
                         tanotes.append("\n");
                     }
                 }
