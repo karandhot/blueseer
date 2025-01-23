@@ -94,6 +94,7 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
  
      public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
      
+     public String currentid = "";
                           
      
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -107,9 +108,9 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                             "new Due Date",
                             "Changes",
                             getGlobalColumnTag("status"),
-                            "commit",
+                            "Commit",
                             getGlobalColumnTag("void"),
-                            "view"})
+                            "View"})
             {
                       @Override  
                       public Class getColumnClass(int col) {  
@@ -133,7 +134,23 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                             "old price", 
                             "new price", 
                             "old qty", 
-                            "new qty" });
+                            "new qty" })
+            {
+                      @Override  
+                      public Class getColumnClass(int col) {  
+                        if (col == 0)       
+                            return ImageIcon.class;  
+                        else return String.class;  //other columns accept String values  
+                      }  
+                      
+                      @Override
+                      public boolean isCellEditable(int row, int column) {
+                            return false;
+                            //Only the first column
+                            // return column == 1;
+                      }
+                      
+                        };;
     
      class ButtonRenderer extends JButton implements TableCellRenderer {
 
@@ -279,15 +296,16 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                         ";");
                 while (res.next()) {
                    modeldetail.addRow(new Object[]{ 
+                      BlueSeerUtils.clickgear,
                       bsNumber(res.getString("sod_line")), 
-                       res.getString("sod_item"),
-                       bsParseDouble(currformatDouble(res.getDouble("sod_listprice"))),
-                       bsParseDouble(currformatDouble(res.getDouble("sodc_price"))),
+                      res.getString("sod_item"),
+                      bsParseDouble(currformatDouble(res.getDouble("sod_listprice"))),
+                      bsParseDouble(currformatDouble(res.getDouble("sodc_price"))),
                       bsNumber(res.getDouble("sod_ord_qty")), 
                       bsNumber(res.getDouble("sodc_qty"))});
                 }
               
-                tabledetail.setModel(modeldetail);
+                
               //  tabledetail.getColumnModel().getColumn(2).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
               //  tabledetail.getColumnModel().getColumn(3).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
                  this.repaint();
@@ -366,6 +384,12 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         tbfromorder.setText("");
         tbtoorder.setText("");
         
+        currentid = "";
+        
+        tabledetail.setModel(modeldetail);
+        tabledetail.getColumnModel().getColumn(0).setMaxWidth(100);
+        
+        
         
          cbopen.setSelected(true);
          cbclose.setSelected(false);
@@ -426,6 +450,48 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         
         if (list == null || list.isEmpty()) {
             bsmf.MainFrame.show("no header level edi kv data to show");
+            return;
+        }
+        
+        ta.setText("  " + "\n\n");
+        for (String[] s : list) {
+          ta.append("Key: " + s[2] + " \t\t  Value: " + s[3] + "  \n");
+        }
+        
+        ta.setCaretPosition(0);
+        ta.setEditable(false);
+        
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Header level Key/Value Pair Information : " + key);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints panelGBC = new GridBagConstraints();
+
+        panelGBC.weightx = 1;                    //I want to fill whole panel with JTextArea
+        panelGBC.weighty = 1;                    //so both weights =1
+        panelGBC.fill = GridBagConstraints.BOTH; //and fill is set to BOTH
+        
+        panel.add(scroll, panelGBC);
+        dialog.add(panel);
+        dialog.setPreferredSize(new Dimension(500, 400));
+        dialog.pack();
+        dialog.setLocationRelativeTo( null );
+        dialog.setResizable(false);
+        dialog.setVisible(true);
+    }
+    
+    public void showEDIKVDetail(String key, String line) {
+        javax.swing.JTextArea ta = new javax.swing.JTextArea();
+        
+        JScrollPane scroll = new JScrollPane(ta);
+        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        
+                
+        ArrayList<String[]> list = getEDIMetaValueDetail(key, line);
+        
+        if (list == null || list.isEmpty()) {
+            bsmf.MainFrame.show("no detail level edi kv data to show");
             return;
         }
         
@@ -555,6 +621,11 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        tabledetail.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tabledetailMouseClicked(evt);
+            }
+        });
         jScrollPane2.setViewportView(tabledetail);
 
         detailpanel.add(jScrollPane2, java.awt.BorderLayout.CENTER);
@@ -953,6 +1024,7 @@ try {
                 getdetail(tablereport.getValueAt(row, 1).toString(), tablereport.getValueAt(row, 3).toString());  // soc_id, soc_po
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
+                currentid = tablereport.getValueAt(row, 1).toString();
               
         }
         if ( col == 10 && ! tablereport.getValueAt(row, 9).toString().equals("closed") &&
@@ -981,6 +1053,14 @@ try {
         bsmf.MainFrame.show("export file created");
        }
     }//GEN-LAST:event_btexportActionPerformed
+
+    private void tabledetailMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabledetailMouseClicked
+        int row = tabledetail.rowAtPoint(evt.getPoint());
+        int col = tabledetail.columnAtPoint(evt.getPoint());
+        if ( col == 0) {
+          showEDIKVDetail(currentid, tabledetail.getValueAt(row, 1).toString());
+        }
+    }//GEN-LAST:event_tabledetailMouseClicked
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
