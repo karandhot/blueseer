@@ -16886,7 +16886,7 @@ return mystring;
                      
                      detailkvpair = getEDIMetaValueAsKVString(tablereport.getValueAt(i, 4).toString(), "detail",res.getString("sod_line"));
                      
-                     output.write(line.deleteCharAt(line.length() - 1).toString() + "," + headerkvpair + "," + detailkvpair);
+                     output.write(line.toString() + headerkvpair + "," + detailkvpair);
                      output.write("\n");
                      // now add detailkvpair
                      
@@ -17040,6 +17040,8 @@ return mystring;
             Statement st = con.createStatement();
             ResultSet res = null;
             String header = "ChangeID, Sales Order Number, PO Number, Order Date, Change Date, Customer Name, Shipto Name, Shipto City, Shipto State, Shipto Zip,  Original DueDate, New DueDate, Remarks, Change Remarks, Order Line Number, Change Code, Item Number, Item Description, Sku Number, Original Order Quantity, Change Quantity, Original Order Price, Change Price, HeaderKVPair, DetailKVPair ";
+            output.write(header + "\n");
+            
             try {
                 for (int i = 0; i < tablereport.getRowCount(); i++) {
                     

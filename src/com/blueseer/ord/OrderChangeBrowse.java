@@ -55,6 +55,8 @@ import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
+import static com.blueseer.edi.ediData.getEDIMetaValueDetail;
+import static com.blueseer.edi.ediData.getEDIMetaValueHeader;
 import static com.blueseer.ord.ordData._evaluateOrderChange;
 import static com.blueseer.ord.ordData.applyOrderChange;
 import static com.blueseer.ord.ordData.updateOrderChangeStatus;
@@ -67,11 +69,15 @@ import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.vdr.venData;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.sql.Connection;
 import java.util.Calendar;
 import java.util.Enumeration;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -102,11 +108,12 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                             "Changes",
                             getGlobalColumnTag("status"),
                             "commit",
-                            getGlobalColumnTag("void")})
+                            getGlobalColumnTag("void"),
+                            "view"})
             {
                       @Override  
                       public Class getColumnClass(int col) {  
-                        if (col == 0 || col == 10 || col == 11)       
+                        if (col == 0 || col == 10 || col == 11 || col == 12)       
                             return ImageIcon.class;  
                         else return String.class;  //other columns accept String values  
                       }  
@@ -407,6 +414,52 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
     public void initvars(String[] arg) {
         clearAll();          
     }
+   
+    public void showEDIKVHeader(String key) {
+        javax.swing.JTextArea ta = new javax.swing.JTextArea();
+        
+        JScrollPane scroll = new JScrollPane(ta);
+        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        
+                
+        ArrayList<String[]> list = getEDIMetaValueHeader(key);
+        
+        if (list == null || list.isEmpty()) {
+            bsmf.MainFrame.show("no header level edi kv data to show");
+            return;
+        }
+        
+        ta.setText("  " + "\n\n");
+        for (String[] s : list) {
+          ta.append("Key: " + s[2] + " \t\t  Value: " + s[3] + "  \n");
+        }
+        
+        ta.setCaretPosition(0);
+        ta.setEditable(false);
+        
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Item level Key/Value Pair Information : " + key);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints panelGBC = new GridBagConstraints();
+
+        panelGBC.weightx = 1;                    //I want to fill whole panel with JTextArea
+        panelGBC.weighty = 1;                    //so both weights =1
+        panelGBC.fill = GridBagConstraints.BOTH; //and fill is set to BOTH
+        
+        panel.add(scroll, panelGBC);
+        dialog.add(panel);
+        dialog.setPreferredSize(new Dimension(500, 400));
+        dialog.pack();
+        dialog.setLocationRelativeTo( null );
+        dialog.setResizable(false);
+        dialog.setVisible(true);
+    }
+    
+    
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -777,6 +830,7 @@ try {
               tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
               tablereport.getColumnModel().getColumn(10).setMaxWidth(100);
               tablereport.getColumnModel().getColumn(11).setMaxWidth(100);
+              tablereport.getColumnModel().getColumn(12).setMaxWidth(100);
                  DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
                 
                  double totqty = 0;
@@ -859,7 +913,8 @@ try {
                                 change,
                                 res.getString("soc_status"),
                                 BlueSeerUtils.clickchange,
-                                BlueSeerUtils.clickvoid
+                                BlueSeerUtils.clickvoid,
+                                BlueSeerUtils.clickgear
                             });
                    
                 } // while   
@@ -900,15 +955,18 @@ try {
                 detailpanel.setVisible(true);
               
         }
-        if ( col == 10 && ! tablereport.getValueAt(row, 1).toString().equals("closed") &&
-                 ! tablereport.getValueAt(row, 1).toString().equals("applied")) {
+        if ( col == 10 && ! tablereport.getValueAt(row, 9).toString().equals("closed") &&
+                 ! tablereport.getValueAt(row, 9).toString().equals("applied")) {
                 applyOrderChange(tablereport.getValueAt(row, 1).toString(), tablereport.getValueAt(row, 3).toString());
                 bsmf.MainFrame.show("Order Change Committed");
         }
-        if ( col == 11 && ! tablereport.getValueAt(row, 1).toString().equals("closed") &&
-                ! tablereport.getValueAt(row, 1).toString().equals("applied")) {
+        if ( col == 11 && ! tablereport.getValueAt(row, 9).toString().equals("closed") &&
+                ! tablereport.getValueAt(row, 9).toString().equals("applied")) {
                 updateOrderChangeStatus(tablereport.getValueAt(row, 1).toString(), "closed");
                 bsmf.MainFrame.show("Order Change Closed");
+        }
+        if ( col == 12 ) {
+                showEDIKVHeader(tablereport.getValueAt(row, 1).toString());
         }
        
     }//GEN-LAST:event_tablereportMouseClicked

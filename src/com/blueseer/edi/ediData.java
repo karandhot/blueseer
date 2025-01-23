@@ -2881,7 +2881,49 @@ public class ediData {
         return r;
         
     }   
+    
+    public static ArrayList<String[]> getEDIMetaValueHeader(String id) {
+         ArrayList<String[]> r = new ArrayList<String[]>();
+         
+         try{
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+               
+                
+                res = st.executeQuery("select * from edi_meta where " +
+                        " edim_id = " + "'" + id + "'" +  " AND " +
+                        " not edim_type like 'detail%' "  +
+                        " order by edim_key;" );
+               while (res.next()) {
+                r.add(new String[]{res.getString("edim_id"), res.getString("edim_type"), res.getString("edim_key"), res.getString("edim_value")});                    
+                }
+               
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return r;
         
+    }   
+     
+    
     public static String[] getEDIMetaValueAsRow(String id, boolean excludedetail) {
          String[] r = null;
          
