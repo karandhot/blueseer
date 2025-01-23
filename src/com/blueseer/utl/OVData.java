@@ -43,6 +43,7 @@ import com.blueseer.adm.admData;
 import com.blueseer.ctr.cusData;
 import static com.blueseer.edi.EDI.getFileContentBytes;
 import static com.blueseer.edi.EDI.writeFile;
+import static com.blueseer.edi.ediData.getEDIMetaValueAsKVString;
 import static com.blueseer.edi.ediData.getEDIMetaValueAsRow;
 import com.blueseer.fgl.fglData;
 import static com.blueseer.fgl.fglData.setGLRecNbr;
@@ -16855,9 +16856,17 @@ return mystring;
             }
             Statement st = con.createStatement();
             ResultSet res = null;
-            String header = "ChangeID, Sales Order Number, PO Number, Order Date, Customer Name, Shipto Name, Shipto City, Shipto State, Shipto Zip,  DueDate, Remarks, Order Line Number, Item Number, Item Description, Sku Number, UPC Number, Order Quantity, Order Price";
+            
+            String headerkvpair = "";
+            String detailkvpair = "";
+            
+            String header = "Sales Order Number, PO Number, Order Create Date, Customer Name, Shipto Name, Shipto City, Shipto State, Shipto Zip,  DueDate, Remarks, Order Line Number, Item Number, Item Description, Sku Number, Order Quantity, Order Price, Header KVPair, Detail KVPair";
+            output.write(header + "\n");
+             
             try {
                 for (int i = 0; i < tablereport.getRowCount(); i++) {
+                headerkvpair = getEDIMetaValueAsKVString(tablereport.getValueAt(i, 4).toString(), "header","");
+                    
                 res = st.executeQuery("select so_nbr, so_po, so_create_date, " +
                         " cm_name, cms_name, cms_city, cms_state, cms_zip,  so_due_date, " +
                         " so_rmks, sod_line, sod_item, sod_desc, sod_custitem, " +
@@ -16874,19 +16883,13 @@ return mystring;
                      for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
                        line.append(res.getString(j).replace(",","")).append(",");
                      }
-                    // output.write(line.deleteCharAt(line.length() - 1).toString() + "\n");  
-                     // now append with edi ta
-                     String[] ta = getEDIMetaValueAsRow(tablereport.getValueAt(i, 4).toString(), true);
-                     String addheader = "";
-                     if (ta != null) {
-                         addheader = ta[0];
-                         line.append(ta[1]);
-                     }
-                     if (k == 1) {
-                     output.write(header + "," + addheader + "\n");
-                     }
-                     output.write(line.deleteCharAt(line.length() - 1).toString() + "\n");
-                                     
+                     
+                     detailkvpair = getEDIMetaValueAsKVString(tablereport.getValueAt(i, 4).toString(), "detail",res.getString("sod_line"));
+                     
+                     output.write(line.deleteCharAt(line.length() - 1).toString() + "," + headerkvpair + "," + detailkvpair);
+                     output.write("\n");
+                     // now add detailkvpair
+                     
                  }
                 
                 } // for each line in tablereport
@@ -17022,7 +17025,8 @@ return mystring;
         File f = new File(path);
         BufferedWriter output = null;
         HashSet<String> set = new HashSet<String>();
-             
+        String headerkvpair = "";
+        String detailkvpair = "";
         
          try{
             output = new BufferedWriter(new FileWriter(f));
@@ -17035,11 +17039,15 @@ return mystring;
             }
             Statement st = con.createStatement();
             ResultSet res = null;
-            String header = "ChangeID, Sales Order Number, PO Number, Order Date, Change Date, Customer Name, Shipto Name, Shipto City, Shipto State, Shipto Zip,  Original DueDate, New DueDate, Remarks, Change Remarks, Order Line Number, Change Code, Item Number, Item Description, Sku Number, Original Order Quantity, Change Quantity, Original Order Price, Change Price ";
+            String header = "ChangeID, Sales Order Number, PO Number, Order Date, Change Date, Customer Name, Shipto Name, Shipto City, Shipto State, Shipto Zip,  Original DueDate, New DueDate, Remarks, Change Remarks, Order Line Number, Change Code, Item Number, Item Description, Sku Number, Original Order Quantity, Change Quantity, Original Order Price, Change Price, HeaderKVPair, DetailKVPair ";
             try {
                 for (int i = 0; i < tablereport.getRowCount(); i++) {
+                    
                 if (! set.contains(tablereport.getValueAt(i, 3).toString())) {   // only want once incident of the primary PO  
-                res = st.executeQuery("select soc_id, so_nbr, so_po, so_create_date, soc_chgdate, " +
+                
+                    headerkvpair = getEDIMetaValueAsKVString(tablereport.getValueAt(i, 1).toString(), "header","");
+                    
+                    res = st.executeQuery("select soc_id, so_nbr, so_po, so_create_date, soc_chgdate, " +
                         " cm_name, cms_name, cms_city, cms_state, cms_zip,  so_due_date, soc_duedate, " +
                         " so_rmks, soc_remarks, sod_line, sodc_change, sod_item, sod_desc, sod_custitem, " +
                         " sod_ord_qty, sodc_qty, sod_listprice, sodc_price from so_mstr " + 
@@ -17058,17 +17066,9 @@ return mystring;
                        line.append(res.getString(j).replace(",","")).append(",");
                      }
                     // output.write(line.deleteCharAt(line.length() - 1).toString() + "\n");  
-                     // now append with edi ta
-                     String[] ta = getEDIMetaValueAsRow(tablereport.getValueAt(i, 3).toString(), true);
-                     String addheader = "";
-                     if (ta != null) {
-                         addheader = ta[0];
-                         line.append(ta[1]);
-                     }
-                     if (k == 1) {
-                     output.write(header + "," + addheader + "\n");
-                     }
-                     output.write(line.deleteCharAt(line.length() - 1).toString() + "\n");
+                     detailkvpair = getEDIMetaValueAsKVString(tablereport.getValueAt(i, 1).toString(), "detail",res.getString("sod_line"));
+                     
+                     output.write(line.toString() + headerkvpair + "," + detailkvpair + "\n");
                                      
                  }
                 } // if not set contains po
