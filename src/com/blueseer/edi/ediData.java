@@ -2841,6 +2841,57 @@ public class ediData {
         
     }   
     
+    public static String[] getEDIMetaValueAsRow(String id, boolean excludedetail) {
+         String[] r = null;
+         
+         try{
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            StringBuilder sbh = new StringBuilder();
+            StringBuilder sbd = new StringBuilder();
+            try {
+
+                if (excludedetail) {
+                  res = st.executeQuery("select * from edi_meta where " +
+                        " edim_id = " + "'" + id + "'" + " AND " +
+                        " not edim_type like 'detail%' " + 
+                        " order by edim_type;" );
+                } else {
+                  res = st.executeQuery("select * from edi_meta where " +
+                        " edim_id = " + "'" + id + "'" + 
+                        " order by edim_type;" );  
+                }
+               while (res.next()) {
+                sbh.append(res.getString("edim_key")).append(",");
+                sbd.append(res.getString("edim_value")).append(",");                   
+                }
+               
+               r = new String[]{sbh.toString(),sbd.toString()};
+               
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return r;
+        
+    }   
+    
     
     public static boolean isValidAS2id(String id) {
         boolean x = false;

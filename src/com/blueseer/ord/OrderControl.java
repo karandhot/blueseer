@@ -284,6 +284,9 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
             if (s[0].equals("autoconfirm")) {
                 cbautoconfirm.setSelected(BlueSeerUtils.ConvertStringToBool(s[1]));  
             }
+            if (s[0].equals("edita_to_notes")) {
+                cbedita.setSelected(BlueSeerUtils.ConvertStringToBool(s[1]));  
+            }
         } 
     }
     
@@ -295,9 +298,9 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
       if (! tbenddate.getText().isBlank() && BlueSeerUtils.isParsableToInt(tbenddate.getText())) {
           OVData.addUpdateSysMeta("system", "ordercontrol", "browse_end_date", tbenddate.getText());  
       }
-      if (! tbenddate.getText().isBlank() && BlueSeerUtils.isParsableToInt(tbenddate.getText())) {
-          OVData.addUpdateSysMeta("system", "ordercontrol", "autoconfirm", BlueSeerUtils.boolToString(cbautoconfirm.isSelected()));  
-      }
+          OVData.addUpdateSysMeta("system", "ordercontrol", "autoconfirm", BlueSeerUtils.boolToString(cbautoconfirm.isSelected())); 
+          OVData.addUpdateSysMeta("system", "ordercontrol", "edita_to_notes", BlueSeerUtils.boolToString(cbedita.isSelected()));  
+      
     }
     
    
@@ -329,6 +332,7 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
         jLabel2 = new javax.swing.JLabel();
         btbilling = new javax.swing.JButton();
         cbautoconfirm = new javax.swing.JCheckBox();
+        cbedita = new javax.swing.JCheckBox();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -439,6 +443,8 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
 
         cbautoconfirm.setText("Auto Confirm Order?");
 
+        cbedita.setText("append EDI TA Notes?");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -457,8 +463,9 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
                             .addComponent(cbautoinvoice)
                             .addComponent(cbcustitem)
                             .addComponent(cbvouchershipping)
-                            .addComponent(cbautoconfirm))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
+                            .addComponent(cbautoconfirm)
+                            .addComponent(cbedita))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 51, Short.MAX_VALUE)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(btupdate)
@@ -471,6 +478,15 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btupdate)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btjson)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btbilling)
+                        .addGap(24, 24, 24))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(5, 5, 5)
                         .addComponent(cbautosource)
@@ -486,16 +502,9 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
                         .addComponent(cbvouchershipping)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cbautoconfirm)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btupdate)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btjson)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btbilling)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cbedita)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -548,6 +557,7 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
     private javax.swing.JCheckBox cbautoinvoice;
     private javax.swing.JCheckBox cbautosource;
     private javax.swing.JCheckBox cbcustitem;
+    private javax.swing.JCheckBox cbedita;
     private javax.swing.JCheckBox cbexceedQOHU;
     private javax.swing.JCheckBox cbsrvmitemdefault;
     private javax.swing.JCheckBox cbsrvmtype;

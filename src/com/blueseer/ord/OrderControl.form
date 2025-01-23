@@ -50,8 +50,9 @@
                               <Component id="cbcustitem" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Component id="cbvouchershipping" min="-2" max="-2" attributes="0"/>
                               <Component id="cbautoconfirm" min="-2" max="-2" attributes="0"/>
+                              <Component id="cbedita" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="59" max="32767" attributes="0"/>
+                          <EmptySpace pref="51" max="32767" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
                               <Component id="btupdate" min="-2" max="-2" attributes="0"/>
@@ -70,6 +71,16 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
+                          <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="btupdate" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="btjson" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                          <Component id="btbilling" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                           <Component id="cbautosource" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -84,19 +95,11 @@
                           <Component id="cbvouchershipping" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="cbautoconfirm" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="cbedita" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="btupdate" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="btjson" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
-                          <Component id="btbilling" min="-2" max="-2" attributes="0"/>
-                      </Group>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
                   <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
               </Group>
@@ -272,6 +275,11 @@
         <Component class="javax.swing.JCheckBox" name="cbautoconfirm">
           <Properties>
             <Property name="text" type="java.lang.String" value="Auto Confirm Order?"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JCheckBox" name="cbedita">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="append EDI TA Notes?"/>
           </Properties>
         </Component>
       </SubComponents>

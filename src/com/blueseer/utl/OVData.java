@@ -43,6 +43,7 @@ import com.blueseer.adm.admData;
 import com.blueseer.ctr.cusData;
 import static com.blueseer.edi.EDI.getFileContentBytes;
 import static com.blueseer.edi.EDI.writeFile;
+import static com.blueseer.edi.ediData.getEDIMetaValueAsRow;
 import com.blueseer.fgl.fglData;
 import static com.blueseer.fgl.fglData.setGLRecNbr;
 import com.blueseer.hrm.hrmData;
@@ -16941,6 +16942,7 @@ return mystring;
         File f = new File(path);
         BufferedWriter output = null;
         HashSet<String> set = new HashSet<String>();
+             
         
          try{
             output = new BufferedWriter(new FileWriter(f));
@@ -16974,7 +16976,14 @@ return mystring;
                      for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
                        line.append(res.getString(j).replace(",","")).append(",");
                      }
-                     output.write(line.deleteCharAt(line.length() - 1).toString() + "\n");                  
+                    // output.write(line.deleteCharAt(line.length() - 1).toString() + "\n");  
+                     // now append with edi ta
+                     String[] ta = getEDIMetaValueAsRow(tablereport.getValueAt(i, 3).toString(), true);
+                     if (ta != null) {
+                         line.append(ta[1]);
+                     }
+                     output.write(line.deleteCharAt(line.length() - 1).toString() + "\n");
+                                     
                  }
                 } // if not set contains po
                 set.add(tablereport.getValueAt(i, 3).toString());
