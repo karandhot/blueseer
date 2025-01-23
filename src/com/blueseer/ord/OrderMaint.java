@@ -39,6 +39,7 @@ import com.blueseer.ctr.cusData;
 import com.blueseer.ctr.cusData.cms_det;
 import static com.blueseer.ctr.cusData.getDiscCodeByCust;
 import static com.blueseer.ctr.cusData.getShipAddressInfo;
+import static com.blueseer.edi.ediData.getEDIMetaValueAll;
 import com.blueseer.fgl.fglData;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.getItemDataInit;
@@ -4113,6 +4114,16 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                     tanotes.append(n);
                     tanotes.append("\n");
                 }
+                
+                // add EDI turn around data to Notes if flagged
+                if (OVData.getSysMetaValue("system", "ordercontrol", "edita_to_notes").equals("1")) {
+                    ArrayList<String[]> edita = getEDIMetaValueAll(ponbr.getText());
+                    for (String[] x : edita) {
+                        tanotes.append(x[0] + ":  " + x[1]);
+                        tanotes.append("\n");
+                    }
+                }
+                
             }
         }
         

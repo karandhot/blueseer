@@ -4627,6 +4627,7 @@ public class ordData {
                       st.executeUpdate(
                         " update sod_det set sod_ord_qty = " + "'" + s[5] + "'" + "," +
                         " sod_listprice = " + "'" + s[4] + "'" + "," +
+                        " sod_netprice = " + "'" + s[4] + "'" + "," +        
                         " sod_due_date = " + "'" + s[0] + "'" +        
                         " where sod_po = " + "'" + s[1] + "'" + 
                                 " and sod_line = " + "'" + s[2] + "'" +

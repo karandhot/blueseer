@@ -2802,6 +2802,45 @@ public class ediData {
         
     }   
     
+    public static ArrayList<String[]> getEDIMetaValueAll(String id) {
+         ArrayList<String[]> r = new ArrayList<String[]>();
+         
+         try{
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+                res = st.executeQuery("select edim_key, edim_value from edi_meta where " +
+                        " edim_id = " + "'" + id + "'" + 
+                        " order by edim_type;" );
+               while (res.next()) {
+                r.add(new String[]{res.getString("edim_key"), res.getString("edim_value")});                    
+                }
+               
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return r;
+        
+    }   
+    
     
     public static boolean isValidAS2id(String id) {
         boolean x = false;

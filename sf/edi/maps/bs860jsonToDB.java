@@ -5,91 +5,96 @@ import com.blueseer.inv.invData;
 import com.blueseer.utl.EDData;
 
 setReference(getInput("order","orderid")); //optional...but must be ran after mappedInput
- 
-  
-    isDBWrite(c);// optional...unless this map is writing to internal database tables (orders, etc)
-    
-    //since this is a DB entry map, create class object specific to inbound doctype (edi850, edi824, etc)
-    edi860 e = new edi860(getInput("order","senderid"), getInput("order","receiverid"), getInput("order","senderid"), getInput("order","receiverid"), "", "", doctype, stctrl);  // mandatory class creation
-    
-    //optional...set some global variables as necessary
-    String  now = now();
-    String po;
-    
-    ArrayList<String[]> ta = new ArrayList<String[]>();
-
-    // begin mapping
-
-       
-    po = getInput("order","po");
-    // changeid must be set as it is used for unique ID for so_chg and sod_chg
-    e.setChangeID(po + "-" + getInput("order","gsnumber")); 
-
-    e.setPO(po);  
- 
-    // override changeID with reference field if not blank
-    int refcount = getLoopCount("order:references:reference",2);
-    for (int i = 1; i <= refcount; i++) {
-    if (getInput(i,"order:references:reference","qualifier").equals("changeid")) {
-       if (! getInput(i,"order:references:reference","value").isBlank()) {
-       e.setChangeID(getInput(i,"order:references:reference","value"));
-       }
-    } // if change id
-    } // for each ref
-
-    // first try finding internal Billto with Original Purchase Order
-    e.setOVBillTo(ordData.getSOOrderBilltoByPO(po)); 
-    
-    if (e.getOVBillTo().isEmpty()) {
-     e.setOVBillTo(EDData.getEDIXrefIn(getInput("order","receiverid"), getInput("order","senderid"), "BT", getInput("order","senderid"))); 
-    }
-
-    if (e.getPO().isEmpty()) {
-      setError("No internal PO found for this change: " + po);
-      return error; 
-    }
 
 
-    e.setPODate(convertDate("yyyyMMdd", getInput("order","orderdate")));
-    e.setDueDate(convertDate("yyyyMMdd", getInput("order","duedate")));
-    ta.add(new String[]{po,"header","duedate", getInput("DTM","1:002","e02")}); 
+     isDBWrite(c);// optional...unless this map is writing to internal database tables (orders, etc)
 
-   
-    ta.add(new String[]{po,"header","vendcode", getInput("order","vendorcode")});
-   
-    
-    
+     //since this is a DB entry map, create class object specific to inbound doctype (edi850, edi824, etc)
+     edi860 e = new edi860(getInput("order","senderid"),
+getInput("order","receiverid"), getInput("order","senderid"), getInput("order","receiverid"), "", "", doctype, stctrl);  // mandatory class creation
+
+     //optional...set some global variables as necessary
+     String  now = now();
+     String po;
+     String changeid;
+
+     ArrayList<String[]> ta = new ArrayList<String[]>();
+
+     // begin mapping
+
+
+     po = getInput("order","po");
+     // changeid must be set as it is used for unique ID for so_chg and sod_chg
+     changeid = po + "-" + getInput("order","gsnumber");
+     e.setChangeID(changeid);
+
+     e.setPO(po);
+
+     // override changeID with reference field if not blank
+     int refcount = getLoopCount("order:references:reference",2);
+     for (int i = 1; i <= refcount; i++) {
+     if (getInput(i,"order:references:reference","qualifier").equals("changeid")) {
+        if (! getInput(i,"order:references:reference","value").isBlank()) {
+        e.setChangeID(getInput(i,"order:references:reference","value"));
+        }
+     } // if change id
+     } // for each ref
+
+     // first try finding internal Billto with Original Purchase Order
+     e.setOVBillTo(ordData.getSOOrderBilltoByPO(po));
+
+     if (e.getOVBillTo().isEmpty()) {
+      e.setOVBillTo(EDData.getEDIXrefIn(getInput("order","receiverid"),getInput("order","senderid"), "BT", getInput("order","senderid")));
+     }
+
+     if (e.getPO().isEmpty()) {
+       setError("No internal PO found for this change: " + po);
+       return error;
+     }
+
+
+     e.setPODate(getInput("order","orderdate"));
+     e.setDueDate(getInput("order","duedate"));
+     ta.add(new String[]{changeid,"header","duedate",getInput("DTM","1:002","e02")});
+
+
+     ta.add(new String[]{changeid,"header","vendcode",getInput("order","vendorcode")});
+
+
+
 int addrcount = getLoopCount("order:addresses:address",2);
 for (int i = 1; i <= addrcount; i++) {
 if (getInput(i,"order:addresses:address","type").equals("billto")) {
-    ta.add(new String[]{po,"header","billcode", getInput(i,"order:addresses:address","addrid")});
+     ta.add(new String[]{changeid,"header","billcode",getInput(i,"order:addresses:address","addrid")});
 } // if billto
 
 if (getInput(i,"order:addresses:address","type").equals("shipto")) {
-	    e.setShipTo(getInput(i,"order:addresses:address","addrid"));
-            e.setShipToName(getInput(i,"order:addresses:address","name"));
-            e.setShipToLine1(getInput(i,"order:addresses:address","line1"));
-            e.setShipToCity(getInput(i,"order:addresses:address","city"));
-            e.setShipToState(getInput(i,"order:addresses:address","state"));
-            e.setShipToZip(getInput(i,"order:addresses:address","zip"));
-            e.setOVShipTo(EDData.getEDIXrefIn(getInput("order","receiverid"), getInput("order","senderid"), "ST", getInput(i,"order:addresses:address","addrid")));
-            ta.add(new String[]{po,"header","shipcode", getInput(i,"order:addresses:address","addrid")});   
+        e.setShipTo(getInput(i,"order:addresses:address","addrid"));
+	e.setShipToName(getInput(i,"order:addresses:address","name"));
+	e.setShipToLine1(getInput(i,"order:addresses:address","line1"));
+	e.setShipToCity(getInput(i,"order:addresses:address","city"));
+	e.setShipToState(getInput(i,"order:addresses:address","state"));
+        e.setShipToZip(getInput(i,"order:addresses:address","zip"));
+	e.setOVShipTo(EDData.getEDIXrefIn(getInput("order","receiverid"),
+	getInput("order","senderid"), "ST",
+	getInput(i,"order:addresses:address","addrid")));
+        ta.add(new String[]{changeid,"header","shipcode",getInput(i,"order:addresses:address","addrid")});
 } // if shipto
 
 } // loop addresses
 
-  
-   if (! e.getOVShipTo().isEmpty()) {
-   e.setOVBillTo(cusData.getcustBillTo(e.getOVShipTo()));
-   } 
-   // NOTE: it's imperative that we have an internal billto code assign for pricing and discounts look up during the detail loop
-   // if here and we have a blank billto...then error out
-   if (e.getOVBillTo().isEmpty()) {
-   setError("No internal Billto Found PO: " + po);
-   return error; 
-   }
 
-/* Now the Detail Item LOOP  */ 
+    if (! e.getOVShipTo().isEmpty()) {
+    e.setOVBillTo(cusData.getcustBillTo(e.getOVShipTo()));
+    }
+    // NOTE: it's imperative that we have an internal billto code assign for pricing and discounts look up during the detail loop
+    // if here and we have a blank billto...then error out
+    if (e.getOVBillTo().isEmpty()) {
+    setError("No internal Billto Found PO: " + po);
+    return error;
+    }
+
+/* Now the Detail Item LOOP  */
 int itemcount = getLoopCount("order:items:item",2);
 int total = 0;
 int totalqty = 0;
@@ -101,66 +106,66 @@ double netprice;
 boolean useInternalPrice = false;
 
 for (int i = 1; i <= itemcount; i++) {
-	e.addDetail();  // INITIATE An ArrayList
-        totalqty += Double.valueOf(getInput(i, "order:items:item","orderquantity"));
+        e.addDetail();  // INITIATE An ArrayList
+         totalqty += Double.valueOf(getInput(i, "order:items:item","orderquantity"));
 
-        e.setDetQty(i-1, getInput(i, "order:items:item","orderquantity"));
-        e.setDetItem(i-1,getInput(i, "order:items:item","itemnumber"));
-        ta.add(new String[]{po,("detail:"+snum(i)),"item", getInput(i, "order:items:item","itemnumber")});
-        e.setDetCustItem(i-1,getInput(i, "order:items:item","skunumber"));
-        item = e.getDetItem(i-1);
-        e.setDetPO(i-1,po);
-        e.setDetLine(i-1,getInput(i, "order:items:item","line"));
-        e.setDetDesc(i-1,getInput(i, "order:items:item","description"));
-        uom = getInput(i, "order:items:item","uom");
-        if (uom.isBlank()) {
-        uom = OVData.getUOMByItem(item);
-        }
-        e.setDetUOM(i-1,uom);
+         e.setDetQty(i-1, getInput(i,"order:items:item","orderquantity"));
+         e.setDetItem(i-1,getInput(i,"order:items:item","itemnumber"));
+         ta.add(new String[]{changeid,("detail:"+snum(i)),"item",getInput(i, "order:items:item","itemnumber")});
+         e.setDetCustItem(i-1,getInput(i,"order:items:item","skunumber"));
+         item = e.getDetItem(i-1);
+         e.setDetPO(i-1,po);
+         e.setDetLine(i-1,getInput(i, "order:items:item","line"));
+         e.setDetDesc(i-1,getInput(i, "order:items:item","description"));
+         uom = getInput(i, "order:items:item","uom");
+         if (uom.isBlank()) {
+         uom = OVData.getUOMByItem(item);
+         }
+         e.setDetUOM(i-1,uom);
 
-       // detail turn around (ta)
-        ta.add(new String[]{po,("detail:"+snum(i)),"custline", getInput(i, "order:items:item","line")});
-        ta.add(new String[]{po,("detail:"+snum(i)),"qty", getInput(i, "order:items:item","orderquantity")});
-        ta.add(new String[]{po,("detail:"+snum(i)),"price", getInput(i, "order:items:item","listprice")});
-        ta.add(new String[]{po,("detail:"+snum(i)),"sku", getInput(i, "order:items:item","skunumber")});
-        ta.add(new String[]{po,("detail:"+snum(i)),"upc", getInput(i, "order:items:item","upcnumber")});
-        ta.add(new String[]{po,("detail:"+snum(i)),"uom", getInput(i, "order:items:item","uom")});
-        ta.add(new String[]{po,("detail:"+snum(i)),"subline", getInput(i, "order:items:item","subline")});
-        ta.add(new String[]{po,("detail:"+snum(i)),"reference", getInput(i, "order:items:item","reference")});
-        ta.add(new String[]{po,("detail:"+snum(i)),"altprice", getInput(i, "order:items:item","altprice")});
-        ta.add(new String[]{po,("detail:"+snum(i)),"rtlprice", getInput(i, "order:items:item","rtlprice")}); 
+        // detail turn around (ta)
+         ta.add(new String[]{changeid,("detail:"+snum(i)),"custline",getInput(i, "order:items:item","line")});
+         ta.add(new String[]{changeid,("detail:"+snum(i)),"qty",getInput(i, "order:items:item","orderquantity")});
+         ta.add(new String[]{changeid,("detail:"+snum(i)),"price",getInput(i, "order:items:item","listprice")});
+         ta.add(new String[]{changeid,("detail:"+snum(i)),"sku",getInput(i, "order:items:item","skunumber")});
+         ta.add(new String[]{changeid,("detail:"+snum(i)),"upc",getInput(i, "order:items:item","upcnumber")});
+         ta.add(new String[]{changeid,("detail:"+snum(i)),"uom",getInput(i, "order:items:item","uom")});
+         ta.add(new String[]{changeid,("detail:"+snum(i)),"subline",getInput(i, "order:items:item","subline")});
+         ta.add(new String[]{changeid,("detail:"+snum(i)),"reference",getInput(i, "order:items:item","reference")});
+         ta.add(new String[]{changeid,("detail:"+snum(i)),"altprice",getInput(i, "order:items:item","altprice")});
+         ta.add(new String[]{changeid,("detail:"+snum(i)),"rtlprice",getInput(i, "order:items:item","rtlprice")});
 
-        if (useInternalPrice) {
-        listprice = invData.getItemPriceFromCust(e.getOVBillTo(), item, uom, cusData.getCustCurrency(e.getOVBillTo()),"LIST",getInput(i, "order:items:item","orderquantity"));
-        discount = invData.getItemDiscFromCust(e.getOVBillTo());
-        netprice = listprice;
-        if (discount != 0) {
-        netprice = listprice - (listprice * (discount / 100));
-        }
-        e.setDetNetPrice(i-1,formatNumber(netprice,"2"));
-        e.setDetListPrice(i-1,formatNumber(listprice,"2"));
-        e.setDetDisc(i-1,formatNumber(discount,"2"));
-        } else {
-         if (isNumber(getInput(i, "order:items:item","listprice"))) {
-            e.setDetNetPrice(i-1, formatNumber(getInput(i, "order:items:item","listprice"),"3"));
-            e.setDetListPrice(i-1, formatNumber(getInput(i, "order:items:item","netprice"),"3"));
+         if (useInternalPrice) {
+         listprice = invData.getItemPriceFromCust(e.getOVBillTo(), item, uom, cusData.getCustCurrency(e.getOVBillTo()),"LIST",getInput(i,"order:items:item","orderquantity"));
+         discount = invData.getItemDiscFromCust(e.getOVBillTo());
+         netprice = listprice;
+         if (discount != 0) {
+         netprice = listprice - (listprice * (discount / 100));
+         }
+         e.setDetNetPrice(i-1,formatNumber(netprice,"2"));
+         e.setDetListPrice(i-1,formatNumber(listprice,"2"));
+         e.setDetDisc(i-1,formatNumber(discount,"2"));
          } else {
-            e.setDetNetPrice(i-1, "0");
-            e.setDetListPrice(i-1, "0");	
-         }   
-        }
+          if (isNumber(getInput(i, "order:items:item","listprice"))) {
+             e.setDetNetPrice(i-1, formatNumber(getInput(i, "order:items:item","listprice"),"3"));
+             e.setDetListPrice(i-1, formatNumber(getInput(i, "order:items:item","netprice"),"3"));
+          } else {
+             e.setDetNetPrice(i-1, "0");
+             e.setDetListPrice(i-1, "0");
+          }
+         }
 
 }
-   
-    /* end of item loop */
 
-    // mapping end
-    
-    mappedInput.clear();
+     /* end of item loop */
 
-   
-     /* Load Sales Order */
-     /* call processDB ONLY if the output is database write */
-    processDB(c,com.blueseer.edi.EDI.createSOCFrom860(e, c), null);
+     // mapping end
+
+     mappedInput.clear();
+
+
+      /* Load Sales Order */
+      /* call processDB ONLY if the output is database write */
+     processDB(c,com.blueseer.edi.EDI.createSOCFrom860(e, c), null);
 
 
