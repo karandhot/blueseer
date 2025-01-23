@@ -16955,8 +16955,8 @@ return mystring;
             }
             Statement st = con.createStatement();
             ResultSet res = null;
+            String header = "ChangeID, Sales Order Number, PO Number, Order Date, Change Date, Customer Name, Shipto Name, Shipto City, Shipto State, Shipto Zip,  Original DueDate, New DueDate, Remarks, Change Remarks, Order Line Number, Change Code, Item Number, Item Description, Sku Number, Original Order Quantity, Change Quantity, Original Order Price, Change Price ";
             try {
-                output.write("ChangeID, Sales Order Number, PO Number, Order Date, Change Date, Customer Name, Shipto Name, Shipto City, Shipto State, Shipto Zip,  Original DueDate, New DueDate, Remarks, Change Remarks, Order Line Number, Change Code, Item Number, Item Description, Sku Number, Original Order Quantity, Change Quantity, Original Order Price, Change Price " + "\n");
                 for (int i = 0; i < tablereport.getRowCount(); i++) {
                 if (! set.contains(tablereport.getValueAt(i, 3).toString())) {   // only want once incident of the primary PO  
                 res = st.executeQuery("select soc_id, so_nbr, so_po, so_create_date, soc_chgdate, " +
@@ -16970,8 +16970,9 @@ return mystring;
                         " left outer join so_chg on soc_id = sodc_id " +
                         " where so_po = " + "'" + tablereport.getValueAt(i, 3).toString() + "'" + 
                         " order by soc_id;");
-                
+                int k = 0;
                 while (res.next()) {
+                    k++;
                      StringBuilder line = new StringBuilder();
                      for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
                        line.append(res.getString(j).replace(",","")).append(",");
@@ -16979,8 +16980,13 @@ return mystring;
                     // output.write(line.deleteCharAt(line.length() - 1).toString() + "\n");  
                      // now append with edi ta
                      String[] ta = getEDIMetaValueAsRow(tablereport.getValueAt(i, 3).toString(), true);
+                     String addheader = "";
                      if (ta != null) {
+                         addheader = ta[0];
                          line.append(ta[1]);
+                     }
+                     if (k == 1) {
+                     output.write(header + "," + addheader + "\n");
                      }
                      output.write(line.deleteCharAt(line.length() - 1).toString() + "\n");
                                      
