@@ -16865,7 +16865,7 @@ return mystring;
                         " inner join sod_det on sod_nbr = so_nbr " +
                         " inner join cm_mstr on cm_code = so_cust " +
                         " inner join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
-                        " where so_po = " + "'" + tablereport.getValueAt(i, 2).toString() + "'" + 
+                        " where so_nbr = " + "'" + tablereport.getValueAt(i, 2).toString() + "'" + 
                         " order by so_nbr;");
                 int k = 0;
                 while (res.next()) {
