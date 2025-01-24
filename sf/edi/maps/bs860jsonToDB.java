@@ -178,6 +178,6 @@ for (int i = 1; i <= itemcount; i++) {
 
       /* Load Sales Order */
       /* call processDB ONLY if the output is database write */
-     processDB(c,com.blueseer.edi.EDI.createSOCFrom860(e, c), null);
+     processDB(c,com.blueseer.edi.EDI.createSOCFrom860(e, c), ta);
 
 
