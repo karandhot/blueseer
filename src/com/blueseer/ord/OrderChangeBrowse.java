@@ -463,24 +463,24 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         ta.setCaretPosition(0);
         ta.setEditable(false);
         
-        JDialog dialog = new JDialog();
-        dialog.setTitle("Header level Key/Value Pair Information : " + key);
-        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridBagLayout());
+        JDialog dialogHeader = new JDialog();
+        dialogHeader.setTitle("Header level Key/Value Pair Information : " + key);
+        dialogHeader.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        JPanel panelHeader = new JPanel();
+        panelHeader.setLayout(new GridBagLayout());
         GridBagConstraints panelGBC = new GridBagConstraints();
 
         panelGBC.weightx = 1;                    //I want to fill whole panel with JTextArea
         panelGBC.weighty = 1;                    //so both weights =1
         panelGBC.fill = GridBagConstraints.BOTH; //and fill is set to BOTH
         
-        panel.add(scroll, panelGBC);
-        dialog.add(panel);
-        dialog.setPreferredSize(new Dimension(500, 400));
-        dialog.pack();
-        dialog.setLocationRelativeTo( null );
-        dialog.setResizable(false);
-        dialog.setVisible(true);
+        panelHeader.add(scroll, panelGBC);
+        dialogHeader.add(panelHeader);
+        dialogHeader.setPreferredSize(new Dimension(500, 400));
+        dialogHeader.pack();
+        dialogHeader.setLocationRelativeTo( null );
+        dialogHeader.setResizable(false);
+        dialogHeader.setVisible(true);
     }
     
     public void showEDIKVDetail(String key, String line) {
