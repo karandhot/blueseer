@@ -129,7 +129,9 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                         };
                 
     javax.swing.table.DefaultTableModel modeldetail = new javax.swing.table.DefaultTableModel(new Object[][]{},
-                        new String[]{getGlobalColumnTag("line"), 
+                        new String[]{
+                            "View",
+                            getGlobalColumnTag("line"), 
                             getGlobalColumnTag("item"), 
                             "old price", 
                             "new price", 
@@ -214,23 +216,23 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         Component c = super.getTableCellRendererComponent(table,
                 value, isSelected, hasFocus, row, column);
         
-         double oldprice = Double.valueOf((String) table.getModel().getValueAt(table.convertRowIndexToModel(row), 2).toString());
-         double newprice = Double.valueOf((String) table.getModel().getValueAt(table.convertRowIndexToModel(row), 3).toString());
-         double oldqty = Double.valueOf((String) table.getModel().getValueAt(table.convertRowIndexToModel(row), 4).toString());
-         double newqty = Double.valueOf((String) table.getModel().getValueAt(table.convertRowIndexToModel(row), 5).toString());
+         double oldprice = Double.valueOf((String) table.getModel().getValueAt(table.convertRowIndexToModel(row), 3).toString());
+         double newprice = Double.valueOf((String) table.getModel().getValueAt(table.convertRowIndexToModel(row), 4).toString());
+         double oldqty = Double.valueOf((String) table.getModel().getValueAt(table.convertRowIndexToModel(row), 5).toString());
+         double newqty = Double.valueOf((String) table.getModel().getValueAt(table.convertRowIndexToModel(row), 6).toString());
          
         c.setBackground(table.getBackground());
         c.setForeground(table.getBackground()); 
         
         if (oldprice != newprice) {
-              if (column == 2 || column == 3) {
+              if (column == 3 || column == 4) {
                 c.setBackground(Color.ORANGE);
                 c.setForeground(Color.WHITE);
               }
         }
          
         if (oldqty != newqty) {
-          if (column == 4 || column == 5) {
+          if (column == 5 || column == 6) {
             c.setBackground(Color.ORANGE);
             c.setForeground(Color.WHITE);
           }
