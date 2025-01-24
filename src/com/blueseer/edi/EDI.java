@@ -3614,7 +3614,7 @@ public class EDI {
            e.duedate = now; 
         }
         String[] custinfo = cusData.getCustInfo(e.ov_billto);
-        String changeid = e.po + "-" + Long.toHexString(System.currentTimeMillis());
+       // String changeid = e.po + "-" + Long.toHexString(System.currentTimeMillis());
         ordData.so_chg soc = new ordData.so_chg(null, 
                  e.changeid,  // unique id
                  e.po,  // po
@@ -3643,7 +3643,7 @@ public class EDI {
           // System.out.println("HERE: " + uom + "/" + e.getDetItem(j) + "/" + e.getDetUOM(j));
       
         ordData.sod_chg sod = new ordData.sod_chg(null, 
-                changeid,
+                e.changeid,
                 e.po,
                 e.getDetLine(j),
                 "", // type
