@@ -62,5 +62,14 @@ mapSegment("items:item","upcnumber",getInput(i,"POC",11));
 commitSegment("items:item");
 }
 
+// tack on raw file as tag in JSON
+StringBuilder sb = new StringBuilder();
+sb.append("_").append(c[13]).append("_").append(c[14]).append("_");
+for (Object f : doc) {
+sb.append((String) f).append("_");
+}
+mapSegment("order:file","contents",sb.toString());
+commitSegment("order:file");
+
 
 

@@ -70,6 +70,8 @@ JSONGenericOrder,sac,sacs,1,0,0,sactype,SAC Type,1,40,-,O,F
 JSONGenericOrder,sac,sacs,1,0,0,saccode,SAC Code,1,80,-,O,F
 JSONGenericOrder,sac,sacs,1,0,0,sacamt,SAC Amount,1,80,-,O,F
 JSONGenericOrder,sac,sacs,1,0,0,sacdesc,SAC Description,1,80,-,O,F
+JSONGenericOrder,file,order,100,1,1,landmark,landmark,9,9,-,M,F
+JSONGenericOrder,file,order,1,0,0,contents,Contents,1,10000,-,O,F
 JSONGenericInvoice,invoice,,1,0,1,landmark,landmark,5,5,-,M,F
 JSONGenericInvoice,invoice,,1,0,0,invoiceid,Invoice Number,1,40,-,O,F
 JSONGenericInvoice,invoice,,1,0,0,ponumber,PO Number,1,40,-,O,F

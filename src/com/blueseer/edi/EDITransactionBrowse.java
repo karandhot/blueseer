@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.edi;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
@@ -44,6 +45,11 @@ import com.blueseer.utl.OVData;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -68,11 +74,22 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Document;
+import javax.swing.text.Highlighter;
+import javax.swing.text.JTextComponent;
 import jcifs.smb.SmbException;
 
 /**
@@ -81,6 +98,7 @@ import jcifs.smb.SmbException;
  */
 public class EDITransactionBrowse extends javax.swing.JPanel {
  
+    Highlighter.HighlightPainter myHighlightPainter = new MyHighlightPainter(Color.YELLOW);
     
     javax.swing.table.DefaultTableModel docmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{"Select", "IdxNbr", "ComKey", "SenderID", "ReceiverID", "TimeStamp", "InFileType", "InDocType", "InBatch", "Reference", "OutFileType", "OutDocType", "OutBatch", "InView", "OutView",  "Status"})
@@ -139,7 +157,7 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
    
     
     
-     class ButtonRenderer extends JButton implements TableCellRenderer {
+    class ButtonRenderer extends JButton implements TableCellRenderer {
 
         public ButtonRenderer() {
             setOpaque(true);
@@ -157,6 +175,130 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
             setText((value == null) ? "" : value.toString());
             return this;
         }
+    }
+    
+     public class myPopupHandler implements ActionListener,
+                              PopupMenuListener {
+        
+        JTextArea ta; 
+        JPopupMenu popup;
+       
+        
+        public myPopupHandler(JTextArea ta) {
+        this.ta = ta;
+        this.ta.setName(ta.getName());
+        popup = new JPopupMenu();
+        popup.setInvoker(ta);
+       
+        if (ta.getName().equals("tafile")) {
+            popup.add(setMenuItem("Search"));
+            popup.add(setMenuItem("Hex Replace"));
+            popup.add(setMenuItem("Raw To Newline"));
+        }
+        /*
+        if (ta.getName().equals("tainput")) {
+            popup.add(setMenuItem("Search"));
+            popup.add(setMenuItem("Clear"));
+            popup.add(setMenuItem("Hex Replace"));
+            popup.add(setMenuItem("Input"));
+            popup.add(setMenuItem("Identify"));
+            popup.add(setMenuItem("Download"));
+            popup.add(setMenuItem("Clear Highlights"));
+            popup.add(setMenuItem("Hide Panel"));
+        }
+        if (ta.getName().equals("tainstruct")) {
+            popup.add(setMenuItem("Search"));
+            popup.add(setMenuItem("Clear"));
+            popup.add(setMenuItem("Structure"));
+            popup.add(setMenuItem("Overlay"));
+            popup.add(setMenuItem("Clear Highlights"));
+        }
+        if (ta.getName().equals("taoutput")) {
+            popup.add(setMenuItem("Search"));
+            popup.add(setMenuItem("Clear"));
+            popup.add(setMenuItem("Hex Replace"));
+            popup.add(setMenuItem("Download"));
+            popup.add(setMenuItem("Clear Highlights"));
+            popup.add(setMenuItem("Hide Panel"));
+        }
+        if (ta.getName().equals("taoutstruct")) {
+            popup.add(setMenuItem("Search"));
+            popup.add(setMenuItem("Clear"));
+            popup.add(setMenuItem("Structure"));
+            popup.add(setMenuItem("Overlay"));
+            popup.add(setMenuItem("Clear Highlights"));
+        }
+        */
+        ta.addMouseListener(ma);
+        popup.addPopupMenuListener(this);
+    }
+ 
+        public JPopupMenu getPopup() {
+        return popup;
+        }
+        
+        private JMenuItem setMenuItem(String s) {
+        JMenuItem menuItem = new JMenuItem(s);
+        menuItem.setActionCommand(s);
+        menuItem.setName(this.ta.getName());
+        menuItem.addActionListener(this);
+        return menuItem;
+    }
+        
+        
+        private MouseListener ma = new MouseAdapter() {
+            private void checkForPopup(MouseEvent e) {
+               if (SwingUtilities.isRightMouseButton(e)) {
+                  if (! ta.isEnabled()) {
+                      return;
+                  } 
+                popup.show(ta, e.getX(), e.getY());
+                } 
+            }
+            public void mousePressed(MouseEvent e)  { checkForPopup(e); }
+            
+        };
+
+        @Override
+        public void actionPerformed(ActionEvent e) { 
+             String ac = e.getActionCommand();
+             JMenuItem parentname = (JMenuItem) e.getSource();
+             switch (ac) {
+                case "Hex Replace" :
+                    hexReplace(parentname.getName());
+                    break;    
+                    
+                case "Search" :
+                    searchTextArea(parentname.getName());
+                    break; 
+                    
+                case "Raw To Newline" :
+                    hexReplaceUnderScore(parentname.getName());
+                    break;    
+                    
+                default:
+                    System.out.println("unknown action: " + ac);
+                    
+             }
+             
+        }
+
+        @Override
+        public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+          //  throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+           // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void popupMenuCanceled(PopupMenuEvent e) {
+           // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+      
+        
     }
     
      
@@ -514,6 +656,9 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
     public EDITransactionBrowse() {
         initComponents();
         setLanguageTags(this);
+        
+        EDITransactionBrowse.myPopupHandler handler3 = new EDITransactionBrowse.myPopupHandler(tafile);
+        tafile.add(handler3.getPopup());
     }
 
     public void setLanguageTags(Object myobj) {
@@ -620,6 +765,180 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
         }
 
     }
+    
+    public void hexReplace(String taname) {
+        JTextComponent ta = null;
+        char toHex = 0;
+        if (taname.equals("tafile")) {
+            ta = tafile;
+        } 
+       
+        String text = bsmf.MainFrame.input("Hex Chars: ");
+        if (text == null || text.isBlank()) {
+            return;
+        }
+        String[] replacehex = text.split("\\|",-1);
+        if (replacehex == null || replacehex.length != 2 || replacehex[0].isBlank()) {
+            return;
+        }
+        char fromHex = (char) Integer.parseInt(replacehex[0], 16);
+        if (! replacehex[1].isBlank()) { 
+        toHex = (char) Integer.parseInt(replacehex[1], 16);
+        }
+        
+        Document d = ta.getDocument();
+        int count = 0;
+         try {
+             String data = d.getText(0, d.getLength());
+             char[] carray = data.toCharArray();
+             StringBuilder sb = new StringBuilder();
+             
+             for (int i = 0; i < carray.length; i++) {
+                 if (carray[i] == fromHex) {
+                    if (toHex > 0) {
+                        sb.append(toHex);  // skip is toHex is blank (0)...removes character
+                    } 
+                    count++;
+                 } else {
+                     sb.append(carray[i]);
+                 }
+             }
+                         
+             if (taname.equals("tafile")) {
+             tafile.setText("");
+             tafile.setText(sb.toString());
+             }
+             bsmf.MainFrame.show("Occurences: " + count);
+         } catch (BadLocationException ex) {
+             bslog(ex);
+             bsmf.MainFrame.show(ex.getMessage());
+         }
+        
+    }
+    
+    public void hexReplaceUnderScore(String taname) {
+        JTextComponent ta = null;
+        char toHex = 0;
+        if (taname.equals("tafile")) {
+            ta = tafile;
+        } 
+       
+        String text = "5f|0a";
+        if (text == null || text.isBlank()) {
+            return;
+        }
+        String[] replacehex = text.split("\\|",-1);
+        if (replacehex == null || replacehex.length != 2 || replacehex[0].isBlank()) {
+            return;
+        }
+        char fromHex = (char) Integer.parseInt(replacehex[0], 16);
+        if (! replacehex[1].isBlank()) { 
+        toHex = (char) Integer.parseInt(replacehex[1], 16);
+        }
+        
+        Document d = ta.getDocument();
+        int count = 0;
+         try {
+             String data = d.getText(0, d.getLength());
+             char[] carray = data.toCharArray();
+             StringBuilder sb = new StringBuilder();
+             
+             for (int i = 0; i < carray.length; i++) {
+                 if (carray[i] == fromHex) {
+                    if (toHex > 0) {
+                        sb.append(toHex);  // skip is toHex is blank (0)...removes character
+                    } 
+                    count++;
+                 } else {
+                     sb.append(carray[i]);
+                 }
+             }
+                         
+             if (taname.equals("tafile")) {
+             tafile.setText("");
+             tafile.setText(sb.toString());
+             }
+            // bsmf.MainFrame.show("Occurences: " + count);
+         } catch (BadLocationException ex) {
+             bslog(ex);
+             bsmf.MainFrame.show(ex.getMessage());
+         }
+        
+    }
+    
+    
+    public void searchTextArea(String taname) {
+        if (taname.equals("tafile")) {
+            cleanHighlights(taname);
+            String text = bsmf.MainFrame.input("Text: ");
+            highlightSearch(tafile, text);            
+        }
+       
+    }
+    
+    class MyHighlightPainter extends DefaultHighlighter.DefaultHighlightPainter {
+        public MyHighlightPainter(Color color) {
+            super(color);
+        }
+    }
+    
+    public void cleanHighlights(String taname) {
+               
+        if (taname.equals("tafile")) {
+            Highlighter h = tafile.getHighlighter();
+            Highlighter.Highlight[] hl = h.getHighlights();
+            for (int i = 0; i < hl.length; i++) {
+                if (hl[i].getPainter() instanceof MyHighlightPainter) {
+                    
+                    h.removeHighlight(hl[i]);
+                }
+            }
+        }
+        
+    }
+    
+    public void highlightSearch(JTextComponent ta, String phrase) {
+        if (phrase == null || phrase.isBlank()) {
+            return;
+        }
+        Highlighter h = ta.getHighlighter();
+        Document d = ta.getDocument();
+        int pos = 0;
+        int count = 0;
+        String text;
+         try {
+            text = d.getText(0, d.getLength());
+            while ((pos = text.toUpperCase().indexOf(phrase.toUpperCase(),pos)) >= 0) {
+                h.addHighlight(pos, pos + phrase.length(), myHighlightPainter);
+                pos += phrase.length();
+                count++;
+            }
+            bsmf.MainFrame.show("Occurences: " + count);
+            
+         } catch (BadLocationException ex) {
+             bslog(ex);
+         }
+    }
+    
+    public void highlightNext(JTextComponent ta) {
+       int current = 0; 
+       
+       if (ta.getName().equals("tafile")) {
+            current = tafile.getCaretPosition();
+            Highlighter h = tafile.getHighlighter();
+            Highlighter.Highlight[] hl = h.getHighlights();
+            for (int i = 0; i < hl.length; i++) {
+                if (hl[i].getPainter() instanceof MyHighlightPainter) {
+                    if (hl[i].getStartOffset() > current) {
+                      tafile.setCaretPosition(hl[i].getStartOffset());
+                      break;
+                    }
+                }
+            }
+        }
+      
+    }
+    
     
     public void initvars(String[] arg) {
        
@@ -810,6 +1129,7 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
 
         tafile.setColumns(20);
         tafile.setRows(5);
+        tafile.setName("tafile"); // NOI18N
         jScrollPane3.setViewportView(tafile);
 
         textpanel.add(jScrollPane3, java.awt.BorderLayout.CENTER);

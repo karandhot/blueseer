@@ -2812,9 +2812,10 @@ public abstract class EDIMap {  // took out the implements EDIMapi
             if (GlobalDebug) {
             System.out.println("JSON TREE: " + tree.toString());
             }
-            try {
+            try { 
                  content = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(root);
-                 if (GlobalDebug) {
+                //  content = mapper.writeValueAsString(root);
+                if (GlobalDebug) {
                    System.out.println("prettyprint: " + "\n" + content);  
                  }
              } catch (JsonProcessingException ex) {

@@ -5000,7 +5000,7 @@ public class ediData {
         for (String s : as2list) {
         as2_mstr as2 = getAS2Mstr(new String[]{s});
         
-            if (as2.as2_outwkf().equals(wkf.wkf_id)) {  // if as2 ID is assigned this executing workflow id then fire
+            if (as2.as2_outwkf().equals(wkf.wkf_id) && as2.as2_enabled().equals("1")) {  // if as2 ID is assigned this executing workflow id then fire
                 try {
                     messg.append(as2.as2_id).append(", ");
                     apiUtils.postAS2(as2.as2_id, false);
