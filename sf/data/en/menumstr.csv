@@ -345,3 +345,4 @@ ShipperItemBrowse,,com.blueseer.shp.ShipperItemBrowse,JMenuItem,shpi
 LabelMixedContMaint,,com.blueseer.lbl.LabelMixedContMaint,JMenuItem,lblx
 ShipBuildMaint,,com.blueseer.shp.ShipBuildMaint,JMenuItem,shpx
 OrderChangeBrowse,,com.blueseer.ord.OrderChangeBrowse,JMenuItem,orch
+MetaMaint,,com.blueseer.adm.MetaMaint,JMenuItem,meta

@@ -292,6 +292,7 @@ Admin,PKSMaint,22,JMenuItem,PKS Maintenance,,,,1,1
 Admin,PKSBrowse,23,JMenuItem,PKS Browse,,1,,1,1
 Admin,CronMaint,24,JMenuItem,Cron Maintenance,,,,1,1
 Admin,CronBrowse,25,JMenuItem,Cron Browse,,1,,1,1
+Admin,MetaMaint,26,JMenuItem,Meta Maintenance,,,,1,1
 Help,About,1,JMenuItem,About,,,,1,1
 Help,License,2,JMenuItem,License,,,,1,1
 Help,Update,3,JMenuItem,Update,,,,1,1

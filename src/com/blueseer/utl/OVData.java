@@ -16860,14 +16860,14 @@ return mystring;
             String headerkvpair = "";
             String detailkvpair = "";
             
-            String header = "Sales Order Number, PO Number, Order Create Date, Customer Name, Shipto Name, Shipto City, Shipto State, Shipto Zip,  DueDate, Remarks, Order Line Number, Item Number, Item Description, Sku Number, Order Quantity, Order Price, Header KVPair, Detail KVPair";
+            String header = "Sales Order Number, PO Number, Order Create Date, PO/Order Date, Customer Name, Shipto Name, Shipto City, Shipto State, Shipto Zip,  DueDate, Remarks, Order Line Number, Item Number, Item Description, Sku Number, Order Quantity, Order Price, Header KVPair, Detail KVPair";
             output.write(header + "\n");
              
             try {
                 for (int i = 0; i < tablereport.getRowCount(); i++) {
                 headerkvpair = getEDIMetaValueAsKVString(tablereport.getValueAt(i, 4).toString(), "header","");
                     
-                res = st.executeQuery("select so_nbr, so_po, so_create_date, " +
+                res = st.executeQuery("select so_nbr, so_po, so_create_date, so_ord_date, " +
                         " cm_name, cms_name, cms_city, cms_state, cms_zip,  so_due_date, " +
                         " so_rmks, sod_line, sod_item, sod_desc, sod_custitem, " +
                         " sod_ord_qty, sod_netprice from so_mstr " + 
