@@ -48,6 +48,7 @@ JSONGenericOrder,item,items,1,0,0,uom,Unit of Measure,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,description,Description,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,skunumber,Sku Number,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,upcnumber,UPC Number,1,40,-,O,F
+JSONGenericOrder,item,items,1,0,0,altitem,Alternate Number,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,orderquantity,Quantity Ordered,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,shippedquantity,Quantity Shipped,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,originalquantity,Quantity Original,1,40,-,O,F
@@ -63,6 +64,10 @@ JSONGenericOrder,item,items,1,0,0,reference,reference,1,100,-,O,F
 JSONGenericOrder,item,items,1,0,0,altprice,Alternate Price,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,rtlprice,Retail Price,1,40,-,O,F
 JSONGenericOrder,item,items,1,0,0,change,Item Change Type,1,50,-,O,F
+JSONGenericOrder,item,items,1,0,0,packitem,Pack Item,1,100,-,O,F
+JSONGenericOrder,item,items,1,0,0,packqty,Pack Qty,1,100,-,O,F
+JSONGenericOrder,item,items,1,0,0,packuom,Pack UOM,1,100,-,O,F
+JSONGenericOrder,item,items,1,0,0,packprice,Pack Price,1,100,-,O,F
 JSONGenericOrder,item,items,1,0,0,kvpair,Key Value field,1,500,-,O,F
 JSONGenericOrder,sacs,order,5,1,1,landmark,landmark,9,9,-,M,F
 JSONGenericOrder,sac,sacs,5,1,1,landmark,landmark,9,9,-,M,F
