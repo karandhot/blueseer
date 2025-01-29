@@ -2158,6 +2158,13 @@ CREATE TABLE IF NOT EXISTS `sod_det` (
   `sod_custprice` varchar(50) NOT NULL  DEFAULT '',
   `sod_edikv` varchar(500) NOT NULL  DEFAULT '',
   `sod_ship` varchar(8) NOT NULL  DEFAULT '',
+  `sod_upc` varchar(60) NOT NULL  DEFAULT '',
+  `sod_altitem` varchar(60) NOT NULL  DEFAULT '',
+  `sod_altuom` varchar(20) NOT NULL  DEFAULT '',
+  `sod_altprice` decimal(14,5) NOT NULL  DEFAULT '0',
+  `sod_packitem` varchar(60) NOT NULL  DEFAULT '',
+  `sod_packuom` varchar(20) NOT NULL  DEFAULT '',
+  `sod_packprice` decimal(14,5) NOT NULL  DEFAULT '0',
   index nbrlineitem (`sod_nbr`, `sod_line`, `sod_item`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `sod_tax` (
@@ -2318,7 +2325,7 @@ CREATE TABLE IF NOT EXISTS `user_mstr` (
   `user_lname` varchar(30)  DEFAULT '',
   `user_fname` varchar(30)  DEFAULT '',
   `user_mname` varchar(30)  DEFAULT '',
-  `user_passwd` varchar(30)  DEFAULT '',
+  `user_passwd` varchar(200)  DEFAULT '',
   `user_status` varchar(1)  DEFAULT '',
   `user_email` varchar(200)  DEFAULT '',
   `user_phone` varchar(15)  DEFAULT '',

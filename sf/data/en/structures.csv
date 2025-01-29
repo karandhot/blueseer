@@ -14315,3 +14315,220 @@ X12860,CTT,,0,0,0,groupend,,0,0,,,F
 X12860,SE,,1,0,1,landmark,Transaction Set Trailer,2,2,-,M,F
 X12860,SE,,1,0,0,e01,Number of Included Segments,1,10,-,M,F
 X12860,SE,,1,0,0,e02,Transaction Set Control Number,4,9,-,M,F
+X12850rev,ST,,1,0,1,landmark,Transaction Set Header,2,2,-,M,F
+X12850rev,ST,,1,0,0,e01,Transaction Set Identifier Code,3,3,-,M/Z,F
+X12850rev,ST,,1,0,0,e02,Transaction Set Control Number,4,9,-,M,F
+X12850rev,ST,,1,0,0,e03,Implementation Convention Reference,1,35,-,O/Z,F
+X12850rev,BEG,,1,0,1,landmark,Beginning Segment for Purchase Order,3,3,-,M,F
+X12850rev,BEG,,1,0,0,e01,Transaction Set Purpose Code,2,2,-,M,F
+X12850rev,BEG,,1,0,0,e02,Purchase Order Type Code,2,2,-,M,F
+X12850rev,BEG,,1,0,0,e03,Purchase Order Number,1,22,-,M,F
+X12850rev,BEG,,1,0,0,e04,Release Number,1,30,-,O,F
+X12850rev,BEG,,1,0,0,e05,Date,8,8,-,M/Z,F
+X12850rev,BEG,,1,0,0,e06,Contract Number,1,30,-,O,F
+X12850rev,BEG,,1,0,0,e07,Acknowledgment Type,2,2,-,O,F
+X12850rev,BEG,,1,0,0,e08,Invoice Type Code,3,3,-,O,F
+X12850rev,BEG,,1,0,0,e09,Contract Type Code,2,2,-,O,F
+X12850rev,BEG,,1,0,0,e10,Purchase Category,2,2,-,O,F
+X12850rev,BEG,,1,0,0,e11,Security Level Code,2,2,-,O,F
+X12850rev,BEG,,1,0,0,e12,Transaction Type Code,2,2,-,O,F
+X12850rev,CUR,,1,0,1,landmark,Currency,3,3,-,O,F
+X12850rev,CUR,,1,0,0,e01,Entity Identifier Code,2,3,-,M,F
+X12850rev,CUR,,1,0,0,e02,Currency Code,3,3,-,M,F
+X12850rev,CUR,,1,0,0,e03,Exchange Rate,4,10,-,O,F
+X12850rev,CUR,,1,0,0,e04,Entity Identifier Code,2,3,-,O,F
+X12850rev,CUR,,1,0,0,e05,Currency Code,3,3,-,O,F
+X12850rev,CUR,,1,0,0,e06,Currency Market/Exchange Code,3,3,-,O,F
+X12850rev,CUR,,1,0,0,e07,Date/Time Qualifier,3,3,-,X,F
+X12850rev,CUR,,1,0,0,e08,Date,8,8,-,O,F
+X12850rev,CUR,,1,0,0,e09,Time,4,8,-,O,F
+X12850rev,CUR,,1,0,0,e10,Date/Time Qualifier,3,3,-,X,F
+X12850rev,CUR,,1,0,0,e11,Date,8,8,-,X,F
+X12850rev,CUR,,1,0,0,e12,Time,4,8,-,X,F
+X12850rev,CUR,,1,0,0,e13,Date/Time Qualifier,3,3,-,X,F
+X12850rev,CUR,,1,0,0,e14,Date,8,8,-,X,F
+X12850rev,CUR,,1,0,0,e15,Time,4,8,-,X,F
+X12850rev,CUR,,1,0,0,e16,Date/Time Qualifier,3,3,-,X,F
+X12850rev,CUR,,1,0,0,e17,Date,8,8,-,X,F
+X12850rev,CUR,,1,0,0,e18,Time,4,8,-,X,F
+X12850rev,CUR,,1,0,0,e19,Date/Time Qualifier,3,3,-,X,F
+X12850rev,CUR,,1,0,0,e20,Date,8,8,-,X,F
+X12850rev,CUR,,1,0,0,e21,Time,4,8,-,X,F
+X12850rev,REF,,99999,0,1,landmark,Reference Information,3,3,-,O,F
+X12850rev,REF,,1,0,0,e01,Reference Identification Qualifier,2,3,-,M,F
+X12850rev,REF,,1,0,0,e02,Reference Identification,1,50,-,X,F
+X12850rev,REF,,1,0,0,e03,Description,1,80,-,X,F
+X12850rev,PER,,3,0,1,landmark,Administrative Communications Contact,3,3,-,O,F
+X12850rev,PER,,1,0,0,e01,Contact Function Code,2,2,-,M,F
+X12850rev,PER,,1,0,0,e02,Name,1,60,-,O,F
+X12850rev,PER,,1,0,0,e03,Communication Number Qualifier,2,2,-,X,F
+X12850rev,PER,,1,0,0,e04,Communication Number,1,256,-,X,F
+X12850rev,PER,,1,0,0,e05,Communication Number Qualifier,2,2,-,X,F
+X12850rev,PER,,1,0,0,e06,Communication Number,1,256,-,X,F
+X12850rev,PER,,1,0,0,e07,Communication Number Qualifier,2,2,-,X,F
+X12850rev,PER,,1,0,0,e08,Communication Number,1,256,-,X,F
+X12850rev,PER,,1,0,0,e09,Contact Inquiry Reference,1,20,-,O,F
+X12850rev,FOB,,99999,0,1,landmark,F.O.B. Related Instructions,3,3,-,O,F
+X12850rev,FOB,,1,0,0,e01,Shipment Method of Payment,2,2,-,M/Z,F
+X12850rev,FOB,,1,0,0,e02,Location Qualifier,1,2,-,X/Z,F
+X12850rev,FOB,,1,0,0,e03,Description,1,80,-,O,F
+X12850rev,FOB,,1,0,0,e04,Transportation Terms Qualifier Code,2,2,-,O,F
+X12850rev,FOB,,1,0,0,e05,Transportation Terms Code,3,3,-,X,F
+X12850rev,FOB,,1,0,0,e06,Location Qualifier,1,2,-,X/Z,F
+X12850rev,FOB,,1,0,0,e07,Description,1,80,-,O,F
+X12850rev,FOB,,1,0,0,e08,Risk of Loss Code,2,2,-,O/Z,F
+X12850rev,FOB,,1,0,0,e09,Description,1,80,-,X,F
+X12850rev,DTM,,10,0,1,landmark,Date/Time Reference,3,3,-,O,F
+X12850rev,DTM,,1,0,0,e01,Date/Time Qualifier,3,3,-,M,F
+X12850rev,DTM,,1,0,0,e02,Date,8,8,-,X,F
+X12850rev,DTM,,1,0,0,e03,Time,4,8,-,X,F
+X12850rev,DTM,,1,0,0,e04,Time Code,2,2,-,O,F
+X12850rev,DTM,,1,0,0,e05,Date Time Period Format Qualifier,2,3,-,X,F
+X12850rev,DTM,,1,0,0,e06,Date Time Period,1,35,-,X,F
+X12850rev,TD1,,2,0,1,landmark,Carrier Details (Quantity and Weight),3,3,-,O,F
+X12850rev,TD1,,1,0,0,e01,Packaging Code,3,5,-,O,F
+X12850rev,TD1,,1,0,0,e02,Lading Quantity,1,7,-,X,F
+X12850rev,TD1,,1,0,0,e03,Commodity Code Qualifier,1,1,-,O,F
+X12850rev,TD1,,1,0,0,e04,Commodity Code,1,30,-,X,F
+X12850rev,TD1,,1,0,0,e05,Lading Description,1,50,-,O,F
+X12850rev,TD1,,1,0,0,e06,Weight Qualifier,1,2,-,O,F
+X12850rev,TD1,,1,0,0,e07,Weight,1,10,-,X,F
+X12850rev,TD1,,1,0,0,e08,Unit or Basis for Measurement Code,2,2,-,X,F
+X12850rev,TD1,,1,0,0,e09,Volume,1,8,-,X,F
+X12850rev,TD1,,1,0,0,e10,Unit or Basis for Measurement Code,2,2,-,X,F
+X12850rev,TD5,,99999,0,1,landmark,Carrier Details (Routing Sequence/Transit Time),3,3,-,O,F
+X12850rev,TD5,,1,0,0,e01,Routing Sequence Code,1,2,-,O,F
+X12850rev,TD5,,1,0,0,e02,Identification Code Qualifier,1,2,-,X,F
+X12850rev,TD5,,1,0,0,e03,Identification Code,2,80,-,X,F
+X12850rev,TD5,,1,0,0,e04,Transportation Method/Type Code,1,2,-,X,F
+X12850rev,TD5,,1,0,0,e05,Routing,1,35,-,X,F
+X12850rev,TD5,,1,0,0,e06,Shipment/Order Status Code,2,2,-,X,F
+X12850rev,TD5,,1,0,0,e07,Location Qualifier,1,2,-,O,F
+X12850rev,TD5,,1,0,0,e08,Location Identifier,1,30,-,X,F
+X12850rev,TD5,,1,0,0,e09,Transit Direction Code,2,2,-,O,F
+X12850rev,TD5,,1,0,0,e10,Transit Time Direction Qualifier,2,2,-,O,F
+X12850rev,TD5,,1,0,0,e11,Transit Time,1,4,-,X,F
+X12850rev,TD5,,1,0,0,e12,Service Level Code,2,2,-,X,F
+X12850rev,TD5,,1,0,0,e13,Service Level Code,2,2,-,X,F
+X12850rev,TD5,,1,0,0,e14,Service Level Code,2,2,-,O,F
+X12850rev,TD5,,1,0,0,e15,Country Code,2,3,-,O/Z,F
+X12850rev,TD3,,12,0,1,landmark,Carrier Details (Equipment),3,3,-,O,F
+X12850rev,TD3,,1,0,0,e01,Equipment Description Code,2,2,-,X,F
+X12850rev,TD3,,1,0,0,e02,Equipment Initial,1,4,-,O,F
+X12850rev,TD3,,1,0,0,e03,Equipment Number,1,15,-,X,F
+X12850rev,TD3,,1,0,0,e04,Weight Qualifier,1,2,-,O,F
+X12850rev,TD3,,1,0,0,e05,Weight,1,10,-,X,F
+X12850rev,TD3,,1,0,0,e06,Unit or Basis for Measurement Code,2,2,-,X,F
+X12850rev,TD3,,1,0,0,e07,Ownership Code,1,1,-,O,F
+X12850rev,TD3,,1,0,0,e08,Seal Status Code,2,2,-,O,F
+X12850rev,TD3,,1,0,0,e09,Seal Number,2,15,-,O,F
+X12850rev,TD3,,1,0,0,e10,Equipment Type,4,4,-,X,F
+X12850rev,N9,,1000,1,1,landmark,Extended Reference Information,2,2,-,O,F
+X12850rev,N9,,1,0,0,e01,Reference Identification Qualifier,2,3,-,M,F
+X12850rev,N9,,1,0,0,e02,Reference Identification,1,50,-,X,F
+X12850rev,N9,,1,0,0,e03,Free-form Description,1,45,-,X,F
+X12850rev,N9,,1,0,0,e04,Date,8,8,-,O,F
+X12850rev,N9,,1,0,0,e05,Time,4,8,-,X,F
+X12850rev,N9,,1,0,0,e06,Time Code,2,2,-,O/Z,F
+X12850rev,MTX,N9,99999,0,1,landmark,Text,3,3,-,O,F
+X12850rev,MTX,N9,1,0,0,e01,Note Reference Code,3,3,-,O,F
+X12850rev,MTX,N9,1,0,0,e02,Textual Data,1,4096,-,X,F
+X12850rev,MTX,N9,1,0,0,e03,Textual Data,1,4096,-,O,F
+X12850rev,MTX,N9,1,0,0,e04,Printer Carriage Control Code,2,2,-,X,F
+X12850rev,MTX,N9,1,0,0,e05,Number,1,9,-,O/Z,F
+X12850rev,MTX,N9,1,0,0,e06,Language Code,2,3,-,O,F
+X12850rev,MSG,N9,10,1,1,landmark,Message Text,3,3,-,M,F
+X12850rev,MSG,N9,1,0,0,e01,Free-form Message Text,1,264,-,M,F
+X12850rev,MSG,N9,1,0,0,e02,Printer Carriage Control Code,2,2,-,X,F
+X12850rev,MSG,N9,1,0,0,e03,Number,1,9,-,O/Z,F
+X12850rev,N1,,200,1,1,landmark,Party Identification,2,2,-,O,F
+X12850rev,N1,,1,0,0,e01,Entity Identifier Code,2,3,-,M,F
+X12850rev,N1,,1,0,0,e02,Name,1,60,-,X,F
+X12850rev,N1,,1,0,0,e03,Identification Code Qualifier,1,2,-,X,F
+X12850rev,N1,,1,0,0,e04,Identification Code,2,80,-,X,F
+X12850rev,N1,,1,0,0,e05,Entity Relationship Code,2,2,-,O,F
+X12850rev,N1,,1,0,0,e06,Entity Identifier Code,2,3,-,O,F
+X12850rev,N2,N1,2,0,1,landmark,Additional Name Information,2,2,-,O,F
+X12850rev,N2,N1,1,0,0,e01,Name,1,60,-,M,F
+X12850rev,N2,N1,1,0,0,e02,Name,1,60,-,O,F
+X12850rev,IN2,N1,99999,0,1,landmark,Individual Name Structure Components,3,3,-,O,F
+X12850rev,IN2,N1,1,0,0,e01,Name Component Qualifier,2,2,-,M,F
+X12850rev,IN2,N1,1,0,0,e02,Name,1,60,-,M,F
+X12850rev,IN2,N1,1,0,0,e03,Name,1,60,-,O,F
+X12850rev,N3,N1,2,0,1,landmark,Party Location,2,2,-,O,F
+X12850rev,N3,N1,1,0,0,e01,Address Information,1,55,-,M,F
+X12850rev,N3,N1,1,0,0,e02,Address Information,1,55,-,O,F
+X12850rev,N4,N1,99999,0,1,landmark,Geographic Location,2,2,-,O,F
+X12850rev,N4,N1,1,0,0,e01,City Name,2,30,-,O,F
+X12850rev,N4,N1,1,0,0,e02,State or Province Code,2,2,-,X,F
+X12850rev,N4,N1,1,0,0,e03,Postal Code,3,15,-,O,F
+X12850rev,N4,N1,1,0,0,e04,Country Code,2,3,-,X,F
+X12850rev,N4,N1,1,0,0,e05,Location Qualifier,1,2,-,X,F
+X12850rev,N4,N1,1,0,0,e06,Location Identifier,1,30,-,O,F
+X12850rev,N4,N1,1,0,0,e07,Country Subdivision Code,1,3,-,X,F
+X12850rev,PO1,,100000,1,1,landmark,Baseline Item Data,3,3,-,M,F
+X12850rev,PO1,,1,0,0,e01,Assigned Identification,1,20,-,O,F
+X12850rev,PO1,,1,0,0,e02,Quantity,1,15,-,X/Z,F
+X12850rev,PO1,,1,0,0,e03,Unit or Basis for Measurement Code,2,2,-,O,F
+X12850rev,PO1,,1,0,0,e04,Unit Price,1,17,-,X,F
+X12850rev,PO1,,1,0,0,e05,Basis of Unit Price Code,2,2,-,O,F
+X12850rev,PO1,,1,0,0,e06,Product/Service ID Qualifier,2,2,-,X,F
+X12850rev,PO1,,1,0,0,e07,Product/Service ID,1,48,-,X,F
+X12850rev,PO1,,1,0,0,e08,Product/Service ID Qualifier,2,2,-,X,F
+X12850rev,PO1,,1,0,0,e09,Product/Service ID,1,48,-,X,F
+X12850rev,PO1,,1,0,0,e10,Product/Service ID Qualifier,2,2,-,X,F
+X12850rev,PO1,,1,0,0,e11,Product/Service ID,1,48,-,X,F
+X12850rev,PO1,,1,0,0,e12,Product/Service ID Qualifier,2,2,-,X,F
+X12850rev,PO1,,1,0,0,e13,Product/Service ID,1,48,-,X,F
+X12850rev,PO1,,1,0,0,e14,Product/Service ID Qualifier,2,2,-,X,F
+X12850rev,PO1,,1,0,0,e15,Product/Service ID,1,48,-,X,F
+X12850rev,PO1,,1,0,0,e16,Product/Service ID Qualifier,2,2,-,X,F
+X12850rev,PO1,,1,0,0,e17,Product/Service ID,1,48,-,X,F
+X12850rev,PO1,,1,0,0,e18,Product/Service ID Qualifier,2,2,-,X,F
+X12850rev,PO1,,1,0,0,e19,Product/Service ID,1,48,-,X,F
+X12850rev,PO1,,1,0,0,e20,Product/Service ID Qualifier,2,2,-,X,F
+X12850rev,PO1,,1,0,0,e21,Product/Service ID,1,48,-,X,F
+X12850rev,PO1,,1,0,0,e22,Product/Service ID Qualifier,2,2,-,X,F
+X12850rev,PO1,,1,0,0,e23,Product/Service ID,1,48,-,X,F
+X12850rev,PO1,,1,0,0,e24,Product/Service ID Qualifier,2,2,-,X,F
+X12850rev,PO1,,1,0,0,e25,Product/Service ID,1,48,-,X,F
+X12850rev,PID,PO1,1000,1,1,landmark,Product/Item Description,3,3,-,O,F
+X12850rev,PID,PO1,1,0,0,e01,Item Description Type,1,1,-,M,F
+X12850rev,PID,PO1,1,0,0,e02,Product/Process Characteristic Code,2,3,-,O,F
+X12850rev,PID,PO1,1,0,0,e03,Agency Qualifier Code,2,2,-,X/Z,F
+X12850rev,PID,PO1,1,0,0,e04,Product Description Code,1,12,-,X/Z,F
+X12850rev,PID,PO1,1,0,0,e05,Description,1,80,-,X,F
+X12850rev,PID,PO1,1,0,0,e06,Surface/Layer/Position Code,2,2,-,O,F
+X12850rev,PID,PO1,1,0,0,e07,Source Subqualifier,1,15,-,O,F
+X12850rev,PID,PO1,1,0,0,e08,Yes/No Condition or Response Code,1,1,-,O/Z,F
+X12850rev,PID,PO1,1,0,0,e09,Language Code,2,3,-,O/Z,F
+X12850rev,PO4,PO1,99999,0,1,landmark,Item Physical Details,3,3,-,O,F
+X12850rev,PO4,PO1,1,0,0,e01,Pack,1,6,-,O,F
+X12850rev,PO4,PO1,1,0,0,e02,Size,1,8,-,X,F
+X12850rev,PO4,PO1,1,0,0,e03,Unit or Basis for Measurement Code,2,2,-,X,F
+X12850rev,PO4,PO1,1,0,0,e04,Packaging Code,3,5,-,X,F
+X12850rev,PO4,PO1,1,0,0,e05,Weight Qualifier,1,2,-,O,F
+X12850rev,PO4,PO1,1,0,0,e06,Gross Weight per Pack,1,9,-,X,F
+X12850rev,PO4,PO1,1,0,0,e07,Unit or Basis for Measurement Code,2,2,-,X,F
+X12850rev,PO4,PO1,1,0,0,e08,Gross Volume per Pack,1,9,-,X,F
+X12850rev,PO4,PO1,1,0,0,e09,Unit or Basis for Measurement Code,2,2,-,X,F
+X12850rev,PO4,PO1,1,0,0,e10,Length,1,8,-,X,F
+X12850rev,PO4,PO1,1,0,0,e11,Width,1,8,-,X,F
+X12850rev,PO4,PO1,1,0,0,e12,Height,1,8,-,X,F
+X12850rev,PO4,PO1,1,0,0,e13,Unit or Basis for Measurement Code,2,2,-,X,F
+X12850rev,PO4,PO1,1,0,0,e14,Inner Pack,1,6,-,O,F
+X12850rev,PO4,PO1,1,0,0,e15,Surface/Layer/Position Code,2,2,-,O/Z,F
+X12850rev,PO4,PO1,1,0,0,e16,Assigned Identification,1,20,-,X/Z,F
+X12850rev,PO4,PO1,1,0,0,e17,Assigned Identification,1,20,-,O/Z,F
+X12850rev,PO4,PO1,1,0,0,e18,Number,1,9,-,O/Z,F
+X12850rev,CTT,,1,1,1,landmark,Transaction Totals,3,3,-,O,F
+X12850rev,CTT,,1,0,0,e01,Number of Line Items,1,6,-,M,F
+X12850rev,CTT,,1,0,0,e02,Hash Total,1,10,-,O,F
+X12850rev,CTT,,1,0,0,e03,Weight,1,10,-,X,F
+X12850rev,CTT,,1,0,0,e04,Unit or Basis for Measurement Code,2,2,-,X,F
+X12850rev,CTT,,1,0,0,e05,Volume,1,8,-,X,F
+X12850rev,CTT,,1,0,0,e06,Unit or Basis for Measurement Code,2,2,-,X,F
+X12850rev,CTT,,1,0,0,e07,Description,1,80,-,O,F
+X12850rev,SE,,1,0,1,landmark,Transaction Set Trailer,2,2,-,M,F
+X12850rev,SE,,1,0,0,e01,Number of Included Segments,1,10,-,M,F
+X12850rev,SE,,1,0,0,e02,Transaction Set Control Number,4,9,-,M,F
