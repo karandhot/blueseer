@@ -3570,7 +3570,10 @@ public class EDI {
                 0, // tax 
                 site,  
                 "", // bom
-                shipto
+                shipto,
+                e.getDetAltItem(j), // sod_char1
+                e.getDetPackQty(j), // sod_char2
+                "" // sod_char3
                 );  
                 detail.add(sod);
         }
@@ -6558,6 +6561,9 @@ public class EDI {
     public ArrayList<String> detnetprice = new ArrayList<String>();
     public ArrayList<String> detdisc = new ArrayList<String>();
     public ArrayList<String> detdesc = new ArrayList<String>();
+    public ArrayList<String> detupc = new ArrayList<String>();
+    public ArrayList<String> detaltitem = new ArrayList<String>();
+    public ArrayList<String> detpackqty = new ArrayList<String>();
         
         public edi850() {
             
@@ -6612,6 +6618,16 @@ public class EDI {
         public void setDetSku(int i, String v) {
            this.detsku.set(i,v);
         }
+        public void setDetUpc(int i, String v) {
+           this.detupc.set(i,v);
+        }
+        public void setDetAltItem(int i, String v) {
+           this.detaltitem.set(i,v);
+        }
+        public void setDetPackQty(int i, String v) {
+           this.detpackqty.set(i,v);
+        }
+        
         public void setDetRef(int i, String v) {
            this.detref.set(i,v);
         }
@@ -6790,6 +6806,15 @@ public class EDI {
         }
         public String getDetDesc(int i) {
            return detdesc.get(i);
+        }
+        public String getDetUpc(int i) {
+           return detupc.get(i);
+        }
+        public String getDetAltItem(int i) {
+           return detaltitem.get(i);
+        }
+        public String getDetPackQty(int i) {
+           return detpackqty.get(i);
         }
         
         

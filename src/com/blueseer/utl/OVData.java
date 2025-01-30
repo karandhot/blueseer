@@ -9707,7 +9707,71 @@ return outvalue;
         return isValid;
         
     }        
+    
+    public static int getPackQtyForItem(String item, String site, String order_uom) {
+           int r = 1;
+           String baseuom = "";
+         try{
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            int x = 0;
+            try {
+                              
+                res = st.executeQuery("select it_uom from item_mstr where it_item = " + "'" + item + "'" +
+                                      " AND it_site = " + "'" + site + "'" + ";" ); 
+               while (res.next()) {
+                baseuom = res.getString("it_uom");   
+                x++;
+                }
+               
+                if (x == 0) {
+                    baseuom = "EA"; // no item in item master
+                }
+               
+               
+                int z = 0;                
+                if (! baseuom.equals(order_uom)) {
+                    res = st.executeQuery("select conv_id, conv_fromamt, conv_toamt from conv_mstr where " +
+                            " conv_fromcode = " + "'" + baseuom + "'" +
+                            " AND conv_tocode = " + "'" + order_uom + "'" + ";" ); 
+                    while (res.next()) {
+                        z++;
+                        r = res.getInt("conv_toamt");
+                    }
+                    if (z == 0) {
+                        // try reverse
+                        res = st.executeQuery("select conv_id, conv_fromamt, conv_toamt from conv_mstr where " +
+                            " conv_fromcode = " + "'" + order_uom + "'" +
+                            " AND conv_tocode = " + "'" + baseuom + "'" + ";" ); 
+                        while (res.next()) {
+                        r = res.getInt("conv_toamt");             
+                        }
+                    }
+                }
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return r;
         
+    }        
+        
+    
     public static String getProdLineInvAcct(String prodline) {
            String myitem = null;
          try{
@@ -10096,6 +10160,43 @@ return outvalue;
         
     }
      
+    public static String getUOMDesc(String uom) {
+           String r = "";
+         try{
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+                res = st.executeQuery("select uom_desc from uom_mstr where " +
+                        " uom_id = " + "'" + uom + "'" + ";" );
+               while (res.next()) {
+                r = res.getString("uom_desc");                    
+                }
+               
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return r;
+        
+    }
+    
     
     public static ArrayList<String> getUOMList() {
            ArrayList myarray = new ArrayList();
@@ -16835,88 +16936,7 @@ return mystring;
         }
                 
       }
-    
-    public static void exportOrderDetail(JTable tablereport) {
-        FileDialog fDialog;
-        fDialog = new FileDialog(new Frame(), "Save", FileDialog.SAVE);
-        fDialog.setVisible(true);
-       // fDialog.setFile("data.csv");
-        String path = fDialog.getDirectory() + fDialog.getFile();
-        File f = new File(path);
-        BufferedWriter output = null;
-        
-         try{
-            output = new BufferedWriter(new FileWriter(f));
-            
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            
-            String headerkvpair = "";
-            String detailkvpair = "";
-            
-            String header = "Sales Order Number, PO Number, Order Create Date, PO/Order Date, Customer Name, Shipto Name, Shipto City, Shipto State, Shipto Zip,  DueDate, Remarks, Order Line Number, Item Number, Item Description, Sku Number, Order Quantity, Order Price, Header KVPair, Detail KVPair";
-            output.write(header + "\n");
-             
-            try {
-                for (int i = 0; i < tablereport.getRowCount(); i++) {
-                headerkvpair = getEDIMetaValueAsKVString(tablereport.getValueAt(i, 4).toString(), "header","");
-                    
-                res = st.executeQuery("select so_nbr, so_po, so_create_date, so_ord_date, " +
-                        " cm_name, cms_name, cms_city, cms_state, cms_zip,  so_due_date, " +
-                        " so_rmks, sod_line, sod_item, sod_desc, sod_custitem, " +
-                        " sod_ord_qty, sod_netprice from so_mstr " + 
-                        " inner join sod_det on sod_nbr = so_nbr " +
-                        " inner join cm_mstr on cm_code = so_cust " +
-                        " inner join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
-                        " where so_nbr = " + "'" + tablereport.getValueAt(i, 2).toString() + "'" + 
-                        " order by so_nbr;");
-                int k = 0;
-                while (res.next()) {
-                    k++;
-                     StringBuilder line = new StringBuilder();
-                     for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
-                       line.append(res.getString(j).replace(",","")).append(",");
-                     }
-                     
-                     detailkvpair = getEDIMetaValueAsKVString(tablereport.getValueAt(i, 4).toString(), "detail",res.getString("sod_line"));
-                     
-                     output.write(line.toString() + headerkvpair + "," + detailkvpair);
-                     output.write("\n");
-                     // now add detailkvpair
-                     
-                 }
-                
-                } // for each line in tablereport
-                
-           }
-            catch (SQLException s){
-                MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               con.close();
-        }
-        }
-        catch (IOException | SQLException e){
-            MainFrame.bslog(e);
-        } finally {
-          if (output != null) {
-              try {
-                  output.close();
-              } catch (IOException ex) {
-                  bslog(ex);
-              }
-          }   
-        }
-    }
-        
+           
     
     public static void exportCertToFile(String data, String filename) {
         FileDialog fDialog;

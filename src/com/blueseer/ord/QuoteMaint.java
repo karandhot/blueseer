@@ -865,7 +865,10 @@ public class QuoteMaint extends javax.swing.JPanel implements IBlueSeerT {
                 0,  //taxamt
                 ddsite.getSelectedItem().toString(),  
                 "", // bomcode
-                "" // shipcode
+                "", // shipcode
+                "", // sod_char1
+                "", // sod_char2
+                ""  // sod_char3
                 );  
                 list.add(x);
             }    

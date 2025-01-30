@@ -94,6 +94,10 @@ for (int i = 1; i <= itemcount; i++) {
         e.setDetItem(i-1,getInput(i, "order:items:item","itemnumber"));
         ta.add(new String[]{po,("detail:"+snum(i)),"item", getInput(i, "order:items:item","itemnumber")});
         e.setDetCustItem(i-1,getInput(i, "order:items:item","skunumber"));
+        e.setDetSku(i-1,getInput(i, "order:items:item","skunumber"));
+        e.setDetAltItem(i-1,getInput(i, "order:items:item","altitem"));
+        e.setDetUpc(i-1,getInput(i, "order:items:item","upcnumber"));
+        e.setDetPackQty(i-1,getInput(i, "order:items:item","packqty"));
         item = e.getDetItem(i-1);
         e.setDetPO(i-1,po);
         e.setDetLine(i-1,getInput(i, "order:items:item","line"));

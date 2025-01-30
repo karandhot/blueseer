@@ -287,6 +287,9 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
             if (s[0].equals("edita_to_notes")) {
                 cbedita.setSelected(BlueSeerUtils.ConvertStringToBool(s[1]));  
             }
+            if (s[0].equals("uom_pricing")) {
+                cbuompricing.setSelected(BlueSeerUtils.ConvertStringToBool(s[1]));  
+            }
         } 
     }
     
@@ -300,6 +303,7 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
       }
           OVData.addUpdateSysMeta("system", "ordercontrol", "autoconfirm", BlueSeerUtils.boolToString(cbautoconfirm.isSelected())); 
           OVData.addUpdateSysMeta("system", "ordercontrol", "edita_to_notes", BlueSeerUtils.boolToString(cbedita.isSelected()));  
+          OVData.addUpdateSysMeta("system", "ordercontrol", "uom_pricing", BlueSeerUtils.boolToString(cbuompricing.isSelected()));
       
     }
     
@@ -333,6 +337,7 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
         btbilling = new javax.swing.JButton();
         cbautoconfirm = new javax.swing.JCheckBox();
         cbedita = new javax.swing.JCheckBox();
+        cbuompricing = new javax.swing.JCheckBox();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -445,6 +450,8 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
 
         cbedita.setText("append EDI TA Notes?");
 
+        cbuompricing.setText("Enforce UOM Pricing?");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -464,7 +471,8 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
                             .addComponent(cbcustitem)
                             .addComponent(cbvouchershipping)
                             .addComponent(cbautoconfirm)
-                            .addComponent(cbedita))
+                            .addComponent(cbedita)
+                            .addComponent(cbuompricing))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 51, Short.MAX_VALUE)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -504,7 +512,9 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
                         .addComponent(cbautoconfirm)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cbedita)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cbuompricing)
+                        .addGap(0, 4, Short.MAX_VALUE)))
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -561,6 +571,7 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
     private javax.swing.JCheckBox cbexceedQOHU;
     private javax.swing.JCheckBox cbsrvmitemdefault;
     private javax.swing.JCheckBox cbsrvmtype;
+    private javax.swing.JCheckBox cbuompricing;
     private javax.swing.JCheckBox cbvouchershipping;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

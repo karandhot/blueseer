@@ -448,14 +448,14 @@ public class ordData {
                 "sod_po = ?, sod_ord_qty = ?, sod_uom = ?, sod_all_qty = ?, " +
                 " sod_listprice = ?, sod_disc = ?, sod_netprice = ?, sod_ord_date = ?, " +
                 "sod_due_date = ?, sod_shipped_qty = ?, sod_status = ?, sod_wh = ?, sod_loc = ?, " +
-                " sod_desc = ?, sod_taxamt = ?, sod_site = ?, sod_bom = ?, sod_ship = ? " +
+                " sod_desc = ?, sod_taxamt = ?, sod_site = ?, sod_bom = ?, sod_ship = ?, sod_char1 = ?, sod_char2 = ?, sod_char3 = ? " +
                  " where sod_nbr = ? and sod_line = ? ; ";
         String sqlInsert = "insert into sod_det (sod_nbr, sod_line, sod_item, sod_custitem, " 
                         + "sod_po, sod_ord_qty, sod_uom, sod_all_qty, " 
                         + "sod_listprice, sod_disc, sod_netprice, sod_ord_date, sod_due_date, " 
                         + "sod_shipped_qty, sod_status, sod_wh, sod_loc, "
-                        + "sod_desc, sod_taxamt, sod_site, sod_bom, sod_ship ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                        + "sod_desc, sod_taxamt, sod_site, sod_bom, sod_ship, sod_char1, sod_char2, sod_char3 ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
         ps = con.prepareStatement(sqlSelect); 
         ps.setString(1, x.sod_nbr);
         ps.setInt(2, x.sod_line);
@@ -484,11 +484,14 @@ public class ordData {
             ps.setString(20, x.sod_site);
             ps.setString(21, x.sod_bom);
             ps.setString(22, x.sod_ship);
+            ps.setString(23, x.sod_char1);
+            ps.setString(24, x.sod_char2);
+            ps.setString(25, x.sod_char3);
             rows = ps.executeUpdate();
         } else {    // update
          ps = con.prepareStatement(sqlUpdate) ;
-            ps.setString(21, x.sod_nbr);
-            ps.setInt(22, x.sod_line);
+            ps.setString(24, x.sod_nbr);
+            ps.setInt(25, x.sod_line);
             ps.setString(1, x.sod_item);
             ps.setString(2, x.sod_custitem);
             ps.setString(3, z.so_po);
@@ -509,6 +512,9 @@ public class ordData {
             ps.setString(18, x.sod_site);
             ps.setString(19, x.sod_bom);
             ps.setString(20, x.sod_ship);
+            ps.setString(21, x.sod_char1);
+            ps.setString(22, x.sod_char2);
+            ps.setString(23, x.sod_char3);
             rows = ps.executeUpdate();
         }
             
@@ -911,7 +917,8 @@ public class ordData {
                     res.getString("sod_custitem"), res.getString("sod_po"), res.getDouble("sod_ord_qty"), res.getString("sod_uom"), res.getDouble("sod_all_qty"),
                     res.getDouble("sod_listprice"), res.getDouble("sod_disc"), res.getDouble("sod_netprice"), res.getString("sod_ord_date"), res.getString("sod_due_date"),
                     res.getDouble("sod_shipped_qty"), res.getString("sod_status"), res.getString("sod_wh"), res.getString("sod_loc"), 
-                    res.getString("sod_desc"), res.getDouble("sod_taxamt"), res.getString("sod_site"), res.getString("sod_bom"), res.getString("sod_ship") );
+                    res.getString("sod_desc"), res.getDouble("sod_taxamt"), res.getString("sod_site"), res.getString("sod_bom"), res.getString("sod_ship"),
+                    res.getString("sod_char1"), res.getString("sod_char2"), res.getString("sod_char3"));
                     list.add(r);
                     }
                 
@@ -940,7 +947,8 @@ public class ordData {
                     res.getString("sod_custitem"), res.getString("sod_po"), res.getDouble("sod_ord_qty"), res.getString("sod_uom"), res.getDouble("sod_all_qty"),
                     res.getDouble("sod_listprice"), res.getDouble("sod_disc"), res.getDouble("sod_netprice"), res.getString("sod_ord_date"), res.getString("sod_due_date"),
                     res.getDouble("sod_shipped_qty"), res.getString("sod_status"), res.getString("sod_wh"), res.getString("sod_loc"), 
-                    res.getString("sod_desc"), res.getDouble("sod_taxamt"), res.getString("sod_site"), res.getString("sod_bom"), res.getString("sod_ship") );
+                    res.getString("sod_desc"), res.getDouble("sod_taxamt"), res.getString("sod_site"), res.getString("sod_bom"), res.getString("sod_ship"),
+                    res.getString("sod_char1"),res.getString("sod_char2"),res.getString("sod_char3"));
                     list.add(r);
                     }
             }
@@ -1096,8 +1104,8 @@ public class ordData {
                         + "sod_po, sod_ord_qty, sod_uom, sod_all_qty, " 
                         + "sod_listprice, sod_disc, sod_netprice, sod_ord_date, sod_due_date, " 
                         + "sod_shipped_qty, sod_status, sod_wh, sod_loc, "
-                        + "sod_desc, sod_taxamt, sod_site, sod_bom, sod_ship ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                        + "sod_desc, sod_taxamt, sod_site, sod_bom, sod_ship, sod_char1, sod_char2, sod_char3 ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
        
           ps = con.prepareStatement(sqlSelect); 
           ps.setString(1, x.sod_nbr);
@@ -1127,6 +1135,9 @@ public class ordData {
             ps.setString(20, x.sod_site);
             ps.setString(21, x.sod_bom);
             ps.setString(22, x.sod_ship);
+            ps.setString(23, x.sod_char1);
+            ps.setString(24, x.sod_char2);
+            ps.setString(25, x.sod_char3);
             rows = ps.executeUpdate();
             } 
             return rows;
@@ -4725,11 +4736,12 @@ public class ordData {
         String sod_po, double sod_ord_qty, String sod_uom, double sod_all_qty, 
         double sod_listprice, double sod_disc, double sod_netprice, String sod_ord_date, 
         String sod_due_date, double sod_shipped_qty, String sod_status, String sod_wh, 
-        String sod_loc, String sod_desc, double sod_taxamt, String sod_site, String sod_bom, String sod_ship) {
+        String sod_loc, String sod_desc, double sod_taxamt, String sod_site, String sod_bom, String sod_ship,
+        String sod_char1, String sod_char2, String sod_char3) {
         public sod_det(String[] m) {
             this (m, "", 0, "", "", "", 0.00, "", 0.00, 0.00, 0.00,
                     0.00, "", "", 0.00, "", "", "", "", 0.00, "",
-                    "", "" );
+                    "", "", "", "", "" );
         }
     }
     

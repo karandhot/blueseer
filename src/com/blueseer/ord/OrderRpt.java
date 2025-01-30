@@ -27,10 +27,13 @@ SOFTWARE.
 package com.blueseer.ord;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static bsmf.MainFrame.checkperms;
 import static bsmf.MainFrame.db;
+import static bsmf.MainFrame.ds;
+import static bsmf.MainFrame.pass;
 import java.awt.Color;
 import java.awt.Component;
 import java.io.File;
@@ -48,13 +51,12 @@ import javax.swing.JCheckBox;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
+import static com.blueseer.edi.ediData.getEDIMetaValueAsKVString;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
@@ -65,6 +67,11 @@ import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import static com.blueseer.utl.OVData.getSysMetaData;
+import java.awt.FileDialog;
+import java.awt.Frame;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.util.Calendar;
 import java.util.Enumeration;
@@ -366,6 +373,88 @@ public class OrderRpt extends javax.swing.JPanel {
         detailpanel.setVisible(false);
           
     }
+    
+    public static void exportOrderDetail(JTable tablereport) {
+        FileDialog fDialog;
+        fDialog = new FileDialog(new Frame(), "Save", FileDialog.SAVE);
+        fDialog.setVisible(true);
+       // fDialog.setFile("data.csv");
+        String path = fDialog.getDirectory() + fDialog.getFile();
+        File f = new File(path);
+        BufferedWriter output = null;
+        
+         try{
+            output = new BufferedWriter(new FileWriter(f));
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            String headerkvpair = "";
+            String detailkvpair = "";
+            
+            String header = "Sales Order Number, PO Number, Order Create Date, PO/Order Date, Customer Name, Shipto ID, Shipto Name, DueDate, Order Line Number, Item Number, Item Description, Sku Number, AltItemNumber, Order Quantity, Order Price, Pack Qty, Header KVPair, Detail KVPair";
+            output.write(header + "\n");
+             
+            try {
+                for (int i = 0; i < tablereport.getRowCount(); i++) {
+                headerkvpair = getEDIMetaValueAsKVString(tablereport.getValueAt(i, 4).toString(), "header","");
+                    
+                res = st.executeQuery("select so_nbr, so_po, so_create_date, so_ord_date, " +
+                        " cm_name, cms_shipto, cms_name, so_due_date, " +
+                        " sod_line, sod_item, sod_desc, sod_custitem, sod_char1, " +
+                        " sod_ord_qty, sod_netprice, sod_char2 from so_mstr " + 
+                        " inner join sod_det on sod_nbr = so_nbr " +
+                        " inner join cm_mstr on cm_code = so_cust " +
+                        " inner join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
+                        " where so_nbr = " + "'" + tablereport.getValueAt(i, 2).toString() + "'" + 
+                        " order by so_nbr;");
+                int k = 0;
+                while (res.next()) {
+                    k++;
+                     StringBuilder line = new StringBuilder();
+                     for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
+                       line.append(res.getString(j).replace(",","")).append(",");
+                     }
+                     
+                     detailkvpair = getEDIMetaValueAsKVString(tablereport.getValueAt(i, 4).toString(), "detail",res.getString("sod_line"));
+                     
+                     output.write(line.toString() + headerkvpair + "," + detailkvpair);
+                     output.write("\n");
+                     // now add detailkvpair
+                     
+                 }
+                
+                } // for each line in tablereport
+                
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        }
+        catch (IOException | SQLException e){
+            MainFrame.bslog(e);
+        } finally {
+          if (output != null) {
+              try {
+                  output.close();
+              } catch (IOException ex) {
+                  bslog(ex);
+              }
+          }   
+        }
+    }
+    
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -1012,7 +1101,7 @@ try {
 
     private void btexportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btexportActionPerformed
         if (tableorder != null && mymodel.getRowCount() > 0) {
-        OVData.exportOrderDetail(tableorder);
+        exportOrderDetail(tableorder);
         bsmf.MainFrame.show("export file created");
        }
     }//GEN-LAST:event_btexportActionPerformed
