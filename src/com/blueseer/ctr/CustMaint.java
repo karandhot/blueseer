@@ -678,12 +678,12 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                 (ddshipstate.getSelectedItem() == null) ? "" : ddshipstate.getSelectedItem().toString(),
                 tbshipzip.getText(),
                 (ddshipcountry.getSelectedItem() == null) ? "" : ddshipcountry.getSelectedItem().toString(),
-                "",
-                "",
-                "",
-                "",
-                "",
-                ""
+                "", // contact
+                "", // phone
+                "", // email
+                "", // misc
+                tbxrefcode.getText(), // xref external code (plant code)
+                ""  // cms_type
                 );
         }
         return x;
@@ -1051,6 +1051,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbshipzip.setText(k.cms_zip());
         ddshipstate.setSelectedItem(k.cms_state());
         ddshipcountry.setSelectedItem(k.cms_country());
+        tbxrefcode.setText(k.cms_plantcode());
         if (k.m()[0].equals("0")) {
             btshipedit.setEnabled(true);
             btshipnew.setEnabled(true);
@@ -1088,6 +1089,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
        tbshipcity.setText("");
        tbshipzip.setText("");
        tbshipcode.setText("");
+       tbxrefcode.setText("");
        
       
         if (ddshipstate.getItemCount() > 0) {
@@ -1243,6 +1245,9 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         btshipnew = new javax.swing.JButton();
         tbshipcode = new javax.swing.JTextField();
         btlookupShipTo = new javax.swing.JButton();
+        tbxrefcode = new javax.swing.JTextField();
+        jLabel48 = new javax.swing.JLabel();
+        btclearshipto = new javax.swing.JButton();
         contactPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         contacttable = new javax.swing.JTable();
@@ -1862,6 +1867,16 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
+        jLabel48.setText("External Code");
+
+        btclearshipto.setText("Clear");
+        btclearshipto.setName("btclear"); // NOI18N
+        btclearshipto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btclearshiptoActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout shiptoPanelLayout = new javax.swing.GroupLayout(shiptoPanel);
         shiptoPanel.setLayout(shiptoPanelLayout);
         shiptoPanelLayout.setHorizontalGroup(
@@ -1876,7 +1891,9 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btlookupShipTo, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(13, 13, 13)
-                        .addComponent(btshipnew))
+                        .addComponent(btshipnew)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btclearshipto))
                     .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                         .addGroup(shiptoPanelLayout.createSequentialGroup()
                             .addComponent(btshipedit)
@@ -1884,29 +1901,32 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                             .addComponent(btshipadd))
                         .addGroup(shiptoPanelLayout.createSequentialGroup()
                             .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addComponent(jLabel37)
-                                        .addComponent(jLabel33)
-                                        .addComponent(jLabel35)
-                                        .addComponent(jLabel31)
-                                        .addComponent(jLabel38)
-                                        .addComponent(jLabel30))
-                                    .addComponent(jLabel32, javax.swing.GroupLayout.Alignment.TRAILING))
-                                .addComponent(jLabel34, javax.swing.GroupLayout.Alignment.TRAILING))
+                                .addComponent(jLabel37, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel33, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel35, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel31, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel38, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel30, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel32, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel34, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel48, javax.swing.GroupLayout.Alignment.TRAILING))
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addGroup(shiptoPanelLayout.createSequentialGroup()
-                                    .addGap(1, 1, 1)
-                                    .addComponent(ddshipcountry, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addComponent(tbshipline3, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
                                 .addComponent(tbshipline2, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
                                 .addComponent(tbshipline1, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
                                 .addComponent(ddshipstate, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(tbshipcity, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
                                 .addComponent(tbshipzip, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(tbshipname)))))
-                .addContainerGap(565, Short.MAX_VALUE))
+                                .addComponent(tbshipname)
+                                .addGroup(shiptoPanelLayout.createSequentialGroup()
+                                    .addGap(1, 1, 1)
+                                    .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(ddshipcountry, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addGroup(shiptoPanelLayout.createSequentialGroup()
+                                            .addComponent(tbxrefcode, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGap(0, 0, Short.MAX_VALUE))))))))
+                .addContainerGap(522, Short.MAX_VALUE))
         );
         shiptoPanelLayout.setVerticalGroup(
             shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1914,7 +1934,9 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addContainerGap()
                 .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel36)
-                    .addComponent(btshipnew)
+                    .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(btshipnew)
+                        .addComponent(btclearshipto))
                     .addComponent(tbshipcode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btlookupShipTo))
                 .addGap(15, 15, 15)
@@ -1951,9 +1973,13 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(jLabel34))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbxrefcode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel48))
+                .addGap(7, 7, 7)
+                .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btshipadd)
                     .addComponent(btshipedit))
-                .addContainerGap(231, Short.MAX_VALUE))
+                .addContainerGap(204, Short.MAX_VALUE))
         );
 
         add(shiptoPanel);
@@ -2344,11 +2370,16 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
     }//GEN-LAST:event_tableattachmentMouseClicked
 
+    private void btclearshiptoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearshiptoActionPerformed
+        clearShipTo();
+    }//GEN-LAST:event_btclearshiptoActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btadd;
     private javax.swing.JButton btaddattachment;
     private javax.swing.JButton btaddcontact;
     private javax.swing.JButton btclear;
+    private javax.swing.JButton btclearshipto;
     private javax.swing.JButton btdelete;
     private javax.swing.JButton btdeleteattachment;
     private javax.swing.JButton btdeletecontact;
@@ -2424,6 +2455,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JLabel jLabel45;
     private javax.swing.JLabel jLabel46;
     private javax.swing.JLabel jLabel47;
+    private javax.swing.JLabel jLabel48;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
@@ -2471,6 +2503,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JTextField tbshipzip;
     private javax.swing.JTextField tbshpformat;
     private javax.swing.JTextField tbtaxid;
+    private javax.swing.JTextField tbxrefcode;
     private javax.swing.JTextField tbzip;
     // End of variables declaration//GEN-END:variables
 }

@@ -779,12 +779,12 @@ public class cusData {
         if (x == null) return;
         String sqlSelect = "select * from cms_det where cms_code = ? and cms_shipto = ?";
         String sqlInsert = "insert into cms_det (cms_code, cms_shipto, cms_name, cms_line1, cms_line2, " 
-                        + "cms_line3, cms_city, cms_state, cms_zip, cms_country ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?); "; 
+                        + "cms_line3, cms_city, cms_state, cms_zip, cms_country, cms_plantcode ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?); "; 
         String sqlUpdate = "update cms_det set " 
                 + " cms_name = ?, cms_line1 = ?, cms_line2 = ?, "
                 + "cms_line3 = ?, cms_city = ?, cms_state = ?, cms_zip = ?, "
-                + "cms_country = ? "
+                + "cms_country = ?, cms_plantcode = ? "
                 + " where cms_code = ? and cms_shipto = ? ; ";
             ps = con.prepareStatement(sqlSelect);
             ps.setString(1, x.cms_code);
@@ -802,12 +802,13 @@ public class cusData {
             ps.setString(8, x.cms_state);
             ps.setString(9, x.cms_zip);
             ps.setString(10, x.cms_country);
+            ps.setString(11, x.cms_plantcode);
             int rows = ps.executeUpdate();
             } else {
                  if (addupdate) {
                     ps = con.prepareStatement(sqlUpdate); 
-                    ps.setString(9, x.cms_code);
-                    ps.setString(10, x.cms_shipto);
+                    ps.setString(10, x.cms_code);
+                    ps.setString(11, x.cms_shipto);
                     ps.setString(1, x.cms_name);
                     ps.setString(2, x.cms_line1);
                     ps.setString(3, x.cms_line2);
@@ -816,6 +817,7 @@ public class cusData {
                     ps.setString(6, x.cms_state);
                     ps.setString(7, x.cms_zip);
                     ps.setString(8, x.cms_country);
+                    ps.setString(9, x.cms_plantcode);
                     ps.executeUpdate();    
                  }
              }
@@ -871,11 +873,11 @@ public class cusData {
         String sql = "update cms_det set " 
                 + " cms_name = ?, cms_line1 = ?, cms_line2 = ?, "
                 + "cms_line3 = ?, cms_city = ?, cms_state = ?, cms_zip = ?, "
-                + "cms_country = ? "
+                + "cms_country = ?, cms_plantcode = ? "
                 + " where cms_code = ? and cms_shipto = ? ; ";
        ps = con.prepareStatement(sql);
-        ps.setString(9, x.cms_code);
-        ps.setString(10, x.cms_shipto);
+        ps.setString(10, x.cms_code);
+        ps.setString(11, x.cms_shipto);
             ps.setString(1, x.cms_name);
             ps.setString(2, x.cms_line1);
             ps.setString(3, x.cms_line2);
@@ -884,6 +886,7 @@ public class cusData {
             ps.setString(6, x.cms_state);
             ps.setString(7, x.cms_zip);
             ps.setString(8, x.cms_country);
+            ps.setString(9, x.cms_plantcode);
             rows = ps.executeUpdate();
         
        
