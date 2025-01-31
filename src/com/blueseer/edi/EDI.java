@@ -6604,6 +6604,9 @@ public class EDI {
             this.detnetprice.add("0");
             this.detdisc.add("0");
             this.detdesc.add("");
+            this.detupc.add("");
+            this.detaltitem.add("");
+            this.detpackqty.add("");
         }
         
         public void setDetItem(int i, String v) {
