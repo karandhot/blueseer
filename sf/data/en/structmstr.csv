@@ -3,6 +3,7 @@ IDOCshpmnt02,SAP SHIPMENT IDOC,generic,856idoc,FF,0,,0,1000
 IDOCinvoic02,SAP INVOICE IDOC,generic,810idoc,FF,0,,0,1000
 X12856,X12 Advance Shipping Notice,generic,856x12,X12,0,,0,1000
 X12850,X12 Purchase Order,generic,850x12,X12,0,,0,1000
+X12850rev,X12 Purchase Order (Reduced),generic,850x12,X12,0,,0,1000
 X12855,X12 Order Acknowledgment,generic,855x12,X12,0,,0,1000
 X12810,X12 Invoice,generic,810x12,X12,0,,0,1000
 X12820,X12 Payment Order/Remittance Advice,generic,820x12,X12,0,,0,1000
