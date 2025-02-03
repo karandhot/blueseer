@@ -4905,7 +4905,7 @@ public class ediData {
                                 }
                             }
                         }
-                        r[1] = "Moving " + count +  " files " + " from " + source + " to " + destination;
+                        r[1] = "FTPid= " + ftp.ftp_id() + "  Moving " + count +  " files " + " from " + source + " to " + destination;
                     } catch (IOException ex) {  
                             r[0] = "1";
                             r[1] = "ERROR WorkFlowID: " + wkfd.wkfd_id + " action: " + wkfd.wkfd_action + "->"  + ex.getMessage();
