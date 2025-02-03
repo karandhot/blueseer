@@ -17421,6 +17421,12 @@ return mystring;
                 String jasperfile = "";
                 if (shtype.equals("F")) {
                     jasperfile = "inv_freight.jasper";
+                } else if (shtype.equals("B")) {
+                    jasperfile = cusData.getCustInvoiceJasper(cust);
+                    if (jasperfile.isEmpty()) {
+                        jasperfile = "inv_generic_svc.jasper";
+                    }
+
                 } else {
                     jasperfile = cusData.getCustInvoiceJasper(cust);
                     if (jasperfile.isEmpty()) {

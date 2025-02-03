@@ -3117,7 +3117,7 @@ public class ordData {
                 bm.bill_site(),
                 String.valueOf(shipperid), 
                 bm.bill_cust(),
-                "", // shipto
+                bm.bill_cust(), // shipto ...same as billto or null if a cust code was created without a corresponding 'same as' shipto
                 bsNumberToUS(bm.bill_nbr()),
                 bm.bill_nbr(),  // po 
                 bm.bill_ref(),  // ref
@@ -3125,7 +3125,7 @@ public class ordData {
                 now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),  // orddate
                 bm.bill_rmks(),
                 "", // shipvia
-                "S", 
+                "B", 
                 custdata[8],
                 bm.bill_site()); 
        
