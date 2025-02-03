@@ -154,6 +154,9 @@ public class StructMaint extends javax.swing.JPanel  {
                     break;
                 case "get":
                     message = getRecord(key);    
+                    break;   
+                case "run":
+                    message = copyRecord(key);    
                     break;    
                 default:
                     message = new String[]{"1", "unknown action"};
@@ -392,7 +395,9 @@ public class StructMaint extends javax.swing.JPanel  {
                     tbkey.requestFocus();
                     return false;
         }
-        */ 
+        */
+        
+        /*
         if (! checkStructure(tbkey.getText())) {
             int errornum = 0;
             if (x.toString().equals("add")) {
@@ -405,7 +410,7 @@ public class StructMaint extends javax.swing.JPanel  {
             tbkey.requestFocus();
             return false;
         } 
-        
+        */
       return true;
     }
     
@@ -497,6 +502,11 @@ public class StructMaint extends javax.swing.JPanel  {
         } else {
            m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordCanceled}; 
         }
+         return m;
+    }
+    
+    public String[] copyRecord(String[] key) {
+         String[] m = addDFStructureTransaction(createDetRecord(key[0]), createRecord(key[0]));
          return m;
     }
     
@@ -1208,7 +1218,7 @@ public class StructMaint extends javax.swing.JPanel  {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btaddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddActionPerformed
-        if (! validateInput(dbaction.add)) {
+       if (! validateInput(dbaction.add)) {
            return;
        }
         setPanelComponentState(this, false);
@@ -1563,10 +1573,16 @@ public class StructMaint extends javax.swing.JPanel  {
     private void btcopyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcopyActionPerformed
         String newkey = bsmf.MainFrame.input("Enter new key: ");
         if (! newkey.isBlank() && ! isValidDFSid(newkey)) {
-         String[] m = addDFStructureTransaction(createDetRecord(newkey), createRecord(newkey));
-         x = getDFSMstr(new String[]{newkey});  
-         dfsdetlist = getDFSDet(newkey);
-         updateForm();
+            if (! validateInput(dbaction.add)) {
+            return;
+            }
+            
+            setPanelComponentState(this, false);
+            executeTask(dbaction.run, new String[]{newkey});
+       //  String[] m = addDFStructureTransaction(createDetRecord(newkey), createRecord(newkey));
+       //  x = getDFSMstr(new String[]{newkey});  
+      //   dfsdetlist = getDFSDet(newkey);
+       //  updateForm();
         } else {
             bsmf.MainFrame.show("key is already in use");
         }
