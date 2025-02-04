@@ -32,6 +32,7 @@ import static com.blueseer.edi.EDI.trimSegment;
 import static com.blueseer.edi.ediData.addUpdateEDIMetaMulti;
 import static com.blueseer.edi.ediData.getDFSMstrasArray;
 import static com.blueseer.edi.ediData.getDSFasString;
+import static com.blueseer.edi.ediData.getDSFasStringBase0;
 import static com.blueseer.edi.ediData.getMapMstr;
 import static com.blueseer.edi.ediData.isSuppressEmptyTag;
 import com.blueseer.edi.ediData.jsonRecord;
@@ -2649,6 +2650,23 @@ public abstract class EDIMap {  // took out the implements EDIMapi
               if (dfs != null && dfs.length > 4 && ! dfs[5].isEmpty()) {
                   delim = delimConvertIntToStr(dfs[5]);
               }
+            
+              // create header tags
+              ArrayList<String> headers = getDSFasStringBase0(dfs[0]);
+              for (String h : headers) {
+                  String[] harr = h.split(",", -1);
+                  if (harr[5].equals("1")) { // skip landmark field
+                      continue;
+                  }
+                  segment += harr[7] + delim;
+              }
+              // trim off last ,
+                if (segment.endsWith(delim)) {
+                    segment = segment.substring(0, segment.length() - 1);
+                }
+              content += segment + "\n";
+              segment = "";
+              
               
               
     	  for (Map.Entry<String, HashMap<String,String>> z : MD.entrySet()) {
