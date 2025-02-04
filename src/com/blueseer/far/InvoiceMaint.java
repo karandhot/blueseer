@@ -1270,7 +1270,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
                                 .addComponent(jLabel18)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(tbopenamt, javax.swing.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE)
+                            .addComponent(tbopenamt, javax.swing.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
                             .addComponent(tbaramt)
                             .addGroup(jPanel3Layout.createSequentialGroup()
                                 .addComponent(tbtype, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1501,7 +1501,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
                         .addGap(24, 24, 24)
                         .addComponent(btclear)
                         .addGap(26, 26, 26)
-                        .addComponent(ddexport, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(ddexport, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btexport)
                         .addGap(18, 42, Short.MAX_VALUE)
@@ -1733,7 +1733,9 @@ public class InvoiceMaint extends javax.swing.JPanel {
          
          //remove data commas
          for (int i = 0; i < H.length; i++) {
-             H[i] = H[i].replace(",", "");
+             if (H[i] != null)  {
+              H[i] = H[i].replace(",", "");
+             }
          }
          
          for (String[] detail : D) {
@@ -1741,7 +1743,9 @@ public class InvoiceMaint extends javax.swing.JPanel {
              sb.append(",");
              //remove data commas in detail
              for (int i = 0; i < detail.length; i++) {
-                detail[i] = detail[i].replace(",", "");
+                if (detail[i] != null) {
+                 detail[i] = detail[i].replace(",", "");
+                }
              }
              sb.append(String.join(",", detail));
              sb.append("\n");

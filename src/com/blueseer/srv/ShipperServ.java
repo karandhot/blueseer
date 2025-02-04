@@ -35,6 +35,7 @@ import static bsmf.MainFrame.user;
 import com.blueseer.shp.shpData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.createMessageJSON;
+import static com.blueseer.utl.BlueSeerUtils.currformat;
 import com.blueseer.utl.OVData;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
@@ -319,13 +320,17 @@ public static String getInvoiceXML(String id) {
             Statement st = con.createStatement();
             ResultSet res = null;
             try{
+            
+           
                 
             res = st.executeQuery("select * from ship_mstr " +
-                           " inner join so_mstr on " +
-                           " so_mstr.so_nbr = sh_so " +
                            " inner join cm_mstr on " +
                            " cm_mstr.cm_code = sh_cust " +
-                           " inner join cms_det on " +
+                           " inner join site_mstr on " +
+                           " site_site = sh_site " +
+                           " inner join ar_mstr on " +
+                           " ar_nbr = sh_id and ar_type = 'I' " + 
+                           " left outer join cms_det on " +
                            " cms_det.cms_shipto = sh_ship and cms_det.cms_code = sh_cust " +
                            " where sh_id = " + "'" + id + "'" + ";");
                        
@@ -338,25 +343,29 @@ public static String getInvoiceXML(String id) {
                     doc = InvoiceXML.createRoot(doc);
 
                     // Create Routing Tag Content
-                    doc = InvoiceXML.createRouting(doc, "tev", "tex");
+                    doc = InvoiceXML.createRouting(doc, res.getString("site_site"), res.getString("sh_cust"));
 
                     // Create header Tag content
-                    doc = InvoiceXML.createHeader(doc, res.getString("sh_po"), 
-                            res.getString("so_ord_date"),
-                            res.getString("so_due_date"),
+                    doc = InvoiceXML.createHeader(doc, res.getString("sh_id"), 
+                            res.getString("sh_po"), 
+                            res.getString("sh_confdate"),
+                            res.getString("sh_shipdate"),
                             res.getString("sh_cust"),
-                            res.getString("sh_shipvia"));
+                            res.getString("sh_shipvia"),
+                            res.getString("cm_terms"),
+                            res.getString("ar_duedate"),
+                            res.getString("ar_amt"));
 
                       // Create shipto Tag content
-                    doc = InvoiceXML.createShipto(doc, res.getString("cms_shipto"), 
-                            res.getString("cms_name"),
-                            res.getString("cms_line1"),
-                            res.getString("cms_line2"),
-                            res.getString("cms_line3"),
-                            res.getString("cms_city"),
-                            res.getString("cms_state"),
-                            res.getString("cms_zip"),   
-                            res.getString("cms_country"));
+                    doc = InvoiceXML.createRemitto(doc, res.getString("site_site"), 
+                            res.getString("site_desc"),
+                            res.getString("site_line1"),
+                            res.getString("site_line2"),
+                            res.getString("site_line3"),
+                            res.getString("site_city"),
+                            res.getString("site_state"),
+                            res.getString("site_zip"),   
+                            res.getString("site_country"));
 
                     // Create billto Tag content
                     doc = InvoiceXML.createBillto(doc, res.getString("cm_code"), 
@@ -460,22 +469,26 @@ public static class  InvoiceXML {
         return doc;
     }
     
-    public static Document createHeader(Document doc, String po, String orddate, 
-            String duedate, String custid, String shipmethod) {
+    public static Document createHeader(Document doc, String invnbr, String po, String orddate, 
+            String duedate, String custid, String shipmethod, String terms, String paymentduedate, String totamt) {
         
        Element header = doc.createElement("header");
        doc.getDocumentElement().appendChild(header);
        
        
+       Element invnbrtag = doc.createElement("invoicenumber");
+                        invnbrtag.appendChild(doc.createTextNode(BlueSeerUtils.xNull(invnbr)));
+       header.appendChild(invnbrtag);
+       
        Element potag = doc.createElement("purchaseordernumber");
                         potag.appendChild(doc.createTextNode(BlueSeerUtils.xNull(po)));
        header.appendChild(potag);
        
-       Element orddatetag = doc.createElement("orderdate");
+       Element orddatetag = doc.createElement("invoicedate");
                         orddatetag.appendChild(doc.createTextNode(BlueSeerUtils.xNull(orddate)));
        header.appendChild(orddatetag);
        
-       Element duedatetag = doc.createElement("duedate");
+       Element duedatetag = doc.createElement("shipdate");
                         duedatetag.appendChild(doc.createTextNode(BlueSeerUtils.xNull(duedate)));
        header.appendChild(duedatetag);
        
@@ -487,15 +500,27 @@ public static class  InvoiceXML {
                         shipmethodtag.appendChild(doc.createTextNode(BlueSeerUtils.xNull(shipmethod)));
        header.appendChild(shipmethodtag);
        
+       Element termstag = doc.createElement("terms");
+                        termstag.appendChild(doc.createTextNode(BlueSeerUtils.xNull(terms)));
+       header.appendChild(termstag);
+       
+       Element paymentduedatetag = doc.createElement("paymentduedate");
+                        paymentduedatetag.appendChild(doc.createTextNode(BlueSeerUtils.xNull(paymentduedate)));
+       header.appendChild(paymentduedatetag);
+       
+       Element totamttag = doc.createElement("totalamount");
+                        totamttag.appendChild(doc.createTextNode(BlueSeerUtils.xNull(currformat(totamt))));
+       header.appendChild(totamttag);
+       
         return doc;
     }
     
-    public static Document createShipto(Document doc, String code, String name, 
+    public static Document createRemitto(Document doc, String code, String name, 
             String line1, String line2, String line3, String city, String state, 
             String zip, String country ) {
         
         Element addr = doc.createElement("address");
-        addr.setAttribute("type", "shipto");
+        addr.setAttribute("type", "remitto");
        doc.getDocumentElement().appendChild(addr);
        
        Element addrname = doc.createElement("addressname");
@@ -607,11 +632,11 @@ public static class  InvoiceXML {
                itmtag.appendChild(eqty);
                
                Element elistprice = doc.createElement("listprice");
-                                elistprice.appendChild(doc.createTextNode(BlueSeerUtils.xNull(listprice.get(i).toString())));
+                                elistprice.appendChild(doc.createTextNode(BlueSeerUtils.xNull(currformat(listprice.get(i).toString()))));
                itmtag.appendChild(elistprice);
                
                Element enetprice = doc.createElement("netprice");
-                                enetprice.appendChild(doc.createTextNode(BlueSeerUtils.xNull(netprice.get(i).toString())));
+                                enetprice.appendChild(doc.createTextNode(BlueSeerUtils.xNull(currformat(netprice.get(i).toString()))));
                itmtag.appendChild(enetprice);
                
                Element ecustnbr = doc.createElement("custnumber");
