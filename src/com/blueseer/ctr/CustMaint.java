@@ -1018,10 +1018,10 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         bsmf.MainFrame.show(m[1]);
     }
     
-    public void deleteShipTo() {
-        String[] m = deleteCMSDet(createCMSDet(false));
+    public void deleteShipTo(String cust, String shipto) {
+        String[] m = deleteCMSDet(cust, shipto);
+        clearShipTo();
         bsmf.MainFrame.show(m[1]);
-        
     }
     
     public void addContact(String cust) {
@@ -1248,6 +1248,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbxrefcode = new javax.swing.JTextField();
         jLabel48 = new javax.swing.JLabel();
         btclearshipto = new javax.swing.JButton();
+        btdeleteshipto = new javax.swing.JButton();
         contactPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         contacttable = new javax.swing.JTable();
@@ -1877,6 +1878,13 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
+        btdeleteshipto.setText("Delete");
+        btdeleteshipto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btdeleteshiptoActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout shiptoPanelLayout = new javax.swing.GroupLayout(shiptoPanel);
         shiptoPanel.setLayout(shiptoPanelLayout);
         shiptoPanelLayout.setHorizontalGroup(
@@ -1896,6 +1904,8 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addComponent(btclearshipto))
                     .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                         .addGroup(shiptoPanelLayout.createSequentialGroup()
+                            .addComponent(btdeleteshipto)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(btshipedit)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(btshipadd))
@@ -1978,7 +1988,8 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addGap(7, 7, 7)
                 .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btshipadd)
-                    .addComponent(btshipedit))
+                    .addComponent(btshipedit)
+                    .addComponent(btdeleteshipto))
                 .addContainerGap(204, Short.MAX_VALUE))
         );
 
@@ -2374,6 +2385,10 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         clearShipTo();
     }//GEN-LAST:event_btclearshiptoActionPerformed
 
+    private void btdeleteshiptoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteshiptoActionPerformed
+        deleteShipTo(tbkey.getText(),tbshipcode.getText());
+    }//GEN-LAST:event_btdeleteshiptoActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btadd;
     private javax.swing.JButton btaddattachment;
@@ -2383,6 +2398,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btdelete;
     private javax.swing.JButton btdeleteattachment;
     private javax.swing.JButton btdeletecontact;
+    private javax.swing.JButton btdeleteshipto;
     private javax.swing.JButton bteditcontact;
     private javax.swing.JButton btlookup;
     private javax.swing.JButton btlookupShipTo;

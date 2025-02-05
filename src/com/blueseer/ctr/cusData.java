@@ -938,6 +938,49 @@ public class cusData {
     return m;
     }
     
+    public static String[] deleteCMSDet(String cust, String shipto) {
+        String[] m = new String[2];
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            _deleteCMSDet(cust, shipto, con, ps, res);  // add cms_det
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+    
+    
     private static void _deleteCMSDet(String x, String y, Connection con, PreparedStatement ps, ResultSet res) throws SQLException { 
        
         String sql = "delete from cms_det where cms_code = ? and cms_shipto = ?; ";

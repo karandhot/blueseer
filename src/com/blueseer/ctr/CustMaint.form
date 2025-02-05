@@ -956,6 +956,8 @@
                       </Group>
                       <Group type="103" alignment="0" groupAlignment="1" attributes="0">
                           <Group type="102" attributes="0">
+                              <Component id="btdeleteshipto" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="btshipedit" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="btshipadd" min="-2" max="-2" attributes="0"/>
@@ -1061,6 +1063,7 @@
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="btshipadd" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="btshipedit" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="btdeleteshipto" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace pref="204" max="32767" attributes="0"/>
               </Group>
@@ -1201,6 +1204,14 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btclearshiptoActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="btdeleteshipto">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Delete"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btdeleteshiptoActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>
