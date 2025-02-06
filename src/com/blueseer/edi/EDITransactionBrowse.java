@@ -1647,7 +1647,7 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
                 String batch = EDData.getEDIBatchFromedi_file(tablereport.getValueAt(i,2).toString());
                 if (! batch.isEmpty())
                     try {
-                        if (! bsmf.MainFrame.remoteDB) {
+                        if (bsmf.MainFrame.remoteDB) {
                         ArrayList<String[]> arrx = new ArrayList<String[]>();
                         arrx.add(new String[]{"id","ediReprocessFile"});
                         arrx.add(new String[]{"batchfilename", batch});
