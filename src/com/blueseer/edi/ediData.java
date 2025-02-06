@@ -3778,8 +3778,10 @@ public class ediData {
         }
         
         String[] r = new String[]{"",""};
+        boolean suppress = false;
         forloop:
         for (wkf_det wkd : wkfdetlist) {
+          suppress = false;
           String eventtime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));  
           String[] lgd = new String[]{wkd.wkfd_action(), eventtime, "", "", ""}; // action,time,ref,status,messg
           
@@ -3849,18 +3851,20 @@ public class ediData {
             case "APICall" :
                 rr = wkfaction_apicall(wkd, getWkfdMeta(wkd.wkfd_id(), wkd.wkfd_line()));
                 lgd[3] = rr.status();
-                lgd[4] = rr.messg();
-                if (! rr.status().equals("0")) {
+                lgd[4] = r[1];
+                // null rr array
+                if (! r[0].equals("0")) {
                     logdetail.add(lgd);
                     break forloop;
                 } 
-                break;  
+                break;     
               
             case "ScriptCall" :
                 rr = wkfaction_scriptcall(wkd, getWkfdMeta(wkd.wkfd_id(), wkd.wkfd_line()));
                 lgd[3] = rr.status();
-                lgd[4] = rr.messg();
-                if (! rr.status().equals("0")) {
+                lgd[4] = r[1];
+                // null rr array
+                if (! r[0].equals("0")) {
                     logdetail.add(lgd);
                     break forloop;
                 } 
@@ -4007,6 +4011,7 @@ public class ediData {
                 break;
                 
                 case "MBToTranslate" :
+                suppress = true;
                 rr = wkfaction_mbToTranslate(wkf, wkd, getWkfdMeta(wkd.wkfd_id(), wkd.wkfd_line()));
                 lgd[3] = rr.status();
                 if (! rr.rarray().isEmpty()) {
@@ -4020,21 +4025,26 @@ public class ediData {
                 break;
                 
                 case "AS2ToEDIIn" :
+                suppress = true;    
                 rr = wkfaction_as2ToEDIIn(wkf, wkd, getWkfdMeta(wkd.wkfd_id(), wkd.wkfd_line()));
                 if (! rr.rarray().isEmpty()) {
                     for (String k : rr.rarray()) {
                      logdetail.add(new String[]{wkd.wkfd_action(), eventtime, "", rr.status(), k});   
                     }
                 }
-                
-                break forloop;
+                if (! rr.status().equals("0")) {
+                    break forloop;
+                } 
+                break;
                 
             default:
                 return bsret("Unknown WorkFlow Action! " + " id: " + id + " action: " + wkd.wkfd_action());
           
           }
-          logdetail.add(lgd);
-        }
+          if (! suppress) { // added suppress logic due to JRTT (rr) type returns....messages are captured in rr instead of at the end
+           logdetail.add(lgd);
+          }
+        } // forloop
         
             boolean isError = false;
             String statusmessg = "";
