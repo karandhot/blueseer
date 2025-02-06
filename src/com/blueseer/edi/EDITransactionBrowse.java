@@ -39,6 +39,7 @@ import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.EDData.getEDIStds;
 import static com.blueseer.utl.EDData.updateEDIFileLogStatusManual;
 import com.blueseer.utl.OVData;
@@ -64,6 +65,10 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import java.net.MalformedURLException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
 import java.util.Calendar;
@@ -1597,7 +1602,7 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
         btdetail.setEnabled(false);
         if (rbDocLog.isSelected()) {
             tbref.setEnabled(true);
-            btreprocess.setEnabled(false);
+            btreprocess.setEnabled(true);
             btclearstatus.setEnabled(false);
             ddoutdoctype.setEnabled(true);
            // getDocLogView();
@@ -1631,7 +1636,7 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
     private void btreprocessActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btreprocessActionPerformed
         //bsmf.MainFrame.show("This functionality is not available yet");
        // return;
-        
+        String r = "unable to reprocess file";
         int[] rows = tablereport.getSelectedRows();
         if (rows.length > 1) {
             bsmf.MainFrame.show(getMessageTag(1162));
@@ -1642,15 +1647,25 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
                 String batch = EDData.getEDIBatchFromedi_file(tablereport.getValueAt(i,2).toString());
                 if (! batch.isEmpty())
                     try {
-                        batch = cleanDirString(EDData.getEDIBatchDir()) + batch; 
-                       String[] m = EDI.processFile(batch, "", "", "", false, true, Integer.valueOf(tablereport.getValueAt(i, 2).toString()), Integer.valueOf(tablereport.getValueAt(i, 1).toString()), "");
-                       String result = m[0] + " of " + m[1];
-                       bsmf.MainFrame.show(getMessageTag(1163,result));
+                        if (! bsmf.MainFrame.remoteDB) {
+                        ArrayList<String[]> arrx = new ArrayList<String[]>();
+                        arrx.add(new String[]{"id","ediReprocessFile"});
+                        arrx.add(new String[]{"batchfilename", batch});
+                        r = sendServerPost(arrx, "", null);
+                        } else {
+                          Path sourcepath = FileSystems.getDefault().getPath(cleanDirString(EDData.getEDIBatchDir()) + batch);
+                          Path destinationpath = FileSystems.getDefault().getPath(cleanDirString(EDData.getEDIInDir()) + "reproc." + batch + "." + Long.toHexString(System.currentTimeMillis()));
+                          Files.copy(sourcepath, destinationpath, StandardCopyOption.REPLACE_EXISTING); 
+                          r = "file requeued for processing";
+                        }
+                     //   batch = cleanDirString(EDData.getEDIBatchDir()) + batch; 
+                     //  String[] m = EDI.processFile(batch, "", "", "", false, true, Integer.valueOf(tablereport.getValueAt(i, 2).toString()), Integer.valueOf(tablereport.getValueAt(i, 1).toString()), "");
+                    //   String result = m[0] + " of " + m[1];
+                       bsmf.MainFrame.show(getMessageTag(1163,r));
                     } catch (IOException ex) {
                         MainFrame.bslog(ex);
-                    } catch (ClassNotFoundException ex) {
-                        MainFrame.bslog(ex);
-                    }
+                        bsmf.MainFrame.show(getMessageTag(1163,r));
+                    } 
             }
         }
         

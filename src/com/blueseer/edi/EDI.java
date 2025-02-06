@@ -5034,6 +5034,18 @@ public class EDI {
         }
     }
     
+    public static String ediReprocessFile(String batchfilename) {
+        Path sourcepath = FileSystems.getDefault().getPath(cleanDirString(EDData.getEDIBatchDir()) + batchfilename);
+        Path destinationpath = FileSystems.getDefault().getPath(cleanDirString(EDData.getEDIInDir()) + "reproc." + batchfilename + "." + Long.toHexString(System.currentTimeMillis()));
+        try {
+            Files.copy(sourcepath, destinationpath, StandardCopyOption.REPLACE_EXISTING);
+            return "file requeued for processing";
+        } catch (IOException ex) {
+            return "unable to reprocess file";
+        }
+    }
+    
+    
     public static void uploadFile(Component comp, String todir) {
         JFileChooser jfc = new JFileChooser(FileSystems.getDefault().getPath("").toFile());
         jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);

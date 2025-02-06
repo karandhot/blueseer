@@ -34,6 +34,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import static com.blueseer.edi.EDI.deleteFile;
+import static com.blueseer.edi.EDI.ediReprocessFile;
 import static com.blueseer.edi.EDI.fileExists;
 import static com.blueseer.edi.EDI.getFileContent;
 import static com.blueseer.edi.EDI.getFileContentBytes;
@@ -270,7 +271,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                   response.getWriter().println(writeFile(filepath, IOUtils.toByteArray(body)));  
                 } else if (id.equals("deleteFile")) { 
                   String filepath = request.getHeader("filepath");
-                  response.getWriter().println(deleteFile(filepath));   
+                  response.getWriter().println(deleteFile(filepath)); 
+                } else if (id.equals("ediReprocessFile")) { 
+                  String batchfilename = request.getHeader("batchfilename");
+                  response.getWriter().println(ediReprocessFile(batchfilename));  
                 } else if (id.equals("uploadFileExists")) { 
                   String filepath = request.getHeader("filepath");
                   response.getWriter().println(fileExists(filepath)); 
