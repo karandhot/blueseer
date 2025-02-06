@@ -4009,7 +4009,7 @@ public class ediData {
                 case "MBToTranslate" :
                 rr = wkfaction_mbToTranslate(wkf, wkd, getWkfdMeta(wkd.wkfd_id(), wkd.wkfd_line()));
                 lgd[3] = rr.status();
-                if (! rr.rarray.isEmpty()) {
+                if (! rr.rarray().isEmpty()) {
                     for (String k : rr.rarray()) {
                      logdetail.add(new String[]{wkd.wkfd_action(), eventtime, "", rr.status(), k});   
                     }
@@ -4021,7 +4021,7 @@ public class ediData {
                 
                 case "AS2ToEDIIn" :
                 rr = wkfaction_as2ToEDIIn(wkf, wkd, getWkfdMeta(wkd.wkfd_id(), wkd.wkfd_line()));
-                if (! rr.rarray.isEmpty()) {
+                if (! rr.rarray().isEmpty()) {
                     for (String k : rr.rarray()) {
                      logdetail.add(new String[]{wkd.wkfd_action(), eventtime, "", rr.status(), k});   
                     }
