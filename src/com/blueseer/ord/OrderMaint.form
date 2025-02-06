@@ -1308,83 +1308,82 @@
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
+                              <Group type="102" attributes="0">
                                   <Component id="qtyshipped" min="-2" pref="80" max="-2" attributes="0"/>
-                                  <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Component id="lbqtyavailable" max="32767" attributes="0"/>
                               </Group>
-                              <Group type="102" attributes="0">
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="tbaltitem" min="-2" pref="260" max="-2" attributes="0"/>
-                                      <Component id="tbdesc" alignment="0" min="-2" pref="260" max="-2" attributes="0"/>
-                                      <Component id="custnumber" min="-2" pref="260" max="-2" attributes="0"/>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <Component id="tbitem" min="-2" pref="216" max="-2" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="btLookUpItemDesc" min="-2" pref="28" max="-2" attributes="0"/>
-                                      </Group>
-                                      <Component id="tbpackqty" alignment="0" min="-2" pref="46" max="-2" attributes="0"/>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <Component id="dduom" min="-2" pref="117" max="-2" attributes="0"/>
-                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                          <Component id="lbuomtext" min="-2" pref="161" max="-2" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                                  <EmptySpace min="0" pref="77" max="32767" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="dduom" min="-2" pref="117" max="-2" attributes="0"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Component id="lbuomtext" min="-2" pref="161" max="-2" attributes="0"/>
                               </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="1" attributes="0">
+                                          <Component id="tbaltitem" min="-2" pref="260" max="-2" attributes="0"/>
+                                          <Component id="tbitem" min="-2" pref="260" max="-2" attributes="0"/>
+                                      </Group>
+                                      <Component id="tbdesc" min="-2" pref="260" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Component id="btLookUpItemDesc" min="-2" pref="28" max="-2" attributes="0"/>
+                              </Group>
+                              <Component id="custnumber" min="-2" pref="260" max="-2" attributes="0"/>
+                              <Component id="tbpackqty" alignment="0" min="-2" pref="46" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
-                          <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="custnumber" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="lblCustItemAndDesc" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="tbaltitem" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLabel15" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="1" attributes="0">
+                              <Group type="102" attributes="0">
                                   <Group type="103" groupAlignment="3" attributes="0">
-                                      <Component id="jLabel9" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="tbdesc" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace min="-2" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="3" attributes="0">
-                                      <Component id="lblpart1" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="lblCustItemAndDesc" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="tbitem" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="tbdesc" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="jLabel9" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="custnumber" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="lblpart1" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="tbaltitem" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="jLabel15" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
-                              <Component id="btLookUpItemDesc" alignment="1" min="-2" max="-2" attributes="0"/>
+                              <Component id="btLookUpItemDesc" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace max="-2" attributes="0"/>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="dduom" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="jLabel5" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="lbuomtext" max="32767" attributes="0"/>
+                              <Component id="lbuomtext" min="-2" pref="18" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="qtyshipped" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="jLabel84" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="lbqtyavailable" max="32767" attributes="0"/>
+                              <Component id="lbqtyavailable" min="-2" pref="20" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="tbpackqty" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="jLabel16" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace max="-2" attributes="0"/>
+                          <EmptySpace pref="17" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1398,8 +1397,8 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="lblCustItemAndDesc">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="CustNumber"/>
-                    <Property name="name" type="java.lang.String" value="lblcustnumber" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Item Number"/>
+                    <Property name="name" type="java.lang.String" value="lblitem" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="qtyshipped">
@@ -1412,8 +1411,8 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="lblpart1">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Item Number"/>
-                    <Property name="name" type="java.lang.String" value="lblitem" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Sku Number"/>
+                    <Property name="name" type="java.lang.String" value="lblcustnumber" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JLabel" name="jLabel5">
@@ -1464,7 +1463,8 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="jLabel15">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Alt Item"/>
+                    <Property name="text" type="java.lang.String" value="Alternate Number"/>
+                    <Property name="name" type="java.lang.String" value="lblaltitem" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="tbpackqty">
@@ -1898,21 +1898,14 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="btaddattachment" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="btdeleteattachment" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="446" max="32767" attributes="0"/>
-                          <Component id="labelmessage" min="-2" pref="266" max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="jScrollPane4" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
+                  <Component id="btaddattachment" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="btdeleteattachment" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace pref="446" max="32767" attributes="0"/>
+                  <Component id="labelmessage" min="-2" pref="266" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
+              <Component id="jScrollPane4" alignment="0" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -1927,8 +1920,7 @@
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jScrollPane4" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="157" max="-2" attributes="0"/>
+                  <Component id="jScrollPane4" min="-2" pref="584" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -1997,12 +1989,10 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="btnotes" min="-2" max="-2" attributes="0"/>
-                      <Component id="jScrollPane1" alignment="0" min="-2" pref="551" max="-2" attributes="0"/>
-                  </Group>
-                  <EmptySpace pref="411" max="32767" attributes="0"/>
+                  <Component id="btnotes" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace pref="863" max="32767" attributes="0"/>
               </Group>
+              <Component id="jScrollPane1" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -2011,8 +2001,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="btnotes" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
-                  <Component id="jScrollPane1" min="-2" pref="231" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="353" max="-2" attributes="0"/>
+                  <Component id="jScrollPane1" min="-2" pref="584" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
