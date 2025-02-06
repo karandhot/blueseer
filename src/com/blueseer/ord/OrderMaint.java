@@ -449,13 +449,13 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
        jTabbedPane1.removeAll();
        jTabbedPane1.add(getClassLabelTag("main", this.getClass().getSimpleName()), jPanelMain);
        jTabbedPane1.add(getClassLabelTag("lines", this.getClass().getSimpleName()), jPanelLines);
-       jTabbedPane1.add(getClassLabelTag("schedule", this.getClass().getSimpleName()), jPanelSched);
+       jTabbedPane1.add(getClassLabelTag("summary", this.getClass().getSimpleName()), jPanelSched);
        jTabbedPane1.add(getClassLabelTag("attachments", this.getClass().getSimpleName()), panelAttachment);
        jTabbedPane1.add(getClassLabelTag("notes", this.getClass().getSimpleName()), panelNotes);
         
         
        // jTabbedPane1.setEnabledAt(1, false);
-        jTabbedPane1.setEnabledAt(2, false);
+        //jTabbedPane1.setEnabledAt(2, false);
         
         currentline = "";
         btitemkv.setEnabled(false);
@@ -538,7 +538,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         sactable.setModel(sacmodel);
         sactable.getTableHeader().setReorderingAllowed(false);
         modelsched.setRowCount(0);
-        tablesched.setModel(modelsched);
+       // tablesched.setModel(modelsched);
         
         tbhdrwh.setText("");
         lblIsSourced.setIcon(null);
@@ -1880,7 +1880,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                       res.getString("srl_duedate"), 
                       res.getString("srl_ref"), res.getString("srl_qtyord"), res.getString("srl_type")});
                 }
-                tablesched.setModel(modelsched);
+             //   tablesched.setModel(modelsched);
                
             } catch (SQLException s) {
                 MainFrame.bslog(s);
@@ -2341,8 +2341,18 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel6 = new javax.swing.JLabel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanelSched = new javax.swing.JPanel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        tablesched = new javax.swing.JTable();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        sactable = new javax.swing.JTable();
+        tbsacamt = new javax.swing.JTextField();
+        tbsacdesc = new javax.swing.JTextField();
+        percentlabel = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        btsacadd = new javax.swing.JButton();
+        btsacdelete = new javax.swing.JButton();
+        ddsactype = new javax.swing.JComboBox<>();
+        ddsacamttype = new javax.swing.JComboBox<>();
+        jLabel17 = new javax.swing.JLabel();
+        jLabel18 = new javax.swing.JLabel();
         jPanelMain = new javax.swing.JPanel();
         jLabel76 = new javax.swing.JLabel();
         tbkey = new javax.swing.JTextField();
@@ -2469,17 +2479,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         btitemkv = new javax.swing.JButton();
         jScrollPane8 = new javax.swing.JScrollPane();
         orddet = new javax.swing.JTable();
-        jPanel5 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        sactable = new javax.swing.JTable();
-        tbsacamt = new javax.swing.JTextField();
-        tbsacdesc = new javax.swing.JTextField();
-        percentlabel = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
-        btsacadd = new javax.swing.JButton();
-        btsacdelete = new javax.swing.JButton();
-        ddsactype = new javax.swing.JComboBox<>();
-        ddsacamttype = new javax.swing.JComboBox<>();
         jPanel6 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         totlines = new javax.swing.JTextField();
@@ -2514,35 +2513,104 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         });
         add(jTabbedPane1);
 
-        jPanelSched.setBorder(javax.swing.BorderFactory.createTitledBorder("Schedule Releases"));
-        jPanelSched.setPreferredSize(new java.awt.Dimension(940, 650));
+        jPanelSched.setBorder(javax.swing.BorderFactory.createTitledBorder("Summary Charges and Allowances"));
+        jPanelSched.setPreferredSize(new java.awt.Dimension(940, 670));
 
-        tablesched.setModel(new javax.swing.table.DefaultTableModel(
+        sactable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+
             }
         ));
-        jScrollPane3.setViewportView(tablesched);
+        jScrollPane2.setViewportView(sactable);
+
+        percentlabel.setText("Percent/Amount");
+        percentlabel.setName("lblpercent"); // NOI18N
+
+        jLabel8.setText("Desc");
+        jLabel8.setName("lbldesc"); // NOI18N
+
+        btsacadd.setText("add");
+        btsacadd.setName("btadd"); // NOI18N
+        btsacadd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btsacaddActionPerformed(evt);
+            }
+        });
+
+        btsacdelete.setText("delete");
+        btsacdelete.setName("btdelete"); // NOI18N
+        btsacdelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btsacdeleteActionPerformed(evt);
+            }
+        });
+
+        ddsacamttype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "amount", "percent" }));
+        ddsacamttype.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ddsacamttypeActionPerformed(evt);
+            }
+        });
+
+        jLabel17.setText("Summary Type");
+
+        jLabel18.setText("Amount Type");
 
         javax.swing.GroupLayout jPanelSchedLayout = new javax.swing.GroupLayout(jPanelSched);
         jPanelSched.setLayout(jPanelSchedLayout);
         jPanelSchedLayout.setHorizontalGroup(
             jPanelSchedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelSchedLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 918, Short.MAX_VALUE))
+                .addGap(11, 11, 11)
+                .addGroup(jPanelSchedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanelSchedLayout.createSequentialGroup()
+                        .addGroup(jPanelSchedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(percentlabel)
+                            .addComponent(jLabel8)
+                            .addComponent(jLabel17)
+                            .addComponent(jLabel18))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanelSchedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(tbsacdesc, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanelSchedLayout.createSequentialGroup()
+                                .addComponent(tbsacamt, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(29, 29, 29)
+                                .addComponent(btsacadd)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btsacdelete))
+                            .addGroup(jPanelSchedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(ddsacamttype, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(ddsactype, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 906, Short.MAX_VALUE))
+                .addGap(11, 11, 11))
         );
         jPanelSchedLayout.setVerticalGroup(
             jPanelSchedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelSchedLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 617, Short.MAX_VALUE))
+                .addGap(27, 27, 27)
+                .addGroup(jPanelSchedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ddsactype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel17))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanelSchedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ddsacamttype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel18))
+                .addGap(4, 4, 4)
+                .addGroup(jPanelSchedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbsacdesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel8))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanelSchedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btsacadd)
+                    .addComponent(btsacdelete)
+                    .addComponent(tbsacamt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(percentlabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
+                .addGap(28, 28, 28))
         );
 
         add(jPanelSched);
@@ -3552,97 +3620,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         });
         jScrollPane8.setViewportView(orddet);
 
-        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("Summary Discounts, Charges, and Taxes"));
-        jPanel5.setName("panelsummary"); // NOI18N
-
-        sactable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-
-            }
-        ));
-        jScrollPane2.setViewportView(sactable);
-
-        percentlabel.setText("Percent/Amount");
-        percentlabel.setName("lblpercent"); // NOI18N
-
-        jLabel8.setText("Desc");
-        jLabel8.setName("lbldesc"); // NOI18N
-
-        btsacadd.setText("add");
-        btsacadd.setName("btadd"); // NOI18N
-        btsacadd.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btsacaddActionPerformed(evt);
-            }
-        });
-
-        btsacdelete.setText("delete");
-        btsacdelete.setName("btdelete"); // NOI18N
-        btsacdelete.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btsacdeleteActionPerformed(evt);
-            }
-        });
-
-        ddsacamttype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "amount", "percent" }));
-        ddsacamttype.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ddsacamttypeActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(percentlabel)
-                    .addComponent(jLabel8))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tbsacdesc, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(tbsacamt, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(29, 29, 29)
-                        .addComponent(btsacadd)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btsacdelete))
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(ddsactype, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ddsacamttype, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 362, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(ddsactype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(ddsacamttype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tbsacdesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel8))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btsacadd)
-                    .addComponent(btsacdelete)
-                    .addComponent(tbsacamt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(percentlabel))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-
         jLabel3.setText("Total Lines:");
         jLabel3.setName("lbltotallines"); // NOI18N
 
@@ -3714,7 +3691,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addGroup(jPanelLinesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane8)
-                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         jPanelLinesLayout.setVerticalGroup(
@@ -3722,9 +3698,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             .addGroup(jPanelLinesLayout.createSequentialGroup()
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 282, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(80, Short.MAX_VALUE))
@@ -4280,7 +4254,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         Set<String> shiptos = new LinkedHashSet<String>();
         for (int j = 0; j < orddet.getRowCount(); j++) {
-            shiptos.add(orddet.getValueAt(j, 17).toString());
+            shiptos.add(orddet.getModel().getValueAt(j, 17).toString());
         } 
         if (shiptos.size() > 1) {
            bsmf.MainFrame.show(getMessageTag(1177));
@@ -4301,10 +4275,10 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         Set<String> shiptos = new LinkedHashSet<String>();
         boolean isMultiShip = false;
         for (int j = 0; j < orddet.getRowCount(); j++) {
-            if (orddet.getValueAt(j, 17).toString().isBlank()) {
+            if (orddet.getModel().getValueAt(j, 17).toString().isBlank()) {
                 continue;
             }
-            shiptos.add(orddet.getValueAt(j, 17).toString());
+            shiptos.add(orddet.getModel().getValueAt(j, 17).toString());
         } 
         if (shiptos.size() > 1) {
            isMultiShip = true;
@@ -4582,6 +4556,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -4615,7 +4591,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
@@ -4624,7 +4599,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JPanel jPanelSched;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JTabbedPane jTabbedPane1;
@@ -4654,7 +4628,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JTextField remarks;
     private javax.swing.JTable sactable;
     private javax.swing.JTable tableattachment;
-    private javax.swing.JTable tablesched;
     private javax.swing.JTextArea tanotes;
     private javax.swing.JTextField tbaddr1;
     private javax.swing.JTextField tbaddr2;
