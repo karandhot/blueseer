@@ -1620,7 +1620,7 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
         btdetail.setEnabled(false);
         if (rbDocLog.isSelected()) {
             tbref.setEnabled(true);
-            btreprocess.setEnabled(false);
+            btreprocess.setEnabled(true);
             btclearstatus.setEnabled(false);
             ddoutdoctype.setEnabled(true);
            // getDocLogView();
@@ -1661,10 +1661,10 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
                      //   batch = cleanDirString(EDData.getEDIBatchDir()) + batch; 
                      //  String[] m = EDI.processFile(batch, "", "", "", false, true, Integer.valueOf(tablereport.getValueAt(i, 2).toString()), Integer.valueOf(tablereport.getValueAt(i, 1).toString()), "");
                     //   String result = m[0] + " of " + m[1];
-                       bsmf.MainFrame.show(getMessageTag(1163,r));
+                       bsmf.MainFrame.show(r);
                     } catch (IOException ex) {
                         MainFrame.bslog(ex);
-                        bsmf.MainFrame.show(getMessageTag(1163,r));
+                        bsmf.MainFrame.show(r);
                     } 
             }
         }
