@@ -1194,29 +1194,47 @@ public class apiUtils {
             k[2] = bsmf.MainFrame.PassWord("1", k[2].toCharArray());
             k[4] = bsmf.MainFrame.PassWord("1", k[4].toCharArray());
             KeyStore keystore = KeyStore.getInstance("PKCS12");
-             fis = new FileInputStream(FileSystems.getDefault().getPath(k[0]).toString());
-            keystore.load(fis, k[2].toCharArray());
-            cert = (X509Certificate) keystore.getCertificate(pks.pks_user());
-            fis.close();
+            fis = new FileInputStream(FileSystems.getDefault().getPath(k[0]).toString());
+            try {
+                keystore.load(fis, k[2].toCharArray());
+                cert = (X509Certificate) keystore.getCertificate(pks.pks_user());
+                fis.close();
+            } catch (IOException ex) {
+               bslog(ex);
+               return "cannot access keystore";
+            }
+            
+            /*
             PublicKey pubkey = cert.getPublicKey();
-                    AsymmetricKeyParameter bpuv = PublicKeyFactory.createKey(pubkey.getEncoded());
-                    byte[] opuv = OpenSSHPublicKeyUtil.encodePublicKey(bpuv);
-                    StringWriter writer = new StringWriter();
-                    PemWriter pemWriter = new PemWriter(writer);
+            AsymmetricKeyParameter bpuv;
+            try {
+                bpuv = PublicKeyFactory.createKey(pubkey.getEncoded());
+                byte[] opuv = OpenSSHPublicKeyUtil.encodePublicKey(bpuv);
+            } catch (IOException ex) {
+                Logger.getLogger(apiUtils.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            */
+            
+            StringWriter writer = new StringWriter();
+            PemWriter pemWriter = new PemWriter(writer);
+                try {
                     pemWriter.writeObject(new PemObject("CERTIFICATE", cert.getEncoded()));
                     pemWriter.flush();
                     pemWriter.close();
                     s = writer.toString();
                     writer.close();
-                    return s;
+                } catch (IOException ex) {
+                    bslog(ex);
+                   return "cannot write PemObject";
+                }
+            
+            return s;
             }
             
             //System.out.println("here-->" + cert.getSerialNumber());
         } catch (KeyStoreException ex) {
             bslog(ex);
         } catch (FileNotFoundException ex) {
-            bslog(ex);
-        } catch (IOException ex) {
             bslog(ex);
         } catch (NoSuchAlgorithmException ex) {
             bslog(ex);
