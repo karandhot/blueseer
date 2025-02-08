@@ -38,7 +38,18 @@ public class XXXexport {
 public static void main(String args[]) {
  try {
      
-             bsmf.MainFrame.setConfig();
+            String configfile = "";
+            if (args != null && args.length > 0) {
+            int i = 0;
+                for (String s : args) {
+                    if (s.equals("-config")) {
+                    configfile = args[i+1];
+                    }
+                    i++;
+                }
+            }
+             bsmf.MainFrame.setConfig(configfile);
+             
               BufferedWriter output;
               String detail = "";
               String delimiter = "__XXX__";

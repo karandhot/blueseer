@@ -59,7 +59,7 @@ public class EDIbs {
     public static boolean isDebug = false;
     
 public static void main(String args[]) throws IOException {
- 
+      
     //first things first...escape clause
     // check for lock file...if exists then bail
 		Path lockpath = Paths.get("lock.txt");
@@ -67,11 +67,19 @@ public static void main(String args[]) throws IOException {
 			System.out.println("lock file...exiting");
 			return;
 		}
+                
+    String configfile = "";
+    if (args != null && args.length > 0) {
+    int i = 0;
+        for (String s : args) {
+            if (s.equals("-config")) {
+            configfile = args[i+1];
+            }
+            i++;
+        }
+    }            
     
-    
-    // set config
-   // bsmf.MainFrame.setConfig();
-    bsmf.MainFrame.setConfig();
+    bsmf.MainFrame.setConfig(configfile);
     tags = ResourceBundle.getBundle("resources.bs", Locale.getDefault());
     // lets process the arguments
     String[] vs = checkargs(args);

@@ -55,9 +55,23 @@ public class cronServer {
 	
 	public static void main(String[] args) throws Exception {
 	
+            String configfile = "";
+            if (args != null && args.length > 0) {
+            int i = 0;
+                for (String s : args) {
+                    if (s.equals("-config")) {
+                    configfile = args[i+1];
+                    }
+                    i++;
+                }
+            }
+            
         Scheduler scheduler = null; 
 		
-	bsmf.MainFrame.setConfig();	
+	bsmf.MainFrame.setConfig(configfile);
+        
+        
+        
 	tags = ResourceBundle.getBundle("resources.bs", Locale.getDefault());
         
         
