@@ -2301,9 +2301,9 @@ public class BlueSeerUtils {
         StringBuilder sb = new StringBuilder();
         String urlString = "";
         if (! bsmf.MainFrame.rhost.isBlank()) {
-            urlString = "http://" + bsmf.MainFrame.rhost + ":8088/bsapi/" + dataClass;
+            urlString = "http://" + bsmf.MainFrame.rhost + ":" + bsmf.MainFrame.serverport + "/bsapi/" + dataClass; 
         } else {
-            urlString = "http://" + bsmf.MainFrame.ip + ":8088/bsapi/" + dataClass;
+            urlString = "http://" + bsmf.MainFrame.ip + ":" + bsmf.MainFrame.serverport + "/bsapi/" + dataClass;
         }
         
         HttpURLConnection conn = null;
@@ -2369,9 +2369,9 @@ public class BlueSeerUtils {
         StringBuilder sb = new StringBuilder();
         String urlString = "";
         if (! bsmf.MainFrame.rhost.isBlank()) {
-            urlString = "http://" + bsmf.MainFrame.rhost + ":8088/bsapi/dataServ";
+            urlString = "http://" + bsmf.MainFrame.rhost + ":" + bsmf.MainFrame.serverport + "/bsapi/dataServ";
         } else {
-            urlString = "http://" + bsmf.MainFrame.ip + ":8088/bsapi/dataServ";
+            urlString = "http://" + bsmf.MainFrame.ip + ":" + bsmf.MainFrame.serverport + "/bsapi/dataServ";
         }
         
         HttpURLConnection conn = null;
@@ -2457,9 +2457,9 @@ public class BlueSeerUtils {
         StringBuilder sb = new StringBuilder();
         String urlString = "";
         if (! bsmf.MainFrame.rhost.isBlank()) {
-            urlString = "http://" + bsmf.MainFrame.rhost + ":8088/bsapi/dataServ";
+            urlString = "http://" + bsmf.MainFrame.rhost + ":" + bsmf.MainFrame.serverport + "/bsapi/dataServ";
         } else {
-            urlString = "http://" + bsmf.MainFrame.ip + ":8088/bsapi/dataServ";
+            urlString = "http://" + bsmf.MainFrame.ip + ":" + bsmf.MainFrame.serverport + "/bsapi/dataServ";
         }
         
         HttpURLConnection conn = null;
