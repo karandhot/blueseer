@@ -361,7 +361,7 @@ public class OrderRpt extends javax.swing.JPanel {
          cbclose.setSelected(true);
         cbbackorder.setSelected(true);
          cberror.setSelected(true);
-         cbblanket.setSelected(true);
+         cbcancel.setSelected(true);
         
         mymodel.setNumRows(0);
         modeldetail.setNumRows(0);
@@ -498,7 +498,7 @@ public class OrderRpt extends javax.swing.JPanel {
         jLabel7 = new javax.swing.JLabel();
         tbrmks = new javax.swing.JTextField();
         jLabel10 = new javax.swing.JLabel();
-        cbblanket = new javax.swing.JCheckBox();
+        cbcancel = new javax.swing.JCheckBox();
         btexport = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
@@ -635,8 +635,8 @@ public class OrderRpt extends javax.swing.JPanel {
         jLabel10.setText("Remarks");
         jLabel10.setName("lblremarks"); // NOI18N
 
-        cbblanket.setText("Blanket");
-        cbblanket.setName("cbblanket"); // NOI18N
+        cbcancel.setText("Cancelled");
+        cbcancel.setName("cbcancel"); // NOI18N
 
         btexport.setText("Export");
         btexport.addActionListener(new java.awt.event.ActionListener() {
@@ -709,7 +709,7 @@ public class OrderRpt extends javax.swing.JPanel {
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(cbblanket))
+                                .addComponent(cbcancel))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(btdetail)))))
@@ -742,7 +742,7 @@ public class OrderRpt extends javax.swing.JPanel {
                         .addComponent(cbopen)
                         .addComponent(cbbackorder)
                         .addComponent(cberror)
-                        .addComponent(cbblanket))
+                        .addComponent(cbcancel))
                     .addComponent(dcTo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -980,7 +980,7 @@ try {
                         continue;
                     if (! cberror.isSelected() && res.getString("so_status").equals(getGlobalProgTag("error")))
                         continue;    
-                    if (! cbblanket.isSelected() && res.getString("so_type").equals(getGlobalProgTag("blanket")))
+                    if (! cbcancel.isSelected() && res.getString("so_status").equals(getGlobalProgTag("cancel")))
                         continue; 
 
                     if (res.getDouble("discountpercent") != 0) {
@@ -1114,7 +1114,7 @@ try {
     private javax.swing.JButton btdetail;
     private javax.swing.JButton btexport;
     private javax.swing.JCheckBox cbbackorder;
-    private javax.swing.JCheckBox cbblanket;
+    private javax.swing.JCheckBox cbcancel;
     private javax.swing.JCheckBox cbclose;
     private javax.swing.JCheckBox cberror;
     private javax.swing.JCheckBox cbopen;

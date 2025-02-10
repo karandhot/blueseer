@@ -257,7 +257,7 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="cbblanket" min="-2" max="-2" attributes="0"/>
+                                      <Component id="cbcancel" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" attributes="0">
                                       <EmptySpace max="32767" attributes="0"/>
@@ -299,7 +299,7 @@
                               <Component id="cbopen" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="cbbackorder" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="cberror" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="cbblanket" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="cbcancel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="dcTo" min="-2" max="-2" attributes="0"/>
                       </Group>
@@ -479,10 +479,10 @@
                 <Property name="name" type="java.lang.String" value="lblremarks" noResource="true"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JCheckBox" name="cbblanket">
+            <Component class="javax.swing.JCheckBox" name="cbcancel">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Blanket"/>
-                <Property name="name" type="java.lang.String" value="cbblanket" noResource="true"/>
+                <Property name="text" type="java.lang.String" value="Cancelled"/>
+                <Property name="name" type="java.lang.String" value="cbcancel" noResource="true"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JButton" name="btexport">
