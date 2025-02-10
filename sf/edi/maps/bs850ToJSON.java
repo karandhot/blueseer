@@ -35,6 +35,13 @@ mapSegment("references:reference","value",getInput(key,2));
 commitSegment("references:reference");
 }
 
+int msgcount = getGroupCount("N9:MSG");
+for (int i = 1; i <= msgcount; i++) {
+mapSegment("notes:note","qualifier","ZZ");
+mapSegment("notes:note","message",getInput(i,"N9:MSG",1));
+commitSegment("notes:note");
+}
+
 
 int addrcount = getGroupCount("N1");
 for (int i = 1; i <= addrcount; i++) {

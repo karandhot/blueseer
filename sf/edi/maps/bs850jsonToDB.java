@@ -42,6 +42,11 @@ for (int i = 1; i <= refcount; i++) {
 ta.add(new String[]{po,"reference",getInput(i,"order:references:reference","qualifier"), getInput(i,"order:references:reference","value")});
 }
 
+
+int msgcount = getLoopCount("order:notes:note",2);
+    for (int i = 1; i <= msgcount; i++) {
+    e.addNotes(getInput(i,"order:notes:note","message"));
+    }
     
 int addrcount = getLoopCount("order:addresses:address",2);
 for (int i = 1; i <= addrcount; i++) {
@@ -62,10 +67,13 @@ if (getInput(i,"order:addresses:address","type").equals("ship-to")) {
 
 } // loop addresses
 
-  
-   if (! e.getOVShipTo().isEmpty()) {
-   e.setOVBillTo(cusData.getcustBillTo(e.getOVShipTo()));
-   } 
+ System.out.println(e.getOVBillTo() + "/" + e.getOVShipTo()); 
+ //  if (! e.getOVShipTo().isEmpty()) {
+//   e.setOVBillTo(cusData.getcustBillTo(e.getOVShipTo()));
+//   } 
+
+System.out.println(e.getOVBillTo());
+
    // NOTE: it's imperative that we have an internal billto code assign for pricing and discounts look up during the detail loop
    // if here and we have a blank billto...then error out
    if (e.getOVBillTo().isEmpty()) {

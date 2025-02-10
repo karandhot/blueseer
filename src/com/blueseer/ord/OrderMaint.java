@@ -741,6 +741,19 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                              btupdate.setEnabled(false);
                              btdelete.setEnabled(false);
                              btinvoice.setEnabled(false);
+                    } else if (ddstatus.getSelectedItem().toString().compareTo(getGlobalProgTag("cancel")) == 0) {
+                             lblstatus.setText(getMessageTag(1192));
+                             lblstatus.setForeground(Color.blue);
+                             btnew.setEnabled(true);
+                             btlookup.setEnabled(true);
+                             btclear.setEnabled(true);
+                             btprintinvoice.setEnabled(true);
+                             btprintps.setEnabled(true);
+                             btprintorder.setEnabled(true);
+                             btadd.setEnabled(false);
+                             btupdate.setEnabled(false);
+                             btdelete.setEnabled(false);
+                             btinvoice.setEnabled(false);
                     } else {
                              
                              lblstatus.setText(getMessageTag(1098));

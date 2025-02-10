@@ -25,6 +25,10 @@ JSONGenericOrder,references,order,5,1,1,landmark,landmark,9,9,-,M,F
 JSONGenericOrder,reference,references,5,1,1,landmark,landmark,9,9,-,M,F
 JSONGenericOrder,reference,references,1,0,0,qualifier,Qualifier,1,40,-,O,F
 JSONGenericOrder,reference,references,1,0,0,value,Value,1,80,-,O,F
+JSONGenericOrder,notes,order,10,1,1,landmark,landmark,9,9,-,M,F
+JSONGenericOrder,note,notes,10,1,1,landmark,landmark,9,9,-,M,F
+JSONGenericOrder,note,notes,1,0,0,qualifier,Qualifier,1,40,-,O,F
+JSONGenericOrder,note,notes,1,0,0,message,Messages,1,80,-,O,F
 JSONGenericOrder,addresses,order,5,1,1,landmark,landmark,9,9,-,M,F
 JSONGenericOrder,address,addresses,5,1,1,landmark,landmark,9,9,-,M,F
 JSONGenericOrder,address,addresses,1,0,0,type,Type,1,40,-,O,F

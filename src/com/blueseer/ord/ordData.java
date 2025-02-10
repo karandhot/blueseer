@@ -4613,6 +4613,7 @@ public class ordData {
         LocalDate now = LocalDate.now();
         now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         int i = 0;
+        
         ArrayList<String[]> list = new ArrayList<String[]>();
         try{
                 res = st.executeQuery("select * from sod_chg inner join so_chg on sodc_id = soc_id " +
@@ -4624,16 +4625,24 @@ public class ordData {
                     res.getString("sodc_line"),
                     res.getString("sodc_item"),
                     res.getString("sodc_price"),
-                    res.getString("sodc_qty")});
+                    res.getString("sodc_qty"),
+                    res.getString("soc_type")});
                 }
                 for (String[] s : list) {
                     if (i == 0) {
                       st.executeUpdate(
                         " update so_chg set soc_status = " + "'applied'" + "," + " soc_applydate = " + "'" + now + "'" + 
                         " where soc_id = " + "'" + changeID + "'" + " and soc_po = " + "'" + po + "'" + ";" );  
+                      if (s[6].equals("01")) {
+                          st.executeUpdate(
+                        " update so_mstr set so_due_date = " + "'" + s[0] + "'" + "," +
+                        " so_status = " + "'" + "cancel" + "'" +
+                         " where so_po = " + "'" + po + "'" + ";" );
+                      } else {
                       st.executeUpdate(
-                        " update so_mstr set so_due_date = " + "'" + s[0] + "'" +
-                         " where so_po = " + "'" + po + "'" + ";" );    
+                        " update so_mstr set so_due_date = " + "'" + s[0] + "'" + 
+                         " where so_po = " + "'" + po + "'" + ";" );  
+                      }
                     }
                       st.executeUpdate(
                         " update sod_det set sod_ord_qty = " + "'" + s[5] + "'" + "," +
@@ -4671,10 +4680,11 @@ public class ordData {
     public static String _evaluateOrderChange(String changeID, String po, Connection con) throws SQLException {
          String x = "none";
          boolean isQtyChange = false;  
-         boolean isPriceChange = false;   
+         boolean isPriceChange = false;  
+         boolean isCancel = false;
  
          
-        String sql = "select sod_line, sod_item, sod_ord_qty, sod_listprice, sodc_qty, sodc_price from sod_chg " +
+        String sql = "select soc_type, sod_line, sod_item, sod_ord_qty, sod_listprice, sodc_qty, sodc_price from sod_chg " +
                 " inner join so_chg on soc_id = sodc_id " +
                 " inner join sod_det on sodc_po = sod_po and sodc_line = sod_line " +
                 " where sod_po = ? " +
@@ -4692,6 +4702,9 @@ public class ordData {
                    if (bsParseDouble(res.getString("sod_listprice")) != bsParseDouble(res.getString("sodc_price"))) {
                        isPriceChange = true;
                    } 
+                   if (res.getString("soc_type").equals("01")) {
+                       isCancel = true;
+                   }
                 }
             
                ps.close();
@@ -4705,7 +4718,10 @@ public class ordData {
                }
                if (! isQtyChange && isPriceChange) {
                    x = "price";
-               }          
+               }   
+               if (isCancel) {
+                   x = "cancel";
+               }
         return x;
         
     }   

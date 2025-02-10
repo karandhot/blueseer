@@ -3621,7 +3621,7 @@ public class EDI {
         ordData.so_chg soc = new ordData.so_chg(null, 
                  e.changeid,  // unique id
                  e.po,  // po
-                 "", // type
+                 e.changetype, // type  
                  now, // change date
                  e.duedate,
                  e.ov_billto,
@@ -6869,6 +6869,7 @@ public class EDI {
     public String st_zip = "";
     public String st_country = "";
     public String ref = "";
+    public String changetype = "";
     
     // Detail fields      
     public ArrayList<String> detsku = new ArrayList<String>();
@@ -6963,6 +6964,10 @@ public class EDI {
         public void setRef(String v) {
            this.ref = v;
         }
+        public void setChangeType(String v) {
+           this.changetype = v;
+        }
+        
         public void setPODate(String v) {
            this.podate = v;
         }
@@ -7020,6 +7025,10 @@ public class EDI {
         public String getRef() {
            return this.ref;
         }
+        public String getChangeType() {
+           return this.changetype;
+        }
+        
         public String getPODate() {
            return this.podate;
         }

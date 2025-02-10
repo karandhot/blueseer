@@ -30,6 +30,8 @@ getInput("order","receiverid"), getInput("order","senderid"), getInput("order","
 
      e.setPO(po);
 
+     e.setChangeType(getInput("order","status"));  // 00 = orig, 01=cancelled
+
      // override changeID with reference field if not blank
      int refcount = getLoopCount("order:references:reference",2);
      for (int i = 1; i <= refcount; i++) {
