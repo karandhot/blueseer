@@ -146,8 +146,11 @@ public static String[] checkargs(String[] args) {
 
 
 public static void runTranslation(String[] args) {
-    try {
-     
+    File lf = new File("ediload.lck");
+    try { 
+	
+        
+                
             boolean isDebug = false;
             if (args != null && args.length > 0) {
                 if (args[0].equals("-debug")) {
@@ -158,17 +161,27 @@ public static void runTranslation(String[] args) {
             String inDir = cleanDirString(EDData.getEDIInDir());
             String inArch = cleanDirString(EDData.getEDIInArch()); 
             String ErrorDir = cleanDirString(EDData.getEDIErrorDir()); 
-               String archpath = inArch;
-               File folder = new File(inDir);
-               File[] listOfFiles = folder.listFiles();
-               if (listOfFiles == null) {
-                   System.out.println("EDILoad ERROR:  Unable to list inDir...possible DB read issue ");
-                   return;
-               }
+            String archpath = inArch;
+            File folder = new File(inDir);
+            File[] listOfFiles = folder.listFiles();
+            if (listOfFiles == null) {
+               System.out.println("EDILoad ERROR:  Unable to list inDir...possible DB read issue ");
+               return;
+            }
 
-               if (listOfFiles.length == 0) {
-                   System.out.println("EDILoad:  No files to process");
-               }
+            if (listOfFiles.length == 0) {
+               System.out.println("EDILoad:  No files to process");
+            }
+               
+            if (lf.exists()) {
+            System.out.println("EDILoad:  lock file found...exiting.  ediload.lck");
+            return;
+	    } else {
+            lf.createNewFile();
+            System.out.println("EDILoad:  creating lock file.  ediload.lck");
+            }
+            
+            
               for (int i = 0; i < listOfFiles.length; i++) {
                 if (listOfFiles[i].isFile()) {
                 System.out.println("EDILoad:  processing file " + listOfFiles[i].getName());
@@ -211,7 +224,12 @@ public static void runTranslation(String[] args) {
           ex.printStackTrace();
        } catch (ClassNotFoundException ex) {
           ex.printStackTrace();
-       }
+       } finally {
+        if (lf.exists()) {
+         lf.delete();
+         System.out.println("EDILoad:  removing lock file.  ediload.lck");
+        }
+    }
 }
 
 public static String[] runTranslationSingleFile(Path targetfilepath) {
