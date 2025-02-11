@@ -216,7 +216,7 @@ String carrier = "";
                                 
                 res = st.executeQuery("select sod_nbr, sod_line, sod_item, sod_custitem, so_cust, sod_po, so_shipvia, so_ship, it_item, it_desc, it_rev from sod_det " 
                         + " inner join so_mstr on so_nbr = sod_nbr " 
-                        + " inner join item_mstr on it_item = sod_item "
+                        + " left outer join item_mstr on it_item = sod_item "
                         + " where sod_nbr = " + "'" + order + "'"
                         + " and sod_line = " + "'" + line + "'" 
                         + ";");
