@@ -847,6 +847,7 @@ String carrier = "";
             concatline = concatline.replace("$ADDRNAME", "");
             concatline = concatline.replace("$REV", revnbr);
             concatline = concatline.replace("$PONUMBER", ponbr);
+            concatline = concatline.replace("$REF", ref);
             concatline = concatline.replace("$SONBR", ordernbr);
             concatline = concatline.replace("$SOLINE", linenbr);
             concatline = concatline.replace("$CARRIER", carrier);
