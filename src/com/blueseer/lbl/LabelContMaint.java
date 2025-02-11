@@ -216,21 +216,20 @@ String carrier = "";
                                 
                 res = st.executeQuery("select sod_nbr, sod_line, sod_item, sod_custitem, so_cust, sod_po, so_shipvia, so_ship, it_item, it_desc, it_rev from sod_det " 
                         + " inner join so_mstr on so_nbr = sod_nbr " 
-                        + " left outer join item_mstr on it_item = sod_item "
                         + " where sod_nbr = " + "'" + order + "'"
                         + " and sod_line = " + "'" + line + "'" 
                         + ";");
                 while (res.next()) {
                     i++;
-                   item = res.getString("it_item");
-                   partdesc = res.getString("it_desc");
+                   item = res.getString("sod_item");
+                   partdesc = res.getString("sod_desc");
                    custitem = res.getString("sod_custitem");
                    billto = res.getString("so_cust");
                    shipto = res.getString("so_ship");
                    ponbr = res.getString("sod_po");
                    ordernbr = res.getString("sod_nbr");
                    linenbr = res.getString("sod_line");
-                   revnbr = res.getString("it_rev");
+                   revnbr = "";
                    carrier = res.getString("so_shipvia");
                    
                    if (custitem.isEmpty()) {
