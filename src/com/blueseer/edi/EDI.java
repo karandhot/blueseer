@@ -3831,7 +3831,7 @@ public class EDI {
             ArrayList<frtData.cfo_det> list = new ArrayList<frtData.cfo_det>();
             String dettype = "";
             for (int j = 0; j < e.getDetCount(); j++ ) {
-               System.out.println("detcount: " + j + "/" + e.getDetType(j));
+             //  System.out.println("detcount: " + j + "/" + e.getDetType(j));
                 dettype = ediData.getEDIXvalue("204", "S5", "2", e.getDetType(j)); // three types supported... LD = Load; CU = Unload Complete; UL = Unload Partial
                 if (dettype.isBlank()) {
                    m[0] = "1"; 
@@ -5199,7 +5199,7 @@ public class EDI {
          if (attrkeys.containsKey("ISA15")) {isa15 = String.format("%1s",attrkeys.get("ISA15"));}
          
          String isa16 = ud;
-         System.out.println(doctype + "/" + sndid + "/" + rcvid + "/" + defaults[14]);
+       //  System.out.println(doctype + "/" + sndid + "/" + rcvid + "/" + defaults[14]);
          String gs1 = EDData.getEDIGSTypeFromBSDoc(defaults[14]);   // defaults[14] = outdoctype 
          
          String gs2 = defaults[2];
