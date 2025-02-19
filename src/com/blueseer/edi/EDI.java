@@ -3536,7 +3536,8 @@ public class EDI {
                 isconfirm, // isConfirmed
                 "0", // isPlanned
                 "edi",
-                "0"
+                "0",
+                bsmf.MainFrame.dfdate.format(new Date())
                 );
         // detail
         ArrayList<ordData.sod_det> detail = new ArrayList<ordData.sod_det>();

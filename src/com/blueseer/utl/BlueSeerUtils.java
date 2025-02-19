@@ -968,7 +968,7 @@ public class BlueSeerUtils {
          
         String x = "0";
         String pattern = "#0.#####";
-        if (! invalue.isBlank()) {
+        if (invalue != null && ! invalue.isBlank()) {
          if (Locale.getDefault().getLanguage().equals("zh") && ! Locale.getDefault().getCountry().equals("US")) {
             Locale cn = new Locale("C@numbers=hans");
             com.ibm.icu.text.NumberFormat formatter = com.ibm.icu.text.NumberFormat.getInstance(cn);

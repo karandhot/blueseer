@@ -2124,6 +2124,7 @@ public class admData {
     }
     
     public static void runFTPClient(String c) {
+        File lf = new File("ftpbss.lck");
         ftp_mstr fm = admData.getFTPMstr(new String[]{c});
         HashMap<String, String> ftpa = getFTPAttrHash(new String[]{c});
         
@@ -2187,7 +2188,19 @@ public class admData {
                    config.put("PreferredAuthentications", "publickey,password"); 
             }
             
+            
+            
              try {
+                 
+                if (lf.exists()) {
+                    logdata.add("ftpbss:  lock file found...exiting.  ftpbss.lck");
+                    log("ftp", logdata);
+                    return;
+                } else {
+                    lf.createNewFile();
+                    logdata.add("ftpbss:  creating lock file.  ftpbss.lck");
+                }
+                 
                  
                  if (usePrivateKey && ! privateKeyPath.isEmpty()) {
                     jsch.addIdentity(privateKeyPath); 
@@ -2333,7 +2346,14 @@ public class admData {
              } catch (Exception e) {
                 logdata.add("***   Unable to connect to FTP server. " + e.toString() + "   ***" + "");
             } finally {
+                
                 try {
+                    
+                    if (lf.exists()) {
+                    lf.delete();
+                    logdata.add("ftpbss:  process complete...removing lock file.  ftpbss.lck");
+                    }
+                    
                     if(session != null) {
                         session.disconnect();
                         logdata.add("disconnect session...");

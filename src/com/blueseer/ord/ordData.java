@@ -67,6 +67,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -136,8 +137,8 @@ public class ordData {
                         + "so_site, so_curr, so_shipvia, so_wh, so_po, so_due_date, so_ord_date, "
                         + "so_create_date, so_userid, so_status, so_isallocated, "
                         + "so_terms, so_ar_acct, so_ar_cc, so_rmks, so_type, so_taxcode, "
-                        + "so_issourced, so_confirm, so_plan, so_entrytype ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                        + "so_issourced, so_confirm, so_plan, so_entrytype, so_mod_date ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
        
           ps = con.prepareStatement(sqlSelect); 
           ps.setString(1, x.so_nbr);
@@ -168,6 +169,7 @@ public class ordData {
             ps.setString(22, x.so_confirm);
             ps.setString(23, x.so_plan);
             ps.setString(24, x.so_entrytype);
+            ps.setString(25, x.so_mod_date);
             rows = ps.executeUpdate();
             } 
             return rows;
@@ -409,7 +411,7 @@ public class ordData {
     private static int _updateOrderMstr(so_mstr x, Connection con, PreparedStatement ps) throws SQLException {
         int rows = 0;
         String sql = "update so_mstr set so_cust = ?, so_ship = ?, " +
-                "so_site = ?, so_curr = ?, so_shipvia = ?, so_wh = ?, so_po = ?, so_due_date = ?, so_ord_date = ?, so_create_date = ?, " +
+                "so_site = ?, so_curr = ?, so_shipvia = ?, so_wh = ?, so_po = ?, so_due_date = ?, so_ord_date = ?, so_mod_date = ?, " +
                 "so_userid = ?, so_status = ?, so_isallocated = ?, so_terms = ?, so_ar_acct = ?, so_ar_cc = ?, so_rmks = ?, so_type = ?, " +
                 "so_taxcode = ?, so_confirm = ?, so_plan = ?, so_export_855 = ? " +
                  " where so_nbr = ? ; ";
@@ -424,7 +426,7 @@ public class ordData {
             ps.setString(7, x.so_po);
             ps.setString(8, x.so_due_date);
             ps.setString(9, x.so_ord_date);
-            ps.setString(10, x.so_create_date);
+            ps.setString(10, x.so_mod_date);
             ps.setString(11, x.so_userid);
             ps.setString(12, x.so_status);
             ps.setString(13, x.so_isallocated);
@@ -837,7 +839,7 @@ public class ordData {
                     res.getString("so_due_date"), res.getString("so_ord_date"), res.getString("so_create_date"), res.getString("so_userid"), res.getString("so_status"),
                     res.getString("so_isallocated"), res.getString("so_terms"), res.getString("so_ar_acct"), res.getString("so_ar_cc"), 
                     res.getString("so_rmks"), res.getString("so_type"), res.getString("so_taxcode"), res.getString("so_issourced"),
-                    res.getString("so_confirm"), res.getString("so_plan"), res.getString("so_entrytype"), res.getString("so_export_855") );
+                    res.getString("so_confirm"), res.getString("so_plan"), res.getString("so_entrytype"), res.getString("so_export_855"), res.getString("so_mod_date") );
                     }
                 }
             }
@@ -868,7 +870,7 @@ public class ordData {
                 res.getString("so_due_date"), res.getString("so_ord_date"), res.getString("so_create_date"), res.getString("so_userid"), res.getString("so_status"),
                 res.getString("so_isallocated"), res.getString("so_terms"), res.getString("so_ar_acct"), res.getString("so_ar_cc"), 
                 res.getString("so_rmks"), res.getString("so_type"), res.getString("so_taxcode"), res.getString("so_issourced"),
-                res.getString("so_confirm"), res.getString("so_plan"), res.getString("so_entrytype"), res.getString("so_export_855"));
+                res.getString("so_confirm"), res.getString("so_plan"), res.getString("so_entrytype"), res.getString("so_export_855"), res.getString("so_mod_date"));
                 }
             }
             return r;
@@ -4635,12 +4637,14 @@ public class ordData {
                         " where soc_id = " + "'" + changeID + "'" + " and soc_po = " + "'" + po + "'" + ";" );  
                       if (s[6].equals("01")) {
                           st.executeUpdate(
-                        " update so_mstr set so_due_date = " + "'" + s[0] + "'" + "," +
+                        " update so_mstr set so_mod_date = " + "'" + setDateDB(new Date()) + "'" + "," + 
+                        " so_due_date = " + "'" + s[0] + "'" + "," +
                         " so_status = " + "'" + "cancel" + "'" +
                          " where so_po = " + "'" + po + "'" + ";" );
                       } else {
                       st.executeUpdate(
-                        " update so_mstr set so_due_date = " + "'" + s[0] + "'" + 
+                        " update so_mstr set so_mod_date = " + "'" + setDateDB(new Date()) + "'" + "," + 
+                        " so_due_date = " + "'" + s[0] + "'" + 
                          " where so_po = " + "'" + po + "'" + ";" );  
                       }
                     }
@@ -4738,11 +4742,11 @@ public class ordData {
     String so_curr, String so_shipvia, String so_wh, String so_po, String so_due_date,
     String so_ord_date, String so_create_date, String so_userid, String so_status, String so_isallocated,
     String so_terms, String so_ar_acct, String so_ar_cc, String so_rmks, String so_type, String so_taxcode,
-    String so_issourced, String so_confirm, String so_plan, String so_entrytype, String so_export_855) {
+    String so_issourced, String so_confirm, String so_plan, String so_entrytype, String so_export_855, String so_mod_date) {
         public so_mstr(String[] m) {
             this(m, "", "", "", "", "", "", "", "", "", "",
                     "", "", "", "", "", "", "", "", "", "",
-                    "", "", "", "", ""
+                    "", "", "", "", "", ""
                     );
         }
     }

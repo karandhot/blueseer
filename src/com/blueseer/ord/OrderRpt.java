@@ -114,7 +114,8 @@ public class OrderRpt extends javax.swing.JPanel {
                             getGlobalColumnTag("qty"), 
                             getGlobalColumnTag("amount"), 
                             getGlobalColumnTag("currency"),
-                            getGlobalColumnTag("status")
+                            getGlobalColumnTag("status"),
+                            getGlobalColumnTag("modified")
                             //getGlobalColumnTag("planstatus")
                         })
              {
@@ -910,7 +911,7 @@ try {
                  DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
              
                  if (dddatetype.getSelectedItem().toString().equals("create")) {
-                    res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_ord_date, so_due_date, so_status, " +
+                    res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
                         " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
                         " sum(sod_taxamt) as matltax, " +
                         " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
@@ -923,9 +924,9 @@ try {
                         " AND so_cust >= " + "'" + fromcust + "'" + 
                         " AND so_cust <= " + "'" + tocust + "'" + 
                         " AND so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
-                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_ord_date, so_due_date, so_status order by so_nbr asc ;"); 
+                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;"); 
                  } else if (dddatetype.getSelectedItem().toString().equals("due")) {
-                        res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_ord_date, so_due_date, so_status, " +
+                        res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
                         " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
                         " sum(sod_taxamt) as matltax, " +
                         " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
@@ -938,9 +939,9 @@ try {
                         " AND so_cust >= " + "'" + fromcust + "'" + 
                         " AND so_cust <= " + "'" + tocust + "'" + 
                         " AND so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
-                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_ord_date, so_due_date, so_status order by so_nbr asc ;");
+                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;");
                  } else {
-                        res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_ord_date, so_due_date, so_status, " +
+                        res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
                         " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
                         " sum(sod_taxamt) as matltax, " +
                         " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
@@ -953,7 +954,7 @@ try {
                         " AND so_cust >= " + "'" + fromcust + "'" + 
                         " AND so_cust <= " + "'" + tocust + "'" + 
                         " AND so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
-                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_ord_date, so_due_date, so_status order by so_nbr asc ;");
+                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;");
                  }
                 
                   
@@ -1011,12 +1012,13 @@ try {
                                 res.getString("so_cust"),
                                 res.getString("so_po"),
                                 res.getString("so_rmks"),
-                                getDateDB(res.getString("so_ord_date")),
+                                getDateDB(res.getString("so_create_date")),
                                 getDateDB(res.getString("so_due_date")),
                                 bsNumber(res.getDouble("totqty")),
                                 total,
                                 res.getString("so_curr"),
-                                res.getString("so_status") 
+                                res.getString("so_status"),
+                                res.getString("so_mod_date")
                                // planstatus
                             });
                 }

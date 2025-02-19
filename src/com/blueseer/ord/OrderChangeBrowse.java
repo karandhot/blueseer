@@ -189,6 +189,9 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
          if (! "none".equals(change) && column == 8 && status.equals("open")) {
               c.setBackground(Color.ORANGE);
               c.setForeground(Color.WHITE);
+        } else if (status.equals("detached")) {
+            c.setBackground(table.getBackground());
+            c.setForeground(Color.RED);
         } else {
             c.setBackground(table.getBackground());
             c.setForeground(table.getBackground());
@@ -290,17 +293,27 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                      tc.setCellRenderer(new OrderChangeBrowse.DetailRenderer());
                  }
                 
-                res = st.executeQuery("select sod_line, sod_item, sod_ord_qty, sod_listprice, sodc_qty, sodc_price from sod_chg " +
+                 if (cbdetached.isSelected()) {
+                    res = st.executeQuery("select sodc_line, sodc_item, sod_ord_qty, sod_listprice, sodc_qty, sodc_price from sod_chg " +
+                        " inner join so_chg on soc_id = sodc_id " +
+                        " left outer join sod_det on sodc_po = sod_po and sodc_line = sod_line " +
+                        " where sodc_po = " + "'" + po + "'" + 
+                        " and sodc_id = " + "'" + id + "'" +
+                        ";"); 
+                 } else {
+                   res = st.executeQuery("select sodc_line, sodc_item, sod_ord_qty, sod_listprice, sodc_qty, sodc_price from sod_chg " +
                         " inner join so_chg on soc_id = sodc_id " +
                         " inner join sod_det on sodc_po = sod_po and sodc_line = sod_line " +
                         " where sod_po = " + "'" + po + "'" + 
                         " and soc_id = " + "'" + id + "'" +
-                        ";");
+                        ";");  
+                 }
+                
                 while (res.next()) {
                    modeldetail.addRow(new Object[]{ 
                       BlueSeerUtils.clickgear,
-                      bsNumber(res.getString("sod_line")), 
-                      res.getString("sod_item"),
+                      bsNumber(res.getString("sodc_line")), 
+                      res.getString("sodc_item"),
                       bsParseDouble(currformatDouble(res.getDouble("sod_listprice"))),
                       bsParseDouble(currformatDouble(res.getDouble("sodc_price"))),
                       bsNumber(res.getDouble("sod_ord_qty")), 
@@ -379,12 +392,10 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
     }
     
     public void clearAll() {
-        lblamttot.setText("0");
-        lblqtytot.setText("0");
+        lbltotrecs.setText("0");
         labeldettotal.setText("");
         tbsearch.setText("");
-        tbfromorder.setText("");
-        tbtoorder.setText("");
+       
         
         currentid = "";
         
@@ -425,10 +436,18 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         for (Object cust : custs) {
             ddcustfrom.addItem(cust);
         }
+        ddcustfrom.insertItemAt("", 0);
+        ddcustfrom.setSelectedIndex(0);
+        
+        
+        
+        
         ddcustto.removeAllItems();
         for (Object cust : custs) {
             ddcustto.addItem(cust);
         }
+        ddcustto.insertItemAt("", 0);
+       // ddcustto.setSelectedIndex(0);
         
         if (ddcustfrom.getItemCount() > 0)
         ddcustfrom.setSelectedIndex(0);
@@ -551,13 +570,9 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         btRun = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
         ddcustto = new javax.swing.JComboBox();
         ddcustfrom = new javax.swing.JComboBox();
         ddsite = new javax.swing.JComboBox();
-        jLabel6 = new javax.swing.JLabel();
-        tbfromorder = new javax.swing.JTextField();
-        tbtoorder = new javax.swing.JTextField();
         cbclose = new javax.swing.JCheckBox();
         cbopen = new javax.swing.JCheckBox();
         btprint = new javax.swing.JButton();
@@ -570,11 +585,10 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         jLabel7 = new javax.swing.JLabel();
         dcto = new com.toedter.calendar.JDateChooser();
         jLabel9 = new javax.swing.JLabel();
+        cbdetached = new javax.swing.JCheckBox();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
-        lblqtytot = new javax.swing.JLabel();
-        lblamttot = new javax.swing.JLabel();
-        EndBal = new javax.swing.JLabel();
+        lbltotrecs = new javax.swing.JLabel();
         labeldettotal = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(0, 102, 204));
@@ -659,12 +673,6 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         jLabel1.setText("From Customer");
         jLabel1.setName("lblfromvend"); // NOI18N
 
-        jLabel3.setText("To Order");
-        jLabel3.setName("lbltopo"); // NOI18N
-
-        jLabel6.setText("From Order");
-        jLabel6.setName("lblfrompo"); // NOI18N
-
         cbclose.setText("Closed");
         cbclose.setName("cbclosed"); // NOI18N
 
@@ -699,6 +707,13 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
 
         jLabel9.setText("To Date");
 
+        cbdetached.setText("detached");
+        cbdetached.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbdetachedActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -706,50 +721,42 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel2))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel7)
                             .addComponent(jLabel9))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                                .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jLabel3))
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                                 .addComponent(dcfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jLabel6)))))
+                                .addGap(68, 68, 68)))
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.TRAILING)))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jLabel2)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(tbtoorder, javax.swing.GroupLayout.DEFAULT_SIZE, 94, Short.MAX_VALUE)
-                            .addComponent(tbfromorder))
-                        .addGap(18, 18, 18)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.TRAILING))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(ddcustfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(ddcustto, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGap(12, 12, 12)
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addGap(165, 165, 165)
+                                .addComponent(cbdetached)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(cbopen)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(cbclose)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(cbapplied))
                             .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(jLabel5)
-                                .addGap(4, 4, 4)
                                 .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btRun)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btclear)
@@ -776,57 +783,45 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                         .addComponent(btdetail)
                         .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel5)
-                        .addComponent(tbfromorder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel6)
                         .addComponent(btprint)
                         .addComponent(btexport)
                         .addComponent(btclear))
-                    .addComponent(dcfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel7))
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jLabel7)
+                        .addComponent(dcfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel4)
-                        .addComponent(ddcustto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(ddcustto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cbdetached))
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel3)
-                        .addComponent(tbtoorder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(cbclose)
                         .addComponent(cbopen)
                         .addComponent(cbapplied))
                     .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel9))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbsearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jLabel8.setText("Total Qty");
+        jLabel8.setText("Total Records:");
         jLabel8.setName("lbltotalqty"); // NOI18N
 
-        lblqtytot.setText("0");
-
-        lblamttot.setBackground(new java.awt.Color(195, 129, 129));
-        lblamttot.setText("0");
-
-        EndBal.setText("Total Amt");
-        EndBal.setName("lbltotalamt"); // NOI18N
+        lbltotrecs.setText("0");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(65, 65, 65)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(EndBal)
-                    .addComponent(jLabel8))
-                .addGap(27, 27, 27)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblamttot, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblqtytot, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(83, 83, 83)
+                .addComponent(jLabel8)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(lbltotrecs, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -834,13 +829,9 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblqtytot, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lbltotrecs, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel8))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(EndBal)
-                    .addComponent(lblamttot, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .addGap(70, 70, 70))
         );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -906,22 +897,14 @@ try {
               tablereport.getColumnModel().getColumn(12).setMaxWidth(100);
                  DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
                 
-                 double totqty = 0;
-                 double totamt = 0;
+                 int i = 0;
                  String change = "";
                  
-                 String orderfrom = tbfromorder.getText();
-                 String orderto = tbtoorder.getText();
-                 
-                 if (orderfrom.isEmpty()) {
-                     orderfrom = bsmf.MainFrame.lownbr;
-                 }
-                  if (orderto.isEmpty()) {
-                     orderto = bsmf.MainFrame.hinbr;
-                 }
                  
                  String custfrom = "";
                  String custto = "";
+                 String status = "";
+                 
                  
                  if (ddcustfrom.getSelectedItem() != null)
                      custfrom = ddcustfrom.getSelectedItem().toString();
@@ -942,22 +925,28 @@ try {
                 // tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
                  
              if (! tbsearch.getText().isBlank()) {
-                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
+                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
                      " from so_mstr inner join so_chg on soc_po = so_po inner join cm_mstr on cm_code = so_cust where " +
                         " so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +
                         " so_po like " + "'%" + tbsearch.getText() + "%'" +
                         " order by so_nbr desc ;");
                  
+             } else if (cbdetached.isSelected()) {
+                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
+                     " from so_chg left outer join so_mstr on so_po = soc_po left outer join cm_mstr on cm_code = so_cust where " +
+                         " soc_billto >= " + "'" + custfrom + "'" + " AND " +        
+                        " soc_billto <= " + "'" + custto + "'" + " AND " +
+                        " soc_chgdate >= " + "'" + setDateDB(dcfrom.getDate()) + "'" + " AND " +
+                        " soc_chgdate <= " + "'" + setDateDB(dcto.getDate()) + "'" + 
+                        " order by soc_id desc ;");
              } else {
-                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
+                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
                      " from so_mstr inner join so_chg on soc_po = so_po inner join cm_mstr on cm_code = so_cust where " +
                         " so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +
                         " so_cust >= " + "'" + custfrom + "'" + " AND " +        
                         " so_cust <= " + "'" + custto + "'" + " AND " +
                         " so_create_date >= " + "'" + setDateDB(dcfrom.getDate()) + "'" + " AND " +
-                        " so_create_date <= " + "'" + setDateDB(dcto.getDate()) + "'" + " AND " +        
-                        " so_nbr >= " + "'" + orderfrom + "'" + " AND " +
-                        " so_nbr <= " + "'" + orderto + "'" + 
+                        " so_create_date <= " + "'" + setDateDB(dcto.getDate()) + "'" +     
                         " order by so_nbr desc ;");
              }  
              
@@ -966,25 +955,32 @@ try {
                 
                        while (res.next()) {
                     
-                        change = _evaluateOrderChange(res.getString("soc_id"), res.getString("so_po"), con);    
+                        if (res.getString("so_nbr") != null && ! res.getString("so_nbr").isBlank()) {   
+                        change = _evaluateOrderChange(res.getString("soc_id"), res.getString("so_po"), con); 
+                        status = res.getString("soc_status");
+                        } else {
+                            change = "N/A";
+                            status = "detached";
+                        }
                            
-                             if (! cbopen.isSelected() && res.getString("soc_status").equals("open"))
+                             if (! cbopen.isSelected() && status.equals("open"))
                              continue;
-                             if (! cbclose.isSelected() && res.getString("soc_status").equals("closed"))
+                             if (! cbclose.isSelected() && status.equals("closed"))
                              continue;
-                             if (! cbapplied.isSelected() && res.getString("soc_status").equals("applied"))
+                             if (! cbapplied.isSelected() && status.equals("applied"))
                              continue;
-                                              
+                           
+                    i++;         
                     mymodel.addRow(new Object[]{ BlueSeerUtils.clickbasket, 
                                 res.getString("soc_id"),
                                 res.getString("so_nbr"),
-                                res.getString("so_po"),
+                                res.getString("soc_po"),
                                 res.getString("soc_chgdate"),
                                 res.getString("cm_name"),
                                 res.getString("so_due_date"),
                                 res.getString("soc_duedate"),
                                 change,
-                                res.getString("soc_status"),
+                                status,
                                 BlueSeerUtils.clickchange,
                                 BlueSeerUtils.clickvoid,
                                 BlueSeerUtils.clickgear
@@ -992,7 +988,7 @@ try {
                    
                 } // while   
                     
-                 
+               lbltotrecs.setText(String.valueOf(i));
                
             } catch (SQLException s) {
                 MainFrame.bslog(s);
@@ -1029,19 +1025,24 @@ try {
                 currentid = tablereport.getValueAt(row, 1).toString();
               
         }
-        if ( col == 10 && ! tablereport.getValueAt(row, 9).toString().equals("closed") &&
-                 ! tablereport.getValueAt(row, 9).toString().equals("applied")) {
-                applyOrderChange(tablereport.getValueAt(row, 1).toString(), tablereport.getValueAt(row, 3).toString());
-                bsmf.MainFrame.show("Order Change Committed");
+        
+        if (! tablereport.getValueAt(row, 9).toString().equals("detached")) {
+            if ( col == 10 && ! tablereport.getValueAt(row, 9).toString().equals("closed") &&
+                     ! tablereport.getValueAt(row, 9).toString().equals("applied")) {
+                    applyOrderChange(tablereport.getValueAt(row, 1).toString(), tablereport.getValueAt(row, 3).toString());
+                    bsmf.MainFrame.show("Order Change Committed");
+            }
+            if ( col == 11 && ! tablereport.getValueAt(row, 9).toString().equals("closed") &&
+                    ! tablereport.getValueAt(row, 9).toString().equals("applied")) {
+                    updateOrderChangeStatus(tablereport.getValueAt(row, 1).toString(), "closed");
+                    bsmf.MainFrame.show("Order Change Closed");
+            }
+            
         }
-        if ( col == 11 && ! tablereport.getValueAt(row, 9).toString().equals("closed") &&
-                ! tablereport.getValueAt(row, 9).toString().equals("applied")) {
-                updateOrderChangeStatus(tablereport.getValueAt(row, 1).toString(), "closed");
-                bsmf.MainFrame.show("Order Change Closed");
-        }
+        
         if ( col == 12 ) {
-                showEDIKVHeader(tablereport.getValueAt(row, 1).toString());
-        }
+                    showEDIKVHeader(tablereport.getValueAt(row, 1).toString());
+            }
        
     }//GEN-LAST:event_tablereportMouseClicked
 
@@ -1064,9 +1065,16 @@ try {
         }
     }//GEN-LAST:event_tabledetailMouseClicked
 
+    private void cbdetachedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbdetachedActionPerformed
+        if (cbdetached.isSelected()) {
+            btexport.setEnabled(false);
+        } else {
+            btexport.setEnabled(true);
+        }
+    }//GEN-LAST:event_cbdetachedActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel EndBal;
     private javax.swing.JButton btRun;
     private javax.swing.JButton btclear;
     private javax.swing.JButton btdetail;
@@ -1074,6 +1082,7 @@ try {
     private javax.swing.JButton btprint;
     private javax.swing.JCheckBox cbapplied;
     private javax.swing.JCheckBox cbclose;
+    private javax.swing.JCheckBox cbdetached;
     private javax.swing.JCheckBox cbopen;
     private com.toedter.calendar.JDateChooser dcfrom;
     private com.toedter.calendar.JDateChooser dcto;
@@ -1083,10 +1092,8 @@ try {
     private javax.swing.JPanel detailpanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
@@ -1096,14 +1103,11 @@ try {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel labeldettotal;
-    private javax.swing.JLabel lblamttot;
-    private javax.swing.JLabel lblqtytot;
+    private javax.swing.JLabel lbltotrecs;
     private javax.swing.JPanel summarypanel;
     private javax.swing.JTable tabledetail;
     private javax.swing.JPanel tablepanel;
     private javax.swing.JTable tablereport;
-    private javax.swing.JTextField tbfromorder;
     private javax.swing.JTextField tbsearch;
-    private javax.swing.JTextField tbtoorder;
     // End of variables declaration//GEN-END:variables
 }
