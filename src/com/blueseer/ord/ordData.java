@@ -3153,7 +3153,7 @@ public class ordData {
                 bdline.billd_netprice(), // net price
                 0, // disc
                 bdline.billd_listprice(), // list price
-                bdline.billd_desc(), // desc
+                "Period( " + xstart.toString() + " - " + xend.toString() + ")", // bdline.billd_desc(), // desc
                 "", // wh
                 "", // loc
                 0, // taxamt
