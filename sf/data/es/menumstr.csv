@@ -321,3 +321,4 @@ CFODriverWindow,,com.blueseer.frt.CFODriverWindow,JMenuItem,cfow
 VehicleBrowse,,com.blueseer.utl.ReportPanel,JMenuItem,vehb
 DriverBrowse,,com.blueseer.utl.ReportPanel,JMenuItem,drvb
 BrokerBrowse,,com.blueseer.utl.ReportPanel,JMenuItem,brkb
+PalletLabelMaint,,com.blueseer.lbl.PalletLabelMaint,JMenuItem,lblp

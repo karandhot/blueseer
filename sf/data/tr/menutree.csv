@@ -61,11 +61,12 @@ APIMenu,APILog,3,JMenuItem,API Log,,,,1,1
 AS2Menu,AS2Maint,1,JMenuItem,AS2 Maintenance,,,,1,1
 AS2Menu,AS2Browse,2,JMenuItem,AS2 Browse,,1,,1,1
 AS2Menu,AS2Log,3,JMenuItem,AS2 Log,,,,1,1
-LabelMenu,LabelsContGeneric,1,JMenuItem,Konteyner Etiketleri,,,,1,1
-LabelMenu,AddrLabel,2,JMenuItem,Adres Etiketleri,,,,1,1
-LabelMenu,LabelBrowse,3,JMenuItem,Etikete Gözat,,1,,1,1
-LabelMenu,LabelFileMaint,4,JMenuItem,Etiket Dosyası Bakımı,,,,1,1
-LabelMenu,LabelFileBrowse,5,JMenuItem,Etiket Dosyası Gözat,,1,,1,1
+LabelMenu,LabelsContGeneric,1,JMenuItem,Palet / Konteyner Etiketi (PDF),,,,1,1
+LabelMenu,PalletLabelMaint,2,JMenuItem,Konteyner Etiketleri,,,,1,1
+LabelMenu,AddrLabel,3,JMenuItem,Adres Etiketleri,,,,1,1
+LabelMenu,LabelBrowse,4,JMenuItem,Etikete Gözat,,1,,1,1
+LabelMenu,LabelFileMaint,5,JMenuItem,Etiket Dosyası Bakımı,,,,1,1
+LabelMenu,LabelFileBrowse,6,JMenuItem,Etiket Dosyası Gözat,,1,,1,1
 Satın alma,POMaintMenu,1,JMenuItem,Satın Alma Siparişi Bakımı,,,,1,1
 Satın alma,POBrowse,2,JMenuItem,Satın Alma Siparişine Gözat,,1,,1,1
 Satın alma,ReceiverMaintMenu,3,JMenuItem,Alıcı Bakımı,,,,1,1

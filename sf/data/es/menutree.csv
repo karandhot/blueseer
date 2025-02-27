@@ -61,11 +61,12 @@ APIMenu,APILog,3,JMenuItem,API Log,,,,1,1
 AS2Menu,AS2Maint,1,JMenuItem,AS2 Maintenance,,,,1,1
 AS2Menu,AS2Browse,2,JMenuItem,AS2 Browse,,1,,1,1
 AS2Menu,AS2Log,3,JMenuItem,AS2 Log,,,,1,1
-LabelMenu,LabelsContGeneric,1,JMenuItem,Etiquetas de contenedores,,,,1,1
-LabelMenu,AddrLabel,2,JMenuItem,Etiquetas de dirección,,,,1,1
-LabelMenu,LabelBrowse,3,JMenuItem,Exploración de etiquetas,,1,,1,1
-LabelMenu,LabelFileMaint,4,JMenuItem,Mantenimiento de archivos de etiquetas,,,,1,1
-LabelMenu,LabelFileBrowse,5,JMenuItem,Exploración de archivos de etiquetas,,1,,1,1
+LabelMenu,PalletLabelMaint,1,JMenuItem,Etiqueta para palets o contenedores (PDF),,,,1,1
+LabelMenu,LabelsContGeneric,2,JMenuItem,Etiquetas de contenedores,,,,1,1
+LabelMenu,AddrLabel,3,JMenuItem,Etiquetas de dirección,,,,1,1
+LabelMenu,LabelBrowse,4,JMenuItem,Exploración de etiquetas,,1,,1,1
+LabelMenu,LabelFileMaint,5,JMenuItem,Mantenimiento de archivos de etiquetas,,,,1,1
+LabelMenu,LabelFileBrowse,6,JMenuItem,Exploración de archivos de etiquetas,,1,,1,1
 Adquisitivo,POMaintMenu,1,JMenuItem,Mantenimiento de órdenes de compra,,,,1,1
 Adquisitivo,POBrowse,2,JMenuItem,Exploración de órdenes de compra,,1,,1,1
 Adquisitivo,ReceiverMaintMenu,3,JMenuItem,Mantenimiento del receptor,,,,1,1

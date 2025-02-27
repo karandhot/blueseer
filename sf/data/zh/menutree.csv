@@ -64,11 +64,12 @@ EDICommMenu,AS2Maint,4,JMenuItem,AS2维护,,,,1,1
 EDICommMenu,AS2Browse,5,JMenuItem,AS2浏览,,1,,1,1
 EDICommMenu,AS2Log,6,JMenuItem,AS2日志,,,,1,1
 EDICommMenu,FTPMaint,7,JMenuItem,FTP/sFTP维护,,,,1,1
-LabelMenu,LabelsContGeneric,1,JMenuItem,集装箱标签,,,,1,1
-LabelMenu,AddrLabel,2,JMenuItem,地址标签,,,,1,1
-LabelMenu,LabelBrowse,3,JMenuItem,标签浏览,,1,,1,1
-LabelMenu,LabelFileMaint,4,JMenuItem,标签文件维护,,,,1,1
-LabelMenu,LabelFileBrowse,5,JMenuItem,标签文件浏览,,1,,1,1
+LabelMenu,PalletLabelMaint,1,JMenuItem,托盘/集装箱标签 (PDF),,,,1,1
+LabelMenu,LabelsContGeneric,2,JMenuItem,集装箱标签,,,,1,1
+LabelMenu,AddrLabel,3,JMenuItem,地址标签,,,,1,1
+LabelMenu,LabelBrowse,4,JMenuItem,标签浏览,,1,,1,1
+LabelMenu,LabelFileMaint,5,JMenuItem,标签文件维护,,,,1,1
+LabelMenu,LabelFileBrowse,6,JMenuItem,标签文件浏览,,1,,1,1
 采购,POMaintMenu,1,JMenuItem,采购订单维护,,,,1,1
 采购,POBrowse,2,JMenuItem,采购订单浏览,,1,,1,1
 采购,ReceiverMaintMenu,3,JMenuItem,接收机维护,,,,1,1

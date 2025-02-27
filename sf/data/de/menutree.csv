@@ -61,11 +61,12 @@ APIMenu,APILog,3,JMenuItem,API Log,,,,1,1
 AS2Menu,AS2Maint,1,JMenuItem,AS2 Maintenance,,,,1,1
 AS2Menu,AS2Browse,2,JMenuItem,AS2 Browse,,1,,1,1
 AS2Menu,AS2Log,3,JMenuItem,AS2 Log,,,,1,1
-LabelMenu,LabelsContGeneric,1,JMenuItem,Behälteretiketten,,,,1,1
-LabelMenu,AddrLabel,2,JMenuItem,Adressetiketten,,,,1,1
-LabelMenu,LabelBrowse,3,JMenuItem,Label-Durchsuchen,,1,,1,1
-LabelMenu,LabelFileMaint,4,JMenuItem,Pflege der Etikettendatei,,,,1,1
-LabelMenu,LabelFileBrowse,5,JMenuItem,Label-Datei durchsuchen,,1,,1,1
+LabelMenu,PalletLabelMaint,1,JMenuItem,Paletten-/Containeretikett (PDF),,,,1,1
+LabelMenu,LabelsContGeneric,2,JMenuItem,Behälteretiketten,,,,1,1
+LabelMenu,AddrLabel,3,JMenuItem,Adressetiketten,,,,1,1
+LabelMenu,LabelBrowse,4,JMenuItem,Label-Durchsuchen,,1,,1,1
+LabelMenu,LabelFileMaint,5,JMenuItem,Pflege der Etikettendatei,,,,1,1
+LabelMenu,LabelFileBrowse,6,JMenuItem,Label-Datei durchsuchen,,1,,1,1
 Einkauf,POMaintMenu,1,JMenuItem,Bestellungspflege,,,,1,1
 Einkauf,POBrowse,2,JMenuItem,Bestellung durchsuchen,,1,,1,1
 Einkauf,ReceiverMaintMenu,3,JMenuItem,Empfängerwartung,,,,1,1

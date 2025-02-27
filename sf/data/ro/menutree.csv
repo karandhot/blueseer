@@ -61,11 +61,12 @@ APIMenu,APILog,3,JMenuItem,API Log,,,,1,1
 AS2Menu,AS2Maint,1,JMenuItem,AS2 Maintenance,,,,1,1
 AS2Menu,AS2Browse,2,JMenuItem,AS2 Browse,,1,,1,1
 AS2Menu,AS2Log,3,JMenuItem,AS2 Log,,,,1,1
-LabelMenu,LabelsContGeneric,1,JMenuItem,Etichete pentru containere,,,,1,1
-LabelMenu,AddrLabel,2,JMenuItem,Etichete de adresă,,,,1,1
-LabelMenu,LabelBrowse,3,JMenuItem,Răsfoire etichetă,,1,,1,1
-LabelMenu,LabelFileMaint,4,JMenuItem,Întreținere fișier etichetă,,,,1,1
-LabelMenu,LabelFileBrowse,5,JMenuItem,Eticheta Fișier Răsfoiește,,1,,1,1
+LabelMenu,PalletLabelMaint,1,JMenuItem,Etichetă palet/container (PDF),,,,1,1
+LabelMenu,LabelsContGeneric,2,JMenuItem,Etichete pentru containere,,,,1,1
+LabelMenu,AddrLabel,3,JMenuItem,Etichete de adresă,,,,1,1
+LabelMenu,LabelBrowse,4,JMenuItem,Răsfoire etichetă,,1,,1,1
+LabelMenu,LabelFileMaint,5,JMenuItem,Întreținere fișier etichetă,,,,1,1
+LabelMenu,LabelFileBrowse,6,JMenuItem,Eticheta Fișier Răsfoiește,,1,,1,1
 Achizitie,POMaintMenu,1,JMenuItem,Întreținerea comenzii de achiziție,,,,1,1
 Achizitie,POBrowse,2,JMenuItem,Răsfoiți comanda de achiziție,,1,,1,1
 Achizitie,ReceiverMaintMenu,3,JMenuItem,Întreținere receptor,,,,1,1
