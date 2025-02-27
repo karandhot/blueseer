@@ -2671,7 +2671,11 @@ public class BlueSeerUtils {
         int remainder = bothTotal % 10;
         int checksum = 10 - remainder;
         
-        return "00" + key + String.valueOf(checksum);
+        if (checksum == 10) {
+            checksum = 0;
+        }
+        
+        return key + String.valueOf(checksum);
        
 		
     }

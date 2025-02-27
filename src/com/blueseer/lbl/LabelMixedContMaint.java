@@ -60,6 +60,7 @@ import com.blueseer.utl.DTData;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.checkForCustomPath;
 import static com.blueseer.utl.OVData.getSystemLabelDirectory;
+import static com.blueseer.utl.OVData.printSSCC18J;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -823,6 +824,15 @@ String carrier = "";
             serialno_display = serialno_str;
         }
         
+        
+        // if sscc18J type label
+        if (lz.lblz_code().toLowerCase().equals("sscc18j")) {
+            printSSCC18J(tbordnbr.getText(), tbline.getText(), serialno_display);
+            return;
+        }
+        
+        
+        // else all other type of labels 
     try {
         Path template = checkForCustomPath(getSystemLabelDirectory(), lz.lblz_file());
         File f = template.toFile();

@@ -128,6 +128,7 @@ import java.nio.file.StandardCopyOption;
 import java.sql.PreparedStatement;
 import java.sql.ResultSetMetaData;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -17582,6 +17583,103 @@ return mystring;
             MainFrame.bslog(e);
         }
     }    
+    
+    public static void printSSCC18J(String order, String line, String serialno) {
+        try{
+             
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+               
+               
+                 String cust = ""; 
+                 String site = ""; 
+                
+                 String site_csz = "";
+                 String bill_csz = "";
+                 String ship_csz = "";
+                 String  now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+                 
+                res = st.executeQuery("select so_nbr, so_cust, so_po, so_site, cm_city, cm_state, cm_zip, cm_country, cms_country, site_country, " +
+                        " cms_city, cms_state, cms_zip, site_city, site_state, site_zip " +
+                        " from so_mstr " +
+                        " inner join cm_mstr on cm_code = so_cust " +
+                        " left outer join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
+                        " inner join site_mstr on site_site = so_site " +
+                        " where so_nbr = " + "'" + bsParseInt(order) + "'" + ";");
+                       int i = 0;
+                       while (res.next()) {
+                          i++;
+                          cust = res.getString(("so_cust"));
+                          site = res.getString(("so_site"));
+                          site_csz = res.getString(("site_city")) + " " + res.getString(("site_state")) + " " + res.getString(("site_zip")) + " " + res.getString(("site_country"));
+                          bill_csz = res.getString(("cm_city")) + " " + res.getString(("cm_state")) + " " + res.getString(("cm_zip")) + " " + res.getString(("cm_country"));
+                          ship_csz = res.getString(("cms_city")) + " " + res.getString(("cms_state")) + " " + res.getString(("cms_zip")) + "  " + res.getString(("cms_country"));
+                         
+                          if (i > 1) {
+                              break;
+                          }
+                       }
+                
+                
+                
+                
+                String logo = "";
+                logo = cusData.getCustLogo(cust);
+                if (logo.isEmpty()) {
+                    logo = OVData.getSiteLogo(site);
+                }
+                
+                String jasperfile = "sscc18.jasper";                
+               
+              
+               Path imagepath = FileSystems.getDefault().getPath(cleanDirString(getSystemImageDirectory()) + logo);
+                HashMap hm = new HashMap();
+                hm.put("REPORT_TITLE", "");
+                hm.put("mynbr",  order);
+                hm.put("myline",  line);
+                hm.put("mydate",  now);
+                hm.put("serialno",  serialno);
+                hm.put("site_csz", site_csz);
+                hm.put("bill_csz", bill_csz);
+                hm.put("ship_csz", ship_csz);
+                hm.put("imagepath", imagepath.toString());
+                hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+               // res = st.executeQuery("select shd_id, sh_cust, shd_po, shd_item, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, cm_city, cm_state, cm_zip, concat(cm_city, \" \", cm_state, \" \", cm_zip) as st_citystatezip, site_desc from ship_det inner join ship_mstr on sh_id = shd_id inner join cm_mstr on cm_code = sh_cust inner join site_mstr on site_site = sh_site where shd_id = '1848' ");
+               // JRResultSetDataSource jasperReports = new JRResultSetDataSource(res);
+               Path template = checkForCustomPath(getSystemJasperDirectory(), jasperfile);
+               JasperPrint jasperPrint = JasperFillManager.fillReport(template.toString(), hm, con );
+               
+              //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
+                
+                JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+                jasperViewer.setVisible(true);
+                jasperViewer.setTitle("Viewer");
+                jasperViewer.setIconImage(null);
+                jasperViewer.setFitPageZoomRatio();
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+            if (res != null) {
+                res.close();
+            }
+            if (st != null) {
+                st.close();
+            }
+            con.close();
+        }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+    }    
+    
     
     public static void printJTableToJasper(String reportname, JTable tablereport, String type) {
         HashMap hm = new HashMap();
