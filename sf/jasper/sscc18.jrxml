@@ -17,6 +17,8 @@
 	<parameter name="myline" class="java.lang.String"/>
 	<parameter name="serialno" class="java.lang.String"/>
 	<parameter name="mydate" class="java.lang.String"/>
+	<parameter name="reference" class="java.lang.String"/>
+	<parameter name="quantity" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[select so_nbr, sod_item, sod_desc, sod_ord_qty,
 so_cust, so_due_date, so_shipvia,  
@@ -138,7 +140,7 @@ where sod_nbr =  $P{mynbr} and sod_line = $P{myline}]]>
 				<textFieldExpression><![CDATA[$F{cms_line1}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="298" y="209" width="191" height="31" uuid="32b88943-0f55-45c5-939d-3f900e40bf08"/>
+				<reportElement x="298" y="183" width="191" height="31" uuid="32b88943-0f55-45c5-939d-3f900e40bf08"/>
 				<textElement>
 					<font size="16"/>
 				</textElement>
@@ -174,6 +176,23 @@ where sod_nbr =  $P{mynbr} and sod_line = $P{myline}]]>
 					<font size="16"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{so_shipvia}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="280" y="214" width="294" height="1" uuid="8e4e49d1-b38c-4bcd-986c-813de7b02955"/>
+			</line>
+			<staticText>
+				<reportElement x="290" y="220" width="70" height="22" uuid="bb4e6fc3-b3ee-43f6-b0bf-921116375c20"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Reference:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="300" y="244" width="191" height="31" uuid="ae667b5a-96b2-41b7-976c-35ae5d242e97"/>
+				<textElement>
+					<font size="16"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{reference}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -235,7 +254,7 @@ where sod_nbr =  $P{mynbr} and sod_line = $P{myline}]]>
 				<textElement>
 					<font size="16"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{sod_ord_qty}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{quantity}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

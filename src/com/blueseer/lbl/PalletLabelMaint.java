@@ -35,13 +35,9 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
 import static com.blueseer.lbl.lblData.addLabelMstr;
-import static com.blueseer.lbl.lblData.addMixedLabelTransaction;
 import static com.blueseer.lbl.lblData.getLabelZebraMstr;
-import com.blueseer.lbl.lblData.label_det;
 import com.blueseer.lbl.lblData.label_mstr;
 import com.blueseer.lbl.lblData.label_zebra;
-import static com.blueseer.ord.ordData.getOrderLineInfo;
-import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.checkDigitUCC18;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
@@ -114,7 +110,7 @@ import javax.swing.JTable;
  *
  * @author vaughnte
  */
-public class LabelMixedContMaint extends javax.swing.JPanel {
+public class PalletLabelMaint extends javax.swing.JPanel {
 
 String item = "";
 String revnbr = "";
@@ -123,6 +119,7 @@ String partdesc = "";
 String billto = "";
 String shipto = "";
 String ref = "";
+String lot = "";
 String ordernbr = "";
 String linenbr = "";
 String ponbr = "";
@@ -148,20 +145,13 @@ String shipcsz = "";
 
 String carrier = "";
 
-   javax.swing.table.DefaultTableModel itemmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
-            new String[]{
-                getGlobalColumnTag("line"), 
-                getGlobalColumnTag("item"), 
-                getGlobalColumnTag("description"),
-                getGlobalColumnTag("orderqty"),
-                "Label Quantity"
-            });  
+    
     
     
     /**
      * Creates new form CarrierMaintPanel
      */
-    public LabelMixedContMaint() {
+    public PalletLabelMaint() {
         initComponents();
         setLanguageTags(this);
     }
@@ -211,7 +201,7 @@ String carrier = "";
         }
     }
     
-    public void getOrderInfo(String order) {
+    public void getOrderInfo(String order, String line) {
          try {
 
             Connection con = null;
@@ -225,27 +215,38 @@ String carrier = "";
             try {
                 int i = 0;
                                 
-                res = st.executeQuery("select so_nbr, so_cust, so_po, so_shipvia, so_ship from so_mstr " 
-                        + " where so_nbr = " + "'" + order + "'"
+                res = st.executeQuery("select sod_nbr, sod_line, sod_item, sod_desc, sod_custitem, so_cust, sod_po, so_shipvia, so_ship from sod_det " 
+                        + " inner join so_mstr on so_nbr = sod_nbr " 
+                        + " where sod_nbr = " + "'" + order + "'"
+                        + " and sod_line = " + "'" + line + "'" 
                         + ";");
                 while (res.next()) {
                     i++;
+                   item = res.getString("sod_item");
+                   partdesc = res.getString("sod_desc");
+                   custitem = res.getString("sod_custitem");
                    billto = res.getString("so_cust");
                    shipto = res.getString("so_ship");
-                   ponbr = res.getString("so_po");
-                   ordernbr = res.getString("so_nbr");
+                   ponbr = res.getString("sod_po");
+                   ordernbr = res.getString("sod_nbr");
+                   linenbr = res.getString("sod_line");
+                   revnbr = "";
                    carrier = res.getString("so_shipvia");
+                   
+                   if (custitem.isEmpty()) {
+                      custitem = item; 
+                   }
                    
                 }
                
                 
                 if (i == 0)
-                    bsmf.MainFrame.show(getMessageTag(1143, order));
+                    bsmf.MainFrame.show(getMessageTag(1143, order + "/" + line));
                 
                 
                 // get shipto addr info
                 if (! shipto.isEmpty() && ! billto.isEmpty()) {
-                    res = st.executeQuery("select * from cms_det inner join cm_mstr on cm_code = cms_code where cms_shipto = " + "'" + shipto + "'" 
+                    res = st.executeQuery("select * from cms_det where cms_shipto = " + "'" + shipto + "'" 
                             + " AND cms_code = " + "'" + billto + "'" + ";");
                 }
                  while (res.next()) {
@@ -257,9 +258,6 @@ String carrier = "";
                  shipzip = res.getString("cms_zip").replace("'", "");
                  shipcountry = res.getString("cms_country").replace("'", "");
                  shipcsz = shipcity + ", " + shipstate + " " + shipzip;
-                 lblcust.setText(res.getString("cm_name"));
-                 lblship.setText(res.getString("cms_name") + "  " + shipcsz);
-                 
                  }
 
             } catch (SQLException s) {
@@ -324,40 +322,20 @@ String carrier = "";
     }
     
     public void initvars(String[] arg) {
-        lblcust.setText("");
-        lblship.setText("");
-        lblitem.setText("");
         tbqty.setText("");
         tbordnbr.setText("");
         tbline.setText("");
         tbqty.setText("");
-        tblblqty.setText("1");
-        tbordnbr.setEditable(true);
+        
         btprint.setEnabled(true);
-        
-        itemmodel.setRowCount(0);
-        itemtable.setModel(itemmodel);
-        itemtable.getTableHeader().setReorderingAllowed(false);
-        
-        ArrayList mylist = OVData.getPrinterList();
-        for (int i = 0; i < mylist.size(); i++) {
-            ddprinter.addItem(mylist.get(i));
-        }
-      
-        ddprinter.removeAllItems();
-        OVData.getPrinterList().stream().forEach((s) -> ddprinter.addItem(s));
-       
         
         getSiteAddress(OVData.getDefaultSite());
         
-         if (ddprinter.getItemCount() == 0) {
-            bsmf.MainFrame.show("No Printers Available");
-            btprint.setEnabled(false);
-        }
+      
         
     }
     
-    public void lookUpFrameOrder() {
+    public void lookUpFrameOrderLine() {
         
         luinput.removeActionListener(lual);
         lual = new ActionListener() {
@@ -390,8 +368,6 @@ String carrier = "";
                 if ( column == 0) {
                 ludialog.dispose();
                 tbordnbr.setText(target.getValueAt(row,1).toString());
-                tbordnbr.setEditable(false);
-                getOrderInfo(tbordnbr.getText());
                 //tbline.setText(target.getValueAt(row,2).toString());
                 }
             }
@@ -452,42 +428,6 @@ String carrier = "";
         
     }
 
-    public boolean validateInput() {
-        Pattern p = Pattern.compile("^[1-9]\\d*$");
-        Matcher m = p.matcher(tbqty.getText());
-        if (!m.find() || tbqty.getText() == null) {
-            bsmf.MainFrame.show(getMessageTag(1026));
-            tbqty.requestFocus();
-           return false;
-        }
-        
-        
-        if (tbordnbr.getText().isEmpty()) {
-            bsmf.MainFrame.show(getMessageTag(1024));
-            tbordnbr.requestFocus();
-            return false;
-        }
-        if (tbline.getText().isEmpty()) {
-            bsmf.MainFrame.show(getMessageTag(1024));
-            tbline.requestFocus();
-            return false;
-        }
-        
-        p = Pattern.compile("^[1-9]\\d*$");
-        m = p.matcher(tblblqty.getText());
-        if (!m.find() || tblblqty.getText() == null) {
-            bsmf.MainFrame.show(getMessageTag(1026));
-            tblblqty.requestFocus();
-            return false;
-        }
-        
-        if (ddprinter.getSelectedItem() == null) {
-            bsmf.MainFrame.show(getMessageTag(1140));
-            return false;
-        }
-        
-        return true;
-    }
     
     public label_mstr createRecord() { 
         java.util.Date now = new java.util.Date();
@@ -502,12 +442,12 @@ String carrier = "";
                  "XX", 
                  labelname,
                  quantity, 
-                 ponbr, 
+                 ponbr,
                  billto,
                  ordernbr, 
                  linenbr, 
                  ref, 
-                 "",  // lot 
+                 lot, 
                  "0", 
                  "0", 
                  shipname, 
@@ -521,30 +461,14 @@ String carrier = "";
                  setDateFormat(now), 
                  setDateFormat(now), 
                  bsmf.MainFrame.userid, 
-                 ddprinter.getSelectedItem().toString(), 
-                 "LabelContPanel", 
+                 "pdf", 
+                 "PalletLabelMaint", 
                  OVData.getDefaultSite(), 
-                 "", // loc
+                 "", 
                  "CONT",
-                 "h"
+                 "flat"
                 );
         return x;
-    }
-   
-    public ArrayList<label_det> createDetRecord() { 
-        ArrayList<label_det> det = new ArrayList<label_det>();
-         for (int j = 0; j < itemtable.getRowCount(); j++) {
-         label_det x = new label_det(null,
-                 serialno_str,
-                 tbordnbr.getText(),
-                 itemtable.getValueAt(j, 0).toString(),
-                 itemtable.getValueAt(j, 1).toString(),
-                 itemtable.getValueAt(j, 2).toString(),
-                 BlueSeerUtils.bsParseInt(itemtable.getValueAt(j, 4).toString()) // label qty
-                );
-         det.add(x);
-         }
-        return det;
     }
    
     
@@ -560,33 +484,21 @@ String carrier = "";
         jPanel1 = new javax.swing.JPanel();
         btprint = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
-        ddprinter = new javax.swing.JComboBox();
-        jLabel2 = new javax.swing.JLabel();
         tbqty = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         lblstatus = new javax.swing.JLabel();
         tbordnbr = new javax.swing.JTextField();
         tbline = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
-        tblblqty = new javax.swing.JTextField();
-        jLabel7 = new javax.swing.JLabel();
         tbref = new javax.swing.JTextField();
         jLabel8 = new javax.swing.JLabel();
-        btlookupOrder = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        itemtable = new javax.swing.JTable();
-        btadditem = new javax.swing.JButton();
-        btdeleteitem = new javax.swing.JButton();
+        btlookupOrderLine = new javax.swing.JButton();
         btlookupLine = new javax.swing.JButton();
-        btclear = new javax.swing.JButton();
-        lblcust = new javax.swing.JLabel();
-        lblship = new javax.swing.JLabel();
-        btnoprint = new javax.swing.JButton();
         lblitem = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Container Label Print (4 x 6)"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Pallet label 8 x 10.5 (Jasper / PDF)"));
         jPanel1.setName("panelmain"); // NOI18N
 
         btprint.setText("Print");
@@ -600,61 +512,22 @@ String carrier = "";
         jLabel3.setText("Order Number");
         jLabel3.setName("lblorder"); // NOI18N
 
-        jLabel2.setText("Printer");
-        jLabel2.setName("lblprinter"); // NOI18N
-
-        jLabel4.setText("Qty On Label");
+        jLabel4.setText("Quantity");
         jLabel4.setName("lblqty"); // NOI18N
 
         lblstatus.setBackground(java.awt.Color.white);
         lblstatus.setForeground(java.awt.Color.red);
 
-        tbline.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tblineActionPerformed(evt);
-            }
-        });
-
         jLabel6.setText("Order Line");
         jLabel6.setName("lblorderline"); // NOI18N
-
-        jLabel7.setText("Number of Labels");
-        jLabel7.setName("lblnumber"); // NOI18N
 
         jLabel8.setText("Reference");
         jLabel8.setName("lblref"); // NOI18N
 
-        btlookupOrder.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/find.png"))); // NOI18N
-        btlookupOrder.addActionListener(new java.awt.event.ActionListener() {
+        btlookupOrderLine.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/find.png"))); // NOI18N
+        btlookupOrderLine.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btlookupOrderActionPerformed(evt);
-            }
-        });
-
-        itemtable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        jScrollPane1.setViewportView(itemtable);
-
-        btadditem.setText("Add Item");
-        btadditem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btadditemActionPerformed(evt);
-            }
-        });
-
-        btdeleteitem.setText("Delete Item");
-        btdeleteitem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btdeleteitemActionPerformed(evt);
+                btlookupOrderLineActionPerformed(evt);
             }
         });
 
@@ -665,81 +538,43 @@ String carrier = "";
             }
         });
 
-        btclear.setText("Clear");
-        btclear.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btclearActionPerformed(evt);
-            }
-        });
-
-        btnoprint.setText("Record Without Print");
-        btnoprint.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnoprintActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(63, 63, 63)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel8, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(63, 63, 63)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(tbordnbr, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(91, 91, 91)
+                                .addComponent(lblstatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btlookupOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btclear)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(btadditem)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btdeleteitem))
-                            .addComponent(lblcust, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(lblship, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(btprint))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(tbqty, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(tbref, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGroup(jPanel1Layout.createSequentialGroup()
                                         .addComponent(tbline, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btlookupLine, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(lblitem, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addGap(0, 0, Short.MAX_VALUE)))
-                        .addGap(12, 12, 12))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 544, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(btlookupLine, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addComponent(btnoprint)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(btprint))))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGap(48, 48, 48)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jLabel8, javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.TRAILING))
-                                .addGap(18, 18, 18)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(ddprinter, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tbref, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tblblqty, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)))
-                .addComponent(lblstatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(20, 20, 20))
+                                        .addComponent(tbordnbr, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btlookupOrderLine, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGap(0, 0, Short.MAX_VALUE)))
+                        .addContainerGap(47, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(lblitem, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(20, Short.MAX_VALUE))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -749,52 +584,32 @@ String carrier = "";
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel3)
                         .addComponent(tbordnbr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(btlookupOrder)
-                    .addComponent(btclear))
+                    .addComponent(btlookupOrderLine))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(tbline, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel6))
-                    .addComponent(btlookupLine, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(lblitem, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(9, 9, 9)
+                    .addComponent(btlookupLine, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(2, 2, 2)
+                .addComponent(lblitem, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbqty, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblcust, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbref, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel8))
+                .addGap(26, 26, 26)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(27, 27, 27)
-                        .addComponent(lblstatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(lblstatus, javax.swing.GroupLayout.DEFAULT_SIZE, 41, Short.MAX_VALUE)
+                        .addGap(34, 34, 34))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(lblship, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(btadditem)
-                            .addComponent(btdeleteitem))
-                        .addGap(5, 5, 5)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(tblblqty, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel7))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(tbref, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel8))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(ddprinter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel2))
-                        .addGap(31, 31, 31)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(btprint)
-                            .addComponent(btnoprint))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addGap(34, 34, 34))
+                        .addGap(28, 28, 28)
+                        .addComponent(btprint)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
 
         add(jPanel1);
@@ -802,197 +617,91 @@ String carrier = "";
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
 
-        if (! validateInput()) {
-            return;
-        }
+        java.util.Date now = new java.util.Date();
+        DateFormat dfdate = new SimpleDateFormat("MM/dd/yyyy");
+        DateFormat dftime = new SimpleDateFormat("hh:mm");
+        DateFormat dfdate2 = new SimpleDateFormat("yyyy-MM-dd");
+        
+        getOrderInfo(tbordnbr.getText(), tbline.getText());
+        
         
         
         
         quantity = tbqty.getText();
-        ref = tbref.getText();
-        item = lblitem.getText();
-        linenbr = tbline.getText();
-        String cust = cusData.getCustFromOrder(tbordnbr.getText());
-        String label = cusData.getCustLabel(cust);
-        label  = (label.isBlank()) ? "generic" : label; 
-        label_zebra lz = getLabelZebraMstr(new String[]{label});
-        labelname = label;
-        serialno = OVData.getNextNbr("label");
-        serialno_str = String.valueOf(serialno);
-        if (lz.lblz_type().toLowerCase().equals("ucc")) {
-            serialno_display = checkDigitUCC18(serialno);
-        } else {
-            serialno_display = serialno_str;
+        
+        Pattern p = Pattern.compile("^[1-9]\\d*$");
+        Matcher m = p.matcher(tbqty.getText());
+        if (!m.find() || tbqty.getText() == null) {
+            bsmf.MainFrame.show(getMessageTag(1026));
+            tbqty.requestFocus();
+           return;
         }
         
         
-        // if sscc18J type label
-        if (lz.lblz_code().toLowerCase().equals("sscc18j")) {
-           // printSSCC18J(tbordnbr.getText(), tbline.getText(), serialno_display, tbref.getText(), tbqty.getText());
-            bsmf.MainFrame.show("Customer has sscc18J label assignment.  sscc18J label format only supported by Pallet Label Maint");
+        if (tbordnbr.getText().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1024));
+            tbordnbr.requestFocus();
+            return;
+        }
+        if (tbline.getText().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1024));
+            tbline.requestFocus();
             return;
         }
         
-        
-        // else all other type of labels 
-    try {
-        Path template = checkForCustomPath(getSystemLabelDirectory(), lz.lblz_file());
-        File f = template.toFile();
-        if(f.exists() && !f.isDirectory()) { 
-            String[] x = addMixedLabelTransaction(createDetRecord(),createRecord());
-            // get zpl string from file
-            BufferedReader fsr = new BufferedReader(new FileReader(f, StandardCharsets.UTF_8));
-            String line = "";
-            String concatline = "";
-            while ((line = fsr.readLine()) != null) {
-                concatline += line;
-            }
-            fsr.close();
-            // replace variables with values
-            concatline = concatline.replace("$PART", item);
-            concatline = concatline.replace("$CUSTPART", custitem);
-            concatline = concatline.replace("$SERIALNO", serialno_display);
-            concatline = concatline.replace("$QUANTITY", quantity);
-            concatline = concatline.replace("$DESCRIPTION", partdesc);
-            concatline = concatline.replace("$CUSTCODE", billto);
-            concatline = concatline.replace("$PART", "");
-            concatline = concatline.replace("$ADDRNAME", "");
-            concatline = concatline.replace("$REV", revnbr);
-            concatline = concatline.replace("$PONUMBER", ponbr);
-            concatline = concatline.replace("$REF", ref);
-            concatline = concatline.replace("$SONBR", ordernbr);
-            concatline = concatline.replace("$SOLINE", linenbr);
-            concatline = concatline.replace("$CARRIER", carrier);
-            concatline = concatline.replace("$SITENAME", sitename);
-            concatline = concatline.replace("$SITEADDR", siteaddr);
-            concatline = concatline.replace("$SITEPHONE", sitephone);
-            concatline = concatline.replace("$SITECSZ", sitecitystatezip);
-            concatline = concatline.replace("$SHIPNAME", shipname);
-            concatline = concatline.replace("$SHIPADDR1", shipaddr1);
-            concatline = concatline.replace("$SHIPADDR2", shipaddr2);
-            concatline = concatline.replace("$SHIPZIP", shipzip);
-            concatline = concatline.replace("$SHIPCSZ", shipcsz);
-            java.util.Date now = new java.util.Date();
-            DateFormat dfdate = new SimpleDateFormat("MM/dd/yyyy");
-            DateFormat dftime = new SimpleDateFormat("hh:mm");
-            concatline = concatline.replace("$TODAYDATE", dfdate.format(now));
-            concatline = concatline.replace("$TODAYTIME", dftime.format(now));
-
-            OVData.printLabelStream(concatline, ddprinter.getSelectedItem().toString());
-
-
-             initvars(null);
-        } else {
-            bsmf.MainFrame.show(getMessageTag(1142,template.toString()));
+        if (! tbref.getText().isEmpty()) {
+        ref = tbref.getText();
         }
+             
+        
+        try {
 
+            String cust = cusData.getCustFromOrder(tbordnbr.getText());
+          //  String label = cusData.getCustLabel(cust);
+         //  label  = (label.isBlank()) ? "sscc19J" : label; 
+
+            String label = "sscc18J";
+            label_zebra lz = getLabelZebraMstr(new String[]{label});
+
+            labelname = label;
+
+            serialno = OVData.getNextNbr("label");
+            serialno_str = String.valueOf(serialno);
+            serialno_display = checkDigitUCC18(serialno);
+
+             // ok....apparently we have a label/printer match.... lets create the label_mstr record for this label
+            addLabelMstr(createRecord()); 
+
+        if (lz.lblz_code().toLowerCase().equals("sscc18j")) {
+            printSSCC18J(tbordnbr.getText(), tbline.getText(), serialno_display, tbref.getText(), tbqty.getText());
+            return;
+        }
 
         } catch (Exception e) {
         MainFrame.bslog(e);
         }
     }//GEN-LAST:event_btprintActionPerformed
 
-    private void btlookupOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupOrderActionPerformed
-        lookUpFrameOrder();
-    }//GEN-LAST:event_btlookupOrderActionPerformed
+    private void btlookupOrderLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupOrderLineActionPerformed
+        lookUpFrameOrderLine();
+    }//GEN-LAST:event_btlookupOrderLineActionPerformed
 
     private void btlookupLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupLineActionPerformed
         lookUpFrameLine();
     }//GEN-LAST:event_btlookupLineActionPerformed
 
-    private void btadditemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btadditemActionPerformed
-        String[] x = getOrderLineInfo(tbordnbr.getText(), tbline.getText());
-        if (x == null) {
-            return;
-        }
-        for (int j = 0; j < itemtable.getRowCount(); j++) {
-             if (itemtable.getValueAt(j, 0).toString().equals(tbline.getText())) {
-                 bsmf.MainFrame.show("line item already added");
-                 return;
-             } 
-         }
-        itemmodel.addRow(new Object[]{ tbline.getText(), x[0], x[1], x[2], tbqty.getText() }); 
-    }//GEN-LAST:event_btadditemActionPerformed
-
-    private void btdeleteitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteitemActionPerformed
-        int[] rows = itemtable.getSelectedRows();
-        for (int i : rows) {
-            bsmf.MainFrame.show(getMessageTag(1031,String.valueOf(i)));
-            ((javax.swing.table.DefaultTableModel) itemtable.getModel()).removeRow(i);
-            
-        }
-    }//GEN-LAST:event_btdeleteitemActionPerformed
-
-    private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
-        initvars(null);
-    }//GEN-LAST:event_btclearActionPerformed
-
-    private void btnoprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnoprintActionPerformed
-        if (! validateInput()) {
-            return;
-        }
-        
-        
-        
-        quantity = tbqty.getText();
-        ref = tbref.getText();
-        int nbroflabels = Integer.valueOf(tblblqty.getText());
-        String cust = cusData.getCustFromOrder(tbordnbr.getText());
-        String label = cusData.getCustLabel(cust);
-        label  = (label.isBlank()) ? "generic" : label; 
-        label_zebra lz = getLabelZebraMstr(new String[]{label});
-        labelname = label;
-        serialno = OVData.getNextNbr("label");
-        serialno_str = String.valueOf(serialno);
-       // bsmf.MainFrame.show(lz.lblz_code() + "/" + lz.lblz_type());
-        if (lz.lblz_type().toLowerCase().equals("ucc")) {
-            serialno_display = checkDigitUCC18(serialno);
-        } else {
-            serialno_display = serialno_str;
-        }
-        
-        String[] x = addMixedLabelTransaction(createDetRecord(),createRecord());
-        if (x[0].equals("0")) {
-            bsmf.MainFrame.show("Record added");
-        } else {
-            bsmf.MainFrame.show("Unable to add label record..." + x[1]);
-        }
-        initvars(null);
-        
-    }//GEN-LAST:event_btnoprintActionPerformed
-
-    private void tblineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tblineActionPerformed
-       if (! tbordnbr.getText().isBlank() && ! tbline.getText().isBlank()) {
-       String[] info = getOrderLineInfo(tbordnbr.getText(), tbline.getText());
-       tbqty.setText(info[2]);
-       lblitem.setText(info[0] + " " + info[1]);
-       }
-    }//GEN-LAST:event_tblineActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btadditem;
-    private javax.swing.JButton btclear;
-    private javax.swing.JButton btdeleteitem;
     private javax.swing.JButton btlookupLine;
-    private javax.swing.JButton btlookupOrder;
-    private javax.swing.JButton btnoprint;
+    private javax.swing.JButton btlookupOrderLine;
     private javax.swing.JButton btprint;
-    private javax.swing.JComboBox ddprinter;
-    private javax.swing.JTable itemtable;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JLabel lblcust;
     private javax.swing.JLabel lblitem;
-    private javax.swing.JLabel lblship;
     private javax.swing.JLabel lblstatus;
-    private javax.swing.JTextField tblblqty;
     private javax.swing.JTextField tbline;
     private javax.swing.JTextField tbordnbr;
     private javax.swing.JTextField tbqty;

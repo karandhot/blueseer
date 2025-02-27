@@ -17584,7 +17584,7 @@ return mystring;
         }
     }    
     
-    public static void printSSCC18J(String order, String line, String serialno) {
+    public static void printSSCC18J(String order, String line, String serialno, String reference, String qty) {
         try{
              
             Connection con = null;
@@ -17645,6 +17645,8 @@ return mystring;
                 hm.put("mynbr",  order);
                 hm.put("myline",  line);
                 hm.put("mydate",  now);
+                hm.put("reference",  reference); 
+                hm.put("quantity",  qty);
                 hm.put("serialno",  serialno);
                 hm.put("site_csz", site_csz);
                 hm.put("bill_csz", bill_csz);

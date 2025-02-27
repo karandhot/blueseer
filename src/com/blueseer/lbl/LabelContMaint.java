@@ -751,7 +751,8 @@ if (lz.lblz_type().toLowerCase().equals("ucc")) {
 
 // if sscc18J type label
         if (lz.lblz_code().toLowerCase().equals("sscc18j")) {
-            printSSCC18J(tbordnbr.getText(), tbline.getText(), serialno_display);
+           // printSSCC18J(tbordnbr.getText(), tbline.getText(), serialno_display, tbref.getText(), tbqty.getText());
+            bsmf.MainFrame.show("Customer has sscc18J label assignment.  sscc18J label format only supported by Pallet Label Maint");
             return;
         }
 
