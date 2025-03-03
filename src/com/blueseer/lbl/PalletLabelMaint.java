@@ -156,6 +156,30 @@ String carrier = "";
         setLanguageTags(this);
     }
 
+    public boolean validateInput() {
+        Pattern p = Pattern.compile("^[1-9]\\d*$");
+        Matcher m = p.matcher(tbqty.getText());
+        if (!m.find() || tbqty.getText() == null) {
+            bsmf.MainFrame.show(getMessageTag(1026));
+            tbqty.requestFocus();
+           return false;
+        }
+        
+        
+        if (tbordnbr.getText().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1024));
+            tbordnbr.requestFocus();
+            return false;
+        }
+        if (tbline.getText().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1024));
+            tbline.requestFocus();
+            return false;
+        }
+        
+        return true;
+    }
+    
     
     public void getSiteAddress(String site) {
         try {
@@ -431,9 +455,9 @@ String carrier = "";
     
     public label_mstr createRecord() { 
         java.util.Date now = new java.util.Date();
-        DateFormat dfdate = new SimpleDateFormat("MM/dd/yyyy");
-        DateFormat dftime = new SimpleDateFormat("hh:mm");
-        DateFormat dfdate2 = new SimpleDateFormat("yyyy-MM-dd");
+        
+        getOrderInfo(tbordnbr.getText(), tbline.getText());
+        
          label_mstr x = new label_mstr(null, 
                  serialno_str, 
                  item, 
@@ -446,7 +470,7 @@ String carrier = "";
                  billto,
                  ordernbr, 
                  linenbr, 
-                 ref, 
+                 tbref.getText(), 
                  lot, 
                  "0", 
                  "0", 
@@ -617,48 +641,13 @@ String carrier = "";
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
 
-        java.util.Date now = new java.util.Date();
-        DateFormat dfdate = new SimpleDateFormat("MM/dd/yyyy");
-        DateFormat dftime = new SimpleDateFormat("hh:mm");
-        DateFormat dfdate2 = new SimpleDateFormat("yyyy-MM-dd");
         
-        getOrderInfo(tbordnbr.getText(), tbline.getText());
-        
-        
-        
-        
-        quantity = tbqty.getText();
-        
-        Pattern p = Pattern.compile("^[1-9]\\d*$");
-        Matcher m = p.matcher(tbqty.getText());
-        if (!m.find() || tbqty.getText() == null) {
-            bsmf.MainFrame.show(getMessageTag(1026));
-            tbqty.requestFocus();
-           return;
-        }
-        
-        
-        if (tbordnbr.getText().isEmpty()) {
-            bsmf.MainFrame.show(getMessageTag(1024));
-            tbordnbr.requestFocus();
+        if (! validateInput()) {
             return;
         }
-        if (tbline.getText().isEmpty()) {
-            bsmf.MainFrame.show(getMessageTag(1024));
-            tbline.requestFocus();
-            return;
-        }
-        
-        if (! tbref.getText().isEmpty()) {
-        ref = tbref.getText();
-        }
-             
+       
         
         try {
-
-            String cust = cusData.getCustFromOrder(tbordnbr.getText());
-          //  String label = cusData.getCustLabel(cust);
-         //  label  = (label.isBlank()) ? "sscc19J" : label; 
 
             String label = "sscc18J";
             label_zebra lz = getLabelZebraMstr(new String[]{label});
@@ -672,10 +661,9 @@ String carrier = "";
              // ok....apparently we have a label/printer match.... lets create the label_mstr record for this label
             addLabelMstr(createRecord()); 
 
-        if (lz.lblz_code().toLowerCase().equals("sscc18j")) {
-            printSSCC18J(tbordnbr.getText(), tbline.getText(), serialno_display, tbref.getText(), tbqty.getText());
-            return;
-        }
+            if (lz.lblz_code().toLowerCase().equals("sscc18j")) {
+                printSSCC18J(tbordnbr.getText(), tbline.getText(), serialno_display, tbref.getText(), tbqty.getText());
+            }
 
         } catch (Exception e) {
         MainFrame.bslog(e);
