@@ -95,9 +95,11 @@ using maven to build the application, you will first need to download the maven 
 1. Download the blueseer source from github. You can either 'git clone https://github.com/BlueSeerERP/blueseer.git' or download the zipped version of Blueseer from github.com/BlueseerERP and extract the contents into a directory called 'blueseer').
 2. Open a powershell prompt and cd to the blueseer directory
 3. Type the below mvn command and press Enter:
+</br>
 mvn package dependency:copy-dependencies -DoutputDirectory="./target/lib"
 4.  cd to the newly created target directory
 5.  type the below java command to bring up an instance of blueseer:
+</br>
 java -classpath ".;lib/*" bsmf.MainFrame
 </br>
 
