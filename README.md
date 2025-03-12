@@ -88,6 +88,20 @@ To use Netbeans, you will first need to download the Netbeans IDE (version 12 or
 7. You should now be able to build and run the application. The default login credentials are 'admin' and 'admin' respectively.
 </br>
 
+<h2>Using Maven</h2>
+
+using maven to build the application, you will first need to download the maven build tool and install.  Make sure the mvn executable is in your Environment Variables.  Once you have maven installed, the following steps can be used to compile BlueSeer and bring up a test instance of the applicatoin:
+
+1. Download the blueseer source from github. You can either 'git clone https://github.com/BlueSeerERP/blueseer.git' or download the zipped version of Blueseer from github.com/BlueseerERP and extract the contents into a directory called 'blueseer').
+2. Open a powershell prompt and cd to the blueseer directory
+3. Type the below mvn command and press Enter:
+mvn package dependency:copy-dependencies -DoutputDirectory="./target/lib"
+4.  cd to the newly created target directory
+5.  type the below java command to bring up an instance of blueseer:
+java -classpath ".;lib/*" bsmf.MainFrame
+</br>
+
+
 <h1>Contributing</h1>
 
 Here's a simple guide to contribute to the BlueSeer project:

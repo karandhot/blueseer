@@ -512,6 +512,8 @@
 
   <build>
 
+  <sourceDirectory>${basedir}/src</sourceDirectory>
+
 
   <resources>
   <resource>
