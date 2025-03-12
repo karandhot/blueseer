@@ -15,6 +15,7 @@
     <maven.compiler.release>17</maven.compiler.release>
   </properties>
 
+
 <repositories>
 	<repository>
                 <id>1_maven.apache.org</id>
@@ -45,10 +46,16 @@
   </dependencyManagement>
 
  
+
     
  
 
   <dependencies>
+  <dependency>
+    <groupId>${swt.groupId}</groupId>
+    <artifactId>${swt.artifactId}</artifactId>
+    <version>${swt.version}</version>
+  </dependency>
 
 <dependency>
     <groupId>javax.servlet</groupId>
@@ -122,7 +129,7 @@
 <dependency>
     <groupId>org.apache.commons</groupId>
     <artifactId>commons-collections4</artifactId>
-    <version>4.5.0-M3</version>
+    <version>4.0</version>
 </dependency>
 
 <dependency>
@@ -147,12 +154,6 @@
     <groupId>org.apache.commons</groupId>
     <artifactId>commons-lang3</artifactId>
     <version>3.17.0</version>
-</dependency>
-
-<dependency>
-    <groupId>commons-io</groupId>
-    <artifactId>commons-io</artifactId>
-    <version>2.18.0</version>
 </dependency>
 
 
@@ -411,67 +412,72 @@
     <version>1.7.0</version>
 </dependency>
 
+
+<dependency>
+    <groupId>org.eclipse.jetty</groupId>
+    <artifactId>jetty-servlet</artifactId>
+    <version>9.4.57.v20241219</version>
+</dependency>
+
 <dependency>
     <groupId>org.eclipse.jetty</groupId>
     <artifactId>jetty-http</artifactId>
-    <version>12.0.17</version>
+    <version>9.4.57.v20241219</version>
 </dependency>
 
 <dependency>
     <groupId>org.eclipse.jetty</groupId>
     <artifactId>jetty-io</artifactId>
-    <version>12.0.17</version>
+    <version>9.4.57.v20241219</version>
 </dependency>
 
 <dependency>
     <groupId>org.eclipse.jetty</groupId>
     <artifactId>jetty-security</artifactId>
-    <version>12.0.17</version>
+    <version>9.4.57.v20241219</version>
 </dependency>
 
 <dependency>
     <groupId>org.eclipse.jetty</groupId>
     <artifactId>jetty-server</artifactId>
-    <version>12.0.17</version>
+    <version>9.4.57.v20241219</version>
 </dependency>
 
-<!--
-<dependency>
-    <groupId>org.eclipse.jetty</groupId>
-    <artifactId>jetty-servlet</artifactId>
-    <version>11.0.24</version>
-</dependency>
--->
+
 <dependency>
     <groupId>org.eclipse.jetty</groupId>
     <artifactId>jetty-util</artifactId>
-    <version>12.0.17</version>
+    <version>9.4.57.v20241219</version>
 </dependency>
 
 <dependency>
     <groupId>org.eclipse.jetty</groupId>
     <artifactId>jetty-webapp</artifactId>
-    <version>11.0.24</version>
+    <version>9.4.57.v20241219</version>
 </dependency>
 
 <dependency>
     <groupId>org.eclipse.jetty</groupId>
     <artifactId>jetty-xml</artifactId>
-    <version>12.0.17</version>
+    <version>9.4.57.v20241219</version>
 </dependency>
 
 
 
+    
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+    </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <scope>test</scope>
     </dependency>
     <!-- Optionally: parameterized tests support -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -482,9 +488,39 @@
     <systemPath>${project.basedir}/lib/bsmf.jar</systemPath>
     </dependency>
 
+
+
   </dependencies>
 
+<profiles>
+  <profile>  
+    <id>windows</id>
+    <activation>
+      <os>
+        <name>Windows 10</name>
+        <arch>amd64</arch>
+      </os>
+    </activation>
+    <properties>
+      <swt.groupId>org.eclipse.platform</swt.groupId>
+      <swt.artifactId>org.eclipse.swt.win32.win32.x86_64</swt.artifactId>
+      <swt.version>3.129.0</swt.version>
+    </properties>
+  </profile>
+</profiles>
+
+
   <build>
+
+
+  <resources>
+  <resource>
+   <directory>src/resources</directory>
+   <targetPath>resources</targetPath>
+  </resource>
+  </resources>
+
+
     <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
       <plugins>
         <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
@@ -493,10 +529,12 @@
           <version>3.4.0</version>
         </plugin>
         <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
+<!--
         <plugin>
           <artifactId>maven-resources-plugin</artifactId>
           <version>3.3.1</version>
         </plugin>
+-->
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.13.0</version>
@@ -508,6 +546,9 @@
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
           <version>3.4.2</version>
+          <configuration>
+            <outputDirectory>./target/lib</outputDirectory>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
@@ -526,7 +567,191 @@
           <artifactId>maven-project-info-reports-plugin</artifactId>
           <version>3.6.1</version>
         </plugin>
+        <plugin>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+            <execution>
+            <id>copy-dependencies</id>
+               <phase>package</phase>
+               <goals>
+                <goal>copy-dependencies</goal>
+               </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/mylib</outputDirectory>
+            </configuration>
+            </execution>
+            </executions>
+        </plugin>
+        <plugin>
+            <artifactId>maven-resources-plugin</artifactId>
+            <executions>
+            <execution>
+               <id>copy-resources</id>
+               <phase>prepare-package</phase>
+               <goals>
+                <goal>copy-resources</goal>
+               </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/images</outputDirectory>
+		<resources>
+		<resource>
+		<directory>src/images</directory>
+		<filtering>false</filtering>
+		</resource>
+		</resources>
+            </configuration>
+            </execution>
+            <execution>
+               <id>copy-resources2</id>
+               <phase>prepare-package</phase>
+               <goals>
+                <goal>copy-resources</goal>
+               </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/data</outputDirectory>
+		<resources>
+		<resource>
+		<directory>sf/data</directory>
+		<filtering>false</filtering>
+		</resource>
+		</resources>
+            </configuration>
+            </execution>
+            <execution>
+               <id>copy-jasper</id>
+               <phase>prepare-package</phase>
+               <goals>
+                <goal>copy-resources</goal>
+               </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/jasper</outputDirectory>
+		<resources>
+		<resource>
+		<directory>sf/jasper</directory>
+		<filtering>false</filtering>
+		</resource>
+		</resources>
+            </configuration>
+            </execution>
+            <execution>
+               <id>copy-zebra</id>
+               <phase>prepare-package</phase>
+               <goals>
+                <goal>copy-resources</goal>
+               </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/zebra</outputDirectory>
+		<resources>
+		<resource>
+		<directory>sf/zebra</directory>
+		<filtering>false</filtering>
+		</resource>
+		</resources>
+            </configuration>
+            </execution>
+            <execution>
+               <id>copy-conf</id>
+               <phase>prepare-package</phase>
+               <goals>
+                <goal>copy-resources</goal>
+               </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/conf</outputDirectory>
+		<resources>
+		<resource>
+		<directory>sf/conf</directory>
+		<filtering>false</filtering>
+		</resource>
+		</resources>
+            </configuration>
+            </execution>
+            <execution>
+               <id>copy-edi</id>
+               <phase>prepare-package</phase>
+               <goals>
+                <goal>copy-resources</goal>
+               </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/edi</outputDirectory>
+		<resources>
+		<resource>
+		<directory>sf/edi</directory>
+		<filtering>false</filtering>
+		</resource>
+		</resources>
+            </configuration>
+            </execution>
+            <execution>
+               <id>copy-logs</id>
+               <phase>prepare-package</phase>
+               <goals>
+                <goal>copy-resources</goal>
+               </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/logs</outputDirectory>
+		<resources>
+		<resource>
+		<directory>sf/logs</directory>
+		<filtering>false</filtering>
+		</resource>
+		</resources>
+            </configuration>
+            </execution>
+            <execution>
+               <id>copy-attachments</id>
+               <phase>prepare-package</phase>
+               <goals>
+                <goal>copy-resources</goal>
+               </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/attachments</outputDirectory>
+		<resources>
+		<resource>
+		<directory>sf/attachments</directory>
+		<filtering>false</filtering>
+		</resource>
+		</resources>
+            </configuration>
+            </execution>
+            <execution>
+               <id>copy-temp</id>
+               <phase>prepare-package</phase>
+               <goals>
+                <goal>copy-resources</goal>
+               </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/temp</outputDirectory>
+		<resources>
+		<resource>
+		<directory>sf/temp</directory>
+		<filtering>false</filtering>
+		</resource>
+		</resources>
+            </configuration>
+            </execution>
+	    <execution>
+            <id>copy-bs.cfg</id>
+            <phase>prepare-package</phase>
+            <goals>
+                <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+                <outputDirectory>${basedir}./target</outputDirectory>
+                <resources>
+                    <resource>
+                        <directory>.</directory>
+                        <includes>
+                            <include>bs.cfg</include>
+                        </includes>
+                    </resource>
+                </resources>
+            </configuration>
+        </execution>
+            </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
+
+
 </project>
