@@ -25,6 +25,8 @@ SOFTWARE.
  */
 package com.blueseer.edi;
 
+import static com.blueseer.edi.EDIbs.dfdate;
+import static com.blueseer.edi.EDIbs.now;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.OVData.sendEmail;
 import static com.blueseer.utl.OVData.sendEmailwSession;
@@ -267,9 +269,10 @@ return r;
                 deleteFile = false;
                 if (listOfFiles[i].isFile()) {
                   if(listOfFiles[i].length() == 0) { 
-                  log.write(now + " " + listOfFiles[i].getName() + " zerosize" );
+                  log.write(now + " " + listOfFiles[i].getName() + " zerosize...leave for next event" );
                   log.write("\n");
-                  listOfFiles[i].delete();
+                 // listOfFiles[i].delete();
+                  continue;
                   } else { 
                   for (String[] s : trafficarray) {
                       if (listOfFiles[i].getName().matches(s[0])) {
