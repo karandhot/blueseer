@@ -399,7 +399,7 @@ public class OrderRpt extends javax.swing.JPanel {
             String headerkvpair = "";
             String detailkvpair = "";
             
-            String header = "Sales Order Number, PO Number, Order Create Date, PO/Order Date, Customer Name, Shipto ID, Shipto Name, DueDate, Order Line Number, Item Number, Item Description, Sku Number, AltItemNumber, UOM, Order Quantity, Order Price, Pack Qty, Header KVPair, Detail KVPair";
+            String header = "Sales Order Number, PO Number, Order Create Date, PO/Order Date, Customer Name, Shipto ID, Shipto Name, DueDate, Order Line Number, MSKU, Item Number, Item Description, Sku Number, AltItemNumber, UOM, Order Quantity, Order Price, Pack Qty, Header KVPair, Detail KVPair";
             output.write(header + "\n");
              
             try {
@@ -408,13 +408,13 @@ public class OrderRpt extends javax.swing.JPanel {
                     
                 res = st.executeQuery("select so_nbr, so_po, so_create_date, so_ord_date, " +
                         " cm_name, cms_plantcode, cms_name, so_due_date, " +
-                        " sod_line, sod_item, sod_desc, sod_custitem, sod_char1, " +
+                        " sod_line, sod_item, '' as msku, sod_desc, sod_custitem, sod_char1, " +
                         " sod_uom, sod_ord_qty, sod_netprice, sod_char2 from so_mstr " + 
                         " inner join sod_det on sod_nbr = so_nbr " +
                         " inner join cm_mstr on cm_code = so_cust " +
                         " inner join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
                         " where so_nbr = " + "'" + tablereport.getValueAt(i, 2).toString() + "'" + 
-                        " order by so_nbr;");
+                        " order by so_nbr by sod_line;");
                 int k = 0;
                 while (res.next()) {
                     k++;
