@@ -79,7 +79,7 @@ permissions functionality that's built into the BlueSeer framework.
 <h2>Using Apache Netbeans</h2>
 
 To use Netbeans, you will first need to download the Netbeans IDE (version 12 or higher). Once you have Netbeans installed, the following steps can be used to compile BlueSeer and bring up a test instance of the application :
-1. Download the blueseer source from github. You can either 'git clone https://github.com/BlueSeerERP/blueseer.git' or download the zipped version of Blueseer from github.com/BlueseerERP and extract the contents into a directory called 'blueseer').
+1. Download the blueseer source from github. You can either 'git clone https://github.com/BlueSeerERP/blueseer.git' or download the zipped version of Blueseer from github.com/BlueseerERP and extract the contents into a directory called 'blueseer'.
 2. Open a command prompt and cd to the install directory 'blueseer/test'. This will be your working/testing directory
 3. Type './refresh.bat' or ('./refresh.sh' for linux) to establish a test instance of the blueseer application along with the bs.cfg file and database instance
 4. Start Netbeans and choose 'Open Project' to open the blueseer project files.
@@ -88,11 +88,21 @@ To use Netbeans, you will first need to download the Netbeans IDE (version 12 or
 7. You should now be able to build and run the application. The default login credentials are 'admin' and 'admin' respectively.
 </br>
 
+<h2>Using Ant</h2>
+
+using Ant to build the application, you will first need to download the Ant build tool and install.  Make sure the ant executable is in your Environment Variables.  Once you have Ant installed, the following steps can be used to compile BlueSeer and bring up a test instance of the application:
+
+1. Download the blueseer source from github. You can either 'git clone https://github.com/BlueSeerERP/blueseer.git' or download the zipped version of Blueseer from github.com/BlueseerERP and extract the contents into a directory called 'blueseer'.
+2. Open a powershell prompt and cd to the blueseer directory
+3. type the following to compile: ant main
+4. type the following to run: ant run
+</br>
+
 <h2>Using Maven</h2>
 
-using maven to build the application, you will first need to download the maven build tool and install.  Make sure the mvn executable is in your Environment Variables.  Once you have maven installed, the following steps can be used to compile BlueSeer and bring up a test instance of the applicatoin:
+using maven to build the application, you will first need to download the maven build tool and install.  Make sure the mvn executable is in your Environment Variables.  Once you have maven installed, the following steps can be used to compile BlueSeer and bring up a test instance of the application:
 
-1. Download the blueseer source from github. You can either 'git clone https://github.com/BlueSeerERP/blueseer.git' or download the zipped version of Blueseer from github.com/BlueseerERP and extract the contents into a directory called 'blueseer').
+1. Download the blueseer source from github. You can either 'git clone https://github.com/BlueSeerERP/blueseer.git' or download the zipped version of Blueseer from github.com/BlueseerERP and extract the contents into a directory called 'blueseer'.
 2. Open a powershell prompt and cd to the blueseer directory
 3. type and execute: mvn package dependency:copy-dependencies -DoutputDirectory="./target/lib"
 4.  cd to the newly created target directory
