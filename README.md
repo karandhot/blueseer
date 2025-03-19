@@ -90,17 +90,18 @@ To use Netbeans, you will first need to download the Netbeans IDE (version 12 or
 
 <h2>Using Ant</h2>
 
-using Ant to build the application, you will first need to download the Ant build tool and install.  Make sure the ant executable is in your Environment Variables.  Once you have Ant installed, the following steps can be used to compile BlueSeer and bring up a test instance of the application:
+Pre-requisite: You will need the JDK (version 17 preferred) installed to run Ant.  You will then need to download the Ant build tool and install.  Make sure the ant executable is in your Environment Variables.  Once you have Ant installed, the following steps can be used to compile BlueSeer and bring up a test instance of the application:
 
 1. Download the blueseer source from github. You can either 'git clone https://github.com/BlueSeerERP/blueseer.git' or download the zipped version of Blueseer from github.com/BlueseerERP and extract the contents into a directory called 'blueseer'.
-2. Open a powershell prompt and cd to the blueseer directory
-3. type the following to compile: ant main
-4. type the following to run: ant run
+2. In the newly created blueseer directory, edit the build.xml file to adjust the location of your JDK17 (search the file for property name 'JDK17')
+3. Once you've updated the build.xml with your JDK17 path, open a powershell prompt and cd to the blueseer directory
+4. type the following to compile: ant main
+5. type the following to run: ant run
 </br>
 
 <h2>Using Maven</h2>
 
-using maven to build the application, you will first need to download the maven build tool and install.  Make sure the mvn executable is in your Environment Variables.  Once you have maven installed, the following steps can be used to compile BlueSeer and bring up a test instance of the application:
+Pre-requisite:  You will need the JDK (version 17 preferred) installed to run Maven.  You will then need to download the maven build tool and install.  Make sure the mvn executable is in your Environment Variables.  Once you have maven installed, the following steps can be used to compile BlueSeer and bring up a test instance of the application:
 
 1. Download the blueseer source from github. You can either 'git clone https://github.com/BlueSeerERP/blueseer.git' or download the zipped version of Blueseer from github.com/BlueseerERP and extract the contents into a directory called 'blueseer'.
 2. Open a powershell prompt and cd to the blueseer directory
