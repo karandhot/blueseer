@@ -1,156 +1,111 @@
 <?xml version="1.0"?>
 <project name="blueseer" default="main" basedir=".">
-    <property name="src.dir" location="../src" />
-    <property name="sf.dir" location="../sf" />
-    <property name="build.dir" location="../build" />
-    <property name="dist.dir" location="../dist" />
-    <property name="test.dir" location="../../wip/test" />
-    <property name="lib.dir" location="../lib" />
-    <property name="classpath.property" 
-	    value="dist/" />
-    <property name="JDK17dir" location="C:/java/jdk-17" />
-    <property name="javac17" location="${JDK17dir}/bin/javac" />
-    <property name="javaclinux" location="/opt/jdk-17/bin/javac" />
-    <property name="java17" location="${JDK17dir}/bin/java" />
-    <property name="java17l" location="/opt/jdk-17/bin/java" />
-    <property name="lang" value="en" />
-    <property name="country" value="US" />
+     <!-- Sets variables which can later be used. -->
+     <!-- The value of a property is accessed via ${} -->
+     <property name="src.dir" location="src" />
+     <property name="test.dir" location="test" />
+     <property name="build.dir" location="${test.dir}/build" />
+     <property name="dist.dir" location="${test.dir}/dist" />
+     <property name="lib.dir" location="lib" />
+     <property name="JDK17dir" location="/java/jdk-17" />
+     <property name="javac17" location="${JDK17dir}/bin/javac" />
+     <property name="java17" location="${JDK17dir}/bin/java" />
+     <property name="classpath.property"
+            value="${test.dir}/dist/" />
+
+     <path id="build.classpath">
+         <fileset dir="${lib.dir}">
+             <include name="**/*.jar" />
+         </fileset>
+     </path>
+
+      <path id="run.classpath">
+        <fileset dir="${test.dir}/dist" includes="*.jar"/>
+        <fileset dir="${test.dir}" includes="*.jar"/>
+     </path>
 
 
-    <path id="build.classpath">
-        <fileset dir="${lib.dir}">
-            <include name="**/*.jar" />
-        </fileset>
-    </path>
-    <path id="run.classpath">
-	<fileset dir="../dist" includes="*.jar"/>
-	<!-- <fileset dir="${test.dir}/edi/maps" includes="*.jar"/>  -->
-    </path>
+     <!-- Deletes the existing build, docs and dist directory-->
+     <target name="clean">
+         <delete dir="${build.dir}" />
+         <delete dir="${dist.dir}" />
+     </target>
 
-    <!-- Deletes the existing build, docs and dist directory-->
-    <target name="clean">
-        <delete dir="${build.dir}" />
-        <delete dir="${dist.dir}" />
-    </target>
+     <!-- Creates the  build, docs and dist directory-->
+     <target name="makedir">
+         <mkdir dir="${build.dir}" />
+         <mkdir dir="${dist.dir}" />
+         <copy todir="${dist.dir}" overwrite="true">
+          <fileset dir="${lib.dir}"/>
+          </copy>
+     </target>
 
-    <!-- Creates the  build, docs and dist directory-->
-    <target name="makedir">
-        <mkdir dir="${build.dir}" />
-        <mkdir dir="${dist.dir}" />
-	 <copy todir="${dist.dir}" overwrite="true">
-         <fileset dir="${lib.dir}"/>
-         </copy>
-    </target>
-
-    <!-- Compiles the java code (including the usage of library for JUnit -->
-    <target name="compile17" depends="clean, makedir">
-        <javac executable="${javac17}" fork="yes" srcdir="${src.dir}" destdir="${build.dir}" classpathref="build.classpath" includeantruntime="false" debug="true">
-        </javac>
-    </target>
-    <target name="compile23" depends="clean, makedir">
-        <javac executable="${javac23}" fork="yes" srcdir="${src.dir}" destdir="${build.dir}" classpathref="build.classpath" includeantruntime="false" debug="true">
-        </javac>
-    </target>
-    <target name="compilelinux" depends="clean, makedir">
-	    <javac  executable="${javaclinux}" fork="yes" srcdir="${src.dir}" destdir="${build.dir}" classpathref="build.classpath" includeantruntime="false" debug="true">
-        </javac>
-    </target>
+     <!-- Compiles the java code (including the usage of library for JUnit -->
+     <target name="compile" depends="clean, makedir">
+         <javac executable="${javac17}" fork="yes" srcdir="${src.dir}"
+destdir="${build.dir}" classpathref="build.classpath"
+includeantruntime="false" debug="true">
+         </javac>
+     </target>
 
 
-    <!-- refresh test database - windows -->
-<target name="refresh">
-        <delete dir="${test.dir}" />
-        <mkdir dir="${test.dir}" />
-	 <copy todir="${test.dir}" overwrite="true">
-         <fileset dir="${sf.dir}"/>
-         </copy>
-	<copy file="sqlite_test.bat" todir="${test.dir}" overwrite="true"/>
-	<copy file=".patch" todir="${test.dir}" overwrite="true"/>
-	<exec dir="${test.dir}" executable="cmd">
-		<arg line="/c sqlite_test.bat ${lang} ${country}" />
-	</exec>
-</target>
+     <!--Creates the deployable jar file  -->
+     <target name="jar" depends="compile">
+         <jar destfile="${dist.dir}\blueseer.jar" basedir="${build.dir}">
+                <fileset dir="${src.dir}"
+includes="images/**/*.png,images/**/*.gif,resources/**/*.properties" />
+                <!--    <fileset dir="${lib.dir}" includes="**/*.jar"/> -->
+             <manifest>
+                 <attribute name="Main-Class" value="bsmf" />
+             </manifest>
+         </jar>
+        <copy file="scripts/bs.cfg.us" tofile="${test.dir}/bs.cfg"
+overwrite="true"/>
+         <mkdir dir="${test.dir}/data" />
+         <copy todir="${test.dir}/data" overwrite="true">
+          <fileset dir="sf/data"/>
+          </copy>
+         <mkdir dir="${test.dir}/jasper" />
+         <copy todir="${test.dir}/jasper" overwrite="true">
+          <fileset dir="sf/jasper"/>
+          </copy>
+         <mkdir dir="${test.dir}/zebra" />
+         <copy todir="${test.dir}/zebra" overwrite="true">
+          <fileset dir="sf/zebra"/>
+          </copy>
+         <mkdir dir="${test.dir}/edi" />
+         <copy todir="${test.dir}/edi" overwrite="true">
+          <fileset dir="sf/edi"/>
+          </copy>
+         <mkdir dir="${test.dir}/conf" />
+         <copy todir="${test.dir}/conf" overwrite="true">
+          <fileset dir="sf/conf"/>
+          </copy>
+         <mkdir dir="${test.dir}/temp" />
+         <mkdir dir="${test.dir}/logs" />
+         <mkdir dir="${test.dir}/attachments" />
+         <mkdir dir="${test.dir}/custom" />
+     </target>
 
-    <!-- refresh test database - linux -->
-<target name="refreshl">
-        <delete dir="${test.dir}" />
-        <mkdir dir="${test.dir}" />
-	 <copy todir="${test.dir}" overwrite="true">
-         <fileset dir="${sf.dir}"/>
-         </copy>
-	<copy file="sqlite_test.sh" todir="${test.dir}" overwrite="true"/>
-	<copy file=".patch" todir="${test.dir}" overwrite="true"/>
-        <chmod file="${test.dir}/sqlite_test.sh" perm="777" />
-        <chmod file="${test.dir}/data/sqlite3" perm="777" />
-	<exec dir="${test.dir}" executable="./sqlite_test.sh ${lang}">
-	</exec>
-</target>
 
-<target name="patch">
-	<exec executable="cmd"> <arg line="/c git rev-parse HEAD >.patch"/>
-	</exec>
-</target>
 
 <target name="run">
-    <path id="runtime.path">
-	    <fileset dir="../dist" includes="*.jar"/>
-    </path>
-    <echo>running target run ....${test.dir}</echo>
-    <java classname="bsmf.MainFrame" jvm="${java17}" fork="true" classpathref="run.classpath" dir="${test.dir}">
-	    <arg value="-debug"/> 
-	    <jvmarg value="-Djava.util.logging.config.file=bslogging.properties"/>
-        </java>
+     <path id="runtime.path">
+            <fileset dir="${test.dir}/dist" includes="*.jar"/>
+           <!-- <fileset dir="lib" includes="*.jar"/> -->
+     </path>
+     <echo>running in ....${test.dir}</echo>
+    <java classname="bsmf.MainFrame" jvm="${java17}" fork="true"
+classpathref="runtime.path" dir="${test.dir}">
+            <arg value="-debug"/>
+            <jvmarg
+value="-Djava.util.logging.config.file=bslogging.properties"/>
+         </java>
 </target>
-<target name="test">
-    <path id="runtime.path">
-	    <fileset dir="../dist" includes="*.jar"/>
-    </path>
-    <echo>running target test ....${test.dir}</echo>
-    <java classname="utilities.bsTestRunner" jvm="${java17}" fork="true" classpathref="run.classpath" dir="${test.dir}">
-	    <arg value="-debug"/> 
-	    <jvmarg value="-Djava.util.logging.config.file=bslogging.properties"/>
-        </java>
-</target>
-<target name="run17">
-    <path id="runtime.path">
-	    <fileset dir="." includes="*.properties"/>
-	    <fileset dir="../dist" includes="*.jar"/>
-	    <fileset dir="${test.dir}/edi/maps" includes="*.jar"/>
-    </path>
-    <echo>running in ....${test.dir}</echo>
-    <java classname="bsmf.MainFrame" jvm="${java17}" fork="true" classpathref="run.classpath" dir="${test.dir}">
-	    <arg value="-debug"/> 
-	    <jvmarg value="-Duser.language=${l}"/>
-	    <jvmarg value="-Duser.country=${c}"/>
-	    <jvmarg value="-Djava.util.logging.config.file=bslogging.properties"/>
-        </java>
-</target>
-<target name="runl">
-    <path id="runtime.path">
-	    <fileset dir="../dist" includes="*.jar"/>
-	    <!--  <fileset dir="../lib" includes="*.jar"/> -->
-	    <fileset dir="${test.dir}/edi/maps" includes="*.jar"/>
-    </path>
-    <echo>running in ....${test.dir}</echo>
-    <java classname="bsmf.MainFrame" jvm="${java17l}" fork="true" classpathref="run.classpath" dir="${test.dir}">
-	    <arg value="-debug"/> 
-	    <jvmarg value="-Djava.util.logging.config.file=bslogging.properties"/>
-        </java>
-</target>
- <target name="print-classpath">
-	<pathconvert property="classpathInName" refid="run.classpath" />
-	<echo>Classpath is ${classpathInName}</echo>
- </target>
 
 
-    <target name="main" depends="compile17, jar">
-        <description>Main target</description>
-    </target>
-    <target name="mainl" depends="compilelinux, jar">
-        <description>Main target</description>
-    </target>
-    <target name="main23" depends="compile23, jar">
-        <description>Main target</description>
-    </target>
+     <target name="main" depends="compile, jar">
+         <description>Main target</description>
+     </target>
 
 </project>
