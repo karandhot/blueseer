@@ -743,7 +743,7 @@
                     <resource>
 			    <directory>./scripts</directory>
                         <includes>
-                            <include>bs.cfg</include>
+                            <include>bs.cfg.us</include>
                         </includes>
                     </resource>
                 </resources>
