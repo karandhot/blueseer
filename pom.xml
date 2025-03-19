@@ -741,7 +741,7 @@
                 <outputDirectory>${basedir}./target</outputDirectory>
                 <resources>
                     <resource>
-                        <directory>.</directory>
+			    <directory>./scripts</directory>
                         <includes>
                             <include>bs.cfg</include>
                         </includes>
