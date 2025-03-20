@@ -50,6 +50,7 @@ import static com.blueseer.ord.ordData.getOrderItemAllocatedQty;
 import static com.blueseer.ord.ordData.getOrderLines;
 import static com.blueseer.ord.ordData.getOrderMstrSet;
 import static com.blueseer.ord.ordData.getSOMetaNotes;
+import static com.blueseer.ord.ordData.isDuplicatePO;
 import com.blueseer.ord.ordData.salesOrder;
 import com.blueseer.ord.ordData.sod_det;
 import com.blueseer.ord.ordData.so_mstr;
@@ -92,6 +93,7 @@ import static com.blueseer.utl.BlueSeerUtils.xZero;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerT;
 import static com.blueseer.utl.OVData.getPackQtyForItem;
+import static com.blueseer.utl.OVData.getSysMetaValue;
 import static com.blueseer.utl.OVData.isVoucherShippingSO;
 
 import java.awt.Color;
@@ -843,7 +845,13 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             return false;
         }
 
-
+        String SuppressDuplicate = getSysMetaValue("system", "ordercontrol", "suppressduplicate");
+        if (! SuppressDuplicate.isBlank() && SuppressDuplicate.equals("1")) {
+            if (isDuplicatePO(ddcust.getSelectedItem().toString(), ponbr.getText())) {
+                bsmf.MainFrame.show(getMessageTag(1197));
+                return false;
+            }
+        }
 
         terms = cusData.getCustTerms(ddcust.getSelectedItem().toString());
         arcc = cusData.getCustSalesCC(ddcust.getSelectedItem().toString());
