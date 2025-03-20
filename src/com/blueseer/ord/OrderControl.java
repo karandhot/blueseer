@@ -290,6 +290,9 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
             if (s[0].equals("uom_pricing")) {
                 cbuompricing.setSelected(BlueSeerUtils.ConvertStringToBool(s[1]));  
             }
+            if (s[0].equals("suppressduplicate")) {
+                cbsuppressdup.setSelected(BlueSeerUtils.ConvertStringToBool(s[1]));  
+            }
         } 
     }
     
@@ -304,6 +307,7 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
           OVData.addUpdateSysMeta("system", "ordercontrol", "autoconfirm", BlueSeerUtils.boolToString(cbautoconfirm.isSelected())); 
           OVData.addUpdateSysMeta("system", "ordercontrol", "edita_to_notes", BlueSeerUtils.boolToString(cbedita.isSelected()));  
           OVData.addUpdateSysMeta("system", "ordercontrol", "uom_pricing", BlueSeerUtils.boolToString(cbuompricing.isSelected()));
+          OVData.addUpdateSysMeta("system", "ordercontrol", "suppressduplicate", BlueSeerUtils.boolToString(cbsuppressdup.isSelected())); 
       
     }
     
@@ -338,6 +342,7 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
         cbautoconfirm = new javax.swing.JCheckBox();
         cbedita = new javax.swing.JCheckBox();
         cbuompricing = new javax.swing.JCheckBox();
+        cbsuppressdup = new javax.swing.JCheckBox();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -452,6 +457,8 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
 
         cbuompricing.setText("Enforce UOM Pricing?");
 
+        cbsuppressdup.setText("Suppress PO Duplication");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -472,8 +479,9 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
                             .addComponent(cbvouchershipping)
                             .addComponent(cbautoconfirm)
                             .addComponent(cbedita)
-                            .addComponent(cbuompricing))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 51, Short.MAX_VALUE)
+                            .addComponent(cbuompricing)
+                            .addComponent(cbsuppressdup))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 43, Short.MAX_VALUE)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(btupdate)
@@ -514,7 +522,9 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
                         .addComponent(cbedita)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cbuompricing)
-                        .addGap(0, 4, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cbsuppressdup)
+                        .addGap(0, 7, Short.MAX_VALUE)))
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -571,6 +581,7 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
     private javax.swing.JCheckBox cbexceedQOHU;
     private javax.swing.JCheckBox cbsrvmitemdefault;
     private javax.swing.JCheckBox cbsrvmtype;
+    private javax.swing.JCheckBox cbsuppressdup;
     private javax.swing.JCheckBox cbuompricing;
     private javax.swing.JCheckBox cbvouchershipping;
     private javax.swing.JLabel jLabel1;

@@ -52,8 +52,9 @@
                               <Component id="cbautoconfirm" min="-2" max="-2" attributes="0"/>
                               <Component id="cbedita" min="-2" max="-2" attributes="0"/>
                               <Component id="cbuompricing" min="-2" max="-2" attributes="0"/>
+                              <Component id="cbsuppressdup" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="51" max="32767" attributes="0"/>
+                          <EmptySpace pref="43" max="32767" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
                               <Component id="btupdate" min="-2" max="-2" attributes="0"/>
@@ -100,7 +101,9 @@
                           <Component id="cbedita" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="cbuompricing" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="0" pref="4" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="cbsuppressdup" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="0" pref="7" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
@@ -288,6 +291,11 @@
         <Component class="javax.swing.JCheckBox" name="cbuompricing">
           <Properties>
             <Property name="text" type="java.lang.String" value="Enforce UOM Pricing?"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JCheckBox" name="cbsuppressdup">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Suppress PO Duplication"/>
           </Properties>
         </Component>
       </SubComponents>
