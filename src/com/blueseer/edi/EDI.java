@@ -50,6 +50,7 @@ import com.blueseer.ord.ordData;
 import static com.blueseer.ord.ordData.addOrderChangeTransaction;
 import static com.blueseer.ord.ordData.addOrderTransaction;
 import static com.blueseer.ord.ordData.addUpdateSOMetaNotes;
+import static com.blueseer.ord.ordData.isDuplicatePO;
 import com.blueseer.ord.ordData.so_mstr;
 import com.blueseer.pur.purData;
 import com.blueseer.pur.purData.po_mstr;
@@ -3496,6 +3497,17 @@ public class EDI {
     
     public static String[] createSOFrom850(edi850 e, String[] control) {
         String[] m = new String[]{"",""};
+        
+        // check for duplication PO
+        String SuppressDuplicate = getSysMetaValue("system", "ordercontrol", "suppressduplicate");
+        if (! SuppressDuplicate.isBlank() && SuppressDuplicate.equals("1")) {
+            if (isDuplicatePO(e.ov_billto, e.po)) {
+                m[0] = "1";
+                m[1] = "duplicate PO for this BillTo/PO: " + e.ov_billto + "/" + e.po;
+                return m;
+            }
+        }
+        
         int sonbr = OVData.getNextNbr("order");
         String shipto;
         
