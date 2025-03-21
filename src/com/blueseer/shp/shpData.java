@@ -1496,6 +1496,9 @@ public class shpData {
         
         // get carrier/vendor apinfo
          // addr, acct, cc, currency, bank, terms, site
+        if (si[8].isBlank()) { // if shipvia is blank
+            return;
+        }
         String[] v = getVendInfo(si[8]);
         Date duedate = OVData.getDueDateFromTerms(parseDate(si[5]), v[5]);
         String strduedate = setDateDB(effdate); // as default...in case no duedate terms
