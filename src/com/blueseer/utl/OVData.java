@@ -129,6 +129,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSetMetaData;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -15437,6 +15438,9 @@ return mystring;
     /* start ar related functions */
     public static Date getDueDateFromTerms(Date effdate, String terms) {
            Date duedate = new Date();
+           LocalDate localeffdate = effdate.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
            
            try{
             
@@ -15451,7 +15455,17 @@ return mystring;
             try{
                 res = st.executeQuery("select * from cust_term where cut_code = " + "'" + terms + "'" + " ;");
                while (res.next()) {
+                    if (res.getString("cut_code").equals("EOM")) {
+                     localeffdate = localeffdate.withDayOfMonth(
+                                localeffdate.getMonth().length(localeffdate.isLeapYear()));   
+                     duedate = Date.from(localeffdate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                    } else if (res.getString("cut_code").equals("FOM")) {
+                      localeffdate = localeffdate.withMonth(localeffdate.getMonthValue() + 1)
+                                                 .withDayOfMonth(1);
+                      duedate = Date.from(localeffdate.atStartOfDay(ZoneId.systemDefault()).toInstant());  
+                    } else {
                     duedate = DateUtils.addDays(effdate,res.getInt("cut_days"));
+                    }
                 }
                
            }

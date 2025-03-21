@@ -116,6 +116,7 @@ public class BillBrowse extends javax.swing.JPanel {
                             getGlobalColumnTag("detail"), 
                             getGlobalColumnTag("number"), 
                             getGlobalColumnTag("customer"), 
+                            getGlobalColumnTag("name"),
                             getGlobalColumnTag("invdate"), 
                             getGlobalColumnTag("nextbilldate"), 
                             getGlobalColumnTag("status"), 
@@ -833,7 +834,8 @@ public class BillBrowse extends javax.swing.JPanel {
                 
                       //must be type balance sheet
                  if (cbactive.isSelected()) {
-                  res = st.executeQuery("select bill_nbr, bill_acctstatus, bill_cust, bill_servicedate, bill_nextbilldate, sum(billd_qty) as 'qty', sum(billd_qty * billd_netprice) as 'price' from bill_mstr " +
+                  res = st.executeQuery("select bill_nbr, bill_acctstatus, bill_cust, cm_name, bill_servicedate, bill_nextbilldate, sum(billd_qty) as 'qty', sum(billd_qty * billd_netprice) as 'price' from bill_mstr " +
+                        " inner join cm_mstr on cm_code = bill_cust " +
                         " inner join bill_det on billd_nbr = bill_nbr where " +
                         " bill_nbr >= " + "'" + nbrfrom + "'" + " AND " +
                         " bill_nbr <= " + "'" + nbrto + "'" + " AND " +
@@ -844,7 +846,8 @@ public class BillBrowse extends javax.swing.JPanel {
                         " bill_acctstatus <> " + "'" + getGlobalProgTag("closed") + "'" +
                         " group by bill_nbr, bill_acctstatus, bill_cust, bill_servicedate, bill_nextbilldate;");
                  } else {
-                    res = st.executeQuery("select bill_nbr, bill_acctstatus, bill_cust, bill_servicedate, bill_nextbilldate, sum(billd_qty) as 'qty', sum(billd_qty * billd_netprice) as 'price' from bill_mstr " +
+                    res = st.executeQuery("select bill_nbr, bill_acctstatus, bill_cust, cm_name, bill_servicedate, bill_nextbilldate, sum(billd_qty) as 'qty', sum(billd_qty * billd_netprice) as 'price' from bill_mstr " +
+                        " inner join cm_mstr on cm_code = bill_cust " +
                         " inner join bill_det on billd_nbr = bill_nbr where " +
                         " bill_nbr >= " + "'" + nbrfrom + "'" + " AND " +
                         " bill_nbr <= " + "'" + nbrto + "'" + " AND " +
@@ -862,6 +865,7 @@ public class BillBrowse extends javax.swing.JPanel {
                          mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, BlueSeerUtils.clickbasket, 
                                bsNumber(res.getString("bill_nbr")),
                                 res.getString("bill_cust"),
+                                res.getString("cm_name"),
                                 getDateDB(res.getString("bill_servicedate")),
                                 getDateDB(res.getString("bill_nextbilldate")),
                                 res.getString("bill_acctstatus"),
