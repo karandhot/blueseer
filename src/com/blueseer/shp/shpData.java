@@ -1496,7 +1496,7 @@ public class shpData {
         
         // get carrier/vendor apinfo
          // addr, acct, cc, currency, bank, terms, site
-        if (si[8].isBlank()) { // if shipvia is blank
+        if (si[8] == null || si[8].isBlank()) { // if shipvia is blank
             return;
         }
         String[] v = getVendInfo(si[8]);
