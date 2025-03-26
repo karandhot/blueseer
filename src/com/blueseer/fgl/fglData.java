@@ -1154,6 +1154,77 @@ public class fglData {
     
     // misc functions
     
+    public static boolean isAcctNumberValid(String acct) {
+       boolean r = false;
+       try{
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            PreparedStatement ps = null;
+            ResultSet res = null;
+            try{
+                String sql = "SELECT ac_id FROM ac_mstr where ac_id = ? ;";
+                ps = con.prepareStatement(sql);
+                ps.setString(1, acct);
+                res = ps.executeQuery();
+                if (res.isBeforeFirst()) {
+                     r = true;
+                }
+           }
+            catch (SQLException s){
+               MainFrame.bslog(s);
+               bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) res.close();
+                if (ps != null) ps.close();
+                if (con != null) con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+       return r;
+    }     
+
+    public static boolean isCostCenterValid(String cc) {
+       boolean r = false;
+       try{
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            PreparedStatement ps = null;
+            ResultSet res = null;
+            try{
+                String sql = "SELECT dept_id FROM dept_mstr where dept_id = ? ;";
+                ps = con.prepareStatement(sql);
+                ps.setString(1, cc);
+                res = ps.executeQuery();
+                if (res.isBeforeFirst()) {
+                     r = true;
+                }
+           }
+            catch (SQLException s){
+               MainFrame.bslog(s);
+               bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) res.close();
+                if (ps != null) ps.close();
+                if (con != null) con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+       return r;
+    }     
+    
+    
     public static String getAccountBalanceReport(String[] key) {
         int year = Integer.valueOf(key[0]); 
         int period = Integer.valueOf(key[1]);

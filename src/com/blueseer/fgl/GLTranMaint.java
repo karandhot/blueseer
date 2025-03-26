@@ -1456,11 +1456,11 @@ public class GLTranMaint extends javax.swing.JPanel {
             return;
          }
        
-        if (! OVData.isAcctNumberValid(ddacct.getSelectedItem().toString()) ) {
+        if (! fglData.isAcctNumberValid(ddacct.getSelectedItem().toString()) ) {
             bsmf.MainFrame.show(getMessageTag(1026));
             return;
         }
-        if (! OVData.isCostCenterValid(ddcc.getSelectedItem().toString()) ) {
+        if (! fglData.isCostCenterValid(ddcc.getSelectedItem().toString()) ) {
             bsmf.MainFrame.show(getMessageTag(1048));
             return;
         }

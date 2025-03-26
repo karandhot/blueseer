@@ -1179,11 +1179,11 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
             tbdesc.requestFocus();
             canproceed = false;
         }
-        if (! OVData.isAcctNumberValid(tbacct.getText()) ) {
+        if (! fglData.isAcctNumberValid(tbacct.getText()) ) {
             bsmf.MainFrame.show(getMessageTag(1026));
             canproceed = false;
         }
-        if (! OVData.isCostCenterValid(tbcc.getText()) ) {
+        if (! fglData.isCostCenterValid(tbcc.getText()) ) {
             bsmf.MainFrame.show(getMessageTag(1026));
             canproceed = false;
         }
