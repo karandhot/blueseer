@@ -33,7 +33,7 @@
 	end from shs_det where shs_nbr = $P{myid} and shs_amttype = 'amount' and shs_type = 'tax'
 ) as taxes,
 sh_cust, sh_confdate, sh_shipvia, sh_bol, sh_ref, sh_rmks, 
-sh_boxes, sh_pallets, shd_po, shd_item, shd_custitem, 
+sh_boxes, sh_pallets, shd_po, shd_item, shd_custitem, shd_desc,
 shd_serial, shd_cont, shd_qty, shd_netprice, shd_listprice, shd_uom, 
 shd_taxamt, shd_taxpercent, cm_code, cm_name, cm_line1, 
 cm_line2, 
@@ -83,6 +83,7 @@ where shd_id =  $P{myid}]]>
 	<field name="shd_uom" class="java.lang.String"/>
 	<field name="sh_trailer" class="java.lang.String"/>
 	<field name="ar_duedate" class="java.lang.String"/>
+	<field name="shd_desc" class="java.lang.String"/>
 	<variable name="mysum" class="java.lang.Double" calculation="Sum">
 		<variableExpression><![CDATA[$F{shd_qty}]]></variableExpression>
 	</variable>
@@ -408,6 +409,13 @@ where shd_id =  $P{myid}]]>
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA["UOM: " + $F{shd_uom}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="20" y="16" width="231" height="16" uuid="6ed8ab93-22d1-4706-a12b-7deb80e915ed"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{shd_desc}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
