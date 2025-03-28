@@ -791,6 +791,10 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             return false;
         }
         
+        if (x.delete.name().equals("delete")) {  // maintain order after canupdate check
+            return true;
+        }
+        
         Map<String,Integer> f = OVData.getTableInfo(new String[]{"so_mstr"});
         int fc;
 

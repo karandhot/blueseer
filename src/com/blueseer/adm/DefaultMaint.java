@@ -31,6 +31,7 @@ import static bsmf.MainFrame.tags;
 import static com.blueseer.adm.admData.addUpdateOVMstr;
 import static com.blueseer.adm.admData.getOVMstr;
 import com.blueseer.adm.admData.ov_mstr;
+import com.blueseer.fgl.fglData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.checkLength;
 import com.blueseer.utl.BlueSeerUtils.dbaction;
@@ -252,7 +253,7 @@ public class DefaultMaint extends javax.swing.JPanel implements IBlueSeerc {
             return false;
         }
              
-        if (! OVData.isCostCenterValid(tbcc.getText())) {
+        if (! fglData.isCostCenterValid(tbcc.getText())) {
             bsmf.MainFrame.show(getMessageTag(1026));
             tbcc.requestFocus();
             return false;
