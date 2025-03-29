@@ -1928,47 +1928,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void getItemInfo(String part) {
        // if part is not already in list
        HashMap<String, String> hm =  getItemDataInit(part, ddsite.getSelectedItem().toString(), ddcust.getSelectedItem().toString(), "cust");
-        /*
-        int k = ddpart.getSelectedIndex();
         
-        int i = 0;
-        // lets first try as cust part...i.e..-1..lets look up the item based on entering a customer part number.
-        if (k < 0) {
-            for (Map.Entry<String, String> entry : hm.entrySet()) {
-                if (entry.getKey().equals("bycustitem")) {
-                    String[] s = entry.getValue().split(",",-1);
-                    if (s != null && s.length == 2) {
-                        i++;
-                        ddpart.setSelectedItem(s[0]);
-                        custnumber.setText(s[1]);
-                        ddpart.setForeground(Color.blue);
-                        custnumber.setForeground(Color.blue);
-                        custnumber.setEditable(false);  
-                    }
-                }
-            }    
-
-
-            // if i is still 0...then must be a misc item
-            if (i == 0) {
-              //  partnbr.addItem(part);
-              //  partnbr.setSelectedItem(part);
-                custnumber.setText("");
-                ddpart.setForeground(Color.red);
-                custnumber.setForeground(Color.red);
-                custnumber.setEditable(true);
-                tbdesc.setForeground(Color.red);
-                tbdesc.setEditable(true);
-
-                discount.setText("0");
-                listprice.setText("0");
-                listprice.setBackground(Color.white);
-
-                netprice.setText("0");
-                qtyshipped.setText("0");
-            }
-        } 
-        */
         int i = 0;
         if (! tbitem.getText().isBlank()) {
             ddbom.removeAllItems();
