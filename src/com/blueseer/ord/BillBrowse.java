@@ -436,8 +436,17 @@ public class BillBrowse extends javax.swing.JPanel {
                 
         btdetail.setEnabled(false);
         detailpanel.setVisible(false);
+        
+        ddsite.removeAllItems();
+        ArrayList<String> mylist = OVData.getSiteList(bsmf.MainFrame.userid);
+        for (int i = 0; i < mylist.size(); i++) {
+            ddsite.addItem(mylist.get(i));
+        }
+        ddsite.setSelectedItem(OVData.getDefaultSiteForUserid(bsmf.MainFrame.userid));
           
     }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -475,6 +484,8 @@ public class BillBrowse extends javax.swing.JPanel {
         cbactive = new javax.swing.JCheckBox();
         btprint = new javax.swing.JButton();
         cbtrans = new javax.swing.JCheckBox();
+        ddsite = new javax.swing.JComboBox<>();
+        jLabel9 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         tbtotsales = new javax.swing.JLabel();
@@ -594,6 +605,8 @@ public class BillBrowse extends javax.swing.JPanel {
 
         cbtrans.setText("Transactions");
 
+        jLabel9.setText("Site:");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -632,9 +645,16 @@ public class BillBrowse extends javax.swing.JPanel {
                                 .addComponent(jLabel4)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(tbfromcust, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tbtocust, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(tbtocust, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(114, 114, 114))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(tbfromcust, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel9)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))))
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(cbactive)
@@ -665,7 +685,9 @@ public class BillBrowse extends javax.swing.JPanel {
                         .addComponent(tbfromcust, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel5)
                         .addComponent(tbcsv)
-                        .addComponent(btprint))
+                        .addComponent(btprint)
+                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel9))
                     .addComponent(dcfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -802,14 +824,12 @@ public class BillBrowse extends javax.swing.JPanel {
                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
                 
                 mymodel.setNumRows(0);
-                 
-              //  tablereport.getColumnModel().getColumn(10).setCellRenderer(new InvoiceBrowsePanel.SomeRenderer());
-                
+               
                  double totsales = 0;
                  double totqty = 0;
                  
             
-                // String site = ddsite.getSelectedItem().toString(); 
+                String site = ddsite.getSelectedItem().toString(); 
                                   
                  String nbrfrom = tbfromnbr.getText();
                  String nbrto = tbtonbr.getText();
@@ -843,12 +863,14 @@ public class BillBrowse extends javax.swing.JPanel {
                         " bill_servicedate <= " + "'" + setDateDB(dcto.getDate()) + "'" + " AND " +
                         " bill_cust >= " + "'" + custfrom + "'" + " AND " +
                         " bill_cust <= " + "'" + custto + "'" + " AND " +
+                        " bill_site = " + "'" + site + "'" + " AND " +        
                         " bill_acctstatus <> " + "'" + getGlobalProgTag("closed") + "'" +
                         " group by bill_nbr, bill_acctstatus, bill_cust, bill_servicedate, bill_nextbilldate;");
                  } else {
                     res = st.executeQuery("select bill_nbr, bill_acctstatus, bill_cust, cm_name, bill_servicedate, bill_nextbilldate, sum(billd_qty) as 'qty', sum(billd_qty * billd_netprice) as 'price' from bill_mstr " +
                         " inner join cm_mstr on cm_code = bill_cust " +
                         " inner join bill_det on billd_nbr = bill_nbr where " +
+                        " bill_site = " + "'" + site + "'" + " AND " +         
                         " bill_nbr >= " + "'" + nbrfrom + "'" + " AND " +
                         " bill_nbr <= " + "'" + nbrto + "'" + " AND " +
                         " bill_servicedate >= " + "'" + setDateDB(dcfrom.getDate()) + "'" + " AND " +
@@ -949,6 +971,7 @@ public class BillBrowse extends javax.swing.JPanel {
     private javax.swing.JLabel datelabel;
     private com.toedter.calendar.JDateChooser dcfrom;
     private com.toedter.calendar.JDateChooser dcto;
+    private javax.swing.JComboBox<String> ddsite;
     private javax.swing.JPanel detailpanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -958,6 +981,7 @@ public class BillBrowse extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
