@@ -101,6 +101,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
 /**
@@ -111,7 +113,7 @@ public class SerialBrowse extends javax.swing.JPanel {
  
      public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
      
-    javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+    javax.swing.table.DefaultTableModel mymodel = new SerialBrowse.MyTableModel(new Object[][]{},
                         new String[]{
                             getGlobalColumnTag("select"),
                             getGlobalColumnTag("detail"),
@@ -159,27 +161,44 @@ public class SerialBrowse extends javax.swing.JPanel {
                       }  
                         };;
     
-     class ButtonRenderer extends JButton implements TableCellRenderer {
+    class MyTableModel extends DefaultTableModel {  
+      
+        public MyTableModel(Object rowData[][], Object columnNames[]) {  
+             super(rowData, columnNames);  
+          }  
+         
+        @Override  
+          public Class getColumnClass(int col) {  
+          //  if (col == 2 || col == 3 || col == 4)       
+          //      return Double.class;  
+          //  else return String.class;  //other columns accept String values  
+              return String.class;
+        }  
+      @Override  
+      public boolean isCellEditable(int row, int col) {  
+        if (col == 0)       //first column will be uneditable  
+            return false;  
+        else return true;  
+      }  
+       
+        }    
+    
+    
+    class SomeRenderer extends DefaultTableCellRenderer {
+        
+    public Component getTableCellRendererComponent(JTable table,
+            Object value, boolean isSelected, boolean hasFocus, int row,
+            int column) {
 
-        public ButtonRenderer() {
-            setOpaque(true);
-        }
-
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                boolean isSelected, boolean hasFocus, int row, int column) {
-            if (isSelected) {
-                setForeground(table.getSelectionForeground());
-                setBackground(table.getSelectionBackground());
-            } else {
-                setForeground(Color.blue);
-                setBackground(UIManager.getColor("Button.background"));
-            }
-            setText((value == null) ? "" : value.toString());
-            return this;
-        }
+        Component c = super.getTableCellRendererComponent(table,
+                value, isSelected, hasFocus, row, column);
+            c.setBackground(table.getBackground());
+            c.setForeground(table.getForeground());
+               
+        return c;
+    }
     }
     
-   
 
     
     
@@ -371,8 +390,8 @@ public class SerialBrowse extends javax.swing.JPanel {
         tablereport.setModel(mymodel);
         tabledetail.setModel(modeldetail);
         
-        tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-        tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
+        tablereport.getColumnModel().getColumn(0).setMaxWidth(50);
+        tablereport.getColumnModel().getColumn(1).setMaxWidth(50);
         btdetail.setEnabled(false);
         detailpanel.setVisible(false);
         
@@ -705,6 +724,14 @@ try {
                 int i = 0;
                  mymodel.setNumRows(0);
                 tablereport.setModel(mymodel);
+                Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
+                 while (en.hasMoreElements()) {
+                     TableColumn tc = en.nextElement();
+                     if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+                         continue;
+                     }
+                     tc.setCellRenderer(new SerialBrowse.SomeRenderer());
+                 }
               
                  String fromserial = "";
                  String toserial = "";

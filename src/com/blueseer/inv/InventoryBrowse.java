@@ -65,6 +65,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import java.sql.Connection;
@@ -133,33 +134,9 @@ public class InventoryBrowse extends javax.swing.JPanel {
 
         Component c = super.getTableCellRendererComponent(table,
                 value, isSelected, hasFocus, row, column);
-        
-        String status = (String)table.getModel().getValueAt(table.convertRowIndexToModel(row), 7);  // 7 = status column
-        
-         if ("error".equals(status)) {
-            c.setBackground(Color.red);
-            c.setForeground(Color.WHITE);
-        } else if ("close".equals(status)) {
-            c.setBackground(Color.blue);
-            c.setForeground(Color.WHITE);
-        } else if ("backorder".equals(status)) {
-            c.setBackground(Color.yellow);
-            c.setForeground(Color.BLACK);
-        }
-        else {
             c.setBackground(table.getBackground());
             c.setForeground(table.getForeground());
-        }       
-        
-        //c.setBackground(row % 2 == 0 ? Color.LIGHT_GRAY : Color.WHITE);
-      // c.setBackground(row % 2 == 0 ? Color.GREEN : Color.LIGHT_GRAY);
-      // c.setBackground(row % 3 == 0 ? new Color(245,245,220) : Color.LIGHT_GRAY);
-       /*
-            if (column == 3)
-            c.setForeground(Color.BLUE);
-            else
-                c.setBackground(table.getBackground());
-       */
+               
         return c;
     }
     }
@@ -509,6 +486,16 @@ try {
             
                 mymodel.setNumRows(0);
                 tablereport.setModel(mymodel);
+                Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
+                 while (en.hasMoreElements()) {
+                     TableColumn tc = en.nextElement();
+                     if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+                         continue;
+                     }
+                     tc.setCellRenderer(new InventoryBrowse.SomeRenderer());
+                 }
+               //  tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+                 
             
                 String wh = "";
                 String loc = "";

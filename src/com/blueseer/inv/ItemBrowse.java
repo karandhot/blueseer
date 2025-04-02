@@ -126,7 +126,7 @@ public class ItemBrowse extends javax.swing.JPanel {
      * Creates new form ScrapReportPanel
      */
     
-     class MyTableModel extends DefaultTableModel {  
+    class MyTableModel extends DefaultTableModel {  
       
         public MyTableModel(Object rowData[][], Object columnNames[]) {  
              super(rowData, columnNames);  
