@@ -284,6 +284,7 @@ public class SerialBrowse extends javax.swing.JPanel {
         ta.append("Location:\t\t" + hm.get("tr_loc") + "  \n");
         ta.append("user:\t\t" + hm.get("tr_userid") + "  \n");
         ta.append("Entity:\t\t" + hm.get("tr_addrcode") + "  \n");
+        ta.append("KeyNumber:\t\t" + hm.get("tr_nbr") + "  \n");
         ta.append("Order:\t\t" + hm.get("tr_order") + "  \n");
         ta.append("Line:\t\t" + hm.get("tr_line") + "  \n");
         ta.append("Program:\t\t" + hm.get("tr_program") + "  \n");
