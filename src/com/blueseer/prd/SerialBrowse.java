@@ -71,6 +71,7 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.getTranMstr;
 import static com.blueseer.inv.invData.getTranMstrBySerial;
 import com.blueseer.inv.invData.tran_mstr;
@@ -382,8 +383,7 @@ public class SerialBrowse extends javax.swing.JPanel {
         dcto.setDate(now);
         tbserialfrom.setText("");
         tbserialto.setText("");
-        tbfromitem.setText("");
-        tbtoitem.setText("");
+        
         
         mymodel.setNumRows(0);
         modeldetail.setNumRows(0);
@@ -408,6 +408,19 @@ public class SerialBrowse extends javax.swing.JPanel {
         }
         ddtype.insertItemAt("ALL", 0);
         ddtype.setSelectedIndex(0);
+        
+         ddfromitem.removeAllItems();
+        ddtoitem.removeAllItems();
+        ArrayList<String> items = invData.getItemMasterAlllist();
+        for (int i = 0; i < items.size(); i++) {
+            ddfromitem.addItem(items.get(i));
+            ddtoitem.addItem(items.get(i));
+        }
+        ddfromitem.insertItemAt("", 0);
+        ddtoitem.insertItemAt("", 0);
+        ddfromitem.setSelectedIndex(0);
+        ddtoitem.setSelectedIndex(ddtoitem.getItemCount() - 1);
+        
     }
     
     
@@ -443,13 +456,13 @@ public class SerialBrowse extends javax.swing.JPanel {
         tbcsv = new javax.swing.JButton();
         dcfrom = new com.toedter.calendar.JDateChooser();
         dcto = new com.toedter.calendar.JDateChooser();
-        tbfromitem = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        tbtoitem = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
         ddtype = new javax.swing.JComboBox<>();
         jLabel8 = new javax.swing.JLabel();
         btclear = new javax.swing.JButton();
+        ddfromitem = new javax.swing.JComboBox<>();
+        ddtoitem = new javax.swing.JComboBox<>();
         jPanel3 = new javax.swing.JPanel();
 
         setBackground(new java.awt.Color(0, 102, 204));
@@ -588,18 +601,16 @@ public class SerialBrowse extends javax.swing.JPanel {
                     .addComponent(tbserialfrom))
                 .addGap(17, 17, 17)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel7)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tbtoitem, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel4))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tbfromitem, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel1)))
+                    .addComponent(jLabel7)
+                    .addComponent(jLabel2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(ddtoitem, 0, 137, Short.MAX_VALUE)
+                    .addComponent(ddfromitem, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
@@ -641,9 +652,9 @@ public class SerialBrowse extends javax.swing.JPanel {
                         .addComponent(jLabel6)
                         .addComponent(btprint)
                         .addComponent(tbcsv)
-                        .addComponent(tbfromitem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel2)
-                        .addComponent(btclear))
+                        .addComponent(btclear)
+                        .addComponent(ddfromitem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(dcfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -655,8 +666,8 @@ public class SerialBrowse extends javax.swing.JPanel {
                             .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel4))
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(tbtoitem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel7)))
+                            .addComponent(jLabel7)
+                            .addComponent(ddtoitem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel8)))
@@ -735,8 +746,7 @@ try {
               
                  String fromserial = "";
                  String toserial = "";
-                 String fromitem = "";
-                 String toitem = "";
+                
                  
                  if (! tbserialfrom.getText().isBlank()) {
                      fromserial = tbserialfrom.getText();
@@ -749,16 +759,7 @@ try {
                      toserial = bsmf.MainFrame.hichar;
                  }
                  
-                 if (! tbfromitem.getText().isBlank()) {
-                     fromitem = tbfromitem.getText();
-                 } else {
-                     fromitem = bsmf.MainFrame.lowchar;
-                 }
-                 if (! tbtoitem.getText().isBlank()) {
-                     toitem = tbtoitem.getText();
-                 } else {
-                     toitem = bsmf.MainFrame.hichar;
-                 }
+                 
                 
                 if (ddtype.getSelectedItem().toString().equals("ALL")) {
                     res = st.executeQuery("SELECT tr_id, tr_op, tr_cost, tr_item, tr_type, tr_wh, tr_loc, tr_qty, tr_base_qty, tr_uom, tr_eff_date, tr_timestamp, tr_ref, tr_serial, tr_program , tr_userid, tr_lot " +
@@ -767,8 +768,8 @@ try {
                         " AND tr_eff_date <= " + "'" + dfdate.format(dcto.getDate()) + "'" + 
                         " AND tr_serial >= " + "'" + fromserial + "'" + 
                         " AND tr_serial <= " + "'" + toserial + "'" + 
-                        " AND tr_item >= " + "'" + fromitem + "'" + 
-                        " AND tr_item <= " + "'" + toitem + "'" + 
+                        " AND tr_item >= " + "'" + ddfromitem.getSelectedItem().toString() + "'" + 
+                        " AND tr_item <= " + "'" + ddtoitem.getSelectedItem().toString() + "'" + 
                          " order by tr_ent_date desc ;");   
                 } else {
                     res = st.executeQuery("SELECT tr_id, tr_op, tr_cost, tr_item, tr_type, tr_wh, tr_loc, tr_qty, tr_base_qty, tr_uom, tr_eff_date, tr_timestamp, tr_ref, tr_serial, tr_program , tr_userid, tr_lot " +
@@ -777,8 +778,8 @@ try {
                         " AND tr_eff_date <= " + "'" + dfdate.format(dcto.getDate()) + "'" + 
                         " AND tr_serial >= " + "'" + fromserial + "'" + 
                         " AND tr_serial <= " + "'" + toserial + "'" + 
-                        " AND tr_item >= " + "'" + fromitem + "'" + 
-                        " AND tr_item <= " + "'" + toitem + "'" +         
+                        " AND tr_item >= " + "'" + ddfromitem.getSelectedItem().toString() + "'" + 
+                        " AND tr_item <= " + "'" + ddtoitem.getSelectedItem().toString() + "'" +         
                         " AND tr_type = " + "'" + ddtype.getSelectedItem().toString() + "'" +
                                
                          " order by tr_ent_date desc ;");    
@@ -873,9 +874,9 @@ try {
         dcto.setDate(now);
         tbserialfrom.setText("");
         tbserialto.setText("");
-        tbfromitem.setText("");
-        tbtoitem.setText("");
         ddtype.setSelectedIndex(0);
+        ddfromitem.setSelectedIndex(0);
+        ddtoitem.setSelectedIndex(ddtoitem.getItemCount() - 1);
         mymodel.setNumRows(0);
         modeldetail.setNumRows(0);
     }//GEN-LAST:event_btclearActionPerformed
@@ -888,7 +889,9 @@ try {
     private javax.swing.JButton btprint;
     private com.toedter.calendar.JDateChooser dcfrom;
     private com.toedter.calendar.JDateChooser dcto;
+    private javax.swing.JComboBox<String> ddfromitem;
     private javax.swing.JComboBox ddsite;
+    private javax.swing.JComboBox<String> ddtoitem;
     private javax.swing.JComboBox<String> ddtype;
     private javax.swing.JPanel detailpanel;
     private javax.swing.JLabel jLabel1;
@@ -909,9 +912,7 @@ try {
     private javax.swing.JPanel tablepanel;
     private javax.swing.JTable tablereport;
     private javax.swing.JButton tbcsv;
-    private javax.swing.JTextField tbfromitem;
     private javax.swing.JTextField tbserialfrom;
     private javax.swing.JTextField tbserialto;
-    private javax.swing.JTextField tbtoitem;
     // End of variables declaration//GEN-END:variables
 }
