@@ -873,6 +873,12 @@ public class InventoryMaint extends javax.swing.JPanel {
             return;
         }
         
+        if (tblotserial.getText().isBlank() && OVData.isInvCtrlSerialize()) {
+            bsmf.MainFrame.show(getMessageTag(1193));
+            tblotserial.requestFocus();
+            return;
+        }
+        
         if (requireWHLoc && ddwh.getSelectedItem().toString().isEmpty()) {
            // ddwh.setBackground(Color.yellow);
             bsmf.MainFrame.show(getMessageTag(1190));
