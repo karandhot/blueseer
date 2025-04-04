@@ -191,6 +191,16 @@ public class InventoryBrowse extends javax.swing.JPanel {
        }
     }
     
+    public void clearAll() {
+        mymodel.setRowCount(0);
+        ddclass.setSelectedIndex(0);
+        cbzero.setSelected(false);
+        tbserial.setText("");
+        ddfromitem.setSelectedIndex(0);
+        ddtoitem.setSelectedIndex(ddtoitem.getItemCount() - 1);
+        ddfromwh.setSelectedIndex(0);
+        ddfromloc.setSelectedIndex(0);
+    }
     public void initvars(String[] arg) {
         mymodel.setRowCount(0);
         
@@ -275,6 +285,7 @@ public class InventoryBrowse extends javax.swing.JPanel {
         tbcsv = new javax.swing.JButton();
         tbserial = new javax.swing.JTextField();
         jLabel9 = new javax.swing.JLabel();
+        btclear = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -352,6 +363,13 @@ public class InventoryBrowse extends javax.swing.JPanel {
 
         jLabel9.setText("Serial Number");
 
+        btclear.setText("Clear");
+        btclear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btclearActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -390,6 +408,8 @@ public class InventoryBrowse extends javax.swing.JPanel {
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(btRun)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btclear)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(tbcsv)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btprint))
@@ -409,7 +429,8 @@ public class InventoryBrowse extends javax.swing.JPanel {
                     .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3)
                     .addComponent(tbcsv)
-                    .addComponent(btprint))
+                    .addComponent(btprint)
+                    .addComponent(btclear))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
@@ -621,9 +642,14 @@ try {
         OVData.printJTableToJasper("Quote Report", tablereport, "genericJTableL8B.jasper" );
     }//GEN-LAST:event_btprintActionPerformed
 
+    private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
+        clearAll();
+    }//GEN-LAST:event_btclearActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btRun;
+    private javax.swing.JButton btclear;
     private javax.swing.JButton btprint;
     private javax.swing.JCheckBox cbzero;
     private javax.swing.JComboBox<String> ddclass;
