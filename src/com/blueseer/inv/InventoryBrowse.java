@@ -201,7 +201,7 @@ public class InventoryBrowse extends javax.swing.JPanel {
         ddclass.addItem("P");
         ddclass.setSelectedIndex(0);
         cbzero.setSelected(false);
-        
+        tbserial.setText("");
         ArrayList<String> sites = new ArrayList();
         ddsite.removeAllItems();
         sites = OVData.getSiteList(bsmf.MainFrame.userid);
@@ -273,6 +273,8 @@ public class InventoryBrowse extends javax.swing.JPanel {
         ddsite = new javax.swing.JComboBox<>();
         ddfromloc = new javax.swing.JComboBox<>();
         tbcsv = new javax.swing.JButton();
+        tbserial = new javax.swing.JTextField();
+        jLabel9 = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -348,27 +350,33 @@ public class InventoryBrowse extends javax.swing.JPanel {
             }
         });
 
+        jLabel9.setText("Serial Number");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(ddsite, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(ddclass, 0, 96, Short.MAX_VALUE))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.TRAILING)))
+                    .addComponent(jLabel9))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(ddsite, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(ddclass, 0, 96, Short.MAX_VALUE))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(ddfromitem, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(ddtoitem, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(tbserial)
+                    .addComponent(ddfromitem, 0, 128, Short.MAX_VALUE)
+                    .addComponent(ddtoitem, 0, 128, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -411,6 +419,10 @@ public class InventoryBrowse extends javax.swing.JPanel {
                     .addComponent(ddclass, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6)
                     .addComponent(cbzero))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbserial, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel9))
                 .addContainerGap())
         );
 
@@ -522,6 +534,8 @@ try {
                        + " in_loc <= " + "'" + ddtoloc.getSelectedItem().toString() + "'"       
                        + ";" );
                  */
+                 
+                 if (tbserial.getText().isBlank()) {
                  res = st.executeQuery("select it_item, it_code, it_desc, " + 
                       " in_serial as serial, in_expire as expire,  " +
                       "case when in_qoh is null then '0' else in_qoh end as qoh, " +
@@ -533,6 +547,22 @@ try {
                        + " it_item <= " + "'" + ddtoitem.getSelectedItem().toString() + "'" +  " AND " 
                        + " it_site = " + "'" + ddsite.getSelectedItem().toString() + "'"        
                        + ";" );
+                 } else {
+                   res = st.executeQuery("select it_item, it_code, it_desc, " + 
+                      " in_serial as serial, in_expire as expire,  " +
+                      "case when in_qoh is null then '0' else in_qoh end as qoh, " +
+                       "case when in_loc is null then '' else in_loc end as loc, " +
+                       "case when in_wh is null then '' else in_wh end as wh " +   
+                      " from item_mstr left outer join in_mstr on in_item = it_item and " +
+                      " in_site = it_site " +   
+                       " where it_item >= " + "'" + ddfromitem.getSelectedItem().toString() + "'" +  " AND " 
+                       + " it_item <= " + "'" + ddtoitem.getSelectedItem().toString() + "'" +  " AND " 
+                       + " in_serial = " + "'" + tbserial.getText() + "'" +  " AND "         
+                       + " it_site = " + "'" + ddsite.getSelectedItem().toString() + "'"        
+                       + ";" );  
+                 }
+                 
+                 
                 while (res.next()) {
                    
                     if (! ddclass.getSelectedItem().toString().isBlank() && ! res.getString("it_code").equals(ddclass.getSelectedItem().toString())) {
@@ -610,6 +640,7 @@ try {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
@@ -618,5 +649,6 @@ try {
     private javax.swing.JPanel tablepanel;
     private javax.swing.JTable tablereport;
     private javax.swing.JButton tbcsv;
+    private javax.swing.JTextField tbserial;
     // End of variables declaration//GEN-END:variables
 }
