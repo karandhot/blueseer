@@ -57,6 +57,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.checkLength;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
+import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import com.blueseer.utl.BlueSeerUtils.dbaction;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
@@ -1657,9 +1658,9 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerT {
                 while (res.next()) {
                     lblitem.setText(res.getString("pod_item"));
                     tbline.setText(res.getString("pod_line"));
-                    tbprice.setText(res.getString("pod_netprice"));
+                    tbprice.setText(currformatDouble(res.getDouble("pod_netprice")));
                     if (res.getString("itc_total") != null)
-                    tbcost.setText(res.getString("itc_total"));
+                    tbcost.setText(currformatDouble(res.getDouble("itc_total")));
                   //  if (res.getString("it_loc") != null)
                   //  ddloc.setSelectedItem(res.getString("it_loc"));
                   //  if (res.getString("it_wh") != null)
