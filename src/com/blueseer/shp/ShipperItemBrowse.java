@@ -751,7 +751,7 @@ public class ShipperItemBrowse extends javax.swing.JPanel {
         if ( col == 0) {
                 String mypanel = "ShipMaint";
                if (! checkperms(mypanel)) { return; }
-               String[] args = new String[]{bsNumberToUS(tablereport.getValueAt(row, 2).toString())};
+               String[] args = new String[]{bsNumberToUS(tablereport.getValueAt(row, 1).toString())};
                reinitpanels(mypanel, true, args);
         }
     }//GEN-LAST:event_tablereportMouseClicked
