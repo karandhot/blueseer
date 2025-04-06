@@ -141,7 +141,7 @@ public class ShipperItemBrowse extends javax.swing.JPanel {
                 
   
     
-     class ButtonRenderer extends JButton implements TableCellRenderer {
+    class ButtonRenderer extends JButton implements TableCellRenderer {
 
         public ButtonRenderer() {
             setOpaque(true);
@@ -162,7 +162,7 @@ public class ShipperItemBrowse extends javax.swing.JPanel {
     }
     
    
- class SomeRenderer extends DefaultTableCellRenderer {
+    class SomeRenderer extends DefaultTableCellRenderer {
          
     public Component getTableCellRendererComponent(JTable table,
             Object value, boolean isSelected, boolean hasFocus, int row,

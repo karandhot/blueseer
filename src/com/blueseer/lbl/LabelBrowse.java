@@ -67,12 +67,14 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -86,7 +88,7 @@ import javax.swing.JTabbedPane;
  */
 public class LabelBrowse extends javax.swing.JPanel {
  
-     MyTableModel mymodel = new LabelBrowse.MyTableModel(new Object[][]{},
+     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{
                             getGlobalColumnTag("detail"), 
                             getGlobalColumnTag("number"), 
@@ -99,7 +101,21 @@ public class LabelBrowse extends javax.swing.JPanel {
                             getGlobalColumnTag("lot"), 
                             getGlobalColumnTag("createdate"), 
                             getGlobalColumnTag("status"), 
-                            getGlobalColumnTag("void")});
+                            getGlobalColumnTag("void")}){
+                      @Override  
+                      public Class getColumnClass(int col) {  
+                        if (col == 0)       
+                            return ImageIcon.class;  
+                        else return String.class;  //other columns accept String values  
+                      }
+                      
+                      @Override
+                      public boolean isCellEditable(int row, int column) {
+                            return false;
+                            //Only the first column
+                            // return column == 1;
+                      }
+                        };
     
     MyTableModel modeltrans = new LabelBrowse.MyTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("serial"), 
@@ -114,7 +130,7 @@ public class LabelBrowse extends javax.swing.JPanel {
     
     
     
-     class MyTableModel extends DefaultTableModel {  
+    class MyTableModel extends DefaultTableModel {  
       
         public MyTableModel(Object rowData[][], Object columnNames[]) {  
              super(rowData, columnNames);  
@@ -169,7 +185,7 @@ public class LabelBrowse extends javax.swing.JPanel {
     }
     }
       
-     class ButtonRenderer extends JButton implements TableCellRenderer {
+    class ButtonRenderer extends JButton implements TableCellRenderer {
 
         public ButtonRenderer() {
             setOpaque(true);
@@ -298,13 +314,14 @@ public class LabelBrowse extends javax.swing.JPanel {
          dcFrom.setDate(now);
          dcTo.setDate(now);
          
-          mymodel.setNumRows(0);
+         mymodel.setNumRows(0);
         modeltrans.setNumRows(0);
         tablelabel.setModel(mymodel);
         tabletran.setModel(modeltrans);
         
-         tablelabel.getColumnModel().getColumn(0).setCellRenderer(new LabelBrowse.ButtonRenderer());
-         tablelabel.getColumnModel().getColumn(0).setMaxWidth(100);
+        
+        tablelabel.getTableHeader().setReorderingAllowed(false); 
+        tablelabel.getColumnModel().getColumn(0).setMaxWidth(100);
          
          detailpanel.setVisible(false);
          btdetail.setEnabled(false);
@@ -643,15 +660,14 @@ try {
                 DecimalFormat df = new DecimalFormat("###,###,###.##", new DecimalFormatSymbols(Locale.US));
                 int i = 0;
                
-                tablelabel.setModel(mymodel);
                  
              //   Enumeration<TableColumn> en = tablelabel.getColumnModel().getColumns();
               //   while (en.hasMoreElements()) {
              //        TableColumn tc = en.nextElement();
              //        tc.setCellRenderer(new LabelBrowsePanel.SomeRenderer());
              //    }
-                  tablelabel.getColumnModel().getColumn(0).setCellRenderer(new LabelBrowse.ButtonRenderer());
-                  tablelabel.getColumnModel().getColumn(0).setMaxWidth(100);
+             //     tablelabel.getColumnModel().getColumn(0).setCellRenderer(new LabelBrowse.ButtonRenderer());
+             //     tablelabel.getColumnModel().getColumn(0).setMaxWidth(100);
                 // TableColumnModel tcm = tablescrap.getColumnModel();
                // tcm.getColumn(3).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));  
                 
@@ -674,7 +690,7 @@ try {
                     qty = qty + res.getInt("lbl_qty");
                     i++;
                         mymodel.addRow(new Object[]{
-                                "Detail",
+                                BlueSeerUtils.clickbasket,
                                 res.getString("lbl_id"),
                                 res.getString("lbl_item"),
                                 res.getString("lbl_qty"),
