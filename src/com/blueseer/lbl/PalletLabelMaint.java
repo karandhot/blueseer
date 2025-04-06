@@ -239,7 +239,7 @@ String carrier = "";
             try {
                 int i = 0;
                                 
-                res = st.executeQuery("select sod_nbr, sod_line, sod_item, sod_desc, sod_custitem, so_cust, sod_po, so_shipvia, so_ship from sod_det " 
+                res = st.executeQuery("select sod_nbr, sod_line, sod_item, sod_desc, sod_custitem, sod_ord_qty, so_cust, sod_po, so_shipvia, so_ship from sod_det " 
                         + " inner join so_mstr on so_nbr = sod_nbr " 
                         + " where sod_nbr = " + "'" + order + "'"
                         + " and sod_line = " + "'" + line + "'" 
@@ -254,6 +254,7 @@ String carrier = "";
                    ponbr = res.getString("sod_po");
                    ordernbr = res.getString("sod_nbr");
                    linenbr = res.getString("sod_line");
+                   quantity = res.getString("sod_ord_qty");
                    revnbr = "";
                    carrier = res.getString("so_shipvia");
                    
