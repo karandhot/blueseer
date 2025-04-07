@@ -113,10 +113,16 @@ public class VoucherBrowse extends javax.swing.JPanel {
                       public Class getColumnClass(int col) {  
                         if (col == 0)       
                             return ImageIcon.class;
-                        else if (col == 6) 
+                        else if (col == 7) 
                             return Double.class;
                         else return String.class;  //other columns accept String values  
-                      }  
+                      }
+                      @Override
+                      public boolean isCellEditable(int row, int column) {
+                            return false;
+                            //Only the first column
+                            // return column == 1;
+                      }
                         };
                 
     javax.swing.table.DefaultTableModel modeldetail = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -159,7 +165,8 @@ public class VoucherBrowse extends javax.swing.JPanel {
         Component c = super.getTableCellRendererComponent(table,
                 value, isSelected, hasFocus, row, column);
         
-        String status = (String)table.getModel().getValueAt(table.convertRowIndexToModel(row), 5);  
+        String status = (String)table.getModel().getValueAt(table.convertRowIndexToModel(row), 6);  
+      //  table.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defcurr)));
         /*
          if (status.isEmpty()) {
             c.setBackground(Color.yellow);
@@ -307,6 +314,7 @@ public class VoucherBrowse extends javax.swing.JPanel {
         mymodel.setNumRows(0);
         modeldetail.setNumRows(0);
         tablereport.setModel(mymodel);
+        tablereport.getTableHeader().setReorderingAllowed(false);
         tabledetail.setModel(modeldetail);
         labelopen.setText("0");
         labeltotal.setText("0");
@@ -635,8 +643,8 @@ public class VoucherBrowse extends javax.swing.JPanel {
         
               tablereport.setModel(mymodel);
               tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-               //  tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-            
+              tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+            /*
             Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
                  while (en.hasMoreElements()) {
                      TableColumn tc = en.nextElement();
@@ -645,8 +653,7 @@ public class VoucherBrowse extends javax.swing.JPanel {
                      }
                      tc.setCellRenderer(new VoucherBrowse.SomeRenderer());
                  }
-            tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-           
+           */
             
                  DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
                 
@@ -723,7 +730,7 @@ public class VoucherBrowse extends javax.swing.JPanel {
                                 res.getString("ap_ref"),
                                 res.getString("ap_rmks"),
                                 res.getString("ap_status"),
-                                bsParseDouble(currformatDouble(res.getDouble("ap_amt"))),
+                                res.getDouble("ap_amt"),
                                 ConvertIntToYesNo(res.getInt("ap_approved"))
                             });
                
