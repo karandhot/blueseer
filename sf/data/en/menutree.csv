@@ -159,7 +159,7 @@ ARMenu,ARPaymentMaint,1,JMenuItem,Payment Maintenance,,,,1,1
 ARMenu,ARPaymentBrowse,2,JMenuItem,Payment Browse,,1,,1,1
 ARMenu,ARMemoMaint,3,JMenuItem,Memo Maintenance,,,,1,1
 ARMenu,ARAgingView,4,JMenuItem,AR Aging View,,,,1,1
-ARMenu,ARTranRpt1,5,JMenuItem,AR Transacation Report,,1,,1,1
+ARMenu,ARTranRpt,5,JMenuItem,AR Transacation Report,,1,,1,1
 ARMenu,InvoiceMaint,6,JMenuItem,Invoice View / Maintenance,,,,1,1
 ARMenu,InvoiceBrowse,7,JMenuItem,Invoice Browse ,,1,,1,1
 ARMenu,ARRptPicker,8,JMenuItem,AR Report Selector,,1,,1,1
