@@ -312,6 +312,7 @@ public class EDILoadMaint extends javax.swing.JPanel {
                     }
                     break;    
                 case "getFiles":
+                    mymodel.setNumRows(0);
                     ArrayList<String[]> arr = new ArrayList<String[]>();
                     arr.add(new String[]{"id","getFilesOfDir"});
                     arr.add(new String[]{"dir", inDir});
@@ -838,7 +839,7 @@ public class EDILoadMaint extends javax.swing.JPanel {
    File folder = new File(inDir);
    File[] listOfFiles = folder.listFiles();
    mymodel.setNumRows(0);
-   tablereport.setModel(mymodel);
+   
    //tablereport.getColumnModel().getColumn(1).setCellRenderer(new SomeRenderer()); 
    
    
@@ -865,6 +866,7 @@ public class EDILoadMaint extends javax.swing.JPanel {
     tablereport.getColumnModel().getColumn(1).setCellRenderer(checkBoxRenderer); 
     tablereport.getColumnModel().getColumn(0).setCellRenderer(new SomeRenderer()); 
     tablereport.setModel(mymodel);
+    
     tafile.setFont(new Font("monospaced", Font.PLAIN, 12));
     
     ddsite.removeAllItems();
