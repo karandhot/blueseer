@@ -305,6 +305,22 @@ public class OrderRpt extends javax.swing.JPanel {
        }
     }
     
+    public void disableAll() {
+        btRun.setEnabled(false);
+        btcsv.setEnabled(false);
+        btexport.setEnabled(false);
+        btdetail.setEnabled(false);
+        btprint.setEnabled(false);
+    }
+    
+    public void enableAll() {
+        btRun.setEnabled(true);
+        btcsv.setEnabled(true);
+        btexport.setEnabled(true);
+        btdetail.setEnabled(true);
+        btprint.setEnabled(true);
+    }
+    
     public void initvars(String[] arg) {
         labelqty.setText("0");
         labelcount.setText("0");
@@ -487,7 +503,7 @@ public class OrderRpt extends javax.swing.JPanel {
         jLabel6 = new javax.swing.JLabel();
         cbclose = new javax.swing.JCheckBox();
         cbopen = new javax.swing.JCheckBox();
-        tbprint = new javax.swing.JButton();
+        btprint = new javax.swing.JButton();
         btcsv = new javax.swing.JButton();
         cbbackorder = new javax.swing.JCheckBox();
         cberror = new javax.swing.JCheckBox();
@@ -599,11 +615,11 @@ public class OrderRpt extends javax.swing.JPanel {
         cbopen.setText("Open");
         cbopen.setName("cbopen"); // NOI18N
 
-        tbprint.setText("PDF");
-        tbprint.setName("btpdf"); // NOI18N
-        tbprint.addActionListener(new java.awt.event.ActionListener() {
+        btprint.setText("PDF");
+        btprint.setName("btpdf"); // NOI18N
+        btprint.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tbprintActionPerformed(evt);
+                btprintActionPerformed(evt);
             }
         });
 
@@ -694,7 +710,7 @@ public class OrderRpt extends javax.swing.JPanel {
                                 .addGap(18, 18, 18)
                                 .addComponent(btRun)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(tbprint)
+                                .addComponent(btprint)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btcsv)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -729,7 +745,7 @@ public class OrderRpt extends javax.swing.JPanel {
                         .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel5)
                         .addComponent(jLabel6)
-                        .addComponent(tbprint)
+                        .addComponent(btprint)
                         .addComponent(btcsv)
                         .addComponent(btexport))
                     .addComponent(dcFrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1085,7 +1101,7 @@ try {
         
     }//GEN-LAST:event_tableorderMouseClicked
 
-    private void tbprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbprintActionPerformed
+    private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
 
         if (tableorder != null && mymodel.getRowCount() > 0) {
            OVData.printJTableToJasper("Sales Order Browse Report", tableorder, "genericJTableL10.jasper" );
@@ -1107,7 +1123,7 @@ try {
             }
             */
         }
-    }//GEN-LAST:event_tbprintActionPerformed
+    }//GEN-LAST:event_btprintActionPerformed
 
     private void btcsvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcsvActionPerformed
        if (tableorder != null && mymodel.getRowCount() > 0) {
@@ -1118,8 +1134,10 @@ try {
 
     private void btexportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btexportActionPerformed
         if (tableorder != null && mymodel.getRowCount() > 0) {
+        disableAll();
         exportOrderDetail(tableorder);
         bsmf.MainFrame.show("export file created");
+        enableAll();
        }
     }//GEN-LAST:event_btexportActionPerformed
 
@@ -1130,6 +1148,7 @@ try {
     private javax.swing.JButton btcsv;
     private javax.swing.JButton btdetail;
     private javax.swing.JButton btexport;
+    private javax.swing.JButton btprint;
     private javax.swing.JCheckBox cbbackorder;
     private javax.swing.JCheckBox cbcancel;
     private javax.swing.JCheckBox cbclose;
@@ -1166,7 +1185,6 @@ try {
     private javax.swing.JTable tableorder;
     private javax.swing.JPanel tablepanel;
     private javax.swing.JTextField tbpo;
-    private javax.swing.JButton tbprint;
     private javax.swing.JTextField tbrmks;
     // End of variables declaration//GEN-END:variables
 }
