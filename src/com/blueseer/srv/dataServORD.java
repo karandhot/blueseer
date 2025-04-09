@@ -222,6 +222,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                 
                 // process specific app (id)
                 if (id.equals("exportOrderDetail")) { 
+                  System.out.println("XXX=" + sb.toString());
                   List<String> zz = Arrays.asList(sb.toString().split("\\R"));
                   response.getWriter().println(OrderRpt.exportOrderDetailSRV(zz));
                 } else {
