@@ -554,6 +554,7 @@ public class OrderRpt extends javax.swing.JPanel {
             output = new BufferedWriter(new FileWriter(f));
             for (String d : dar) {
                    output.write(d);
+                   output.write("\n");
             }
         } catch (IOException ex) {
                bslog(ex);

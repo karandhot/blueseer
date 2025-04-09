@@ -796,10 +796,10 @@ public class EDI {
                
             for (String f : files) {
            //   for (int i = 0; i < listOfFiles.length; i++) {
-           System.out.println("XXXfile=" + inDir + f);
+           
               if (Files.exists(FileSystems.getDefault().getPath(inDir + f))) {
                   File file = new File(inDir + f);
-                  System.out.println("XXXfileWDir=" + inDir + f);
+                  
                 sb.append("EDILoad:  processing file " + f).append("\n");
                   if(file.length() == 0) { 
                   file.delete();
