@@ -244,7 +244,11 @@ public class OrderRpt extends javax.swing.JPanel {
            
             BlueSeerUtils.endTask(message);
             enableAll();
-            bsmf.MainFrame.show("export file created");
+            if (rData != null) {
+              createExportFile(rData);
+              bsmf.MainFrame.show("export file created");
+            }
+            
             
             } catch (Exception e) {
                 MainFrame.bslog(e);
@@ -615,7 +619,7 @@ public class OrderRpt extends javax.swing.JPanel {
                        line.append(res.getString(j).replace(",","")).append(",");
                      }
                      
-                     detailkvpair = getEDIMetaValueAsKVString(arr[4], "detail",res.getString("sod_line"));
+                     detailkvpair = getEDIMetaValueAsKVString(arr[4], "detail", res.getString("sod_line"));
                      
                      sb.append(line.toString()).append(headerkvpair).append(",").append(detailkvpair).append("\n");
                     // output.write(line.toString() + headerkvpair + "," + detailkvpair);
@@ -662,10 +666,6 @@ public class OrderRpt extends javax.swing.JPanel {
         list.add(new String[]{"id","exportOrderDetail"});
         
         rData = sendServerPost(list, postData, null, "dataServORD");
-        
-        if (rData != null) {
-            createExportFile(rData);
-        }
         
         x[0] = "0";
         x[1] = "Processing complete";
@@ -1339,9 +1339,6 @@ try {
           disableAll();  
             if (bsmf.MainFrame.remoteDB) {
                 executeTask("exportOrderDetail", null);
-                if (rData != null) {
-                    createExportFile(rData);
-                }
             } else {
                exportOrderDetail(tableorder);
             }
