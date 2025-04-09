@@ -56,6 +56,7 @@ import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
+import static com.blueseer.edi.EDILoadMaint.rData;
 import static com.blueseer.edi.ediData.getEDIMetaValueAsKVString;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
@@ -65,6 +66,7 @@ import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import static com.blueseer.utl.OVData.getSysMetaData;
 import java.awt.FileDialog;
@@ -75,7 +77,10 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.util.Calendar;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -83,6 +88,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import net.sf.jasperreports.engine.JasperExportManager;
@@ -99,7 +105,7 @@ public class OrderRpt extends javax.swing.JPanel {
  
      public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
      public String defcurr;
-                          
+     public String rData;                     
      
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{
@@ -146,7 +152,7 @@ public class OrderRpt extends javax.swing.JPanel {
                             getGlobalColumnTag("shipqty"), 
                             getGlobalColumnTag("status")});
     
-     class ButtonRenderer extends JButton implements TableCellRenderer {
+    class ButtonRenderer extends JButton implements TableCellRenderer {
 
         public ButtonRenderer() {
             setOpaque(true);
@@ -196,7 +202,62 @@ public class OrderRpt extends javax.swing.JPanel {
     }
     }
 
-    
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rData = "";
+            
+            
+            switch(this.action) {
+                case "exportOrderDetail":
+                    message = processPost();
+                    break;
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            enableAll();
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+   
     
     
     /**
@@ -471,6 +532,142 @@ public class OrderRpt extends javax.swing.JPanel {
           }   
         }
     }
+    
+    public static void createExportFile(String data) {
+       FileDialog fDialog;
+        fDialog = new FileDialog(new Frame(), "Save", FileDialog.SAVE);
+        fDialog.setVisible(true);
+       // fDialog.setFile("data.csv");
+        String path = fDialog.getDirectory() + fDialog.getFile();
+        File f = new File(path);
+        BufferedWriter output = null;
+        
+        String[] dar = data.split("\\R");
+        try {
+            for (String d : dar) {
+                   output.write(d);
+            }
+        } catch (IOException ex) {
+               bslog(ex);
+        } finally {
+            if (output != null) {
+                try {
+                    output.close();
+                } catch (IOException ex) {
+                    bslog(ex);
+                }
+            }
+        }
+        
+        
+    }
+    
+    public static String exportOrderDetailSRV(List<String> list) {
+        
+        StringBuilder sb = new StringBuilder();
+         try{
+             
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            String headerkvpair = "";
+            String detailkvpair = "";
+            
+            
+            
+            String header = "Sales Order Number, PO Number, Order Create Date, PO/Order Date, Customer Name, Shipto ID, Shipto Name, DueDate, Order Line Number, Item Number, Item Description, Master Sku, Sku Number, AltItemNumber, UOM, Order Quantity, Order Price, Pack Qty, Header KVPair, Detail KVPair";
+          //  output.write(header + "\n");
+            sb.append(header).append("\n");
+            try {
+                // for (int i = 0; i < list.size(); i++) {
+                for (String s : list) {
+                  if (s.isBlank()) {
+                      continue;
+                  }  
+                  String[] arr = s.split(",");
+               // headerkvpair = getEDIMetaValueAsKVString(tablereport.getValueAt(i, 4).toString(), "header","");
+                headerkvpair = getEDIMetaValueAsKVString(arr[4], "header","");
+                    
+                res = st.executeQuery("select so_nbr, so_po, so_create_date, so_ord_date, " +
+                        " cm_name, cms_plantcode, cms_name, so_due_date, " +
+                        " sod_line, sod_item, sod_desc, '' as msku, sod_custitem, sod_char1, " +
+                        " sod_uom, sod_ord_qty, sod_netprice, sod_char2 from so_mstr " + 
+                        " inner join sod_det on sod_nbr = so_nbr " +
+                        " inner join cm_mstr on cm_code = so_cust " +
+                        " inner join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
+                        " where so_nbr = " + "'" + arr[2] + "'" + 
+                        " order by so_nbr, sod_line;");
+                int k = 0;
+                while (res.next()) {
+                    k++;
+                     StringBuilder line = new StringBuilder();
+                     for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
+                       line.append(res.getString(j).replace(",","")).append(",");
+                     }
+                     
+                     detailkvpair = getEDIMetaValueAsKVString(arr[4], "detail",res.getString("sod_line"));
+                     
+                     sb.append(line.toString()).append(headerkvpair).append(",").append(detailkvpair).append("\n");
+                    // output.write(line.toString() + headerkvpair + "," + detailkvpair);
+                    // output.write("\n");
+                     // now add detailkvpair
+                     
+                 }
+                
+                } // for each line in tablereport
+                
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        } catch (SQLException e){
+            MainFrame.bslog(e);
+        } 
+         
+         return sb == null ? "no data" : sb.toString();
+    }
+    
+    public String[] processPost() throws IOException {
+        String[] x = new String[2];
+        int j = 0;  
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0 ; i < mymodel.getRowCount(); i++) {  
+                    sb.append(mymodel.getValueAt(i,0).toString()).append(",");
+                    sb.append(mymodel.getValueAt(i,1).toString()).append(",");
+                    sb.append(mymodel.getValueAt(i,2).toString()).append(",");
+                    sb.append(mymodel.getValueAt(i,3).toString()).append(",");
+                    sb.append(mymodel.getValueAt(i,4).toString());
+                    sb.append("\n");
+        }
+        String postData = sb.toString();
+       // if (postData.endsWith(",")) {
+       //             postData = postData.substring(0, postData.length() - 1);
+       // }
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","exportOrderDetail"});
+        rData = sendServerPost(list, postData, null);
+        
+        if (rData != null) {
+            createExportFile(rData);
+        }
+        
+        x[0] = "0";
+        x[1] = "Processing complete";
+       
+        return x;
+    }
+    
     
     
     /**
@@ -1134,10 +1331,16 @@ try {
 
     private void btexportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btexportActionPerformed
         if (tableorder != null && mymodel.getRowCount() > 0) {
-        disableAll();
-        exportOrderDetail(tableorder);
+          disableAll();  
+            if (bsmf.MainFrame.remoteDB) {
+                executeTask("exportOrderDetail", null);
+                if (rData != null) {
+                    createExportFile(rData);
+                }
+            } else {
+               exportOrderDetail(tableorder);
+            }
         bsmf.MainFrame.show("export file created");
-        enableAll();
        }
     }//GEN-LAST:event_btexportActionPerformed
 
