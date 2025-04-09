@@ -2452,6 +2452,95 @@ public class BlueSeerUtils {
        return sb.toString();
     }
 
+    public static String sendServerPost(ArrayList<String[]> hlist, String postData, byte[] b, String dataClass) throws MalformedURLException, IOException {
+       
+        StringBuilder sb = new StringBuilder();
+        String urlString = "";
+        if (! bsmf.MainFrame.rhost.isBlank()) {
+            urlString = "http://" + bsmf.MainFrame.rhost + ":" + bsmf.MainFrame.serverport + "/bsapi/" + dataClass; 
+        } else {
+            urlString = "http://" + bsmf.MainFrame.ip + ":" + bsmf.MainFrame.serverport + "/bsapi/" + dataClass; 
+        }
+        
+        HttpURLConnection conn = null;
+        
+        String user = bsmf.MainFrame.user;
+        String pass = bsmf.MainFrame.pass;
+        
+        
+       
+        
+        URL url = new URL(urlString);
+        
+        byte[] postDataBytes;
+        if (b != null) {
+            postDataBytes = b;
+        } else {
+            postDataBytes = postData.getBytes("UTF-8");
+        }
+        
+        conn = (HttpURLConnection) url.openConnection();
+
+        
+        conn.setDoOutput(true);
+        conn.setConnectTimeout(10000);
+        conn.setReadTimeout(10000);
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "text/plain");
+        conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
+        
+        // Custom Headers
+        for (String[] h : hlist) {
+         conn.setRequestProperty(h[0],h[1]);
+        }
+        
+        
+             
+        // auth   
+        if (! user.isBlank() && ! pass.isBlank()) {
+        String userCredentials = new String(user + ":" + pass);
+        String basicAuth = "Basic " + Base64.toBase64String(userCredentials.getBytes());
+        conn.setRequestProperty("Authorization", basicAuth);
+        } else {
+            return sb.toString();
+        } 
+        
+                
+        
+        
+        conn.getOutputStream().write(postDataBytes);
+               
+        
+        if (conn.getResponseCode() != 200) {
+                    sb.append(conn.getResponseCode() + ": " + conn.getResponseMessage());
+                    String output = "";
+                    BufferedReader br = new BufferedReader(new InputStreamReader((conn.getErrorStream())));
+                    while ((output = br.readLine()) != null) {
+                        sb.append(output).append("\n");
+                    }
+                    br.close(); 
+                    //throw new RuntimeException("Failed : HTTP error code : "
+                    //		+ conn.getResponseCode());
+                    
+        } else {
+            BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+            String output = "";
+            
+            
+            while ((output = br.readLine()) != null) {
+                sb.append(output).append("\n");
+            }
+            br.close(); 
+        }
+        
+        if (conn != null) {
+          conn.disconnect();
+        }
+        
+       return sb.toString();
+    }
+
+    
     public static byte[] sendServerPostByteR(ArrayList<String[]> hlist, String postData, byte[] b) throws MalformedURLException, IOException {
        
         StringBuilder sb = new StringBuilder();

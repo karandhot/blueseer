@@ -660,7 +660,8 @@ public class OrderRpt extends javax.swing.JPanel {
        // }
         ArrayList<String[]> list = new ArrayList<String[]>();
         list.add(new String[]{"id","exportOrderDetail"});
-        rData = sendServerPost(list, postData, null);
+        
+        rData = sendServerPost(list, postData, null, "dataServORD");
         
         if (rData != null) {
             createExportFile(rData);
