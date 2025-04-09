@@ -796,7 +796,7 @@ public class EDI {
                
             for (String f : files) {
            //   for (int i = 0; i < listOfFiles.length; i++) {
-           System.out.println("XXXfile=" + f);
+           System.out.println("XXXfile=" + inDir + f);
               if (Files.exists(FileSystems.getDefault().getPath(inDir + f))) {
                   File file = new File(inDir + f);
                   System.out.println("XXXfileWDir=" + inDir + f);
@@ -834,6 +834,8 @@ public class EDI {
                  
                   
                   }
+                } else {
+                  System.out.println("XXX file does not exist");
                 }
               }
        } catch (IOException ex) {
