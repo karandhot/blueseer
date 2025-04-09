@@ -222,8 +222,9 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                 
                 // process specific app (id)
                 if (id.equals("exportOrderDetail")) { 
-                  System.out.println("XXX=" + sb.toString());
+                  
                   List<String> zz = Arrays.asList(sb.toString().split("\\|"));
+                  System.out.println("XXX=" + zz.size());
                   response.getWriter().println(OrderRpt.exportOrderDetailSRV(zz));
                 } else {
                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
