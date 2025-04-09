@@ -653,7 +653,7 @@ public class OrderRpt extends javax.swing.JPanel {
         for (int i = 0 ; i < mymodel.getRowCount(); i++) {  
                     sb.append(mymodel.getValueAt(i,2).toString()).append(",");
                     sb.append(mymodel.getValueAt(i,4).toString());
-                    sb.append("\n");
+                    sb.append("|");
         }
         String postData = sb.toString();
        // if (postData.endsWith(",")) {
