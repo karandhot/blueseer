@@ -549,7 +549,7 @@ public class OrderRpt extends javax.swing.JPanel {
         File f = new File(path);
         BufferedWriter output = null;
         
-        String[] dar = data.split("\\R");
+        String[] dar = data.split("\\n");
         try {
             output = new BufferedWriter(new FileWriter(f));
             for (String d : dar) {
@@ -600,7 +600,7 @@ public class OrderRpt extends javax.swing.JPanel {
                   }  
                   String[] arr = s.split(",");
                // headerkvpair = getEDIMetaValueAsKVString(tablereport.getValueAt(i, 4).toString(), "header","");
-                headerkvpair = getEDIMetaValueAsKVString(arr[4], "header","");
+                headerkvpair = getEDIMetaValueAsKVString(arr[1], "header","");
                     
                 res = st.executeQuery("select so_nbr, so_po, so_create_date, so_ord_date, " +
                         " cm_name, cms_plantcode, cms_name, so_due_date, " +
@@ -609,7 +609,7 @@ public class OrderRpt extends javax.swing.JPanel {
                         " inner join sod_det on sod_nbr = so_nbr " +
                         " inner join cm_mstr on cm_code = so_cust " +
                         " inner join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
-                        " where so_nbr = " + "'" + arr[2] + "'" + 
+                        " where so_nbr = " + "'" + arr[0] + "'" + 
                         " order by so_nbr, sod_line;");
                 int k = 0;
                 while (res.next()) {
@@ -619,7 +619,7 @@ public class OrderRpt extends javax.swing.JPanel {
                        line.append(res.getString(j).replace(",","")).append(",");
                      }
                      
-                     detailkvpair = getEDIMetaValueAsKVString(arr[4], "detail", res.getString("sod_line"));
+                     detailkvpair = getEDIMetaValueAsKVString(arr[1], "detail", res.getString("sod_line"));
                      
                      sb.append(line.toString()).append(headerkvpair).append(",").append(detailkvpair).append("\n");
                     // output.write(line.toString() + headerkvpair + "," + detailkvpair);
@@ -651,10 +651,7 @@ public class OrderRpt extends javax.swing.JPanel {
         int j = 0;  
         StringBuilder sb = new StringBuilder();
         for (int i = 0 ; i < mymodel.getRowCount(); i++) {  
-                    sb.append(mymodel.getValueAt(i,0).toString()).append(",");
-                    sb.append(mymodel.getValueAt(i,1).toString()).append(",");
                     sb.append(mymodel.getValueAt(i,2).toString()).append(",");
-                    sb.append(mymodel.getValueAt(i,3).toString()).append(",");
                     sb.append(mymodel.getValueAt(i,4).toString());
                     sb.append("\n");
         }
