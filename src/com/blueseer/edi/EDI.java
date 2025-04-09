@@ -787,6 +787,7 @@ public class EDI {
                 }
             }
            
+            System.out.println("XXXfilecount=" + files.length);
             
             String inDir = cleanDirString(EDData.getEDIInDir());
             String inArch = cleanDirString(EDData.getEDIInArch()); 
