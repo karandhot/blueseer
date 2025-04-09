@@ -643,7 +643,7 @@ public class OrderRpt extends javax.swing.JPanel {
             MainFrame.bslog(e);
         } 
          
-         return sb == null ? "no data" : sb.toString();
+         return (sb == null) ? "no data" : sb.toString();
     }
     
     public String[] processPost() throws IOException {

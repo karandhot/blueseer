@@ -747,8 +747,9 @@ public class EDILoadMaint extends javax.swing.JPanel {
         }
         String postData = sb.toString();
         if (postData.endsWith(",")) {
-                    postData = postData.substring(0, postData.length() - 1);
+            postData = postData.substring(0, postData.length() - 1);
         }
+        System.out.println("XXXfilestring=" + postData);
         ArrayList<String[]> list = new ArrayList<String[]>();
         list.add(new String[]{"id","runEDI"});
         
