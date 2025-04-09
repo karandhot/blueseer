@@ -244,6 +244,7 @@ public class OrderRpt extends javax.swing.JPanel {
            
             BlueSeerUtils.endTask(message);
             enableAll();
+            bsmf.MainFrame.show("export file created");
             
             } catch (Exception e) {
                 MainFrame.bslog(e);
@@ -510,6 +511,8 @@ public class OrderRpt extends javax.swing.JPanel {
                 
                 } // for each line in tablereport
                 
+                bsmf.MainFrame.show("export file created");
+                
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
@@ -544,6 +547,7 @@ public class OrderRpt extends javax.swing.JPanel {
         
         String[] dar = data.split("\\R");
         try {
+            output = new BufferedWriter(new FileWriter(f));
             for (String d : dar) {
                    output.write(d);
             }
@@ -1340,7 +1344,7 @@ try {
             } else {
                exportOrderDetail(tableorder);
             }
-        bsmf.MainFrame.show("export file created");
+        
        }
     }//GEN-LAST:event_btexportActionPerformed
 
