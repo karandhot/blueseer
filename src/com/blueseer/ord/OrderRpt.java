@@ -230,7 +230,7 @@ public class OrderRpt extends javax.swing.JPanel {
                     break;
                 
                 case "runReport":
-                    message = processPost();
+                    message = serverPostOrderReport();
                     break;    
                     
                 default:
@@ -770,6 +770,40 @@ public class OrderRpt extends javax.swing.JPanel {
        
         return x;
     }
+    
+    public String[] serverPostOrderReport() throws IOException {
+        String[] x = new String[2];
+      
+        String fromcust = "";
+        String tocust = "";
+        if (ddfromcust.getSelectedItem() == null || ddfromcust.getSelectedItem().toString().isEmpty()) {
+                    fromcust = bsmf.MainFrame.lowchar;
+        } else {
+            fromcust = ddfromcust.getSelectedItem().toString();
+        }
+         if (ddtocust.getSelectedItem() == null || ddtocust.getSelectedItem().toString().isEmpty()) {
+            tocust = bsmf.MainFrame.hichar;
+        } else {
+            tocust = ddtocust.getSelectedItem().toString();
+        }
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","orderReport"});
+        list.add(new String[]{"fromdate",setDateDB(dcFrom.getDate())});
+        list.add(new String[]{"todate",setDateDB(dcTo.getDate())});
+        list.add(new String[]{"fromcust", fromcust});
+        list.add(new String[]{"tocust",tocust});
+        list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
+        list.add(new String[]{"datetype",dddatetype.getSelectedItem().toString()});
+        
+      //  rData = sendServerPost(list, postData, null, "dataServORD");
+        rData = sendServerPost(list, "", null, "dataServORD");
+        
+        x[0] = "0";
+        x[1] = "Processing complete";
+       
+        return x;
+    }
+    
     
     public void btRunLocal() {
         try {
