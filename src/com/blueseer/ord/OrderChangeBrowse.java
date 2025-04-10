@@ -289,6 +289,11 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                 case "exportOrderChange":
                     message = processPost();
                     break;
+                    
+                case "runReport":
+                    message = serverPostOrderReport();
+                    break;
+                    
                 default:
                     message = new String[]{"1", "unknown action"};
             }
@@ -304,13 +309,20 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
             try {
             String[] message = get();
            
-            BlueSeerUtils.endTask(message);
-            enableAll();
-            if (rData != null) {
-              createExportFile(rData);
-              bsmf.MainFrame.show("export file created");
-            }
+            BlueSeerUtils.endTask(message);           
             
+            enableAll();
+            if (this.action.equals("exportOrderChange")) {
+                if (rData != null && ! rData.isBlank()) {
+                  createExportFile(rData);
+                  bsmf.MainFrame.show("export file created");
+                }
+            }
+            if (this.action.equals("runReport")) {
+                if (rData != null && ! rData.isBlank()) {
+                  fillReportTable(rData);
+                }
+            }
             
             } catch (Exception e) {
                 MainFrame.bslog(e);
@@ -505,6 +517,20 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         modeldetail.setNumRows(0);
         tablereport.setModel(mymodel);
         tabledetail.setModel(modeldetail);
+        
+          tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+          tablereport.getColumnModel().getColumn(10).setMaxWidth(100);
+          tablereport.getColumnModel().getColumn(11).setMaxWidth(100);
+          tablereport.getColumnModel().getColumn(12).setMaxWidth(100);
+          
+       Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
+         while (en.hasMoreElements()) {
+             TableColumn tc = en.nextElement();
+             if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+                 continue;
+             }
+             tc.setCellRenderer(new OrderChangeBrowse.SomeRenderer());
+         }
         
         btdetail.setEnabled(false);
         detailpanel.setVisible(false);
@@ -769,7 +795,193 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         return x;
     }
     
+    public String[] serverPostOrderReport() throws IOException {
+        String[] x = new String[2];
+      
+        String fromcust = "";
+        String tocust = "";
+        if (ddfromcust.getSelectedItem() == null || ddfromcust.getSelectedItem().toString().isEmpty()) {
+                    fromcust = bsmf.MainFrame.lowchar;
+        } else {
+            fromcust = ddfromcust.getSelectedItem().toString();
+        }
+         if (ddtocust.getSelectedItem() == null || ddtocust.getSelectedItem().toString().isEmpty()) {
+            tocust = bsmf.MainFrame.hichar;
+        } else {
+            tocust = ddtocust.getSelectedItem().toString();
+        }
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","orderChangeReport"});
+        list.add(new String[]{"fromdate",setDateDB(dcfrom.getDate())});
+        list.add(new String[]{"todate",setDateDB(dcto.getDate())});
+        list.add(new String[]{"fromcust", fromcust});
+        list.add(new String[]{"tocust",tocust});
+        list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
+        list.add(new String[]{"posearch",tbsearch.getText()});
+        list.add(new String[]{"isdetached", String.valueOf(cbdetached.isSelected())});
+        rData = sendServerPost(list, "", null, "dataServORD");
+        
+        x[0] = "0";
+        x[1] = "Processing complete";
+       
+        return x;
+    }
     
+    public void fillReportTable(String data) {
+        mymodel.setNumRows(0);
+        int i = 0;
+        String[] dar = data.split("\\n");
+        for (String d : dar) {
+        String[] s = d.split(",", -1);
+                        
+                           
+         if (! cbopen.isSelected() && s[8].equals("open"))
+         continue;
+         if (! cbclose.isSelected() && s[8].equals("closed"))
+         continue;
+         if (! cbapplied.isSelected() && s[8].equals("applied"))
+         continue;
+                           
+                    i++;         
+                    mymodel.addRow(new Object[]{ BlueSeerUtils.clickbasket, 
+                                s[0], //res.getString("soc_id"),
+                                s[1],// res.getString("so_nbr"),
+                                s[2],// res.getString("soc_po"),
+                                s[3], //res.getString("soc_chgdate"),
+                                s[4], //res.getString("cm_name"),
+                                s[5], //res.getString("so_due_date"),
+                                s[6], //res.getString("soc_duedate"),
+                                s[7], //change,
+                                s[8],// status,
+                                BlueSeerUtils.clickchange,
+                                BlueSeerUtils.clickvoid,
+                                BlueSeerUtils.clickgear
+                            });
+                   
+                }  
+                    
+               lbltotrecs.setText(String.valueOf(i));
+        
+    }
+    
+    public void btRunLocal() {
+         try {
+            Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+               mymodel.setNumRows(0);
+        
+              
+                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+                
+                 int i = 0;
+                 String change = "";
+                 
+                 
+                 String custfrom = "";
+                 String custto = "";
+                 String status = "";
+                 
+                 
+                 if (ddfromcust.getSelectedItem() != null)
+                     custfrom = ddfromcust.getSelectedItem().toString();
+                 
+                 if (ddtocust.getSelectedItem() != null)
+                     custto = ddtocust.getSelectedItem().toString();
+                 
+                 
+                 
+                 
+                // tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+                 
+             if (! tbsearch.getText().isBlank()) {
+                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
+                     " from so_mstr inner join so_chg on soc_po = so_po inner join cm_mstr on cm_code = so_cust where " +
+                        " so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +
+                        " so_po like " + "'%" + tbsearch.getText() + "%'" +
+                        " order by so_nbr desc ;");
+                 
+             } else if (cbdetached.isSelected()) {
+                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
+                     " from so_chg left outer join so_mstr on so_po = soc_po left outer join cm_mstr on cm_code = so_cust where " +
+                         " soc_billto >= " + "'" + custfrom + "'" + " AND " +        
+                        " soc_billto <= " + "'" + custto + "'" + " AND " +
+                        " soc_chgdate >= " + "'" + setDateDB(dcfrom.getDate()) + "'" + " AND " +
+                        " soc_chgdate <= " + "'" + setDateDB(dcto.getDate()) + "'" + 
+                        " order by soc_id desc ;");
+             } else {
+                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
+                     " from so_mstr inner join so_chg on soc_po = so_po inner join cm_mstr on cm_code = so_cust where " +
+                        " so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +
+                        " so_cust >= " + "'" + custfrom + "'" + " AND " +        
+                        " so_cust <= " + "'" + custto + "'" + " AND " +
+                        " so_create_date >= " + "'" + setDateDB(dcfrom.getDate()) + "'" + " AND " +
+                        " so_create_date <= " + "'" + setDateDB(dcto.getDate()) + "'" +     
+                        " order by so_nbr desc ;");
+             }  
+             
+                     
+                  
+                
+                       while (res.next()) {
+                    
+                        if (res.getString("so_nbr") != null && ! res.getString("so_nbr").isBlank()) {   
+                        change = _evaluateOrderChange(res.getString("soc_id"), res.getString("so_po"), con); 
+                        status = res.getString("soc_status");
+                        } else {
+                            change = "N/A";
+                            status = "detached";
+                        }
+                           
+                             if (! cbopen.isSelected() && status.equals("open"))
+                             continue;
+                             if (! cbclose.isSelected() && status.equals("closed"))
+                             continue;
+                             if (! cbapplied.isSelected() && status.equals("applied"))
+                             continue;
+                           
+                    i++;         
+                    mymodel.addRow(new Object[]{ BlueSeerUtils.clickbasket, 
+                                res.getString("soc_id"),
+                                res.getString("so_nbr"),
+                                res.getString("soc_po"),
+                                res.getString("soc_chgdate"),
+                                res.getString("cm_name"),
+                                res.getString("so_due_date"),
+                                res.getString("soc_duedate"),
+                                change,
+                                status,
+                                BlueSeerUtils.clickchange,
+                                BlueSeerUtils.clickvoid,
+                                BlueSeerUtils.clickgear
+                            });
+                   
+                } // while   
+                    
+               lbltotrecs.setText(String.valueOf(i));
+               
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+     }
     
     
     /**
@@ -1102,134 +1314,13 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
 
-    
-try {
-            Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
+        if (bsmf.MainFrame.remoteDB) {
+            disableAll(); 
+            executeTask("runReport", null);
         } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
+           btRunLocal();
         }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-               mymodel.setNumRows(0);
-        
-              tablereport.setModel(mymodel);
-              tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-              tablereport.getColumnModel().getColumn(10).setMaxWidth(100);
-              tablereport.getColumnModel().getColumn(11).setMaxWidth(100);
-              tablereport.getColumnModel().getColumn(12).setMaxWidth(100);
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                
-                 int i = 0;
-                 String change = "";
-                 
-                 
-                 String custfrom = "";
-                 String custto = "";
-                 String status = "";
-                 
-                 
-                 if (ddfromcust.getSelectedItem() != null)
-                     custfrom = ddfromcust.getSelectedItem().toString();
-                 
-                 if (ddtocust.getSelectedItem() != null)
-                     custto = ddtocust.getSelectedItem().toString();
-                 
-                 
-                 
-                  Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
-                 while (en.hasMoreElements()) {
-                     TableColumn tc = en.nextElement();
-                     if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
-                         continue;
-                     }
-                     tc.setCellRenderer(new OrderChangeBrowse.SomeRenderer());
-                 }
-                // tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                 
-             if (! tbsearch.getText().isBlank()) {
-                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
-                     " from so_mstr inner join so_chg on soc_po = so_po inner join cm_mstr on cm_code = so_cust where " +
-                        " so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +
-                        " so_po like " + "'%" + tbsearch.getText() + "%'" +
-                        " order by so_nbr desc ;");
-                 
-             } else if (cbdetached.isSelected()) {
-                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
-                     " from so_chg left outer join so_mstr on so_po = soc_po left outer join cm_mstr on cm_code = so_cust where " +
-                         " soc_billto >= " + "'" + custfrom + "'" + " AND " +        
-                        " soc_billto <= " + "'" + custto + "'" + " AND " +
-                        " soc_chgdate >= " + "'" + setDateDB(dcfrom.getDate()) + "'" + " AND " +
-                        " soc_chgdate <= " + "'" + setDateDB(dcto.getDate()) + "'" + 
-                        " order by soc_id desc ;");
-             } else {
-                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
-                     " from so_mstr inner join so_chg on soc_po = so_po inner join cm_mstr on cm_code = so_cust where " +
-                        " so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +
-                        " so_cust >= " + "'" + custfrom + "'" + " AND " +        
-                        " so_cust <= " + "'" + custto + "'" + " AND " +
-                        " so_create_date >= " + "'" + setDateDB(dcfrom.getDate()) + "'" + " AND " +
-                        " so_create_date <= " + "'" + setDateDB(dcto.getDate()) + "'" +     
-                        " order by so_nbr desc ;");
-             }  
-             
-                     
-                  
-                
-                       while (res.next()) {
-                    
-                        if (res.getString("so_nbr") != null && ! res.getString("so_nbr").isBlank()) {   
-                        change = _evaluateOrderChange(res.getString("soc_id"), res.getString("so_po"), con); 
-                        status = res.getString("soc_status");
-                        } else {
-                            change = "N/A";
-                            status = "detached";
-                        }
-                           
-                             if (! cbopen.isSelected() && status.equals("open"))
-                             continue;
-                             if (! cbclose.isSelected() && status.equals("closed"))
-                             continue;
-                             if (! cbapplied.isSelected() && status.equals("applied"))
-                             continue;
-                           
-                    i++;         
-                    mymodel.addRow(new Object[]{ BlueSeerUtils.clickbasket, 
-                                res.getString("soc_id"),
-                                res.getString("so_nbr"),
-                                res.getString("soc_po"),
-                                res.getString("soc_chgdate"),
-                                res.getString("cm_name"),
-                                res.getString("so_due_date"),
-                                res.getString("soc_duedate"),
-                                change,
-                                status,
-                                BlueSeerUtils.clickchange,
-                                BlueSeerUtils.clickvoid,
-                                BlueSeerUtils.clickgear
-                            });
-                   
-                } // while   
-                    
-               lbltotrecs.setText(String.valueOf(i));
-               
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+
        
     }//GEN-LAST:event_btRunActionPerformed
 
@@ -1276,16 +1367,15 @@ try {
     }//GEN-LAST:event_btprintActionPerformed
 
     private void btexportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btexportActionPerformed
-        if (tablereport != null && mymodel.getRowCount() > 0) {
-          disableAll();  
+        if (tablereport != null && mymodel.getRowCount() > 0) { // still necessary to click run if only for the exportOrderDetail (local grab)
             if (bsmf.MainFrame.remoteDB) {
+                disableAll(); 
                 executeTask("exportOrderChange", null);
             } else {
                OVData.exportOrderChange(tablereport);
-               bsmf.MainFrame.show("export file created");
             }
-        
        }
+        
     }//GEN-LAST:event_btexportActionPerformed
 
     private void tabledetailMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabledetailMouseClicked

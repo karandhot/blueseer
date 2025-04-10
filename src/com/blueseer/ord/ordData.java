@@ -4924,6 +4924,93 @@ public class ordData {
         return sb.toString();
     }
     
+    public static String getOrderChangeReportData(String[] keys) {
+        StringBuilder sb = new StringBuilder();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+             
+               String change = "";
+               String status = "";
+                
+                // keys :   fromdate, todate, fromcust, tocust, site, posearch, isdetached
+             
+                 if (! keys[5].isBlank()) {
+                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
+                     " from so_mstr inner join so_chg on soc_po = so_po inner join cm_mstr on cm_code = so_cust where " +
+                        " so_site = " + "'" + keys[4] + "'" + " AND " +
+                        " so_po like " + "'%" + keys[5] + "%'" +
+                        " order by so_nbr desc ;");
+                 
+             } else if (keys[6].equals("true")) {
+                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
+                     " from so_chg left outer join so_mstr on so_po = soc_po left outer join cm_mstr on cm_code = so_cust where " +
+                         " soc_billto >= " + "'" + keys[2] + "'" + " AND " +        
+                        " soc_billto <= " + "'" + keys[3] + "'" + " AND " +
+                        " soc_chgdate >= " + "'" + keys[0] + "'" + " AND " +
+                        " soc_chgdate <= " + "'" + keys[1] + "'" + 
+                        " order by soc_id desc ;");
+             } else {
+                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
+                     " from so_mstr inner join so_chg on soc_po = so_po inner join cm_mstr on cm_code = so_cust where " +
+                        " so_site = " + "'" + keys[4] + "'" + " AND " +
+                        " so_cust >= " + "'" + keys[2] + "'" + " AND " +        
+                        " so_cust <= " + "'" + keys[3] + "'" + " AND " +
+                        " so_create_date >= " + "'" + keys[0] + "'" + " AND " +
+                        " so_create_date <= " + "'" + keys[1] + "'" +     
+                        " order by so_nbr desc ;");
+             }  
+                
+                  
+                
+                    while (res.next()) {
+
+                   if (res.getString("so_nbr") != null && ! res.getString("so_nbr").isBlank()) {   
+                        change = _evaluateOrderChange(res.getString("soc_id"), res.getString("so_po"), con); 
+                        status = res.getString("soc_status");
+                        } else {
+                            change = "N/A";
+                            status = "detached";
+                        }
+                    
+                    sb.append(res.getString("soc_id")).append(",");
+                    sb.append(res.getString("so_nbr")).append(",");
+                    sb.append(res.getString("soc_po")).append(",");
+                    sb.append(res.getString("soc_chgdate")).append(",");
+                    sb.append(res.getString("cm_name")).append(",");
+                    sb.append(res.getString("so_due_date")).append(",");
+                    sb.append(res.getString("soc_duedate")).append(",");
+                    sb.append(change).append(",");
+                    sb.append(status).append("\n");
+                       
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return sb.toString();
+    }
+    
     
     public record salesOrder(String[] m, so_mstr so, ArrayList<sod_det> sod,
         ArrayList<sos_det> sos, ArrayList<sod_tax> sodtax, ArrayList<so_tax> sotax, cms_det cms, ArrayList<String[]> someta) {

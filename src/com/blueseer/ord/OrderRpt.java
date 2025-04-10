@@ -737,8 +737,7 @@ public class OrderRpt extends javax.swing.JPanel {
          
          return (sb == null) ? "no data" : sb.toString();
     }
-       
-    
+        
     public String[] processPost() throws IOException {
         String[] x = new String[2];
       
@@ -803,8 +802,7 @@ public class OrderRpt extends javax.swing.JPanel {
        
         return x;
     }
-    
-    
+        
     public void btRunLocal() {
         try {
             Connection con = null;
