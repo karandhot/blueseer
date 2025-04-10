@@ -28,10 +28,13 @@ package com.blueseer.ord;
 
 import com.blueseer.pur.*;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static bsmf.MainFrame.checkperms;
 import static bsmf.MainFrame.db;
+import static bsmf.MainFrame.ds;
+import static bsmf.MainFrame.pass;
 import java.awt.Color;
 import java.awt.Component;
 import java.sql.DriverManager;
@@ -48,13 +51,12 @@ import javax.swing.JCheckBox;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
+import static com.blueseer.edi.ediData.getEDIMetaValueAsKVStringPair;
 import static com.blueseer.edi.ediData.getEDIMetaValueDetail;
 import static com.blueseer.edi.ediData.getEDIMetaValueHeader;
 import static com.blueseer.ord.ordData._evaluateOrderChange;
@@ -67,11 +69,18 @@ import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.vdr.venData;
 import java.awt.Dimension;
+import java.awt.FileDialog;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.util.Calendar;
 import java.util.Enumeration;
@@ -83,6 +92,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
@@ -95,7 +105,7 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
      public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
      
      public String currentid = "";
-                          
+     public String rData;                     
      
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("detail"), 
@@ -254,7 +264,67 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
     }
     }
 
-    
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rData = "";
+            
+            
+            switch(this.action) {
+                case "exportOrderChange":
+                    message = processPost();
+                    break;
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            enableAll();
+            if (rData != null) {
+              createExportFile(rData);
+              bsmf.MainFrame.show("export file created");
+            }
+            
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+   
     
     
     /**
@@ -391,6 +461,20 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
        }
     }
     
+     public void disableAll() {
+        btRun.setEnabled(false);
+        btexport.setEnabled(false);
+        btdetail.setEnabled(false);
+        btprint.setEnabled(false);
+    }
+    
+    public void enableAll() {
+        btRun.setEnabled(true);
+        btexport.setEnabled(true);
+        btdetail.setEnabled(true);
+        btprint.setEnabled(true);
+    }
+    
     public void clearAll() {
         lbltotrecs.setText("0");
         labeldettotal.setText("");
@@ -431,29 +515,29 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
             ddsite.addItem(site);
         }
         
-        ddcustfrom.removeAllItems();
+        ddfromcust.removeAllItems();
         ArrayList custs = cusData.getcustmstrlist();
         for (Object cust : custs) {
-            ddcustfrom.addItem(cust);
+            ddfromcust.addItem(cust);
         }
-        ddcustfrom.insertItemAt("", 0);
-        ddcustfrom.setSelectedIndex(0);
+        ddfromcust.insertItemAt("", 0);
+        ddfromcust.setSelectedIndex(0);
         
         
         
         
-        ddcustto.removeAllItems();
+        ddtocust.removeAllItems();
         for (Object cust : custs) {
-            ddcustto.addItem(cust);
+            ddtocust.addItem(cust);
         }
-        ddcustto.insertItemAt("", 0);
+        ddtocust.insertItemAt("", 0);
        // ddcustto.setSelectedIndex(0);
         
-        if (ddcustfrom.getItemCount() > 0)
-        ddcustfrom.setSelectedIndex(0);
+        if (ddfromcust.getItemCount() > 0)
+        ddfromcust.setSelectedIndex(0);
         
-        if (ddcustto.getItemCount() > 0)
-        ddcustto.setSelectedIndex(ddcustto.getItemCount() - 1);
+        if (ddtocust.getItemCount() > 0)
+        ddtocust.setSelectedIndex(ddtocust.getItemCount() - 1);
     }
     
     public void initvars(String[] arg) {
@@ -544,6 +628,147 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         dialog.setVisible(true);
     }
     
+    public static void createExportFile(String data) {
+       FileDialog fDialog;
+        fDialog = new FileDialog(new Frame(), "Save", FileDialog.SAVE);
+        fDialog.setVisible(true);
+       // fDialog.setFile("data.csv");
+        String path = fDialog.getDirectory() + fDialog.getFile();
+        File f = new File(path);
+        BufferedWriter output = null;
+        
+        String[] dar = data.split("\\n");
+        try {
+            output = new BufferedWriter(new FileWriter(f));
+            for (String d : dar) {
+                   output.write(d);
+                   output.write("\n");
+            }
+        } catch (IOException ex) {
+               bslog(ex);
+        } finally {
+            if (output != null) {
+                try {
+                    output.close();
+                } catch (IOException ex) {
+                    bslog(ex);
+                }
+            }
+        }
+        
+        
+    }
+    
+    public static String exportOrderChangeSRV(String fromdate, String todate, String fromcust, String tocust, String site) {
+        
+        StringBuilder sb = new StringBuilder();
+         try{
+             
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            String headerkvpair = "";
+            String detailkvpair = "";
+            
+            
+            
+           String header = "ChangeID, Sales Order Number, PO Number, Order Date, Change Date, Customer Name, Shipto Name, Shipto City, Shipto State, Shipto Zip,  Original DueDate, New DueDate, Remarks, Change Remarks, Order Line Number, Change Code, Item Number, Item Description, Sku Number, Original Order Quantity, Change Quantity, Original Order Price, Change Price, HeaderKVPair, DetailKVPair ";
+           sb.append(header).append("\n");
+            try {
+                // for (int i = 0; i < list.size(); i++) {
+               
+               // headerkvpair = getEDIMetaValueAsKVString(tablereport.getValueAt(i, 4).toString(), "header","");
+                
+               res = st.executeQuery("select soc_id, so_nbr, so_po, so_create_date, soc_chgdate, " +
+                        " cm_name, cms_name, cms_city, cms_state, cms_zip,  so_due_date, soc_duedate, " +
+                        " so_rmks, soc_remarks, sod_line, sodc_change, sod_item, sod_desc, sod_custitem, " +
+                        " sod_ord_qty, sodc_qty, sod_listprice, sodc_price from so_mstr " + 
+                        " inner join sod_det on sod_nbr = so_nbr " +
+                        " inner join cm_mstr on cm_code = so_cust " +
+                        " inner join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
+                        " left outer join sod_chg on sodc_po = sod_po and sodc_line = sod_line " +
+                        " left outer join so_chg on soc_id = sodc_id " +
+                        " where so_site = " + "'" + site + "'" + " AND " +
+                        " so_cust >= " + "'" + fromcust + "'" + " AND " +        
+                        " so_cust <= " + "'" + tocust + "'" + " AND " +
+                        " so_create_date >= " + "'" + fromdate + "'" + " AND " +
+                        " so_create_date <= " + "'" + todate + "'" +     
+                        " order by soc_id ;");
+               
+               
+                int k = 0;
+                while (res.next()) {
+                    k++;
+                     StringBuilder line = new StringBuilder();
+                     for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
+                       line.append(res.getString(j).replace(",","")).append(",");
+                     }
+                     String[] hd = getEDIMetaValueAsKVStringPair(res.getString("soc_id"), res.getString("sod_line"));
+                    // headerkvpair = getEDIMetaValueAsKVString(res.getString("so_nbr"), "header", "");
+                    // detailkvpair = getEDIMetaValueAsKVString(res.getString("so_nbr"), "detail", res.getString("sod_line"));
+                     
+                     sb.append(line.toString()).append(hd[0]).append(",").append(hd[1]).append("\n");
+                    // output.write(line.toString() + headerkvpair + "," + detailkvpair);
+                    // output.write("\n");
+                     // now add detailkvpair
+                     
+                 }
+               
+                
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        } catch (SQLException e){
+            MainFrame.bslog(e);
+        } 
+         
+         return (sb == null) ? "no data" : sb.toString();
+    }
+    
+    public String[] processPost() throws IOException {
+        String[] x = new String[2];
+      
+        String fromcust = "";
+        String tocust = "";
+        if (ddfromcust.getSelectedItem() == null || ddfromcust.getSelectedItem().toString().isEmpty()) {
+                    fromcust = bsmf.MainFrame.lowchar;
+        } else {
+            fromcust = ddfromcust.getSelectedItem().toString();
+        }
+         if (ddtocust.getSelectedItem() == null || ddtocust.getSelectedItem().toString().isEmpty()) {
+            tocust = bsmf.MainFrame.hichar;
+        } else {
+            tocust = ddtocust.getSelectedItem().toString();
+        }
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","exportOrderChange"});
+        list.add(new String[]{"fromdate",setDateDB(dcfrom.getDate())});
+        list.add(new String[]{"todate",setDateDB(dcto.getDate())});
+        list.add(new String[]{"fromcust", fromcust});
+        list.add(new String[]{"tocust",tocust});
+        list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
+        
+      //  rData = sendServerPost(list, postData, null, "dataServORD");
+        rData = sendServerPost(list, "", null, "dataServORD");
+        
+        x[0] = "0";
+        x[1] = "Processing complete";
+       
+        return x;
+    }
+    
     
     
     
@@ -570,8 +795,8 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         btRun = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
-        ddcustto = new javax.swing.JComboBox();
-        ddcustfrom = new javax.swing.JComboBox();
+        ddtocust = new javax.swing.JComboBox();
+        ddfromcust = new javax.swing.JComboBox();
         ddsite = new javax.swing.JComboBox();
         cbclose = new javax.swing.JCheckBox();
         cbopen = new javax.swing.JCheckBox();
@@ -740,8 +965,8 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(ddcustfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(ddcustto, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(ddfromcust, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(ddtocust, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(12, 12, 12)
                         .addComponent(jLabel5)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -778,7 +1003,7 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel1)
-                        .addComponent(ddcustfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(ddfromcust, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(btRun)
                         .addComponent(btdetail)
                         .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -793,7 +1018,7 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel4)
-                        .addComponent(ddcustto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(ddtocust, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(cbdetached))
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(cbclose)
@@ -906,11 +1131,11 @@ try {
                  String status = "";
                  
                  
-                 if (ddcustfrom.getSelectedItem() != null)
-                     custfrom = ddcustfrom.getSelectedItem().toString();
+                 if (ddfromcust.getSelectedItem() != null)
+                     custfrom = ddfromcust.getSelectedItem().toString();
                  
-                 if (ddcustto.getSelectedItem() != null)
-                     custto = ddcustto.getSelectedItem().toString();
+                 if (ddtocust.getSelectedItem() != null)
+                     custto = ddtocust.getSelectedItem().toString();
                  
                  
                  
@@ -1051,9 +1276,15 @@ try {
     }//GEN-LAST:event_btprintActionPerformed
 
     private void btexportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btexportActionPerformed
-       if (tablereport != null && mymodel.getRowCount() > 0) {
-        OVData.exportOrderChange(tablereport);
-        bsmf.MainFrame.show("export file created");
+        if (tablereport != null && mymodel.getRowCount() > 0) {
+          disableAll();  
+            if (bsmf.MainFrame.remoteDB) {
+                executeTask("exportOrderChange", null);
+            } else {
+               OVData.exportOrderChange(tablereport);
+               bsmf.MainFrame.show("export file created");
+            }
+        
        }
     }//GEN-LAST:event_btexportActionPerformed
 
@@ -1086,9 +1317,9 @@ try {
     private javax.swing.JCheckBox cbopen;
     private com.toedter.calendar.JDateChooser dcfrom;
     private com.toedter.calendar.JDateChooser dcto;
-    private javax.swing.JComboBox ddcustfrom;
-    private javax.swing.JComboBox ddcustto;
+    private javax.swing.JComboBox ddfromcust;
     private javax.swing.JComboBox ddsite;
+    private javax.swing.JComboBox ddtocust;
     private javax.swing.JPanel detailpanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

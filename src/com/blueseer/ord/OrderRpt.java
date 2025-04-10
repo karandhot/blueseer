@@ -620,7 +620,7 @@ public class OrderRpt extends javax.swing.JPanel {
                      for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
                        line.append(res.getString(j).replace(",","")).append(",");
                      }
-                     String[] hd = getEDIMetaValueAsKVStringPair(res.getString("so_nbr"), res.getString("sod_line"));
+                     String[] hd = getEDIMetaValueAsKVStringPair(res.getString("so_po"), res.getString("sod_line"));
                     // headerkvpair = getEDIMetaValueAsKVString(res.getString("so_nbr"), "header", "");
                     // detailkvpair = getEDIMetaValueAsKVString(res.getString("so_nbr"), "detail", res.getString("sod_line"));
                      
@@ -727,19 +727,7 @@ public class OrderRpt extends javax.swing.JPanel {
     
     public String[] processPost() throws IOException {
         String[] x = new String[2];
-        /*
-        int j = 0;  
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0 ; i < mymodel.getRowCount(); i++) {  
-                    sb.append(mymodel.getValueAt(i,2).toString()).append(",");
-                    sb.append(mymodel.getValueAt(i,4).toString());
-                    sb.append("|");
-        }
-        */
-      //  String postData = sb.toString();
-       // if (postData.endsWith(",")) {
-       //             postData = postData.substring(0, postData.length() - 1);
-       // }
+      
         String fromcust = "";
         String tocust = "";
         if (ddfromcust.getSelectedItem() == null || ddfromcust.getSelectedItem().toString().isEmpty()) {

@@ -51,6 +51,7 @@ import static com.blueseer.edi.apiUtils.postAS2;
 import static com.blueseer.edi.apiUtils.runAPIPost;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
+import com.blueseer.ord.OrderChangeBrowse;
 import com.blueseer.ord.OrderRpt;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
@@ -229,6 +230,13 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                   String site = request.getHeader("site");
                 //  List<String> zz = Arrays.asList(sbabove.toString().split("\\|"));                  
                   response.getWriter().println(OrderRpt.exportOrderDetailSRV(fromdate, todate, fromcust, tocust, site));
+                } else if (id.equals("exportOrderChange")) {
+                  String fromdate = request.getHeader("fromdate");
+                  String todate = request.getHeader("todate");
+                  String fromcust = request.getHeader("fromcust");
+                  String tocust = request.getHeader("tocust");
+                  String site = request.getHeader("site");               
+                  response.getWriter().println(OrderChangeBrowse.exportOrderChangeSRV(fromdate, todate, fromcust, tocust, site));  
                 } else {
                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                   response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": unknown ID " + "\n" + getHeaders(request)); 

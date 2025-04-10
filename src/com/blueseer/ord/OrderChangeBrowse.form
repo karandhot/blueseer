@@ -217,8 +217,8 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="ddcustfrom" min="-2" pref="117" max="-2" attributes="0"/>
-                                  <Component id="ddcustto" min="-2" pref="117" max="-2" attributes="0"/>
+                                  <Component id="ddfromcust" min="-2" pref="117" max="-2" attributes="0"/>
+                                  <Component id="ddtocust" min="-2" pref="117" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                               <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
@@ -264,7 +264,7 @@
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="ddcustfrom" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="ddfromcust" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="btRun" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="btdetail" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="ddsite" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -282,7 +282,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="ddcustto" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="ddtocust" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="cbdetached" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="103" alignment="0" groupAlignment="3" attributes="0">
@@ -340,14 +340,14 @@
                 <Property name="name" type="java.lang.String" value="lblfromvend" noResource="true"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JComboBox" name="ddcustto">
+            <Component class="javax.swing.JComboBox" name="ddtocust">
               <Properties>
                 <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
                   <StringArray count="0"/>
                 </Property>
               </Properties>
             </Component>
-            <Component class="javax.swing.JComboBox" name="ddcustfrom">
+            <Component class="javax.swing.JComboBox" name="ddfromcust">
               <Properties>
                 <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
                   <StringArray count="0"/>
