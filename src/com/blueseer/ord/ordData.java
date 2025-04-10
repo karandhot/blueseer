@@ -48,6 +48,8 @@ import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
+import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
+import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.parseDateLD;
@@ -68,10 +70,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.table.TableColumn;
 
 /**
  *
@@ -4770,6 +4774,155 @@ public class ordData {
         return x;
         
     }   
+    
+    public static String getOrderReportData(String[] keys) {
+        StringBuilder sb = new StringBuilder();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+             
+                double qty = 0;
+                double dol = 0;
+                double total = 0;
+                double tax = 0;
+                double disc = 0;
+                double charge = 0;
+                int i = 0;
+                String fromcust = "";
+                String tocust = "";
+                String fromcode = "";
+                String tocode = "";
+                String planstatus = "";
+                
+                // keys :   fromdate, todate, fromcust, tocust, site, datetype
+             
+                 if (keys[5].equals("create")) {
+                    res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
+                        " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
+                        " sum(sod_taxamt) as matltax, " +
+                        " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
+                        " (select sum(case when (sos_type = 'charge' or sos_type = 'shipping ADD') and sos_amttype = 'amount' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'charge'," + 
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = so_nbr)as 'taxpercent', " +
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = so_nbr) as 'taxcharge' " +
+                        " FROM  so_mstr left outer join sod_det on sod_nbr = so_nbr " +
+                        " where so_create_date >= " + "'" + keys[0]  + "'" + 
+                        " AND so_create_date <= " + "'" + keys[1] + "'" + 
+                        " AND so_cust >= " + "'" + keys[2] + "'" + 
+                        " AND so_cust <= " + "'" + keys[3] + "'" + 
+                        " AND so_site = " + "'" + keys[4] + "'" + 
+                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;"); 
+                 } else if (keys[5].equals("due")) {
+                        res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
+                        " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
+                        " sum(sod_taxamt) as matltax, " +
+                        " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
+                        " (select sum(case when (sos_type = 'charge' or sos_type = 'shipping ADD') and sos_amttype = 'amount' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'charge'," + 
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = so_nbr)as 'taxpercent', " +
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = so_nbr) as 'taxcharge' " +
+                        " FROM  so_mstr left outer join sod_det on sod_nbr = so_nbr " +
+                        " where so_due_date >= " + "'" + keys[0]  + "'" + 
+                        " AND so_due_date <= " + "'" + keys[1] + "'" + 
+                        " AND so_cust >= " + "'" + keys[2] + "'" + 
+                        " AND so_cust <= " + "'" + keys[3] + "'" + 
+                        " AND so_site = " + "'" + keys[4] + "'" + 
+                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;");
+                 } else if (keys[5].equals("modified")) {
+                        res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
+                        " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
+                        " sum(sod_taxamt) as matltax, " +
+                        " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
+                        " (select sum(case when (sos_type = 'charge' or sos_type = 'shipping ADD') and sos_amttype = 'amount' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'charge'," + 
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = so_nbr)as 'taxpercent', " +
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = so_nbr) as 'taxcharge' " +
+                        " FROM  so_mstr left outer join sod_det on sod_nbr = so_nbr " +
+                        " where so_mod_date >= " + "'" + keys[0]  + "'" + 
+                        " AND so_mod_date <= " + "'" + keys[1] + "'" + 
+                        " AND so_cust >= " + "'" + keys[2] + "'" + 
+                        " AND so_cust <= " + "'" + keys[3] + "'" + 
+                        " AND so_site = " + "'" + keys[4] + "'" + 
+                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;");       
+                 } else {
+                        res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
+                        " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
+                        " sum(sod_taxamt) as matltax, " +
+                        " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
+                        " (select sum(case when (sos_type = 'charge' or sos_type = 'shipping ADD') and sos_amttype = 'amount' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'charge'," + 
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = so_nbr)as 'taxpercent', " +
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = so_nbr) as 'taxcharge' " +
+                        " FROM  so_mstr left outer join sod_det on sod_nbr = so_nbr " +
+                        " where so_ord_date >= " + "'" + keys[0]  + "'" + 
+                        " AND so_ord_date <= " + "'" + keys[1] + "'" + 
+                        " AND so_cust >= " + "'" + keys[2] + "'" + 
+                        " AND so_cust <= " + "'" + keys[3] + "'" + 
+                        " AND so_site = " + "'" + keys[4] + "'" + 
+                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;");
+                 }
+                
+                  
+                
+                    while (res.next()) {
+                    total = 0;
+                    tax = 0;
+                    disc = 0;
+                    charge = 0;
+
+                    if (res.getDouble("discountpercent") != 0) {
+                      disc = res.getDouble("totdol") * (res.getDouble("discountpercent") / 100.0);
+                    } else {
+                      disc = 0;  
+                    }
+                    charge = res.getDouble("charge");
+                    total = res.getDouble("totdol") + charge;  // charges added to total before taxing
+                    
+                    // now do tax
+                    if (res.getDouble("taxpercent") != 0) {
+                      tax = total * (res.getDouble("taxpercent") / 100.0);
+                    } else {
+                      tax = 0;  
+                    }
+                    tax += (res.getDouble("taxcharge") + res.getDouble("matltax"));
+                                        
+                    total = total + tax;
+                    
+                    sb.append(bsNumber(res.getString("so_nbr"))).append(",");
+                    sb.append(res.getString("so_cust")).append(",");
+                    sb.append(res.getString("so_po")).append(",");
+                    sb.append(res.getString("so_rmks")).append(",");
+                    sb.append(getDateDB(res.getString("so_create_date"))).append(",");
+                    sb.append(getDateDB(res.getString("so_due_date"))).append(",");
+                    sb.append(bsNumber(res.getDouble("totqty"))).append(",");
+                    sb.append(bsNumber(total)).append(",");
+                    sb.append(res.getString("so_curr")).append(",");
+                    sb.append(res.getString("so_status")).append(",");
+                    sb.append(res.getString("so_mod_date")).append("\n");
+                       
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return sb.toString();
+    }
     
     
     public record salesOrder(String[] m, so_mstr so, ArrayList<sod_det> sod,

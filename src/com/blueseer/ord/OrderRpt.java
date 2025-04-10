@@ -228,6 +228,11 @@ public class OrderRpt extends javax.swing.JPanel {
                 case "exportOrderDetail":
                     message = processPost();
                     break;
+                
+                case "runReport":
+                    message = processPost();
+                    break;    
+                    
                 default:
                     message = new String[]{"1", "unknown action"};
             }
@@ -245,9 +250,16 @@ public class OrderRpt extends javax.swing.JPanel {
            
             BlueSeerUtils.endTask(message);
             enableAll();
-            if (rData != null) {
-              createExportFile(rData);
-              bsmf.MainFrame.show("export file created");
+            if (this.action.equals("exportOrderDetail")) {
+                if (rData != null && rData.isBlank()) {
+                  createExportFile(rData);
+                  bsmf.MainFrame.show("export file created");
+                }
+            }
+            if (this.action.equals("runReport")) {
+                if (rData != null && rData.isBlank()) {
+                  fillReportTable(rData);
+                }
             }
             
             
@@ -453,6 +465,20 @@ public class OrderRpt extends javax.swing.JPanel {
         tabledetail.setModel(modeldetail);
         tableorder.getTableHeader().setReorderingAllowed(false);
         
+        tableorder.getColumnModel().getColumn(0).setMaxWidth(100);
+        tableorder.getColumnModel().getColumn(1).setMaxWidth(100);  
+        tableorder.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency()))); 
+
+        Enumeration<TableColumn> en = tableorder.getColumnModel().getColumns();
+         while (en.hasMoreElements()) {
+             TableColumn tc = en.nextElement();
+             if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+                 continue;
+             }
+             tc.setCellRenderer(new OrderRpt.SomeRenderer());
+         }
+        
+        
         btdetail.setEnabled(false);
         detailpanel.setVisible(false);
           
@@ -572,6 +598,70 @@ public class OrderRpt extends javax.swing.JPanel {
         
     }
     
+    public void fillReportTable(String data) {
+        
+        double qty = 0;
+        double dol = 0;
+        double total = 0;
+        int i = 0;
+        
+        mymodel.setNumRows(0);
+        
+        String[] dar = data.split("\\n");
+        for (String d : dar) {
+            String[] s = d.split(",", -1);
+            
+            
+            total = 0;
+                  
+                           
+          // bypass POs that are not in the search criteria
+            if (! tbpo.getText().isBlank() && ! s[2].contains(tbpo.getText())) {
+                continue;
+            }  
+            if (! tbrmks.getText().isBlank() && ! s[3].contains(tbrmks.getText())) {
+                continue;
+            }
+
+            if (! cbopen.isSelected() && s[9].equals(getGlobalProgTag("open")))
+                continue;
+            if (! cbclose.isSelected() && s[9].equals(getGlobalProgTag("closed")))
+                continue;
+            if (! cbbackorder.isSelected() && s[9].equals(getGlobalProgTag("backorder")))
+                continue;
+            if (! cberror.isSelected() && s[9].equals(getGlobalProgTag("error")))
+                continue;    
+            if (! cbcancel.isSelected() && s[9].equals(getGlobalProgTag("cancel")))
+                continue; 
+
+
+            dol = dol + BlueSeerUtils.bsParseDouble(s[7]);
+            qty = qty + BlueSeerUtils.bsParseDouble(s[6]);
+            i++;
+            
+            
+            mymodel.addRow(new Object[]{
+                            BlueSeerUtils.clickflag,
+                            BlueSeerUtils.clickbasket,
+                               bsNumber(s[0]), // bsNumber(res.getString("so_nbr")),
+                               s[1], // res.getString("so_cust"),
+                               s[2], // res.getString("so_po"),
+                               s[3], // res.getString("so_rmks"),
+                               getDateDB(s[4]), // getDateDB(res.getString("so_create_date")),
+                               getDateDB(s[5]), // getDateDB(res.getString("so_due_date")),
+                               bsNumber(s[6]),  //  bsNumber(res.getDouble("totqty")),
+                               BlueSeerUtils.bsParseDouble(s[7]), // total,
+                               s[8], // res.getString("so_curr"),
+                               s[9], // res.getString("so_status"),
+                               s[10] // res.getString("so_mod_date")
+                               // planstatus
+                            });
+        }
+        labeldollar.setText(String.valueOf(currformatDouble(dol)));
+        labelcount.setText(String.valueOf(i));
+        labelqty.setText(bsNumber(qty));
+    }
+    
     public static String exportOrderDetailSRV(String fromdate, String todate, String fromcust, String tocust, String site) {
         
         StringBuilder sb = new StringBuilder();
@@ -647,83 +737,7 @@ public class OrderRpt extends javax.swing.JPanel {
          
          return (sb == null) ? "no data" : sb.toString();
     }
-    
-    public static String exportOrderDetailSRVold(List<String> list) {
-        
-        StringBuilder sb = new StringBuilder();
-         try{
-             
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            
-            String headerkvpair = "";
-            String detailkvpair = "";
-            
-            
-            
-            String header = "Sales Order Number, PO Number, Order Create Date, PO/Order Date, Customer Name, Shipto ID, Shipto Name, DueDate, Order Line Number, Item Number, Item Description, Master Sku, Sku Number, AltItemNumber, UOM, Order Quantity, Order Price, Pack Qty, Header KVPair, Detail KVPair";
-          //  output.write(header + "\n");
-            sb.append(header).append("\n");
-            try {
-                // for (int i = 0; i < list.size(); i++) {
-                for (String s : list) {
-                  if (s.isBlank()) {
-                      continue;
-                  }  
-                  String[] arr = s.split(",");
-               // headerkvpair = getEDIMetaValueAsKVString(tablereport.getValueAt(i, 4).toString(), "header","");
-                headerkvpair = getEDIMetaValueAsKVString(arr[1], "header","");
-                    
-                res = st.executeQuery("select so_nbr, so_po, so_create_date, so_ord_date, " +
-                        " cm_name, cms_plantcode, cms_name, so_due_date, " +
-                        " sod_line, sod_item, sod_desc, '' as msku, sod_custitem, sod_char1, " +
-                        " sod_uom, sod_ord_qty, sod_netprice, sod_char2 from so_mstr " + 
-                        " inner join sod_det on sod_nbr = so_nbr " +
-                        " inner join cm_mstr on cm_code = so_cust " +
-                        " inner join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
-                        " where so_nbr = " + "'" + arr[0] + "'" + 
-                        " order by so_nbr, sod_line;");
-                int k = 0;
-                while (res.next()) {
-                    k++;
-                     StringBuilder line = new StringBuilder();
-                     for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
-                       line.append(res.getString(j).replace(",","")).append(",");
-                     }
-                     
-                     detailkvpair = getEDIMetaValueAsKVString(arr[1], "detail", res.getString("sod_line"));
-                     
-                     sb.append(line.toString()).append(headerkvpair).append(",").append(detailkvpair).append("\n");
-                    // output.write(line.toString() + headerkvpair + "," + detailkvpair);
-                    // output.write("\n");
-                     // now add detailkvpair
-                     
-                 }
-                
-                } // for each line in tablereport
-                
-           }
-            catch (SQLException s){
-                MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               con.close();
-        }
-        } catch (SQLException e){
-            MainFrame.bslog(e);
-        } 
-         
-         return (sb == null) ? "no data" : sb.toString();
-    }
-    
+       
     
     public String[] processPost() throws IOException {
         String[] x = new String[2];
@@ -757,7 +771,195 @@ public class OrderRpt extends javax.swing.JPanel {
         return x;
     }
     
-    
+    public void btRunLocal() {
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+             
+                double qty = 0;
+                double dol = 0;
+                double total = 0;
+                double tax = 0;
+                double disc = 0;
+                double charge = 0;
+                int i = 0;
+                String fromcust = "";
+                String tocust = "";
+                String fromcode = "";
+                String tocode = "";
+                String planstatus = "";
+                              
+                
+                if (ddfromcust.getSelectedItem() == null || ddfromcust.getSelectedItem().toString().isEmpty()) {
+                    fromcust = bsmf.MainFrame.lowchar;
+                } else {
+                    fromcust = ddfromcust.getSelectedItem().toString();
+                }
+                 if (ddtocust.getSelectedItem() == null || ddtocust.getSelectedItem().toString().isEmpty()) {
+                    tocust = bsmf.MainFrame.hichar;
+                } else {
+                    tocust = ddtocust.getSelectedItem().toString();
+                }
+              
+                   
+                mymodel.setNumRows(0);
+                 
+                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+             
+                 if (dddatetype.getSelectedItem().toString().equals("create")) {
+                    res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
+                        " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
+                        " sum(sod_taxamt) as matltax, " +
+                        " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
+                        " (select sum(case when (sos_type = 'charge' or sos_type = 'shipping ADD') and sos_amttype = 'amount' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'charge'," + 
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = so_nbr)as 'taxpercent', " +
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = so_nbr) as 'taxcharge' " +
+                        " FROM  so_mstr left outer join sod_det on sod_nbr = so_nbr " +
+                        " where so_create_date >= " + "'" + setDateDB(dcFrom.getDate())  + "'" + 
+                        " AND so_create_date <= " + "'" + setDateDB(dcTo.getDate()) + "'" + 
+                        " AND so_cust >= " + "'" + fromcust + "'" + 
+                        " AND so_cust <= " + "'" + tocust + "'" + 
+                        " AND so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
+                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;"); 
+                 } else if (dddatetype.getSelectedItem().toString().equals("due")) {
+                        res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
+                        " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
+                        " sum(sod_taxamt) as matltax, " +
+                        " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
+                        " (select sum(case when (sos_type = 'charge' or sos_type = 'shipping ADD') and sos_amttype = 'amount' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'charge'," + 
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = so_nbr)as 'taxpercent', " +
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = so_nbr) as 'taxcharge' " +
+                        " FROM  so_mstr left outer join sod_det on sod_nbr = so_nbr " +
+                        " where so_due_date >= " + "'" + setDateDB(dcFrom.getDate())  + "'" + 
+                        " AND so_due_date <= " + "'" + setDateDB(dcTo.getDate()) + "'" + 
+                        " AND so_cust >= " + "'" + fromcust + "'" + 
+                        " AND so_cust <= " + "'" + tocust + "'" + 
+                        " AND so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
+                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;");
+                 } else if (dddatetype.getSelectedItem().toString().equals("modified")) {
+                        res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
+                        " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
+                        " sum(sod_taxamt) as matltax, " +
+                        " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
+                        " (select sum(case when (sos_type = 'charge' or sos_type = 'shipping ADD') and sos_amttype = 'amount' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'charge'," + 
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = so_nbr)as 'taxpercent', " +
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = so_nbr) as 'taxcharge' " +
+                        " FROM  so_mstr left outer join sod_det on sod_nbr = so_nbr " +
+                        " where so_mod_date >= " + "'" + setDateDB(dcFrom.getDate())  + "'" + 
+                        " AND so_mod_date <= " + "'" + setDateDB(dcTo.getDate()) + "'" + 
+                        " AND so_cust >= " + "'" + fromcust + "'" + 
+                        " AND so_cust <= " + "'" + tocust + "'" + 
+                        " AND so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
+                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;");       
+                 } else {
+                        res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
+                        " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
+                        " sum(sod_taxamt) as matltax, " +
+                        " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
+                        " (select sum(case when (sos_type = 'charge' or sos_type = 'shipping ADD') and sos_amttype = 'amount' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'charge'," + 
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = so_nbr)as 'taxpercent', " +
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = so_nbr) as 'taxcharge' " +
+                        " FROM  so_mstr left outer join sod_det on sod_nbr = so_nbr " +
+                        " where so_ord_date >= " + "'" + setDateDB(dcFrom.getDate())  + "'" + 
+                        " AND so_ord_date <= " + "'" + setDateDB(dcTo.getDate()) + "'" + 
+                        " AND so_cust >= " + "'" + fromcust + "'" + 
+                        " AND so_cust <= " + "'" + tocust + "'" + 
+                        " AND so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
+                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;");
+                 }
+                
+                  
+                
+                    while (res.next()) {
+                    total = 0;
+                    tax = 0;
+                    disc = 0;
+                    charge = 0;
+                           
+                  // bypass POs that are not in the search criteria
+                    if (! tbpo.getText().isBlank() && ! res.getString("so_po").contains(tbpo.getText())) {
+                        continue;
+                    }  
+                    if (! tbrmks.getText().isBlank() && ! res.getString("so_rmks").contains(tbrmks.getText())) {
+                        continue;
+                    }
+                  
+                    if (! cbopen.isSelected() && res.getString("so_status").equals(getGlobalProgTag("open")))
+                        continue;
+                    if (! cbclose.isSelected() && res.getString("so_status").equals(getGlobalProgTag("closed")))
+                        continue;
+                    if (! cbbackorder.isSelected() && res.getString("so_status").equals(getGlobalProgTag("backorder")))
+                        continue;
+                    if (! cberror.isSelected() && res.getString("so_status").equals(getGlobalProgTag("error")))
+                        continue;    
+                    if (! cbcancel.isSelected() && res.getString("so_status").equals(getGlobalProgTag("cancel")))
+                        continue; 
+
+                    if (res.getDouble("discountpercent") != 0) {
+                      disc = res.getDouble("totdol") * (res.getDouble("discountpercent") / 100.0);
+                    } else {
+                      disc = 0;  
+                    }
+                    charge = res.getDouble("charge");
+                    total = res.getDouble("totdol") + charge;  // charges added to total before taxing
+                    
+                    // now do tax
+                    if (res.getDouble("taxpercent") != 0) {
+                      tax = total * (res.getDouble("taxpercent") / 100.0);
+                    } else {
+                      tax = 0;  
+                    }
+                    tax += (res.getDouble("taxcharge") + res.getDouble("matltax"));
+                                        
+                    total = total + tax;
+                    
+                    dol = dol + total;
+                    qty = qty + res.getDouble("totqty");
+                    i++;
+                        mymodel.addRow(new Object[]{
+                            BlueSeerUtils.clickflag,
+                            BlueSeerUtils.clickbasket,
+                                bsNumber(res.getString("so_nbr")),
+                                res.getString("so_cust"),
+                                res.getString("so_po"),
+                                res.getString("so_rmks"),
+                                getDateDB(res.getString("so_create_date")),
+                                getDateDB(res.getString("so_due_date")),
+                                bsNumber(res.getDouble("totqty")),
+                                total,
+                                res.getString("so_curr"),
+                                res.getString("so_status"),
+                                res.getString("so_mod_date")
+                               // planstatus
+                            });
+                }
+                labeldollar.setText(String.valueOf(currformatDouble(dol)));
+                labelcount.setText(String.valueOf(i));
+                labelqty.setText(bsNumber(qty));
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+    }
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -1156,208 +1358,13 @@ public class OrderRpt extends javax.swing.JPanel {
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
 
-    
-try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-             
-                double qty = 0;
-                double dol = 0;
-                double total = 0;
-                double tax = 0;
-                double disc = 0;
-                double charge = 0;
-                int i = 0;
-                String fromcust = "";
-                String tocust = "";
-                String fromcode = "";
-                String tocode = "";
-                String planstatus = "";
-                              
-                
-                if (ddfromcust.getSelectedItem() == null || ddfromcust.getSelectedItem().toString().isEmpty()) {
-                    fromcust = bsmf.MainFrame.lowchar;
-                } else {
-                    fromcust = ddfromcust.getSelectedItem().toString();
-                }
-                 if (ddtocust.getSelectedItem() == null || ddtocust.getSelectedItem().toString().isEmpty()) {
-                    tocust = bsmf.MainFrame.hichar;
-                } else {
-                    tocust = ddtocust.getSelectedItem().toString();
-                }
-              
-                   
-                mymodel.setNumRows(0);
-                tableorder.setModel(mymodel);
-                tableorder.getColumnModel().getColumn(0).setMaxWidth(100);
-                tableorder.getColumnModel().getColumn(1).setMaxWidth(100);  
-                tableorder.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency()))); 
-                
-                Enumeration<TableColumn> en = tableorder.getColumnModel().getColumns();
-                 while (en.hasMoreElements()) {
-                     TableColumn tc = en.nextElement();
-                     if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
-                         continue;
-                     }
-                     tc.setCellRenderer(new OrderRpt.SomeRenderer());
-                 }
-             
-                 
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-             
-                 if (dddatetype.getSelectedItem().toString().equals("create")) {
-                    res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
-                        " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
-                        " sum(sod_taxamt) as matltax, " +
-                        " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
-                        " (select sum(case when (sos_type = 'charge' or sos_type = 'shipping ADD') and sos_amttype = 'amount' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'charge'," + 
-                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = so_nbr)as 'taxpercent', " +
-                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = so_nbr) as 'taxcharge' " +
-                        " FROM  so_mstr left outer join sod_det on sod_nbr = so_nbr " +
-                        " where so_create_date >= " + "'" + setDateDB(dcFrom.getDate())  + "'" + 
-                        " AND so_create_date <= " + "'" + setDateDB(dcTo.getDate()) + "'" + 
-                        " AND so_cust >= " + "'" + fromcust + "'" + 
-                        " AND so_cust <= " + "'" + tocust + "'" + 
-                        " AND so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
-                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;"); 
-                 } else if (dddatetype.getSelectedItem().toString().equals("due")) {
-                        res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
-                        " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
-                        " sum(sod_taxamt) as matltax, " +
-                        " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
-                        " (select sum(case when (sos_type = 'charge' or sos_type = 'shipping ADD') and sos_amttype = 'amount' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'charge'," + 
-                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = so_nbr)as 'taxpercent', " +
-                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = so_nbr) as 'taxcharge' " +
-                        " FROM  so_mstr left outer join sod_det on sod_nbr = so_nbr " +
-                        " where so_due_date >= " + "'" + setDateDB(dcFrom.getDate())  + "'" + 
-                        " AND so_due_date <= " + "'" + setDateDB(dcTo.getDate()) + "'" + 
-                        " AND so_cust >= " + "'" + fromcust + "'" + 
-                        " AND so_cust <= " + "'" + tocust + "'" + 
-                        " AND so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
-                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;");
-                 } else if (dddatetype.getSelectedItem().toString().equals("modified")) {
-                        res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
-                        " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
-                        " sum(sod_taxamt) as matltax, " +
-                        " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
-                        " (select sum(case when (sos_type = 'charge' or sos_type = 'shipping ADD') and sos_amttype = 'amount' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'charge'," + 
-                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = so_nbr)as 'taxpercent', " +
-                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = so_nbr) as 'taxcharge' " +
-                        " FROM  so_mstr left outer join sod_det on sod_nbr = so_nbr " +
-                        " where so_mod_date >= " + "'" + setDateDB(dcFrom.getDate())  + "'" + 
-                        " AND so_mod_date <= " + "'" + setDateDB(dcTo.getDate()) + "'" + 
-                        " AND so_cust >= " + "'" + fromcust + "'" + 
-                        " AND so_cust <= " + "'" + tocust + "'" + 
-                        " AND so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
-                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;");       
-                 } else {
-                        res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
-                        " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
-                        " sum(sod_taxamt) as matltax, " +
-                        " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
-                        " (select sum(case when (sos_type = 'charge' or sos_type = 'shipping ADD') and sos_amttype = 'amount' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'charge'," + 
-                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = so_nbr)as 'taxpercent', " +
-                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = so_nbr) as 'taxcharge' " +
-                        " FROM  so_mstr left outer join sod_det on sod_nbr = so_nbr " +
-                        " where so_ord_date >= " + "'" + setDateDB(dcFrom.getDate())  + "'" + 
-                        " AND so_ord_date <= " + "'" + setDateDB(dcTo.getDate()) + "'" + 
-                        " AND so_cust >= " + "'" + fromcust + "'" + 
-                        " AND so_cust <= " + "'" + tocust + "'" + 
-                        " AND so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
-                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;");
-                 }
-                
-                  
-                
-                    while (res.next()) {
-                    total = 0;
-                    tax = 0;
-                    disc = 0;
-                    charge = 0;
-                           
-                  // bypass POs that are not in the search criteria
-                    if (! tbpo.getText().isBlank() && ! res.getString("so_po").contains(tbpo.getText())) {
-                        continue;
-                    }  
-                    if (! tbrmks.getText().isBlank() && ! res.getString("so_rmks").contains(tbrmks.getText())) {
-                        continue;
-                    }
-                  
-                    if (! cbopen.isSelected() && res.getString("so_status").equals(getGlobalProgTag("open")))
-                        continue;
-                    if (! cbclose.isSelected() && res.getString("so_status").equals(getGlobalProgTag("closed")))
-                        continue;
-                    if (! cbbackorder.isSelected() && res.getString("so_status").equals(getGlobalProgTag("backorder")))
-                        continue;
-                    if (! cberror.isSelected() && res.getString("so_status").equals(getGlobalProgTag("error")))
-                        continue;    
-                    if (! cbcancel.isSelected() && res.getString("so_status").equals(getGlobalProgTag("cancel")))
-                        continue; 
-
-                    if (res.getDouble("discountpercent") != 0) {
-                      disc = res.getDouble("totdol") * (res.getDouble("discountpercent") / 100.0);
-                    } else {
-                      disc = 0;  
-                    }
-                    charge = res.getDouble("charge");
-                    total = res.getDouble("totdol") + charge;  // charges added to total before taxing
-                    
-                    // now do tax
-                    if (res.getDouble("taxpercent") != 0) {
-                      tax = total * (res.getDouble("taxpercent") / 100.0);
-                    } else {
-                      tax = 0;  
-                    }
-                    tax += (res.getDouble("taxcharge") + res.getDouble("matltax"));
-                                        
-                    total = total + tax;
-                    
-                    dol = dol + total;
-                    qty = qty + res.getDouble("totqty");
-                    i++;
-                        mymodel.addRow(new Object[]{
-                            BlueSeerUtils.clickflag,
-                            BlueSeerUtils.clickbasket,
-                                bsNumber(res.getString("so_nbr")),
-                                res.getString("so_cust"),
-                                res.getString("so_po"),
-                                res.getString("so_rmks"),
-                                getDateDB(res.getString("so_create_date")),
-                                getDateDB(res.getString("so_due_date")),
-                                bsNumber(res.getDouble("totqty")),
-                                total,
-                                res.getString("so_curr"),
-                                res.getString("so_status"),
-                                res.getString("so_mod_date")
-                               // planstatus
-                            });
-                }
-                labeldollar.setText(String.valueOf(currformatDouble(dol)));
-                labelcount.setText(String.valueOf(i));
-                labelqty.setText(bsNumber(qty));
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+        if (bsmf.MainFrame.remoteDB) {
+            disableAll(); 
+            executeTask("runReport", null);
+        } else {
+           btRunLocal();
         }
+
        
     }//GEN-LAST:event_btRunActionPerformed
 
@@ -1419,14 +1426,13 @@ try {
     }//GEN-LAST:event_btcsvActionPerformed
 
     private void btexportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btexportActionPerformed
-        if (tableorder != null && mymodel.getRowCount() > 0) {
-          disableAll();  
+        if (tableorder != null && mymodel.getRowCount() > 0) { // still necessary to click run if only for the exportOrderDetail (local grab)
             if (bsmf.MainFrame.remoteDB) {
+                disableAll(); 
                 executeTask("exportOrderDetail", null);
             } else {
                exportOrderDetail(tableorder);
             }
-        
        }
     }//GEN-LAST:event_btexportActionPerformed
 

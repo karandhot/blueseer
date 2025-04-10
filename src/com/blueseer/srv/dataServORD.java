@@ -53,6 +53,7 @@ import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.ord.OrderChangeBrowse;
 import com.blueseer.ord.OrderRpt;
+import static com.blueseer.ord.ordData.getOrderReportData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.createMessageJSON;
@@ -237,6 +238,31 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                   String tocust = request.getHeader("tocust");
                   String site = request.getHeader("site");               
                   response.getWriter().println(OrderChangeBrowse.exportOrderChangeSRV(fromdate, todate, fromcust, tocust, site));  
+                } else if(id.equals("orderReport")) {
+                   String[] keys = new String[]{
+                   request.getHeader("fromdate"), 
+                   request.getHeader("todate"), 
+                   request.getHeader("fromcust"), 
+                   request.getHeader("tocust"), 
+                   request.getHeader("site"), 
+                   request.getHeader("datetype")
+                   }; 
+
+                   for (String k : keys) {
+                       if (k == null) {
+                           response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                           response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing param");  
+                           return;
+                       }
+                   }
+
+                   String r = getOrderReportData(keys);
+
+                   if (r == null || r.isBlank()) {
+                     response.getWriter().println("no return for: " + String.join(",",keys));   
+                   } else {
+                     response.getWriter().println(r);   
+                   }
                 } else {
                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                   response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": unknown ID " + "\n" + getHeaders(request)); 
