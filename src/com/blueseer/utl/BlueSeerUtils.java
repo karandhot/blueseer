@@ -2328,7 +2328,7 @@ public class BlueSeerUtils {
         conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("Content-Type", "text/plain");
         conn.setConnectTimeout(10000);
-        conn.setReadTimeout(10000);
+        conn.setReadTimeout(300000);
        // conn.setRequestMethod("GET");    
            
         if (! user.isBlank() && ! pass.isBlank()) {
@@ -2396,7 +2396,7 @@ public class BlueSeerUtils {
         
         conn.setDoOutput(true);
         conn.setConnectTimeout(10000);
-        conn.setReadTimeout(10000);
+        conn.setReadTimeout(300000);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "text/plain");
         conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
@@ -2483,8 +2483,8 @@ public class BlueSeerUtils {
 
         
         conn.setDoOutput(true);
-        conn.setConnectTimeout(60000);
-        conn.setReadTimeout(60000);
+        conn.setConnectTimeout(10000);
+        conn.setReadTimeout(300000);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "text/plain");
         conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
@@ -2575,7 +2575,7 @@ public class BlueSeerUtils {
         
         conn.setDoOutput(true);
         conn.setConnectTimeout(10000);
-        conn.setReadTimeout(10000);
+        conn.setReadTimeout(300000);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "text/plain");
         conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));

@@ -212,20 +212,23 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                 String id = request.getHeader("id");
                 
                 String line = "";
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sbabove = new StringBuilder();
                 BufferedReader reader = request.getReader();  // as string
                 while ((line = reader.readLine()) != null) {  
-                sb.append(line);
+                sbabove.append(line);
                 }
                
               
                 
                 // process specific app (id)
                 if (id.equals("exportOrderDetail")) { 
-                  
-                  List<String> zz = Arrays.asList(sb.toString().split("\\|"));
-                  System.out.println("XXX=" + zz.size());
-                  response.getWriter().println(OrderRpt.exportOrderDetailSRV(zz));
+                  String fromdate = request.getHeader("fromdate");
+                  String todate = request.getHeader("todate");
+                  String fromcust = request.getHeader("fromcust");
+                  String tocust = request.getHeader("tocust");
+                  String site = request.getHeader("site");
+                //  List<String> zz = Arrays.asList(sbabove.toString().split("\\|"));                  
+                  response.getWriter().println(OrderRpt.exportOrderDetailSRV(fromdate, todate, fromcust, tocust, site));
                 } else {
                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                   response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": unknown ID " + "\n" + getHeaders(request)); 

@@ -3030,6 +3030,62 @@ public class ediData {
         
     }   
     
+    public static String[] getEDIMetaValueAsKVStringPair(String id, String line) {
+         String[] r = new String[]{"",""};
+         
+         try{
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            StringBuilder sbh = new StringBuilder();
+            StringBuilder sbd = new StringBuilder();
+            try {
+
+                line = "detail:" + line;
+                
+                res = st.executeQuery("select * from edi_meta where " +
+                        " edim_id = " + "'" + id + "'" + 
+                        " order by edim_type;" );
+                while (res.next()) {
+                    if (res.getString("edim_type").startsWith("header")) {
+                        sbh.append(res.getString("edim_key")).append("=").append(res.getString("edim_value")).append(":");
+                    }  
+                    if (res.getString("edim_type").equals(line)) {
+                        sbd.append(res.getString("edim_key")).append("=").append(res.getString("edim_value")).append(":");
+                    }                 
+                }
+               
+               if (sbh.toString().length() > 0) {
+                 r[0] = sbh.toString().substring(0, sbh.length() - 1); // remove last ":"  
+               } 
+               if (sbd.toString().length() > 0) {
+                 r[1] = sbd.toString().substring(0, sbd.length() - 1); // remove last ":"  
+               } 
+               
+               
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return r;
+        
+    }   
+    
     
     public static boolean isValidAS2id(String id) {
         boolean x = false;

@@ -58,6 +58,7 @@ import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
 import static com.blueseer.edi.EDILoadMaint.rData;
 import static com.blueseer.edi.ediData.getEDIMetaValueAsKVString;
+import static com.blueseer.edi.ediData.getEDIMetaValueAsKVStringPair;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
@@ -571,7 +572,83 @@ public class OrderRpt extends javax.swing.JPanel {
         
     }
     
-    public static String exportOrderDetailSRV(List<String> list) {
+    public static String exportOrderDetailSRV(String fromdate, String todate, String fromcust, String tocust, String site) {
+        
+        StringBuilder sb = new StringBuilder();
+         try{
+             
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            String headerkvpair = "";
+            String detailkvpair = "";
+            
+            
+            
+            String header = "Sales Order Number, PO Number, Order Create Date, PO/Order Date, Customer Name, Shipto ID, Shipto Name, DueDate, Order Line Number, Item Number, Item Description, Master Sku, Sku Number, AltItemNumber, UOM, Order Quantity, Order Price, Pack Qty, Header KVPair, Detail KVPair";
+          //  output.write(header + "\n");
+            sb.append(header).append("\n");
+            try {
+                // for (int i = 0; i < list.size(); i++) {
+               
+               // headerkvpair = getEDIMetaValueAsKVString(tablereport.getValueAt(i, 4).toString(), "header","");
+                
+                    
+                res = st.executeQuery("select so_nbr, so_po, so_create_date, so_ord_date, " +
+                        " cm_name, cms_plantcode, cms_name, so_due_date, " +
+                        " sod_line, sod_item, sod_desc, '' as msku, sod_custitem, sod_char1, " +
+                        " sod_uom, sod_ord_qty, sod_netprice, sod_char2 from so_mstr " + 
+                        " inner join sod_det on sod_nbr = so_nbr " +
+                        " inner join cm_mstr on cm_code = so_cust " +
+                        " inner join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
+                        " where so_create_date >= " + "'" + fromdate  + "'" + 
+                        " AND so_create_date <= " + "'" + todate + "'" + 
+                        " AND so_cust >= " + "'" + fromcust + "'" + 
+                        " AND so_cust <= " + "'" + tocust + "'" + 
+                        " AND so_site = " + "'" + site + "'" + 
+                         " order by so_nbr asc ;"); 
+                int k = 0;
+                while (res.next()) {
+                    k++;
+                     StringBuilder line = new StringBuilder();
+                     for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
+                       line.append(res.getString(j).replace(",","")).append(",");
+                     }
+                     String[] hd = getEDIMetaValueAsKVStringPair(res.getString("so_nbr"), res.getString("sod_line"));
+                    // headerkvpair = getEDIMetaValueAsKVString(res.getString("so_nbr"), "header", "");
+                    // detailkvpair = getEDIMetaValueAsKVString(res.getString("so_nbr"), "detail", res.getString("sod_line"));
+                     
+                     sb.append(line.toString()).append(hd[0]).append(",").append(hd[1]).append("\n");
+                    // output.write(line.toString() + headerkvpair + "," + detailkvpair);
+                    // output.write("\n");
+                     // now add detailkvpair
+                     
+                 }
+               
+                
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        } catch (SQLException e){
+            MainFrame.bslog(e);
+        } 
+         
+         return (sb == null) ? "no data" : sb.toString();
+    }
+    
+    public static String exportOrderDetailSRVold(List<String> list) {
         
         StringBuilder sb = new StringBuilder();
          try{
@@ -647,8 +724,10 @@ public class OrderRpt extends javax.swing.JPanel {
          return (sb == null) ? "no data" : sb.toString();
     }
     
+    
     public String[] processPost() throws IOException {
         String[] x = new String[2];
+        /*
         int j = 0;  
         StringBuilder sb = new StringBuilder();
         for (int i = 0 ; i < mymodel.getRowCount(); i++) {  
@@ -656,14 +735,33 @@ public class OrderRpt extends javax.swing.JPanel {
                     sb.append(mymodel.getValueAt(i,4).toString());
                     sb.append("|");
         }
-        String postData = sb.toString();
+        */
+      //  String postData = sb.toString();
        // if (postData.endsWith(",")) {
        //             postData = postData.substring(0, postData.length() - 1);
        // }
+        String fromcust = "";
+        String tocust = "";
+        if (ddfromcust.getSelectedItem() == null || ddfromcust.getSelectedItem().toString().isEmpty()) {
+                    fromcust = bsmf.MainFrame.lowchar;
+        } else {
+            fromcust = ddfromcust.getSelectedItem().toString();
+        }
+         if (ddtocust.getSelectedItem() == null || ddtocust.getSelectedItem().toString().isEmpty()) {
+            tocust = bsmf.MainFrame.hichar;
+        } else {
+            tocust = ddtocust.getSelectedItem().toString();
+        }
         ArrayList<String[]> list = new ArrayList<String[]>();
         list.add(new String[]{"id","exportOrderDetail"});
+        list.add(new String[]{"fromdate",setDateDB(dcFrom.getDate())});
+        list.add(new String[]{"todate",setDateDB(dcTo.getDate())});
+        list.add(new String[]{"fromcust", fromcust});
+        list.add(new String[]{"tocust",tocust});
+        list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
         
-        rData = sendServerPost(list, postData, null, "dataServORD");
+      //  rData = sendServerPost(list, postData, null, "dataServORD");
+        rData = sendServerPost(list, "", null);
         
         x[0] = "0";
         x[1] = "Processing complete";
