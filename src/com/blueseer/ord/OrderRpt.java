@@ -761,7 +761,7 @@ public class OrderRpt extends javax.swing.JPanel {
         list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
         
       //  rData = sendServerPost(list, postData, null, "dataServORD");
-        rData = sendServerPost(list, "", null);
+        rData = sendServerPost(list, "", null, "dataServORD");
         
         x[0] = "0";
         x[1] = "Processing complete";
