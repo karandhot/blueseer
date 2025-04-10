@@ -264,7 +264,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                    } else {
                      response.getWriter().println(r);   
                    }
-                } else if (id.equals("orderReportChange")) {
+                } else if (id.equals("orderChangeReport")) {
                    String[] keys = new String[]{
                    request.getHeader("fromdate"), 
                    request.getHeader("todate"), 
