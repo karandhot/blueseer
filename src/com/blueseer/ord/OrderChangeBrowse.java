@@ -690,10 +690,10 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                         " so_rmks, soc_remarks, sod_line, sodc_change, sod_item, sod_desc, sod_custitem, " +
                         " sod_ord_qty, sodc_qty, sod_listprice, sodc_price from so_mstr " + 
                         " inner join sod_det on sod_nbr = so_nbr " +
+                        " inner join so_chg on soc_po = so_po " + // soc_id = sodc_id " +
+                        " inner join sod_chg on sodc_po = sod_po and sodc_line = sod_line " +
                         " inner join cm_mstr on cm_code = so_cust " +
-                        " inner join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
-                        " left outer join sod_chg on sodc_po = sod_po and sodc_line = sod_line " +
-                        " left outer join so_chg on soc_id = sodc_id " +
+                        " inner join cms_det on cms_code = so_cust and cms_shipto = so_ship " +                        
                         " where so_site = " + "'" + site + "'" + " AND " +
                         " so_cust >= " + "'" + fromcust + "'" + " AND " +        
                         " so_cust <= " + "'" + tocust + "'" + " AND " +
