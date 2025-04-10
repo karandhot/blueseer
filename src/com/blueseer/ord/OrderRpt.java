@@ -251,13 +251,13 @@ public class OrderRpt extends javax.swing.JPanel {
             BlueSeerUtils.endTask(message);
             enableAll();
             if (this.action.equals("exportOrderDetail")) {
-                if (rData != null && rData.isBlank()) {
+                if (rData != null && ! rData.isBlank()) {
                   createExportFile(rData);
                   bsmf.MainFrame.show("export file created");
                 }
             }
             if (this.action.equals("runReport")) {
-                if (rData != null && rData.isBlank()) {
+                if (rData != null && ! rData.isBlank()) {
                   fillReportTable(rData);
                 }
             }
