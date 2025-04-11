@@ -3053,7 +3053,7 @@ public class ediData {
                         " edim_id = " + "'" + id + "'" + 
                         " order by edim_type;" );
                 while (res.next()) {
-                    if (res.getString("edim_type").startsWith("header")) {
+                    if (res.getString("edim_type").startsWith("header") || res.getString("edim_type").startsWith("reference")) {
                         sbh.append(res.getString("edim_key")).append("=").append(res.getString("edim_value")).append(":");
                     }  
                     if (res.getString("edim_type").equals(line)) {
