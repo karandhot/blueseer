@@ -3051,14 +3051,16 @@ public class ediData {
                 
                 res = st.executeQuery("select * from edi_meta where " +
                         " edim_id = " + "'" + id + "'" + 
+                        " and not edim_type like 'detail%' order by edim_type;" );
+                while (res.next()) {
+                    sbh.append(res.getString("edim_key")).append("=").append(res.getString("edim_value")).append(":");
+                }
+                res = st.executeQuery("select * from edi_meta where " +
+                        " edim_id = " + "'" + id + "'" + 
+                        " and edim_type = " + "'" + line + "'" +
                         " order by edim_type;" );
                 while (res.next()) {
-                    if (res.getString("edim_type").startsWith("header") || res.getString("edim_type").startsWith("reference")) {
-                        sbh.append(res.getString("edim_key")).append("=").append(res.getString("edim_value")).append(":");
-                    }  
-                    if (res.getString("edim_type").equals(line)) {
-                        sbd.append(res.getString("edim_key")).append("=").append(res.getString("edim_value")).append(":");
-                    }                 
+                    sbd.append(res.getString("edim_key")).append("=").append(res.getString("edim_value")).append(":");
                 }
                
                if (sbh.toString().length() > 0) {
