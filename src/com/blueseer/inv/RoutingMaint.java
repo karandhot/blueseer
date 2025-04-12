@@ -408,9 +408,9 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
         int fc;
         
         fc = checkLength(f,"wf_op");
-        if (tbkey.getText().length() > fc || tbkey.getText().isEmpty()) {
+        if (tbop.getText().length() > fc || tbop.getText().isEmpty()) {
             bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
-            tbkey.requestFocus();
+            tbop.requestFocus();
             return false;
         }
         
