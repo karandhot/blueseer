@@ -54,6 +54,7 @@ import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.ord.OrderChangeBrowse;
 import com.blueseer.ord.OrderRpt;
 import static com.blueseer.ord.ordData.getOrderChangeReportData;
+import static com.blueseer.ord.ordData.getOrderDetailExport;
 import static com.blueseer.ord.ordData.getOrderReportData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
@@ -231,7 +232,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                   String tocust = request.getHeader("tocust");
                   String site = request.getHeader("site");
                 //  List<String> zz = Arrays.asList(sbabove.toString().split("\\|"));                  
-                  response.getWriter().println(OrderRpt.exportOrderDetailSRV(fromdate, todate, fromcust, tocust, site));
+                  response.getWriter().println(getOrderDetailExport(fromdate, todate, fromcust, tocust, site));
                 } else if (id.equals("exportOrderChange")) {
                   String fromdate = request.getHeader("fromdate");
                   String todate = request.getHeader("todate");

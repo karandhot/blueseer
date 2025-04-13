@@ -226,11 +226,11 @@ public class OrderRpt extends javax.swing.JPanel {
             
             switch(this.action) {
                 case "exportOrderDetail":
-                    message = processPost();
+                    message = runRemoteExportDetail();
                     break;
                 
-                case "runReport":
-                    message = serverPostOrderReport();
+                case "runRemoteOrderReport":
+                    message = runRemoteOrderReport();
                     break;    
                     
                 default:
@@ -256,7 +256,7 @@ public class OrderRpt extends javax.swing.JPanel {
                   bsmf.MainFrame.show("export file created");
                 }
             }
-            if (this.action.equals("runReport")) {
+            if (this.action.equals("runRemoteOrderReport")) {
                 if (rData != null && ! rData.isBlank()) {
                   fillReportTable(rData);
                 }
@@ -662,83 +662,8 @@ public class OrderRpt extends javax.swing.JPanel {
         labelqty.setText(bsNumber(qty));
     }
     
-    public static String exportOrderDetailSRV(String fromdate, String todate, String fromcust, String tocust, String site) {
         
-        StringBuilder sb = new StringBuilder();
-         try{
-             
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            
-            String headerkvpair = "";
-            String detailkvpair = "";
-            
-            
-            
-            String header = "Sales Order Number, PO Number, Order Create Date, PO/Order Date, Customer Name, Shipto ID, Shipto Name, DueDate, Order Line Number, Item Number, Item Description, Master Sku, Sku Number, AltItemNumber, UOM, Order Quantity, Order Price, Pack Qty, Header KVPair, Detail KVPair";
-          //  output.write(header + "\n");
-            sb.append(header).append("\n");
-            try {
-                // for (int i = 0; i < list.size(); i++) {
-               
-               // headerkvpair = getEDIMetaValueAsKVString(tablereport.getValueAt(i, 4).toString(), "header","");
-                
-                    
-                res = st.executeQuery("select so_nbr, so_po, so_create_date, so_ord_date, " +
-                        " cm_name, cms_plantcode, cms_name, so_due_date, " +
-                        " sod_line, sod_item, sod_desc, '' as msku, sod_custitem, sod_char1, " +
-                        " sod_uom, sod_ord_qty, sod_netprice, sod_char2 from so_mstr " + 
-                        " inner join sod_det on sod_nbr = so_nbr " +
-                        " inner join cm_mstr on cm_code = so_cust " +
-                        " inner join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
-                        " where so_create_date >= " + "'" + fromdate  + "'" + 
-                        " AND so_create_date <= " + "'" + todate + "'" + 
-                        " AND so_cust >= " + "'" + fromcust + "'" + 
-                        " AND so_cust <= " + "'" + tocust + "'" + 
-                        " AND so_site = " + "'" + site + "'" + 
-                         " order by so_nbr asc ;"); 
-                int k = 0;
-                while (res.next()) {
-                    k++;
-                     StringBuilder line = new StringBuilder();
-                     for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
-                       line.append(res.getString(j).replace(",","")).append(",");
-                     }
-                     String[] hd = getEDIMetaValueAsKVStringPair(res.getString("so_po"), res.getString("sod_line"));
-                    // headerkvpair = getEDIMetaValueAsKVString(res.getString("so_nbr"), "header", "");
-                    // detailkvpair = getEDIMetaValueAsKVString(res.getString("so_nbr"), "detail", res.getString("sod_line"));
-                     
-                     sb.append(line.toString()).append(hd[0]).append(",").append(hd[1]).append("\n");
-                    // output.write(line.toString() + headerkvpair + "," + detailkvpair);
-                    // output.write("\n");
-                     // now add detailkvpair
-                     
-                 }
-               
-                
-           }
-            catch (SQLException s){
-                MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               con.close();
-        }
-        } catch (SQLException e){
-            MainFrame.bslog(e);
-        } 
-         
-         return (sb == null) ? "no data" : sb.toString();
-    }
-        
-    public String[] processPost() throws IOException {
+    public String[] runRemoteExportDetail() throws IOException {
         String[] x = new String[2];
       
         String fromcust = "";
@@ -770,7 +695,7 @@ public class OrderRpt extends javax.swing.JPanel {
         return x;
     }
     
-    public String[] serverPostOrderReport() throws IOException {
+    public String[] runRemoteOrderReport() throws IOException {
         String[] x = new String[2];
       
         String fromcust = "";
@@ -803,7 +728,7 @@ public class OrderRpt extends javax.swing.JPanel {
         return x;
     }
         
-    public void btRunLocal() {
+    public void runLocalOrderReport() {
         try {
             Connection con = null;
             if (ds != null) {
@@ -1392,9 +1317,9 @@ public class OrderRpt extends javax.swing.JPanel {
 
         if (bsmf.MainFrame.remoteDB) {
             disableAll(); 
-            executeTask("runReport", null);
+            executeTask("runRemoteOrderReport", null);
         } else {
-           btRunLocal();
+           runLocalOrderReport();
         }
 
        
