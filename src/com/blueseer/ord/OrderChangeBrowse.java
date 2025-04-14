@@ -921,8 +921,8 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                         " so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +
                         " so_cust >= " + "'" + custfrom + "'" + " AND " +        
                         " so_cust <= " + "'" + custto + "'" + " AND " +
-                        " so_create_date >= " + "'" + setDateDB(dcfrom.getDate()) + "'" + " AND " +
-                        " so_create_date <= " + "'" + setDateDB(dcto.getDate()) + "'" +     
+                        " soc_chgdate >= " + "'" + setDateDB(dcfrom.getDate()) + "'" + " AND " +
+                        " soc_chgdate <= " + "'" + setDateDB(dcto.getDate()) + "'" +     
                         " order by so_nbr desc ;");
              }  
              
