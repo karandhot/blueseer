@@ -780,7 +780,7 @@ public class EDILoadMaint extends javax.swing.JPanel {
         
     public void updateForm() {
         
-        
+        lbcount.setText("0");
         
         if (rData != null && ! rData.isBlank()) {
             tafile.setText("");
