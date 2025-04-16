@@ -5088,6 +5088,84 @@ public class ordData {
          return (sb == null) ? "no data" : sb.toString();
     }
     
+    public static String getOrderChangeExport(String fromdate, String todate, String fromcust, String tocust, String site) {
+        
+        StringBuilder sb = new StringBuilder();
+         try{
+             
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            String headerkvpair = "";
+            String detailkvpair = "";
+            
+            
+            
+           String header = "ChangeID, Sales Order Number, PO Number, Order Date, Change Date, Customer Name, Shipto Name, Shipto City, Shipto State, Shipto Zip,  Original DueDate, New DueDate, Remarks, Change Remarks, Order Line Number, Change Code, Item Number, Item Description, Sku Number, Original Order Quantity, Change Quantity, Original Order Price, Change Price, HeaderKVPair, DetailKVPair ";
+           sb.append(header).append("\n");
+            try {
+                // for (int i = 0; i < list.size(); i++) {
+               
+               // headerkvpair = getEDIMetaValueAsKVString(tablereport.getValueAt(i, 4).toString(), "header","");
+                
+               res = st.executeQuery("select soc_id, so_nbr, so_po, so_create_date, soc_chgdate, " +
+                        " cm_name, cms_name, cms_city, cms_state, cms_zip,  so_due_date, soc_duedate, " +
+                        " so_rmks, soc_remarks, sod_line, sodc_change, sod_item, sod_desc, sod_custitem, " +
+                        " sod_ord_qty, sodc_qty, sod_listprice, sodc_price from so_mstr " + 
+                        " inner join sod_det on sod_nbr = so_nbr " +
+                        " inner join so_chg on soc_po = so_po " + // soc_id = sodc_id " +
+                        " inner join sod_chg on sodc_po = sod_po and sodc_line = sod_line " +
+                        " inner join cm_mstr on cm_code = so_cust " +
+                        " inner join cms_det on cms_code = so_cust and cms_shipto = so_ship " +                        
+                        " where so_site = " + "'" + site + "'" + " AND " +
+                        " so_cust >= " + "'" + fromcust + "'" + " AND " +        
+                        " so_cust <= " + "'" + tocust + "'" + " AND " +
+                        " so_create_date >= " + "'" + fromdate + "'" + " AND " +
+                        " so_create_date <= " + "'" + todate + "'" +     
+                        " order by soc_id ;");
+               
+               
+                int k = 0;
+                while (res.next()) {
+                    k++;
+                     StringBuilder line = new StringBuilder();
+                     for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
+                       line.append(res.getString(j).replace(",","")).append(",");
+                     }
+                     String[] hd = getEDIMetaValueAsKVStringPair(res.getString("soc_id"), res.getString("sod_line"));
+                    // headerkvpair = getEDIMetaValueAsKVString(res.getString("so_nbr"), "header", "");
+                    // detailkvpair = getEDIMetaValueAsKVString(res.getString("so_nbr"), "detail", res.getString("sod_line"));
+                     
+                     sb.append(line.toString()).append(hd[0]).append(",").append(hd[1]).append("\n");
+                    // output.write(line.toString() + headerkvpair + "," + detailkvpair);
+                    // output.write("\n");
+                     // now add detailkvpair
+                     
+                 }
+               
+                
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        } catch (SQLException e){
+            MainFrame.bslog(e);
+        } 
+         
+         return (sb == null) ? "no data" : sb.toString();
+    }
+    
     
     public record salesOrder(String[] m, so_mstr so, ArrayList<sod_det> sod,
         ArrayList<sos_det> sos, ArrayList<sod_tax> sodtax, ArrayList<so_tax> sotax, cms_det cms, ArrayList<String[]> someta) {

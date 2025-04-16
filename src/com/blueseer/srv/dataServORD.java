@@ -53,6 +53,7 @@ import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.ord.OrderChangeBrowse;
 import com.blueseer.ord.OrderRpt;
+import static com.blueseer.ord.ordData.getOrderChangeExport;
 import static com.blueseer.ord.ordData.getOrderChangeReportData;
 import static com.blueseer.ord.ordData.getOrderDetailExport;
 import static com.blueseer.ord.ordData.getOrderReportData;
@@ -239,7 +240,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                   String fromcust = request.getHeader("fromcust");
                   String tocust = request.getHeader("tocust");
                   String site = request.getHeader("site");               
-                  response.getWriter().println(OrderChangeBrowse.exportOrderChangeSRV(fromdate, todate, fromcust, tocust, site));  
+                  response.getWriter().println(getOrderChangeExport(fromdate, todate, fromcust, tocust, site));  
                 } else if (id.equals("orderReport")) {
                    String[] keys = new String[]{
                    request.getHeader("fromdate"), 
