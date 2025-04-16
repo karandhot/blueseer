@@ -79,7 +79,7 @@ public class APILog extends javax.swing.JPanel {
  
     
     javax.swing.table.DefaultTableModel modeltable = new javax.swing.table.DefaultTableModel(new Object[][]{},
-                        new String[]{"Select", "LogID", "ID", "Method", "TimeStamp", "Desc", "File", "Status"})
+                        new String[]{"Select", "LogID", "ID", "Method", "TimeStamp", "Error", "File", "Status"})
             {
                       @Override  
                       public Class getColumnClass(int col) {  
@@ -188,8 +188,7 @@ public class APILog extends javax.swing.JPanel {
 
                //  tablereport.getColumnModel().getColumn(8).setCellRenderer(new EDITransactionBrowse.SomeRenderer()); 
               //   tablereport.getColumnModel().getColumn(7).setCellRenderer(new EDITransactionBrowse.FileViewRenderer()); 
-                 tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-                 tablereport.getColumnModel().getColumn(7).setMaxWidth(100);
+                
                  
                     
                     if (tbapiid.getText().isEmpty()) {
@@ -335,10 +334,8 @@ public class APILog extends javax.swing.JPanel {
         
         // tablereport.getColumnModel().getColumn(0).setCellRenderer(new ButtonRenderer());
          tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-         tabledetail.getColumnModel().getColumn(0).setMaxWidth(100);
-         tabledetail.getColumnModel().getColumn(1).setMaxWidth(100);
-         tabledetail.getColumnModel().getColumn(2).setMaxWidth(100);
-         tabledetail.getColumnModel().getColumn(4).setMaxWidth(200);
+         tablereport.getColumnModel().getColumn(7).setMaxWidth(100);
+        
        
         
         btdetail.setEnabled(false);
