@@ -79,7 +79,7 @@ public class APILog extends javax.swing.JPanel {
  
     
     javax.swing.table.DefaultTableModel modeltable = new javax.swing.table.DefaultTableModel(new Object[][]{},
-                        new String[]{"Select", "LogID", "PartnerID", "Method", "TimeStamp", "File", "MDN", "Status"})
+                        new String[]{"Select", "LogID", "ID", "Method", "TimeStamp", "Desc", "File", "Status"})
             {
                       @Override  
                       public Class getColumnClass(int col) {  
@@ -225,8 +225,8 @@ public class APILog extends javax.swing.JPanel {
                         res.getString("apil_id"),
                         res.getString("apil_method"),
                         res.getString("apil_ts"),
-                        res.getString("apil_file"),
-                        res.getString("apil_mdn"),
+                        res.getString("apil_error"),
+                        res.getString("apil_file"),                        
                         statusImage
                     });
                 }

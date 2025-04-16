@@ -5591,6 +5591,15 @@ public class ediData {
         }
     }
     
+    public record api_log(String[] m, String apil_logid, String apil_comkey, String apil_idxnbr, String apil_id, String apil_method,
+        String apil_status, String apil_error, String apil_ts, String apil_file, String apil_mdn, String apil_site ) {
+        public api_log(String[] m) {
+            this(m, "", "", "", "", "", "", "", "", "", "",
+                    "");
+        }
+    }
+    
+    
     public record JRRT(String status, String messg, ArrayList<String> rarray) {};
     
     public record jsonRecord(ObjectNode on, boolean isArray) {}
