@@ -56,11 +56,17 @@ public class cronServer {
 	public static void main(String[] args) throws Exception {
 	
             String configfile = "";
+            String quartzfile = "quartz.properties";
+            
+            
             if (args != null && args.length > 0) {
             int i = 0;
                 for (String s : args) {
                     if (s.equals("-config")) {
                     configfile = args[i+1];
+                    }
+                    if (s.equals("-quartz")) {
+                    quartzfile = args[i+1];
                     }
                     i++;
                 }
@@ -77,11 +83,11 @@ public class cronServer {
         
         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
        
-        Path path = FileSystems.getDefault().getPath("conf/quartz.properties");
+        Path path = FileSystems.getDefault().getPath("conf/" + quartzfile);
         if (! Files.exists(path)) {
             scheduler = new StdSchedulerFactory().getScheduler();
         } else {
-            StdSchedulerFactory sf = new StdSchedulerFactory("conf/quartz.properties");
+            StdSchedulerFactory sf = new StdSchedulerFactory("conf/" + quartzfile);
             scheduler = sf.getScheduler();  
         }
        
