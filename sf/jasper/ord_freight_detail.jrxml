@@ -16,7 +16,8 @@ case when cfod_time1 = '' then 'None Specified' else cfod_time1 end  as cfod_tim
 case when cfod_time2 = '' then 'None Specified' else cfod_time2 end  as cfod_time2,  
 cfod_phone, cfod_email, cfod_contact
 from cfo_det
-where  cfod_nbr = $P{myid} and cfod_stopline = $P{stopline}]]>
+inner join cfo_mstr on cfo_nbr = cfod_nbr and cfo_revision = cfod_revision
+where  cfod_nbr = $P{myid} and cfo_defaultrev = '1' and cfod_stopline = $P{stopline}]]>
 	</queryString>
 	<field name="cfod_rmks" class="java.lang.String">
 		<fieldDescription><![CDATA[]]></fieldDescription>

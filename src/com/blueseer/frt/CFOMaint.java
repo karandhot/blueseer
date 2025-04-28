@@ -1328,6 +1328,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     public ArrayList<String[]> costToDetail() {
         
         double totamt = bsParseDouble(tbforate.getText());
+        double totamtLessCharge = bsParseDouble(tbcost.getText()) - bsParseDouble(tbcharges.getText());
         
         ArrayList<String[]> list = new ArrayList<String[]>();
         // create line item 1 with bulk rate
@@ -1336,7 +1337,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
              ddratetype.getSelectedItem().toString(), // item
              tbkey.getText(), // order
              tbnumber.getText(), // cust fo
-             formatUSC(tbcost.getText()), // netprice
+             currformatDoubleUS(totamtLessCharge),  // formatUSC(tbcost.getText()), // netprice
              "0" // taxamt
              };
         list.add(s);

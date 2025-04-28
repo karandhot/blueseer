@@ -25,7 +25,7 @@ import com.blueseer.utl.EDData;
        e.setCarrier(getInput("B2","e02"));
        // lets set tpid and cust at this point with ISA sender ID and cross reference lookup into cmedi_mstr
        e.setTPID(getInputISA(6).trim()); 
-       e.setCust(EDData.getEDIXrefIn(getInputISA(6).trim(), getInputGS(2), "BT", getInputGS(3)));
+       e.setCust(EDData.getEDIXrefIn(getInputGS(3), getInputGS(2), "SM", getInputGS(2)));
 
 
 

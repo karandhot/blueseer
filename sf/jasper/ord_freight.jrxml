@@ -35,10 +35,10 @@ cfod_stopline, cfod_type, cfod_name, cfod_line1, cfod_city, cfod_state, cfod_zip
 cm_terms, cm_code, cm_name, cm_line1, cm_line2, 
 site_desc, site_line1 
 from cfo_det 
-inner join cfo_mstr on cfo_nbr = cfod_nbr
+inner join cfo_mstr on cfo_nbr = cfod_nbr and cfo_revision = cfod_revision
 inner join cm_mstr on cm_code = cfo_cust 
 inner join site_mstr on site_site = cfo_site 
-where cfod_nbr =  $P{myid}]]>
+where cfod_nbr =  $P{myid} and cfo_defaultrev = '1']]>
 	</queryString>
 	<field name="cfo_nbr" class="java.lang.String"/>
 	<field name="cfo_cust" class="java.lang.String"/>

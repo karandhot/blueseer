@@ -39,12 +39,12 @@ cm_line2,
 cms_name, cms_line1, cms_line2, 
 site_desc, site_line1 
 from ship_det 
-inner join cfo_mstr on cfo_nbr = sh_so 
+inner join cfo_mstr on cfo_nbr = sh_so and cfo_defaultrev = '1'
 inner join ship_mstr on sh_id = shd_id 
 inner join cm_mstr on cm_code = sh_cust 
 left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship 
 inner join site_mstr on site_site = sh_site 
-where shd_id =  $P{myid}]]>
+where shd_id =  $P{myid} ]]>
 	</queryString>
 	<field name="shd_id" class="java.lang.String"/>
 	<field name="sh_curr" class="java.lang.String"/>

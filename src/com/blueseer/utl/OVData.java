@@ -18594,7 +18594,9 @@ MainFrame.bslog(e);
                         " from cfo_mstr " +
                         " inner join cm_mstr on cm_code = cfo_cust " +
                         " inner join site_mstr on site_site = cfo_site " +
-                        " where cfo_nbr = " + "'" + bsParseInt(id) + "'" + ";");
+                        " where cfo_nbr = " + "'" + bsParseInt(id) + "'" + 
+                        " and cfo_defaultrev = '1' " +
+                                ";");
                        while (res.next()) {
                           cust = res.getString(("cfo_cust"));
                           site = res.getString(("cfo_site"));
@@ -18611,7 +18613,9 @@ MainFrame.bslog(e);
                         deliverydate = res.getString(("cfod_date"));
                     }
                     res = st.executeQuery("select cfo_mileage, cfo_weight from cfo_mstr " +
-                            " where cfo_nbr = " + "'" + bsParseInt(id) + "'"  + ";"); 
+                            " where cfo_nbr = " + "'" + bsParseInt(id) + "'"  + 
+                            " and cfo_defaultrev = '1' " +
+                                ";");
                     while (res.next()) {
                         miles = res.getString(("cfo_mileage"));
                         weight = res.getString(("cfo_weight"));

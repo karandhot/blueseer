@@ -3899,6 +3899,13 @@ public class EDI {
                 m = addCFOTransaction(list, x, null, null);
             } 
             
+            if (m[0].equals("0")) {
+            m[0] = "success";
+            m[1] = m[1] + ": " + cfokey;
+            } else {
+            m[0] = "error";
+            }
+            
             return m;
      }
      

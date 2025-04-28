@@ -18,7 +18,7 @@
 	</parameter>
 	<queryString>
 		<![CDATA[select cfod_stopline, cfod_type, cfod_name, cfod_line1, cfod_city, cfod_state, cfod_zip, cfod_phone
-from cfo_det where cfod_nbr = $P{myfreightnbr}]]>
+from cfo_det inner join cfo_mstr on cfo_nbr = cfod_nbr and cfo_revision = cfod_revision where cfod_nbr = $P{myfreightnbr} and cfo_defaultrev = '1']]>
 	</queryString>
 	<field name="cfod_stopline" class="java.lang.String">
 		<fieldDescription><![CDATA[]]></fieldDescription>
