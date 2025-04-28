@@ -199,7 +199,12 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                   String filepath = request.getHeader("filepath");
                   response.setContentType("application/octet-stream");
                   response.setHeader("Content-Transfer-Encoding", "binary");
-                  response.getOutputStream().write(getFileContentBytes(filepath));
+                  byte[] contents = getFileContentBytes(filepath);
+                  if (contents != null) {
+                    response.getOutputStream().write(getFileContentBytes(filepath));
+                  } else {
+                      response.getWriter().println("null content");
+                  }
                  // response.getWriter().println(getFileContent(filepath)); 
                 } else if (id.equals("getAsciiDumpPGPKey")) { 
                   String pksid = request.getHeader("pksid");
