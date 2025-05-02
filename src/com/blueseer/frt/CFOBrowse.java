@@ -334,11 +334,12 @@ public class CFOBrowse extends javax.swing.JPanel {
         btdetail.setEnabled(false);
         detailpanel.setVisible(false);
         
-        ddstatus.removeAllItems();
+        ddsite.removeAllItems();
         ArrayList sites = OVData.getSiteList(bsmf.MainFrame.userid);
         for (Object site : sites) {
-            ddstatus.addItem(site);
+            ddsite.addItem(site);
         }
+        ddsite.setSelectedItem(OVData.getDefaultSiteForUserid(bsmf.MainFrame.userid));
         
         ddcustfrom.removeAllItems();
         ddcustto.removeAllItems();
@@ -365,6 +366,7 @@ public class CFOBrowse extends javax.swing.JPanel {
         ddstatus.removeAllItems();
         ddstatus.addItem("");
         ddstatus.addItem("pending");
+        ddstatus.addItem("accepted");
         ddstatus.addItem("scheduled");
         ddstatus.addItem("delivered");
         ddstatus.addItem("declined");
@@ -400,7 +402,7 @@ public class CFOBrowse extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         ddcustto = new javax.swing.JComboBox();
         ddcustfrom = new javax.swing.JComboBox();
-        ddstatus = new javax.swing.JComboBox();
+        ddsite = new javax.swing.JComboBox();
         jLabel6 = new javax.swing.JLabel();
         tbfromnbr = new javax.swing.JTextField();
         tbtonbr = new javax.swing.JTextField();
@@ -408,6 +410,8 @@ public class CFOBrowse extends javax.swing.JPanel {
         fromkeynumber = new javax.swing.JLabel();
         tbtocustfo = new javax.swing.JTextField();
         tokeynumber = new javax.swing.JLabel();
+        ddstatus = new javax.swing.JComboBox();
+        jLabel1 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         lbllines = new javax.swing.JLabel();
@@ -486,7 +490,7 @@ public class CFOBrowse extends javax.swing.JPanel {
             }
         });
 
-        jLabel5.setText("Status");
+        jLabel5.setText("Site");
         jLabel5.setName("lblsite"); // NOI18N
 
         fromkeypartner.setText("From Customer");
@@ -501,6 +505,8 @@ public class CFOBrowse extends javax.swing.JPanel {
         fromkeynumber.setText("From Customer Order");
 
         tokeynumber.setText("To Customer Order");
+
+        jLabel1.setText("Status");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -518,31 +524,35 @@ public class CFOBrowse extends javax.swing.JPanel {
                             .addComponent(tbtonbr, javax.swing.GroupLayout.DEFAULT_SIZE, 94, Short.MAX_VALUE)
                             .addComponent(tbfromnbr))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                                 .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(tokeynumber)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(tbtocustfo, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(tokeypartner))
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(fromkeynumber)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(tbfromcustfo, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(fromkeypartner)))
+                                .addComponent(tokeynumber))
+                            .addComponent(fromkeynumber))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(tbfromcustfo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbtocustfo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(tokeypartner, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(fromkeypartner, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(ddcustfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(ddcustto, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel5)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel5)
+                    .addComponent(jLabel1))
                 .addGap(4, 4, 4)
-                .addComponent(ddstatus, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(btRun)
-                .addGap(18, 18, 18)
-                .addComponent(btdetail)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(btRun)
+                        .addGap(18, 18, 18)
+                        .addComponent(btdetail))
+                    .addComponent(ddstatus, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -554,7 +564,7 @@ public class CFOBrowse extends javax.swing.JPanel {
                     .addComponent(ddcustfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btRun)
                     .addComponent(btdetail)
-                    .addComponent(ddstatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5)
                     .addComponent(tbfromnbr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6)
@@ -569,7 +579,9 @@ public class CFOBrowse extends javax.swing.JPanel {
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(ddcustto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel3)
-                        .addComponent(tbtonbr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(tbtonbr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(ddstatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel1)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -738,6 +750,7 @@ try {
                         " cfo_nbr <= " + "'" + nbrto + "'" + " AND " +
                         " cfo_custfonbr >= " + "'" + custnbrfrom + "'" + " AND " +
                         " cfo_custfonbr <= " + "'" + custnbrto + "'" + " AND " +
+                        " cfo_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +        
                         " cfo_orderstatus = " + "'" + ddstatus.getSelectedItem().toString() + "'" +
                         " order by cfo_nbr ;");
                 } else {
@@ -750,6 +763,7 @@ try {
                         " cfo_nbr <= " + "'" + nbrto + "'" + " AND " +
                         " cfo_custfonbr >= " + "'" + custnbrfrom + "'" + " AND " +
                         " cfo_custfonbr <= " + "'" + custnbrto + "'" + " AND " +
+                        " cfo_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +        
                         " cfo_orderstatus = " + "'" + ddstatus.getSelectedItem().toString() + "'" +
                         " order by cfo_nbr ;");
                 }
@@ -763,6 +777,7 @@ try {
                         " cfo_cust <= " + "'" + custto + "'" + " AND " +
                         " cfo_nbr >= " + "'" + nbrfrom + "'" + " AND " +
                         " cfo_nbr <= " + "'" + nbrto + "'" + " AND " +
+                        " cfo_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +        
                         " cfo_custfonbr >= " + "'" + custnbrfrom + "'" + " AND " +
                         " cfo_custfonbr <= " + "'" + custnbrto + "'" + 
                         " order by cfo_nbr ;"); 
@@ -774,6 +789,7 @@ try {
                         " cfo_cust <= " + "'" + custto + "'" + " AND " +
                         " cfo_nbr >= " + "'" + nbrfrom + "'" + " AND " +
                         " cfo_nbr <= " + "'" + nbrto + "'" + " AND " +
+                        " cfo_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +        
                         " cfo_custfonbr >= " + "'" + custnbrfrom + "'" + " AND " +
                         " cfo_custfonbr <= " + "'" + custnbrto + "'" + 
                         " order by cfo_nbr ;"); 
@@ -870,10 +886,12 @@ try {
     private javax.swing.JButton btdetail;
     private javax.swing.JComboBox ddcustfrom;
     private javax.swing.JComboBox ddcustto;
+    private javax.swing.JComboBox ddsite;
     private javax.swing.JComboBox ddstatus;
     private javax.swing.JPanel detailpanel;
     private javax.swing.JLabel fromkeynumber;
     private javax.swing.JLabel fromkeypartner;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
