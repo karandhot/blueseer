@@ -1808,6 +1808,7 @@
                               <Component id="jLabel41" alignment="1" min="-2" max="-2" attributes="0"/>
                               <Component id="jLabel42" min="-2" max="-2" attributes="0"/>
                               <Component id="jLabel43" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
@@ -1821,6 +1822,7 @@
                                   <Component id="btsacdelete" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <Component id="ddsactype" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
+                              <Component id="ddchargecode" alignment="0" min="-2" pref="93" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       </Group>
@@ -1845,6 +1847,11 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="ddchargecode" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jLabel5" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="tbsacdesc" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jLabel41" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -1856,7 +1863,7 @@
                       <Component id="percentlabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jScrollPane2" pref="153" max="32767" attributes="0"/>
+                  <Component id="jScrollPane2" pref="125" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -1946,6 +1953,24 @@
         <Component class="javax.swing.JLabel" name="jLabel43">
           <Properties>
             <Property name="text" type="java.lang.String" value="Amount Type"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="ddchargecode">
+          <Properties>
+            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+              <StringArray count="0"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ddchargecodeActionPerformed"/>
+          </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JLabel" name="jLabel5">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Charge Code"/>
           </Properties>
         </Component>
       </SubComponents>

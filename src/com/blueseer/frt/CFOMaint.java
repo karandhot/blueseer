@@ -201,7 +201,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
    // OVData avmdata = new OVData();
     javax.swing.table.DefaultTableModel myorddetmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
             new String[]{
-                getGlobalColumnTag("line"), 
+                getGlobalColumnTag("stopline"), 
                 getGlobalColumnTag("type"),
                 getGlobalColumnTag("date"),
                 getGlobalColumnTag("name"), 
@@ -523,7 +523,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
        
        jTabbedPane1.removeAll();
        jTabbedPane1.add("Main", jPanelMain);
-       jTabbedPane1.add("Location", jPanelLocation);
+       jTabbedPane1.add("Stops", jPanelLocation);
        jTabbedPane1.add("Charges", jPanelCharges);
        jTabbedPane1.add("Attachments", panelAttachment);
        
@@ -605,6 +605,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         dddriver.removeAllItems();
         ddbroker.removeAllItems();
         ddtimezone.removeAllItems();
+        ddchargecode.removeAllItems();
         
         for (String[] s : initDataSets) {
                       
@@ -635,6 +636,9 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
             if (s[0].equals("equipmenttypes")) {
               ddequiptype.addItem(s[1]); 
             }
+            if (s[0].equals("chargecodes")) {
+              ddchargecode.addItem(s[1]); 
+            }
             if (s[0].equals("sites")) {
               ddsite.addItem(s[1]); 
             }
@@ -662,6 +666,8 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddservicetype.setSelectedIndex(0);
         ddequiptype.insertItemAt("", 0);
         ddequiptype.setSelectedIndex(0);
+        ddchargecode.insertItemAt("", 0);
+        ddchargecode.setSelectedIndex(0);
        
         ddsactype.removeAllItems();
         ddsactype.addItem("charge");
@@ -1807,6 +1813,8 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddsacamttype = new javax.swing.JComboBox<>();
         jLabel42 = new javax.swing.JLabel();
         jLabel43 = new javax.swing.JLabel();
+        ddchargecode = new javax.swing.JComboBox<>();
+        jLabel5 = new javax.swing.JLabel();
         panelAttachment = new javax.swing.JPanel();
         labelmessage = new javax.swing.JLabel();
         btaddattachment = new javax.swing.JButton();
@@ -2910,6 +2918,14 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
 
         jLabel43.setText("Amount Type");
 
+        ddchargecode.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ddchargecodeActionPerformed(evt);
+            }
+        });
+
+        jLabel5.setText("Charge Code");
+
         javax.swing.GroupLayout jPanelChargesLayout = new javax.swing.GroupLayout(jPanelCharges);
         jPanelCharges.setLayout(jPanelChargesLayout);
         jPanelChargesLayout.setHorizontalGroup(
@@ -2922,7 +2938,8 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                             .addComponent(percentlabel)
                             .addComponent(jLabel41)
                             .addComponent(jLabel42)
-                            .addComponent(jLabel43))
+                            .addComponent(jLabel43)
+                            .addComponent(jLabel5))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanelChargesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(ddsacamttype, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2933,7 +2950,8 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                                 .addComponent(btsacadd)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btsacdelete))
-                            .addComponent(ddsactype, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(ddsactype, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(ddchargecode, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 685, Short.MAX_VALUE))
                 .addContainerGap())
@@ -2951,6 +2969,10 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(jLabel43))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanelChargesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ddchargecode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel5))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanelChargesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbsacdesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel41))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2960,7 +2982,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(tbsacamt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(percentlabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE))
         );
 
         add(jPanelCharges);
@@ -3921,6 +3943,17 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
     }//GEN-LAST:event_tableattachmentMouseClicked
 
+    private void ddchargecodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddchargecodeActionPerformed
+        if (! isLoad) {
+            if (ddchargecode.getSelectedItem() != null && ! ddchargecode.getSelectedItem().toString().isBlank() ) {
+                tbsacdesc.setText(OVData.getCodeValueByCodeKey("freightchargecodes", ddchargecode.getSelectedItem().toString()));
+            }
+            if (ddchargecode.getSelectedItem() != null && ddchargecode.getSelectedItem().toString().isBlank() ) {
+                tbsacdesc.setText("");
+            }
+        }
+    }//GEN-LAST:event_ddchargecodeActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btadd;
     private javax.swing.JButton btaddattachment;
@@ -3953,6 +3986,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     private com.toedter.calendar.JDateChooser dcdate;
     private com.toedter.calendar.JDateChooser dcorddate;
     private javax.swing.JComboBox<String> ddbroker;
+    private javax.swing.JComboBox<String> ddchargecode;
     private javax.swing.JComboBox ddcountry;
     private javax.swing.JComboBox<String> ddcust;
     private javax.swing.JComboBox<String> dddatetype;
@@ -4015,6 +4049,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JLabel jLabel41;
     private javax.swing.JLabel jLabel42;
     private javax.swing.JLabel jLabel43;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel76;

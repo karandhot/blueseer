@@ -1140,6 +1140,14 @@ public class frtData {
                lines.add(s);
             }
             
+            res = st.executeQuery("select code_key from code_mstr where code_code = 'freightchargecodes' order by code_key ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "chargecodes";
+               s[1] = res.getString("code_key");
+               lines.add(s);
+            }
+            
             res = st.executeQuery("select code_key from code_mstr where code_code = 'freighteqptype' order by code_key ;");
             while (res.next()) {
                 String[] s = new String[2];
