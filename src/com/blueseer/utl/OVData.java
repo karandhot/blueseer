@@ -17686,13 +17686,14 @@ return mystring;
         }
         
         String jasperfile = "";
-        if (type.startsWith("genericJTable")) {
+      //  if (type.startsWith("genericJTable")) {
+        if (type.length() > 3) {  // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
             jasperfile = type;
         } else {
           jasperfile = OVData.getCodeValueByCodeKey("jasper", type);
-            if (jasperfile.isEmpty()) {
+        }
+        if (jasperfile.isEmpty()) {
                 jasperfile = "genericJTableL11.jasper";
-            }
         }
         Path template = FileSystems.getDefault().getPath(cleanDirString(getSystemJasperDirectory()) + jasperfile);
                

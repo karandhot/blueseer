@@ -1401,7 +1401,7 @@ try {
     }//GEN-LAST:event_ddperiodItemStateChanged
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
-        OVData.printJTableToJasper("Account Balances Report", tablereport, "genericJTableL8.jasper" );
+        OVData.printJTableToJasper("Account Balances Report", tablereport, "acctbalance.jasper" );
     }//GEN-LAST:event_btprintActionPerformed
 
 

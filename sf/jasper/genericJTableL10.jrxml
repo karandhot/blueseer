@@ -157,11 +157,11 @@
 				</reportElement>
 				<textFieldExpression><![CDATA[$F{COLUMN_3}]]></textFieldExpression>
 			</textField>
-			<textField pattern="###0">
+			<textField pattern="¤###0.00;¤-###0.00">
 				<reportElement x="400" y="2" width="80" height="16" uuid="32390b0a-6d5c-4fae-8870-72c4e68a5f90">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
-				<textFieldExpression><![CDATA[$F{COLUMN_5}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{COLUMN_5}.matches("-?\\d+(\\.\\d+)?")) ? Double.valueOf($F{COLUMN_5}) : $F{COLUMN_5}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="160" y="0" width="80" height="16" uuid="a33e94ca-e3f8-4f4f-9bd9-5152ed973656">
@@ -187,11 +187,11 @@
 				</reportElement>
 				<textFieldExpression><![CDATA[$F{COLUMN_6}]]></textFieldExpression>
 			</textField>
-			<textField pattern="###0">
+			<textField pattern="¤###0.00;¤-###0.00">
 				<reportElement x="560" y="2" width="80" height="16" uuid="9e378f44-6a38-499c-a7b0-9a4c24926aef">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
-				<textFieldExpression><![CDATA[$F{COLUMN_7}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[(($P{d7}.matches("Price") || $P{d7}.matches("Cost")  || $P{d7}.matches("Amount")) && $F{COLUMN_7}.matches("-?\\d+(\\.\\d+)?")) ? Double.valueOf($F{COLUMN_7}) : $F{COLUMN_7}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0">
 				<reportElement x="640" y="2" width="80" height="16" uuid="1682bbca-7e20-4acd-a7cf-2c27e209a9e6">

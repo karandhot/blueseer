@@ -129,9 +129,9 @@
 				<reportElement x="0" y="0" width="100" height="16" uuid="978682a3-4259-41c3-adae-54872ecfe90a"/>
 				<textFieldExpression><![CDATA[$F{COLUMN_0}]]></textFieldExpression>
 			</textField>
-			<textField pattern="###0">
+			<textField pattern="¤###0.00;¤-###0.00">
 				<reportElement x="600" y="0" width="100" height="16" uuid="8d41f191-2e96-4753-ba0f-72dfb33f4703"/>
-				<textFieldExpression><![CDATA[$F{COLUMN_6}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[(($P{d6}.matches("Price") || $P{d6}.matches("Cost")  || $P{d6}.matches("Amount")) && $F{COLUMN_6}.matches("-?\\d+(\\.\\d+)?")) ? Double.valueOf($F{COLUMN_6}) : $F{COLUMN_6}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="100" y="0" width="100" height="16" uuid="ee72a0da-c3b3-48c4-a45e-ef0e73f30c87"/>
@@ -149,13 +149,13 @@
 				<reportElement x="400" y="0" width="100" height="16" uuid="ca2b58e9-ab02-4e95-95bc-87eb07be7541"/>
 				<textFieldExpression><![CDATA[$F{COLUMN_4}]]></textFieldExpression>
 			</textField>
-			<textField pattern="###0">
+			<textField pattern="¤###0.00;¤-###0.00">
 				<reportElement x="500" y="0" width="100" height="16" uuid="32390b0a-6d5c-4fae-8870-72c4e68a5f90"/>
-				<textFieldExpression><![CDATA[$F{COLUMN_5}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[(($P{d5}.matches("Price") || $P{d5}.matches("Cost")  || $P{d5}.matches("Amount")) && $F{COLUMN_5}.matches("-?\\d+(\\.\\d+)?")) ? Double.valueOf($F{COLUMN_5}) : $F{COLUMN_5}]]></textFieldExpression>
 			</textField>
-			<textField pattern="###0">
+			<textField pattern="¤###0.00;¤-###0.00">
 				<reportElement x="700" y="0" width="100" height="16" uuid="2c44ff14-9346-4f64-8045-5652e87f06d5"/>
-				<textFieldExpression><![CDATA[$F{COLUMN_7}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[(($P{d7}.matches("Price") || $P{d7}.matches("Cost")  || $P{d7}.matches("Amount")) && $F{COLUMN_7}.matches("-?\\d+(\\.\\d+)?")) ? Double.valueOf($F{COLUMN_7}) : $F{COLUMN_7}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

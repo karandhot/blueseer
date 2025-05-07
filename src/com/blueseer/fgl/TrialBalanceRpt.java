@@ -1153,7 +1153,7 @@ try {
     }//GEN-LAST:event_ddperiodItemStateChanged
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
-        OVData.printJTableToJasper("Trial Balance Report", tablereport, "genericJTableL7.jasper" );
+        OVData.printJTableToJasper("Trial Balance Report", tablereport, "trialbalance.jasper" );
     }//GEN-LAST:event_btprintActionPerformed
 
 
