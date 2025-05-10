@@ -17677,8 +17677,7 @@ return mystring;
            newmodel.addRow(myarray);
          }
          */
-       
-        
+               
         
         
         for (int j = 0; j < newmodel.getColumnCount(); j++) {

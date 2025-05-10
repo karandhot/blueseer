@@ -112,7 +112,7 @@ where sod_nbr =  $P{mynbr} and sod_line = $P{myline}]]>
 				<textFieldExpression><![CDATA[$P{site_csz}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="2" y="210" width="186" height="29" uuid="299afeb8-9165-4bd5-8a31-98ef276cd24d"/>
+				<reportElement x="0" y="188" width="186" height="29" uuid="299afeb8-9165-4bd5-8a31-98ef276cd24d"/>
 				<textElement>
 					<font size="16"/>
 				</textElement>
@@ -194,6 +194,15 @@ where sod_nbr =  $P{mynbr} and sod_line = $P{myline}]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{reference}]]></textFieldExpression>
 			</textField>
+			<componentElement>
+				<reportElement positionType="FixRelativeToBottom" x="-10" y="214" width="270" height="61" uuid="0078660d-65b2-4094-8120-80425980703f">
+					<property name="com.jaspersoft.studio.unit.barWidth" value="px"/>
+				</reportElement>
+				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="Code128" drawText="false" checksumRequired="false">
+					<jr:codeExpression><![CDATA[$F{so_po}]]></jr:codeExpression>
+					<jr:applicationIdentifierExpression><![CDATA[0]]></jr:applicationIdentifierExpression>
+				</jr:barbecue>
+			</componentElement>
 		</band>
 	</pageHeader>
 	<detail>
@@ -256,6 +265,13 @@ where sod_nbr =  $P{mynbr} and sod_line = $P{myline}]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{quantity}]]></textFieldExpression>
 			</textField>
+			<staticText>
+				<reportElement x="0" y="210" width="70" height="22" uuid="659da148-4e90-4566-aafd-6d97a56c122e"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[SSCC-18]]></text>
+			</staticText>
 		</band>
 	</detail>
 	<summary>

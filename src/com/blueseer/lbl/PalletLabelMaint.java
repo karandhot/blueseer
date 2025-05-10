@@ -351,7 +351,7 @@ String carrier = "";
         tbordnbr.setText("");
         tbline.setText("");
         tbqty.setText("");
-        
+        lblitem.setText("");
         btprint.setEnabled(true);
         
         getSiteAddress(OVData.getDefaultSite());
