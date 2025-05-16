@@ -23,7 +23,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-package com.blueseer.prd;
+package com.blueseer.shp;
 
 
 import bsmf.MainFrame;
@@ -54,10 +54,15 @@ import static bsmf.MainFrame.user;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.getWHLOCfromSerialNumber;
 import com.blueseer.inv.invData.inv_ctrl;
+import static com.blueseer.lbl.lblData.getLabelMstrByStrID;
+import static com.blueseer.lbl.lblData.getLabelTableRecs;
+import com.blueseer.lbl.lblData.label_mstr;
 import com.blueseer.sch.schData;
 import static com.blueseer.sch.schData.getPlanDetHistory;
 import com.blueseer.sch.schData.plan_mstr;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.OVData.getSysMetaValue;
 import static com.blueseer.utl.OVData.getpsmstrcompSerialized;
@@ -75,38 +80,58 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingWorker;
-import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.view.JasperViewer;
+import java.util.HashSet;
 
 /**
  *
  * @author vaughnte
  */
-public class ProdEntryByPlanMaint extends javax.swing.JPanel {
+public class ShipScanMaint extends javax.swing.JPanel {
 
-String partnumber = "";
-String custpart = "";
-int serialno = 0;
-String serialno_str = "";
-String quantity = "";
-
-String sitename = "";
-String siteaddr = "";
-String sitephone = "";
-String sitecitystatezip = "";
-
-LinkedHashMap<String,String[]> serialkeys = null; 
-
-javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+ // global variable declarations
+                boolean isLoad = false;
+                String terms = "";
+                String aracct = "";
+                String arcc = "";
+                String arbank = "";
+                double actamt = 0.00;
+                double baseamt = 0.00;
+                double rcvamt = 0.00;
+                String curr = "";
+                String basecurr = "";
+                int j = 0;
+                HashSet<String> assignedlabels = new HashSet<String>();
+                HashSet<String> assigneditems = new HashSet<String>();
+    
+    // global datatablemodel declarations 
+    javax.swing.table.DefaultTableModel serialmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
             new String[]{
-                "jobid", "operation", "qty", "date", "userid"
-            });
+                getGlobalColumnTag("label"),
+                getGlobalColumnTag("order"),
+                getGlobalColumnTag("line"),
+                getGlobalColumnTag("item"), 
+                getGlobalColumnTag("description"), 
+                getGlobalColumnTag("custitem"),
+                getGlobalColumnTag("warehouse"), 
+                getGlobalColumnTag("location"),
+                getGlobalColumnTag("qty"),
+                getGlobalColumnTag("uom"),
+                getGlobalColumnTag("price"),
+                getGlobalColumnTag("po")});
+    
+    javax.swing.table.DefaultTableModel itemmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+            new String[]{
+                getGlobalColumnTag("item"), 
+                getGlobalColumnTag("description"), 
+                getGlobalColumnTag("qty")});
+  
     
     
     /**
      * Creates new form CarrierMaintPanel
      */
-    public ProdEntryByPlanMaint() {
+    public ShipScanMaint() {
         initComponents();
         setLanguageTags(this);
     }
@@ -132,7 +157,7 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
             
              switch(this.type) {
                 case "run":
-                    message = postProd();    
+                    message = postShip();    
                     break;      
                 default:
                     message = new String[]{"1", "unknown action"};
@@ -206,219 +231,122 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
     } 
     
     public void setComponentDefaultValues() {
-        tbqty.setText("");
-        tbscan.setText("");
-        qtylabel.setText("");
-        qtylabel.setForeground(Color.black);
-        ddop.removeAllItems();
-        tbref.setText("");
+        
+      tbscan.setText("");
+       
+      serialmodel.setRowCount(0);
+      serialdet.setModel(serialmodel);
+      serialdet.getTableHeader().setReorderingAllowed(false);
       
+      itemmodel.setRowCount(0);
+      itemdet.setModel(itemmodel);
+      itemdet.getTableHeader().setReorderingAllowed(false);
        
-       historytable.setModel(historymodel);
-       historytable.getTableHeader().setReorderingAllowed(false);
-       historymodel.setRowCount(0);
        
-       
-       btcommit.setEnabled(false);
+      btcommit.setEnabled(false);
         
-       tbscan.requestFocusInWindow();
+      tbscan.requestFocusInWindow();
     }
-    
-    
-    public void printTubTicket(String scan, String subid) throws PrinterException {
-        
-          
-        PrinterJob job = PrinterJob.getPrinterJob();
-        PrintService service = PrintServiceLookup.lookupDefaultPrintService();
-        
-        if ( service != null) {
-         job.setPrintService(service);
-         try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-           
-
-                HashMap hm = new HashMap();
-                hm.put("REPORT_TITLE", "MASTER TICKET");
-                 hm.put("SUBREPORT_DIR", "jasper/");
-                hm.put("myid",  scan);
-                hm.put("subid",  subid);
-                File mytemplate = new File("jasper/subticket.jasper");
-                JasperPrint print = JasperFillManager.fillReport(mytemplate.getPath(), hm, con );
-                con.close();
-  
-               // code auto sends to printer
-//PrintRequestAttributeSet printRequestAttributeSet = new HashPrintRequestAttributeSet();
-//    JRPrintServiceExporter exporter;
-//    exporter = new JRPrintServiceExporter();
-   
- //   exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
- //         exporter.setParameter(JRPrintServiceExporterParameter.PRINT_SERVICE, service);
- //   exporter.setParameter(JRPrintServiceExporterParameter.PRINT_SERVICE_ATTRIBUTE_SET, service.getAttributes());
- //   exporter.setParameter(JRPrintServiceExporterParameter.PRINT_REQUEST_ATTRIBUTE_SET, printRequestAttributeSet);
- //   exporter.setParameter(JRPrintServiceExporterParameter.DISPLAY_PAGE_DIALOG, Boolean.FALSE);
- //   exporter.setParameter(JRPrintServiceExporterParameter.DISPLAY_PRINT_DIALOG, Boolean.FALSE);
- //   exporter.exportReport();  
-         // end code auto sends to printer
      
-             //   JasperExportManager.exportReportToPdfFile(print,"temp/subjob.pdf");
-                JasperViewer jasperViewer = new JasperViewer(print, false);
-                jasperViewer.setVisible(true);
-    
-    
-            
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+    public String sumQtyByItem() {
+        String x = "";
+        double qty = 0;
+        boolean doesExist = false;
+        for (String s : assigneditems) {
+          qty = 0;
+          for (int j = 0; j < serialdet.getRowCount(); j++) {
+            if (serialdet.getModel().getValueAt(j, 3).equals(s)) {
+                qty += bsParseDouble(serialdet.getModel().getValueAt(j, 8).toString());
+            }             
+          }
+          for (int j = 0; j < itemdet.getRowCount(); j++) {
+            if (itemdet.getModel().getValueAt(j, 0).equals(s)) {
+                doesExist = true;
+                itemdet.getModel().setValueAt(String.valueOf(qty), j, 2);
+                break;
+            }             
+          }
+          if (! doesExist) {
+              itemmodel.addRow(new Object[] { 
+                s, // item
+                "", // desc
+                qty // qty
+                }); 
+          }
         }
-        
-        }
-      
-   
-    /* We set the selected service and pass it as a paramenter */
- 
+        return x;
     }
     
-    public void getScanHistory(String scan) {
-       historymodel.setRowCount(0);
-       ArrayList<String[]> hist = getPlanDetHistory(scan);
-       for (String[] h : hist) {
-            historymodel.addRow(new Object[]{
-                      h[1], // jobid
-                      h[3], // op
-                      h[7], // qty
-                      h[5], // date
-                      h[8] // userid
-                  });
-       }
+   
+        
+    public boolean isDuplicate(String serial_id_str) {
+        for (int j = 0; j < serialdet.getRowCount(); j++) {
+            if (serialdet.getValueAt(j, 0).toString().equals(serial_id_str)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public String[] postShip() {
+        
+        return null;
     }
     
     public void validateScan(String scan) {
-        boolean checkBOMSerial = true;
-        boolean requireOpScan = BlueSeerUtils.ConvertStringToBool(getSysMetaValue("system", "inventorycontrol", "operation_scan_required"));
-        if (requireOpScan) {
-            btcommit.setEnabled(false);
-            tbscan.setText("");
-            qtylabel.setText("Operational Scanning Required...See Inventory Control");
-            qtylabel.setForeground(Color.red);
-            tbscan.requestFocusInWindow();
-            return;
-        }
-        
+               
         
         lblmessage.setText("");
         if (scan.isEmpty()) {
-            qtylabel.setText("");
-            partlabel.setText("");
             return;
         }
         
-        if (schData.isPlan(scan)) {
-      // tbqty.setText(String.valueOf(schData.getPlanSchedQty(scan)));
-       partlabel.setText(schData.getPlanItem(scan));
-       partlabel.setForeground(Color.blue);
-       ddop.removeAllItems();
-       ArrayList<String> mylist = OVData.getOperationsByItem(partlabel.getText());
-     //  ArrayList<String> mylist = invData.getItemRoutingOPs(partlabel.getText());
-       mylist.sort(Comparator.comparingInt(Integer::parseInt)); 
-      // Collections.sort(mylist, Collections.reverseOrder());
-       for (int i = 0; i < mylist.size(); i++) {
-    //   for (int i = mylist.size() - 1; i >= 0; i--) {    
-           ddop.addItem(mylist.get(i));
-       }
-       if (ddop.getItemCount() > 0) {
-        ddop.setSelectedIndex(mylist.size() - 1);
-       }
-       
-       if (ddop.getItemCount() <= 0) {
-           ddop.addItem("0");
-           partlabel.setText(partlabel.getText() + " " + "No Operations..." + "\n" + "make sure item has routing AND standard cost");
-           partlabel.setForeground(Color.yellow);
-       } else {
-          double prevscanned = schData.getPlanDetTotQtyByOp(tbscan.getText(), ddop.getSelectedItem().toString());
-          double qtysched = schData.getPlanSchedQty(tbscan.getText());
-          double remaining = qtysched - prevscanned;
-          tbqty.setText(String.valueOf(remaining));
-          qtylabel.setText("qty sched: " + String.valueOf(qtysched) + "     qty scanned: " + String.valueOf(prevscanned));
-          qtylabel.setForeground(Color.blue);
-          plan_mstr pm = schData.getPlanMstr(new String[]{tbscan.getText()});
-          
-          if (Integer.valueOf(pm.plan_status()) != 0 ) { // check if closed
-            lblmessage.setText(getMessageTag(1071,tbscan.getText()));
-            lblmessage.setForeground(Color.red);
-            btcommit.setEnabled(false);
-            checkBOMSerial = false;
-            } else {
-                btcommit.setEnabled(true);
-          }
-          
-          if (qtysched == 0 ) { // check if scheduled
-            lblmessage.setText(getMessageTag(1182,tbscan.getText()));
-            lblmessage.setForeground(Color.red);
-            btcommit.setEnabled(false);
-            checkBOMSerial = false;
-            } else {
-                btcommit.setEnabled(true);
-          }
-          
-       }
-       
-       
-       // scan components with bom serial flag set
-       // need to iterate through all components that are serialized
-       boolean bomserialerror = false;
-        if (checkBOMSerial) { // make sure is not closed or otherwise bad ticket before requesting BOM serial numbers
-        ArrayList<String> comps = getpsmstrcompSerialized(schData.getPlanItem(scan));
+        label_mstr label = getLabelMstrByStrID(scan);
+        if (label.m()[0].equals("0")) {
+            
         
-        serialkeys = new LinkedHashMap<String,String[]>();
-        for (String c : comps) {
-            String serial = bsmf.MainFrame.input("Enter Serial Number of component: " + c);
-            String[] v = getWHLOCfromSerialNumber(c,serial);
-            if (v == null || serial.isBlank()) {
-              bomserialerror = true;
-              bsmf.MainFrame.show("serial number does not exist for this item: " + c);
-              break;
-            }
-            String[] values = new String[]{serial, "", ""};  // defaults to blank wh / loc
-            if (v != null) {
-                values = new String[]{serial,v[0],v[1]};
-            }             
-            if (serialkeys.containsKey(c)) {
-                serialkeys.replace(c, values);
-            } else {
-                serialkeys.put(c, values);
-            }
-        }
-        }
-        
-        
-        if (bomserialerror) {
-              btcommit.setEnabled(false);
+            if (! isDuplicate(label.lbl_id_str())) {
+                serialmodel.addRow(new Object[] { 
+                    label.lbl_id_str(), // serial
+                    label.lbl_order(), // order
+                    label.lbl_line(), // orderline
+                    label.lbl_item(), // item
+                    label.lbl_item(), // desc
+                    label.lbl_custitem(), // custitem
+                    "", // wh
+                    label.lbl_loc(), // loc
+                    label.lbl_qty(), // qty
+                    "", // uom
+                    "0.00", // price
+                    label.lbl_po() // po
+                    });
+
+                if (! assigneditems.contains(label.lbl_item())) {
+                  assigneditems.add(label.lbl_item());
+                }
+
+                sumQtyByItem();
+
               tbscan.setText("");
-              qtylabel.setText("Unknown BOM serial number");
-              qtylabel.setForeground(Color.red);
+              lblmessage.setText("scanned: " + scan);
+              lblmessage.setForeground(Color.black);
               tbscan.requestFocusInWindow();
-              return;
-        }
-       
-       
-       // now get history of plan jobid (scan)
-       getScanHistory(tbscan.getText());
-       
-       tbqty.requestFocusInWindow();
-       
-      } else {
-              btcommit.setEnabled(false);
+              return;  
+            } else {
               tbscan.setText("");
-              qtylabel.setText("Bad Ticket");
-              qtylabel.setForeground(Color.red);
-        // bsmf.MainFrame.show("Bad Ticket: " + scan);
-         tbscan.requestFocusInWindow();
-            return;
-      }
+              lblmessage.setText("Duplicate Serial Number: " + scan);
+              lblmessage.setForeground(Color.red);
+              tbscan.requestFocusInWindow();
+              return;  
+            }
+        } else {
+          tbscan.setText("");
+          lblmessage.setText("Bad / Unknown Serial Number: " + scan);
+          lblmessage.setForeground(Color.red);
+          tbscan.requestFocusInWindow();
+          return;  
+        }
+      
     }
     
     public void setLanguageTags(Object myobj) {
@@ -470,130 +398,7 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
        setComponentDefaultValues();
     }
     
-    public String[] postProd() {
-        String[] m = null;
-        plan_mstr pm = schData.getPlanMstr(new String[]{tbscan.getText()});
-        inv_ctrl ic = invData.getINVCtrl(new String[]{tbscan.getText()});
-        double prevscanned = schData.getPlanDetTotQtyByOp(tbscan.getText(), ddop.getSelectedItem().toString());
-        String[] detail = invData.getItemDetail(pm.plan_item());
-        boolean isPlan = true;
-        
-        if (pm.m()[0].equals("1")) {
-            isPlan = false;
-        }
-        double qty = Double.valueOf(tbqty.getText());
-        
-        if (! isPlan) {
-            lblmessage.setText(getMessageTag(1070,tbscan.getText()));
-            lblmessage.setForeground(Color.red);
-            return new String[]{"1", getMessageTag(1011)};
-        }
-        
-        if (isPlan &&  Integer.valueOf(pm.plan_status()) > 0 ) {
-            lblmessage.setText(getMessageTag(1071,tbscan.getText()));
-            lblmessage.setForeground(Color.red);
-            return new String[]{"1", getMessageTag(1011)};
-        }
-        if (isPlan &&  Integer.valueOf(pm.plan_status()) < 0 ) {
-            lblmessage.setText(getMessageTag(1072,tbscan.getText()));
-            lblmessage.setForeground(Color.red);
-            return new String[]{"1", getMessageTag(1011)};
-        }
-        
-         // check inventory control flag... "Plan Multiple Scan Issues"
-        // if false...only one scan per plan ticket per operation
-        
-        if (! BlueSeerUtils.ConvertStringToBool(ic.planmultiscan()) && (prevscanned > 0)) {
-            lblmessage.setText("Ticket Already Reported for this Operation " + tbscan.getText() + " / " + ddop.getSelectedItem().toString());
-            lblmessage.setForeground(Color.red);
-                return new String[]{"1", getMessageTag(1011)};
-        }
-        
-        
-        // now lets sum up qtys posted previously (if any) for this OP and this Ticket and make sure
-        // qty field is not greater than qty previous + qty scheduled
-        // this should work for multiscan and nonmultican conditions
-       // bsmf.MainFrame.show(pm.plan_qty_sched());
-        
-        if ( qty > (pm.plan_qty_sched() - prevscanned) ) {
-             lblmessage.setText("Qty Exceeds limit (Already Scanned Qty: " + String.valueOf(prevscanned) + " out of SchedQty: " + String.valueOf(pm.plan_qty_sched()) + ")");
-            lblmessage.setForeground(Color.red);
-            return new String[]{"1", getMessageTag(1011)};
-        }
-        
-        
-        
-        
-        if (isPlan &&  Integer.valueOf(pm.plan_status()) == 0 ) {
-            boolean isLastOp = OVData.isLastOperation(pm.plan_item(), ddop.getSelectedItem().toString() );
-            //OK ...if here..we should be prepared to commit.... Let's commit the transaction with OVData.loadTranHistByTable
-            
-            JTable mytable = new JTable();
-            javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
-            new String[]{
-                "Part", "Type", "Operation", "Qty", "Date", "Location", "SerialNo", "Reference", "Site", "Userid", "ProdLine", "AssyCell", "Rmks", "PackCell", "PackDate", "AssyDate", "ExpireDate", "Program", "Warehouse", "BOM"
-            });
-             // get necessary info from plan_mstr for this scan and store into mytable(mymodel)
-             
-              String prodline = detail[3];
-              String loc = detail[8];
-              String wh = detail[9];
-              String expire = detail[10];
-              java.util.Date now = new java.util.Date();
-              DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-             mymodel.addRow(new Object[]{
-                pm.plan_item(),
-                "ISS-WIP",
-                ddop.getSelectedItem().toString(),
-                tbqty.getText(),
-                dfdate.format(now),
-                loc, // location
-                tbscan.getText(),  // serialno  
-                pm.plan_type(),  // reference 
-                pm.plan_site(),
-                bsmf.MainFrame.userid,
-                prodline,
-                "",   //  tr_actcell
-                tbref.getText().replace(",", ""),   // remarks 
-                "", // pack station
-                "", // pack date
-                "", // assembly date
-                expire,
-                "ProdEntryByPlan", // program
-                wh,
-                ""  // bom will grab default
-            });
-       
-            mytable.setModel(mymodel);
-            
-            
-            // OK...we should have a JTable with the necessary info to create the tran_mstr table
-            if (serialkeys.size() == 0) {
-                serialkeys = null;
-            }
-            
-             if (! OVData.loadTranHistByTable(mytable, serialkeys)) {
-            return new String[]{"1", getMessageTag(1010,"loadTranHist")};
-            } else {
-                 //must have successfully enter tran_mstr...now lets create pland_mstr...and update plan_mstr if closing
-                 int key = OVData.CreatePlanDet(mytable, isLastOp);
-                 lblmessage.setText("Scan Complete");
-                 lblmessage.setForeground(Color.blue);
-                 m = new String[]{"0", getMessageTag(1125)};
-                 getScanHistory(tbscan.getText());
-                 
-                if (BlueSeerUtils.ConvertStringToBool(ic.printsubticket())) {               
-                     try {
-                        printTubTicket(tbscan.getText(), String.valueOf(key));
-                    } catch (PrinterException ex) {
-                        MainFrame.bslog(ex);
-                    }
-                }
-            } 
-       } 
-        return m;
-    }
-    
+   
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -604,38 +409,23 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        tbqty = new javax.swing.JTextField();
-        jLabel4 = new javax.swing.JLabel();
         tbscan = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         btcommit = new javax.swing.JButton();
-        ddop = new javax.swing.JComboBox();
-        jLabel7 = new javax.swing.JLabel();
-        tbref = new javax.swing.JTextField();
-        jLabel8 = new javax.swing.JLabel();
-        qtylabel = new javax.swing.JLabel();
         lblmessage = new javax.swing.JLabel();
-        partlabel = new javax.swing.JLabel();
-        jpaneltable = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        historytable = new javax.swing.JTable();
+        btdeleteitem = new javax.swing.JButton();
+        btclear = new javax.swing.JButton();
+        labelPanel = new javax.swing.JPanel();
+        jScrollPane8 = new javax.swing.JScrollPane();
+        serialdet = new javax.swing.JTable();
+        itemPanel = new javax.swing.JPanel();
+        jScrollPane9 = new javax.swing.JScrollPane();
+        itemdet = new javax.swing.JTable();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Prod Entry By Plan Ticket"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Shipper Scan Menu"));
         jPanel1.setName("panelmain"); // NOI18N
-
-        tbqty.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                tbqtyFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                tbqtyFocusLost(evt);
-            }
-        });
-
-        jLabel4.setText("Quantity");
-        jLabel4.setName("lblqty"); // NOI18N
 
         tbscan.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -643,11 +433,6 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
             }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 tbscanFocusLost(evt);
-            }
-        });
-        tbscan.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tbscanActionPerformed(evt);
             }
         });
 
@@ -662,28 +447,25 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
             }
         });
 
-        jLabel7.setText("Operation");
-        jLabel7.setName("lblop"); // NOI18N
-
-        tbref.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                tbrefFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                tbrefFocusLost(evt);
+        btdeleteitem.setText("Remove Label");
+        btdeleteitem.setName("btdeleteitem"); // NOI18N
+        btdeleteitem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btdeleteitemActionPerformed(evt);
             }
         });
 
-        jLabel8.setText("Reference");
-        jLabel8.setName("lblreference"); // NOI18N
+        btclear.setText("Clear");
+        btclear.setName("btclear"); // NOI18N
+        btclear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btclearActionPerformed(evt);
+            }
+        });
 
-        qtylabel.setForeground(new java.awt.Color(25, 102, 232));
+        labelPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Scanned Labels"));
 
-        partlabel.setForeground(new java.awt.Color(25, 102, 232));
-
-        jpaneltable.setBorder(javax.swing.BorderFactory.createTitledBorder("JobID Scan History"));
-
-        historytable.setModel(new javax.swing.table.DefaultTableModel(
+        serialdet.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -694,90 +476,108 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane1.setViewportView(historytable);
+        jScrollPane8.setViewportView(serialdet);
 
-        javax.swing.GroupLayout jpaneltableLayout = new javax.swing.GroupLayout(jpaneltable);
-        jpaneltable.setLayout(jpaneltableLayout);
-        jpaneltableLayout.setHorizontalGroup(
-            jpaneltableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jpaneltableLayout.createSequentialGroup()
+        javax.swing.GroupLayout labelPanelLayout = new javax.swing.GroupLayout(labelPanel);
+        labelPanel.setLayout(labelPanelLayout);
+        labelPanelLayout.setHorizontalGroup(
+            labelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(labelPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1)
+                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 555, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        jpaneltableLayout.setVerticalGroup(
-            jpaneltableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jpaneltableLayout.createSequentialGroup()
+        labelPanelLayout.setVerticalGroup(
+            labelPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(labelPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
+        );
+
+        itemPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Summarized Items"));
+
+        itemdet.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane9.setViewportView(itemdet);
+
+        javax.swing.GroupLayout itemPanelLayout = new javax.swing.GroupLayout(itemPanel);
+        itemPanel.setLayout(itemPanelLayout);
+        itemPanelLayout.setHorizontalGroup(
+            itemPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(itemPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 555, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        itemPanelLayout.setVerticalGroup(
+            itemPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jpaneltable, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(lblmessage, javax.swing.GroupLayout.PREFERRED_SIZE, 378, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                            .addGap(14, 14, 14)
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btdeleteitem, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(btcommit, javax.swing.GroupLayout.Alignment.TRAILING)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(itemPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel5)
-                                .addComponent(jLabel4)
-                                .addComponent(jLabel7))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(tbqty, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGroup(jPanel1Layout.createSequentialGroup()
-                                    .addComponent(tbscan, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(47, 47, 47)
-                                    .addComponent(partlabel, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addComponent(ddop, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(qtylabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                            .addContainerGap()
-                            .addComponent(jLabel8)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(btcommit)
-                                .addComponent(tbref, javax.swing.GroupLayout.PREFERRED_SIZE, 328, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap(161, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addComponent(tbscan, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btclear)
+                                        .addGap(0, 0, Short.MAX_VALUE))
+                                    .addComponent(lblmessage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))))
+                .addContainerGap())
+            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(labelPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addContainerGap()))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(tbscan, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel5))
-                    .addComponent(partlabel, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(qtylabel, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(ddop, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel7))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel4)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(1, 1, 1)
-                        .addComponent(tbqty, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tbref, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel8))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btcommit)
+                    .addComponent(tbscan, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel5)
+                    .addComponent(btclear))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblmessage, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(21, 21, 21)
+                .addComponent(btdeleteitem)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 212, Short.MAX_VALUE)
+                .addComponent(itemPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jpaneltable, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(btcommit)
+                .addGap(94, 94, 94))
+            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createSequentialGroup()
+                    .addGap(126, 126, 126)
+                    .addComponent(labelPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(304, Short.MAX_VALUE)))
         );
 
         add(jPanel1);
@@ -787,23 +587,6 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
        setPanelComponentState(this, false);
         executeTask(BlueSeerUtils.dbaction.run, new String[]{""});
     }//GEN-LAST:event_btcommitActionPerformed
-
-    private void tbqtyFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbqtyFocusGained
-       tbqty.setBackground(Color.yellow);
-    }//GEN-LAST:event_tbqtyFocusGained
-
-    private void tbqtyFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbqtyFocusLost
-         String x = BlueSeerUtils.bsformat("", tbqty.getText(), "2");
-        if (x.equals("error")) {
-            tbqty.setText("");
-            tbqty.setBackground(Color.yellow);
-            bsmf.MainFrame.show(getMessageTag(1000));
-            tbqty.requestFocus();
-        } else {
-            tbqty.setText(x);
-            tbqty.setBackground(Color.white);
-        }
-    }//GEN-LAST:event_tbqtyFocusLost
 
     private void tbscanFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbscanFocusGained
        tbscan.setBackground(Color.yellow);
@@ -815,35 +598,49 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
         validateScan(tbscan.getText());        
     }//GEN-LAST:event_tbscanFocusLost
 
-    private void tbscanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbscanActionPerformed
-        tbqty.requestFocusInWindow();
-    }//GEN-LAST:event_tbscanActionPerformed
+    private void btdeleteitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteitemActionPerformed
+        int[] rows = serialdet.getSelectedRows();
+        String targetlabel = "";
+        for (int i : rows) {
+            targetlabel = serialdet.getModel().getValueAt(i, 0).toString();
+        }
 
-    private void tbrefFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbrefFocusGained
-        // TODO add your handling code here:
-    }//GEN-LAST:event_tbrefFocusGained
+        ArrayList<Integer> rowsToDelete = new ArrayList<Integer>();
+        for (int i = 0; i < serialdet.getRowCount(); i++) {
+            if (serialdet.getModel().getValueAt(i, 0).toString().equals(targetlabel)) {
+                rowsToDelete.add(i);
 
-    private void tbrefFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbrefFocusLost
-        // TODO add your handling code here:
-    }//GEN-LAST:event_tbrefFocusLost
+            }
+        }
+        Collections.reverse(rowsToDelete);
+        for (int j : rowsToDelete) {
+            ((javax.swing.table.DefaultTableModel) serialdet.getModel()).removeRow(j);
+        }
+
+        assignedlabels.remove(targetlabel);
+        sumQtyByItem();
+
+    }//GEN-LAST:event_btdeleteitemActionPerformed
+
+    private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
+        BlueSeerUtils.messagereset();
+        initvars(null);
+    }//GEN-LAST:event_btclearActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btclear;
     private javax.swing.JButton btcommit;
-    private javax.swing.JComboBox ddop;
-    private javax.swing.JTable historytable;
-    private javax.swing.JLabel jLabel4;
+    private javax.swing.JButton btdeleteitem;
+    private javax.swing.JPanel itemPanel;
+    private javax.swing.JTable itemdet;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JPanel jpaneltable;
+    private javax.swing.JScrollPane jScrollPane8;
+    private javax.swing.JScrollPane jScrollPane9;
+    private javax.swing.JPanel labelPanel;
     private javax.swing.JLabel lblmessage;
-    private javax.swing.JLabel partlabel;
-    private javax.swing.JLabel qtylabel;
-    private javax.swing.JTextField tbqty;
-    private javax.swing.JTextField tbref;
+    private javax.swing.JTable serialdet;
     private javax.swing.JTextField tbscan;
     // End of variables declaration//GEN-END:variables
 }

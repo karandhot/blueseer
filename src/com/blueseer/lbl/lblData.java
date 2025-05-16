@@ -272,6 +272,122 @@ public class lblData {
     return m;
     }
     
+    public static label_mstr getLabelMstr(String x) {
+        label_mstr r = null;
+        String[] m = new String[2];
+        String sql = "select * from label_mstr where lbl_id = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, x);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new label_mstr(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new label_mstr(m, res.getString("lbl_id"), 
+                            res.getString("lbl_item"),
+                            res.getString("lbl_custitem"),
+                            res.getString("lbl_id_str"),
+                            res.getString("lbl_conttype"),
+                            res.getString("lbl_name"),
+                            res.getString("lbl_qty"),
+                            res.getString("lbl_po"),
+                            res.getString("lbl_billto"),
+                            res.getString("lbl_order"),
+                            res.getString("lbl_line"),
+                            res.getString("lbl_ref"),
+                            res.getString("lbl_lot"),
+                            res.getString("lbl_parent"),
+                            res.getString("lbl_parent_str"),
+                            res.getString("lbl_addrcode"),
+                            res.getString("lbl_addrname"),
+                            res.getString("lbl_addr1"),
+                            res.getString("lbl_addr2"),
+                            res.getString("lbl_addrcity"),
+                            res.getString("lbl_addrstate"),
+                            res.getString("lbl_addrzip"),
+                            res.getString("lbl_addrcountry"),
+                            res.getString("lbl_crt_date"),
+                            res.getString("lbl_ship_date"),
+                            res.getString("lbl_userid"),
+                            res.getString("lbl_printer"),
+                            res.getString("lbl_prog"),
+                            res.getString("lbl_site"),
+                            res.getString("lbl_loc"),
+                            res.getString("lbl_trantype"),
+                            res.getString("lbl_type")
+                        );
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new label_mstr(m);
+        }
+        return r;
+    }
+    
+    public static label_mstr getLabelMstrByStrID(String x) {
+        label_mstr r = null;
+        String[] m = new String[2];
+        String sql = "select * from label_mstr where lbl_id_str = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, x);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new label_mstr(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new label_mstr(m, res.getString("lbl_id"), 
+                            res.getString("lbl_item"),
+                            res.getString("lbl_custitem"),
+                            res.getString("lbl_id_str"),
+                            res.getString("lbl_conttype"),
+                            res.getString("lbl_name"),
+                            res.getString("lbl_qty"),
+                            res.getString("lbl_po"),
+                            res.getString("lbl_billto"),
+                            res.getString("lbl_order"),
+                            res.getString("lbl_line"),
+                            res.getString("lbl_ref"),
+                            res.getString("lbl_lot"),
+                            res.getString("lbl_parent"),
+                            res.getString("lbl_parent_str"),
+                            res.getString("lbl_addrcode"),
+                            res.getString("lbl_addrname"),
+                            res.getString("lbl_addr1"),
+                            res.getString("lbl_addr2"),
+                            res.getString("lbl_addrcity"),
+                            res.getString("lbl_addrstate"),
+                            res.getString("lbl_addrzip"),
+                            res.getString("lbl_addrcountry"),
+                            res.getString("lbl_crt_date"),
+                            res.getString("lbl_ship_date"),
+                            res.getString("lbl_userid"),
+                            res.getString("lbl_printer"),
+                            res.getString("lbl_prog"),
+                            res.getString("lbl_site"),
+                            res.getString("lbl_loc"),
+                            res.getString("lbl_trantype"),
+                            res.getString("lbl_type")
+                        );
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new label_mstr(m);
+        }
+        return r;
+    }
+    
     
     public static String[] addLabelZebraMstr(label_zebra x) {
         String[] m = new String[2];
