@@ -1468,6 +1468,7 @@ public class EDI {
                   //  c[2] = map;
                   //  c[3] = infile;
                     c[4] = isa[13]; //isactrlnbr
+                   
                   //  c[8] = outfile;
                     c[9] = String.valueOf((int) s);
                     c[10] = String.valueOf((int) e);
@@ -1517,7 +1518,8 @@ public class EDI {
                     end = i + 14 + Integer.valueOf(String.valueOf(gscount).length()) + 1;
                     // now add to ISAmap
                    HashMap<Integer,ArrayList> mycopy = new HashMap<Integer,ArrayList>(stse_hash);
-                  ISAmap.put(isacount, new Object[] {start, end, (int) s, (int) e, (int) u, mycopy, c});
+                   String[] cnew = Arrays.copyOf(c, c.length);
+                  ISAmap.put(isacount, new Object[] {start, end, (int) s, (int) e, (int) u, mycopy, cnew});
                     isaList.add("IEA" + ":" + String.valueOf(i));
                     stcount = 0;
                     docs.clear();
