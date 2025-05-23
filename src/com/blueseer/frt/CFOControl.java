@@ -39,12 +39,15 @@ import com.blueseer.utl.BlueSeerUtils;
 import com.blueseer.utl.BlueSeerUtils.dbaction;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import com.blueseer.utl.IBlueSeerc;
+import com.blueseer.utl.OVData;
+import static com.blueseer.utl.OVData.getSysMetaData;
 import java.awt.Component;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -209,6 +212,7 @@ public class CFOControl extends javax.swing.JPanel implements IBlueSeerc {
     
     public String[] updateRecord(String[] x) {
      String[] m = addUpdateCFOCtrl(createRecord());
+     SysMeta();
         return m;
      }
       
@@ -228,8 +232,23 @@ public class CFOControl extends javax.swing.JPanel implements IBlueSeerc {
     public void updateForm() {
     cbapptype.setSelected(BlueSeerUtils.ConvertStringToBool(x.frtc_function()));
     cbsend990.setSelected(BlueSeerUtils.ConvertStringToBool(x.frtc_export990()));
+    
+     // get sysmeta recs
+    ArrayList<String[]> obc = getSysMetaData("system", "freightcontrol");
+        for (String[] s : obc) {            
+            if (s[0].equals("shipperkey")) {
+                cbshipperkey.setSelected(BlueSeerUtils.ConvertStringToBool(s[1]));  
+            }
+        } 
+    
     }
     
+     public void SysMeta() {
+     
+          OVData.addUpdateSysMeta("system", "freightcontrol", "shipperkey", BlueSeerUtils.boolToString(cbshipperkey.isSelected())); 
+          
+      
+    }
     
   
     /**
@@ -245,6 +264,7 @@ public class CFOControl extends javax.swing.JPanel implements IBlueSeerc {
         cbsend990 = new javax.swing.JCheckBox();
         btupdate = new javax.swing.JButton();
         cbapptype = new javax.swing.JCheckBox();
+        cbshipperkey = new javax.swing.JCheckBox();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -264,29 +284,33 @@ public class CFOControl extends javax.swing.JPanel implements IBlueSeerc {
 
         cbapptype.setText("Freight Carrier Application?");
 
+        cbshipperkey.setText("Use Freight Number as Shipper/Invoice");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(cbapptype)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(btupdate)
-                        .addComponent(cbsend990)))
-                .addGap(19, 19, 19))
+                    .addComponent(cbshipperkey)
+                    .addComponent(btupdate)
+                    .addComponent(cbsend990))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap(29, Short.MAX_VALUE)
+                .addContainerGap(26, Short.MAX_VALUE)
                 .addComponent(cbapptype)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(cbsend990, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(3, 3, 3)
+                .addComponent(cbshipperkey)
+                .addGap(12, 12, 12)
                 .addComponent(btupdate)
-                .addGap(21, 21, 21))
+                .addContainerGap())
         );
 
         add(jPanel1);
@@ -304,6 +328,7 @@ public class CFOControl extends javax.swing.JPanel implements IBlueSeerc {
     private javax.swing.JButton btupdate;
     private javax.swing.JCheckBox cbapptype;
     private javax.swing.JCheckBox cbsend990;
+    private javax.swing.JCheckBox cbshipperkey;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 }

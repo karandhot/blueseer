@@ -288,7 +288,7 @@ public class EDIExport extends javax.swing.JPanel {
         String status = "";
         tacomments.append("See edilog (document view) for any errors.\n");
         for (String x : list) {
-          l_error = EDI.Create810(x); 
+          l_error = EDI.CreateInvoices(x); 
           if (l_error == 0) {
             status = "success";
             EDData.updateEDIInvoiceStatus(x);   

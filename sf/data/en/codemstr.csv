@@ -1591,3 +1591,37 @@ freightchargecodes,Z34,Protective Service Rule 745,1
 freightchargecodes,Z35,Protective Service Rule 755,1
 freightchargecodes,ZFF,First Flight Out,1
 freightchargecodes,ZZZ,Mutually Defined,1
+freightdatecodes,78,Delivery Appointment Scheduled Date,1
+freightdatecodes,77,Pickup Appointment Scheduled Date,1
+freightdatecodes,79,Pickup Requested Scheduled Date,1
+freightdatecodes,80,Delivery Requested Scheduled Date,1
+freightdatecodes,81,Pickup Appointment Granted Date,1
+freightdatecodes,82,Delivery Appointment Granted Date,1
+freightdatecodes,69,Scheduled Pickup Date,1
+freightdatecodes,70,Scheduled Delivery Date,1
+freightdatecodes,37,Ship Not Before Date,1
+freightdatecodes,38,Ship Not Later Than Date,1
+freightdatecodes,53,Deliver Not Before Date,1
+freightdatecodes,54,Deliver No Later Than Date,1
+freighttimecodes,ED,Earliest Delivery Time,1
+freighttimecodes,EP,Earliest Pickup Time,1
+freighttimecodes,LD,Latest Delivery Time,1
+freighttimecodes,LP,Latest Pickup Time,1
+freighttimecodes,2,Pickup Appointment Scheduled Time,1
+freighttimecodes,3,Delivery Appointment Scheduled Time,1
+freighttimecodes,G,Earliest Requested Deliver Time,1
+freighttimecodes,I,Earliest Requested Pickup Time,1
+freighttimecodes,K,Latest Requested Pickup Time,1
+freighttimecodes,L,Latest Requested Delivery Time,1
+freighttimecodes,X,Scheduled Delivery Time,1
+freighttimecodes,U,Scheduled Pickup Time,1
+freighttimecodes,Y,Requested Pickup Time,1
+freighttimecodes,Z,Requested Delivery Time,1
+freightrejectioncodes,A13,Other,1
+freightrejectioncodes,CPT,Capacity Type,1
+freightrejectioncodes,CPU,Capacity Unavailable,1
+freightrejectioncodes,EQT,Equipment Type,1
+freightrejectioncodes,EQU,Equipment Unavailable,1
+freightrejectioncodes,LNH,Length Of Haul,1
+freightrejectioncodes,PRM,Permits,1
+freightrejectioncodes,WGT,Weight,1

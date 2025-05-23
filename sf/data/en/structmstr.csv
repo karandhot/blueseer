@@ -13,6 +13,7 @@ X12830,X12 Planning Schedule,generic,830x12,X12,0,,0,1000
 X12860,X12 Purchase Order Change,generic,860x12,X12,0,,0,1000
 X12862,X12 Shipping Schedule,generic,862x12,X12,0,,0,1000
 X12204,X12 Motor Carrier Load Tender,generic,204x12,X12,0,,0,1000
+X12210,X12 Motor Carrier Invoice,generic,210x12,X12,0,,0,1000
 X12214,X12 Carrier Shipment Status,generic,214x12,X12,0,,0,1000
 X12990,X12 Response to Load Tender,generic,990x12,X12,0,,0,1000
 X12812,X12 Credit / Debit Adjustment,generic,812x12,X12,0,,0,1000

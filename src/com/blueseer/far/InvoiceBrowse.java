@@ -104,7 +104,7 @@ public class InvoiceBrowse extends javax.swing.JPanel {
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("select"), 
                             getGlobalColumnTag("detail"), 
-                            getGlobalColumnTag("shipper"), 
+                            getGlobalColumnTag("invoice"), 
                             getGlobalColumnTag("site"),
                             getGlobalColumnTag("customer"), 
                             getGlobalColumnTag("shipdate"), 

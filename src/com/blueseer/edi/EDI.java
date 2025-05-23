@@ -3841,10 +3841,13 @@ public class EDI {
                 e.getRemarks(), // remarks
                 "0,0,0", // derived construct
                 "", // logic
-                "", // site
+                OVData.getDefaultSite(), // site
                 "1", // is EDI
-                "", // edi rejection reason..to be added
-                "1" // revision is default? ...assumes latest always default when created via EDI
+                "", // edi rejection reason..to be added (can be taken out as of 20250522...new fields added below)
+                "1", // revision is default? ...assumes latest always default when created via EDI
+                "", // rejectcode
+                "", // rejection
+                cfokey + "-" + e.getRef()  // uniquekey
         );
             
             // now the detail
@@ -3884,13 +3887,20 @@ public class EDI {
                 (e.getDetBoxes(j).isBlank() ? "0" : e.getDetBoxes(j).replace(defaultDecimalSeparator, '.') ), // pallets
                 (e.getDetUnits(j).isBlank() ? "0" : e.getDetUnits(j).replace(defaultDecimalSeparator, '.') ), // quantity
                 "0", // hazmat
-                e.getDetDateType(j), // datetype
+                e.getDetDateType(j), // datecode
+                OVData.getCodeValueByCodeKey("freightdatecodes", e.getDetDateType(j)), // datetype        
                 (e.getDetDate(j).isBlank() ? null : e.getDetDate(j)), // date
-                e.getDetTimeType1(j),// timetype1
+                e.getDetDateType2(j), // datecode2
+                OVData.getCodeValueByCodeKey("freightdatecodes", e.getDetDateType2(j)), // datetype2
+                (e.getDetDate2(j).isBlank() ? null : e.getDetDate2(j)),  // date2
+                e.getDetTimeCode1(j),// timecode1
+                OVData.getCodeValueByCodeKey("freighttimecodes", e.getDetTimeCode1(j)), // timetype1   ... get from code_mstr freighttimecodes        
                 e.getDetTime1(j), // time
-                e.getDetTimeType1(j), // timetype2
-                e.getDetTimeType2(j), // time2
-                e.getDetTimeZone(j), // timezone
+                e.getDetTimeZone(j), // timezone 
+                e.getDetTimeCode2(j), // timecode2
+                OVData.getCodeValueByCodeKey("freighttimecodes", e.getDetTimeCode2(j)), // timetype2 ...get from code_mstr freighttimecodes
+                e.getDetTime2(j), // time2
+                e.getDetTimeZone2(j), // timezone2
                 (e.getDetRate(j).isBlank() ? "0" : e.getDetRate(j).replace(defaultDecimalSeparator, '.') ), // rate 
                 (e.getDetMiles(j).isBlank() ? "0" : e.getDetMiles(j).replace(defaultDecimalSeparator, '.')) // miles
                 );  
@@ -4452,6 +4462,156 @@ public class EDI {
        return errorcode; 
          
      }
+    
+    public static int CreateInvoices(String shipper)  {
+        int errorcode = 0;
+        // errorcode = 0 ... clean exit
+        // errorcode = 1 ... no record found in getEDIXrefOut/getEDITPDefaults
+        // errorcode = 2 ... any catch error below ...try running from command line to see trace dump
+        // errorcode = 3 ... error in map...see edi log
+        
+        
+        String doctype = "";
+        String gs01code = "";
+        
+        String map = "";
+        ArrayList<String[]> messages = new ArrayList<String[]>();
+         
+        ship_mstr sh = shpData.getShipMstr(new String[]{shipper});
+        
+        if (sh.sh_type().equals("F")) {
+            doctype = "210db";
+            gs01code = "IM";
+        } else {
+            doctype = "810db";
+            gs01code = "PY";
+        }
+        
+        messages.add(new String[]{"info","exporting: " + doctype + " invoice: " + shipper + " for billto: " + sh.sh_cust()});
+        
+        int comkey = OVData.getNextNbr("edilog");
+        
+        String[] c = initEDIControl();   
+        
+        c[1] = doctype;
+        c[2] = "";
+        c[3] = "";
+        c[4] = "";
+        c[5] = "";
+        c[6] = "";
+        c[7] = shipper;
+        
+        c[12] = ""; // is override
+        c[22] = String.valueOf(comkey);
+        c[28] = "DB";
+        c[17] = "0";
+        c[18] = "999999";
+        c[19] = "0";
+        c[20] = "999999";
+        c[39] = sh.sh_site();
+        
+        int idxnbr = EDData.writeEDIIDX(c);
+        c[16] = String.valueOf(idxnbr);
+        
+        // get Delimiters from Cust Defaults
+        String[] ids = EDData.getEDIXrefOut(sh.sh_cust(), gs01code); // bsgs, tpgs, tpaddr, bsaddr, type
+        if (ids[0].isBlank()) {
+        messages.add(new String[]{"error","810 no edi_xref found for keys(billto/type): " + sh.sh_cust() + "/" + gs01code} );
+        EDData.writeEDILogMulti(c, messages);
+        messages.clear();  // clear message here
+        return 1;
+        } else {
+        messages.add(new String[]{"info","edi_xref: " + ids[0] + "/" + ids[1] + "/" + ids[2] + "/" + ids[3] + "/" + ids[4]});
+        }    
+        
+        String[] defaults = EDData.getEDITPDefaults(doctype, ids[0], ids[1]  ); //810, ourGS, theirsGS
+        if (defaults[19].isBlank()) { // if edi_doc is blank...no default found
+        messages.add(new String[]{"error","no EDITPDefaults found for (doctype/senderGS/receiverGS): " + doctype + "/" + ids[0] + "/" + ids[1]} );
+        EDData.writeEDILogMulti(c, messages);
+        messages.clear();  // clear message here
+        return 1;   
+        } else {
+        messages.add(new String[]{"info","edi_mstr (id,doc): " + defaults[18] + "/" + defaults[19]});
+        messages.add(new String[]{"info","edi_mstr (sndISA/GS,rcvISA/GS): " + defaults[0] + "/" + defaults[2] + "/" + defaults[3] + "/" + defaults[5]});
+        }
+        c[9] = defaults[7]; 
+        c[10] = defaults[6]; 
+        c[11] = defaults[8]; 
+        
+        c[0] = defaults[2];
+        c[21] = defaults[5];
+        c[29] = defaults[15]; // outfiletype
+        c[15] = defaults[14]; // outdoctype
+        
+        map = defaults[24];         
+        c[2] = map;
+        
+          if (map.isEmpty()) {
+            errorcode = 1;
+            messages.add(new String[]{"error", doctype + " : map variable is empty for billto/gs02/gs03/doc: " + sh.sh_cust() + "/" + defaults[2] + "/" + defaults[5] + " / " + c[1]});
+            EDData.writeEDILogMulti(c, messages);
+            messages.clear();  // clear message here
+            return errorcode;
+        } 
+          
+        if (! BlueSeerUtils.isEDIClassFile(map)) {
+            errorcode = 1;
+            messages.add(new String[]{"error", doctype + " : unable to locate compiled map (" + map + ") billto/gs02/gs03/doc: " + sh.sh_cust() + "/" + defaults[2] + "/" + defaults[5] + " / " + c[1]});
+            EDData.writeEDILogMulti(c, messages);
+            messages.clear();  // clear message here
+            return errorcode;
+        }     
+        messages.add(new String[]{"info","using map: " + map});
+       
+        
+        // Mapdata method call below requires two parameters (ArrayList, String[]) ...doc and c
+        ArrayList doc = new ArrayList();
+        doc.add(shipper);
+        
+        
+         // call map 
+        try {
+        URLClassLoader cl = getEDIClassLoader();  
+        Class cls = Class.forName(map,true,cl); 
+        Object obj = cls.getDeclaredConstructor().newInstance();
+        Method method = cls.getDeclaredMethod("Mapdata", ArrayList.class, String[].class, ArrayList.class);
+        Object oc = method.invoke(obj, doc, c, messages);
+        String[] oString = (String[]) oc;
+        messages.add(new String[]{oString[0], oString[1]});
+        EDData.updateEDIIDX(idxnbr, c); 
+        if (oString[0].equals("error")) {
+            errorcode = 3;
+        }
+        } catch (InvocationTargetException ex) {
+        errorcode = 2;    
+        if (c[12].isEmpty()) {
+        messages.add(new String[]{"error", "invocation exception in map class " + map + "/" + c[0] + " / " + c[1]});    
+        clearStaticVariables();
+        }
+        edilog(ex); 
+        } catch (ClassNotFoundException ex) {
+        errorcode = 2;    
+        if (c[12].isEmpty()) {
+        messages.add(new String[]{"error", "Map Class not found " + map + "/" + c[0] + " / " + c[1]});        
+        }
+        edilog(ex); 
+        } catch (IllegalAccessException |
+             InstantiationException | NoSuchMethodException ex
+            ) {
+        errorcode = 2;    
+        if (c[12].isEmpty()) {
+        messages.add(new String[]{"error", "IllegalAccess|Instantiation|NoSuchMethod " + map + "/" + c[0] + " / " + c[1]});        
+       }
+        edilog(ex);
+       } finally {
+          EDData.writeEDILogMulti(c, messages);
+          messages.clear();  // clear message here...and at 997...and at end   
+       }
+         
+       return errorcode; 
+         
+     }
+    
     
     public static int Create850(String po)  {
         int errorcode = 0;
@@ -7702,7 +7862,7 @@ public class EDI {
     
     // Detail fields     
     public ArrayList<String[]> detailArray = new ArrayList<String[]>();
-    public int DetFieldsCount204i = 31;
+    public int DetFieldsCount204i = 34;
     public String[] initDetailArray(String[] a) {
         for (int i = 0; i < a.length; i++) {
             a[i] = "";
@@ -7745,7 +7905,7 @@ public class EDI {
         public void setDetTime1(int i, String v) {
            this.detailArray.get(i)[4] = v;
         }
-        public void setDetTimeType1(int i, String v) {
+        public void setDetTimeCode1(int i, String v) {
           this.detailArray.get(i)[5] = v;
         }
         public void setDetTime2(int i, String v) {
@@ -7754,10 +7914,10 @@ public class EDI {
         public void setDetRef(int i, String v) {
            this.detailArray.get(i)[7] = v;
         }
-         public void setDetAddrCode(int i, String v) {
+        public void setDetAddrCode(int i, String v) {
            this.detailArray.get(i)[8] = v;
         }
-          public void setDetAddrName(int i, String v) {
+        public void setDetAddrName(int i, String v) {
            this.detailArray.get(i)[9] = v;
         }
         public void setDetAddrLine1(int i, String v) {
@@ -7799,7 +7959,7 @@ public class EDI {
         public void setDetDateType(int i, String v) {
            this.detailArray.get(i)[22] = v;
         }
-        public void setDetTimeType2(int i, String v) {
+        public void setDetDateType2(int i, String v) {
            this.detailArray.get(i)[23] = v;
         }
         public void setDetRate(int i, String v) {
@@ -7808,7 +7968,7 @@ public class EDI {
         public void setDetMiles(int i, String v) {
            this.detailArray.get(i)[25] = v;
         }
-        public void setDetTimeZone(int i, String v) {
+        public void setDetTimeZone1(int i, String v) {
            this.detailArray.get(i)[26] = v;
         }
         public void setDetCountry(int i, String v) {
@@ -7822,6 +7982,15 @@ public class EDI {
         }
         public void setDetContact(int i, String v) {
            this.detailArray.get(i)[30] = v;
+        }
+        public void setDetTimeCode2(int i, String v) {
+           this.detailArray.get(i)[31] = v;
+        }
+        public void setDetTimeZone2(int i, String v) {
+           this.detailArray.get(i)[32] = v;
+        }
+        public void setDetDate2(int i, String v) {
+           this.detailArray.get(i)[33] = v;
         }
         
         
@@ -7841,7 +8010,7 @@ public class EDI {
           public String getDetTime1(int i) {
             return detailArray.get(i)[4];
         }
-          public String getDetTimeType1(int i) {
+          public String getDetTimeCode1(int i) {
            return detailArray.get(i)[5];
         }
         public String getDetTime2(int i) {
@@ -7895,7 +8064,7 @@ public class EDI {
         public String getDetDateType(int i) {
            return detailArray.get(i)[22];
         }
-        public String getDetTimeType2(int i) {
+        public String getDetDateType2(int i) {
            return detailArray.get(i)[23];
         }
         public String getDetRate(int i) {
@@ -7919,7 +8088,16 @@ public class EDI {
         public String getDetContact(int i) {
            return detailArray.get(i)[30];
         }
-              
+        public String getDetTimeCode2(int i) {
+           return detailArray.get(i)[31];
+        }
+        public String getDetTimeZone2(int i) {
+           return detailArray.get(i)[32];
+        }
+        public String getDetDate2(int i) {
+           return detailArray.get(i)[33];
+        }
+               
 // header setters 
    
     

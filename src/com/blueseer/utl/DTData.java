@@ -3299,6 +3299,71 @@ public class DTData {
         
          } 
     
+    public static DefaultTableModel getGenCodeBrowseUtilByCode( String str, int state, String myfield, String code) {
+        javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+                      new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("key1"), getGlobalColumnTag("value")})
+                {
+                      @Override  
+                      public Class getColumnClass(int col) {  
+                        if (col == 0)       
+                            return ImageIcon.class;  
+                        else return String.class;  //other columns accept String values  
+                      }  
+                        }; 
+              
+       try{
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try{
+                if (state == 1) { // begins
+                    res = st.executeQuery(" select code_code, code_key, code_value " +
+                        " FROM  code_mstr where " + myfield + " like " + "'" + str + "%'" +
+                        " and code_code = " + "'" + code + "'" +
+                        " order by code_code ;");
+                }
+                if (state == 2) { // ends
+                    res = st.executeQuery(" select code_code, code_key, code_value " +
+                        " FROM  code_mstr where " + myfield + " like " + "'%" + str + "'" +
+                        " and code_code = " + "'" + code + "'" +
+                        " order by code_code ;");
+                }
+                 if (state == 0) { // match
+                 res = st.executeQuery(" select code_code, code_key, code_value " +
+                        " FROM  code_mstr where " + myfield + " like " + "'%" + str + "%'" +
+                        " and code_code = " + "'" + code + "'" +
+                        " order by code_code ;");
+                 }
+                    while (res.next()) {
+                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, 
+                                   res.getString("code_key"),
+                                   res.getString("code_value")
+                        });
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               if (con != null) con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+        return mymodel;
+        
+         } 
+    
+    
     public static DefaultTableModel getEDIXrefBrowseUtil( String str, int state, String myfield) {
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                       new String[]{getGlobalColumnTag("select"), "partner GSID", "system GSID", getGlobalColumnTag("type"), getGlobalColumnTag("partner addrid"), getGlobalColumnTag("system addrid")})
@@ -9657,13 +9722,43 @@ return mymodel;
                         return String.class;  //other columns accept String values  
                       }  
                         }; 
-                        mymodel.addRow(new Object[] {"CPT","Capacity Type"});
-                        mymodel.addRow(new Object[] {"CPU","Capacity Unavailable"});
-                        mymodel.addRow(new Object[] {"EQT","Equipment Type"});
-                        mymodel.addRow(new Object[] {"EQU","Equipment Unavailable"});
-                        mymodel.addRow(new Object[] {"LNH","Length of Haul"});
-                        mymodel.addRow(new Object[] {"PRM","Permits"});
-                        mymodel.addRow(new Object[] {"WGT","Weight"});
+        
+        
+        try{
+
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{     
+                res = st.executeQuery("SELECT code_key, code_value " +
+                    "from code_mstr where code_code = 'freightrejectioncodes' order by code_key ;");
+
+            while (res.next()) {
+
+                mymodel.addRow(new Object[]{ 
+                    res.getString("code_key"),
+                    res.getString("code_value")
+                        });
+            }
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+          } finally {
+           if (res != null) res.close();
+           if (st != null) st.close();
+           if (con != null) con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+
+    }
+                     
                     
         return mymodel;
     }

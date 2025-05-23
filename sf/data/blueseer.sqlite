@@ -1993,7 +1993,10 @@ CREATE TABLE "cfo_mstr" (
   "cfo_site" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
   "cfo_edi" tinyint(1) NOT NULL COLLATE NOCASE DEFAULT '0',
   "cfo_edireason" varchar(50) NOT NULL COLLATE NOCASE DEFAULT '',
-  "cfo_defaultrev" tinyint(1) NOT NULL COLLATE NOCASE DEFAULT '0'
+  "cfo_defaultrev" tinyint(1) NOT NULL COLLATE NOCASE DEFAULT '0',
+  "cfo_rejectcode" varchar(10) NOT NULL COLLATE NOCASE  DEFAULT '',
+  "cfo_rejection" varchar(100) NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfo_uniquekey" varchar(80) NOT NULL COLLATE NOCASE DEFAULT ''
 );
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -2024,13 +2027,20 @@ CREATE TABLE "cfo_det" (
   "cfod_pallet" decimal(14,5) NOT NULL COLLATE NOCASE DEFAULT '0',
   "cfod_ladingqty" decimal(14,5) NOT NULL COLLATE NOCASE DEFAULT '0',
   "cfod_hazmat" varchar(50) NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfod_datecode" varchar(8)  NOT NULL COLLATE NOCASE DEFAULT '',
   "cfod_datetype" varchar(80)  NOT NULL COLLATE NOCASE DEFAULT '',
   "cfod_date" date DEFAULT '0000-00-00',
-  "cfod_timetype1" varchar(50)  NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfod_datecode2" varchar(8)  NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfod_datetype2" varchar(80)  NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfod_date2" date DEFAULT '0000-00-00',
+  "cfod_timecode1" varchar(8)  NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfod_timetype1" varchar(70)  NOT NULL COLLATE NOCASE DEFAULT '',
   "cfod_time1" varchar(8)  NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfod_timezone1" varchar(10)  NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfod_timecode2" varchar(8)  NOT NULL COLLATE NOCASE DEFAULT '',
   "cfod_timetype2" varchar(50)  NOT NULL COLLATE NOCASE DEFAULT '',
   "cfod_time2" varchar(8)  NOT NULL COLLATE NOCASE DEFAULT '',
-  "cfod_timezone" varchar(10)  NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfod_timezone2" varchar(10)  NOT NULL COLLATE NOCASE DEFAULT '',
   "cfod_rate" decimal(14,5)  NOT NULL COLLATE NOCASE DEFAULT '0',
   "cfod_miles" varchar(14,5)  NOT NULL COLLATE NOCASE DEFAULT '0'
 ); 

@@ -16,18 +16,21 @@ import com.blueseer.utl.EDData;
         String custfo = ""; 
         String origfo = "";
         String purpose = "";
+String cfokey = "";
+String tnid = "";
         int eline = 0;
-        
+      ArrayList<String[]> ta = new ArrayList<String[]>();  
 
     // begin mapping
     
-	e.setCustFO(getInput("B2","e04"));
+       cfokey = getInput("B2","e04") + "-";  // concatenated with L11 TN below
+       e.setCustFO(getInput("B2","e04"));
        e.setCarrier(getInput("B2","e02"));
        // lets set tpid and cust at this point with ISA sender ID and cross reference lookup into cmedi_mstr
        e.setTPID(getInputISA(6).trim()); 
        e.setCust(EDData.getEDIXrefIn(getInputGS(3), getInputGS(2), "SM", getInputGS(2)));
 
-
+      
 
 
         // if cancellation...cancel original freight order based on custfo number...if status is not 'InTransit'
@@ -45,9 +48,15 @@ import com.blueseer.utl.EDData;
        EDData.writeEDILog(c, "INFO", "204 Update Not Implemented");
        }
 
-       if (getInput("L11","e02").toUpperCase().equals("ZI")) {
+       if (getInput("L11","e02").toUpperCase().equals("TN")) {
            e.setRef(getInput("L11","e01"));
+           cfokey = cfokey + getInput("L11","e01");
+           tnid = getInput("L11","e01");
        }
+
+    ta.add(new String[]{cfokey,"header","order", getInput("B2","e04")}); 
+    ta.add(new String[]{cfokey,"header","reference", tnid});
+
 
 // S5 Stop details
 var linecount = getGroupCount("S5");
@@ -58,6 +67,12 @@ for (int i = 1; i <= linecount; i++) {
        eline = i - 1;  // base zero
        e.setDetLine(eline, getInput(i,"S5","e01"));
        e.setDetType(eline, getInput(i,"S5","e02"));              
+
+       e.setDetDateType(eline, getInput(i,"S5:G62","e01"));
+       e.setDetDate(eline, convertDate("yyyyMMdd", getInput(i,"S5:G62","e02")));
+       e.setDetTimeCode1(eline, getInput(i,"S5:G62","e03"));
+       e.setDetTime1(eline, getInput(i,"S5:G62","e04"));
+/*
         if ( getInput(i,"S5:G62","e01").equals("68") || getInput(i,"S5:G62","e01").equals("70")) {
         e.setDetDate(eline, convertDate("yyyyMMdd", getInput(i,"S5:G62","e02")));
           if ( ! getInput(i,"S5:G62","e04").isEmpty() ) {
@@ -69,12 +84,30 @@ for (int i = 1; i <= linecount; i++) {
            if ( ! getInput(i,"S5:G62","e04").isEmpty() ) {
           e.setDetTime1(eline, getInput(i,"S5:G62","e04"));
           }
-        }  
+        }
+*/  
         e.setDetAddrName(eline, getInput(i,"S5:N1","e02"));
         if (! getInput(i,"S5:N1","e04").isEmpty()) {
           e.setDetAddrCode(eline, getInput(i,"S5:N1","e04"));
         }
-        e.setDetPhone(eline, getInput(i,"S5:N1:G61","e04"));
+
+// NTE
+        var nteloop = getLoopKeys("S5:NTE",i);
+        String rmks = "";
+        for (var key : nteloop) {
+           rmks += getInput(key,2);
+        }
+         e.setDetRemarks(eline,rmks);
+
+// G61
+        e.setDetContact(eline, getInput(i,"S5:N1:G61","e02"));
+        if (getInput(i,"S5:N1:G61","e03").equals("EM")) {
+           e.setDetEmail(eline, getInput(i,"S5:N1:G61","e04"));
+        }
+        if (getInput(i,"S5:N1:G61","e03").equals("TE")) {
+           e.setDetPhone(eline, getInput(i,"S5:N1:G61","e04"));
+        }
+        
         e.setDetAddrLine1(eline, getInput(i,"S5:N1:N3","e01"));
         e.setDetAddrCity(eline, getInput(i,"S5:N1:N4","e01"));
         e.setDetAddrState(eline, getInput(i,"S5:N1:N4","e02"));
@@ -95,5 +128,5 @@ for (int i = 1; i <= linecount; i++) {
 
      /* Load Sales Order */
      /* call processDB ONLY if the output is database write */
-    processDB(c,com.blueseer.edi.EDI.createCFOFrom204(e, c), null);
+    processDB(c,com.blueseer.edi.EDI.createCFOFrom204(e, c), ta);
 

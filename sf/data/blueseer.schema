@@ -1745,7 +1745,10 @@ CREATE TABLE IF NOT EXISTS `cfo_mstr` (
   `cfo_site` varchar(10) NOT NULL  DEFAULT '',
   `cfo_edi` tinyint(1) NOT NULL  DEFAULT '0',
   `cfo_edireason` varchar(50) NOT NULL  DEFAULT '',
-  `cfo_defaultrev` tinyint(1) NOT NULL  DEFAULT '0'
+  `cfo_defaultrev` tinyint(1) NOT NULL  DEFAULT '0',
+  `cfo_rejectcode` varchar(10) NOT NULL  DEFAULT '',
+  `cfo_rejection` varchar(100) NOT NULL  DEFAULT '',
+  `cfo_uniquekey` varchar(80) NOT NULL  DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `cfo_det` (
   `cfod_nbr` varchar(8) NOT NULL  DEFAULT '',
@@ -1773,13 +1776,20 @@ CREATE TABLE IF NOT EXISTS `cfo_det` (
   `cfod_pallet` decimal(14,2) NOT NULL DEFAULT '0',
   `cfod_ladingqty` decimal(14,2) NOT NULL DEFAULT '0',
   `cfod_hazmat` varchar(50) NOT NULL DEFAULT '',
+  `cfod_datecode` varchar(8)  NOT NULL DEFAULT '',
   `cfod_datetype` varchar(80)  NOT NULL DEFAULT '',
   `cfod_date` date DEFAULT NULL,
-  `cfod_timetype1` varchar(50)  NOT NULL DEFAULT '',
+  `cfod_datecode2` varchar(8)  NOT NULL DEFAULT '',
+  `cfod_datetype2` varchar(80)  NOT NULL DEFAULT '',
+  `cfod_date2` date DEFAULT NULL,
+  `cfod_timecode1` varchar(8)  NOT NULL DEFAULT '',
+  `cfod_timetype1` varchar(70)  NOT NULL DEFAULT '',
   `cfod_time1` varchar(8)  NOT NULL DEFAULT '',
+  `cfod_timezone1` varchar(10)  NOT NULL DEFAULT '',
+  `cfod_timecode2` varchar(8)  NOT NULL DEFAULT '',
   `cfod_timetype2` varchar(50)  NOT NULL DEFAULT '',
   `cfod_time2` varchar(8)  NOT NULL DEFAULT '',
-  `cfod_timezone` varchar(20)  NOT NULL DEFAULT '',
+  `cfod_timezone2` varchar(10)  NOT NULL DEFAULT '',
   `cfod_rate` decimal(14,5)  NOT NULL DEFAULT '0',
   `cfod_miles` decimal(14,2)  NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
