@@ -3847,7 +3847,7 @@ public class EDI {
                 "1", // revision is default? ...assumes latest always default when created via EDI
                 "", // rejectcode
                 "", // rejection
-                cfokey + "-" + e.getRef()  // uniquekey
+                e.getCustFO() + "-" + e.getRef()  // uniquekey
         );
             
             // now the detail
