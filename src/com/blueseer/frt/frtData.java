@@ -1683,7 +1683,7 @@ public class frtData {
         " cfo_brokerid = ?, cfo_brokercontact = ?, cfo_brokercell = ?, cfo_ratetype = ?, cfo_rate = ?, " +
         " cfo_mileage = ?, cfo_driverrate = ?, cfo_driverstd = ?, cfo_weight = ?, cfo_orddate = ?, cfo_confdate = ?, cfo_ishazmat = ?, " +
         " cfo_miscexpense = ?, cfo_misccharges = ?, cfo_cost = ?, cfo_bol = ?, cfo_rmks = ?, cfo_derived = ?, cfo_logic = ?, cfo_site = ?, " +
-        " cfo_edi = ?, cfo_edireason = ?, cfo_defaultrev = ?, cfo_rejectcode = ?, cfo_rejection = ?, cfo_uniquekey = ? " +
+        " cfo_edi = ?, cfo_edireason = ?, cfo_defaultrev = ?, cfo_rejectcode = ?, cfo_rejection = ? " + // do not update cfo_uniquekey
         " where cfo_nbr = ? and cfo_revision = ? ; ";
         
             ps = con.prepareStatement(sql);
@@ -1723,9 +1723,8 @@ public class frtData {
             ps.setString(34, x.cfo_defaultrev);
             ps.setString(35, x.cfo_rejectcode);
             ps.setString(36, x.cfo_rejection);
-            ps.setString(37, x.cfo_uniquekey);
-            ps.setString(38, x.cfo_nbr);
-            ps.setString(39, x.cfo_revision);
+            ps.setString(37, x.cfo_nbr);
+            ps.setString(38, x.cfo_revision);
             
             rows = ps.executeUpdate();
         
