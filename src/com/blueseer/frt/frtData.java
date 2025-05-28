@@ -1652,8 +1652,8 @@ public class frtData {
         int rows = 0;
         String sqlSelect = "select * from cfo_sos where cfos_nbr = ? and cfos_revision = ? and cfos_desc = ?";
         String sqlInsert = "insert into cfo_sos (cfos_nbr, cfos_revision, cfos_desc, cfos_type, " 
-                        + "cfos_amttype, cfos_amt ) "
-                        + " values (?,?,?,?,?,?); "; 
+                        + "cfos_amttype, cfos_amt, cfos_key, cfos_value ) "
+                        + " values (?,?,?,?,?,?,?,?); "; 
        
           ps = con.prepareStatement(sqlSelect); 
           ps.setString(1, x.cfos_nbr);
@@ -1668,6 +1668,8 @@ public class frtData {
             ps.setString(4, x.cfos_type);
             ps.setString(5, x.cfos_amttype);
             ps.setString(6, x.cfos_amt);
+            ps.setString(7, x.cfos_key);
+            ps.setString(8, x.cfos_value);
             rows = ps.executeUpdate();
             } 
             return rows;
@@ -2077,7 +2079,46 @@ public class frtData {
         }
         return list;
     }
-        
+    
+    public static ArrayList<cfo_sos> getCFOSOS(String code, String revision) {
+        cfo_sos r = null;
+        String[] m = new String[2];
+        ArrayList<cfo_sos> list = new ArrayList<cfo_sos>();
+        String sql = "select * from cfo_sos where cfos_nbr = ? and cfos_revision = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, code);
+        ps.setString(2, revision);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new cfo_sos(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new cfo_sos(m, 
+                        res.getString("cfos_nbr"), 
+                        res.getString("cfos_revision"),         
+                        res.getString("cfos_desc"), 
+                        res.getString("cfos_type"), 
+                        res.getString("cfos_amttype"), 
+                        res.getString("cfos_amt"), 
+                        res.getString("cfos_key"), 
+                        res.getString("cfos_value"));
+                        list.add(r);
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new cfo_sos(m);
+               list.add(r);
+        }
+        return list;
+    }
+    
+    
     public static String[] deleteCFOMstr(cfo_mstr x) { 
        String[] m = new String[2];
         String sql = "delete from cfo_mstr where cfo_nbr = ? and cfo_revision = ?; ";
@@ -2430,9 +2471,9 @@ public class frtData {
     
     
     public record cfo_sos(String[] m, String cfos_nbr, String cfos_revision, String cfos_desc, String cfos_type, 
-        String cfos_amttype, String cfos_amt) {
+        String cfos_amttype, String cfos_amt, String cfos_key, String cfos_value) {
         public cfo_sos(String[] m) {
-            this (m, "", "", "", "", "", "");
+            this (m, "", "", "", "", "", "", "", "");
         }
     }
     

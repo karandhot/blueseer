@@ -868,9 +868,10 @@
                 <Component class="javax.swing.JComboBox" name="ddratetype">
                   <Properties>
                     <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                      <StringArray count="2">
+                      <StringArray count="3">
                         <StringItem index="0" value="Flat Rate"/>
                         <StringItem index="1" value="Mileage Rate"/>
+                        <StringItem index="2" value="Weight Rate"/>
                       </StringArray>
                     </Property>
                   </Properties>
@@ -953,6 +954,9 @@
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="tbtotweight">
+                  <Events>
+                    <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="tbtotweightFocusLost"/>
+                  </Events>
                 </Component>
                 <Component class="javax.swing.JLabel" name="jLabel35">
                   <Properties>
@@ -1382,8 +1386,14 @@
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="tbtime1">
+                      <Events>
+                        <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="tbtime1FocusLost"/>
+                      </Events>
                     </Component>
                     <Component class="javax.swing.JTextField" name="tbtime2">
+                      <Events>
+                        <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="tbtime2FocusLost"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -2185,21 +2195,14 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="btaddattachment" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="btdeleteattachment" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="446" max="32767" attributes="0"/>
-                          <Component id="labelmessage" min="-2" pref="266" max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="jScrollPane3" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
+                  <Component id="btaddattachment" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="btdeleteattachment" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace pref="446" max="32767" attributes="0"/>
+                  <Component id="labelmessage" min="-2" pref="266" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
+              <Component id="jScrollPane3" alignment="0" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -2214,8 +2217,7 @@
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jScrollPane3" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="157" max="-2" attributes="0"/>
+                  <Component id="jScrollPane3" min="-2" pref="584" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

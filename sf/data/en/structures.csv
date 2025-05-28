@@ -11073,6 +11073,9 @@ X12210,B3,,1,0,0,e11,Standard Carrier Alpha Code,2,4,-,M,F
 X12210,B3,,1,0,0,e12,Date,8,8,-,O,F
 X12210,B3,,1,0,0,e13,Tariff Service Code,2,2,-,O,F
 X12210,B3,,1,0,0,e14,Transportation Terms Code,3,3,-,O/Z,F
+X12210,N9,,1,0,1,landmark,Reference Tag,2,2,-,M,F
+X12210,N9,,1,0,0,e01,Reference Qualifier,2,2,-,O,F
+X12210,N9,,1,0,0,e02,Reference Number,1,80,-,M,F
 X12210,C2,,1,0,1,landmark,Bank ID,2,2,-,O,F
 X12210,C2,,1,0,0,e01,Bank Client Code,1,1,-,M,F
 X12210,C2,,1,0,0,e02,Identification Code Qualifier,1,2,-,M,F

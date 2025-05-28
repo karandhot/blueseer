@@ -800,8 +800,9 @@ public class shpData {
     
     public static ArrayList<ship_det> createShipDetFreight(ArrayList<String[]> detail, String shippernbr, String confdate, String site) {
         ArrayList<ship_det> list = new ArrayList<ship_det>();
-        for (String[] d : detail) {            
-            // Freight field order:  "Line", "Item", "FO", "CUSTFO", "NetPrice", "TAXAMT"
+        for (String[] d : detail) {   
+            
+            // Freight field order:  "Line", "Item", "FO", "CUSTFO", "NetPrice", "TAXAMT", "desc"
             ship_det x = new ship_det(null,
                   shippernbr,
                   bsParseInt(d[0]), // shline
@@ -816,8 +817,8 @@ public class shpData {
                   "", // currency
                   bsParseDouble(d[4]), // netprice
                   0, // disc
-                  bsParseDouble(d[4]), // listprice
-                  "", // desc
+                  bsParseDouble(d[4]),
+                  d[6], // desc
                   "", // wh
                   "", // loc
                   bsParseDouble(d[5]), // taxamt
@@ -1818,10 +1819,10 @@ public class shpData {
     }
     
     public static double getShipperTotal(String nbr) {
-       double tax = 0;
-       double disc = 0;
-       double charge = 0;
-       double shippertotal = 0;
+       double tax = 0.00;
+       double disc = 0.00;
+       double charge = 0.00;
+       double shippertotal = 0.00;
      try{
         Connection con = null;
         if (ds != null) {
@@ -1835,7 +1836,7 @@ public class shpData {
         try{
             res = st.executeQuery("SELECT  sum(shd_netprice * shd_qty) as mytotal  " +
                                     " FROM  ship_det  " +
-                                    " where shd_nbr = " + "'" + nbr + "'" +       
+                                    " where shd_id = " + "'" + nbr + "'" +       
                                     ";");
                 while (res.next()) {
                     shippertotal += res.getDouble("mytotal");
@@ -1891,6 +1892,8 @@ public class shpData {
     catch (Exception e){
         MainFrame.bslog(e);
     }
+     
+         
     return shippertotal + charge + tax;
 
     }
@@ -2033,6 +2036,45 @@ public class shpData {
 
     }
          return billto;
+     }
+
+    public static String getShipperChar1(String shipper) {
+         String r = "";
+          try{
+
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+                  // sh_char1 is used by the CFO_Maint class to note the invoice status of a freight invoice:  "" = original, "1" = update, "2" = complete rebill
+                  res = st.executeQuery("select sh_char1 from ship_mstr where sh_id = " + "'" + shipper + "'" +";");
+                while (res.next()) {
+                    r = res.getString("sh_char1");
+                }
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+
+        } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+
+    }
+         return r;
      }
 
     

@@ -59,6 +59,7 @@ import static com.blueseer.frt.frtData.getCFOItem;
 import static com.blueseer.frt.frtData.getCFOLines;
 import static com.blueseer.frt.frtData.getCFOMstr;
 import static com.blueseer.frt.frtData.getCFORevisions;
+import static com.blueseer.frt.frtData.getCFOSOS;
 import static com.blueseer.frt.frtData.getDriverInfo;
 import static com.blueseer.frt.frtData.getDriverPhone;
 import static com.blueseer.frt.frtData.updateCFORejection;
@@ -80,6 +81,7 @@ import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.isParsableToInt;
 import static com.blueseer.utl.BlueSeerUtils.logChange;
 import static com.blueseer.utl.BlueSeerUtils.luModel;
 import static com.blueseer.utl.BlueSeerUtils.luTable;
@@ -229,7 +231,8 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
    javax.swing.table.DefaultTableModel sacmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
             new String[]{
                 getGlobalColumnTag("type"), 
-                getGlobalColumnTag("description"), 
+                getGlobalColumnTag("code"), 
+                getGlobalColumnTag("description"),
                 getGlobalColumnTag("value"), 
                 getGlobalColumnTag("amount")
             });
@@ -585,7 +588,8 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbcost.setEditable(false);
         tbtime1.setText("");
         tbtime2.setText("");
-        
+        tbsacamt.setText("");
+        tbsacdesc.setText("");
        // tablelist.clear();
        
         myorddetmodel.setRowCount(0);
@@ -895,6 +899,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
        x = getCFOMstr(key);
        cfodetlist = getCFODet(key[0], x.cfo_revision()); 
        cfoitemlist = getCFOItem(key[0], x.cfo_revision()); 
+       soslist = getCFOSOS(key[0], x.cfo_revision());
        getAttachments(key[0]);
         return x.m();
     }
@@ -1037,10 +1042,12 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
          for (int j = 0; j < sactable.getRowCount(); j++) {
              cfo_sos x = new cfo_sos(null, tbkey.getText().toString(),
                 ddrevision.getSelectedItem().toString(),
-                sactable.getValueAt(j, 1).toString(),
-                sactable.getValueAt(j, 0).toString(),
                 sactable.getValueAt(j, 2).toString(),
-                sactable.getValueAt(j, 3).toString().replace(defaultDecimalSeparator, '.'));     
+                sactable.getValueAt(j, 0).toString(),
+                sactable.getValueAt(j, 3).toString(),
+                sactable.getValueAt(j, 4).toString().replace(defaultDecimalSeparator, '.'),
+                sactable.getValueAt(j, 1).toString(), // key
+                sactable.getValueAt(j, 2).toString()); // value    
                 list.add(x);
          }
        
@@ -1432,7 +1439,8 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
             if (! sos.cfos_type().equals("tax")) {  // don't show header tax again...
             sacmodel.addRow(new Object[]{
                       sos.cfos_type(), 
-                      sos.cfos_desc(),
+                      sos.cfos_key(), // item
+                      sos.cfos_desc(),   // desc
                       sos.cfos_amttype(),
                       sos.cfos_amt()});
             }
@@ -1467,16 +1475,16 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         // create line item 1 with bulk rate
              String[] s = new String[]{
              "1", // shline
-             ddratetype.getSelectedItem().toString(), // item
+             "DLH", // item
              tbkey.getText(), // order
              tbnumber.getText(), // cust fo
              currformatDoubleUS(totamtLessCharge),  // formatUSC(tbcost.getText()), // netprice
-             "0" // taxamt
-             };
+             "0", // taxamt
+             OVData.getCodeValueByCodeKey("freightchargecodes", "DLH")};
         list.add(s);
         
         // additional line items contain charges/surcharges from cfo_sos table
-        ArrayList<String[]> sac = OVData.getFreightSAC(tbkey.getText()); 
+        ArrayList<String[]> sac = OVData.getFreightSAC(tbkey.getText(), ddrevision.getSelectedItem().toString()); 
         int cnt = 1;
         String myamttype = "";
         double myamt = 0.00;
@@ -1496,11 +1504,12 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                 cnt++;
                 String[] c1 = new String[]{
                  String.valueOf(cnt), // shline
-                 ss[1], // item
+                 ss[5], // item
                  tbkey.getText(), // order
                  tbnumber.getText(), // cust fo
                  currformatDoubleUS(myamt), // netprice
-                 "0" // taxamt
+                 "0", // taxamt
+                 ss[1] // desc 
                  };
                  list.add(c1);
             }
@@ -1525,7 +1534,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
       double totalcharges = 0.00;
       
       for (int j = 0; j < sactable.getRowCount(); j++) {
-             totalcharges += Double.valueOf(sactable.getValueAt(j, 3).toString()); 
+             totalcharges += Double.valueOf(sactable.getValueAt(j, 4).toString()); 
       }  
       tbcharges.setText(currformatDouble(totalcharges));
       
@@ -1550,7 +1559,12 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
       // updates header fields
       if (cbderivedweight.isSelected()) {
         tbtotweight.setText(String.valueOf(weight));
+      } else {
+        if (! tbtotweight.getText().isBlank()) {
+         weight = Double.valueOf(tbtotweight.getText());  // if not derived...take text value
+        }
       }
+      
       if (cbderivedrate.isSelected()) {
         tbforate.setText(currformatDouble(rate));
       }
@@ -1565,8 +1579,10 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
       if (! tbforate.getText().isBlank()) {
             if (ddratetype.getSelectedItem().toString().equals("Flat Rate")) {
                 dol = Double.valueOf(tbforate.getText()) + Double.valueOf(tbcharges.getText());
-            } else {
+            } else if (ddratetype.getSelectedItem().toString().equals("Mileage Rate")) {
                 dol = (Double.valueOf(tbforate.getText()) * miles) + Double.valueOf(tbcharges.getText());
+            } else {
+                dol = (Double.valueOf(tbforate.getText()) * weight) + Double.valueOf(tbcharges.getText());
             }
       } 
       tbcost.setText(currformatDouble(dol));
@@ -1674,6 +1690,8 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         itemdetmodel.setRowCount(0);
         
+        tbtime1.setText("");
+        tbtime2.setText("");
         
      
         if (ddtimetype1.getItemCount() > 0) {
@@ -2300,7 +2318,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addContainerGap())
         );
 
-        ddratetype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Flat Rate", "Mileage Rate" }));
+        ddratetype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Flat Rate", "Mileage Rate", "Weight Rate" }));
         ddratetype.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ddratetypeActionPerformed(evt);
@@ -2346,6 +2364,12 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         });
 
         dcconfdate.setDateFormatString("yyyy-MM-dd");
+
+        tbtotweight.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                tbtotweightFocusLost(evt);
+            }
+        });
 
         jLabel35.setText("Commit Date");
 
@@ -2649,6 +2673,18 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel21.setText("Time Event 1");
 
         jLabel25.setText("Time Event 2");
+
+        tbtime1.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                tbtime1FocusLost(evt);
+            }
+        });
+
+        tbtime2.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                tbtime2FocusLost(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel16Layout = new javax.swing.GroupLayout(jPanel16);
         jPanel16.setLayout(jPanel16Layout);
@@ -3316,17 +3352,13 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         panelAttachmentLayout.setHorizontalGroup(
             panelAttachmentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelAttachmentLayout.createSequentialGroup()
-                .addGroup(panelAttachmentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(panelAttachmentLayout.createSequentialGroup()
-                        .addComponent(btaddattachment)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btdeleteattachment)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 446, Short.MAX_VALUE)
-                        .addComponent(labelmessage, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(panelAttachmentLayout.createSequentialGroup()
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addComponent(btaddattachment)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btdeleteattachment)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 446, Short.MAX_VALUE)
+                .addComponent(labelmessage, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
+            .addComponent(jScrollPane3)
         );
         panelAttachmentLayout.setVerticalGroup(
             panelAttachmentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3338,8 +3370,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addComponent(btaddattachment)
                         .addComponent(btdeleteattachment)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(157, 157, 157))
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 584, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         add(panelAttachment);
@@ -3421,6 +3452,24 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         itemmap.put(String.valueOf(currentstopline), z);
         
         // kvstop
+        String datecode = "";
+        String datetype = "";
+        String timecode1 = "";
+        String timetype1 = "";
+        String timecode2 = "";
+        String timetype2 = "";
+        if (dddatetype.getSelectedItem() != null && ! dddatetype.getSelectedItem().toString().isBlank()) {
+            datecode = dddatetype.getSelectedItem().toString().split("-")[0];
+            datetype = dddatetype.getSelectedItem().toString().split("-")[1];
+        }
+        if (ddtimetype1.getSelectedItem() != null && ! ddtimetype1.getSelectedItem().toString().isBlank()) {
+            timecode1 = ddtimetype1.getSelectedItem().toString().split("-")[0];
+            timetype1 = ddtimetype1.getSelectedItem().toString().split("-")[1];
+        }
+        if (ddtimetype2.getSelectedItem() != null && ! ddtimetype2.getSelectedItem().toString().isBlank()) {
+            timecode2 = ddtimetype2.getSelectedItem().toString().split("-")[0];
+            timetype2 = ddtimetype2.getSelectedItem().toString().split("-")[1];
+        }
         String[] stoparray = new String[]{String.valueOf(currentstopline), 
             String.valueOf(currentstopline), 
             ddstoptype.getSelectedItem().toString(), 
@@ -3444,18 +3493,18 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
             String.valueOf(pallets), // pallets
             String.valueOf(ladingqty), // ladingqty
             "", // hazmat
-            dddatetype.getSelectedItem().toString().split("-")[0], // datecode
-            dddatetype.getSelectedItem().toString().split("-")[1], // datetype
+            datecode, // datecode
+            datetype, // datetype
             datestr,
             "",  // datecode2
             "",  // datetype2
             "",  // date2
-            ddtimetype1.getSelectedItem().toString().split("-")[0], // timecode1
-            ddtimetype1.getSelectedItem().toString().split("-")[1],
+            timecode1, // timecode1
+            timetype1,
             tbtime1.getText(),
             ddtimezone.getSelectedItem().toString(),
-            ddtimetype2.getSelectedItem().toString().split("-")[0], // timecode2
-            ddtimetype2.getSelectedItem().toString().split("-")[1],  // timetype2
+            timecode2, // timecode2
+            timetype2,  // timetype2
             tbtime2.getText(), // time2
             ddtimezone.getSelectedItem().toString(), // timezone2
             tbstoprate.getText().isBlank() ? "0" : tbstoprate.getText(),
@@ -3758,12 +3807,24 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                 tbcontact.setText(v[14]);
                 tbmisc.setText(v[15]); 
                 tbremarks.setText(v[16]);
-                dddatetype.setSelectedItem(v[23] + "-" + v[24]);
+                if (v[23].isBlank()) {
+                  dddatetype.setSelectedIndex(0);
+                } else {
+                  dddatetype.setSelectedItem(v[23] + "-" + v[24]);
+                }
                 dcdate.setDate(BlueSeerUtils.parseDate(v[25]));
                 ddtimezone.setSelectedItem(v[32]);
-                ddtimetype1.setSelectedItem(v[29] + "-" + v[30]);
+                if (v[29].isBlank()) {
+                  ddtimetype1.setSelectedIndex(0);
+                } else {
+                  ddtimetype1.setSelectedItem(v[29] + "-" + v[30]);
+                }
                 tbtime1.setText(v[31]);
-                ddtimetype2.setSelectedItem(v[33] + "-" + v[34]);
+                if (v[29].isBlank()) {
+                  ddtimetype2.setSelectedIndex(0);
+                } else {
+                  ddtimetype2.setSelectedItem(v[33] + "-" + v[34]);
+                }
                 tbtime2.setText(v[35]);
                 tbstoprate.setText(v[37]);
                 tbstopmiles.setText(v[38]);
@@ -3884,6 +3945,24 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         double weight = 0.00;
         double ladingqty = 0.00;
         double pallets = 0.00;
+        String datecode = "";
+        String datetype = "";
+        String timecode1 = "";
+        String timetype1 = "";
+        String timecode2 = "";
+        String timetype2 = "";
+        if (dddatetype.getSelectedItem() != null && ! dddatetype.getSelectedItem().toString().isBlank()) {
+            datecode = dddatetype.getSelectedItem().toString().split("-")[0];
+            datetype = dddatetype.getSelectedItem().toString().split("-")[1];
+        }
+        if (ddtimetype1.getSelectedItem() != null && ! ddtimetype1.getSelectedItem().toString().isBlank()) {
+            timecode1 = ddtimetype1.getSelectedItem().toString().split("-")[0];
+            timetype1 = ddtimetype1.getSelectedItem().toString().split("-")[1];
+        }
+        if (ddtimetype2.getSelectedItem() != null && ! ddtimetype2.getSelectedItem().toString().isBlank()) {
+            timecode2 = ddtimetype2.getSelectedItem().toString().split("-")[0];
+            timetype2 = ddtimetype2.getSelectedItem().toString().split("-")[1];
+        }
         
         if (dcdate.getDate() != null) {
             datestr = bsmf.MainFrame.dfdate.format(dcdate.getDate()).toString();
@@ -3951,13 +4030,20 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
             String.valueOf(pallets), // pallets
             String.valueOf(ladingqty), // ladingqty
             "", // hazmat
-            dddatetype.getSelectedItem().toString(),
+            datecode, // datecode
+            datetype, // datetype
             datestr,
-            ddtimetype1.getSelectedItem().toString(),
+            "",  // datecode2
+            "",  // datetype2
+            "",  // date2
+            timecode1, // timecode1
+            timetype1,
             tbtime1.getText(),
-            ddtimetype2.getSelectedItem().toString(),
-            tbtime2.getText(),
             ddtimezone.getSelectedItem().toString(),
+            timecode2, // timecode2
+            timetype2,  // timetype2
+            tbtime2.getText(), // time2
+            ddtimezone.getSelectedItem().toString(), // timezone2
             tbstoprate.getText(),
             tbstopmiles.getText()
          };
@@ -4029,7 +4115,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
 
         if (proceed) {
-        sacmodel.addRow(new Object[]{ ddsactype.getSelectedItem().toString(), tbsacdesc.getText(), ddsacamttype.getSelectedItem().toString(), String.valueOf(amount)});
+        sacmodel.addRow(new Object[]{ ddsactype.getSelectedItem().toString(), ddchargecode.getSelectedItem().toString(), tbsacdesc.getText(), ddsacamttype.getSelectedItem().toString(), String.valueOf(amount)});
         }
         summarize();
         
@@ -4260,6 +4346,72 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     private void btfindchargecodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btfindchargecodeActionPerformed
         lookUpFrameChargeCode();
     }//GEN-LAST:event_btfindchargecodeActionPerformed
+
+    private void tbtotweightFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbtotweightFocusLost
+          if (! tbtotweight.getText().isEmpty()) {
+        String x = BlueSeerUtils.bsformat("", tbtotweight.getText(), "0");
+        if (x.equals("error")) {
+            tbtotweight.setText("");
+            tbtotweight.setBackground(Color.yellow);
+            bsmf.MainFrame.show(getMessageTag(1000));
+            tbtotweight.requestFocus();
+        } else {
+            tbtotweight.setText(x);
+            tbtotweight.setBackground(Color.white);
+        }
+        summarize();
+        }
+    }//GEN-LAST:event_tbtotweightFocusLost
+
+    private void tbtime1FocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbtime1FocusLost
+        if (tbtime1.getText().isBlank()) {
+            return;
+        }
+        String x = tbtime1.getText();
+        
+        if (x.length() != 5 && x.indexOf(":") != 2 ) {
+            tbtime1.setText("");
+            tbtime1.setBackground(Color.yellow);
+            bsmf.MainFrame.show("time format must be xx:xx ... 00:00 to 23:59");
+            tbtime1.requestFocus();
+        } else if (! isParsableToInt(x.substring(0,2)) || ! isParsableToInt(x.substring(3,5))) {
+            tbtime1.setBackground(Color.yellow);
+            bsmf.MainFrame.show("time format must be xx:xx ...valid time range 00:00 to 23:59");
+            tbtime1.requestFocus();
+        } else if (Integer.valueOf(x.substring(0,2)) > 23 || Integer.valueOf(x.substring(3,5)) > 59) {
+            tbtime1.setBackground(Color.yellow);
+            bsmf.MainFrame.show("time format must be xx:xx ...valid time range 00:00 to 23:59");
+            tbtime1.requestFocus();    
+        } else {
+           tbtime1.setText(x);
+           tbtime1.setBackground(Color.white); 
+        }
+    }//GEN-LAST:event_tbtime1FocusLost
+
+    private void tbtime2FocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbtime2FocusLost
+        if (tbtime2.getText().isBlank()) {
+            return;
+        }
+        String x = tbtime2.getText();
+        
+        if (x.length() != 5 && x.indexOf(":") != 2 ) {
+            tbtime2.setText("");
+            tbtime2.setBackground(Color.yellow);
+            bsmf.MainFrame.show("time format must be xx:xx ... 00:00 to 23:59");
+            tbtime2.requestFocus();
+        } else if (! isParsableToInt(x.substring(0,2)) || ! isParsableToInt(x.substring(3,5))) {
+            tbtime2.setBackground(Color.yellow);
+            bsmf.MainFrame.show("time format must be xx:xx ...valid time range 00:00 to 23:59");
+            tbtime2.requestFocus();
+        } else if (Integer.valueOf(x.substring(0,2)) > 23 || Integer.valueOf(x.substring(3,5)) > 59) {
+            tbtime2.setBackground(Color.yellow);
+            bsmf.MainFrame.show("time format must be xx:xx ...valid time range 00:00 to 23:59");
+            tbtime2.requestFocus();    
+        } else {
+           tbtime2.setText(x);
+           tbtime2.setBackground(Color.white); 
+        }
+    }//GEN-LAST:event_tbtime2FocusLost
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btadd;

@@ -16460,7 +16460,7 @@ return mystring;
       return sac;
    }
 
-    public static ArrayList<String[]> getFreightSAC(String order) {
+    public static ArrayList<String[]> getFreightSAC(String order, String revision) {
       ArrayList<String[]> sac = new ArrayList<String[]>();
       try{
 
@@ -16473,17 +16473,19 @@ return mystring;
         Statement st = con.createStatement();
         ResultSet res = null;
         try{
-             res = st.executeQuery("select cfos_nbr, cfos_desc, cfos_type, cfos_amttype, cfos_amt " +
-                     " from cfo_sos where cfos_nbr = " + "'" + order + "'" + 
+             res = st.executeQuery("select cfos_nbr, cfos_desc, cfos_type, cfos_amttype, cfos_amt, cfos_key, cfos_value " +
+                     " from cfo_sos where cfos_nbr = " + "'" + order + "'" + " and cfos_revision = " + "'" + revision + "'" +  
                      " and cfos_type <> 'passive' " + 
                      ";");
              while (res.next()) {
-                 String[] myarray = new String[5];
+                 String[] myarray = new String[7];
                  myarray[0] = res.getString("cfos_nbr");
                  myarray[1] = res.getString("cfos_desc");
                  myarray[2] = res.getString("cfos_type");
                  myarray[3] = res.getString("cfos_amttype");
                  myarray[4] = res.getString("cfos_amt");
+                 myarray[5] = res.getString("cfos_key");
+                 myarray[6] = res.getString("cfos_value");
                  sac.add(myarray);
              }
         }
