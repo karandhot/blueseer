@@ -12,12 +12,13 @@ import com.blueseer.utl.EDData;
     edi204 e = new edi204(getInputISA(6).trim(), getInputISA(8).trim(), getInputGS(2), getInputGS(3), c[4], getInputISA(9), c[1], c[6]); // mandatory class creation
     
     //optional...set some global variables as necessary
-    String  now = now();
+        String  now = now();
         String custfo = ""; 
         String origfo = "";
         String purpose = "";
-String cfokey = "";
-String tnid = "";
+        String cfokey = "";
+        String tnid = "";
+        
         int eline = 0;
       ArrayList<String[]> ta = new ArrayList<String[]>();  
 
@@ -68,6 +69,8 @@ for (int i = 1; i <= linecount; i++) {
        e.setDetLine(eline, getInput(i,"S5","e01"));
        e.setDetType(eline, getInput(i,"S5","e02"));              
 
+       e.setDetRemarks(eline,"BOOHOO");
+
        e.setDetDateType(eline, getInput(i,"S5:G62","e01"));
        e.setDetDate(eline, convertDate("yyyyMMdd", getInput(i,"S5:G62","e02")));
        e.setDetTimeCode1(eline, getInput(i,"S5:G62","e03"));
@@ -99,6 +102,10 @@ for (int i = 1; i <= linecount; i++) {
         }
          e.setDetRemarks(eline,rmks);
 
+         if (e.getDetRemarks(eline).isBlank()) {
+           e.setDetRemarks(eline,getInput("NTE","e02"));
+         }
+
 // G61
         e.setDetContact(eline, getInput(i,"S5:N1:G61","e02"));
         if (getInput(i,"S5:N1:G61","e03").equals("EM")) {
@@ -108,6 +115,14 @@ for (int i = 1; i <= linecount; i++) {
            e.setDetPhone(eline, getInput(i,"S5:N1:G61","e04"));
         }
         
+        if (e.getDetContact(eline).isBlank()) {
+           e.setDetContact(eline,getInput("G61","e02"));
+        }
+         if (e.getDetPhone(eline).isBlank()) {
+           e.setDetPhone(eline,getInput("G61","e04"));
+        }
+
+
         e.setDetAddrLine1(eline, getInput(i,"S5:N1:N3","e01"));
         e.setDetAddrCity(eline, getInput(i,"S5:N1:N4","e01"));
         e.setDetAddrState(eline, getInput(i,"S5:N1:N4","e02"));

@@ -28,9 +28,11 @@ String key = doc.get(0).toString();
         commitSegment("B1");
 
         mapSegment("N9","e01","TN");
-        mapSegment("N9","e02",cfo.cfo_custfonbr());
+        mapSegment("N9","e02",getMeta(cfo.cfo_uniquekey(),"header","reference"));
+        if (status.equals("A")) {
         mapSegment("N9","e07","CN");
         mapSegment("N9","e08",cfo.cfo_nbr());
+        }
         commitSegment("N9");
 
         if (status.equals("D")) {
