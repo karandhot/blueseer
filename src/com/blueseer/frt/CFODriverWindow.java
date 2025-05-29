@@ -98,9 +98,9 @@ public class CFODriverWindow extends javax.swing.JPanel {
                             getGlobalColumnTag("status"), 
                             getGlobalColumnTag("name"),
                             getGlobalColumnTag("driverid"),
-                            getGlobalColumnTag("type"),
-                            getGlobalColumnTag("miles"),
-                            getGlobalColumnTag("cost")})
+                            getGlobalColumnTag("truckid"),
+                            getGlobalColumnTag("loaddate"),
+                            getGlobalColumnTag("unloaddate")})
             {
                       @Override  
                       public Class getColumnClass(int col) {  
@@ -766,20 +766,22 @@ try {
                      }
                      tc.setCellRenderer(new CFODriverWindow.SomeRenderer());
                  }
-                 tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              //   tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
               
              if (! ddstatus.getSelectedItem().toString().isBlank()) {    
              
                 if (carrierPOV) { 
-                res = st.executeQuery("select cfo_nbr, cfo_revision, cfo_orderstatus, cfo_cust, cfo_mileage, " +
-                      " cfo_truckid, cfo_driver, cfo_ratetype, cfo_cost, cm_name " +
+                res = st.executeQuery("select cfo_nbr, cfo_revision, cfo_orderstatus, cfo_cust, cfo_mileage, cfo_servicetype, cfo_equipmenttype, cfo_truckid " +
+                      " cfo_truckid, cfo_driver, cfo_ratetype, cfo_cost, cm_name, " +
+                       "(select cfod_date from cfo_det where cfod_nbr = cfo_nbr and cfod_revision = cfo_revision and cfod_type = 'Load') as date1, " +
+                      "(select cfod_date from cfo_det where cfod_nbr = cfo_nbr and cfod_revision = cfo_revision and cfod_type = 'Unload Complete') as date2 " +   
                          " from cfo_mstr inner join cm_mstr on cm_code = cfo_cust where " +
                         " cfo_cust >= " + "'" + custfrom + "'" + " AND " +
                         " cfo_cust <= " + "'" + custto + "'" + " AND " +
                         " cfo_nbr >= " + "'" + nbrfrom + "'" + " AND " +
                         " cfo_nbr <= " + "'" + nbrto + "'" + " AND " +
                         " cfo_orderstatus = " + "'" + ddstatus.getSelectedItem().toString() + "'" +
-                        " order by cfo_nbr ;");
+                        " order by date1 ;");
                 } else {
                     res = st.executeQuery("select cfo_nbr, cfo_revision, cfo_orderstatus, cfo_cust, cfo_mileage, " +
                       " cfo_truckid, cfo_driver, cfo_ratetype, cfo_cost, car_name " +
@@ -794,14 +796,16 @@ try {
              } else {
                  
                 if (carrierPOV) {  
-                res = st.executeQuery("select cfo_nbr, cfo_revision, cfo_orderstatus, cfo_cust, cfo_mileage, " +
-                      " cfo_truckid, cfo_driver, cfo_ratetype, cfo_cost, cm_name " +
+                res = st.executeQuery("select cfo_nbr, cfo_revision, cfo_orderstatus, cfo_cust, cfo_mileage, cfo_servicetype, cfo_equipmenttype, cfo_truckid, " +
+                      " cfo_truckid, cfo_driver, cfo_ratetype, cfo_cost, cm_name, " +
+                      "(select cfod_date from cfo_det where cfod_nbr = cfo_nbr and cfod_revision = cfo_revision and cfod_type = 'Load') as date1, " +
+                      "(select cfod_date from cfo_det where cfod_nbr = cfo_nbr and cfod_revision = cfo_revision and cfod_type = 'Unload Complete') as date2 " +  
                          " from cfo_mstr inner join cm_mstr on cm_code = cfo_cust where " +
                         " cfo_cust >= " + "'" + custfrom + "'" + " AND " +
                         " cfo_cust <= " + "'" + custto + "'" + " AND " +
                         " cfo_nbr >= " + "'" + nbrfrom + "'" + " AND " +
                         " cfo_nbr <= " + "'" + nbrto + "'" + 
-                        " order by cfo_nbr ;"); 
+                        " order by date1 ;"); 
                 } else {
                     res = st.executeQuery("select cfo_nbr, cfo_revision, cfo_orderstatus, cfo_cust, cfo_mileage, " +
                       " cfo_truckid, cfo_driver, cfo_ratetype, cfo_cost, car_name " +
@@ -824,9 +828,9 @@ try {
                                 res.getString("cfo_orderstatus"),
                                 res.getString("cm_name"),
                                 res.getString("cfo_driver"),
-                                res.getString("cfo_ratetype"),
-                                res.getString("cfo_mileage"),
-                                bsParseDouble(currformatDouble(total))
+                                res.getString("cfo_truckid"),
+                                res.getString("date1"),
+                                res.getString("date2")
                             });
                         } else {
                             mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, 
@@ -843,12 +847,12 @@ try {
                     
                        // now driver scheduling info
             res = st.executeQuery("select drv_id, drv_lname, drv_fname, cfo_nbr, cfo_orderstatus, date1, date2 from drv_mstr left outer join " +
-                    " (select cfo_driver, cfo_nbr, cfo_orderstatus, (select cfod_date from cfo_det where cfod_nbr = cfo_nbr and " +
-                    " cfod_datetype like '%Pickup%') as date1, (select cfod_date from cfo_det where cfod_nbr = cfo_nbr and cfod_datetype like '%Delivery%') as date2 " +
+                    " (select cfo_driver, cfo_nbr, cfo_orderstatus, (select cfod_date from cfo_det where cfod_nbr = cfo_nbr and cfod_revision = cfo_revision and " +
+                    " cfod_type = 'Load') as date1, (select cfod_date from cfo_det where cfod_nbr = cfo_nbr and cfod_revision = cfo_revision and cfod_type = 'Unload Complete') as date2 " +
                     " from cfo_mstr inner join cfo_det on cfod_nbr = cfo_nbr and cfod_revision = cfo_revision " +
                     " where cfod_date >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" + 
                     " and cfod_date <= " + "'" + enddate + "'" +
-                    " and cfod_datetype like '%Pickup%' ) x  " +
+                    " and cfod_type = 'Load' ) x  " +
                     " on x.cfo_driver = drv_id; " ); 
             Date date1 = null;
             Date date2 = null;

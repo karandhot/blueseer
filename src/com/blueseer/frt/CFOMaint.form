@@ -764,48 +764,33 @@
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="1" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="103" alignment="0" groupAlignment="0" attributes="0">
-                                      <Group type="103" alignment="0" groupAlignment="0" attributes="0">
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
-                                              <Component id="jLabel31" min="-2" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Component id="jLabel37" alignment="1" min="-2" max="-2" attributes="0"/>
-                                          <Component id="jLabel23" alignment="1" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <Component id="jLabel35" alignment="1" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jLabel34" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Component id="jLabel33" alignment="1" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <Component id="jLabel32" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="jLabel23" alignment="1" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel31" alignment="1" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel32" alignment="1" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel33" alignment="1" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel37" alignment="1" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel34" alignment="1" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel35" alignment="1" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="cbhazmat" min="-2" max="-2" attributes="0"/>
-                              <Component id="dcconfdate" min="-2" pref="135" max="-2" attributes="0"/>
-                              <Component id="dcorddate" min="-2" pref="135" max="-2" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="ddratetype" pref="102" max="32767" attributes="0"/>
-                                          <Component id="tbforate" max="32767" attributes="0"/>
-                                          <Component id="tbdriverrate" alignment="0" max="32767" attributes="0"/>
-                                          <Component id="tbtotweight" alignment="0" max="32767" attributes="0"/>
-                                      </Group>
-                                      <Component id="tbmileage" alignment="1" min="-2" pref="102" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="cbstandard" min="-2" max="-2" attributes="0"/>
-                                      <Component id="cbderivedrate" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="cbderivedmiles" min="-2" max="-2" attributes="0"/>
-                                      <Component id="cbderivedweight" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
+                              <Component id="ddratetype" alignment="0" max="32767" attributes="0"/>
+                              <Component id="tbforate" alignment="0" max="32767" attributes="0"/>
+                              <Component id="tbmileage" alignment="0" min="-2" pref="102" max="-2" attributes="0"/>
+                              <Component id="tbtotweight" alignment="0" max="32767" attributes="0"/>
+                              <Component id="tbdriverrate" alignment="0" max="32767" attributes="0"/>
+                              <Component id="dcorddate" alignment="0" min="-2" pref="135" max="-2" attributes="0"/>
+                              <Component id="dcconfdate" alignment="0" min="-2" pref="135" max="-2" attributes="0"/>
+                              <Component id="cbhazmat" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="cbstandard" min="-2" max="-2" attributes="0"/>
+                              <Component id="cbderivedrate" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="cbderivedmiles" min="-2" max="-2" attributes="0"/>
+                              <Component id="cbderivedweight" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -2208,7 +2193,7 @@
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="labelmessage" alignment="0" max="32767" attributes="0"/>
                       <Group type="103" alignment="0" groupAlignment="3" attributes="0">
@@ -2216,8 +2201,9 @@
                           <Component id="btdeleteattachment" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jScrollPane3" min="-2" pref="584" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <Component id="jScrollPane3" pref="561" max="32767" attributes="0"/>
+                  <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

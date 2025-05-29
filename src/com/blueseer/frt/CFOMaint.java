@@ -73,6 +73,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.checkLength;
 import static com.blueseer.utl.BlueSeerUtils.clog;
+import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDoubleUS;
 import com.blueseer.utl.BlueSeerUtils.dbaction;
@@ -1327,15 +1328,15 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbbrokercontact.setText(x.cfo_brokercontact());
         tbbrokercell.setText(x.cfo_brokercell());
         ddratetype.setSelectedItem(x.cfo_ratetype());
-        tbforate.setText(x.cfo_rate());
+        tbforate.setText(currformat(x.cfo_rate()));
         tbmileage.setText(x.cfo_mileage());
-        tbdriverrate.setText(x.cfo_driverrate());
+        tbdriverrate.setText(currformat(x.cfo_driverrate()));
         cbstandard.setSelected(BlueSeerUtils.ConvertStringToBool(x.cfo_driverstd()));
         tbtotweight.setText(x.cfo_weight());
         dcorddate.setDate(BlueSeerUtils.parseDate(x.cfo_orddate()));
         dcconfdate.setDate(BlueSeerUtils.parseDate(x.cfo_confdate()));
-        tbcharges.setText(x.cfo_misccharges());
-        tbcost.setText(x.cfo_cost());
+        tbcharges.setText(currformat(x.cfo_misccharges()));
+        tbcost.setText(currformat(x.cfo_cost()));
         ddsite.setSelectedItem(x.cfo_site());
         
         if (ddcust.getSelectedItem() != null && ! ddcust.getSelectedItem().toString().isBlank()) {
@@ -2393,38 +2394,30 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(jPanel4Layout.createSequentialGroup()
-                                    .addGap(11, 11, 11)
-                                    .addComponent(jLabel31))
-                                .addComponent(jLabel37, javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(jLabel23, javax.swing.GroupLayout.Alignment.TRAILING))
-                            .addComponent(jLabel35, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel34, javax.swing.GroupLayout.Alignment.TRAILING))
-                        .addComponent(jLabel33, javax.swing.GroupLayout.Alignment.TRAILING))
-                    .addComponent(jLabel32))
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel23, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel31, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel32, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel33, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel37, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel34, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel35, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cbhazmat)
-                    .addComponent(dcconfdate, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ddratetype, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(tbforate)
+                    .addComponent(tbmileage, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tbtotweight)
+                    .addComponent(tbdriverrate)
                     .addComponent(dcorddate, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(ddratetype, 0, 102, Short.MAX_VALUE)
-                                .addComponent(tbforate)
-                                .addComponent(tbdriverrate)
-                                .addComponent(tbtotweight))
-                            .addComponent(tbmileage, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cbstandard)
-                            .addComponent(cbderivedrate)
-                            .addComponent(cbderivedmiles)
-                            .addComponent(cbderivedweight))))
+                    .addComponent(dcconfdate, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cbhazmat))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cbstandard)
+                    .addComponent(cbderivedrate)
+                    .addComponent(cbderivedmiles)
+                    .addComponent(cbderivedweight))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
@@ -3370,7 +3363,8 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addComponent(btaddattachment)
                         .addComponent(btdeleteattachment)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 584, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 561, Short.MAX_VALUE)
+                .addGap(23, 23, 23))
         );
 
         add(panelAttachment);
@@ -3984,9 +3978,9 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         itemmap.remove(String.valueOf(currentstopline));
         ArrayList<String[]> z = new ArrayList<String[]>();
         for (int j = 0; j < itemdet.getRowCount(); j++) {
-            weight += Double.valueOf(itemdet.getValueAt(j, 6).toString());
-            ladingqty += Double.valueOf(itemdet.getValueAt(j, 4).toString());
-            pallets += Double.valueOf(itemdet.getValueAt(j, 5).toString());
+            weight += bsParseDouble(itemdet.getValueAt(j, 6).toString());
+            ladingqty += bsParseDouble(itemdet.getValueAt(j, 4).toString());
+            pallets += bsParseDouble(itemdet.getValueAt(j, 5).toString());
             String[] v = new String[]{
               itemdet.getValueAt(j, 0).toString(),
               itemdet.getValueAt(j, 1).toString(),
