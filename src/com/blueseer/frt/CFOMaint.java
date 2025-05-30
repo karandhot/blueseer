@@ -3492,7 +3492,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
             datestr,
             "",  // datecode2
             "",  // datetype2
-            "",  // date2
+            null,  // date2
             timecode1, // timecode1
             timetype1,
             tbtime1.getText(),
@@ -4188,7 +4188,24 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
             wh[7],
             tbnumber.getText()
          });
-        
+         String datecode = "";
+        String datetype = "";
+        String timecode1 = "";
+        String timetype1 = "";
+        String timecode2 = "";
+        String timetype2 = "";
+        if (dddatetype.getSelectedItem() != null && ! dddatetype.getSelectedItem().toString().isBlank()) {
+            datecode = dddatetype.getSelectedItem().toString().split("-")[0];
+            datetype = dddatetype.getSelectedItem().toString().split("-")[1];
+        }
+        if (ddtimetype1.getSelectedItem() != null && ! ddtimetype1.getSelectedItem().toString().isBlank()) {
+            timecode1 = ddtimetype1.getSelectedItem().toString().split("-")[0];
+            timetype1 = ddtimetype1.getSelectedItem().toString().split("-")[1];
+        }
+        if (ddtimetype2.getSelectedItem() != null && ! ddtimetype2.getSelectedItem().toString().isBlank()) {
+            timecode2 = ddtimetype2.getSelectedItem().toString().split("-")[0];
+            timetype2 = ddtimetype2.getSelectedItem().toString().split("-")[1];
+        }
         String[] stoparray = new String[]{String.valueOf(currentstopline), 
             String.valueOf(currentstopline), 
             "Load", 
@@ -4212,15 +4229,22 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
             String.valueOf(pallets), // pallets
             String.valueOf(ladingqty), // ladingqty
             "", // hazmat
-            dddatetype.getSelectedItem().toString(),
+            datecode, // datecode
+            datetype, // datetype
             datestr,
-            ddtimetype1.getSelectedItem().toString(),
+            "",  // datecode2
+            "",  // datetype2
+            null,  // date2
+            timecode1, // timecode1
+            timetype1,
             tbtime1.getText(),
-            ddtimetype2.getSelectedItem().toString(),
-            tbtime2.getText(),
             ddtimezone.getSelectedItem().toString(),
-            tbstoprate.getText(),
-            tbstopmiles.getText()
+            timecode2, // timecode2
+            timetype2,  // timetype2
+            tbtime2.getText(), // time2
+            ddtimezone.getSelectedItem().toString(), // timezone2
+            tbstoprate.getText().isBlank() ? "0" : tbstoprate.getText(),
+            tbstopmiles.getText().isBlank() ? "0" : tbstopmiles.getText()
          };
         kvstop.put(String.valueOf(currentstopline), stoparray);
         isLoad = true;
