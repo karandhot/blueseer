@@ -4399,7 +4399,7 @@ public class EDI {
         
           if (map.isEmpty()) {
             errorcode = 1;
-            messages.add(new String[]{"error","810: map variable is empty for billto/gs02/gs03/doc: " + sh.sh_cust() + "/" + defaults[2] + "/" + defaults[5] + " / " + c[1]});
+            messages.add(new String[]{"error","810: map variable is empty for billto/gs02/gs03/doc: " + sh.sh_cust() + "/" + defaults[2] + "/" + defaults[5] + "/" + c[1]});
             EDData.writeEDILogMulti(c, messages);
             messages.clear();  // clear message here
             return errorcode;
@@ -4548,7 +4548,7 @@ public class EDI {
         
           if (map.isEmpty()) {
             errorcode = 1;
-            messages.add(new String[]{"error", doctype + " : map variable is empty for billto/gs02/gs03/doc: " + sh.sh_cust() + "/" + defaults[2] + "/" + defaults[5] + " / " + c[1]});
+            messages.add(new String[]{"error", doctype + " : map variable is empty for billto/gs02/gs03/doc: " + sh.sh_cust() + "/" + defaults[2] + "/" + defaults[5] + "/" + c[1]});
             EDData.writeEDILogMulti(c, messages);
             messages.clear();  // clear message here
             return errorcode;
@@ -4690,7 +4690,7 @@ public class EDI {
         
           if (map.isEmpty()) {
             errorcode = 1;
-            messages.add(new String[]{"error","850o: map variable is empty for billto/gs02/gs03/doc: " + pom.po_vend() + "/" + defaults[2] + "/" + defaults[5] + " / " + c[1]});
+            messages.add(new String[]{"error","850o: map variable is empty for billto/gs02/gs03/doc: " + pom.po_vend() + "/" + defaults[2] + "/" + defaults[5] + "/" + c[1]});
             EDData.writeEDILogMulti(c, messages);
             messages.clear();  // clear message here
             return errorcode;
@@ -5094,7 +5094,7 @@ public class EDI {
         
           if (map.isEmpty()) {
             errorcode = 1;
-            messages.add(new String[]{"error","204: map variable is empty for billto/gs02/gs03/doc: " + fo.cfo_cust() + "/" + defaults[2] + "/" + defaults[5] + " / " + c[1]});
+            messages.add(new String[]{"error","204: map variable is empty for billto/gs02/gs03/doc: " + fo.cfo_cust() + "/" + defaults[2] + "/" + defaults[5] + "/" + c[1]});
             EDData.writeEDILogMulti(c, messages);
             messages.clear();  // clear message here
             return errorcode;

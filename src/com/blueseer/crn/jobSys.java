@@ -85,6 +85,12 @@ public class jobSys implements Job {
                 EDILoad.runTranslation(null);
                 break;
             }
+            
+            case "edi -debug":  {
+                EDILoad.runTranslation(new String[]{"-debug"});
+                break;
+            }
+
                 
             case "edi810o":  {
                 ArrayList<String> invoices = EDData.getEDIInvoicesAutoExport();
