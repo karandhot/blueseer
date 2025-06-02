@@ -3017,13 +3017,14 @@ public class EDI {
           
            if (map.isEmpty() && c[12].isEmpty()) {
             if (GlobalDebug)   
-            System.out.println("Searching for Map (X12 in) with GS values type/gs02/gs03: " + c[1] + "/" + gs02 + "/" + gs03);    
+            System.out.println("Searching for Map (X12 in) with GS values type/gs02/gs03: " + c[1] + " / " + gs02 + " / " + gs03);    
 
-              //map = EDData.getEDIMap(c[1], gs02, gs03); 
+              map = EDData.getEDIMap(c[1], gs02, gs03); 
            } 
 
            if (GlobalDebug)   {
-               System.out.println("Final map find:  " + map + "/" + c[1] + "/" + gs02 + "/" + gs03);
+               System.out.println("Final map find (map/gs02/gs03):  " + map + " / " + gs02 + " / " + gs03);
+               System.out.println("Final map find b:  " + map + " / " + c[1] + " / " + gs02 + " / " + gs03);
            }
            
            // if no map then bail
