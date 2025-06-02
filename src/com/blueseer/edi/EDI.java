@@ -3007,8 +3007,13 @@ public class EDI {
             continue;
           }   
           
-            
-            
+            if (GlobalDebug)   {
+                System.out.println("initial control values: ");
+                for (int i = 0; i < c.length; i++) {
+                    System.out.println(i + " -> " + c[i]);
+                }
+                System.out.println("initial map in c2: " + map + "/map name length:" + map.length());  
+            }
           
            if (map.isEmpty() && c[12].isEmpty()) {
             if (GlobalDebug)   
@@ -3021,7 +3026,7 @@ public class EDI {
            
            // if no map then bail
            if (map.isEmpty()) {
-                messages.add(new String[]{"error","X12:  map variable is empty for parent/gs02/gs03/doc: " + parentPartner + "/" + gs02 + "/" + gs03 + " / " + c[1]});
+                messages.add(new String[]{"error","X12:  map variable is empty for parent/gs02/gs03/doc: " + parentPartner + "/" + gs02 + "/" + gs03 + "/" + c[1]});
            } else if (! BlueSeerUtils.isEDIClassFile(map) && c[12].isEmpty()) {
                 messages.add(new String[]{"error","X12: unable to locate compiled map (" + map + ") for parent/gs02/gs03/doc: " + parentPartner + "/" + gs02 + "/" + gs03 + " / " + c[1]});
            } else {
