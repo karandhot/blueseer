@@ -3022,7 +3022,9 @@ public class EDI {
               map = EDData.getEDIMap(c[1], gs02, gs03); 
            } 
 
-           
+           if (GlobalDebug)   {
+               System.out.println("Final map find:  " + map + "/" + c[1] + "/" + gs02 + "/" + gs03);
+           }
            
            // if no map then bail
            if (map.isEmpty()) {
