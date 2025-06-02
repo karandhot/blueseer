@@ -3019,7 +3019,7 @@ public class EDI {
             if (GlobalDebug)   
             System.out.println("Searching for Map (X12 in) with GS values type/gs02/gs03: " + c[1] + "/" + gs02 + "/" + gs03);    
 
-              map = EDData.getEDIMap(c[1], gs02, gs03); 
+              //map = EDData.getEDIMap(c[1], gs02, gs03); 
            } 
 
            if (GlobalDebug)   {
