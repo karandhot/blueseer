@@ -479,8 +479,8 @@ public class VendXrefRpt extends javax.swing.JPanel {
         int col = tablereport.columnAtPoint(evt.getPoint());
         String[] myparameter = new String[]{tablereport.getValueAt(row, 1).toString(),tablereport.getValueAt(row, 4).toString()};
         if ( col == 0) {
-              if (! checkperms("CustXrefMaint")) { return; }
-           reinitpanels("CustXrefMaint", true, myparameter);
+              if (! checkperms("VendXrefMaint")) { return; }
+           reinitpanels("VendXrefMaint", true, myparameter);
         }
     }//GEN-LAST:event_tablereportMouseClicked
 
@@ -512,7 +512,7 @@ public class VendXrefRpt extends javax.swing.JPanel {
 
                 while (res.next()) {
                     i++;
-                     mymodel.addRow(new Object[]{"select", res.getString("vdp_vend"),
+                     mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, res.getString("vdp_vend"),
                          res.getString("vd_name"),
                         res.getString("vdp_item"),
                         res.getString("vdp_vitem"),

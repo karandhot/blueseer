@@ -651,11 +651,12 @@ public class VendXrefMaint extends javax.swing.JPanel implements IBlueSeer {
         };
         luTable.addMouseListener(luml);
       
-        callDialog("Vendor", "VendItem", "Item"); 
+        callDialog("Vendor", "Vendor Item", "Item"); 
+        /*
         callDialog(getClassLabelTag("lblvend", this.getClass().getSimpleName()), 
                 getClassLabelTag("lblvenditem", this.getClass().getSimpleName()),
                 getClassLabelTag("lblitem", this.getClass().getSimpleName())); 
-        
+        */
         
     }
 
@@ -788,8 +789,9 @@ public class VendXrefMaint extends javax.swing.JPanel implements IBlueSeer {
                         .addComponent(btlookup, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(13, 13, 13)
                         .addComponent(btnew)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btclear))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btclear)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(jPanel1Layout.createSequentialGroup()

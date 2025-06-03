@@ -3861,6 +3861,8 @@ public class EDI {
             // now the detail
             ArrayList<frtData.cfo_det> list = new ArrayList<frtData.cfo_det>();
             String dettype = "";
+            String time1 = "";
+            String time2 = "";
             for (int j = 0; j < e.getDetCount(); j++ ) {
              //  System.out.println("detcount: " + j + "/" + e.getDetType(j));
                 dettype = ediData.getEDIXvalue("204", "S5", "2", e.getDetType(j)); // three types supported... LD = Load; CU = Unload Complete; UL = Unload Partial
@@ -3869,6 +3871,15 @@ public class EDI {
                    m[1] = "unknown S5 type: " + e.getDetType(j);
                    break;
                 }
+                time1 = e.getDetTime1(j);
+                if (! time1.isBlank() && ! time1.contains(":") && time1.length() >= 4) {
+                    time1 = time1.substring(0,2) + ":" + time1.substring(2,4);
+                }
+                time2 = e.getDetTime2(j);
+                if (! time2.isBlank() && ! time2.contains(":") && time2.length() >= 4) {
+                    time2 = time2.substring(0,2) + ":" + time2.substring(2,4);
+                }
+                
                 frtData.cfo_det y = new frtData.cfo_det(null, 
                 cfokey,
                 revision, // revision 
@@ -3903,11 +3914,11 @@ public class EDI {
                 (e.getDetDate2(j).isBlank() ? null : e.getDetDate2(j)),  // date2
                 e.getDetTimeCode1(j),// timecode1
                 OVData.getCodeValueByCodeKey("freighttimecodes", e.getDetTimeCode1(j)), // timetype1   ... get from code_mstr freighttimecodes        
-                e.getDetTime1(j), // time
+                time1, // time
                 e.getDetTimeZone(j), // timezone 
                 e.getDetTimeCode2(j), // timecode2
                 OVData.getCodeValueByCodeKey("freighttimecodes", e.getDetTimeCode2(j)), // timetype2 ...get from code_mstr freighttimecodes
-                e.getDetTime2(j), // time2
+                time2, // time2
                 e.getDetTimeZone2(j), // timezone2
                 (e.getDetRate(j).isBlank() ? "0" : e.getDetRate(j).replace(defaultDecimalSeparator, '.') ), // rate 
                 (e.getDetMiles(j).isBlank() ? "0" : e.getDetMiles(j).replace(defaultDecimalSeparator, '.')) // miles
