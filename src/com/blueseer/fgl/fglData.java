@@ -1580,7 +1580,6 @@ public class fglData {
             } catch (SQLException s) {
                 MainFrame.bslog(s);
                 sb.append(s.getMessage());
-                System.out.println("ACCOUNTING: " + s.getMessage());
                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                 if (res != null) {
@@ -1594,7 +1593,6 @@ public class fglData {
         } catch (Exception e) {
             MainFrame.bslog(e);
             sb.append(e.getMessage());
-            System.out.println("ACCOUNTING 2: " + e.getMessage());
         }
         
         return sb.toString();

@@ -342,6 +342,7 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
         }
         
         if (data != null) {  // data = acct, cc, type, curr, desc, site, begbal, activity, endbal
+        System.out.println("HERE IT IS: " + data);
         String[] arrdata = data.split("\n", -1);
         for (String x : arrdata) {
             String[] s = x.split(",",-1);
