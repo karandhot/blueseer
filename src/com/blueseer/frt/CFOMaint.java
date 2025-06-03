@@ -873,7 +873,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
      
     public String[] deleteRecord(String[] x) {
      String[] m = new String[2];
-        boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
+        boolean proceed = bsmf.MainFrame.warn("this will delete all revisions of this freight order...are you sure you want to delete?");
         if (proceed) {
          m = deleteCFOMstr(createRecord()); 
          initvars(null);

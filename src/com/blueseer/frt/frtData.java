@@ -2120,19 +2120,63 @@ public class frtData {
     
     public static String[] deleteCFOMstr(cfo_mstr x) { 
        String[] m = new String[2];
-        String sql = "delete from cfo_mstr where cfo_nbr = ? and cfo_revision = ?; ";
-        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
-	PreparedStatement ps = con.prepareStatement(sql)) {
-        ps.setString(1, x.cfo_nbr);
-        ps.setString(1, x.cfo_revision);
-        int rows = ps.executeUpdate();
-        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
-        } catch (SQLException s) {
-	       MainFrame.bslog(s);
-               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        if (x == null) {
+            return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
         }
-        return m;
+        Connection con = null;
+        try { 
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            _deleteCFOMstr(x, con); 
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
+        } finally {
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
     }
+    
+     private static void _deleteCFOMstr(cfo_mstr x, Connection con) throws SQLException { 
+        PreparedStatement ps = null; 
+        // DELETE ALL revisions of freight order record...user has been warned.
+        String sql = "delete from cfo_mstr where cfo_nbr = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x.cfo_nbr);
+        ps.executeUpdate();
+        sql = "delete from cfo_det where cfod_nbr = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x.cfo_nbr);
+        ps.executeUpdate();
+        sql = "delete from cfo_meta where cfom_nbr = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x.cfo_nbr);
+        ps.executeUpdate();
+        sql = "delete from cfo_item where cfoi_nbr = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x.cfo_nbr);
+        ps.executeUpdate();
+        sql = "delete from cfod_meta where cfodm_nbr = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x.cfo_nbr);
+        ps.executeUpdate();
+        sql = "delete from cfoi_meta where cfoim_nbr = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x.cfo_nbr);
+        ps.executeUpdate();
+        ps.close();
+    }
+    
     
     // misc
     public static ArrayList<String> getCFORevisions(String cfo) {
