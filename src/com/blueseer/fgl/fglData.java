@@ -1592,6 +1592,7 @@ public class fglData {
             }
         } catch (Exception e) {
             MainFrame.bslog(e);
+            sb.append(e.getMessage());
         }
         
         return sb.toString();

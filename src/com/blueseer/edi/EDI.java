@@ -4352,10 +4352,19 @@ public class EDI {
         
         String doctype = "810db";
         String map = "";
+        String gs01code = "";
+        
         ArrayList<String[]> messages = new ArrayList<String[]>();
          
         ship_mstr sh = shpData.getShipMstr(new String[]{shipper});
         
+        if (sh.sh_type().equals("F")) {
+            doctype = "210db";
+            gs01code = "IM";
+        } else {
+            doctype = "810db";
+            gs01code = "PY";
+        }
         
         messages.add(new String[]{"info","exporting: " + doctype + " invoice: " + shipper + " for billto: " + sh.sh_cust()});
         
@@ -4384,15 +4393,17 @@ public class EDI {
         c[16] = String.valueOf(idxnbr);
         
         // get Delimiters from Cust Defaults
-        String[] ids = EDData.getEDIXrefOut(sh.sh_cust(), "PY"); // bsgs, tpgs, tpaddr, bsaddr, type
+        String[] ids = EDData.getEDIXrefOut(sh.sh_cust(), gs01code); // bsgs, tpgs, tpaddr, bsaddr, type
         if (ids[0].isBlank()) {
-        messages.add(new String[]{"error","810 no edi_xref found for keys(billto/type): " + sh.sh_cust() + "/" + "PY"} );
+        messages.add(new String[]{"error","810 no edi_xref found for keys(billto/type): " + sh.sh_cust() + "/" + gs01code} );
         EDData.writeEDILogMulti(c, messages);
         messages.clear();  // clear message here
         return 1;
         } else {
         messages.add(new String[]{"info","edi_xref: " + ids[0] + "/" + ids[1] + "/" + ids[2] + "/" + ids[3] + "/" + ids[4]});
         }    
+        
+        
         
         String[] defaults = EDData.getEDITPDefaults(doctype, ids[0], ids[1]  ); //810, ourGS, theirsGS
         if (defaults[19].isBlank()) { // if edi_doc is blank...no default found
@@ -4416,9 +4427,9 @@ public class EDI {
         map = defaults[24];         
         c[2] = map;
         
-          if (map.isEmpty()) {
+         if (map.isEmpty()) {
             errorcode = 1;
-            messages.add(new String[]{"error","810: map variable is empty for billto/gs02/gs03/doc: " + sh.sh_cust() + "/" + defaults[2] + "/" + defaults[5] + "/" + c[1]});
+            messages.add(new String[]{"error", doctype + " : map variable is empty for billto/gs02/gs03/doc: " + sh.sh_cust() + "/" + defaults[2] + "/" + defaults[5] + "/" + c[1]});
             EDData.writeEDILogMulti(c, messages);
             messages.clear();  // clear message here
             return errorcode;
@@ -4426,12 +4437,13 @@ public class EDI {
           
         if (! BlueSeerUtils.isEDIClassFile(map)) {
             errorcode = 1;
-            messages.add(new String[]{"error","810: unable to locate compiled map (" + map + ") billto/gs02/gs03/doc: " + sh.sh_cust() + "/" + defaults[2] + "/" + defaults[5] + " / " + c[1]});
+            messages.add(new String[]{"error", doctype + " : unable to locate compiled map (" + map + ") billto/gs02/gs03/doc: " + sh.sh_cust() + "/" + defaults[2] + "/" + defaults[5] + " / " + c[1]});
             EDData.writeEDILogMulti(c, messages);
             messages.clear();  // clear message here
             return errorcode;
         }     
         messages.add(new String[]{"info","using map: " + map});
+       
        
         
         // Mapdata method call below requires two parameters (ArrayList, String[]) ...doc and c
