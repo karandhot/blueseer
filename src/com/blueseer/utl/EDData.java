@@ -2588,7 +2588,7 @@ public class EDData {
         return mystring;
         
     }
-    
+        
     public static boolean hasEDIXref(String bsaddr, String editype) {
              boolean has = false;
         try{
