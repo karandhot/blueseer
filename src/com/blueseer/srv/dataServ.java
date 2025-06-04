@@ -33,6 +33,7 @@ import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.edi.EDI.Create990;
 import static com.blueseer.edi.EDI.deleteFile;
 import static com.blueseer.edi.EDI.ediReprocessFile;
 import static com.blueseer.edi.EDI.fileExists;
@@ -148,7 +149,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     }
 
  @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
        // BufferedReader reader = request.getReader();
         response.setContentType("text/plain");
@@ -286,6 +287,9 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                 } else if (id.equals("FileExists")) { 
                   String filepath = request.getHeader("filepath");
                   response.getWriter().println(fileExists(filepath));
+                } else if (id.equals("send990")) { 
+                  String key = request.getHeader("key");
+                  response.getWriter().println(Create990(key));  
                 } else {
                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                   response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": unknown ID " + "\n" + getHeaders(request));  

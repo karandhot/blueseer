@@ -92,6 +92,7 @@ import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.EDData;
 import static com.blueseer.utl.EDData.hasEDIXref;
@@ -848,12 +849,25 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
        m = updateCFOTransaction(tbkey.getText(), ddrevision.getSelectedItem().toString(), badlines, createDetRecord(), createRecord(), createItemRecord(), createSOSRecord());
      
         if (m[0].equals("0") && receipt990) {
+               /*
                if (ddorderstatus.getSelectedItem().equals("declined")) {
                 if (! rejectioncode.isBlank()) {
                     updateCFORejection(tbkey.getText(),rejectioncode, rejectionreason);
                 }
                }
-               Create990(tbkey.getText());
+               */
+               if (bsmf.MainFrame.remoteDB) {
+                ArrayList<String[]> arrx = new ArrayList<String[]>();
+                    arrx.add(new String[]{"id","send990"});
+                    arrx.add(new String[]{"key", tbkey.getText()});
+                   try {   
+                       sendServerPost(arrx, "", null);
+                   } catch (IOException ex) {
+                       bslog(ex);
+                   }
+               } else {
+                Create990(tbkey.getText());
+               }
                receipt990 = false;
         }
        
@@ -949,8 +963,8 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                 String.valueOf(BlueSeerUtils.boolToInt(cbedi.isSelected())),
                 "", // edi rejection reason..to be added
                 String.valueOf(BlueSeerUtils.boolToInt(cbrev.isSelected())),
-                "", // rejectcode
-                "", // rejection
+                rejectioncode, // rejectcode
+                rejectionreason, // rejection
                 "" // uniquekey
         );
         return x;

@@ -2627,21 +2627,21 @@ public class BlueSeerUtils {
     
     public static boolean confirmServerAuth(HttpServletRequest httpRequest) {
         final String authorization = httpRequest.getHeader("Authorization");
-        System.out.println("confirmServerAuth: enter");
+       // System.out.println("confirmServerAuth: enter");
         if (authorization != null && authorization.toLowerCase().startsWith("basic")) {
             String base64Credentials = authorization.substring("Basic".length()).trim();
             Base64 b = new Base64(); 
             String credentials = new String(b.decode(base64Credentials), Charset.forName("UTF-8"));
-            System.out.println("confirmServerAuth 1: " + credentials + "/" + bsmf.MainFrame.user + "/" + bsmf.MainFrame.pass);
+           // System.out.println("confirmServerAuth 1: " + credentials + "/" + bsmf.MainFrame.user + "/" + bsmf.MainFrame.pass);
             final String[] v = credentials.split(":", 2);
             if ( v != null && v.length > 1 && v[0].equals(bsmf.MainFrame.user) && v[1].equals(bsmf.MainFrame.pass)) {
                 return true;
             } else {
-                bslog("api dataServ: Credentials Failed: " + credentials);
-                System.out.println("confirmServerAuth: enter");
+                bslog("confirmServerAuth creds failed: " + credentials);
+                System.out.println("confirmServerAuth creds failed: " + credentials );
             }            
         } else {
-        bslog("api dataServ: No Authorization sent ");
+        bslog("confirmServerAuth creds: No basic auth ");
         System.out.println("confirmServerAuth: no basic auth");
         }
         return false;
