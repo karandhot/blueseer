@@ -631,7 +631,7 @@ public class BrokerMaint extends javax.swing.JPanel implements IBlueSeerT {
 
         setBackground(new java.awt.Color(0, 102, 204));
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Driver Maintenance"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Broker Maintenance"));
         jPanel1.setName("panelmain"); // NOI18N
 
         jLabel1.setText("Code:");
