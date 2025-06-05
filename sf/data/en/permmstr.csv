@@ -390,6 +390,7 @@ edi,Update,0
 edi,PlantDirectoryMenu,0
 edi,NavCodeBrowse,0
 edi,menuscreen,0
+edi,EDIExportReset,0
 admin,RecvItemBrowse,0
 admin,POItemBrowse,0
 admin,OrderItemBrowse,0
@@ -400,3 +401,5 @@ admin,OrderChangeBrowse,0
 admin,MetaMaint,0
 admin,PalletLabelMaint,0
 admin,ShipScanMaint,0
+admin,CFOInvoice,0
+admin,EDIExportReset,0

@@ -543,7 +543,12 @@ public class ReqControl extends javax.swing.JPanel {
     }//GEN-LAST:event_btdeleteActionPerformed
 
     private void btaddauthActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddauthActionPerformed
-         authmodel.addRow(new Object[]{ddallusers.getSelectedItem().toString(), tbdesc.getText(), tbsequence.getText(), cbenabled.isSelected(), cbemail.isSelected()});
+        if (BlueSeerUtils.isParsableToInt(tbsequence.getText())) {
+        authmodel.addRow(new Object[]{ddallusers.getSelectedItem().toString(), tbdesc.getText(), tbsequence.getText(), cbenabled.isSelected(), cbemail.isSelected()});
+        } else {
+            bsmf.MainFrame.show("Sequence must be integer value");
+            tbsequence.requestFocus();
+        }
     }//GEN-LAST:event_btaddauthActionPerformed
 
     private void btdeleteauthActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteauthActionPerformed

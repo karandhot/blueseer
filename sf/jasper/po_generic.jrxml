@@ -21,7 +21,7 @@
 po_terms, po_shipvia, pod_item, pod_venditem, 
 pod_ord_qty, pod_netprice, 
 vd_addr, vd_name, vd_line1, vd_line2, 
-site_desc, site_line1  from pod_mstr 
+site_desc, site_line1, vds_name, vds_line1  from pod_mstr 
 left outer join item_mstr on it_item = pod_item 
 inner join po_mstr on po_nbr = pod_nbr 
 inner join vd_mstr on vd_addr = po_vend 

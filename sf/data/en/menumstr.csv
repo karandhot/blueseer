@@ -348,3 +348,5 @@ OrderChangeBrowse,,com.blueseer.ord.OrderChangeBrowse,JMenuItem,orch
 MetaMaint,,com.blueseer.adm.MetaMaint,JMenuItem,meta
 PalletLabelMaint,,com.blueseer.lbl.PalletLabelMaint,JMenuItem,lblp
 ShipScanMaint,,com.blueseer.shp.ShipScanMaint,JMenuItem,shpz
+CFOInvoice,,com.blueseer.frt.CFOInvoice,JMenuItem,cfoi
+EDIExportReset,,com.blueseer.edi.EDIExportReset,JMenuItem,ediz

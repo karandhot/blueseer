@@ -29,13 +29,14 @@ VendorMenu,VendControl,8,JMenuItem,Vendor Control,,,,1,1
 Freight,CFOMaint,1,JMenuItem,Freight Order Maintenance,,,,1,1
 Freight,CFOBrowse,2,JMenuItem,Freight Order Report,,,,1,1
 Freight,CFODriverWindow,3,JMenuItem,Order/Driver Schedule,,,,1,1
-Freight,VehicleMaint,4,JMenuItem,Vehicle Management,,,,1,1
-Freight,VehicleBrowse,5,JMenuItem,Vehicle Browse,,1,,1,1
-Freight,DriverMaint,6,JMenuItem,Driver Management,,,,1,1
-Freight,DriverBrowse,7,JMenuItem,Driver Browse,,1,,1,1
-Freight,BrokerMaint,8,JMenuItem,Broker Management,,,,1,1
-Freight,BrokerBrowse,9,JMenuItem,Broker Browse,,1,,1,1
-Freight,CFOControl,10,JMenuItem,Freight Control,,,,1,1
+Freight,CFOInvoice,4,JMenuItem,Freight Invoice Maintenance,,,,1,1
+Freight,VehicleMaint,5,JMenuItem,Vehicle Management,,,,1,1
+Freight,VehicleBrowse,6,JMenuItem,Vehicle Browse,,1,,1,1
+Freight,DriverMaint,7,JMenuItem,Driver Management,,,,1,1
+Freight,DriverBrowse,8,JMenuItem,Driver Browse,,1,,1,1
+Freight,BrokerMaint,9,JMenuItem,Broker Management,,,,1,1
+Freight,BrokerBrowse,10,JMenuItem,Broker Browse,,1,,1,1
+Freight,CFOControl,11,JMenuItem,Freight Control,,,,1,1
 EDI,EDILoad,1,JMenuItem,EDI Load,,,,1,1
 EDI,EDILog,2,JMenuItem,EDI Log,,,,1,1
 EDI,EDIConfMenu,3,JMenu,EDI Configuration Menu,,,,1,1
@@ -43,7 +44,8 @@ EDI,EDITranMenu,4,JMenu,EDI Translation Menu,,,,1,1
 EDI,EDICommMenu,5,JMenu,EDI Communications Menu,,,,1,1
 EDI,EDIWkflMenu,6,JMenu,EDI WorkFlow Menu,,,,1,1
 EDI,EDIExport,7,JMenuItem,EDI Export,,,,1,1
-EDI,EDIControl,8,JMenuItem,EDI Control,,,,1,1
+EDI,EDIExportReset,8,JMenuItem,EDI Document Reset,,,,1,1
+EDI,EDIControl,9,JMenuItem,EDI Control,,,,1,1
 EDIConfMenu,EDIPartnerMaint,1,JMenuItem,EDI Partner Maintenance,,,,1,1
 EDIConfMenu,EDIPartnerBrowse,2,JMenuItem,EDI Partner Browse,,1,,1,1
 EDIConfMenu,EDIPartnerDocMaint,3,JMenuItem,Partner Transaction Maintenance,,,,1,1

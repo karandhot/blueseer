@@ -247,3 +247,5 @@ com.blueseer.ord.OrderChangeBrowse,,1
 com.blueseer.adm.MetaMaint,,1
 com.blueseer.lbl.PalletLabelMaint,,1
 com.blueseer.shp.ShipScanMaint,,1
+com.blueseer.frt.CFOInvoice,,1
+com.blueseer.edi.EDIExportReset,,1

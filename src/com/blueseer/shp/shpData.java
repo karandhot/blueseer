@@ -3318,6 +3318,103 @@ public class shpData {
       return x;
   }
 
+    public static boolean addUpdateShipMeta(String id, String type, String key, String value) {
+        boolean x = false;
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+                int i = 0;
+                res = st.executeQuery("SELECT shm_value FROM sh_meta where shm_id = " + "'" + id + "'"
+                        + " AND shm_type = " + "'" + type + "'"
+                        + " AND shm_key = " + "'" + key + "'"     
+                        + " ;");
+                while (res.next()) {
+                    i++;
+                }
+
+                if (i == 0) {
+                    st.executeUpdate("insert into sh_meta (shm_id, shm_type, shm_key, shm_value) values ( "
+                            + "'" + id + "'" + ","
+                            + "'" + type + "'" + ","
+                            + "'" + key + "'" + ","
+                            + "'" + value + "'" + ")"
+                            + ";");
+                    x = true;
+                } else {
+                    st.executeUpdate("update sh_meta set "
+                            + " shm_value = " + "'" + value + "'"
+                            + " where shm_id = " + "'" + id + "'" + " and "
+                            + " shm_type = " +  "'" + type + "'" + " and "
+                            + " shm_key = " +  "'" + key + "'"  
+                            + ";");
+                    x = true;
+                }
+            } // if proceed
+            catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return x;
+    }
+
+    public static String getShipMetaValue(String id, String type, String key) {
+         String x = "";
+         try{
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+                res = st.executeQuery("select shm_value from sh_meta where " +
+                        " shm_id = " + "'" + id + "'" + " AND " +
+                        " shm_type = " + "'" + type + "'" + " AND " +
+                        " shm_key = " + "'" + key + "'" +
+                        " order by shm_value;" );
+               while (res.next()) {
+                x = res.getString("shm_value");                    
+                }
+               
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return x;
+        
+    }   
+    
     
     public record ship_mstr(String[] m, String sh_id, String sh_cust, String sh_ship, int sh_pallets, 
         int sh_boxes, String sh_shipvia, String sh_shipdate, String sh_po_date,
