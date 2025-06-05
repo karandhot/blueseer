@@ -448,7 +448,7 @@ public class CFOInvoice extends javax.swing.JPanel {
                 }
                 
                 st.executeUpdate("insert into ship_det "
-                        + "(shd_id, shd_soline, shd_item, shd_custitem, shd_so, shd_po, shd_date, shd_qty, shd_uom, "
+                        + "(shd_id, shd_line, shd_item, shd_custitem, shd_so, shd_po, shd_date, shd_qty, shd_uom, "
                         + "shd_listprice, shd_disc, shd_netprice, shd_wh, shd_loc, shd_desc, shd_taxamt, shd_site, shd_soline ) "
                         + " values ( " + "'" + shipper + "'" + ","
                         + "'" + (j + 1) + "'" + ","
