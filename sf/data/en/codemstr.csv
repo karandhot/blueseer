@@ -38,6 +38,145 @@ freighteqptype,Stretch RGN,Stretch RGN Gooseneck trailer,1
 freighteqptype,Lowboy,Lowboy double drop trailer,1
 freighteqptype,Reefer,Refrigerated trailer,1
 freighteqptype,Specialized,Specialized trailer,1
+freighteqptype,20,20 ft. IL Container (Open Top) ,1
+freighteqptype,2B,20 ft. IL Container (Closed Top) ,1
+freighteqptype,2C,Cut-in Robot Distributed Power Unit (DPU) ,1
+freighteqptype,2D,Control Unit ,1
+freighteqptype,2E,Head-end Helper Unit ,1
+freighteqptype,2F,Roadrailer ,1
+freighteqptype,2G,Cut-in Helper ,1
+freighteqptype,2H,Rear-end Helper Unit ,1
+freighteqptype,2R,Rear-end Robot Distributed Power Unit (DPU) ,1
+freighteqptype,40,40 ft. IL Container (Open Top) ,1
+freighteqptype,4B,40 ft. IL Container (Closed Top) ,1
+freighteqptype,AA,Air Ride Van ,1
+freighteqptype,AC,Closed Container ,1
+freighteqptype,AD,Flatbed Sliding Tandem ,1
+freighteqptype,AF,Air Freight (Break Bulk) ,1
+freighteqptype,AL,Container Aluminum ,1
+freighteqptype,AP,Aircraft ,1
+freighteqptype,AT,Closed Container (Controlled Temperature) ,1
+freighteqptype,BC,Covered Barge ,1
+freighteqptype,BE,Bilevel Railcar Fully Open ,1
+freighteqptype,BF,Bilevel Railcar Fully Enclosed ,1
+freighteqptype,BG,Bogie ,1
+freighteqptype,BH,Bilevel Railcar Screened With Roof ,1
+freighteqptype,BJ,Bilevel Railcar Screened No Roof ,1
+freighteqptype,BK,Container Bulk ,1
+freighteqptype,BO,Barge Open ,1
+freighteqptype,BR,Barge ,1
+freighteqptype,BX,Boxcar ,1
+freighteqptype,CA,Caboose ,1
+freighteqptype,CB,Chassis Gooseneck ,1
+freighteqptype,CC,Container resting on a Chassis ,1
+freighteqptype,CD,Container with Bag Hangers ,1
+freighteqptype,CG,Container Tank (Gas) ,1
+freighteqptype,CH,Chassis ,1
+freighteqptype,CI,Container Insulated ,1
+freighteqptype,CJ,Container Insulated/Ventilated ,1
+freighteqptype,CK,Container Heated/Insulated/Ventilated ,1
+freighteqptype,CL,Container (Closed Top - Length Unspecified) ,1
+freighteqptype,CM,Container Open-Sided ,1
+freighteqptype,CN,Container ,1
+freighteqptype,CP,Coil Car Open ,1
+freighteqptype,CQ,Container Tank (Food Grade-Liquid) ,1
+freighteqptype,CR,Coil-Car Covered ,1
+freighteqptype,CS,Container-Low Side Open Top ,1
+freighteqptype,CT,Container-High Side Open Top ,1
+freighteqptype,CU,Container (Open Top - Length Unspecified) ,1
+freighteqptype,CV,Closed Van ,1
+freighteqptype,CW,Container Tank (Chemicals) ,1
+freighteqptype,CX,Container Tank ,1
+freighteqptype,CZ,Refrigerated Container ,1
+freighteqptype,DD,Double-Drop Trailer ,1
+freighteqptype,DF,Container with Flush Doors ,1
+freighteqptype,DT,Drop Back Trailer ,1
+freighteqptype,DX,Boxcar Damage Free Equipped ,1
+freighteqptype,ET,End of Train Device ,1
+freighteqptype,FF,Frozen Food Trailer ,1
+freighteqptype,FH,Flat Bed Trailer with Headboards ,1
+freighteqptype,FN,Flat Bed Trailer with No Headboards ,1
+freighteqptype,FP,Flatcar With Pedestal ,1
+freighteqptype,FR,Flat Bed Trailer - Removable Sides ,1
+freighteqptype,FS,Container with Floor Securing Rings ,1
+freighteqptype,FT,Flat Bed Trailer ,1
+freighteqptype,FX,Boxcar Cushion Under Frame OF ,1
+freighteqptype,GS,Generator Set ,1
+freighteqptype,HB,Container with Hangar Bars ,1
+freighteqptype,HC,Hopper Car (Covered) ,1
+freighteqptype,HO,Hopper Car (Open) ,1
+freighteqptype,HP,Hopper Car (Covered; Pneumatic Discharge) ,1
+freighteqptype,HT,Head of Train Device ,1
+freighteqptype,HV,High Cube Van ,1
+freighteqptype,HY,Hydrant-Cart ,1
+freighteqptype,ID,Idler Car ,1
+freighteqptype,IX,Boxcar (Insulated) ,1
+freighteqptype,LO,Locomotive ,1
+freighteqptype,LS,Half Height Flat Rack ,1
+freighteqptype,LU,Load/unload Device on Equipment ,1
+freighteqptype,NX,Boxcar (Interior Bulkheads) ,1
+freighteqptype,OB,Ocean Vessel (Break Bulk) ,1
+freighteqptype,OT,Open-top/flatbed trailer ,1
+freighteqptype,OV,Open Top Van ,1
+freighteqptype,PL,Container Platform ,1
+freighteqptype,PP,Power Pack ,1
+freighteqptype,PT,Protected Trailer ,1
+freighteqptype,PU,Pickup Truck ,1
+freighteqptype,RA,Fixed-Rack Flat-Bed Trailer ,1
+freighteqptype,RC,Refrigerated (Reefer) Car ,1
+freighteqptype,RD,Fixed-Rack Double Drop Trailer ,1
+freighteqptype,RE,Flat Car (End Bulkheads) ,1
+freighteqptype,RF,Flat Car ,1
+freighteqptype,RG,Gondola Covered ,1
+freighteqptype,RI,Gondola Car (Covered - Interior Bulkheads) ,1
+freighteqptype,RO,Gondola Car (Open) ,1
+freighteqptype,RR,Rail Car ,1
+freighteqptype,RS,Fixed-Rack Single-Drop Trailer ,1
+freighteqptype,RT,Controlled Temperature Trailer (Reefer) ,1
+freighteqptype,SA,Saddle ,1
+freighteqptype,SC,Service Car ,1
+freighteqptype,SD,Single-Drop Trailer ,1
+freighteqptype,SK,Stack Car ,1
+freighteqptype,SL,Container Steel ,1
+freighteqptype,SR,STAK-RAK ,1
+freighteqptype,SS,Container with Smooth Sides ,1
+freighteqptype,ST,Removable Side Trailer ,1
+freighteqptype,SV,Van - Special Inside Length Width or Height Requirements ,1
+freighteqptype,TA,Trailer Heated/Insulated/Ventilated ,1
+freighteqptype,TB,Trailer Boat ,1
+freighteqptype,TC,Trailer Car ,1
+freighteqptype,TF,Trailer Dry Freight ,1
+freighteqptype,TG,Trailer Tank (Gas) ,1
+freighteqptype,TH,Truck Open Top High Side ,1
+freighteqptype,TI,Trailer Insulated ,1
+freighteqptype,TJ,Trailer Tank (Chemicals) ,1
+freighteqptype,TK,Trailer Tank (Food Grade-Liquid) ,1
+freighteqptype,TL,Trailer (not otherwise specified) ,1
+freighteqptype,TM,Trailer Insulated/Ventilated ,1
+freighteqptype,TN,Tank Car ,1
+freighteqptype,TO,Truck Open Top ,1
+freighteqptype,TP,Trailer Pneumatic ,1
+freighteqptype,TQ,Trailer Electric Heat ,1
+freighteqptype,TR,Tractor ,1
+freighteqptype,TT,Telescoping Trailer ,1
+freighteqptype,TU,Truck Open Top Low Side ,1
+freighteqptype,TV,Truck Van ,1
+freighteqptype,TW,Trailer Refrigerated ,1
+freighteqptype,UA,Trilevel Railcar 20 Feet ,1
+freighteqptype,UB,Trilevel Railcar Screened Fully Enclosed ,1
+freighteqptype,UC,Trilevel Railcar Screened With Roof ,1
+freighteqptype,UD,Trilevel Railcar Screened No Roof ,1
+freighteqptype,UE,Trilevel Railcar Screened With Doors No Roof ,1
+freighteqptype,UL,Unit Load Device (ULD) ,1
+freighteqptype,UP,Container Upgraded ,1
+freighteqptype,VA,Container Vented ,1
+freighteqptype,VE,Vessel Ocean ,1
+freighteqptype,VL,Vessel Lake ,1
+freighteqptype,VR,Vessel Ocean Rollon-Rolloff ,1
+freighteqptype,VS,Vessel Ocean Lash ,1
+freighteqptype,VT,Vessel Ocean Containership ,1
+freighteqptype,WR,Container with Wavy or Ripple Sides ,1
+freighteqptype,WY,Railroad Maintenance of Way Car ,1
 edidoctype,generic,Generic Document Type,1
 edidoctype,850csv,CSV Order,1
 edidoctype,860csv,CSV Order Change,1

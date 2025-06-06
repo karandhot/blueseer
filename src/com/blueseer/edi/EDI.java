@@ -7878,6 +7878,8 @@ public class EDI {
     public String custfo = "";
     public String carrier = "";
     public String equiptype = "";
+    public String servicetype = "";
+    public String equiplength = "";
     public String cust = "";
     public String tpid = "";
     public String ref = "";
