@@ -324,6 +324,9 @@ public class CFOInvoice extends javax.swing.JPanel {
         ddsactype.addItem("passive");
         ddsactype.setSelectedIndex(0);
        
+        tbchargecode.setText("");
+        tbsacdesc.setText("");
+        tbsacamt.setText("");
        
        isLoad = false;
     }
@@ -453,7 +456,7 @@ public class CFOInvoice extends javax.swing.JPanel {
                         + " values ( " + "'" + shipper + "'" + ","
                         + "'" + (j + 1) + "'" + ","
                         + "'" + sactable.getValueAt(j, 1).toString().replace("'", "") + "'" + ","
-                        + "''" + ","
+                        + "'" + "Flat Rate" + "'" + ","
                         + "'" + cfonbr + "'" + ","
                         + "'" + cfonbr + "'" + ","        
                         + "'" + shipdate + "'" + ","        
@@ -956,6 +959,9 @@ public class CFOInvoice extends javax.swing.JPanel {
             sacmodel.addRow(new Object[]{ ddsactype.getSelectedItem().toString(), tbchargecode.getText(), tbsacdesc.getText(),  String.valueOf(amount)});
         }
         summarize();
+        tbchargecode.setText("");
+        tbsacdesc.setText("");
+        tbsacamt.setText("");
 
     }//GEN-LAST:event_btsacaddActionPerformed
 

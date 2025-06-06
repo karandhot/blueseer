@@ -802,12 +802,12 @@ public class shpData {
         ArrayList<ship_det> list = new ArrayList<ship_det>();
         for (String[] d : detail) {   
             
-            // Freight field order:  "Line", "Item", "FO", "CUSTFO", "NetPrice", "TAXAMT", "desc"
+            // Freight field order:  "Line", "Item", "FO", "CUSTFO", "NetPrice", "TAXAMT", "desc", "sku" (rate type)
             ship_det x = new ship_det(null,
                   shippernbr,
                   bsParseInt(d[0]), // shline
                   d[1], //item
-                  "", //custitem
+                  d[7], // custitem, sku, freight rate type
                   d[2], // fo
                   bsParseInt(d[0]), // foline = shline  
                   confdate, //confdate

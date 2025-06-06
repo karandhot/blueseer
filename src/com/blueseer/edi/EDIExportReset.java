@@ -43,6 +43,7 @@ import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import com.blueseer.utl.IBlueSeerc;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.getSysMetaData;
+import static com.blueseer.utl.OVData.isValidShipper;
 import java.awt.Component;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -196,7 +197,11 @@ public class EDIExportReset extends javax.swing.JPanel  {
     
     public boolean validateInput(dbaction x) { 
         boolean b = true;
-                                
+            
+        if (! isValidShipper(tbkey.getText())) {
+            bsmf.MainFrame.show("invalid key");
+            return false;
+        }
                // nothing here
                
         return b;

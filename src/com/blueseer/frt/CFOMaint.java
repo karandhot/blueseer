@@ -1495,7 +1495,9 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
              tbnumber.getText(), // cust fo
              currformatDoubleUS(totamtLessCharge),  // formatUSC(tbcost.getText()), // netprice
              "0", // taxamt
-             OVData.getCodeValueByCodeKey("freightchargecodes", "DLH")};
+             OVData.getCodeValueByCodeKey("freightchargecodes", "DLH"),  // desc
+             ddratetype.getSelectedItem().toString() // sku -- holds rate type 
+             };
         list.add(s);
         
         // additional line items contain charges/surcharges from cfo_sos table
@@ -1524,8 +1526,9 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                  tbnumber.getText(), // cust fo
                  currformatDoubleUS(myamt), // netprice
                  "0", // taxamt
-                 ss[1] // desc 
-                 };
+                 ss[1], // desc 
+                 "Flat Rate" // sku -- holds rate type
+                };
                  list.add(c1);
             }
         }
