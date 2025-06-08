@@ -192,7 +192,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     public boolean lock_ddshipper = false;
     public int currentstopline = 0;
     boolean isLoad = false;
-    boolean carrierPOV = true;
+    public boolean carrierPOV = true;
     public static cfo_mstr x = null;
     public static frt_ctrl fc = null;
     public static ArrayList<cfo_det> cfodetlist = null;
@@ -503,12 +503,25 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public void setComponentDefaultValues() {
-       isLoad = true;
+      
               
-       kvstop.clear();
-       itemmap.clear();
+    
+       // clear global fields
+    receipt990 = false;
+    rejectioncode = "";
+    rejectionreason = "";
+    lock_ddshipper = false;
+    currentstopline = 0;
+    carrierPOV = true;
+    x = null;
+    fc = null;  
+    cfodetlist = null;
+    soslist = null;
+    cfoitemlist = null;
+    kvstop.clear();
+    itemmap.clear();
+    stk.clear();
        
-       clearStopFields();
        
        fc = getCFOCtrl(null);
        // note:  fc.frtc_function() = 1 for Trucking POV...and 0 for Customer POV
@@ -589,6 +602,13 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbtime2.setText("");
         tbsacamt.setText("");
         tbsacdesc.setText("");
+        tbequiptype.setEditable(false);
+        tbequiptype.setText("");
+        lblequiptype.setText("");
+        lbclientname.setText("");
+        tanotes.setText("");
+        
+        
        // tablelist.clear();
        
         myorddetmodel.setRowCount(0);
@@ -610,7 +630,6 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddstate.removeAllItems();
         ddcust.removeAllItems();
         ddshipto.removeAllItems();
-        ddequiptype.removeAllItems();
         ddservicetype.removeAllItems();
         ddbroker.removeAllItems();
         ddtimezone.removeAllItems();
@@ -639,9 +658,6 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
             if (s[0].equals("servicetypes")) {
               ddservicetype.addItem(s[1]); 
             }
-            if (s[0].equals("equipmenttypes")) {
-              ddequiptype.addItem(s[1]); 
-            }
             if (s[0].equals("chargecodes")) {
               ddchargecode.addItem(s[1]); 
             }
@@ -669,16 +685,15 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddsite.setSelectedItem(defaultsite);
         ddstate.insertItemAt("", 0);
         ddstate.setSelectedIndex(0);
+        
         ddcust.insertItemAt("", 0);
         ddcust.setSelectedIndex(0);
-      
+        
        
         ddbroker.insertItemAt("", 0);
         ddbroker.setSelectedIndex(0);
         ddservicetype.insertItemAt("", 0);
         ddservicetype.setSelectedIndex(0);
-        ddequiptype.insertItemAt("", 0);
-        ddequiptype.setSelectedIndex(0);
         ddchargecode.insertItemAt("", 0);
         ddchargecode.setSelectedIndex(0);
         dddatetype.insertItemAt("", 0);
@@ -718,7 +733,9 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         String timeZoneShort = getTimeZoneShort.format(Calendar.getInstance().getTime());
         ddtimezone.setSelectedItem(timeZoneShort);
         
-       isLoad = false;
+      
+      clearStopFields();  // leave at bottom...so as not to reset the isLoad bool to false too soon. 
+       
     }
     
     public void newAction(String x) {
@@ -802,12 +819,13 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public void initvars(String[] arg) {
-       
+       isLoad = true;
        setPanelComponentState(this, false); 
        setComponentDefaultValues();
-        btnew.setEnabled(true);
-        btlookup.setEnabled(true);
-        
+       btnew.setEnabled(true);
+       btlookup.setEnabled(true);
+       isLoad = false;
+       
         if (arg != null && arg.length > 0) {
             executeTask(dbaction.get,arg);
         } else {
@@ -929,7 +947,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                 tbnumber.getText(),
                 ddrevision.getSelectedItem().toString(),
                 ddservicetype.getSelectedItem().toString(),
-                ddequiptype.getSelectedItem().toString(),
+                tbequiptype.getText(),
                 tbvehicle.getText(),
                 tbtrailer.getText(),
                 ddorderstatus.getSelectedItem().toString(),
@@ -1144,7 +1162,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         luTable.addMouseListener(luml);
       
         callDialog(getClassLabelTag("lookupid", this.getClass().getSimpleName()), 
-                getClassLabelTag("lbllastname", this.getClass().getSimpleName()));  
+                getClassLabelTag("lbllastname", this.getClass().getSimpleName()), 2);  
         
         
     }
@@ -1184,7 +1202,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         luTable.addMouseListener(luml);
       
         callDialog(getClassLabelTag("lookupid", this.getClass().getSimpleName()), 
-                getClassLabelTag("lbldesc", this.getClass().getSimpleName()));  
+                getClassLabelTag("lbldesc", this.getClass().getSimpleName()), 2);  
     }
     
     public void lookUpFrameRejection() {
@@ -1280,7 +1298,49 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         luTable.addMouseListener(luml);
       
         callDialog(getClassLabelTag("lblcode", this.getClass().getSimpleName()), 
-                getClassLabelTag("lbldesc", this.getClass().getSimpleName()));  
+                getClassLabelTag("lbldesc", this.getClass().getSimpleName()), 2);  
+        
+        
+    }
+
+     public void lookUpFrameEquipType() {
+        
+        luinput.removeActionListener(lual);
+        lual = new ActionListener() {
+        public void actionPerformed(ActionEvent event) {
+        if (lurb1.isSelected()) {  
+         luModel = DTData.getGenCodeBrowseUtilByCode(luinput.getText(),0, "code_key", "freighteqptype"); 
+        } else {
+         luModel = DTData.getGenCodeBrowseUtilByCode(luinput.getText(),0, "code_value", "freighteqptype");    
+        }
+        luTable.setModel(luModel);
+        luTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        if (luModel.getRowCount() < 1) {
+            ludialog.setTitle(getMessageTag(1001));
+        } else {
+            ludialog.setTitle(getMessageTag(1002, String.valueOf(luModel.getRowCount())));
+        }
+        }
+        };
+        luinput.addActionListener(lual);
+        
+        luTable.removeMouseListener(luml);
+        luml = new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                JTable target = (JTable)e.getSource();
+                int row = target.getSelectedRow();
+                int column = target.getSelectedColumn();
+                if ( column == 0) {
+                ludialog.dispose();
+                tbequiptype.setText(target.getValueAt(row,1).toString());
+                lblequiptype.setText(target.getValueAt(row,2).toString());
+                }
+            }
+        };
+        luTable.addMouseListener(luml);
+      
+        callDialog(getClassLabelTag("lookupid", this.getClass().getSimpleName()), 
+                getClassLabelTag("lbldesc", this.getClass().getSimpleName()), 2);  
         
         
     }
@@ -1322,13 +1382,16 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         tbkey.setText(x.cfo_nbr());
         ddcust.setSelectedItem(x.cfo_cust());
+        lbclientname.setText(cusData.getCustName(x.cfo_cust()));
+        
         tbnumber.setText(x.cfo_custfonbr());
         ddrevision.setSelectedItem(x.cfo_revision());
         cbhazmat.setSelected(BlueSeerUtils.ConvertStringToBool(x.cfo_ishazmat()));
         cbrev.setSelected(BlueSeerUtils.ConvertStringToBool(x.cfo_defaultrev()));
         cbedi.setSelected(BlueSeerUtils.ConvertStringToBool(x.cfo_edi()));
         ddservicetype.setSelectedItem(x.cfo_servicetype());
-        ddequiptype.setSelectedItem(x.cfo_equipmenttype());
+        tbequiptype.setText(x.cfo_equipmenttype());
+        lblequiptype.setText(OVData.getCodeValueByCodeKey("freighteqptype", x.cfo_equipmenttype()));
         tbvehicle.setText(x.cfo_truckid());
         tbtrailer.setText(x.cfo_trailernbr());
         ddorderstatus.setSelectedItem(x.cfo_orderstatus());
@@ -1669,6 +1732,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public void clearStopFields() {
+        
         isLoad = true;
         ddstopsequence.setSelectedIndex(0);
         ddstoptype.setSelectedIndex(0); 
@@ -1767,17 +1831,16 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void clientChangeEvent(String mykey) {
             
-       if (! isLoad && ddcust.getSelectedItem() != null && ! ddcust.getSelectedItem().toString().isEmpty() ) {
+       if (! isLoad && ! mykey.isBlank() ) {
            ddshipto.removeAllItems();
-           lbclientname.setText(cusData.getCustName(ddcust.getSelectedItem().toString()));
-           ArrayList<String> list = cusData.getcustshipmstrlist(ddcust.getSelectedItem().toString());
+           lbclientname.setText(cusData.getCustName(mykey));
+           
+           ArrayList<String> list = cusData.getcustshipmstrlist(mykey);
             for (String s : list) {
                 ddshipto.addItem(s);
             }
             ddshipto.insertItemAt("",0);
-       } else {
-           lbclientname.setText("");
-       }
+       } 
     }
   
     public void clearShipAddress() {
@@ -1849,7 +1912,6 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddcust = new javax.swing.JComboBox<>();
         tbtrailer = new javax.swing.JTextField();
         jLabel101 = new javax.swing.JLabel();
-        ddequiptype = new javax.swing.JComboBox();
         btaddshipper = new javax.swing.JButton();
         tbnumber = new javax.swing.JTextField();
         jLabel16 = new javax.swing.JLabel();
@@ -1860,6 +1922,8 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         btfindvehicle = new javax.swing.JButton();
         tbvehicle = new javax.swing.JTextField();
         lblequiptype = new javax.swing.JLabel();
+        tbequiptype = new javax.swing.JTextField();
+        btfindequiptype = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         ddratetype = new javax.swing.JComboBox<>();
         jLabel37 = new javax.swing.JLabel();
@@ -2207,13 +2271,6 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel101.setText("Truck ID");
         jLabel101.setName("lblcarrier"); // NOI18N
 
-        ddequiptype.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "test1", "test2", "test3" }));
-        ddequiptype.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ddequiptypeActionPerformed(evt);
-            }
-        });
-
         btaddshipper.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/add.png"))); // NOI18N
         btaddshipper.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2238,6 +2295,17 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
+        btfindequiptype.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/find.png"))); // NOI18N
+        btfindequiptype.setFocusable(false);
+        btfindequiptype.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btfindequiptype.setName("btlookup"); // NOI18N
+        btfindequiptype.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btfindequiptype.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btfindequiptypeActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -2256,10 +2324,6 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addGap(4, 4, 4)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(tbvehicle, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btfindvehicle, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(ddrevision, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(cbrev)
@@ -2273,14 +2337,23 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btaddshipper, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(ddequiptype, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(lblequiptype, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(ddcust, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lbclientname, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(lbclientname, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(tbequiptype)
+                            .addComponent(tbvehicle, javax.swing.GroupLayout.DEFAULT_SIZE, 78, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(btfindequiptype, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lblequiptype, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(btfindvehicle, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE)))))
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2308,11 +2381,17 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(ddservicetype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel9))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(ddequiptype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel85)
-                    .addComponent(lblequiptype, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(9, 9, 9)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(lblequiptype, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(9, 9, 9))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btfindequiptype, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(tbequiptype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel85)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel101)
@@ -3747,14 +3826,6 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 
-    private void ddequiptypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddequiptypeActionPerformed
-        if (! isLoad) {
-            if (ddequiptype.getSelectedItem() != null) {
-              lblequiptype.setText(getCodeValueByCodeKey("freighteqptype",ddequiptype.getSelectedItem().toString()));
-            }
-        }
-    }//GEN-LAST:event_ddequiptypeActionPerformed
-
     private void btdeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteActionPerformed
          if (! validateInput(dbaction.delete)) {
            return;
@@ -3895,13 +3966,13 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_jTabbedPane1StateChanged
 
     private void ddcustActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddcustActionPerformed
-          if (ddcust.getItemCount() > 0) {
+          if (! isLoad && ddcust.getItemCount() > 0 && ! ddcust.getSelectedItem().toString().isBlank()) {
            clientChangeEvent(ddcust.getSelectedItem().toString());
         } // if ddcust has a list
     }//GEN-LAST:event_ddcustActionPerformed
 
     private void ddbrokerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddbrokerActionPerformed
-        if (isLoad == false && ddbroker.getSelectedItem() != null && ! ddbroker.getSelectedItem().toString().isBlank()) {
+        if (! isLoad && ddbroker.getSelectedItem() != null && ! ddbroker.getSelectedItem().toString().isBlank()) {
             String[] x = getBrokerInfo(ddbroker.getSelectedItem().toString());
             tbbrokercell.setText(x[2]);
             tbbrokercontact.setText(x[3]);
@@ -4140,6 +4211,9 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         if (proceed) {
         sacmodel.addRow(new Object[]{ ddsactype.getSelectedItem().toString(), ddchargecode.getSelectedItem().toString(), tbsacdesc.getText(), ddsacamttype.getSelectedItem().toString(), String.valueOf(amount)});
         }
+        tbsacdesc.setText("");
+        ddchargecode.setSelectedIndex(0);
+        tbsacamt.setText("");
         summarize();
         
     }//GEN-LAST:event_btsacaddActionPerformed
@@ -4460,6 +4534,10 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
     }//GEN-LAST:event_tbtime2FocusLost
 
+    private void btfindequiptypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btfindequiptypeActionPerformed
+        lookUpFrameEquipType();
+    }//GEN-LAST:event_btfindequiptypeActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btadd;
     private javax.swing.JButton btaddattachment;
@@ -4475,6 +4553,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btdeletestop;
     private javax.swing.JButton btfindchargecode;
     private javax.swing.JButton btfinddriver;
+    private javax.swing.JButton btfindequiptype;
     private javax.swing.JButton btfindvehicle;
     private javax.swing.JButton btlookup;
     private javax.swing.JButton btnew;
@@ -4499,7 +4578,6 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JComboBox ddcountry;
     private javax.swing.JComboBox<String> ddcust;
     private javax.swing.JComboBox<String> dddatetype;
-    private javax.swing.JComboBox ddequiptype;
     private javax.swing.JComboBox<String> ddfotype;
     private javax.swing.JComboBox ddorderstatus;
     private javax.swing.JComboBox<String> ddratetype;
@@ -4622,6 +4700,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JTextField tbdrivername;
     private javax.swing.JTextField tbdriverrate;
     private javax.swing.JTextField tbemail;
+    private javax.swing.JTextField tbequiptype;
     private javax.swing.JTextField tbforate;
     private javax.swing.JTextField tbkey;
     private javax.swing.JTextField tbmileage;

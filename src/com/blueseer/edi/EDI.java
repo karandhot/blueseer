@@ -3860,6 +3860,7 @@ public class EDI {
             
             // now the detail
             ArrayList<frtData.cfo_det> list = new ArrayList<frtData.cfo_det>();
+            ArrayList<frtData.cfo_item> OIDlist = new ArrayList<frtData.cfo_item>();
             String dettype = "";
             String time1 = "";
             String time2 = "";
@@ -3924,10 +3925,31 @@ public class EDI {
                 (e.getDetMiles(j).isBlank() ? "0" : e.getDetMiles(j).replace(defaultDecimalSeparator, '.')) // miles
                 );  
                 list.add(y);
+                
+                // create OID loop cfo_item table info here
+                String[] oids = e.getDetOIDItems(j).split(":",-1);
+                for (int h = 0; h < oids.length; h++) {
+                frtData.cfo_item w = new frtData.cfo_item(null, 
+                cfokey,
+                revision, // revision 
+                String.valueOf(j + 1),  //stopline
+                String.valueOf(j + 1), // itemline
+                oids[h], // item
+                "", // itemdesc
+                "", // order   
+                "", // qty 
+                "", // pallets  
+                "", // weight   
+                "", // ref   
+                "" // rmks  
+                );
+                OIDlist.add(w);
+                } // end of OID
+                        
                } // for each det
             
             if (m[0].isBlank()) { // if not error
-                m = addCFOTransaction(list, x, null, null);
+                m = addCFOTransaction(list, x, OIDlist, null);
             } 
             
             if (m[0].equals("0")) {
@@ -7895,7 +7917,7 @@ public class EDI {
     
     // Detail fields     
     public ArrayList<String[]> detailArray = new ArrayList<String[]>();
-    public int DetFieldsCount204i = 34;
+    public int DetFieldsCount204i = 39;
     public String[] initDetailArray(String[] a) {
         for (int i = 0; i < a.length; i++) {
             a[i] = "";
@@ -8025,7 +8047,21 @@ public class EDI {
         public void setDetDate2(int i, String v) {
            this.detailArray.get(i)[33] = v;
         }
-        
+        public void setDetOIDItems(int i, String v) {
+           this.detailArray.get(i)[34] = v;
+        }
+        public void setDetOIDPallets(int i, String v) {
+           this.detailArray.get(i)[35] = v;
+        }
+        public void setDetOIDOrder(int i, String v) {
+           this.detailArray.get(i)[36] = v;
+        }
+        public void setDetOIDQty(int i, String v) {
+           this.detailArray.get(i)[37] = v;
+        }
+        public void setDetOIDRef(int i, String v) {
+           this.detailArray.get(i)[38] = v;
+        }
         
        // getters for detail
          public String getDetLine(int i) {
@@ -8058,10 +8094,10 @@ public class EDI {
         public String getDetAddrName(int i) {
            return detailArray.get(i)[9];
         }
-           public String getDetAddrLine1(int i) {
+        public String getDetAddrLine1(int i) {
             return detailArray.get(i)[10];
         }
-            public String getDetAddrLine2(int i) {
+        public String getDetAddrLine2(int i) {
             return detailArray.get(i)[11];
         }
         public String getDetAddrCity(int i) {
@@ -8130,7 +8166,22 @@ public class EDI {
         public String getDetDate2(int i) {
            return detailArray.get(i)[33];
         }
-               
+        public String getDetOIDItems(int i) {
+           return detailArray.get(i)[34];
+        }
+        public String getDetOIDPallets(int i) {
+           return detailArray.get(i)[35];
+        }
+        public String getDetOIDOrder(int i) {
+           return detailArray.get(i)[36];
+        }
+        public String getDetOIDQty(int i) {
+           return detailArray.get(i)[37];
+        }
+        public String getDetOIDRef(int i) {
+           return detailArray.get(i)[38];
+        }
+                
 // header setters 
    
     

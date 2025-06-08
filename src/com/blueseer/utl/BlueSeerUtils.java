@@ -453,7 +453,75 @@ public class BlueSeerUtils {
         ludialog.setVisible(true);
         luinput.requestFocus();
     } 
+    
+    public static void callDialog(String rb1, String rb2, int rbdefault) {
+        
+         if (ludialog != null) {
+            ludialog.dispose();
+        }
+        if (luModel != null && luModel.getRowCount() > 0) {
+        luModel.setRowCount(0);
+        luModel.setColumnCount(0);
+        }
+        luinput.setText("");
+        luTable.setPreferredScrollableViewportSize(new Dimension(500,200));
+        luTable.getTableHeader().setReorderingAllowed(false);
+        JScrollPane scrollPane = new JScrollPane(luTable);
+        JPanel rbpanel = new JPanel();
+        lubg = new ButtonGroup();
+        lurb1 = new JRadioButton(rb1);
+        lurb2 = new JRadioButton(rb2);
+        lurb1.setSelected(true);
+        lurb2.setSelected(false);
+        if (rbdefault == 2) {
+            lurb1.setSelected(false);
+            lurb2.setSelected(true);
+        }
+        
+        BoxLayout radiobuttonpanellayout = new BoxLayout(rbpanel, BoxLayout.X_AXIS);
+        rbpanel.setLayout(radiobuttonpanellayout);
+        rbpanel.add(lurb1);
+        JLabel spacer = new JLabel("   ");
+        rbpanel.add(spacer);
+        rbpanel.add(lurb2);
+        lubg.add(lurb1);
+        lubg.add(lurb2);
+        
+        
+        ludialog = new JDialog();
+        ludialog.setTitle("Search By Text and Press Enter:");
+        ludialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridBagLayout());
+      
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2,2,2,2);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        panel.add(rbpanel, gbc);
+        
+        gbc.gridwidth = 1;
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        panel.add(luinput, gbc);
+        
+        gbc.gridwidth = 1;
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        panel.add( scrollPane, gbc );
+        
+        ludialog.add(panel);
+        
+        ludialog.pack();
+        ludialog.setLocationRelativeTo( null );
+        ludialog.setResizable(false);
+        ludialog.setVisible(true);
+        luinput.requestFocus();
+    } 
      
+    
     public static void callDialog(String rb1, String rb2, String rb3) {
         
          if (ludialog != null) {
@@ -1115,8 +1183,9 @@ public class BlueSeerUtils {
     
     public static Locale getCurrencyLocale(String currency) {
         Locale locale = null;
-        Currency c = Currency.getInstance(currency);
+        
         if (! currency.isBlank()) {
+        Currency c = Currency.getInstance(currency);    
         locale = bsmf.MainFrame.currencymap.get(c);
         }
         if (locale == null || currency.equals("USD")) { // had to add USD override...currencymap was pulling locale with US prepended to $ sign

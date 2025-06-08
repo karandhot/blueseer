@@ -538,7 +538,8 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
            ddshipstate.setSelectedIndex(0); 
         }
         ddstatus.setSelectedItem(getGlobalProgTag("open"));
-               
+         
+        
         
         isLoad = false;
         
@@ -1612,7 +1613,7 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
     }
     
-     public void retotal() {
+    public void retotal() {
         
         double dol = 0;
         double newdisc = 0;
@@ -1643,6 +1644,114 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
          
     }
    
+    public void loadShipToAddress() {
+        try {
+                        Connection con = null;
+                        if (ds != null) {
+                          con = ds.getConnection();
+                        } else {
+                          con = DriverManager.getConnection(url + db, user, pass);  
+                        }
+                        Statement st = con.createStatement();
+                        ResultSet res = null;
+                        try {
+                            
+                            if (ddship.getSelectedItem().toString().isBlank()) {
+                              res = st.executeQuery("select * from site_mstr where site_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + ";");
+                            while (res.next()) {
+                                tbshipcode.setText(res.getString("site_site"));
+                                tbshipname.setText(res.getString("site_desc"));
+                                tbshipline1.setText(res.getString("site_line1"));
+                                tbshipline2.setText(res.getString("site_line2"));
+                                tbshipcity.setText(res.getString("site_city"));
+                                tbshipzip.setText(res.getString("site_zip"));
+                                tbshipcontact.setText(res.getString("site_sqename"));
+                                tbshipphone.setText(res.getString("site_phone"));
+                                tbshipemail.setText(res.getString("site_sqeemail"));
+                                ddshipstate.setSelectedItem(res.getString("site_state"));
+                                ddshipcountry.setSelectedItem(res.getString("site_country"));
+                                lbshipto.setText("ship to site");
+                            }  
+                            } else {
+                            res = st.executeQuery("select * from vds_det where vds_code = " + "'" + ddvend.getSelectedItem().toString() + "'" +
+                                    " AND vds_shipto = " + "'" + ddship.getSelectedItem().toString() + "'" + ";");
+                            while (res.next()) {
+                                tbshipcode.setText(res.getString("vds_shipto"));
+                                tbshipname.setText(res.getString("vds_name"));
+                                tbshipline1.setText(res.getString("vds_line1"));
+                                tbshipline2.setText(res.getString("vds_line2"));
+                                tbshipcity.setText(res.getString("vds_city"));
+                                tbshipzip.setText(res.getString("vds_zip"));
+                                tbshipcontact.setText(res.getString("vds_contact"));
+                                tbshipphone.setText(res.getString("vds_phone"));
+                                tbshipemail.setText(res.getString("vds_email"));
+                                ddshipstate.setSelectedItem(res.getString("vds_state"));
+                                ddshipcountry.setSelectedItem(res.getString("vds_country"));
+                                lbshipto.setText(res.getString("vds_name"));
+                            }
+                        }
+                        dditemship.setSelectedItem(ddship.getSelectedItem().toString());
+                        } catch (SQLException s) {
+                            MainFrame.bslog(s);
+                        } finally {
+                            if (res != null) {
+                                res.close();
+                            }
+                            if (st != null) {
+                                st.close();
+                            }
+                            con.close();
+                        }
+                    } catch (Exception e) {
+                        MainFrame.bslog(e);
+                    }
+    }
+   
+    public void loadShipToAddressInitialize() {
+        try {
+                        Connection con = null;
+                        if (ds != null) {
+                          con = ds.getConnection();
+                        } else {
+                          con = DriverManager.getConnection(url + db, user, pass);  
+                        }
+                        Statement st = con.createStatement();
+                        ResultSet res = null;
+                        try {
+                            
+                           
+                              res = st.executeQuery("select * from site_mstr where site_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + ";");
+                            while (res.next()) {
+                                tbshipcode.setText(res.getString("site_site"));
+                                tbshipname.setText(res.getString("site_desc"));
+                                tbshipline1.setText(res.getString("site_line1"));
+                                tbshipline2.setText(res.getString("site_line2"));
+                                tbshipcity.setText(res.getString("site_city"));
+                                tbshipzip.setText(res.getString("site_zip"));
+                                tbshipcontact.setText(res.getString("site_sqename"));
+                                tbshipphone.setText(res.getString("site_phone"));
+                                tbshipemail.setText(res.getString("site_sqeemail"));
+                                ddshipstate.setSelectedItem(res.getString("site_state"));
+                                ddshipcountry.setSelectedItem(res.getString("site_country"));
+                                lbshipto.setText("ship to site");
+                            }  
+                           
+                        dditemship.setSelectedItem(tbshipcode.getText());
+                        } catch (SQLException s) {
+                            MainFrame.bslog(s);
+                        } finally {
+                            if (res != null) {
+                                res.close();
+                            }
+                            if (st != null) {
+                                st.close();
+                            }
+                            con.close();
+                        }
+                    } catch (Exception e) {
+                        MainFrame.bslog(e);
+                    }
+    }
     
     
     
@@ -3015,6 +3124,7 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
                 jTabbedPane1.setEnabledAt(1, true);
                 jTabbedPane1.setEnabledAt(2, true);
                 vendChangeEvent(ddvend.getSelectedItem().toString());
+                loadShipToAddressInitialize();
             } // if ddvend has a list
         }
     }//GEN-LAST:event_ddvendActionPerformed
@@ -3040,68 +3150,9 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_ddtypeActionPerformed
 
     private void ddshipActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddshipActionPerformed
-        if (! isLoad && ddship.getItemCount() > 0)  {
+        if (! isLoad && ddsite.getSelectedItem() != null && ddvend.getSelectedItem() != null && ddship.getItemCount() > 0)  {
             clearShipAddress();
-                    try {
-                        Connection con = null;
-                        if (ds != null) {
-                          con = ds.getConnection();
-                        } else {
-                          con = DriverManager.getConnection(url + db, user, pass);  
-                        }
-                        Statement st = con.createStatement();
-                        ResultSet res = null;
-                        try {
-                            
-                            if (ddship.getSelectedItem().toString().isBlank()) {
-                              res = st.executeQuery("select * from site_mstr where site_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + ";");
-                            while (res.next()) {
-                                tbshipcode.setText(res.getString("site_site"));
-                                tbshipname.setText(res.getString("site_desc"));
-                                tbshipline1.setText(res.getString("site_line1"));
-                                tbshipline2.setText(res.getString("site_line2"));
-                                tbshipcity.setText(res.getString("site_city"));
-                                tbshipzip.setText(res.getString("site_zip"));
-                                tbshipcontact.setText(res.getString("site_sqename"));
-                                tbshipphone.setText(res.getString("site_phone"));
-                                tbshipemail.setText(res.getString("site_sqeemail"));
-                                ddshipstate.setSelectedItem(res.getString("site_state"));
-                                ddshipcountry.setSelectedItem(res.getString("site_country"));
-                                lbshipto.setText("ship to site");
-                            }  
-                            } else {
-                            res = st.executeQuery("select * from vds_det where vds_code = " + "'" + ddvend.getSelectedItem().toString() + "'" +
-                                    " AND vds_shipto = " + "'" + ddship.getSelectedItem().toString() + "'" + ";");
-                            while (res.next()) {
-                                tbshipcode.setText(res.getString("vds_shipto"));
-                                tbshipname.setText(res.getString("vds_name"));
-                                tbshipline1.setText(res.getString("vds_line1"));
-                                tbshipline2.setText(res.getString("vds_line2"));
-                                tbshipcity.setText(res.getString("vds_city"));
-                                tbshipzip.setText(res.getString("vds_zip"));
-                                tbshipcontact.setText(res.getString("vds_contact"));
-                                tbshipphone.setText(res.getString("vds_phone"));
-                                tbshipemail.setText(res.getString("vds_email"));
-                                ddshipstate.setSelectedItem(res.getString("vds_state"));
-                                ddshipcountry.setSelectedItem(res.getString("vds_country"));
-                                lbshipto.setText(res.getString("vds_name"));
-                            }
-                        }
-                        dditemship.setSelectedItem(ddship.getSelectedItem().toString());
-                        } catch (SQLException s) {
-                            MainFrame.bslog(s);
-                        } finally {
-                            if (res != null) {
-                                res.close();
-                            }
-                            if (st != null) {
-                                st.close();
-                            }
-                            con.close();
-                        }
-                    } catch (Exception e) {
-                        MainFrame.bslog(e);
-                    }
+            loadShipToAddress();                    
         }
     }//GEN-LAST:event_ddshipActionPerformed
 

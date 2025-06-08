@@ -314,7 +314,8 @@ public class CFOBrowse extends javax.swing.JPanel {
         java.util.Date fromdate = cal.getTime();
         
       //  dcfrom.setDate(firstday);
-        dcdate.setDate(fromdate);
+        dcfromdate.setDate(fromdate);
+        dctodate.setDate(now);
         
         fc = getCFOCtrl(null);
        // note:  fc.frtc_function() = 1 for Trucking POV...and 0 for Customer POV
@@ -422,10 +423,12 @@ public class CFOBrowse extends javax.swing.JPanel {
         jLabel6 = new javax.swing.JLabel();
         ddstatus = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
-        dcdate = new com.toedter.calendar.JDateChooser();
+        dcfromdate = new com.toedter.calendar.JDateChooser();
         dddatetype = new javax.swing.JComboBox<>();
         jLabel2 = new javax.swing.JLabel();
         tbcustfonbr = new javax.swing.JTextField();
+        dctodate = new com.toedter.calendar.JDateChooser();
+        jLabel4 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         lbllines = new javax.swing.JLabel();
@@ -513,16 +516,20 @@ public class CFOBrowse extends javax.swing.JPanel {
         jLabel3.setText("Date Type");
         jLabel3.setName("lbltopo"); // NOI18N
 
-        jLabel6.setText("Date");
+        jLabel6.setText("From Date");
         jLabel6.setName("lblfrompo"); // NOI18N
 
         jLabel1.setText("Status");
 
-        dcdate.setDateFormatString("yyyy-MM-dd");
+        dcfromdate.setDateFormatString("yyyy-MM-dd");
 
         dddatetype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Create Date", "Pickup Date" }));
 
         jLabel2.setText("Cust Order Number");
+
+        dctodate.setDateFormatString("yyyy-MM-dd");
+
+        jLabel4.setText("To Date");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -530,43 +537,52 @@ public class CFOBrowse extends javax.swing.JPanel {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel6)
-                    .addComponent(jLabel3))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(jLabel3)
+                        .addComponent(jLabel4))
+                    .addComponent(jLabel6))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(dcdate, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(dcfromdate, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
+                    .addComponent(dctodate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(dddatetype, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(tokeypartner, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(fromkeypartner, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addComponent(fromkeypartner)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(ddcustfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(ddcustto, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                                .addComponent(tokeypartner)
+                                .addGap(121, 121, 121))
+                            .addComponent(ddcustto, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel5)
-                    .addComponent(jLabel1))
-                .addGap(4, 4, 4)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(4, 4, 4)
+                        .addComponent(ddstatus, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(54, 54, 54)
-                        .addComponent(btRun)
-                        .addGap(18, 18, 18)
-                        .addComponent(btdetail))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(ddstatus, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tbcustfonbr, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                        .addComponent(tbcustfonbr, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addGap(66, 66, 66)
+                        .addComponent(btRun)
+                        .addGap(18, 18, 18)
+                        .addComponent(btdetail)
+                        .addGap(50, 50, 50))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -580,20 +596,25 @@ public class CFOBrowse extends javax.swing.JPanel {
                         .addComponent(btdetail)
                         .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel5))
-                    .addComponent(dcdate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel6))
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jLabel6)
+                        .addComponent(dcfromdate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(tokeypartner)
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(ddcustto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel3)
                         .addComponent(ddstatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel1)
-                        .addComponent(dddatetype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel2)
-                        .addComponent(tbcustfonbr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(tbcustfonbr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(dctodate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3)
+                    .addComponent(dddatetype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(12, Short.MAX_VALUE))
         );
 
         jLabel8.setText("Total Qty");
@@ -731,7 +752,11 @@ try {
                      tc.setCellRenderer(new CFOBrowse.SomeRenderer());
                  }
                  tablereport.getColumnModel().getColumn(11).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-              
+             
+                 
+                 
+            // if ordinary order date type
+            if (dddatetype.getSelectedItem().toString().equals("Create Date")) {
              if (! ddstatus.getSelectedItem().toString().isBlank()) {    
              
                 if (carrierPOV) { 
@@ -740,7 +765,8 @@ try {
                          " from cfo_mstr inner join cm_mstr on cm_code = cfo_cust where " +
                         " cfo_cust >= " + "'" + custfrom + "'" + " AND " +
                         " cfo_cust <= " + "'" + custto + "'" + " AND " +
-                        " cfo_orddate >= " + "'" + setDateDB(dcdate.getDate()) + "'" + " AND " + 
+                        " cfo_orddate >= " + "'" + setDateDB(dcfromdate.getDate()) + "'" + " AND " +
+                        " cfo_orddate <= " + "'" + setDateDB(dctodate.getDate()) + "'" + " AND " +         
                         " cfo_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +        
                         " cfo_orderstatus = " + "'" + ddstatus.getSelectedItem().toString() + "'" +
                         " order by cfo_nbr ;");
@@ -750,7 +776,8 @@ try {
                          " from cfo_mstr inner join car_mstr on car_id = cfo_cust where " +
                         " cfo_cust >= " + "'" + custfrom + "'" + " AND " +
                         " cfo_cust <= " + "'" + custto + "'" + " AND " +
-                        " cfo_orddate >= " + "'" + setDateDB(dcdate.getDate()) + "'" + " AND " + 
+                        " cfo_orddate >= " + "'" + setDateDB(dcfromdate.getDate()) + "'" + " AND " + 
+                        " cfo_orddate <= " + "'" + setDateDB(dctodate.getDate()) + "'" + " AND " +           
                         " cfo_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +        
                         " cfo_orderstatus = " + "'" + ddstatus.getSelectedItem().toString() + "'" +
                         " order by cfo_nbr ;");
@@ -763,7 +790,8 @@ try {
                          " from cfo_mstr inner join cm_mstr on cm_code = cfo_cust where " +
                         " cfo_cust >= " + "'" + custfrom + "'" + " AND " +
                         " cfo_cust <= " + "'" + custto + "'" + " AND " +
-                        " cfo_orddate >= " + "'" + setDateDB(dcdate.getDate()) + "'" + " AND " + 
+                        " cfo_orddate >= " + "'" + setDateDB(dcfromdate.getDate()) + "'" + " AND " + 
+                        " cfo_orddate <= " + "'" + setDateDB(dctodate.getDate()) + "'" + " AND " +          
                         " cfo_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
                         " order by cfo_nbr ;"); 
                 } else {
@@ -772,7 +800,8 @@ try {
                          " from cfo_mstr inner join car_mstr on car_id = cfo_cust where " +
                         " cfo_cust >= " + "'" + custfrom + "'" + " AND " +
                         " cfo_cust <= " + "'" + custto + "'" + " AND " +
-                       " cfo_orddate >= " + "'" + setDateDB(dcdate.getDate()) + "'" + " AND " + 
+                       " cfo_orddate >= " + "'" + setDateDB(dcfromdate.getDate()) + "'" + " AND " + 
+                       " cfo_orddate <= " + "'" + setDateDB(dctodate.getDate()) + "'" + " AND " +          
                         " cfo_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
                         " order by cfo_nbr ;"); 
                 }
@@ -821,7 +850,113 @@ try {
              
                    
                     } // while   
-                    
+            
+            } // if datetype = create date
+            
+            
+            // if pick date type
+            if (dddatetype.getSelectedItem().toString().equals("Pickup Date")) {
+             if (! ddstatus.getSelectedItem().toString().isBlank()) {    
+             
+                if (carrierPOV) { 
+                res = st.executeQuery("select cfo_custfonbr, cfo_nbr, cfo_revision, cfo_orderstatus, cfo_cust, cfo_orddate, " +
+                      " cfo_truckid, cfo_driver, cfo_ratetype, cfo_cost, cm_name " +
+                         " from cfo_mstr inner join cfo_det on cfod_nbr = cfo_nbr and cfod_revision = cfo_revision " +
+                        " inner join cm_mstr on cm_code = cfo_cust where " +
+                        " cfo_cust >= " + "'" + custfrom + "'" + " AND " +
+                        " cfo_cust <= " + "'" + custto + "'" + " AND " +
+                        " cfod_type = " + "'" + "Load" + "'" + " AND " +        
+                        " cfod_date >= " + "'" + setDateDB(dcfromdate.getDate()) + "'" + " AND " +
+                        " cfod_date <= " + "'" + setDateDB(dctodate.getDate()) + "'" + " AND " + 
+                        " cfo_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +        
+                        " cfo_orderstatus = " + "'" + ddstatus.getSelectedItem().toString() + "'" +
+                        " order by cfo_nbr ;");
+                } else {
+                    res = st.executeQuery("select cfo_custfonbr, cfo_nbr, cfo_revision, cfo_orderstatus, cfo_cust, cfo_orddate, " +
+                      " cfo_truckid, cfo_driver, cfo_ratetype, cfo_cost, car_name " +
+                         " from cfo_mstr inner join car_mstr on car_id = cfo_cust where " +
+                        " cfo_cust >= " + "'" + custfrom + "'" + " AND " +
+                        " cfo_cust <= " + "'" + custto + "'" + " AND " +
+                        " cfo_orddate >= " + "'" + setDateDB(dcfromdate.getDate()) + "'" + " AND " + 
+                        " cfo_orddate <= " + "'" + setDateDB(dctodate.getDate()) + "'" + " AND " +           
+                        " cfo_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +        
+                        " cfo_orderstatus = " + "'" + ddstatus.getSelectedItem().toString() + "'" +
+                        " order by cfo_nbr ;");
+                }
+             } else {
+                 
+                if (carrierPOV) {  
+                res = st.executeQuery("select cfo_custfonbr, cfo_nbr, cfo_revision, cfo_orderstatus, cfo_cust, cfo_orddate, " +
+                      " cfo_truckid, cfo_driver, cfo_ratetype, cfo_cost, cm_name " +
+                        " from cfo_mstr inner join cfo_det on cfod_nbr = cfo_nbr and cfod_revision = cfo_revision " +
+                        " inner join cm_mstr on cm_code = cfo_cust where " +
+                        " cfo_cust >= " + "'" + custfrom + "'" + " AND " +
+                        " cfo_cust <= " + "'" + custto + "'" + " AND " +
+                        " cfod_type = " + "'" + "Load" + "'" + " AND " +        
+                        " cfod_date >= " + "'" + setDateDB(dcfromdate.getDate()) + "'" + " AND " +
+                        " cfod_date <= " + "'" + setDateDB(dctodate.getDate()) + "'" + " AND " + 
+                        " cfo_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
+                        " order by cfo_nbr ;"); 
+                } else {
+                    res = st.executeQuery("select cfo_custfonbr, cfo_nbr, cfo_revision, cfo_orderstatus, cfo_cust, cfo_orddate, " +
+                      " cfo_truckid, cfo_driver, cfo_ratetype, cfo_cost, car_name " +
+                         " from cfo_mstr inner join car_mstr on car_id = cfo_cust where " +
+                        " cfo_cust >= " + "'" + custfrom + "'" + " AND " +
+                        " cfo_cust <= " + "'" + custto + "'" + " AND " +
+                       " cfo_orddate >= " + "'" + setDateDB(dcfromdate.getDate()) + "'" + " AND " + 
+                       " cfo_orddate <= " + "'" + setDateDB(dctodate.getDate()) + "'" + " AND " +          
+                        " cfo_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
+                        " order by cfo_nbr ;"); 
+                }
+             }
+                     
+                  
+                
+                       while (res.next()) {
+                       
+                        total = res.getDouble("cfo_cost"); 
+                        dol = dol + total;
+                        i++; 
+                        
+                        if (! tbcustfonbr.getText().isBlank() && ! res.getString("cfo_custfonbr").contains(tbcustfonbr.getText())) {
+                            continue;
+                        }
+                        
+                        if (carrierPOV) {  
+                        mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, BlueSeerUtils.clickbasket, 
+                                res.getString("cfo_nbr"),
+                                res.getString("cfo_revision"),
+                                res.getString("cfo_orderstatus"),
+                                res.getString("cfo_orddate"),
+                                res.getString("cm_name"),
+                                res.getString("cfo_custfonbr"),
+                                res.getString("cfo_truckid"),
+                                res.getString("cfo_driver"),
+                                res.getString("cfo_ratetype"),
+                                bsParseDouble(currformatDouble(total))
+                            });
+                        } else {
+                            mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, BlueSeerUtils.clickbasket, 
+                                res.getString("cfo_nbr"),
+                                res.getString("cfo_revision"),
+                                res.getString("cfo_orderstatus"),
+                                res.getString("cfo_orddate"),
+                                res.getString("car_name"),
+                                res.getString("cfo_custfonbr"),
+                                res.getString("cfo_truckid"),
+                                res.getString("cfo_driver"),
+                                res.getString("cfo_ratetype"),
+                                bsParseDouble(currformatDouble(total))
+                                });
+                        }
+               
+             
+                   
+                    } // while   
+            
+            } // if datetype = pick date
+                       
+                       
                  
                 lblamttot.setText(String.valueOf(currformatDouble(dol)));
                 lbllines.setText(bsNumber(i));
@@ -873,7 +1008,8 @@ try {
     private javax.swing.JLabel EndBal;
     private javax.swing.JButton btRun;
     private javax.swing.JButton btdetail;
-    private com.toedter.calendar.JDateChooser dcdate;
+    private com.toedter.calendar.JDateChooser dcfromdate;
+    private com.toedter.calendar.JDateChooser dctodate;
     private javax.swing.JComboBox ddcustfrom;
     private javax.swing.JComboBox ddcustto;
     private javax.swing.JComboBox<String> dddatetype;
@@ -884,6 +1020,7 @@ try {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel8;

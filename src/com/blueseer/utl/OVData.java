@@ -186,7 +186,7 @@ import org.json.JSONObject;
 public class OVData { 
     
    public static String major = "7.0"; 
-   public static String minor = "58";
+   public static String minor = "59";
     
    public static String[] states = {"AB","AL","AK","AZ","AR","BC","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","MB","ME","MD","MA","MI","MN","MS","MO","MT","NE","NL","NV","NH","NJ","NL","NM","NY","NC","ND","NS","OH","OK","ON","OR","PA","PE","QC","RI","SC","SD","SE","TN","TX","UT","VT","VA","WA","WV","WI","WY" };
    public static String[] countries = {"Afghanistan","Albania","Algeria","Andorra","Angola","Antigua & Deps","Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina","Burundi","Cambodia","Cameroon","Canada","Cape Verde","Central African Rep","Chad","Chile","China","Colombia","Comoros","Congo","Congo {Democratic Rep}","Costa Rica","Croatia","Cuba","Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","East Timor","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland {Republic}","Israel","Italy","Ivory Coast","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Korea North","Korea South","Kosovo","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Macedonia","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar, {Burma}","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","Norway","Oman","Pakistan","Palau","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russian Federation","Rwanda","St Kitts & Nevis","St Lucia","Saint Vincent & the Grenadines","Samoa","San Marino","Sao Tome & Principe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","Spain","Sri Lanka","Sudan","Suriname","Swaziland","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Togo","Tonga","Trinidad & Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom", "USA","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe" }; 
@@ -18110,10 +18110,10 @@ return mystring;
                 double taxes = getPOTotalTax(po);
                 res = st.executeQuery("select po_vend, po_site, po_curr, " +
                         " vd_city, vd_state, vd_zip, vd_country, site_desc, site_line1, site_city, site_state, site_zip, site_country, " +
-                        " vds_name, vds_line1, vds_city, vds_state, vds_zip, vds_country " + 
+                        " poa_name, poa_line1, poa_city, poa_state, poa_zip, poa_country " + 
                         " from po_mstr " +
                         " inner join vd_mstr on vd_addr = po_vend " +
-                        " left outer join vds_det on vds_code = po_vend and vds_shipto = po_ship " +
+                        " inner join po_addr on poa_code = po_nbr" +
                         " inner join site_mstr on site_site = po_site " +
                         " where po_nbr = " + "'" + bsParseInt(po) + "'" + ";");
                        while (res.next()) {
@@ -18122,15 +18122,10 @@ return mystring;
                           currency = res.getString("po_curr");
                           site_csz = res.getString("site_city") + " " + res.getString("site_state") + " " + res.getString("site_zip") + " " + res.getString("site_country");
                           vend_csz = res.getString("vd_city") + " " + res.getString("vd_state") + " " + res.getString("vd_zip") + " " + res.getString("vd_country");
-                          if (res.getString("vds_city") == null || res.getString("vds_city").equals("NULL") || res.getString("vds_city").isBlank() ) {
-                             ship_csz = site_csz; 
-                             shipname = res.getString("site_desc");
-                             shipline1 = res.getString("site_line1");
-                          } else {
-                             ship_csz = res.getString(("vds_city")) + " " + res.getString(("vds_state")) + " " + res.getString(("vds_zip")) + " " + res.getString(("vds_country")); 
-                             shipname = res.getString("vds_name");
-                             shipline1 = res.getString("vds_line1");
-                          }
+                          ship_csz = res.getString("poa_city") + " " + res.getString("poa_state") + " " + res.getString("poa_zip") + " " + res.getString("poa_country");
+                          shipname = res.getString("poa_name");
+                          shipline1 = res.getString("poa_line1");
+                         
                           
                        }
                 
@@ -18144,7 +18139,7 @@ return mystring;
                  }
             
                                
-              
+               
                 String jasperfile = OVData.getDefaultPOPrintJasper(site);
                 if (isMultiShip) {
                    jasperfile = "po_generic_multidest.jasper";
@@ -18166,7 +18161,10 @@ return mystring;
                 hm.put("tac", tac_str);
                // res = st.executeQuery("select shd_id, sh_cust, shd_po, shd_item, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, cm_city, cm_state, cm_zip, concat(cm_city, \" \", cm_state, \" \", cm_zip) as st_citystatezip, site_desc from ship_det inner join ship_mstr on sh_id = shd_id inner join cm_mstr on cm_code = sh_cust inner join site_mstr on site_site = sh_site where shd_id = '1848' ");
                // JRResultSetDataSource jasperReports = new JRResultSetDataSource(res);
-                Path template = checkForCustomPath(getSystemJasperDirectory(), jasperfile);
+              
+               Path template = checkForCustomPath(getSystemJasperDirectory(), jasperfile);
+                
+                
                 JasperPrint jasperPrint = JasperFillManager.fillReport(template.toString(), hm, con );
                 //JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/poprt.pdf");
          
