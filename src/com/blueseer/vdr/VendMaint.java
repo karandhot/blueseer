@@ -317,6 +317,9 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void setComponentDefaultValues() {
        isLoad = true;
        
+       vdtype = "";
+       k = null;
+               
        jTabbedPane1.removeAll();
         jTabbedPane1.add("Main", mainPanel);
         jTabbedPane1.add("Locations", shiptoPanel);
