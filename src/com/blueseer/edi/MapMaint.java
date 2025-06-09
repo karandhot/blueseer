@@ -29,6 +29,9 @@ package com.blueseer.edi;
 
 import bsmf.MainFrame;
 import static bsmf.MainFrame.bslog;
+import static bsmf.MainFrame.db;
+import static bsmf.MainFrame.ds;
+import static bsmf.MainFrame.pass;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import java.awt.Color;
@@ -51,6 +54,8 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import static bsmf.MainFrame.tags;
+import static bsmf.MainFrame.url;
+import static bsmf.MainFrame.user;
 import static com.blueseer.adm.SystemControl.newFile;
 import com.blueseer.edi.EDI.AnnoDoc;
 import static com.blueseer.edi.EDI.createIMAP;
@@ -132,6 +137,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.sql.Connection;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -1104,7 +1110,11 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         
     public String[] updateRecord(String[] key) {
          saveFile();  // save source map file
-         String[] m = updateMapMstr(createRecord());
+         map_mstr mm = createRecord();
+         String[] m = updateMapMstr(mm);
+         
+         // also update edi_mstr for appropriate fields as the edi_mstr must stay commensurate with any map_mstr ancillary field updates
+         updateEDIMstr(mm);
          return m;
     }
     
@@ -1220,6 +1230,40 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         setAction(x.m()); 
     }
     
+    public void updateEDIMstr(map_mstr mm) {
+         try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            try {
+                    // NOTE:   cannot change edi_doc (it is a key in edi_mstr) ...if map_mstr has changed inbound doctype, then edi_mstr has to be recreated.
+                    st.executeUpdate("update edi_mstr set "
+                            + "edi_doctypeout = " + "'" + mm.map_outdoctype() + "'"  + ","
+                            + "edi_filetypeout = " + "'" + mm.map_outfiletype() + "'"  + ","   
+                            + "edi_filetype = " + "'" + mm.map_infiletype() + "'"  + ","         
+                            + "edi_ifs = " + "'" + mm.map_ifs() + "'" + ","
+                            + "edi_ofs = " + "'" + mm.map_ofs() + "'"
+                            + " where edi_map = " + "'" + mm.map_id() + "'"  
+                            + ";");                
+         
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+    }
     
     public ArrayList<String> extractImports() {
         ArrayList<String> s = new ArrayList<String>();
