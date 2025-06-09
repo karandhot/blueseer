@@ -3937,9 +3937,9 @@ public class EDI {
                 oids[h], // item
                 "", // itemdesc
                 "", // order   
-                "", // qty 
-                "", // pallets  
-                "", // weight   
+                "0", // qty 
+                "0", // pallets  
+                "0", // weight   
                 "", // ref   
                 "" // rmks  
                 );
