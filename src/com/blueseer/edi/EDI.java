@@ -3928,7 +3928,7 @@ public class EDI {
                 list.add(y);
                 
                 // create OID loop cfo_item table info here
-                if (e.getDetOIDItems(j).isBlank()) {
+                if (! e.getDetOIDItems(j).isBlank()) {
                     String[] oids_items = e.getDetOIDItems(j).split(":",-1);
                     String[] oids_order = e.getDetOIDOrder(j).split(":",-1);
                     String[] oids_ref = e.getDetOIDRef(j).split(":",-1);
