@@ -3922,30 +3922,35 @@ public class EDI {
                 time2, // time2
                 e.getDetTimeZone2(j), // timezone2
                 (e.getDetRate(j).isBlank() ? "0" : e.getDetRate(j).replace(defaultDecimalSeparator, '.') ), // rate 
-                (e.getDetMiles(j).isBlank() ? "0" : e.getDetMiles(j).replace(defaultDecimalSeparator, '.')) // miles
+                (e.getDetMiles(j).isBlank() ? "0" : e.getDetMiles(j).replace(defaultDecimalSeparator, '.')), // miles
+                (e.getDetVolume(j).isBlank() ? "0" : e.getDetVolume(j).replace(defaultDecimalSeparator, '.')) // volume
                 );  
                 list.add(y);
                 
                 // create OID loop cfo_item table info here
-                String[] oids = e.getDetOIDItems(j).split(":",-1);
-                for (int h = 0; h < oids.length; h++) {
-                frtData.cfo_item w = new frtData.cfo_item(null, 
-                cfokey,
-                revision, // revision 
-                String.valueOf(j + 1),  //stopline
-                String.valueOf(j + 1), // itemline
-                oids[h], // item
-                "", // itemdesc
-                "", // order   
-                "0", // qty 
-                "0", // pallets  
-                "0", // weight   
-                "", // ref   
-                "" // rmks  
-                );
-                OIDlist.add(w);
-                } // end of OID
-                        
+                if (e.getDetOIDItems(j).isBlank()) {
+                    String[] oids_items = e.getDetOIDItems(j).split(":",-1);
+                    String[] oids_order = e.getDetOIDOrder(j).split(":",-1);
+                    String[] oids_ref = e.getDetOIDRef(j).split(":",-1);
+                    String[] oids_qty = e.getDetOIDQty(j).split(":",-1);
+                    for (int h = 0; h < oids_items.length; h++) {
+                    frtData.cfo_item w = new frtData.cfo_item(null, 
+                    cfokey,
+                    revision, // revision 
+                    String.valueOf(j + 1),  //stopline
+                    String.valueOf(j + 1), // itemline
+                    oids_items[h], // item
+                    "", // itemdesc
+                    oids_order[h], // order   
+                    (oids_qty[h].isBlank() ? "0" : oids_qty[h]), // qty 
+                    "0", // pallets  
+                    "0", // weight   
+                    oids_ref[h], // ref   
+                    "" // rmks  
+                    );
+                    OIDlist.add(w);
+                    } // end of OID
+                } // if any OIDitems       
                } // for each det
             
             if (m[0].isBlank()) { // if not error
@@ -7917,7 +7922,7 @@ public class EDI {
     
     // Detail fields     
     public ArrayList<String[]> detailArray = new ArrayList<String[]>();
-    public int DetFieldsCount204i = 39;
+    public int DetFieldsCount204i = 40;
     public String[] initDetailArray(String[] a) {
         for (int i = 0; i < a.length; i++) {
             a[i] = "";
@@ -8062,6 +8067,9 @@ public class EDI {
         public void setDetOIDRef(int i, String v) {
            this.detailArray.get(i)[38] = v;
         }
+        public void setDetVolume(int i, String v) {
+           this.detailArray.get(i)[39] = v;
+        }
         
        // getters for detail
          public String getDetLine(int i) {
@@ -8181,7 +8189,10 @@ public class EDI {
         public String getDetOIDRef(int i) {
            return detailArray.get(i)[38];
         }
-                
+        public String getDetVolume(int i) {
+           return detailArray.get(i)[39];
+        }
+                 
 // header setters 
    
     

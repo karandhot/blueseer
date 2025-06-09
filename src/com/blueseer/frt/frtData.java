@@ -1551,8 +1551,8 @@ public class frtData {
                         + "cfod_reference, cfod_ordnum, cfod_weight, cfod_pallet, cfod_ladingqty, cfod_hazmat, "
                         + "cfod_datecode, cfod_datetype, cfod_date, cfod_datecode2, cfod_datetype2, cfod_date2, "
                         + "cfod_timecode1, cfod_timetype1, cfod_time1, cfod_timezone1, cfod_timecode2, cfod_timetype2, cfod_time2, cfod_timezone2, "
-                        + "cfod_rate, cfod_miles ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                        + "cfod_rate, cfod_miles, cfod_volume ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
        
           ps = con.prepareStatement(sqlSelect); 
           ps.setString(1, x.cfod_nbr);
@@ -1602,6 +1602,7 @@ public class frtData {
             ps.setString(39, x.cfod_timezone2);            
             ps.setString(40, x.cfod_rate);
             ps.setString(41, x.cfod_miles);
+            ps.setString(42, x.cfod_volume);
             rows = ps.executeUpdate();
             } 
             return rows;
@@ -1755,8 +1756,8 @@ public class frtData {
                         + "cfod_reference, cfod_ordnum, cfod_weight, cfod_pallet, cfod_ladingqty, cfod_hazmat, "
                         + "cfod_datecode, cfod_datetype, cfod_date, cfod_datecode2, cfod_datetype2, cfod_date2, "
                         + "cfod_timecode1, cfod_timetype1, cfod_time1, cfod_timezone1, cfod_timecode2, cfod_timetype2, cfod_time2, cfod_timezone2, "
-                        + "cfod_rate, cfod_miles ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                        + "cfod_rate, cfod_miles, cfod_volume ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
         String sqlUpdate = "update cfo_det set cfod_seq = ?, cfod_type = ?, " 
                         + "cfod_code = ?, cfod_name = ?, cfod_line1 = ?, cfod_line2 = ?, cfod_line3 = ?, " 
                         + "cfod_city = ?, cfod_state = ?, cfod_zip = ?, cfod_country = ?, cfod_phone = ?, " 
@@ -1765,7 +1766,7 @@ public class frtData {
                         + "cfod_datecode = ?, cfod_datetype = ?, cfod_date = ?, cfod_datecode2 = ?, cfod_datetype2 = ?, cfod_date2 = ?, "
                         + "cfod_timecode1 = ?, cfod_timetype1 = ?, cfod_time1 = ?, cfod_timezone1 = ?, " 
                         + "cfod_timecode2 = ?, cfod_timetype2 = ?, cfod_time2 = ?, cfod_timezone2 = ?, "
-                        + "cfod_rate = ?, cfod_miles = ? "
+                        + "cfod_rate = ?, cfod_miles = ?, cfod_volume = ? "
                         + " where cfod_nbr = ? and cfod_revision = ? and cfod_stopline = ?; ";
        
           ps = con.prepareStatement(sqlSelect); 
@@ -1816,12 +1817,13 @@ public class frtData {
             ps.setString(39, x.cfod_timezone2);            
             ps.setString(40, x.cfod_rate);
             ps.setString(41, x.cfod_miles);
+            ps.setString(42, x.cfod_volume);
             rows = ps.executeUpdate();
             } else {
             ps = con.prepareStatement(sqlUpdate) ;    
-            ps.setString(39, x.cfod_nbr);
-            ps.setString(40, x.cfod_revision);
-            ps.setString(41, x.cfod_stopline);
+            ps.setString(40, x.cfod_nbr);
+            ps.setString(41, x.cfod_revision);
+            ps.setString(42, x.cfod_stopline);
             ps.setString(1, x.cfod_seq);
             ps.setString(2, x.cfod_type);
             ps.setString(3, x.cfod_code);
@@ -1860,6 +1862,7 @@ public class frtData {
             ps.setString(36, x.cfod_timezone2);            
             ps.setString(37, x.cfod_rate);
             ps.setString(38, x.cfod_miles);
+            ps.setString(39, x.cfod_volume);
             rows = ps.executeUpdate();
             }
             return rows;
@@ -2023,7 +2026,8 @@ public class frtData {
                         res.getString("cfod_time2"),
                         res.getString("cfod_timezone2"),
                         res.getString("cfod_rate"),
-                        res.getString("cfod_miles"));
+                        res.getString("cfod_miles"),
+                        res.getString("cfod_volume"));
                         list.add(r);
                     }
                 }
@@ -2491,13 +2495,13 @@ public class frtData {
         String cfod_weight, String cfod_pallet, String cfod_ladingqty, String cfod_hazmat,
         String cfod_datecode, String cfod_datetype, String cfod_date,  String cfod_datecode2, String cfod_datetype2, String cfod_date2,
         String cfod_timecode1, String cfod_timetype1, String cfod_time1, String cfod_timezone1, 
-        String cfod_timecode2, String cfod_timetype2, String cfod_time2, String cfod_timezone2, String cfod_rate, String cfod_miles) {
+        String cfod_timecode2, String cfod_timetype2, String cfod_time2, String cfod_timezone2, String cfod_rate, String cfod_miles, String cfod_volume) {
         public cfo_det(String[] m) {
             this(m,"","","","","","","","","","",
                    "","","","","","","","","","",
                    "","","","","","","","","","",
                    "","","","","","","","","","",
-                   "");
+                   "", "");
         }
     }
    

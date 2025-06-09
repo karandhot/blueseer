@@ -1791,7 +1791,8 @@ CREATE TABLE IF NOT EXISTS `cfo_det` (
   `cfod_time2` varchar(8)  NOT NULL DEFAULT '',
   `cfod_timezone2` varchar(10)  NOT NULL DEFAULT '',
   `cfod_rate` decimal(14,5)  NOT NULL DEFAULT '0',
-  `cfod_miles` decimal(14,2)  NOT NULL DEFAULT '0'
+  `cfod_miles` decimal(14,2)  NOT NULL DEFAULT '0',
+  `cfod_volume` decimal(14,2)  NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `cfo_item` (
   `cfoi_nbr` varchar(8) NOT NULL  DEFAULT '',
