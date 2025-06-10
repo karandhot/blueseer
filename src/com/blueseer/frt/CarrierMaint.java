@@ -297,6 +297,18 @@ public class CarrierMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddcountry.insertItemAt("", 0);
         ddcountry.setSelectedItem("USA");
         
+        tbusdot.setText("");
+        tbmc.setText("");
+        tbein.setText("");
+        tbscac.setText("");
+        tbacct.setText("");
+        tbname.setText("");
+        tbline1.setText("");
+        tbcity.setText("");
+        tbzip.setText("");
+        tbphone.setText("");
+        tbemail.setText("");
+        tanotes.setText("");
         tbminmiles.setText("0");
         tbmaxmiles.setText("0");
         tbdhmiles.setText("0");
@@ -345,15 +357,21 @@ public class CarrierMaint extends javax.swing.JPanel implements IBlueSeerT {
         if (tbkey.getText().length() > fc || tbkey.getText().isEmpty()) {
             bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
             tbkey.requestFocus();
+            tbkey.setBackground(Color.yellow);
             return false;
-        }     
+        } else {
+            tbkey.setBackground(null);
+        }    
          
         fc = checkLength(f,"car_desc");
         if (tbdesc.getText().length() > fc ) {
             bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
             tbdesc.requestFocus();
+            tbdesc.setBackground(Color.yellow);
             return false;
-        } 
+        } else {
+            tbdesc.setBackground(null);
+        }
                
         return true;
     }
@@ -628,7 +646,7 @@ public class CarrierMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel15 = new javax.swing.JLabel();
         tbrate = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        tanotes = new javax.swing.JTextArea();
         jLabel16 = new javax.swing.JLabel();
         jLabel17 = new javax.swing.JLabel();
         tbtractors = new javax.swing.JTextField();
@@ -901,9 +919,9 @@ public class CarrierMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        tanotes.setColumns(20);
+        tanotes.setRows(5);
+        jScrollPane1.setViewportView(tanotes);
 
         jLabel16.setText("Rate Per Mile");
 
@@ -1187,7 +1205,7 @@ public class CarrierMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextArea tanotes;
     private javax.swing.JTextField tbacct;
     private javax.swing.JTextField tbcity;
     private javax.swing.JTextField tbdesc;
