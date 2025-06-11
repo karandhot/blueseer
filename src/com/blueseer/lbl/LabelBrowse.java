@@ -91,7 +91,8 @@ public class LabelBrowse extends javax.swing.JPanel {
      javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{
                             getGlobalColumnTag("detail"), 
-                            getGlobalColumnTag("number"), 
+                            getGlobalColumnTag("serial"), 
+                            getGlobalColumnTag("value"), 
                             getGlobalColumnTag("item"), 
                             getGlobalColumnTag("quantity"), 
                             getGlobalColumnTag("customer"), 
@@ -111,9 +112,9 @@ public class LabelBrowse extends javax.swing.JPanel {
                       
                       @Override
                       public boolean isCellEditable(int row, int column) {
-                            return false;
-                            //Only the first column
-                            // return column == 1;
+                            return true;
+                            //return false;
+                            // return column == 3;
                       }
                         };
     
@@ -692,6 +693,7 @@ try {
                         mymodel.addRow(new Object[]{
                                 BlueSeerUtils.clickbasket,
                                 res.getString("lbl_id"),
+                                res.getString("lbl_id_str"),
                                 res.getString("lbl_item"),
                                 res.getString("lbl_qty"),
                                 res.getString("lbl_po"),

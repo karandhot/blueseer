@@ -526,7 +526,8 @@ String carrier = "";
                  OVData.getDefaultSite(), 
                  "", // loc
                  "CONT",
-                 "h"
+                 "h",
+                 shipto
                 );
         return x;
     }

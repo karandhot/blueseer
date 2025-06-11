@@ -491,7 +491,8 @@ String carrier = "";
                  OVData.getDefaultSite(), 
                  "", 
                  "CONT",
-                 "flat"
+                 "flat",
+                 shipto
                 );
         return x;
     }

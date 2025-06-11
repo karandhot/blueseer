@@ -28,6 +28,7 @@ package com.blueseer.shp;
 
 import bsmf.MainFrame;
 import static bsmf.MainFrame.db;
+import static bsmf.MainFrame.defaultDecimalSeparator;
 import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
 import com.blueseer.utl.OVData;
@@ -51,19 +52,27 @@ import net.sf.jasperreports.engine.JasperPrint;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.ctr.cusData.getCustInfo;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.getWHLOCfromSerialNumber;
 import com.blueseer.inv.invData.inv_ctrl;
 import static com.blueseer.lbl.lblData.getLabelMstrByStrID;
+import static com.blueseer.lbl.lblData.getLabelStatus;
 import static com.blueseer.lbl.lblData.getLabelTableRecs;
 import com.blueseer.lbl.lblData.label_mstr;
+import static com.blueseer.lbl.lblData.updateLabelStatus;
+import static com.blueseer.ord.ordData.getOrderLineInfo;
 import com.blueseer.sch.schData;
 import static com.blueseer.sch.schData.getPlanDetHistory;
 import com.blueseer.sch.schData.plan_mstr;
+import static com.blueseer.shp.shpData.addShipperTransaction;
+import static com.blueseer.shp.shpData.confirmShipperTransaction;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import static com.blueseer.utl.OVData.getSysMetaValue;
 import static com.blueseer.utl.OVData.getpsmstrcompSerialized;
 import java.awt.Component;
@@ -91,23 +100,21 @@ public class ShipScanMaint extends javax.swing.JPanel {
 
  // global variable declarations
                 boolean isLoad = false;
-                String terms = "";
-                String aracct = "";
-                String arcc = "";
-                String arbank = "";
-                double actamt = 0.00;
-                double baseamt = 0.00;
-                double rcvamt = 0.00;
-                String curr = "";
-                String basecurr = "";
+                
                 int j = 0;
                 HashSet<String> assignedlabels = new HashSet<String>();
                 HashSet<String> assigneditems = new HashSet<String>();
+                String firstshipto = "";
+                String firstbillto = "";
+                String[] custinfo = null;
+                String shipper = "";
     
     // global datatablemodel declarations 
     javax.swing.table.DefaultTableModel serialmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
             new String[]{
                 getGlobalColumnTag("label"),
+                getGlobalColumnTag("customer"),
+                getGlobalColumnTag("shipto"),
                 getGlobalColumnTag("order"),
                 getGlobalColumnTag("line"),
                 getGlobalColumnTag("item"), 
@@ -118,7 +125,8 @@ public class ShipScanMaint extends javax.swing.JPanel {
                 getGlobalColumnTag("qty"),
                 getGlobalColumnTag("uom"),
                 getGlobalColumnTag("price"),
-                getGlobalColumnTag("po")});
+                getGlobalColumnTag("po"),
+                getGlobalColumnTag("site")});
     
     javax.swing.table.DefaultTableModel itemmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
             new String[]{
@@ -172,7 +180,10 @@ public class ShipScanMaint extends javax.swing.JPanel {
             String[] message = get();
            
             BlueSeerUtils.endTask(message);
-            initvars(null);  
+            if (message[0].equals("0")) {
+            bsmf.MainFrame.show("Successfully created shipper: " + shipper);
+            }
+            initvars(null);
             } catch (Exception e) {
                 MainFrame.bslog(e);
             } 
@@ -241,8 +252,14 @@ public class ShipScanMaint extends javax.swing.JPanel {
       itemmodel.setRowCount(0);
       itemdet.setModel(itemmodel);
       itemdet.getTableHeader().setReorderingAllowed(false);
+      firstshipto = "";
+      custinfo = null; 
        
-       
+      assigneditems.clear();
+      assignedlabels.clear();
+      lblmessage.setText("");
+      shipper = "";
+      
       btcommit.setEnabled(false);
         
       tbscan.requestFocusInWindow();
@@ -255,8 +272,8 @@ public class ShipScanMaint extends javax.swing.JPanel {
         for (String s : assigneditems) {
           qty = 0;
           for (int j = 0; j < serialdet.getRowCount(); j++) {
-            if (serialdet.getModel().getValueAt(j, 3).equals(s)) {
-                qty += bsParseDouble(serialdet.getModel().getValueAt(j, 8).toString());
+            if (serialdet.getModel().getValueAt(j, 5).equals(s)) {
+                qty += bsParseDouble(serialdet.getModel().getValueAt(j, 10).toString());
             }             
           }
           for (int j = 0; j < itemdet.getRowCount(); j++) {
@@ -277,6 +294,75 @@ public class ShipScanMaint extends javax.swing.JPanel {
         return x;
     }
     
+    public shpData.ship_mstr createRecord(String shipper) {
+                
+        java.util.Date now = new java.util.Date();
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+       
+        // get header info from first record in serialdet table
+        shpData.ship_mstr x = new shpData.ship_mstr(null, 
+                shipper,
+                serialdet.getValueAt(0, 1).toString(),
+                serialdet.getValueAt(0, 2).toString(),
+                0, // pallets
+                0, // boxes
+                "", // shipvia  
+                setDateDB(now),
+                null, // po date
+                "", // ref
+                "", // po number
+                "", // remarks
+                bsmf.MainFrame.userid,
+                serialdet.getValueAt(0,14).toString(),
+                custinfo[2], // currency
+                "", // wh
+                custinfo[4],  // terms
+                "", // taxcode
+                custinfo[0],  // aracct
+                custinfo[1],  // arcc
+                "S", // type
+                "", // sh_so 
+                serialdet.getValueAt(0,14).toString(),
+                "");
+                
+        return x;        
+    }
+    
+    public ArrayList<shpData.ship_det> createDetRecord(String shipper) {
+        ArrayList<shpData.ship_det> list = new ArrayList<shpData.ship_det>();
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        
+        // line, item, order, orderline, po, qty, netprice, desc, wh, loc, disc, listprice, tax, cont, serial
+        for (int j = 0; j < serialdet.getRowCount(); j++) { 
+            shpData.ship_det x = new shpData.ship_det(null, 
+                shipper, // shipper
+                j + 1, //shline
+                serialdet.getValueAt(j, 5).toString(), // item
+                serialdet.getValueAt(j, 7).toString(), // custimtem
+                serialdet.getValueAt(j, 3).toString(),  // order
+                bsParseInt(serialdet.getValueAt(j, 4).toString()), //soline    
+                setDateDB(new java.util.Date()),
+                serialdet.getValueAt(j, 13).toString(), // po
+                bsParseDouble(serialdet.getValueAt(j, 10).toString().replace(defaultDecimalSeparator, '.')), // qty
+                serialdet.getValueAt(j, 11).toString(), //uom
+                "USD", //currency
+                bsParseDouble(serialdet.getValueAt(j, 12).toString().replace(defaultDecimalSeparator, '.')), // net price
+                0, // disc
+                bsParseDouble(serialdet.getValueAt(j, 12).toString().replace(defaultDecimalSeparator, '.')), // list price
+                serialdet.getValueAt(j, 6).toString(), // desc
+                serialdet.getValueAt(j, 8).toString(), // wh
+                serialdet.getValueAt(j, 9).toString(), // loc
+                0, // taxamt
+                "0", // cont
+                "", // ref
+                serialdet.getValueAt(j, 0).toString(), // serial   
+                serialdet.getValueAt(j, 14).toString(),
+                "" // bom
+                );
+        list.add(x);
+        }      
+        return list;        
+    }
    
         
     public boolean isDuplicate(String serial_id_str) {
@@ -289,8 +375,15 @@ public class ShipScanMaint extends javax.swing.JPanel {
     }
     
     public String[] postShip() {
-        
-        return null;
+      int shipperid = OVData.getNextNbr("shipper");  
+      shipper = String.valueOf(shipperid);
+      String[] m = addShipperTransaction(createDetRecord(String.valueOf(shipperid)), createRecord(String.valueOf(shipperid)), null);
+        for (String label : assignedlabels) {
+            updateLabelStatus(label, "1");
+        }
+        shpData.updateShipperSAC(String.valueOf(shipperid));
+        confirmShipperTransaction("", String.valueOf(shipperid), new java.util.Date());
+        return m;
     }
     
     public void validateScan(String scan) {
@@ -304,26 +397,66 @@ public class ShipScanMaint extends javax.swing.JPanel {
         label_mstr label = getLabelMstrByStrID(scan);
         if (label.m()[0].equals("0")) {
             
-        
+            if (getLabelStatus(label.lbl_id()) > 0) {
+            tbscan.setText("");
+            lblmessage.setText("Label already scanned: " + scan);
+            lblmessage.setForeground(Color.red);
+            tbscan.requestFocusInWindow();
+            return;  
+            }
+            
+            if (firstshipto.isEmpty()) {
+                  firstshipto = label.lbl_shipto();
+                  custinfo = getCustInfo(label.lbl_billto());
+                  btcommit.setEnabled(true);
+            }
+            
+         //   bsmf.MainFrame.show("HERE:  " + firstshipto + "/" + label.lbl_shipto());
+            
+            if (! label.lbl_shipto().equals(firstshipto)) {
+                tbscan.setText("");
+                lblmessage.setText("ShipTo must be same as first label scanned: " + firstshipto);
+                lblmessage.setForeground(Color.red);
+                tbscan.requestFocusInWindow();
+                return;
+            }
+            
+            String[] orderlineinfo = getOrderLineInfo(label.lbl_order(), label.lbl_line());  //  item, desc, ordqty, uom, netprice
+            if (orderlineinfo == null) {
+                tbscan.setText("");
+                lblmessage.setText("cannot retrieve order line info: " + label.lbl_order() + "/" + label.lbl_line());
+                lblmessage.setForeground(Color.red);
+                tbscan.requestFocusInWindow();
+                return;
+            }
+            
             if (! isDuplicate(label.lbl_id_str())) {
                 serialmodel.addRow(new Object[] { 
                     label.lbl_id_str(), // serial
+                    label.lbl_billto(), // billto
+                    label.lbl_shipto(), // shipto
                     label.lbl_order(), // order
                     label.lbl_line(), // orderline
                     label.lbl_item(), // item
-                    label.lbl_item(), // desc
+                    orderlineinfo[1], // desc
                     label.lbl_custitem(), // custitem
                     "", // wh
                     label.lbl_loc(), // loc
                     label.lbl_qty(), // qty
-                    "", // uom
-                    "0.00", // price
-                    label.lbl_po() // po
-                    });
+                    orderlineinfo[3], // uom
+                    orderlineinfo[4], // price
+                    label.lbl_po(), // po
+                    label.lbl_site()});
 
                 if (! assigneditems.contains(label.lbl_item())) {
                   assigneditems.add(label.lbl_item());
                 }
+                
+                if (! assignedlabels.contains(label.lbl_id())) {
+                  assignedlabels.add(label.lbl_id());
+                }
+                
+                
 
                 sumQtyByItem();
 
@@ -584,7 +717,18 @@ public class ShipScanMaint extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btcommitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcommitActionPerformed
-       setPanelComponentState(this, false);
+        // aracct, arcc, currency, bank, terms, carrier, onhold, site, taxcode
+        if (custinfo == null) {
+            bsmf.MainFrame.show("missing data...unable to determine billto");
+            return;
+        }
+        
+        if (serialdet.getRowCount() < 1) {
+            bsmf.MainFrame.show("unable to create shipper...no rows in table");
+            return;
+        }
+        
+        setPanelComponentState(this, false);
         executeTask(BlueSeerUtils.dbaction.run, new String[]{""});
     }//GEN-LAST:event_btcommitActionPerformed
 

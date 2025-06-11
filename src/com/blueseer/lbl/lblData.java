@@ -116,8 +116,8 @@ public class lblData {
         String sqlInsert = "insert into label_mstr (lbl_id, lbl_item, lbl_custitem, lbl_id_str, lbl_conttype, lbl_name, lbl_qty, lbl_po, "
                         + "lbl_billto, lbl_order, lbl_line, lbl_ref, lbl_lot, lbl_parent, lbl_parent_str, "
                         + "lbl_addrcode, lbl_addrname, lbl_addr1, lbl_addr2, lbl_addrcity, lbl_addrstate, lbl_addrzip, lbl_addrcountry, "
-                        + "lbl_crt_date, lbl_ship_date, lbl_userid, lbl_printer, lbl_prog, lbl_site, lbl_loc, lbl_trantype, lbl_type)  " +
-                " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                        + "lbl_crt_date, lbl_ship_date, lbl_userid, lbl_printer, lbl_prog, lbl_site, lbl_loc, lbl_trantype, lbl_type, lbl_shipto)  " +
+                " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
           ps = con.prepareStatement(sqlSelect); 
           ps.setString(1, x.lbl_id);
           res = ps.executeQuery();
@@ -155,6 +155,7 @@ public class lblData {
             ps.setString(30, x.lbl_loc);
             ps.setString(31, x.lbl_trantype);
             ps.setString(32, x.lbl_type);
+            ps.setString(33, x.lbl_shipto);
             rows = ps.executeUpdate();   
             }
            return rows;
@@ -317,7 +318,8 @@ public class lblData {
                             res.getString("lbl_site"),
                             res.getString("lbl_loc"),
                             res.getString("lbl_trantype"),
-                            res.getString("lbl_type")
+                            res.getString("lbl_type"),
+                            res.getString("lbl_shipto")
                         );
                     }
                 }
@@ -375,7 +377,8 @@ public class lblData {
                             res.getString("lbl_site"),
                             res.getString("lbl_loc"),
                             res.getString("lbl_trantype"),
-                            res.getString("lbl_type")
+                            res.getString("lbl_type"),
+                            res.getString("lbl_shipto")
                         );
                     }
                 }
@@ -853,12 +856,12 @@ public class lblData {
         String lbl_addr1, String lbl_addr2, String lbl_addrcity, String lbl_addrstate, 
         String lbl_addrzip, String lbl_addrcountry, String lbl_crt_date, String lbl_ship_date, 
         String lbl_userid, String lbl_printer, String lbl_prog, String lbl_site, 
-        String lbl_loc, String lbl_trantype, String lbl_type) {
+        String lbl_loc, String lbl_trantype, String lbl_type, String lbl_shipto) {
         public label_mstr(String[]m) {
             this(m, "", "", "", "", "", "", "", "", "", "",
                     "", "", "", "", "", "", "", "", "", "",
                     "", "", "", "", "", "", "", "", "", "",
-                    "", "");
+                    "", "", "");
         }
     }
     

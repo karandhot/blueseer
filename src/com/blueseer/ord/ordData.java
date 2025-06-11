@@ -4343,8 +4343,8 @@ public class ordData {
              return item;
     }
     
-    public static String[] getOrderLineInfo(String order, String line) {
-        String[] x = null;  // returns item, desc, ordqty
+    public static double getNetPrice(String order, String line) {
+        double price = 0.00;
         try{
         Connection con = null;
         if (ds != null) {
@@ -4355,10 +4355,47 @@ public class ordData {
         Statement st = con.createStatement();
         ResultSet res = null;
             try{
-                res = st.executeQuery("select sod_item, sod_desc, sod_ord_qty from sod_det where sod_nbr = " + "'" + order + "'" + 
+                res = st.executeQuery("select sod_netprice from sod_det where sod_nbr = " + "'" + order + "'" + 
                         " and sod_line = " + "'" + line + "'" + ";");
                 while (res.next()) {
-                    x = new String[]{res.getString("sod_item"), res.getString("sod_desc"), String.valueOf(res.getDouble("sod_ord_qty"))};
+                    price = res.getDouble("sod_netprice");
+                }
+            }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+             return price;
+    }
+    
+    
+    public static String[] getOrderLineInfo(String order, String line) {
+        String[] x = null;  // returns item, desc, ordqty, uom, netprice
+        try{
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+            try{
+                res = st.executeQuery("select sod_item, sod_desc, sod_ord_qty, sod_uom, sod_netprice from sod_det where sod_nbr = " + "'" + order + "'" + 
+                        " and sod_line = " + "'" + line + "'" + ";");
+                while (res.next()) {
+                    x = new String[]{res.getString("sod_item"), 
+                        res.getString("sod_desc"), 
+                        res.getString("sod_ord_qty"),
+                        res.getString("sod_uom"),
+                        res.getString("sod_netprice")};
                 }
             }
             catch (SQLException s){

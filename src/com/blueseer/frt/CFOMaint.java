@@ -792,22 +792,41 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         if (tbkey.getText().length() > fc || tbkey.getText().isEmpty()) {
             bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
             tbkey.requestFocus();
+            tbkey.setBackground(Color.yellow);
             return false;
-        } 
+        } else {
+            tbkey.setBackground(null);
+        }
         
         fc = checkLength(f,"cfo_cust");
         if (ddcust.getSelectedItem().toString().length() > fc || ddcust.getSelectedItem().toString().isBlank()) {
             bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
             ddcust.requestFocus();
+            ddcust.setBackground(Color.yellow);
             return false;
-        } 
+        } else {
+            ddcust.setBackground(null);
+        }
+        
+        fc = checkLength(f,"cfo_custfonbr");
+        if (tbnumber.getText().length() > fc) {
+            bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
+            tbnumber.requestFocus();
+            tbnumber.setBackground(Color.yellow);
+            return false;
+        } else {
+            tbnumber.setBackground(null);
+        }
        
          
         fc = checkLength(f,"cfo_rmks");
         if (tbremarks.getText().length() > fc ) {
             bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
             tbremarks.requestFocus();
+            tbremarks.setBackground(Color.yellow);
             return false;
+        } else {
+            tbremarks.setBackground(null);
         } 
         
         if (orddet.getRowCount() == 0) {
@@ -817,6 +836,109 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                
         return true;
     }
+    
+    public boolean validateStopInput(dbaction x) {
+       
+               
+        Map<String,Integer> f = OVData.getTableInfo(new String[]{"cfo_det"});
+        int fc;
+
+        fc = checkLength(f,"cfod_name");
+        if (tbname.getText().length() > fc) {
+            bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
+            tbname.requestFocus();
+            tbname.setBackground(Color.yellow);
+            return false;
+        } else {
+            tbname.setBackground(null);
+        }
+        
+        fc = checkLength(f,"cfod_line1");
+        if (tbaddr1.getText().length() > fc) {
+            bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
+            tbaddr1.requestFocus();
+            tbaddr1.setBackground(Color.yellow);
+            return false;
+        } else {
+            tbaddr1.setBackground(null);
+        }
+        
+        fc = checkLength(f,"cfod_line2");
+        if (tbaddr2.getText().length() > fc) {
+            bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
+            tbaddr2.requestFocus();
+            tbaddr2.setBackground(Color.yellow);
+            return false;
+        } else {
+            tbaddr2.setBackground(null);
+        }
+        
+        fc = checkLength(f,"cfod_city");
+        if (tbcity.getText().length() > fc) {
+            bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
+            tbcity.requestFocus();
+            tbcity.setBackground(Color.yellow);
+            return false;
+        } else {
+            tbcity.setBackground(null);
+        }
+        
+        fc = checkLength(f,"cfod_zip");
+        if (tbzip.getText().length() > fc) {
+            bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
+            tbzip.requestFocus();
+            tbzip.setBackground(Color.yellow);
+            return false;
+        } else {
+            tbzip.setBackground(null);
+        }
+        
+        fc = checkLength(f,"cfod_email");
+        if (tbemail.getText().length() > fc) {
+            bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
+            tbemail.requestFocus();
+            tbemail.setBackground(Color.yellow);
+            return false;
+        } else {
+            tbemail.setBackground(null);
+        }
+        
+        fc = checkLength(f,"cfod_contact");
+        if (tbcontact.getText().length() > fc) {
+            bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
+            tbcontact.requestFocus();
+            tbcontact.setBackground(Color.yellow);
+            return false;
+        } else {
+            tbcontact.setBackground(null);
+        }
+        
+        fc = checkLength(f,"cfod_phone");
+        if (tbphone.getText().length() > fc) {
+            bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
+            tbphone.requestFocus();
+            tbphone.setBackground(Color.yellow);
+            return false;
+        } else {
+            tbphone.setBackground(null);
+        }
+        
+        fc = checkLength(f,"cfod_rmks");
+        if (tbremarks.getText().length() > fc) {
+            bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
+            tbremarks.requestFocus();
+            tbremarks.setBackground(Color.yellow);
+            return false;
+        } else {
+            tbremarks.setBackground(null);
+        }
+        
+        
+        
+               
+        return true;
+    }
+    
     
     public void initvars(String[] arg) {
        isLoad = true;
@@ -1826,6 +1948,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbstopordernbr.setEnabled(state);
         tbstoprate.setEnabled(state);
         tbstopmiles.setEnabled(state);
+        tbvolume.setEnabled(state);
         btdeleteitem.setEnabled(state);
         btadditem.setEnabled(state);
         
@@ -3499,6 +3622,10 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btaddstopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddstopActionPerformed
         
+        if (! validateStopInput(dbaction.add)) {
+           return;
+        }
+        
         String datestr = "0000-00-00";
         double weight = 0.00;
         double ladingqty = 0.00;
@@ -3645,9 +3772,9 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btaddstopActionPerformed
 
     private void btaddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddActionPerformed
-         if (! validateInput(dbaction.add)) {
+        if (! validateInput(dbaction.add)) {
            return;
-       }
+        }
         setPanelComponentState(this, false);
         executeTask(dbaction.add, new String[]{tbkey.getText(), ddrevision.getSelectedItem().toString()});
     }//GEN-LAST:event_btaddActionPerformed
@@ -4369,7 +4496,8 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
             tbtime2.getText(), // time2
             ddtimezone.getSelectedItem().toString(), // timezone2
             tbstoprate.getText().isBlank() ? "0" : tbstoprate.getText(),
-            tbstopmiles.getText().isBlank() ? "0" : tbstopmiles.getText()
+            tbstopmiles.getText().isBlank() ? "0" : tbstopmiles.getText(),
+            tbvolume.getText().isBlank() ? "0" : tbvolume.getText()
          };
         kvstop.put(String.valueOf(currentstopline), stoparray);
         isLoad = true;
@@ -4423,7 +4551,8 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
             tbtime2.getText(),
             ddtimezone.getSelectedItem().toString(),
             tbstoprate.getText(),
-            tbstopmiles.getText()
+            tbstopmiles.getText(),
+            tbvolume.getText()
          };
         kvstop.put(String.valueOf(currentstopline), stoparray);
         
