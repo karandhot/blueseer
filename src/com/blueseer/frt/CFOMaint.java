@@ -44,6 +44,7 @@ import static com.blueseer.adm.admData.addChangeLog;
 import com.blueseer.ctr.cusData;
 import static com.blueseer.ctr.cusData.getShipAddressInfo;
 import static com.blueseer.edi.EDI.Create990;
+import com.blueseer.fgl.fglData;
 import static com.blueseer.frt.frtData.addCFOTransaction;
 import com.blueseer.frt.frtData.cfo_det;
 import com.blueseer.frt.frtData.cfo_item;
@@ -354,7 +355,10 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                     break;
                 case "get":
                     message = getRecord(key);    
-                    break;    
+                    break;  
+                case "run":
+                    message = Run_autoInvoice();
+                    break;      
                 default:
                     message = new String[]{"1", "unknown action"};
             }
@@ -376,7 +380,9 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
             } else if (this.type.equals("add") && message[0].equals("0")) {
              initvars(key);
            } else if (this.type.equals("update") && message[0].equals("0")) {
-             initvars(key);    
+             initvars(key); 
+           } else if (this.type.equals("run")) {
+             initvars(null);    
            } else {
              initvars(null);  
            }
@@ -1666,6 +1672,89 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     
     // misc
+    
+    public String[] Run_autoInvoice() {
+        
+        String[] m = autoInvoice();
+        // autopost
+        if (OVData.isAutoPost()) {
+            fglData.PostGL();
+        }
+        return m;
+    }
+    
+    public String[] autoInvoice() {
+       java.util.Date now = new java.util.Date();
+       DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+       String[] m = null; 
+        
+        if (carrierPOV) {
+        int shipperid = 0;
+        if (OVData.getSysMetaValue("system", "freightcontrol", "shipperkey").equals("1")) {
+            shipperid = Integer.valueOf(tbkey.getText());
+        } else {
+            shipperid = OVData.getNextNbr("shipper");
+        }
+         
+        shpData.ship_mstr sh = shpData.createShipMstrJRT(
+                             String.valueOf(shipperid), 
+                              ddsite.getSelectedItem().toString(),
+                              tbkey.getText(), // bol
+                              ddcust.getSelectedItem().toString(),
+                              ddcust.getSelectedItem().toString(),
+                              tbkey.getText(),
+                              tbnumber.getText().replace("'", ""),  // po
+                              tbkey.getText().replace("'", ""),  // ref
+                              dfdate.format(now), // delivery date
+                              dfdate.format(now), // ord date
+                              ddrevision.getSelectedItem().toString(),
+                              ddsite.getSelectedItem().toString(), // shipvia
+                              "F", 
+                              "", // tax
+                              ddsite.getSelectedItem().toString()); 
+        ArrayList<String[]> detail = costToDetail();
+        ArrayList<shpData.ship_det> shd = shpData.createShipDetFreight(detail, String.valueOf(shipperid), dfdate.format(bsmf.MainFrame.now), ddsite.getSelectedItem().toString());
+        shpData.addShipperTransaction(shd, sh, null);
+       // shpData.updateShipperSAC(String.valueOf(shipperid));
+        
+        m = confirmShipperTransaction("freight", String.valueOf(shipperid), now);
+        updateFreightOrderStatus(tbkey.getText(),"closed");
+        if (m[0].equals("0")) {
+            m[1] = "committed freight order to invoice number: " + String.valueOf(shipperid);
+        }
+         /*
+         bsmf.MainFrame.show("committed freight order to invoice number: " + String.valueOf(shipperid));
+         if (m[0].equals("1")) { // if error
+           bsmf.MainFrame.show(m[1]);
+         } else {
+           executeTask(dbaction.get, new String[]{tbkey.getText()});
+         }
+         */
+        } else {
+            for (int j = 0; j < orddet.getRowCount(); j++) {
+                if (orddet.getValueAt(j, 1).toString().equals("Load")) {
+                    continue;
+                }
+                if (! orddet.getValueAt(j, 8).toString().isBlank()) {
+                m = confirmShipperTransaction("order", orddet.getValueAt(j, 8).toString(), now);
+                updateFreightOrderStatus(tbkey.getText(),"closed");
+                if (m[0].equals("0")) {
+                  m[1] = "committed shipper: " + orddet.getValueAt(j, 8).toString();
+                }
+                  /*
+                  bsmf.MainFrame.show("committed shipper: " + orddet.getValueAt(j, 8).toString());
+                  if (m[0].equals("1")) { // if error
+                    bsmf.MainFrame.show(m[1]);
+                  } else {
+                    executeTask(dbaction.get, new String[]{tbkey.getText()});
+                  }
+                  */
+                }
+            } 
+        } 
+        return m;
+    }
+    
     public ArrayList<String[]> costToDetail() {
         
         double totamt = bsParseDouble(tbforate.getText());
@@ -3859,65 +3948,8 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btlookupActionPerformed
 
     private void btcommitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcommitActionPerformed
-        java.util.Date now = new java.util.Date();
-        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-        
-        if (carrierPOV) {
-        int shipperid = 0;
-        if (OVData.getSysMetaValue("system", "freightcontrol", "shipperkey").equals("1")) {
-            shipperid = Integer.valueOf(tbkey.getText());
-        } else {
-            shipperid = OVData.getNextNbr("shipper");
-        }
-         
-        shpData.ship_mstr sh = shpData.createShipMstrJRT(
-                             String.valueOf(shipperid), 
-                              ddsite.getSelectedItem().toString(),
-                              tbkey.getText(), // bol
-                              ddcust.getSelectedItem().toString(),
-                              ddcust.getSelectedItem().toString(),
-                              tbkey.getText(),
-                              tbnumber.getText().replace("'", ""),  // po
-                              tbkey.getText().replace("'", ""),  // ref
-                              dfdate.format(now), // delivery date
-                              dfdate.format(now), // ord date
-                              ddrevision.getSelectedItem().toString(),
-                              ddsite.getSelectedItem().toString(), // shipvia
-                              "F", 
-                              "", // tax
-                              ddsite.getSelectedItem().toString()); 
-        ArrayList<String[]> detail = costToDetail();
-        ArrayList<shpData.ship_det> shd = shpData.createShipDetFreight(detail, String.valueOf(shipperid), dfdate.format(bsmf.MainFrame.now), ddsite.getSelectedItem().toString());
-        shpData.addShipperTransaction(shd, sh, null);
-       // shpData.updateShipperSAC(String.valueOf(shipperid));
-        
-        String[] m = confirmShipperTransaction("freight", String.valueOf(shipperid), now);
-        updateFreightOrderStatus(tbkey.getText(),"closed");
-        bsmf.MainFrame.show("committed freight order to invoice number: " + String.valueOf(shipperid));
-         if (m[0].equals("1")) { // if error
-           bsmf.MainFrame.show(m[1]);
-         } else {
-           executeTask(dbaction.get, new String[]{tbkey.getText()});
-         }
-        } else {
-            for (int j = 0; j < orddet.getRowCount(); j++) {
-                if (orddet.getValueAt(j, 1).toString().equals("Load")) {
-                    continue;
-                }
-                if (! orddet.getValueAt(j, 8).toString().isBlank()) {
-                String[] m = confirmShipperTransaction("order", orddet.getValueAt(j, 8).toString(), now);
-                updateFreightOrderStatus(tbkey.getText(),"closed");
-                  bsmf.MainFrame.show("committed shipper: " + orddet.getValueAt(j, 8).toString());
-                  if (m[0].equals("1")) { // if error
-                    bsmf.MainFrame.show(m[1]);
-                  } else {
-                    executeTask(dbaction.get, new String[]{tbkey.getText()});
-                  }
-                }
-            } 
-        }
-        
-        
+      setPanelComponentState(this, false);
+      executeTask(dbaction.run, new String[]{tbkey.getText()});  
     }//GEN-LAST:event_btcommitActionPerformed
 
     private void tbforateFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbforateFocusLost
