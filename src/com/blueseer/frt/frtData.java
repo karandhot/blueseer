@@ -799,6 +799,93 @@ public class frtData {
         return r;
     }
     
+    public static String[] addCFOStatus(cfo_status x) {
+        String[] m = new String[2];
+        int rows = 0;
+        String sqlInsert = "insert into cfo_status (cfox_nbr, cfox_revision, cfox_cfonbr, " +
+            " cfox_event, cfox_eventdesc, cfox_status, cfox_statusdesc, " +
+            " cfox_eventdate, cfox_eventtime, cfox_timezone, " +
+            " cfox_city, cfox_state, cfox_country, cfox_lat, cfox_long, cfox_remarks, cfox_key, cfox_ref ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+             PreparedStatement ps = con.prepareStatement(sqlInsert);) {
+             ps.setString(1, x.cfox_nbr);
+             ps.setString(2, x.cfox_revision);
+             ps.setString(3, x.cfox_cfonbr);
+             ps.setString(4, x.cfox_event);
+             ps.setString(5, x.cfox_eventdesc);
+             ps.setString(6, x.cfox_status);
+             ps.setString(7, x.cfox_statusdesc);
+             ps.setString(8, x.cfox_eventdate);
+             ps.setString(9, x.cfox_eventtime);
+             ps.setString(10, x.cfox_timezone);
+             ps.setString(11, x.cfox_city);
+             ps.setString(12, x.cfox_state);
+             ps.setString(13, x.cfox_country);
+             ps.setString(14, x.cfox_lat);
+             ps.setString(15, x.cfox_long);
+             ps.setString(16, x.cfox_remarks);
+             ps.setString(17, x.cfox_key);
+             ps.setString(18, x.cfox_ref);
+             rows = ps.executeUpdate();
+             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+
+    public static ArrayList<cfo_status> getCFOStatusList(String code, String revision) {
+        cfo_status r = null;
+        String[] m = new String[2];
+        ArrayList<cfo_status> list = new ArrayList<cfo_status>();
+        String sql = "select * from cfo_status where cfox_nbr = ? and cfox_revision = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, code);
+        ps.setString(2, revision);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new cfo_status(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new cfo_status(m, 
+                        res.getString("cfox_nbr"), 
+                        res.getString("cfox_revision"),         
+                        res.getString("cfox_cfonbr"), 
+                        res.getString("cfox_ts"), 
+                        res.getString("cfox_event"), 
+                        res.getString("cfox_eventdesc"), 
+                        res.getString("cfox_status"), 
+                        res.getString("cfox_statusdesc"), 
+                        res.getString("cfox_eventdate"), 
+                        res.getString("cfox_eventtime"), 
+                        res.getString("cfox_timezone"),
+                        res.getString("cfox_city"),
+                        res.getString("cfox_state"),
+                        res.getString("cfox_country"),
+                        res.getString("cfox_lat"),
+                        res.getString("cfox_long"),        
+                        res.getString("cfox_remarks"),
+                        res.getString("cfox_key"),
+                        res.getString("cfox_ref"));
+                        list.add(r);
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new cfo_status(m);
+               list.add(r);
+        }
+        return list;
+    }
+    
+   
     
     
     
@@ -1193,6 +1280,118 @@ public class frtData {
                s[1] = res.getString("brk_id");
                lines.add(s);
             }
+            res = st.executeQuery("select tz_code from time_zone order by tz_code ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "timezones";
+               s[1] = res.getString("tz_code");
+               lines.add(s);
+            }
+            
+            
+            /*
+             res = st.executeQuery("select car_id from car_mstr order by car_id;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "freight";
+               s[1] = res.getString("car_id");
+               lines.add(s);
+            }
+            */
+            
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+        return lines;
+    }
+    
+    public static ArrayList<String[]> getCFOStatusInit() {
+        String defaultsite = "";
+        ArrayList<String[]> lines = new ArrayList<String[]>();
+        try{
+        Connection con = null;
+        if (ds != null) {
+        con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+        // allocate, custitemonly, site, currency, sites, currencies, uoms, 
+        // states, warehouses, locations, customers, taxcodes, carriers, statuses    
+            
+           
+            res = st.executeQuery("select site_site from site_mstr;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "sites";
+               s[1] = res.getString("site_site");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select ov_site, ov_currency from ov_mstr;" );
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "currency";
+               s[1] = res.getString("ov_currency");
+               lines.add(s);
+               s = new String[2];
+               s[0] = "site";
+               s[1] = res.getString("ov_site");
+               lines.add(s);
+               defaultsite = s[1];
+            }
+                        
+            res = st.executeQuery("select code_key from code_mstr where code_code = 'country' order by code_key ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "countries";
+               s[1] = res.getString("code_key");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select code_key from code_mstr where code_code = 'state' order by code_key ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "states";
+               s[1] = res.getString("code_key");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select code_key from code_mstr where code_code = 'freightstatuseventcodes' order by code_key ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "eventcodes";
+               s[1] = res.getString("code_key");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select code_key from code_mstr where code_code = 'freightstatusreasoncodes' order by code_key ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "reasoncodes";
+               s[1] = res.getString("code_key");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select code_value from code_mstr where code_code = 'freightstatusreasoncodes' AND code_key = 'default' ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "defaultstatus";
+               s[1] = res.getString("code_value");
+               lines.add(s);
+            }
+            
             res = st.executeQuery("select tz_code from time_zone order by tz_code ;");
             while (res.next()) {
                 String[] s = new String[2];
@@ -2521,6 +2720,17 @@ public class frtData {
         String cfos_amttype, String cfos_amt, String cfos_key, String cfos_value) {
         public cfo_sos(String[] m) {
             this (m, "", "", "", "", "", "", "", "");
+        }
+    }
+    
+    public record cfo_status(String[] m, String cfox_nbr, String cfox_revision, String cfox_cfonbr, String cfox_ts, 
+        String cfox_event, String cfox_eventdesc, String cfox_status, String cfox_statusdesc, 
+        String cfox_eventdate, String cfox_eventtime, String cfox_timezone, 
+        String cfox_city, String cfox_state, String cfox_country, String cfox_lat, String cfox_long, String cfox_remarks,
+        String cfox_key, String cfox_ref) {
+        public cfo_status(String[] m) {
+            this (m, "", "", "", "", "", "", "", "", "", "",
+                     "", "", "", "", "", "", "", "", "");
         }
     }
     

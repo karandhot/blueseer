@@ -403,3 +403,4 @@ admin,PalletLabelMaint,0
 admin,ShipScanMaint,0
 admin,CFOInvoice,0
 admin,EDIExportReset,0
+admin,CFOStatus,0

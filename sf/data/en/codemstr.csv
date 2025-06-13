@@ -38,145 +38,145 @@ freighteqptype,Stretch RGN,Stretch RGN Gooseneck trailer,1
 freighteqptype,Lowboy,Lowboy double drop trailer,1
 freighteqptype,Reefer,Refrigerated trailer,1
 freighteqptype,Specialized,Specialized trailer,1
-freighteqptype,20,20 ft. IL Container (Open Top) ,1
-freighteqptype,2B,20 ft. IL Container (Closed Top) ,1
-freighteqptype,2C,Cut-in Robot Distributed Power Unit (DPU) ,1
-freighteqptype,2D,Control Unit ,1
-freighteqptype,2E,Head-end Helper Unit ,1
-freighteqptype,2F,Roadrailer ,1
-freighteqptype,2G,Cut-in Helper ,1
-freighteqptype,2H,Rear-end Helper Unit ,1
-freighteqptype,2R,Rear-end Robot Distributed Power Unit (DPU) ,1
-freighteqptype,40,40 ft. IL Container (Open Top) ,1
-freighteqptype,4B,40 ft. IL Container (Closed Top) ,1
-freighteqptype,AA,Air Ride Van ,1
-freighteqptype,AC,Closed Container ,1
-freighteqptype,AD,Flatbed Sliding Tandem ,1
-freighteqptype,AF,Air Freight (Break Bulk) ,1
-freighteqptype,AL,Container Aluminum ,1
-freighteqptype,AP,Aircraft ,1
-freighteqptype,AT,Closed Container (Controlled Temperature) ,1
-freighteqptype,BC,Covered Barge ,1
-freighteqptype,BE,Bilevel Railcar Fully Open ,1
-freighteqptype,BF,Bilevel Railcar Fully Enclosed ,1
-freighteqptype,BG,Bogie ,1
-freighteqptype,BH,Bilevel Railcar Screened With Roof ,1
-freighteqptype,BJ,Bilevel Railcar Screened No Roof ,1
-freighteqptype,BK,Container Bulk ,1
-freighteqptype,BO,Barge Open ,1
-freighteqptype,BR,Barge ,1
-freighteqptype,BX,Boxcar ,1
-freighteqptype,CA,Caboose ,1
-freighteqptype,CB,Chassis Gooseneck ,1
-freighteqptype,CC,Container resting on a Chassis ,1
-freighteqptype,CD,Container with Bag Hangers ,1
-freighteqptype,CG,Container Tank (Gas) ,1
-freighteqptype,CH,Chassis ,1
-freighteqptype,CI,Container Insulated ,1
-freighteqptype,CJ,Container Insulated/Ventilated ,1
-freighteqptype,CK,Container Heated/Insulated/Ventilated ,1
-freighteqptype,CL,Container (Closed Top - Length Unspecified) ,1
-freighteqptype,CM,Container Open-Sided ,1
-freighteqptype,CN,Container ,1
-freighteqptype,CP,Coil Car Open ,1
-freighteqptype,CQ,Container Tank (Food Grade-Liquid) ,1
-freighteqptype,CR,Coil-Car Covered ,1
-freighteqptype,CS,Container-Low Side Open Top ,1
-freighteqptype,CT,Container-High Side Open Top ,1
-freighteqptype,CU,Container (Open Top - Length Unspecified) ,1
-freighteqptype,CV,Closed Van ,1
-freighteqptype,CW,Container Tank (Chemicals) ,1
-freighteqptype,CX,Container Tank ,1
-freighteqptype,CZ,Refrigerated Container ,1
-freighteqptype,DD,Double-Drop Trailer ,1
-freighteqptype,DF,Container with Flush Doors ,1
-freighteqptype,DT,Drop Back Trailer ,1
-freighteqptype,DX,Boxcar Damage Free Equipped ,1
-freighteqptype,ET,End of Train Device ,1
-freighteqptype,FF,Frozen Food Trailer ,1
-freighteqptype,FH,Flat Bed Trailer with Headboards ,1
-freighteqptype,FN,Flat Bed Trailer with No Headboards ,1
-freighteqptype,FP,Flatcar With Pedestal ,1
-freighteqptype,FR,Flat Bed Trailer - Removable Sides ,1
-freighteqptype,FS,Container with Floor Securing Rings ,1
-freighteqptype,FT,Flat Bed Trailer ,1
-freighteqptype,FX,Boxcar Cushion Under Frame OF ,1
-freighteqptype,GS,Generator Set ,1
-freighteqptype,HB,Container with Hangar Bars ,1
-freighteqptype,HC,Hopper Car (Covered) ,1
-freighteqptype,HO,Hopper Car (Open) ,1
-freighteqptype,HP,Hopper Car (Covered; Pneumatic Discharge) ,1
-freighteqptype,HT,Head of Train Device ,1
-freighteqptype,HV,High Cube Van ,1
-freighteqptype,HY,Hydrant-Cart ,1
-freighteqptype,ID,Idler Car ,1
-freighteqptype,IX,Boxcar (Insulated) ,1
-freighteqptype,LO,Locomotive ,1
-freighteqptype,LS,Half Height Flat Rack ,1
-freighteqptype,LU,Load/unload Device on Equipment ,1
-freighteqptype,NX,Boxcar (Interior Bulkheads) ,1
-freighteqptype,OB,Ocean Vessel (Break Bulk) ,1
-freighteqptype,OT,Open-top/flatbed trailer ,1
-freighteqptype,OV,Open Top Van ,1
-freighteqptype,PL,Container Platform ,1
-freighteqptype,PP,Power Pack ,1
-freighteqptype,PT,Protected Trailer ,1
-freighteqptype,PU,Pickup Truck ,1
-freighteqptype,RA,Fixed-Rack Flat-Bed Trailer ,1
-freighteqptype,RC,Refrigerated (Reefer) Car ,1
-freighteqptype,RD,Fixed-Rack Double Drop Trailer ,1
-freighteqptype,RE,Flat Car (End Bulkheads) ,1
-freighteqptype,RF,Flat Car ,1
-freighteqptype,RG,Gondola Covered ,1
-freighteqptype,RI,Gondola Car (Covered - Interior Bulkheads) ,1
-freighteqptype,RO,Gondola Car (Open) ,1
-freighteqptype,RR,Rail Car ,1
-freighteqptype,RS,Fixed-Rack Single-Drop Trailer ,1
-freighteqptype,RT,Controlled Temperature Trailer (Reefer) ,1
-freighteqptype,SA,Saddle ,1
-freighteqptype,SC,Service Car ,1
-freighteqptype,SD,Single-Drop Trailer ,1
-freighteqptype,SK,Stack Car ,1
-freighteqptype,SL,Container Steel ,1
-freighteqptype,SR,STAK-RAK ,1
-freighteqptype,SS,Container with Smooth Sides ,1
-freighteqptype,ST,Removable Side Trailer ,1
-freighteqptype,SV,Van - Special Inside Length Width or Height Requirements ,1
-freighteqptype,TA,Trailer Heated/Insulated/Ventilated ,1
-freighteqptype,TB,Trailer Boat ,1
-freighteqptype,TC,Trailer Car ,1
-freighteqptype,TF,Trailer Dry Freight ,1
-freighteqptype,TG,Trailer Tank (Gas) ,1
-freighteqptype,TH,Truck Open Top High Side ,1
-freighteqptype,TI,Trailer Insulated ,1
-freighteqptype,TJ,Trailer Tank (Chemicals) ,1
-freighteqptype,TK,Trailer Tank (Food Grade-Liquid) ,1
-freighteqptype,TL,Trailer (not otherwise specified) ,1
-freighteqptype,TM,Trailer Insulated/Ventilated ,1
-freighteqptype,TN,Tank Car ,1
-freighteqptype,TO,Truck Open Top ,1
-freighteqptype,TP,Trailer Pneumatic ,1
-freighteqptype,TQ,Trailer Electric Heat ,1
-freighteqptype,TR,Tractor ,1
-freighteqptype,TT,Telescoping Trailer ,1
-freighteqptype,TU,Truck Open Top Low Side ,1
-freighteqptype,TV,Truck Van ,1
-freighteqptype,TW,Trailer Refrigerated ,1
-freighteqptype,UA,Trilevel Railcar 20 Feet ,1
-freighteqptype,UB,Trilevel Railcar Screened Fully Enclosed ,1
-freighteqptype,UC,Trilevel Railcar Screened With Roof ,1
-freighteqptype,UD,Trilevel Railcar Screened No Roof ,1
-freighteqptype,UE,Trilevel Railcar Screened With Doors No Roof ,1
-freighteqptype,UL,Unit Load Device (ULD) ,1
-freighteqptype,UP,Container Upgraded ,1
-freighteqptype,VA,Container Vented ,1
-freighteqptype,VE,Vessel Ocean ,1
-freighteqptype,VL,Vessel Lake ,1
-freighteqptype,VR,Vessel Ocean Rollon-Rolloff ,1
-freighteqptype,VS,Vessel Ocean Lash ,1
-freighteqptype,VT,Vessel Ocean Containership ,1
-freighteqptype,WR,Container with Wavy or Ripple Sides ,1
-freighteqptype,WY,Railroad Maintenance of Way Car ,1
+freighteqptype,20,20 ft. IL Container (Open Top),1
+freighteqptype,2B,20 ft. IL Container (Closed Top),1
+freighteqptype,2C,Cut-in Robot Distributed Power Unit (DPU),1
+freighteqptype,2D,Control Unit,1
+freighteqptype,2E,Head-end Helper Unit,1
+freighteqptype,2F,Roadrailer,1
+freighteqptype,2G,Cut-in Helper,1
+freighteqptype,2H,Rear-end Helper Unit,1
+freighteqptype,2R,Rear-end Robot Distributed Power Unit (DPU),1
+freighteqptype,40,40 ft. IL Container (Open Top),1
+freighteqptype,4B,40 ft. IL Container (Closed Top),1
+freighteqptype,AA,Air Ride Van,1
+freighteqptype,AC,Closed Container,1
+freighteqptype,AD,Flatbed Sliding Tandem,1
+freighteqptype,AF,Air Freight (Break Bulk),1
+freighteqptype,AL,Container Aluminum,1
+freighteqptype,AP,Aircraft,1
+freighteqptype,AT,Closed Container (Controlled Temperature),1
+freighteqptype,BC,Covered Barge,1
+freighteqptype,BE,Bilevel Railcar Fully Open,1
+freighteqptype,BF,Bilevel Railcar Fully Enclosed,1
+freighteqptype,BG,Bogie,1
+freighteqptype,BH,Bilevel Railcar Screened With Roof,1
+freighteqptype,BJ,Bilevel Railcar Screened No Roof,1
+freighteqptype,BK,Container Bulk,1
+freighteqptype,BO,Barge Open,1
+freighteqptype,BR,Barge,1
+freighteqptype,BX,Boxcar,1
+freighteqptype,CA,Caboose,1
+freighteqptype,CB,Chassis Gooseneck,1
+freighteqptype,CC,Container resting on a Chassis,1
+freighteqptype,CD,Container with Bag Hangers,1
+freighteqptype,CG,Container Tank (Gas),1
+freighteqptype,CH,Chassis,1
+freighteqptype,CI,Container Insulated,1
+freighteqptype,CJ,Container Insulated/Ventilated,1
+freighteqptype,CK,Container Heated/Insulated/Ventilated,1
+freighteqptype,CL,Container (Closed Top - Length Unspecified),1
+freighteqptype,CM,Container Open-Sided,1
+freighteqptype,CN,Container,1
+freighteqptype,CP,Coil Car Open,1
+freighteqptype,CQ,Container Tank (Food Grade-Liquid),1
+freighteqptype,CR,Coil-Car Covered,1
+freighteqptype,CS,Container-Low Side Open Top,1
+freighteqptype,CT,Container-High Side Open Top,1
+freighteqptype,CU,Container (Open Top - Length Unspecified),1
+freighteqptype,CV,Closed Van,1
+freighteqptype,CW,Container Tank (Chemicals),1
+freighteqptype,CX,Container Tank,1
+freighteqptype,CZ,Refrigerated Container,1
+freighteqptype,DD,Double-Drop Trailer,1
+freighteqptype,DF,Container with Flush Doors,1
+freighteqptype,DT,Drop Back Trailer,1
+freighteqptype,DX,Boxcar Damage Free Equipped,1
+freighteqptype,ET,End of Train Device,1
+freighteqptype,FF,Frozen Food Trailer,1
+freighteqptype,FH,Flat Bed Trailer with Headboards,1
+freighteqptype,FN,Flat Bed Trailer with No Headboards,1
+freighteqptype,FP,Flatcar With Pedestal,1
+freighteqptype,FR,Flat Bed Trailer - Removable Sides,1
+freighteqptype,FS,Container with Floor Securing Rings,1
+freighteqptype,FT,Flat Bed Trailer,1
+freighteqptype,FX,Boxcar Cushion Under Frame OF,1
+freighteqptype,GS,Generator Set,1
+freighteqptype,HB,Container with Hangar Bars,1
+freighteqptype,HC,Hopper Car (Covered),1
+freighteqptype,HO,Hopper Car (Open),1
+freighteqptype,HP,Hopper Car (Covered; Pneumatic Discharge),1
+freighteqptype,HT,Head of Train Device,1
+freighteqptype,HV,High Cube Van,1
+freighteqptype,HY,Hydrant-Cart,1
+freighteqptype,ID,Idler Car,1
+freighteqptype,IX,Boxcar (Insulated),1
+freighteqptype,LO,Locomotive,1
+freighteqptype,LS,Half Height Flat Rack,1
+freighteqptype,LU,Load/unload Device on Equipment,1
+freighteqptype,NX,Boxcar (Interior Bulkheads),1
+freighteqptype,OB,Ocean Vessel (Break Bulk),1
+freighteqptype,OT,Open-top/flatbed trailer,1
+freighteqptype,OV,Open Top Van,1
+freighteqptype,PL,Container Platform,1
+freighteqptype,PP,Power Pack,1
+freighteqptype,PT,Protected Trailer,1
+freighteqptype,PU,Pickup Truck,1
+freighteqptype,RA,Fixed-Rack Flat-Bed Trailer,1
+freighteqptype,RC,Refrigerated (Reefer) Car,1
+freighteqptype,RD,Fixed-Rack Double Drop Trailer,1
+freighteqptype,RE,Flat Car (End Bulkheads),1
+freighteqptype,RF,Flat Car,1
+freighteqptype,RG,Gondola Covered,1
+freighteqptype,RI,Gondola Car (Covered - Interior Bulkheads),1
+freighteqptype,RO,Gondola Car (Open),1
+freighteqptype,RR,Rail Car,1
+freighteqptype,RS,Fixed-Rack Single-Drop Trailer,1
+freighteqptype,RT,Controlled Temperature Trailer (Reefer),1
+freighteqptype,SA,Saddle,1
+freighteqptype,SC,Service Car,1
+freighteqptype,SD,Single-Drop Trailer,1
+freighteqptype,SK,Stack Car,1
+freighteqptype,SL,Container Steel,1
+freighteqptype,SR,STAK-RAK,1
+freighteqptype,SS,Container with Smooth Sides,1
+freighteqptype,ST,Removable Side Trailer,1
+freighteqptype,SV,Van - Special Inside Length Width or Height Requirements,1
+freighteqptype,TA,Trailer Heated/Insulated/Ventilated,1
+freighteqptype,TB,Trailer Boat,1
+freighteqptype,TC,Trailer Car,1
+freighteqptype,TF,Trailer Dry Freight,1
+freighteqptype,TG,Trailer Tank (Gas),1
+freighteqptype,TH,Truck Open Top High Side,1
+freighteqptype,TI,Trailer Insulated,1
+freighteqptype,TJ,Trailer Tank (Chemicals),1
+freighteqptype,TK,Trailer Tank (Food Grade-Liquid),1
+freighteqptype,TL,Trailer (not otherwise specified),1
+freighteqptype,TM,Trailer Insulated/Ventilated,1
+freighteqptype,TN,Tank Car,1
+freighteqptype,TO,Truck Open Top,1
+freighteqptype,TP,Trailer Pneumatic,1
+freighteqptype,TQ,Trailer Electric Heat,1
+freighteqptype,TR,Tractor,1
+freighteqptype,TT,Telescoping Trailer,1
+freighteqptype,TU,Truck Open Top Low Side,1
+freighteqptype,TV,Truck Van,1
+freighteqptype,TW,Trailer Refrigerated,1
+freighteqptype,UA,Trilevel Railcar 20 Feet,1
+freighteqptype,UB,Trilevel Railcar Screened Fully Enclosed,1
+freighteqptype,UC,Trilevel Railcar Screened With Roof,1
+freighteqptype,UD,Trilevel Railcar Screened No Roof,1
+freighteqptype,UE,Trilevel Railcar Screened With Doors No Roof,1
+freighteqptype,UL,Unit Load Device (ULD),1
+freighteqptype,UP,Container Upgraded,1
+freighteqptype,VA,Container Vented,1
+freighteqptype,VE,Vessel Ocean,1
+freighteqptype,VL,Vessel Lake,1
+freighteqptype,VR,Vessel Ocean Rollon-Rolloff,1
+freighteqptype,VS,Vessel Ocean Lash,1
+freighteqptype,VT,Vessel Ocean Containership,1
+freighteqptype,WR,Container with Wavy or Ripple Sides,1
+freighteqptype,WY,Railroad Maintenance of Way Car,1
 edidoctype,generic,Generic Document Type,1
 edidoctype,850csv,CSV Order,1
 edidoctype,860csv,CSV Order Change,1
@@ -1764,3 +1764,151 @@ freightrejectioncodes,EQU,Equipment Unavailable,1
 freightrejectioncodes,LNH,Length Of Haul,1
 freightrejectioncodes,PRM,Permits,1
 freightrejectioncodes,WGT,Weight,1
+freightstatuseventcodes,A3,Shipment Returned to Shipper,1
+freightstatuseventcodes,A7,Refused by Consignee,1
+freightstatuseventcodes,A9,Shipment Damaged,1
+freightstatuseventcodes,AF,Carrier Departed Pickup Location with Shipment,1
+freightstatuseventcodes,AG,Estimated Delivery,1
+freightstatuseventcodes,AH,Attempted Delivery,1
+freightstatuseventcodes,AI,Shipment has been Reconsigned,1
+freightstatuseventcodes,AJ,Tendered for Delivery,1
+freightstatuseventcodes,AL,Shipment Conveyance Loaded to Rail Car,1
+freightstatuseventcodes,AM,Loaded on Truck,1
+freightstatuseventcodes,AN,Diverted to Air Carrier,1
+freightstatuseventcodes,AP,Delivery Not Completed,1
+freightstatuseventcodes,AR,Rail Arrival at Destination Intermodal Ramp,1
+freightstatuseventcodes,AV,Available for Delivery,1
+freightstatuseventcodes,AW,Shipment Available for Pick-up,1
+freightstatuseventcodes,B6,Estimated to Arrive at Carrier Terminal,1
+freightstatuseventcodes,BA,Connecting Line or Cartage Pickup,1
+freightstatuseventcodes,BC,Storage in Transit,1
+freightstatuseventcodes,BO,Shipment Conveyance Reported Bad Order,1
+freightstatuseventcodes,BR,Shipment Conveyance Released From Bad Order,1
+freightstatuseventcodes,C1,Estimated to Depart Terminal Location,1
+freightstatuseventcodes,C2,Delivered Empty,1
+freightstatuseventcodes,C3,Picked-up Empty,1
+freightstatuseventcodes,CA,Shipment Cancelled,1
+freightstatuseventcodes,CB,Completed Shipment,1
+freightstatuseventcodes,CD,Carrier Departed Delivery Location,1
+freightstatuseventcodes,CL,Trailer Closed Out,1
+freightstatuseventcodes,CP,Completed Loading at Pickup Location,1
+freightstatuseventcodes,D1,Completed Unloading at Delivery Location,1
+freightstatuseventcodes,DE,Last Free Day without Demurrage for Shipment,1
+freightstatuseventcodes,DO,Shipment Delivery Order Received,1
+freightstatuseventcodes,I1,In-Gate,1
+freightstatuseventcodes,J1,Delivered to Connecting Line,1
+freightstatuseventcodes,K1,Arrived at Customs,1
+freightstatuseventcodes,K2,Customs Released,1
+freightstatuseventcodes,L1,Loading,1
+freightstatuseventcodes,LC,Shipment Container Loaded to Chassis,1
+freightstatuseventcodes,NB,Shipment Conveyance Received Without Paperwork,1
+freightstatuseventcodes,OA,Out-Gate,1
+freightstatuseventcodes,OO,Paperwork Received - Did not Receive Shipment or Equipment,1
+freightstatuseventcodes,P1,Departed Terminal Location,1
+freightstatuseventcodes,PA,Partial Shipment,1
+freightstatuseventcodes,PD,Last Free Day without Per Diem for Shipment,1
+freightstatuseventcodes,PR,U.S. Customs Hold at In-Bond Location,1
+freightstatuseventcodes,R1,Received from Prior Carrier,1
+freightstatuseventcodes,RA,Carrier Arrived at Rail Ramp,1
+freightstatuseventcodes,RD,Carrier Departed Rail Ramp,1
+freightstatuseventcodes,RH,Shipment Conveyance Released from Hold,1
+freightstatuseventcodes,RL,Rail Departure from Origin Intermodal Ramp,1
+freightstatuseventcodes,S1,Trailer Spotted at Consignee's Location,1
+freightstatuseventcodes,SD,Shipment Delayed,1
+freightstatuseventcodes,UC,Shipment Container Unloaded from Chassis,1
+freightstatuseventcodes,UR,Shipment Conveyance Unloaded From Rail Car,1
+freightstatuseventcodes,X1,Arrived at Delivery Location,1
+freightstatuseventcodes,X2,Estimated Date and/or Time of Arrival at Consignee's Location,1
+freightstatuseventcodes,X3,Arrived at Pickup Location,1
+freightstatuseventcodes,X4,Arrived at Terminal Location,1
+freightstatuseventcodes,X5,Arrived at Delivery Location Loading Dock,1
+freightstatuseventcodes,X6,En Route to Delivery Location,1
+freightstatuseventcodes,X8,Arrived at Pickup Location Loading Dock,1
+freightstatuseventcodes,X9,Arrived at Carrier's Warehouse,1
+freightstatuseventcodes,XB,Shipment Acknowledged,1
+freightstatusreasoncodes,A1,Missed Delivery,1
+freightstatusreasoncodes,A2,Incorrect Address,1
+freightstatusreasoncodes,A3,Indirect Delivery,1
+freightstatusreasoncodes,A5,Unable to Locate,1
+freightstatusreasoncodes,A6,Address Corrected - Delivery Attempted,1
+freightstatusreasoncodes,AA,Mis-sort,1
+freightstatusreasoncodes,AD,Customer Requested Future Delivery,1
+freightstatusreasoncodes,AE,Restricted Articles Unacceptable,1
+freightstatusreasoncodes,AF,Accident,1
+freightstatusreasoncodes,AG,Consignee Related,1
+freightstatusreasoncodes,AH,Driver Related,1
+freightstatusreasoncodes,AI,Mechanical Breakdown,1
+freightstatusreasoncodes,AJ,Other Carrier Related,1
+freightstatusreasoncodes,AK,Damaged/Rewrapped in Hub,1
+freightstatusreasoncodes,AL,Previous Stop,1
+freightstatusreasoncodes,AM,Shipper Related,1
+freightstatusreasoncodes,AN,Holiday - Closed,1
+freightstatusreasoncodes,AO,Weather or Natural Disaster Related,1
+freightstatusreasoncodes,AP,Awaiting Export,1
+freightstatusreasoncodes,AQ,Recipient Unavailable - Delivery Delayed,1
+freightstatusreasoncodes,AR,Improper International Paperwork,1
+freightstatusreasoncodes,AS,Hold Due to Customs Documentation Problems,1
+freightstatusreasoncodes,AT,Unable to Contact Recipient for Broker Information,1
+freightstatusreasoncodes,AU,Civil Event Related Delay,1
+freightstatusreasoncodes,AV,Exceeds Service Limitations,1
+freightstatusreasoncodes,AW,Past Cut-off Time,1
+freightstatusreasoncodes,AX,Insufficient Pickup Time,1
+freightstatusreasoncodes,AY,Missed Pickup,1
+freightstatusreasoncodes,AZ,Alternate Carrier Delivered,1
+freightstatusreasoncodes,B1,Consignee Closed,1
+freightstatusreasoncodes,B2,Trap for Customer,1
+freightstatusreasoncodes,B4,Held for Payment,1
+freightstatusreasoncodes,B5,Held for Consignee,1
+freightstatusreasoncodes,B8,Improper Unloading Facility or Equipment,1
+freightstatusreasoncodes,B9,Receiving Time Restricted,1
+freightstatusreasoncodes,BB,Held per Shipper,1
+freightstatusreasoncodes,BC,Missing Documents,1
+freightstatusreasoncodes,BD,Border Clearance,1
+freightstatusreasoncodes,BE,Road Conditions,1
+freightstatusreasoncodes,BF,Carrier Keying Error,1
+freightstatusreasoncodes,BG,Other,1
+freightstatusreasoncodes,BH,Insufficient Time to Complete Delivery,1
+freightstatusreasoncodes,BI,Cartage Agent,1
+freightstatusreasoncodes,BJ,Customer Wanted Earlier Delivery,1
+freightstatusreasoncodes,BK,Prearranged Appointment,1
+freightstatusreasoncodes,BL,Held for Protective Service,1
+freightstatusreasoncodes,BM,Flatcar Shortage,1
+freightstatusreasoncodes,BN,Failed to Release Billing,1
+freightstatusreasoncodes,BO,Railroad Failed to Meet Schedule,1
+freightstatusreasoncodes,BP,Load Shifted,1
+freightstatusreasoncodes,BQ,Shipment Overweight,1
+freightstatusreasoncodes,BR,Train Derailment,1
+freightstatusreasoncodes,BS,Refused by Customer,1
+freightstatusreasoncodes,BT,Returned to Shipper,1
+freightstatusreasoncodes,C1,Waiting for Customer Pickup,1
+freightstatusreasoncodes,C2,Credit Hold,1
+freightstatusreasoncodes,C3,Suspended at Customer Request,1
+freightstatusreasoncodes,C4,Customer Vacation,1
+freightstatusreasoncodes,C5,Customer Strike,1
+freightstatusreasoncodes,C6,Waiting Shipping Instructions,1
+freightstatusreasoncodes,C7,Waiting for Customer Specified Carrier,1
+freightstatusreasoncodes,C8,Collect on Delivery Required,1
+freightstatusreasoncodes,C9,Cash Not Available From Consignee,1
+freightstatusreasoncodes,CA,Customs (Import or Export),1
+freightstatusreasoncodes,CB,No Requested Arrival Date Provided by Shipper,1
+freightstatusreasoncodes,CC,No Requested Arrival Time Provided by Shipper,1
+freightstatusreasoncodes,D1,Carrier Dispatch Error,1
+freightstatusreasoncodes,D2,Driver Not Available,1
+freightstatusreasoncodes,F1,Non-Express Clearance Delay,1
+freightstatusreasoncodes,F2,International Non-carrier Delay,1
+freightstatusreasoncodes,HB,Held Pending Appointment,1
+freightstatusreasoncodes,P1,Processing Delay,1
+freightstatusreasoncodes,P2,Waiting Inspection,1
+freightstatusreasoncodes,P3,Production Falldown,1
+freightstatusreasoncodes,P4,Held for Full Carrier Load,1
+freightstatusreasoncodes,RC,Reconsigned,1
+freightstatusreasoncodes,S1,Delivery Shortage,1
+freightstatusreasoncodes,T1,Tractor With Sleeper Car Not Available,1
+freightstatusreasoncodes,T2,Tractor Conventional Not Available,1
+freightstatusreasoncodes,T3,Trailer not Available,1
+freightstatusreasoncodes,T4,Trailer Not Usable Due to Prior Product,1
+freightstatusreasoncodes,T5,Trailer Class Not Available,1
+freightstatusreasoncodes,T6,Trailer Volume Not Available,1
+freightstatusreasoncodes,T7,Insufficient Delivery Time,1
+freightstatusreasoncodes,NS,Normal Status,1
+freightstatusreasoncodes,NA,Normal Appointment,1

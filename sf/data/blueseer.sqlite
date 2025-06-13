@@ -3560,5 +3560,26 @@ CREATE TABLE "sod_chg" (
   "sodc_misc" varchar(200) NOT NULL COLLATE NOCASE DEFAULT '',
   "sodc_change" varchar(50) NOT NULL COLLATE NOCASE DEFAULT ''
 );
+CREATE TABLE "cfo_status" (
+  "cfox_nbr" varchar(8) NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfox_revision" int(3) NOT NULL  DEFAULT '0',
+  "cfox_cfonbr" varchar(20) NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfox_ts" timestamp NOT NULL DEFAULT (datetime('now','localtime')),
+  "cfox_event" varchar(10)  NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfox_eventdesc" varchar(100)  NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfox_status" varchar(10)  NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfox_statusdesc" varchar(100)  NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfox_eventdate" date DEFAULT '0000-00-00',
+  "cfox_eventtime" varchar(8) NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfox_timezone" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfox_city" varchar(80) NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfox_state" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfox_country" varchar(3) NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfox_lat" varchar(20) NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfox_long" varchar(20) NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfox_remarks" varchar(200) NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfox_key" varchar(20) NOT NULL COLLATE NOCASE DEFAULT '',
+  "cfox_ref" varchar(200) NOT NULL COLLATE NOCASE DEFAULT ''
+);
 
 End Transaction;
