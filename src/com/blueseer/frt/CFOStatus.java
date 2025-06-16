@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.frt;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.defaultDecimalSeparator;
 import static bsmf.MainFrame.ds;
@@ -37,6 +38,8 @@ import static bsmf.MainFrame.user;
 import com.blueseer.adm.admData;
 import static com.blueseer.adm.admData.addChangeLog;
 import com.blueseer.adm.admData.change_log;
+import static com.blueseer.edi.EDI.Create214;
+import static com.blueseer.edi.EDI.Create990;
 import static com.blueseer.frt.frtData.addBrokerMstr;
 import static com.blueseer.frt.frtData.addCFOStatus;
 import static com.blueseer.frt.frtData.addDriverMstr;
@@ -76,6 +79,7 @@ import static com.blueseer.utl.BlueSeerUtils.ludialog;
 import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerT;
@@ -90,6 +94,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -129,6 +134,8 @@ public class CFOStatus extends javax.swing.JPanel {
                 public static ArrayList<cfo_det> cfod = null;
                 public static ArrayList<cfo_status> statuslist = null;
                 public static String thiskey = "";
+                public static String uniquekey = "";
+                
     // global datatablemodel declarations       
    
     javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -474,6 +481,20 @@ public class CFOStatus extends javax.swing.JPanel {
      
     public String[] addRecord(String[] x) {
         String[] m = addCFOStatus(createRecord());
+        if (m[0].equals("0")) {
+               if (bsmf.MainFrame.remoteDB) {
+                ArrayList<String[]> arrx = new ArrayList<String[]>();
+                    arrx.add(new String[]{"id","send214"});
+                    arrx.add(new String[]{"key", tbkey.getText()});
+                   try {   
+                       sendServerPost(arrx, "", null);
+                   } catch (IOException ex) {
+                       bslog(ex);
+                   }
+               } else {
+                Create214(tbkey.getText(), uniquekey);
+               }
+        }
         return m;
     }
     
@@ -485,7 +506,7 @@ public class CFOStatus extends javax.swing.JPanel {
     }
      
    public cfo_status createRecord() { 
-                
+        uniquekey = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));        
         cfo_status z = new cfo_status(null, 
                 tbkey.getText(),
                 x.cfo_revision(),
@@ -504,7 +525,7 @@ public class CFOStatus extends javax.swing.JPanel {
                 tblatitude.getText(),
                 tblongitude.getText(),
                 tbremarks.getText(),
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")),  // key
+                uniquekey,  // key
                 "" // ref
         );
         return z;

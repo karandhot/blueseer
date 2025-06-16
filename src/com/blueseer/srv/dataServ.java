@@ -33,6 +33,7 @@ import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.edi.EDI.Create214;
 import static com.blueseer.edi.EDI.Create990;
 import static com.blueseer.edi.EDI.deleteFile;
 import static com.blueseer.edi.EDI.ediReprocessFile;
@@ -290,6 +291,10 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                 } else if (id.equals("send990")) { 
                   String key = request.getHeader("key");
                   response.getWriter().println(Create990(key));  
+                } else if (id.equals("send214")) { 
+                  String number = request.getHeader("number");
+                  String key = request.getHeader("key");
+                  response.getWriter().println(Create214(number, key));    
                 } else {
                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                   response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": unknown ID " + "\n" + getHeaders(request));  

@@ -885,6 +885,52 @@ public class frtData {
         return list;
     }
     
+    public static cfo_status getCFOStatus(String[] x) {
+        cfo_status r = null;
+        String[] m = new String[2];
+        String sql = "select * from cfo_status where cfox_nbr = ? and cfox_key = ?;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql);) {
+            ps.setString(1, x[0]);
+            ps.setString(2, x[1]);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new cfo_status(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new cfo_status(m, 
+                        res.getString("cfox_nbr"), 
+                        res.getString("cfox_revision"),         
+                        res.getString("cfox_cfonbr"), 
+                        res.getString("cfox_ts"), 
+                        res.getString("cfox_event"), 
+                        res.getString("cfox_eventdesc"), 
+                        res.getString("cfox_status"), 
+                        res.getString("cfox_statusdesc"), 
+                        res.getString("cfox_eventdate"), 
+                        res.getString("cfox_eventtime"), 
+                        res.getString("cfox_timezone"),
+                        res.getString("cfox_city"),
+                        res.getString("cfox_state"),
+                        res.getString("cfox_country"),
+                        res.getString("cfox_lat"),
+                        res.getString("cfox_long"),        
+                        res.getString("cfox_remarks"),
+                        res.getString("cfox_key"),
+                        res.getString("cfox_ref"));
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new cfo_status(m);
+        }
+        return r;
+    }
+    
    
     
     

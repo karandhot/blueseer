@@ -4992,7 +4992,7 @@ public class EDI {
         // get Delimiters from Cust Defaults
         String[] ids = EDData.getEDIXrefOut(fo.cfo_cust(), "GF");
         if (ids[0].isBlank()) {
-        messages.add(new String[]{"error","990 no edi_xref found for keys(billto/type): " + fo.cfo_cust() + "/" + "PR"} );
+        messages.add(new String[]{"error","990 no edi_xref found for keys(billto/type): " + fo.cfo_cust() + "/" + "GF"} );
         EDData.writeEDILogMulti(c, messages);
         messages.clear();  // clear message here
         return 1;
@@ -5084,7 +5084,143 @@ public class EDI {
        return errorcode; 
          
      }
+     
+    public static int Create214(String nbr, String key)  {
+        int errorcode = 0;
+        // errorcode = 0 ... clean exit
+        
+        String doctype = "214db";
+        String map = "";
+        String gs01code = "QM";
+        ArrayList<String[]> messages = new ArrayList<String[]>();
+         
+        // lets determine the billto of this shipper
+        cfo_mstr fo = frtData.getCFOMstr(new String[]{nbr});
+        
+        messages.add(new String[]{"info","exporting: " + doctype + " order: " + nbr + " for billto: " + fo.cfo_cust()});
+        
+        int comkey = OVData.getNextNbr("edilog");
+        
+        String[] c = initEDIControl();   
+        
+        c[1] = doctype;
+        c[2] = "";
+        c[3] = "";
+        c[4] = "";
+        c[5] = "";
+        c[6] = "";
+        c[7] = nbr;
+        c[15] = "0"; // dir out
+        c[12] = ""; // is override
+        c[22] = String.valueOf(comkey);
+        c[28] = "DB";
+        c[17] = "0";
+        c[18] = "999999";
+        c[19] = "0";
+        c[20] = "999999";
+        c[29] = "X12";
+        c[39] = fo.cfo_site();
+        
+        int idxnbr = EDData.writeEDIIDX(c);
+        c[16] = String.valueOf(idxnbr);
+        // get Delimiters from Cust Defaults
+        String[] ids = EDData.getEDIXrefOut(fo.cfo_cust(), gs01code);
+        if (ids[0].isBlank()) {
+        messages.add(new String[]{"error","214 no edi_xref found for keys(billto/type): " + fo.cfo_cust() + "/" + gs01code} );
+        EDData.writeEDILogMulti(c, messages);
+        messages.clear();  // clear message here
+        return 1;
+        } else {
+        messages.add(new String[]{"info","edi_xref: " + ids[0] + "/" + ids[1] + "/" + ids[2] + "/" + ids[3] + "/" + ids[4]});
+        }        
+        // tpid, gsid, tpaddr, ovaddr, type
+        
+        String[] defaults = EDData.getEDITPDefaults(doctype, ids[0], ids[1]  ); //doc, ourGS, theirsGS
+        messages.add(new String[]{"info","edi_mstr (id,doc): " + defaults[18] + "/" + defaults[19]});
+        messages.add(new String[]{"info","edi_mstr (sndISA/GS,rcvISA/GS): " + defaults[0] + "/" + defaults[2] + "/" + defaults[3] + "/" + defaults[5]});
+        
+        c[9] = defaults[7]; 
+        c[10] = defaults[6]; 
+        c[11] = defaults[8]; 
+        
+        c[0] = defaults[2];
+        c[21] = defaults[5];
+        
+               
+        messages.add(new String[]{"info","searching for map with: " + c[1] + "/" + defaults[2] + "/" + defaults[5]});
+        map = EDData.getEDIMap(c[1], defaults[2], defaults[5]);
+        
+        c[2] = map;
+        
+        if (map.isEmpty()) {
+            errorcode = 1;
+            messages.add(new String[]{"error","214 map string is empty for billto/gs02/gs03/doc: " + fo.cfo_cust() + "/" + defaults[2] + "/" + defaults[5] + " / " + c[1]});
+            EDData.writeEDILogMulti(c, messages);
+            messages.clear();  // clear message here
+            return errorcode;
+        } 
           
+         if (! BlueSeerUtils.isEDIClassFile(map)) {
+            errorcode = 1;
+            messages.add(new String[]{"error","214: unable to locate compiled map (" + map + ") billto/gs02/gs03/doc: " + fo.cfo_cust() + "/" + defaults[2] + "/" + defaults[5] + " / " + c[1]});
+            EDData.writeEDILogMulti(c, messages);
+            messages.clear();  // clear message here
+            return errorcode;
+        }     
+          
+        messages.add(new String[]{"info","using map: " + map});
+       
+        
+        // Mapdata method call below requires two parameters (ArrayList, String[]) ...doc and c
+        ArrayList doc = new ArrayList();
+        doc.add(nbr);  // cfox_nbr
+        doc.add(key);  // cfox_key
+        
+        
+         // call map 
+        try {
+        URLClassLoader cl = getEDIClassLoader();  
+        Class cls = Class.forName(map,true,cl); 
+        Object obj = cls.getDeclaredConstructor().newInstance();
+        Method method = cls.getDeclaredMethod("Mapdata", ArrayList.class, String[].class, ArrayList.class);
+        Object oc = method.invoke(obj, doc, c, messages);
+        String[] oString = (String[]) oc;
+        messages.add(new String[]{oString[0], oString[1]});
+        EDData.updateEDIIDX(idxnbr, c); 
+        if (oString[0].equals("error")) {
+            errorcode = 3;
+        }
+        } catch (InvocationTargetException ex) {
+        errorcode = 2;    
+        if (c[12].isEmpty()) {
+        messages.add(new String[]{"error", "invocation exception in map class " + map + "/" + c[0] + " / " + c[1]});    
+        clearStaticVariables();
+        }
+        edilog(ex); 
+        } catch (ClassNotFoundException ex) {
+        errorcode = 2;    
+        if (c[12].isEmpty()) {
+        messages.add(new String[]{"error", "Map Class not found " + map + "/" + c[0] + " / " + c[1]});        
+        }
+        edilog(ex); 
+        } catch (IllegalAccessException |
+             InstantiationException | NoSuchMethodException ex
+            ) {
+        errorcode = 2;    
+        if (c[12].isEmpty()) {
+        messages.add(new String[]{"error", "IllegalAccess|Instantiation|NoSuchMethod " + map + "/" + c[0] + " / " + c[1]});        
+       }
+        edilog(ex);
+       } finally {
+          EDData.writeEDILogMulti(c, messages);
+          messages.clear();  // clear message here...and at 997...and at end   
+       }
+         
+       return errorcode; 
+         
+     }
+    
+    
     public static int Create204(String nbr)  {
         int errorcode = 0;
         
