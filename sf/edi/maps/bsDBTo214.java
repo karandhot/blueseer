@@ -11,12 +11,13 @@ String shipline = "";
 String shipcity = "";
 String shipstate = "";
 String shipzip = "";
+String stopline = "";
 
  // now lets get order header info 
         // fonbr, ref, site, wh, date, remarks, carrier, carrier_assigned, reasoncode, custfo, type
-        frtData.cfo_mstr cfo = frtData.getCFOMstr(new String[]{cfonbr,""});
-        frtData.car_mstr car = frtData.getCarrierMstr(new String[]{"internal"});
+        frtData.cfo_mstr cfo = frtData.getCFOMstr(new String[]{cfonbr,""}); 
         frtData.cfo_status cfox = frtData.getCFOStatus(new String[]{cfonbr,uniquekey});
+        frtData.car_mstr car = frtData.getCarrierMstr(new String[]{"internal"});
         String[] t = EDData.getEDIXrefOut(cfo.cfo_cust(),"QM");
         
         defaultrev = cfo.cfo_defaultrev();
@@ -35,6 +36,7 @@ String shipzip = "";
               shipcity = cd.cfod_city();
               shipstate = cd.cfod_state();
               shipzip = cd.cfod_zip();
+              stopline = cd.cfod_stopline();
               }
           }
         } else {  // else must be drop off event codes
@@ -47,29 +49,32 @@ String shipzip = "";
               shipcity = cd.cfod_city();
               shipstate = cd.cfod_state();
               shipzip = cd.cfod_zip();
+              stopline = cd.cfod_stopline();
               }
           }
         }
+
+        frtData.cfo_item cfoi = frtData.getCFOItem(cfonbr,defaultrev,stopline);
 
         mapSegment("B10","e01",cfonbr);
         mapSegment("B10","e02",cfo.cfo_custfonbr());
         mapSegment("B10","e03",car.car_scac());
         commitSegment("B10");
 
-        mapSegment("L11","e01",cfo.cfo_custfonbr());
+        mapSegment("L11","e01",cfoi.cfoi_order());
         mapSegment("L11","e02","OQ");
         commitSegment("L11");
 
         mapSegment("N1","e01","SH");
         mapSegment("N1","e02",cfo.cfo_cust());
         mapSegment("N1","e03","1");
-        mapSegment("N1","e04",t[1]);
+        mapSegment("N1","e04",t[2]);
         commitSegment("N1");
 
         mapSegment("N1","e01",shiptype);
         mapSegment("N1","e02",shipname);
         mapSegment("N1","e03","9");
-        mapSegment("N1","e04",t[1]);
+        mapSegment("N1","e04",shipname);
         commitSegment("N1");
 
         mapSegment("N3","e01",shipline);
@@ -87,15 +92,15 @@ String shipzip = "";
         mapSegment("AT7","e02",cfox.cfox_status());
         mapSegment("AT7","e03","");
         mapSegment("AT7","e04","");
-        mapSegment("AT7","e05",cfox.cfox_eventdate());
-        mapSegment("AT7","e06",cfox.cfox_eventtime());
+        mapSegment("AT7","e05",cfox.cfox_eventdate().replace("-",""));
+        mapSegment("AT7","e06",cfox.cfox_eventtime().replace(":",""));
         mapSegment("AT7","e07","LT");
         commitSegment("AT7");
 
         if (! cfox.cfox_city().isBlank()) {
-        mapSegment("MS1","e01",shipcity);
-        mapSegment("MS1","e02",shipstate);
-        mapSegment("MS1","e03",shipzip);
+        mapSegment("MS1","e01",cfox.cfox_city());
+        mapSegment("MS1","e02",cfox.cfox_state());
+        mapSegment("MS1","e03",cfox.cfox_country());
         commitSegment("MS1");
         } else {
         mapSegment("MS1","e04",cfox.cfox_lat());

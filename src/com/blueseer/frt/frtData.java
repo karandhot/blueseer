@@ -1857,6 +1857,7 @@ public class frtData {
     
     private static int _addCFOItem(cfo_item x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
         int rows = 0;
+        bsmf.MainFrame.show(x.cfoi_nbr + "/" + x.cfoi_revision + "/" + x.cfoi_stopline + "/" + x.cfoi_itemline);
        /*
         String cfoi_nbr, String cfoi_stopline, String cfoi_itemline,
         String cfoi_item, String cfoi_itemdesc, String cfoi_order, 
@@ -2286,6 +2287,76 @@ public class frtData {
         return list;
     }
     
+    public static cfo_det getCFODet(String code, String revision, String stopline) {
+        cfo_det r = null;
+        String[] m = new String[2];
+        String sql = "select * from cfo_det where cfod_nbr = ? and cfod_revision = ? and cfod_stopline = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, code);
+        ps.setString(2, revision);
+        ps.setString(3, stopline);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new cfo_det(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new cfo_det(m, res.getString("cfod_nbr"), 
+                        res.getString("cfod_revision"),        
+                        res.getString("cfod_stopline"), 
+                        res.getString("cfod_seq"), 
+                        res.getString("cfod_type"), 
+                        res.getString("cfod_code"), 
+                        res.getString("cfod_name"), 
+                        res.getString("cfod_line1"), 
+                        res.getString("cfod_line2"), 
+                        res.getString("cfod_line3"), 
+                        res.getString("cfod_city"), 
+                        res.getString("cfod_state"), 
+                        res.getString("cfod_zip"), 
+                        res.getString("cfod_country"), 
+                        res.getString("cfod_phone"), 
+                        res.getString("cfod_email"), 
+                        res.getString("cfod_contact"), 
+                        res.getString("cfod_misc"), 
+                        res.getString("cfod_rmks"), 
+                        res.getString("cfod_reference"), 
+                        res.getString("cfod_ordnum"), 
+                        res.getString("cfod_weight"), 
+                        res.getString("cfod_pallet"), 
+                        res.getString("cfod_ladingqty"), 
+                        res.getString("cfod_hazmat"),
+                        res.getString("cfod_datecode"),        
+                        res.getString("cfod_datetype"), 
+                        res.getString("cfod_date"), 
+                        res.getString("cfod_datecode2"),        
+                        res.getString("cfod_datetype2"), 
+                        res.getString("cfod_date2"),  
+                        res.getString("cfod_timecode1"),        
+                        res.getString("cfod_timetype1"), 
+                        res.getString("cfod_time1"),
+                        res.getString("cfod_timezone1"),        
+                        res.getString("cfod_timecode2"),        
+                        res.getString("cfod_timetype2"), 
+                        res.getString("cfod_time2"),
+                        res.getString("cfod_timezone2"),
+                        res.getString("cfod_rate"),
+                        res.getString("cfod_miles"),
+                        res.getString("cfod_volume"));
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new cfo_det(m);
+        }
+        return r;
+    }
+    
+    
     public static ArrayList<cfo_item> getCFOItem(String code, String revision) {
         cfo_item r = null;
         String[] m = new String[2];
@@ -2327,6 +2398,47 @@ public class frtData {
         }
         return list;
     }
+    
+    public static cfo_item getCFOItem(String code, String revision, String stopline) {
+        cfo_item r = null;
+        String[] m = new String[2];
+        String sql = "select * from cfo_item where cfoi_nbr = ? and cfoi_revision = ? and cfoi_stopline = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, code);
+        ps.setString(2, revision);
+        ps.setString(3, stopline);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new cfo_item(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new cfo_item(m, 
+                        res.getString("cfoi_nbr"), 
+                        res.getString("cfoi_revision"),         
+                        res.getString("cfoi_stopline"), 
+                        res.getString("cfoi_itemline"), 
+                        res.getString("cfoi_item"), 
+                        res.getString("cfoi_itemdesc"), 
+                        res.getString("cfoi_order"), 
+                        res.getString("cfoi_qty"), 
+                        res.getString("cfoi_pallets"), 
+                        res.getString("cfoi_weight"), 
+                        res.getString("cfoi_ref"), 
+                        res.getString("cfoi_rmks"));
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new cfo_item(m);
+        }
+        return r;
+    }
+    
     
     public static ArrayList<cfo_sos> getCFOSOS(String code, String revision) {
         cfo_sos r = null;

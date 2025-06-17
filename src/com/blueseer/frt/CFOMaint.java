@@ -4065,7 +4065,8 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
            int stopnumber = Integer.valueOf(ddstopsequence.getSelectedItem().toString().substring(6));
            //for (int j = 0; j < orddet.getRowCount(); j++) {
             String[] v = kvstop.get(String.valueOf(stopnumber));
-                
+            currentstopline = stopnumber;
+            
                 ddstoptype.setSelectedItem(v[2]); 
                 ddshipto.setSelectedItem(v[3]); 
                 tbname.setText(v[4]); 
