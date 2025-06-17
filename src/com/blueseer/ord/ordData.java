@@ -3134,7 +3134,9 @@ public class ordData {
                 "", // shipvia
                 "B", 
                 custdata[8],
-                bm.bill_site()); 
+                bm.bill_site(),
+                "" // tracking
+                ); 
        
        // create shp_det 
        ArrayList<shpData.ship_det> shd = new ArrayList<shpData.ship_det>();

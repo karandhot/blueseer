@@ -955,7 +955,11 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                               sv.sv_create_date(),
                               sv.sv_rmks(),
                               "",
-                              "S", "", sv.sv_site()); 
+                              "S", 
+                              "", 
+                              sv.sv_site(),
+                              "" // tracking
+                              ); 
         
         ArrayList<svd_det> svdarray = ordData.getServiceOrderDet(new String[]{nbr});
         ArrayList<String[]> detail = new ArrayList<String[]>();

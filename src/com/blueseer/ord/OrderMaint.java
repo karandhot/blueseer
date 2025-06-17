@@ -918,6 +918,12 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     public String[] addRecord(String[] x) {
      String[] m = new String[2];
      m = addOrderTransaction(createDetRecord(), createRecord(), createTaxRecord(), createTaxDetRecord(), createSOSRecord());
+     
+      //  add someta
+        if (! tbtracking.getText().isBlank()) {
+            addUpdateSOMeta(tbkey.getText(), "header", "trackingnumber", tbtracking.getText());
+        }
+     
       // if autoinvoice
         if (OVData.isAutoInvoice()) {
         boolean sure = bsmf.MainFrame.warn("This is an auto-invoice order...Are you sure you want to auto-invoice?");     
@@ -1686,7 +1692,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 ddshipvia.getSelectedItem().toString(),
                 "S", 
                 ddtax.getSelectedItem().toString(),
-                ddsite.getSelectedItem().toString()); 
+                ddsite.getSelectedItem().toString(),
+                tbtracking.getText()); 
         ArrayList<String[]> detail = tableToArrayList();
         ArrayList<shpData.ship_det> shd = shpData.createShipDetJRT(detail, String.valueOf(shipperid), setDateDB(orddate.getDate()), ddsite.getSelectedItem().toString());
         ArrayList<shpData.ship_tree> sht = createTreeRecord(sh.sh_id());

@@ -675,7 +675,7 @@ public class shpData {
     }
    
     
-    public static ship_mstr createShipMstrJRT(String nbr, String site, String bol, String billto, String shipto, String so, String po, String ref, String shipdate, String orddate, String remarks, String shipvia, String shiptype, String taxcode, String shipfrom) {
+    public static ship_mstr createShipMstrJRT(String nbr, String site, String bol, String billto, String shipto, String so, String po, String ref, String shipdate, String orddate, String remarks, String shipvia, String shiptype, String taxcode, String shipfrom, String tracking) {
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
         cm_mstr cm = cusData.getCustMstr(new String[]{billto});
         String acct = cm.cm_ar_acct();
@@ -723,7 +723,7 @@ public class shpData {
                 shiptype,
                 so,
                 shipfrom,
-                "" // trailer/tracking
+                tracking // trailer/tracking
             );
                 
         return x;        
