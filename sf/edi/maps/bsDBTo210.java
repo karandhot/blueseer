@@ -108,7 +108,7 @@ for (frtData.cfo_det cfod : cfodet) {
                 mapSegment("LX","e01",snum(i));
                 commitSegment("LX");
  
-                if (! d[0].equals("Flat Rate")) {
+                if (! d[1].equals("Flat Rate")) {
                    mapSegment("L0","e02",cfo.cfo_mileage());
                    mapSegment("L0","e03","DM");
                    mapSegment("L0","e04",cfo.cfo_weight());
@@ -116,18 +116,19 @@ for (frtData.cfo_det cfod : cfodet) {
                    commitSegment("L0");
                 }
 
-                if (d[0].equals("Flat Rate")) {
+                if (d[1].equals("Flat Rate")) {
                 mapSegment("L1","e02",formatNumber(BlueSeerUtils.bsParseDouble(d[5]),"2"));
                 mapSegment("L1","e03","FR");
                 mapSegment("L1","e04",formatNumber(BlueSeerUtils.bsParseDouble(d[5]) * 100,"0"));
-                mapSegment("L1","e11",d[9]);
+                mapSegment("L1","e08",d[0]);
+                mapSegment("L1","e12",d[9]);
                 commitSegment("L1");
                 } else {
-                mapSegment("L1","e02",cfo.cfo_rate());
+                mapSegment("L1","e02",formatNumber(BlueSeerUtils.bsParseDouble(d[5]),"2"));
                 mapSegment("L1","e03","PM");
                 mapSegment("L1","e04",formatNumber(BlueSeerUtils.bsParseDouble(d[5]) * 100,"0"));
-                mapSegment("L1","e8",d[0]);
-                mapSegment("L1","e11",d[9]);
+                mapSegment("L1","e08",d[0]);
+                mapSegment("L1","e12",d[9]);
                 commitSegment("L1");
                 }
                   

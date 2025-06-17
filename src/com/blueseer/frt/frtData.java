@@ -1265,43 +1265,43 @@ public class frtData {
                lines.add(s);
             }
             
-            res = st.executeQuery("select code_key from code_mstr where code_code = 'freightsrvtype' order by code_key ;");
+            res = st.executeQuery("select freight_key from code_freight where freight_code = 'freightsrvtype' order by freight_key ;");
             while (res.next()) {
                 String[] s = new String[2];
                s[0] = "servicetypes";
-               s[1] = res.getString("code_key");
+               s[1] = res.getString("freight_key");
                lines.add(s);
             }
             
-            res = st.executeQuery("select code_key from code_mstr where code_code = 'freightchargecodes' order by code_key ;");
+            res = st.executeQuery("select freight_key from code_freight where freight_code = 'freightchargecodes' order by freight_key ;");
             while (res.next()) {
                 String[] s = new String[2];
                s[0] = "chargecodes";
-               s[1] = res.getString("code_key");
+               s[1] = res.getString("freight_key");
                lines.add(s);
             }
             
-            res = st.executeQuery("select code_key from code_mstr where code_code = 'freighteqptype' order by code_key ;");
+            res = st.executeQuery("select freight_key from code_freight where freight_code = 'freighteqptype' order by freight_key ;");
             while (res.next()) {
                 String[] s = new String[2];
                s[0] = "equipmenttypes";
-               s[1] = res.getString("code_key");
+               s[1] = res.getString("freight_key");
                lines.add(s);
             }
             
-            res = st.executeQuery("select code_key, code_value from code_mstr where code_code = 'freightdatecodes' order by code_key ;");
+            res = st.executeQuery("select freight_key, freight_value from code_freight where freight_code = 'freightdatecodes' order by freight_key ;");
             while (res.next()) {
                 String[] s = new String[2];
                s[0] = "freightdatecodes";
-               s[1] = res.getString("code_key") + "-" + res.getString("code_value");
+               s[1] = res.getString("freight_key") + "-" + res.getString("freight_value");
                lines.add(s);
             }
             
-            res = st.executeQuery("select code_key, code_value from code_mstr where code_code = 'freighttimecodes' order by code_key ;");
+            res = st.executeQuery("select freight_key, freight_value from code_freight where freight_code = 'freighttimecodes' order by freight_key ;");
             while (res.next()) {
                 String[] s = new String[2];
                s[0] = "freighttimecodes";
-               s[1] = res.getString("code_key") + "-" + res.getString("code_value");
+               s[1] = res.getString("freight_key") + "-" + res.getString("freight_value");
                lines.add(s);
             }
             
@@ -1414,27 +1414,27 @@ public class frtData {
                lines.add(s);
             }
             
-            res = st.executeQuery("select code_key from code_mstr where code_code = 'freightstatuseventcodes' order by code_key ;");
+            res = st.executeQuery("select freight_key from code_freight where freight_code = 'freightstatuseventcodes' order by freight_key ;");
             while (res.next()) {
                 String[] s = new String[2];
                s[0] = "eventcodes";
-               s[1] = res.getString("code_key");
+               s[1] = res.getString("freight_key");
                lines.add(s);
             }
             
-            res = st.executeQuery("select code_key from code_mstr where code_code = 'freightstatusreasoncodes' order by code_key ;");
+            res = st.executeQuery("select freight_key from code_freight where freight_code = 'freightstatusreasoncodes' order by freight_key ;");
             while (res.next()) {
                 String[] s = new String[2];
                s[0] = "reasoncodes";
-               s[1] = res.getString("code_key");
+               s[1] = res.getString("freight_key");
                lines.add(s);
             }
             
-            res = st.executeQuery("select code_value from code_mstr where code_code = 'freightstatusreasoncodes' AND code_key = 'default' ;");
+            res = st.executeQuery("select freight_value from code_freight where freight_code = 'freightstatusreasoncodes' AND freight_key = 'default' ;");
             while (res.next()) {
                 String[] s = new String[2];
                s[0] = "defaultstatus";
-               s[1] = res.getString("code_value");
+               s[1] = res.getString("freight_value");
                lines.add(s);
             }
             
@@ -2508,7 +2508,7 @@ public class frtData {
     return m;
     }
     
-     private static void _deleteCFOMstr(cfo_mstr x, Connection con) throws SQLException { 
+    private static void _deleteCFOMstr(cfo_mstr x, Connection con) throws SQLException { 
         PreparedStatement ps = null; 
         // DELETE ALL revisions of freight order record...user has been warned.
         String sql = "delete from cfo_mstr where cfo_nbr = ?; ";
@@ -2538,8 +2538,195 @@ public class frtData {
         ps.close();
     }
     
+     public static String[] addCodeFreight(code_freight x) {
+        String[] m ;
+        String sqlSelect = "SELECT * FROM  code_freight where freight_code = ? and codefreight_key = ?";
+        String sqlInsert = "insert into code_freight (freight_code, freight_key, freight_value, freight_internal) " 
+                        + " values (?,?,?,?); "; 
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+             PreparedStatement ps = con.prepareStatement(sqlSelect);) {
+             ps.setString(1, x.freight_code);
+             ps.setString(2, x.freight_key);
+          try (ResultSet res = ps.executeQuery();
+               PreparedStatement psi = con.prepareStatement(sqlInsert);) {  
+            if (! res.isBeforeFirst()) {
+            psi.setString(1, x.freight_code);
+            psi.setString(2, x.freight_key);
+            psi.setString(3, x.freight_value);
+            psi.setString(4, x.freight_internal);
+            int rows = psi.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+            } else {
+            m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordAlreadyExists};    
+            }
+          } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+          }
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+
+    public static String[] addOrUpdateCodeFreight(code_freight x) {
+        String[] m ;
+        String sqlSelect = "SELECT * FROM  code_freight where freight_code = ? and freight_key = ?";
+        String sqlInsert = "insert into code_freight (freight_code, freight_key, freight_value, freight_internal) " 
+                        + " values (?,?,?,?); "; 
+        String sqlUpdate = "update code_freight set freight_value = ?, freight_internal = ? " +   
+                          " where freight_code = ? and freight_key = ? ; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+             PreparedStatement ps = con.prepareStatement(sqlSelect);) {
+             ps.setString(1, x.freight_code);
+             ps.setString(2, x.freight_key);
+          try (ResultSet res = ps.executeQuery();
+               PreparedStatement psi = con.prepareStatement(sqlInsert);
+               PreparedStatement psu = con.prepareStatement(sqlUpdate);) {  
+            if (! res.isBeforeFirst()) {
+            psi.setString(1, x.freight_code);
+            psi.setString(2, x.freight_key);
+            psi.setString(3, x.freight_value);
+            psi.setString(4, x.freight_internal);
+            int rows = psi.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+            } else {
+            psu.setString(3, x.freight_code);
+            psu.setString(4, x.freight_key);
+            psu.setString(1, x.freight_value);
+            psu.setString(2, x.freight_internal);
+            int rows = psu.executeUpdate();    
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};    
+            }
+          } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+          }
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
+    public static String[] updateCodeFreight(code_freight x) {
+        String[] m ;
+        String sql = "update code_freight set freight_value = ?, freight_internal = ? " +   
+                          " where freight_code = ? and freight_key = ? ; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, x.freight_value);
+        ps.setString(2, x.freight_internal);
+        ps.setString(3, x.freight_code);
+        ps.setString(4, x.freight_key);
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
+    public static String[] deleteCodeFreight(code_freight x) { 
+       String[] m ;
+        String sql = "delete from code_freight where freight_code = ? and freight_key = ?; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, x.freight_code);
+        ps.setString(2, x.freight_key);
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
+    public static code_freight getCodeFreight(String[] x) {
+        code_freight r = null;
+        String[] m ;
+        String sql = "";
+         if (x.length >= 2 && ! x[1].isEmpty()) {
+            sql = "select * from code_freight where freight_code = ? and freight_key = ? ;"; 
+         } else {
+            sql = "select * from code_freight where freight_code = ? limit 1 ;";  
+         }
+        
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, x[0]);
+        if (x.length >= 2 && ! x[1].isEmpty()) {
+        ps.setString(2, x[1]);
+        }
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new code_freight(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new code_freight(m, 
+                            res.getString("freight_code"), 
+                            res.getString("freight_key"),
+                            res.getString("freight_value"),
+                            res.getString("freight_internal")
+                        );
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new code_freight(m);
+        }
+        return r;
+    }
+  
+    
     
     // misc
+    public static String getFreightCodeByCodeKey(String code, String key) {
+       String mystring = "";
+        try{
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try{
+                res = st.executeQuery("select freight_value from code_freight where " +
+                        " freight_code = " + "'" + code + "'" + 
+                        " AND freight_key = " + "'" + key + "'" + " ;");
+               while (res.next()) {
+                   mystring = res.getString("freight_value");
+                    
+                }
+               
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return mystring;
+        
+    }
+    
+    
     public static ArrayList<String> getCFORevisions(String cfo) {
         ArrayList<String> lines = new ArrayList<String>();
         try{
@@ -2957,6 +3144,13 @@ public class frtData {
     public record frt_ctrl(String[] m, String frtc_function, String frtc_export990, String frtc_varchar)  {
         public frt_ctrl(String[] m) {
             this (m, "", "", "");
+        }
+    }
+    
+    public record code_freight(String[] m, String freight_code, String freight_key, String freight_value,
+        String freight_internal ) {
+        public code_freight(String[] m) {
+            this(m, "", "", "", "");
         }
     }
     

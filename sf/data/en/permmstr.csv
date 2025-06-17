@@ -404,3 +404,5 @@ admin,ShipScanMaint,0
 admin,CFOInvoice,0
 admin,EDIExportReset,0
 admin,CFOStatus,0
+admin,FreightCodeMaint,0
+admin,FreightCodeBrowse,0

@@ -55,6 +55,7 @@ import static com.blueseer.frt.frtData.getCFODet;
 import static com.blueseer.frt.frtData.getCFOMstr;
 import static com.blueseer.frt.frtData.getCFOStatusList;
 import static com.blueseer.frt.frtData.getDriverMstr;
+import static com.blueseer.frt.frtData.getFreightCodeByCodeKey;
 import static com.blueseer.frt.frtData.updateBrokerMstr;
 import static com.blueseer.frt.frtData.updateDriverMstr;
 import com.blueseer.frt.frtData.veh_mstr;
@@ -84,8 +85,6 @@ import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerT;
 import com.blueseer.utl.OVData;
-import static com.blueseer.utl.OVData.getCodeMstrKeyList;
-import static com.blueseer.utl.OVData.getCodeValueByCodeKey;
 import com.blueseer.vdr.venData;
 import static com.blueseer.vdr.venData.addVendMstr;
 import java.awt.Color;
@@ -968,13 +967,13 @@ public class CFOStatus extends javax.swing.JPanel {
 
     private void ddeventActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddeventActionPerformed
         if (ddevent.getSelectedItem() != null) {
-          lblevent.setText(getCodeValueByCodeKey("freightstatuseventcodes", ddevent.getSelectedItem().toString()));
+          lblevent.setText(getFreightCodeByCodeKey("freightstatuseventcodes", ddevent.getSelectedItem().toString()));
         }
     }//GEN-LAST:event_ddeventActionPerformed
 
     private void ddstatusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddstatusActionPerformed
         if (ddstatus.getSelectedItem() != null) {
-          lblstatus.setText(getCodeValueByCodeKey("freightstatusreasoncodes", ddstatus.getSelectedItem().toString()));
+          lblstatus.setText(getFreightCodeByCodeKey("freightstatusreasoncodes", ddstatus.getSelectedItem().toString()));
         }
     }//GEN-LAST:event_ddstatusActionPerformed
 

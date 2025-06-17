@@ -181,6 +181,9 @@ public int[] mywidth;
         if (arg[0].equals("GenCodeBrowse")) {
              mymodel = DTData.getGenCodeAll();
         }
+        if (arg[0].equals("FreightCodeBrowse")) {
+             mymodel = DTData.getFreightCodeAll();
+        }
         if (arg[0].equals("WorkCellBrowse")) {
              mymodel = DTData.getWorkCellAll();
         }
@@ -597,12 +600,18 @@ public int[] mywidth;
                args = new String[]{TableReport.getValueAt(row, 1).toString()};
                reinitpanels(mypanel, true, args);
             }
-             if (TableReport.getName() != null && TableReport.getName().compareTo("GenCodeBrowse") == 0) {
+            if (TableReport.getName() != null && TableReport.getName().compareTo("GenCodeBrowse") == 0) {
                  mypanel = "GenericCodeMaint";
                 if (! checkperms(mypanel)) { return; }
                args = new String[]{TableReport.getValueAt(row, 1).toString(),TableReport.getValueAt(row, 2).toString()};
                reinitpanels(mypanel, true, args);
             }
+            if (TableReport.getName() != null && TableReport.getName().compareTo("FreightCodeBrowse") == 0) {
+                 mypanel = "FreightCodeMaint";
+                if (! checkperms(mypanel)) { return; }
+               args = new String[]{TableReport.getValueAt(row, 1).toString(),TableReport.getValueAt(row, 2).toString()};
+               reinitpanels(mypanel, true, args);
+            } 
             if (TableReport.getName() != null && TableReport.getName().compareTo("ForecastBrowse") == 0) {
                  mypanel = "ForecastMaint";
                 if (! checkperms(mypanel)) { return; }

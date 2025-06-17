@@ -3908,17 +3908,17 @@ public class EDI {
                 (e.getDetUnits(j).isBlank() ? "0" : e.getDetUnits(j).replace(defaultDecimalSeparator, '.') ), // quantity
                 "0", // hazmat
                 e.getDetDateType(j), // datecode
-                OVData.getCodeValueByCodeKey("freightdatecodes", e.getDetDateType(j)), // datetype        
+                frtData.getFreightCodeByCodeKey("freightdatecodes", e.getDetDateType(j)), // datetype        
                 (e.getDetDate(j).isBlank() ? null : e.getDetDate(j)), // date
                 e.getDetDateType2(j), // datecode2
-                OVData.getCodeValueByCodeKey("freightdatecodes", e.getDetDateType2(j)), // datetype2
+                frtData.getFreightCodeByCodeKey("freightdatecodes", e.getDetDateType2(j)), // datetype2
                 (e.getDetDate2(j).isBlank() ? null : e.getDetDate2(j)),  // date2
                 e.getDetTimeCode1(j),// timecode1
-                OVData.getCodeValueByCodeKey("freighttimecodes", e.getDetTimeCode1(j)), // timetype1   ... get from code_mstr freighttimecodes        
+                frtData.getFreightCodeByCodeKey("freighttimecodes", e.getDetTimeCode1(j)), // timetype1   ... get from code_mstr freighttimecodes        
                 time1, // time
                 e.getDetTimeZone(j), // timezone 
                 e.getDetTimeCode2(j), // timecode2
-                OVData.getCodeValueByCodeKey("freighttimecodes", e.getDetTimeCode2(j)), // timetype2 ...get from code_mstr freighttimecodes
+                frtData.getFreightCodeByCodeKey("freighttimecodes", e.getDetTimeCode2(j)), // timetype2 ...get from code_mstr freighttimecodes
                 time2, // time2
                 e.getDetTimeZone2(j), // timezone2
                 (e.getDetRate(j).isBlank() ? "0" : e.getDetRate(j).replace(defaultDecimalSeparator, '.') ), // rate 

@@ -351,3 +351,5 @@ ShipScanMaint,,com.blueseer.shp.ShipScanMaint,JMenuItem,shpz
 CFOInvoice,,com.blueseer.frt.CFOInvoice,JMenuItem,cfoi
 EDIExportReset,,com.blueseer.edi.EDIExportReset,JMenuItem,ediz
 CFOStatus,,com.blueseer.frt.CFOStatus,JMenuItem,cfos
+FreightCodeMaint,,com.blueseer.frt.FreightCodeMaint,JMenuItem,fcom
+FreightCodeBrowse,,com.blueseer.utl.ReportPanel,JMenuItem,fcob

@@ -3001,6 +3001,12 @@ CREATE TABLE "code_mstr" (
   "code_value" varchar(100) NOT NULL COLLATE NOCASE DEFAULT '',
   "code_internal" tinyint(1) NOT NULL DEFAULT '0'
 );
+CREATE TABLE "code_freight" (
+  "freight_code" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
+  "freight_key" varchar(100) NOT NULL COLLATE NOCASE DEFAULT '',
+  "freight_value" varchar(100) NOT NULL COLLATE NOCASE DEFAULT '',
+  "freight_internal" tinyint(1) NOT NULL DEFAULT '0'
+);
 CREATE TABLE "label_zebra" (
   "lblz_code" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
   "lblz_desc" varchar(100) NOT NULL COLLATE NOCASE DEFAULT '',

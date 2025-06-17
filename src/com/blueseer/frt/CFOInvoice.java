@@ -72,7 +72,6 @@ import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerT;
 import com.blueseer.utl.OVData;
-import static com.blueseer.utl.OVData.getCodeValueByCodeKey;
 import com.blueseer.vdr.venData;
 import static com.blueseer.vdr.venData.addVendMstr;
 import java.awt.Color;
@@ -599,9 +598,9 @@ public class CFOInvoice extends javax.swing.JPanel {
         lual = new ActionListener() {
         public void actionPerformed(ActionEvent event) {
         if (lurb1.isSelected()) {  
-         luModel = DTData.getGenCodeBrowseUtilByCode(luinput.getText(),0, "code_key", "freightchargecodes"); 
+         luModel = DTData.getFreightCodeBrowseUtilByCode(luinput.getText(),0, "freight_key", "freightchargecodes"); 
         } else {
-         luModel = DTData.getGenCodeBrowseUtilByCode(luinput.getText(),0, "code_value", "freightchargecodes");    
+         luModel = DTData.getFreightCodeBrowseUtilByCode(luinput.getText(),0, "freight_value", "freightchargecodes");    
         }
         luTable.setModel(luModel);
         luTable.getColumnModel().getColumn(0).setMaxWidth(50);

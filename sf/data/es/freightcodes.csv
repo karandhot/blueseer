@@ -1,0 +1,1438 @@
+freightsrvtype,LTL,Less Than Truckload,1
+freightsrvtype,FTL,Full Truckload,1
+freightsrvtype,Flatbed,Flat Bed Services,1
+freightsrvtype,Refrigerated,Refridgerated Services,1
+freightsrvtype,Expedite,Expedited Services,1
+freightsrvtype,Intermodal,Intermodal,1
+freighteqptype,Box Truck,Box Truck,1
+freighteqptype,Enclosed 53,53 Enclosed Trailer,1
+freighteqptype,Flatbed,Flat bed trailer,1
+freighteqptype,Stepdeck,stepdeck singledrop trailer,1
+freighteqptype,Conestoga,Conestoga trailer,1
+freighteqptype,Gooseneck,Gooseneck trailer,1
+freighteqptype,Removable Gooseneck,RGN Gooseneck trailer,1
+freighteqptype,Stretch RGN,Stretch RGN Gooseneck trailer,1
+freighteqptype,Lowboy,Lowboy double drop trailer,1
+freighteqptype,Reefer,Refrigerated trailer,1
+freighteqptype,Specialized,Specialized trailer,1
+freighteqptype,20,20 ft. IL Container (Open Top),1
+freighteqptype,2B,20 ft. IL Container (Closed Top),1
+freighteqptype,2C,Cut-in Robot Distributed Power Unit (DPU),1
+freighteqptype,2D,Control Unit,1
+freighteqptype,2E,Head-end Helper Unit,1
+freighteqptype,2F,Roadrailer,1
+freighteqptype,2G,Cut-in Helper,1
+freighteqptype,2H,Rear-end Helper Unit,1
+freighteqptype,2R,Rear-end Robot Distributed Power Unit (DPU),1
+freighteqptype,40,40 ft. IL Container (Open Top),1
+freighteqptype,4B,40 ft. IL Container (Closed Top),1
+freighteqptype,AA,Air Ride Van,1
+freighteqptype,AC,Closed Container,1
+freighteqptype,AD,Flatbed Sliding Tandem,1
+freighteqptype,AF,Air Freight (Break Bulk),1
+freighteqptype,AL,Container Aluminum,1
+freighteqptype,AP,Aircraft,1
+freighteqptype,AT,Closed Container (Controlled Temperature),1
+freighteqptype,BC,Covered Barge,1
+freighteqptype,BE,Bilevel Railcar Fully Open,1
+freighteqptype,BF,Bilevel Railcar Fully Enclosed,1
+freighteqptype,BG,Bogie,1
+freighteqptype,BH,Bilevel Railcar Screened With Roof,1
+freighteqptype,BJ,Bilevel Railcar Screened No Roof,1
+freighteqptype,BK,Container Bulk,1
+freighteqptype,BO,Barge Open,1
+freighteqptype,BR,Barge,1
+freighteqptype,BX,Boxcar,1
+freighteqptype,CA,Caboose,1
+freighteqptype,CB,Chassis Gooseneck,1
+freighteqptype,CC,Container resting on a Chassis,1
+freighteqptype,CD,Container with Bag Hangers,1
+freighteqptype,CG,Container Tank (Gas),1
+freighteqptype,CH,Chassis,1
+freighteqptype,CI,Container Insulated,1
+freighteqptype,CJ,Container Insulated/Ventilated,1
+freighteqptype,CK,Container Heated/Insulated/Ventilated,1
+freighteqptype,CL,Container (Closed Top - Length Unspecified),1
+freighteqptype,CM,Container Open-Sided,1
+freighteqptype,CN,Container,1
+freighteqptype,CP,Coil Car Open,1
+freighteqptype,CQ,Container Tank (Food Grade-Liquid),1
+freighteqptype,CR,Coil-Car Covered,1
+freighteqptype,CS,Container-Low Side Open Top,1
+freighteqptype,CT,Container-High Side Open Top,1
+freighteqptype,CU,Container (Open Top - Length Unspecified),1
+freighteqptype,CV,Closed Van,1
+freighteqptype,CW,Container Tank (Chemicals),1
+freighteqptype,CX,Container Tank,1
+freighteqptype,CZ,Refrigerated Container,1
+freighteqptype,DD,Double-Drop Trailer,1
+freighteqptype,DF,Container with Flush Doors,1
+freighteqptype,DT,Drop Back Trailer,1
+freighteqptype,DX,Boxcar Damage Free Equipped,1
+freighteqptype,ET,End of Train Device,1
+freighteqptype,FF,Frozen Food Trailer,1
+freighteqptype,FH,Flat Bed Trailer with Headboards,1
+freighteqptype,FN,Flat Bed Trailer with No Headboards,1
+freighteqptype,FP,Flatcar With Pedestal,1
+freighteqptype,FR,Flat Bed Trailer - Removable Sides,1
+freighteqptype,FS,Container with Floor Securing Rings,1
+freighteqptype,FT,Flat Bed Trailer,1
+freighteqptype,FX,Boxcar Cushion Under Frame OF,1
+freighteqptype,GS,Generator Set,1
+freighteqptype,HB,Container with Hangar Bars,1
+freighteqptype,HC,Hopper Car (Covered),1
+freighteqptype,HO,Hopper Car (Open),1
+freighteqptype,HP,Hopper Car (Covered; Pneumatic Discharge),1
+freighteqptype,HT,Head of Train Device,1
+freighteqptype,HV,High Cube Van,1
+freighteqptype,HY,Hydrant-Cart,1
+freighteqptype,ID,Idler Car,1
+freighteqptype,IX,Boxcar (Insulated),1
+freighteqptype,LO,Locomotive,1
+freighteqptype,LS,Half Height Flat Rack,1
+freighteqptype,LU,Load/unload Device on Equipment,1
+freighteqptype,NX,Boxcar (Interior Bulkheads),1
+freighteqptype,OB,Ocean Vessel (Break Bulk),1
+freighteqptype,OT,Open-top/flatbed trailer,1
+freighteqptype,OV,Open Top Van,1
+freighteqptype,PL,Container Platform,1
+freighteqptype,PP,Power Pack,1
+freighteqptype,PT,Protected Trailer,1
+freighteqptype,PU,Pickup Truck,1
+freighteqptype,RA,Fixed-Rack Flat-Bed Trailer,1
+freighteqptype,RC,Refrigerated (Reefer) Car,1
+freighteqptype,RD,Fixed-Rack Double Drop Trailer,1
+freighteqptype,RE,Flat Car (End Bulkheads),1
+freighteqptype,RF,Flat Car,1
+freighteqptype,RG,Gondola Covered,1
+freighteqptype,RI,Gondola Car (Covered - Interior Bulkheads),1
+freighteqptype,RO,Gondola Car (Open),1
+freighteqptype,RR,Rail Car,1
+freighteqptype,RS,Fixed-Rack Single-Drop Trailer,1
+freighteqptype,RT,Controlled Temperature Trailer (Reefer),1
+freighteqptype,SA,Saddle,1
+freighteqptype,SC,Service Car,1
+freighteqptype,SD,Single-Drop Trailer,1
+freighteqptype,SK,Stack Car,1
+freighteqptype,SL,Container Steel,1
+freighteqptype,SR,STAK-RAK,1
+freighteqptype,SS,Container with Smooth Sides,1
+freighteqptype,ST,Removable Side Trailer,1
+freighteqptype,SV,Van - Special Inside Length Width or Height Requirements,1
+freighteqptype,TA,Trailer Heated/Insulated/Ventilated,1
+freighteqptype,TB,Trailer Boat,1
+freighteqptype,TC,Trailer Car,1
+freighteqptype,TF,Trailer Dry Freight,1
+freighteqptype,TG,Trailer Tank (Gas),1
+freighteqptype,TH,Truck Open Top High Side,1
+freighteqptype,TI,Trailer Insulated,1
+freighteqptype,TJ,Trailer Tank (Chemicals),1
+freighteqptype,TK,Trailer Tank (Food Grade-Liquid),1
+freighteqptype,TL,Trailer (not otherwise specified),1
+freighteqptype,TM,Trailer Insulated/Ventilated,1
+freighteqptype,TN,Tank Car,1
+freighteqptype,TO,Truck Open Top,1
+freighteqptype,TP,Trailer Pneumatic,1
+freighteqptype,TQ,Trailer Electric Heat,1
+freighteqptype,TR,Tractor,1
+freighteqptype,TT,Telescoping Trailer,1
+freighteqptype,TU,Truck Open Top Low Side,1
+freighteqptype,TV,Truck Van,1
+freighteqptype,TW,Trailer Refrigerated,1
+freighteqptype,UA,Trilevel Railcar 20 Feet,1
+freighteqptype,UB,Trilevel Railcar Screened Fully Enclosed,1
+freighteqptype,UC,Trilevel Railcar Screened With Roof,1
+freighteqptype,UD,Trilevel Railcar Screened No Roof,1
+freighteqptype,UE,Trilevel Railcar Screened With Doors No Roof,1
+freighteqptype,UL,Unit Load Device (ULD),1
+freighteqptype,UP,Container Upgraded,1
+freighteqptype,VA,Container Vented,1
+freighteqptype,VE,Vessel Ocean,1
+freighteqptype,VL,Vessel Lake,1
+freighteqptype,VR,Vessel Ocean Rollon-Rolloff,1
+freighteqptype,VS,Vessel Ocean Lash,1
+freighteqptype,VT,Vessel Ocean Containership,1
+freighteqptype,WR,Container with Wavy or Ripple Sides,1
+freighteqptype,WY,Railroad Maintenance of Way Car,1
+freightchargecodes,000,Pump Out Charge,1
+freightchargecodes,002,Renewal,1
+freightchargecodes,003,Account Number Correction Charge,1
+freightchargecodes,004,Dividend,1
+freightchargecodes,005,Activation of Carnet,1
+freightchargecodes,006,Overpayment,1
+freightchargecodes,007,Suspense,1
+freightchargecodes,008,Balance Forward,1
+freightchargecodes,009,Dividend Interest,1
+freightchargecodes,010,Add on - Destination,1
+freightchargecodes,011,Loan Interest,1
+freightchargecodes,012,Premium Waiver,1
+freightchargecodes,015,Add on - Origin,1
+freightchargecodes,016,Dividend Adjustment,1
+freightchargecodes,017,Interest,1
+freightchargecodes,020,Address Correction,1
+freightchargecodes,025,Advance Destination Amount,1
+freightchargecodes,026,Integrated Business Services (IBS) Service Charge,1
+freightchargecodes,027,Special Packaging,1
+freightchargecodes,028,Box Liners,1
+freightchargecodes,029,Product Personalization,1
+freightchargecodes,030,Advance Destination Fee,1
+freightchargecodes,031,Tape Charges,1
+freightchargecodes,032,Subject to Tax,1
+freightchargecodes,035,Advance Origin Amount,1
+freightchargecodes,040,Advance Origin Fee,1
+freightchargecodes,045,Advance Fee,1
+freightchargecodes,050,Agent Disbursement - Destination,1
+freightchargecodes,055,Agent Disbursement Fee - Destination,1
+freightchargecodes,060,Agent Disbursement - Origin,1
+freightchargecodes,065,Agent Disbursement Fee - Origin,1
+freightchargecodes,070,Air Export Certificate,1
+freightchargecodes,075,Air Express Charge,1
+freightchargecodes,080,Air Transportation Charge,1
+freightchargecodes,085,Airline Opening Fee,1
+freightchargecodes,090,Airport Tax - Destination,1
+freightchargecodes,095,Airport Tax - Origin,1
+freightchargecodes,100,Airport Terminal Handling Charge,1
+freightchargecodes,105,Acknowledgment of Delivery Fee (AOD),1
+freightchargecodes,110,Amending Export Documentation,1
+freightchargecodes,115,Assembly Fee,1
+freightchargecodes,120,Banking Drafts,1
+freightchargecodes,135,Cables (sending of),1
+freightchargecodes,140,Call Tag,1
+freightchargecodes,145,Canadian C.Q.Customs Clearance,1
+freightchargecodes,150,Canadian Currency Exchange,1
+freightchargecodes,155,Canadian Import Termination Fee,1
+freightchargecodes,160,Canadian Reconsignment Fee,1
+freightchargecodes,165,Canadian Remanifest Fee,1
+freightchargecodes,170,Certificate of Origin,1
+freightchargecodes,175,Certificate of Registration,1
+freightchargecodes,180,Chamber of Commerce Service Charge,1
+freightchargecodes,185,Change of Airbill - Service Fee,1
+freightchargecodes,186,Chemical Milling Charge,1
+freightchargecodes,190,City Terminal Charge,1
+freightchargecodes,205,Collect Surcharge,1
+freightchargecodes,210,Constant Surveillance Service,1
+freightchargecodes,215,Consular Legalization Service,1
+freightchargecodes,220,Consularization Fee,1
+freightchargecodes,225,Constant Surveillance Service - Armed,1
+freightchargecodes,230,Credit,1
+freightchargecodes,235,Customer Account Identification,1
+freightchargecodes,240,Customs Broker Fee,1
+freightchargecodes,245,Customs Invoice,1
+freightchargecodes,250,Customs Invoice - Additional Page,1
+freightchargecodes,255,Data/Drawing Charge,1
+freightchargecodes,260,Delivery Surcharge,1
+freightchargecodes,265,Development Charge,1
+freightchargecodes,270,Discount - Drop Box/Convenience Ctr.,1
+freightchargecodes,275,Discount - Incentive,1
+freightchargecodes,280,Discount - Multiple Shipment,1
+freightchargecodes,285,Discount - Service Option (Delivery),1
+freightchargecodes,290,Discount - Service Option (Pickup),1
+freightchargecodes,295,Discount - Special,1
+freightchargecodes,297,Contingency Credit Charge,1
+freightchargecodes,300,Distribution Fee,1
+freightchargecodes,310,Dry Ice,1
+freightchargecodes,315,Duty Charge,1
+freightchargecodes,320,Endorsement Fee,1
+freightchargecodes,325,Eur1 Presentation Fee,1
+freightchargecodes,335,Excise Tax - Destination,1
+freightchargecodes,340,Excise Tax - Origin,1
+freightchargecodes,345,Expedited One Day Consular Service,1
+freightchargecodes,350,Expedited Shipments,1
+freightchargecodes,355,Extra Copies and Mailings,1
+freightchargecodes,360,Export Customs Clearance,1
+freightchargecodes,365,Export Declarations - Automated,1
+freightchargecodes,370,Export Declarations - U.S. Shippers,1
+freightchargecodes,375,Export License Application,1
+freightchargecodes,380,Extra Service - Counter-to-Counter,1
+freightchargecodes,385,Facsimile Charges,1
+freightchargecodes,390,Facsimile Charges - Additional Pages,1
+freightchargecodes,392,Failed Lamp Panel Charge,1
+freightchargecodes,393,First Article Charge,1
+freightchargecodes,395,Free Domicile Shipment Processing,1
+freightchargecodes,400,Freight,1
+freightchargecodes,405,Fuel Surcharge,1
+freightchargecodes,410,Government Warehouse Fee - Destination,1
+freightchargecodes,415,Government Warehouse Fee - Origin,1
+freightchargecodes,416,Grain Flow Charge,1
+freightchargecodes,420,Hazardous Materials Handling Fee - Domestic,1
+freightchargecodes,425,Hazardous Materials Handling Fee - International,1
+freightchargecodes,426,Heat Treat Charge,1
+freightchargecodes,430,IATA Airbill Preparation,1
+freightchargecodes,435,IATA Fee,1
+freightchargecodes,440,Import Service Fee,1
+freightchargecodes,445,Insurance Fee,1
+freightchargecodes,450,Inland Transportation,1
+freightchargecodes,455,Insurance Premium,1
+freightchargecodes,460,International Door-to-Door Handling Fee,1
+freightchargecodes,462,Incorrect Billing Account Charge,1
+freightchargecodes,465,Italian Release Charge,1
+freightchargecodes,470,Letter of Credit Processing,1
+freightchargecodes,475,Mailing - Postage Cost,1
+freightchargecodes,480,Mailing - Service Fee,1
+freightchargecodes,485,Messenger Service,1
+freightchargecodes,490,Minimum Air Transportation Charge,1
+freightchargecodes,495,Miscellaneous - Destination,1
+freightchargecodes,500,Miscellaneous - Origin,1
+freightchargecodes,505,Missing Account NBR Charge,1
+freightchargecodes,510,Offshore - Alaska/Hawaii,1
+freightchargecodes,515,On Hand Service,1
+freightchargecodes,520,Oversized Premium,1
+freightchargecodes,525,Passing Shippers Export Entry,1
+freightchargecodes,535,Pickup - Out of Area,1
+freightchargecodes,540,Pickup Surcharge,1
+freightchargecodes,545,Pre-Positioned Inventory Service,1
+freightchargecodes,550,Preparation of Air Waybill - Origin,1
+freightchargecodes,555,Preparation of Canadian Customs Invoice,1
+freightchargecodes,560,Preparation of Commercial Invoice,1
+freightchargecodes,565,Preparation of Export Entry,1
+freightchargecodes,570,Preparation of Insurance Certificate,1
+freightchargecodes,580,Priority Service,1
+freightchargecodes,585,Preparation of U.S. Export Documentation,1
+freightchargecodes,586,Processing Charge,1
+freightchargecodes,590,Rebilled Drayage - Destination,1
+freightchargecodes,593,Re-Bill Charge,1
+freightchargecodes,595,Proforma Invoice,1
+freightchargecodes,600,Recipient Address Correction,1
+freightchargecodes,605,Rebilled Drayage - Origin,1
+freightchargecodes,610,Record/Filing,1
+freightchargecodes,615,Recovery Fee,1
+freightchargecodes,620,Recrating/Recoopering - Destination,1
+freightchargecodes,625,Recrating/Recoopering - Origin,1
+freightchargecodes,635,Registration of Export Shipments,1
+freightchargecodes,640,Registration of Export for Reentry,1
+freightchargecodes,641,Reliability Charge,1
+freightchargecodes,645,Restricted Article Fee,1
+freightchargecodes,650,Repickup,1
+freightchargecodes,665,Saturday Delivery,1
+freightchargecodes,670,Saturday Pickup,1
+freightchargecodes,675,Security Signature Service,1
+freightchargecodes,680,Service Upgrade,1
+freightchargecodes,685,Special Delivery,1
+freightchargecodes,690,Special Handling Service,1
+freightchargecodes,695,Special Pickup,1
+freightchargecodes,696,Special Test Equipment Charge,1
+freightchargecodes,697,Special Tooling Charge,1
+freightchargecodes,700,Special Vehicle Rent,1
+freightchargecodes,705,Stamp Fee,1
+freightchargecodes,706,Straightening Charge,1
+freightchargecodes,720,Telephone - Destination,1
+freightchargecodes,725,Telephone - Origin,1
+freightchargecodes,730,Terminal Service Fee,1
+freightchargecodes,731,Test/Qualification Charge,1
+freightchargecodes,732,Tooling Rework Charge,1
+freightchargecodes,735,Tracing Inbound Via Other Carriers,1
+freightchargecodes,736,Tracing Service Fee,1
+freightchargecodes,740,Transfer of Lading Charge,1
+freightchargecodes,745,Valuation Fee,1
+freightchargecodes,750,Value Added Tax (VAT),1
+freightchargecodes,760,Waybill and Invoice Distribution,1
+freightchargecodes,761,Written Proof of Delivery,1
+freightchargecodes,762,X-ray Charge,1
+freightchargecodes,763,Auto Towing Charge,1
+freightchargecodes,764,Late Return Charge,1
+freightchargecodes,765,One Way Drop Off Charge,1
+freightchargecodes,766,Business Center Charge,1
+freightchargecodes,767,Gift Shop Charge,1
+freightchargecodes,768,Health Club Charge,1
+freightchargecodes,769,Laundry and Dry Cleaning Charge,1
+freightchargecodes,770,In-room Mini-bar Charge,1
+freightchargecodes,771,In-room Movie Charge,1
+freightchargecodes,772,Passenger Facility Charge,1
+freightchargecodes,773,Prepaid Expenses,1
+freightchargecodes,999,Other (See related description),1
+freightchargecodes,AAA,Advertising Allowance,1
+freightchargecodes,AAJ,Adjustments,1
+freightchargecodes,AAM,Additional Material,1
+freightchargecodes,AAN,Allowance Non-performance,1
+freightchargecodes,AAO,Allowance Advance,1
+freightchargecodes,AAS,Attendants Accompanying,1
+freightchargecodes,AAT,Handling Charge Tax,1
+freightchargecodes,ABC,Alcoholic Beverage Report Charge,1
+freightchargecodes,ABL,Attachments to Bill of Lading Charge,1
+freightchargecodes,ACD,Allegheny County PA Delivery Charge,1
+freightchargecodes,ACF,Access Charge - Federal,1
+freightchargecodes,ACH,Access Charges,1
+freightchargecodes,ACL,Actual Labor Charge,1
+freightchargecodes,ACS,Access Charge - State,1
+freightchargecodes,ADH,Advance Charges Handling,1
+freightchargecodes,ADL,Advance Loading Charge,1
+freightchargecodes,ADV,Advances,1
+freightchargecodes,AFB,Additional Copies of Freight Bill,1
+freightchargecodes,AFC,Collect on Delivery Alteration Charge,1
+freightchargecodes,AFN,Aircraft Ordered But Not Used,1
+freightchargecodes,AGS,Armed Guard Service,1
+freightchargecodes,AIB,Additional Injection/Blending Service Charge,1
+freightchargecodes,AIC,Air Freight - Consolidation,1
+freightchargecodes,AIR,Air Freight,1
+freightchargecodes,ALC,Advance Lading Charge,1
+freightchargecodes,ALP,Use of Alternate Port,1
+freightchargecodes,AMB,Adjustment for Maximum Charges Billing,1
+freightchargecodes,AMC,Absolute Minimum Charge,1
+freightchargecodes,AMP,Adjustment for Minimum Average Time Requirement Billing,1
+freightchargecodes,ANB,Adjustment for Minimum Charges Billing,1
+freightchargecodes,ANC,Anchoring and Unanchoring,1
+freightchargecodes,ANS,Anodizing Charge,1
+freightchargecodes,APL,Appliance Servicing,1
+freightchargecodes,APT,Appointment (Notification),1
+freightchargecodes,ARB,Arbitrary (In Addition to Through Rates and Charges),1
+freightchargecodes,ARC,Air Conditioning Disconnect and Connect,1
+freightchargecodes,ARG,Rail Armed Guard Service,1
+freightchargecodes,ARR,Air Ride Tractor Service Charge,1
+freightchargecodes,ASC,Assembly Charge,1
+freightchargecodes,AUX,Auxiliary Service,1
+freightchargecodes,AVA,Ad Valorem,1
+freightchargecodes,BAA,Beaming Charge,1
+freightchargecodes,BAB,Brokerage or Duty,1
+freightchargecodes,BAC,Buyers Car Allowance,1
+freightchargecodes,BAD,Bad Debt,1
+freightchargecodes,BAF,Both-Flat,1
+freightchargecodes,BAP,Broken Package Charge,1
+freightchargecodes,BAS,Base Charge,1
+freightchargecodes,BBK,Break Bulk Surface Charge,1
+freightchargecodes,BCF,Border Crossing Fee,1
+freightchargecodes,BDX,Bordeaux Arbitraries,1
+freightchargecodes,BEY,Beyond Freight Charges,1
+freightchargecodes,BFD,Bedding/Feeding/Disinfecting,1
+freightchargecodes,BKA,Bulky Article,1
+freightchargecodes,BLA,Bill of Lading Attendancy,1
+freightchargecodes,BLC,Bill of Lading Charge,1
+freightchargecodes,BLD,Billed Demand,1
+freightchargecodes,BLK,Blocking and Bracing Charge,1
+freightchargecodes,BLW,Blower Charge,1
+freightchargecodes,BND,Bond Charges,1
+freightchargecodes,BOB,Bobtail Charges,1
+freightchargecodes,BOP,Bop Sheet Charge,1
+freightchargecodes,BRA,Basic Reorder Allowance,1
+freightchargecodes,BRD,Bridge Toll,1
+freightchargecodes,BRG,Aqua Train,1
+freightchargecodes,BSC,Bunker Surcharge,1
+freightchargecodes,BSS,Broker Selection Surcharge,1
+freightchargecodes,BTC,Bi-level Tri-level Charges,1
+freightchargecodes,BU2,Bunker Adjustment - 20 Foot Container,1
+freightchargecodes,BU4,Bunker Adjustment - 40 Foot Container,1
+freightchargecodes,BUA,Bunker Adjustment,1
+freightchargecodes,BUR,Bureau Report Charge,1
+freightchargecodes,BYD,Beyond Charge,1
+freightchargecodes,CA1,Currency Adjustment - Break Bulk,1
+freightchargecodes,CA2,Currency Adjustment - 20 Foot Container,1
+freightchargecodes,CA4,Currency Adjustment - 40 Foot Container,1
+freightchargecodes,CAA,Cancellation Charge,1
+freightchargecodes,CAC,Cash Discount,1
+freightchargecodes,CAD,Certification Fee,1
+freightchargecodes,CAE,Co-manufacturing Discount,1
+freightchargecodes,CAF,Competitive Allowance,1
+freightchargecodes,CAG,Competitive Car Allowance,1
+freightchargecodes,CAH,Compressor Charge,1
+freightchargecodes,CAJ,Crafting,1
+freightchargecodes,CAK,Customer Equipment Allowance,1
+freightchargecodes,CAL,Cutting Charge,1
+freightchargecodes,CAO,Co-op Credit,1
+freightchargecodes,CAP,Car Loading,1
+freightchargecodes,CAQ,Contract Escalation,1
+freightchargecodes,CAR,Car Rental,1
+freightchargecodes,CAS,Container Deposits,1
+freightchargecodes,CAV,Contract Allowance,1
+freightchargecodes,CAW,Cooperative Advertising/Merchandising Allowance (Performance),1
+freightchargecodes,CAZ,Claims Commercial Auto Report Charge,1
+freightchargecodes,CBL,Copy of Bill of Lading Charge,1
+freightchargecodes,CBO,Cents Off,1
+freightchargecodes,CBP,Competitive Price,1
+freightchargecodes,CBR,Carrier,1
+freightchargecodes,CBW,Container Allowance,1
+freightchargecodes,CBX,City Sales Tax (Only),1
+freightchargecodes,CCA,Carrier Credit Allowance,1
+freightchargecodes,CCH,Certification Charge,1
+freightchargecodes,CCP,Claims Commercial Property Report Charge,1
+freightchargecodes,CCR,Concession Credit,1
+freightchargecodes,CCS,Carrier Caboose Charge,1
+freightchargecodes,CDA,Carrier Debit Allowance,1
+freightchargecodes,CDD,Corrosion Additive Service Charge,1
+freightchargecodes,CDF,Cancelled Order Heavy Duty Flatcar,1
+freightchargecodes,CDR,Copy of Delivery Receipt Charge,1
+freightchargecodes,CER,Container Service Charge UK/EUR,1
+freightchargecodes,CFC,Customs Fees - Container Level,1
+freightchargecodes,CFL,Customs Fees - Lift Level,1
+freightchargecodes,CGC,Carrier Guard Car Charge,1
+freightchargecodes,CGL,Canada Great Lakes Additionals,1
+freightchargecodes,CGR,Return Carrier Guard Car Charge,1
+freightchargecodes,CGT,Cargo Taxes,1
+freightchargecodes,CHE,Chassis Equipment Lease Charge,1
+freightchargecodes,CHG,Charges Forward/Advance Charge,1
+freightchargecodes,CHN,Chain and Binders,1
+freightchargecodes,CIR,Special Circus Trains,1
+freightchargecodes,CIS,Constant Surveillance,1
+freightchargecodes,CLC,Chicago Loop Charge,1
+freightchargecodes,CLD,Container Loss/Damage,1
+freightchargecodes,CLN,Cleaning Charge,1
+freightchargecodes,CLS,Container Leasing,1
+freightchargecodes,CMC,Concession Money,1
+freightchargecodes,CMF,City maintenance fee,1
+freightchargecodes,CMI,Continuous Mileage,1
+freightchargecodes,CMP,Camp Arbitrary,1
+freightchargecodes,CNS,Consolidation,1
+freightchargecodes,CNV,Converting,1
+freightchargecodes,COA,Commission Amount,1
+freightchargecodes,COC,Connect Charge,1
+freightchargecodes,COD,COD Amount,1
+freightchargecodes,COF,Ocean Freight,1
+freightchargecodes,COL,Fee for Collecting COD Charge,1
+freightchargecodes,COM,Combination,1
+freightchargecodes,CON,Congestion Surcharge,1
+freightchargecodes,COP,Port Changes,1
+freightchargecodes,COR,Core Charge,1
+freightchargecodes,COU,Consignee Unload,1
+freightchargecodes,CPA,Claims Personal Auto Report Charge,1
+freightchargecodes,CPC,Copilot Service Charge,1
+freightchargecodes,CPE,Computer Processing Expense,1
+freightchargecodes,CPP,Claims Personal Property Report Charge,1
+freightchargecodes,CRA,Cost recovery/adjustment,1
+freightchargecodes,CRF,Cost Recovery Factor,1
+freightchargecodes,CRP,Court Reporter Charge,1
+freightchargecodes,CRR,Credit Report Charge,1
+freightchargecodes,CRS,Courier Services,1
+freightchargecodes,CSA,Closing & Sealing,1
+freightchargecodes,CSC,Contract Service Charge,1
+freightchargecodes,CSE,Customs Entry,1
+freightchargecodes,CSF,Customs Formalities,1
+freightchargecodes,CSP,Government Caboose Charge,1
+freightchargecodes,CSR,Conservation research fee,1
+freightchargecodes,CST,Cassette,1
+freightchargecodes,CTA,Container/Trailer Allowance,1
+freightchargecodes,CTC,Container Service Charge USA/Canada,1
+freightchargecodes,CTD,Customer Required Special Truck at Destination,1
+freightchargecodes,CTE,Court or Trial Expense,1
+freightchargecodes,CTF,Chassis Transfer,1
+freightchargecodes,CTG,Cartage Charge,1
+freightchargecodes,CTL,Controlled Atmosphere,1
+freightchargecodes,CTO,Customer Required Special Truck at Origin,1
+freightchargecodes,CTR,Circuitous Routing Charge,1
+freightchargecodes,CTX,Customs Exams (Intensive Tailgate),1
+freightchargecodes,CUA,Currency Adjustment,1
+freightchargecodes,CUD,Currency Discount,1
+freightchargecodes,CUF,Currency Adjustment Factor,1
+freightchargecodes,CUP,Customer Paid Deductible,1
+freightchargecodes,CUS,Customs Charge,1
+freightchargecodes,DAA,Deficit Freight,1
+freightchargecodes,DAB,Deposit,1
+freightchargecodes,DAC,Distributor Discount/Allowance,1
+freightchargecodes,DAD,Drum Up Charge,1
+freightchargecodes,DAM,Damaged Merchandise,1
+freightchargecodes,DBD,Dockage - Boat Detention,1
+freightchargecodes,DBL,Double Wide Separate and Reassemble,1
+freightchargecodes,DBP,Delivery of Fuel from Barge to Pipeline Charge,1
+freightchargecodes,DCE,Damage to Carrier Equipment,1
+freightchargecodes,DCS,Disconnect charge,1
+freightchargecodes,DCT,City Delivery,1
+freightchargecodes,DCV,Damage to Carrier Vessel,1
+freightchargecodes,DDA,Defective Allowance,1
+freightchargecodes,DDC,Drum Cost,1
+freightchargecodes,DDD,Drum Deposit,1
+freightchargecodes,DDF,Dowel Pin Charge,1
+freightchargecodes,DDN,Dual Driver with National Agency Check,1
+freightchargecodes,DDP,Dual Driver Protectice Service,1
+freightchargecodes,DDS,Deaf and Disabled Surcharge,1
+freightchargecodes,DDZ,Drayage at Port of Debarkation (Zone Rate),1
+freightchargecodes,DEA,Demurrage - Average Agreement,1
+freightchargecodes,DEB,Detention: Vehicle with Power Unit (Bulk Petroleum Product Shipments),1
+freightchargecodes,DED,Deductible,1
+freightchargecodes,DEL,Delivery Charge,1
+freightchargecodes,DEM,Demurrage,1
+freightchargecodes,DEP,Detention of Power Units,1
+freightchargecodes,DER,Derrick Charge,1
+freightchargecodes,DES,Demurrage - Special,1
+freightchargecodes,DET,Detention of Trailers,1
+freightchargecodes,DEV,Texas Rail Commission Deviation Charge,1
+freightchargecodes,DEW,Detention Without Power Unit,1
+freightchargecodes,DEZ,Drayage at Port of Embarkation (Zone Rate),1
+freightchargecodes,DFD,Keep from Freezing Percent Differential,1
+freightchargecodes,DFM,410 Dromedary with Mechanical Restraining Devices Charge,1
+freightchargecodes,DFS,410 Dromedary,1
+freightchargecodes,DFW,Delay Furnishing Destination Weights,1
+freightchargecodes,DGE,Damage to Government Equipment,1
+freightchargecodes,DGS,Dangerous Goods Surcharge,1
+freightchargecodes,DIC,Diversion Charge,1
+freightchargecodes,DIR,Direct Repair,1
+freightchargecodes,DIS,Distribution Service,1
+freightchargecodes,DIV,Diversion and Reconsignment,1
+freightchargecodes,DLH,Drayage/Line Haul,1
+freightchargecodes,DLP,Delivery of Fuel from Rail Tank Car to Pipeline Charge,1
+freightchargecodes,DMC,Deadhead Mileage Charge,1
+freightchargecodes,DMD,Demand charge,1
+freightchargecodes,DNA,Dunnage Allowance,1
+freightchargecodes,DOC,Documentation Charge,1
+freightchargecodes,DON,Deposit in Lieu of Order,1
+freightchargecodes,DOV,Container Diversion,1
+freightchargecodes,DPB,Delivery of Fuel from Pipeline to Barge Charge,1
+freightchargecodes,DPD,Drayage at Port of Debarkation,1
+freightchargecodes,DPE,Drayage at Port of Embarkation,1
+freightchargecodes,DPL,Delivery of Fuel from Pipeline to Rail Tank Car Charge,1
+freightchargecodes,DPR,Depreciation,1
+freightchargecodes,DPT,Delivery of Fuel from Pipeline to Tank Truck or Trailer Charge,1
+freightchargecodes,DPU,Detention with Power Units (30 minute periods) Charge,1
+freightchargecodes,DRC,Drayage,1
+freightchargecodes,DRP,Deramping,1
+freightchargecodes,DRV,Driver License Record Report Charge,1
+freightchargecodes,DRY,Dryer Charge,1
+freightchargecodes,DSC,Discount,1
+freightchargecodes,DSF,Detention - Special Type Flat Car,1
+freightchargecodes,DSM,Dromedary with Mechanical Restraining Devices Charge,1
+freightchargecodes,DSR,Dromedary Service Charge,1
+freightchargecodes,DST,Container Destuffing,1
+freightchargecodes,DTA,Diversion to Air Charge,1
+freightchargecodes,DTB,Detention (Labor),1
+freightchargecodes,DTC,Destination Charge,1
+freightchargecodes,DTD,Destination Duty,1
+freightchargecodes,DTF,Destination Inland Freight,1
+freightchargecodes,DTL,Detention Loading,1
+freightchargecodes,DTP,Delivery of Fuel from Tank Truck or Trailer to Pipeline Charge,1
+freightchargecodes,DTU,Detention Unloading,1
+freightchargecodes,DTV,Detention (Vehicle),1
+freightchargecodes,DWC,Driver's Wages,1
+freightchargecodes,DWP,Detention with Power Units (60 minute periods) Charge,1
+freightchargecodes,EAC,Exchange Access Credit,1
+freightchargecodes,EAX,Extra Axles,1
+freightchargecodes,EBD,Exhibition Delivery Charge,1
+freightchargecodes,EBP,Exhibition Pickup Charge,1
+freightchargecodes,ECC,Will Call Charge,1
+freightchargecodes,ECR,Escort/Courier Service Charge,1
+freightchargecodes,ECS,Empty Railcar Ordered But Not Used Charge,1
+freightchargecodes,EDD,Equipment Hose at Destination Charge,1
+freightchargecodes,EDO,Equipment Hose at Origin Charge,1
+freightchargecodes,EEA,Early Buy Allowance,1
+freightchargecodes,EEB,Early Payment Allowance,1
+freightchargecodes,EEC,Escalation,1
+freightchargecodes,EEF,Expediting Fee,1
+freightchargecodes,EEG,One Time Engineering Charge,1
+freightchargecodes,EEH,Engineering Charge,1
+freightchargecodes,EEP,Expediting Premium,1
+freightchargecodes,EEX,Export Shipping Charge,1
+freightchargecodes,EIC,Export/Import Charge,1
+freightchargecodes,ELS,Extra Lights,1
+freightchargecodes,EMR,Emergency Response Service,1
+freightchargecodes,EMS,Emergency Surcharge,1
+freightchargecodes,EMT,Empty Movement,1
+freightchargecodes,ENC,Energy charge,1
+freightchargecodes,ENS,Energy Surcharge (Fuel Adjustment Factor),1
+freightchargecodes,EPC,Emergency Port Charge,1
+freightchargecodes,EPS,Environmental Protection Service,1
+freightchargecodes,ERS,Empty Return,1
+freightchargecodes,ERT,Satisfactory Service Standards Charge,1
+freightchargecodes,ESA,Early Ship Allowance,1
+freightchargecodes,ESC,Emergency Service,1
+freightchargecodes,ESD,Estimated Customs Duty (Dutypaid - Charge),1
+freightchargecodes,ESE,External Service Expense,1
+freightchargecodes,ETR,Empty Trailer Returned Charge,1
+freightchargecodes,EUC,European Port Charges,1
+freightchargecodes,EVC,Excessive Value Charge,1
+freightchargecodes,EXC,Exclusive Use Charge,1
+freightchargecodes,EXD,Extra Driver,1
+freightchargecodes,EXL,Extra Length,1
+freightchargecodes,EXM,Excess Mileage Charge,1
+freightchargecodes,EXP,Expedited Service Charge,1
+freightchargecodes,EXS,Excess Periods,1
+freightchargecodes,EXW,Excess Weight,1
+freightchargecodes,EXZ,Expando Remove and Install,1
+freightchargecodes,FAB,F.E.T. Federal Excise Tax,1
+freightchargecodes,FAC,F.E.T. (Percent),1
+freightchargecodes,FAD,F.E.T. (Dollar Value),1
+freightchargecodes,FAE,Fabrication Charge,1
+freightchargecodes,FAF,F.E.T. Tires,1
+freightchargecodes,FAG,Freight Equalization,1
+freightchargecodes,FAH,Freight Surcharge,1
+freightchargecodes,FAK,Barge Freight All Kinds Service,1
+freightchargecodes,FBD,Freight Based on Dollar Minimum,1
+freightchargecodes,FCB,Freight Charges to Border,1
+freightchargecodes,FCD,Freight Charges to Destination,1
+freightchargecodes,FCI,Freight Charges Inbound and Outbound,1
+freightchargecodes,FCS,Furnishing Chassis,1
+freightchargecodes,FDD,Flat Deck Delivery,1
+freightchargecodes,FDL,Food and Lodging,1
+freightchargecodes,FDS,Financial Document Surcharge,1
+freightchargecodes,FFC,Fuel Filters Furnished by Carrier Charge,1
+freightchargecodes,FFI,Finance Charge,1
+freightchargecodes,FFL,Freshness/Leaker Allowance,1
+freightchargecodes,FFN,Special Finish Charge,1
+freightchargecodes,FFP,Freight Passthrough,1
+freightchargecodes,FFR,Flat Rate,1
+freightchargecodes,FFS,Fuel Filters Furnished by Shipper Charge,1
+freightchargecodes,FIR,Fire Report,1
+freightchargecodes,FLS,Flatrack Surcharge,1
+freightchargecodes,FLT,Ferry Service,1
+freightchargecodes,FMR,Foreign Military Sales (FMS) Rental,1
+freightchargecodes,FMS,Foreign Military Sales (FMS) Special Charge,1
+freightchargecodes,FRC,Franchise fee,1
+freightchargecodes,FTC,Federal Transfer Surcharge,1
+freightchargecodes,FTR,Filtration Service Charge,1
+freightchargecodes,FUE,Fuel Charge,1
+freightchargecodes,FWA,Forwarding Agent Commission,1
+freightchargecodes,FWC,Forwarding Charge,1
+freightchargecodes,FXE,Texas Rail Commission Fixed Charge,1
+freightchargecodes,GAR,Garment District,1
+freightchargecodes,GAT,Gate Inspection Charge (Intermodal),1
+freightchargecodes,GDR,Grain Doors,1
+freightchargecodes,GGA,Glaze Allowance,1
+freightchargecodes,GGF,Gold Factor,1
+freightchargecodes,GKT,Gasket,1
+freightchargecodes,GMS,Garment Surcharge,1
+freightchargecodes,GOC,Government-owned Containers,1
+freightchargecodes,GPD,Gulf Port Delivery Charge,1
+freightchargecodes,GRD,Groupage Discount,1
+freightchargecodes,GRS,Gross Receipts Surcharge,1
+freightchargecodes,GSP,Government Guard Car Charge,1
+freightchargecodes,GSS,Greater Security Service,1
+freightchargecodes,GST,Goods and Services Tax Charge,1
+freightchargecodes,HAN,Handling Charges on Distribution Freight Forwarded Beyond,1
+freightchargecodes,HAZ,Hazardous Cargo Charge,1
+freightchargecodes,HBD,Harbor Dues,1
+freightchargecodes,HDF,Heavy Duty Flat Car Charge,1
+freightchargecodes,HDG,Holding Charge,1
+freightchargecodes,HDH,Shipment Holdover Charge for Holidays,1
+freightchargecodes,HDW,Shipment Holdover Charge for Weekends,1
+freightchargecodes,HET,Heat in Transit Charges,1
+freightchargecodes,HFA,Handling Freight At Positions Not Immediately Adjacent To Vehicle Charge,1
+freightchargecodes,HHA,Hauling and Hoisting to be Direct Billed,1
+freightchargecodes,HHB,Handling,1
+freightchargecodes,HHG,Household Goods Pickup or Delivery,1
+freightchargecodes,HIC,Highway Interchange,1
+freightchargecodes,HLF,Home Line Freight Charge,1
+freightchargecodes,HMA,Accessible Hazardous Material,1
+freightchargecodes,HMI,Inaccessible Hazardous Material,1
+freightchargecodes,HOC,Hook-up charge,1
+freightchargecodes,HOL,Sunday or Holiday Pickup or Delivery,1
+freightchargecodes,HOS,Hose Charge,1
+freightchargecodes,HOX,Hose Charge Special,1
+freightchargecodes,HRS,Heater or Refrigeration,1
+freightchargecodes,HSC,High Security Red In-bond Seal Charge,1
+freightchargecodes,HUL,Heavy Lift,1
+freightchargecodes,HZC,Hazardous Materials Surcharge Charge,1
+freightchargecodes,HZD,Hazardous Cargo on Deck,1
+freightchargecodes,HZS,Hazardous Storage,1
+freightchargecodes,IAA,Industry Price Allowance,1
+freightchargecodes,IAB,Income Freight (Manufacturing to Shipping Point),1
+freightchargecodes,IAC,Inspection Fee,1
+freightchargecodes,ICE,Cooling Service,1
+freightchargecodes,IDC,Idler Car Charge,1
+freightchargecodes,IDD,Improper Documentation,1
+freightchargecodes,IDL,Inside Delivery,1
+freightchargecodes,IDP,Interdivision Profit,1
+freightchargecodes,IFC,Inbound Freight Charges,1
+freightchargecodes,IHT,Interstate/Highway Toll,1
+freightchargecodes,IIA,Invoice Adjustment,1
+freightchargecodes,IIH,Icing Inhibitor Charge,1
+freightchargecodes,IIP,Item Percentage,1
+freightchargecodes,IIU,Item-Unit,1
+freightchargecodes,ILD,Island Delivery Charge,1
+freightchargecodes,ILF,Initial License Fee,1
+freightchargecodes,ILP,Island Pickup Charge,1
+freightchargecodes,IMP,Impactographs,1
+freightchargecodes,IMS,Intermodal Shipment Service Charge,1
+freightchargecodes,INC,Insurance Surcharge,1
+freightchargecodes,INP,Interplant Charge,1
+freightchargecodes,INR,Interest on refund,1
+freightchargecodes,INS,Insurance,1
+freightchargecodes,INT,Interpreter Expense,1
+freightchargecodes,IPC,Intra-plant Charge,1
+freightchargecodes,IPU,Inside Pickup,1
+freightchargecodes,IRA,Irish Arbitraries,1
+freightchargecodes,ISD,Interest on security deposit,1
+freightchargecodes,ISO,Intermodal Storage (Origin),1
+freightchargecodes,IST,Intermodal Storage (Destination),1
+freightchargecodes,ITC,Insulated Tank Charge,1
+freightchargecodes,ITS,Interline Transfer Charge,1
+freightchargecodes,JST,Junction Settlement Charge,1
+freightchargecodes,KIT,Glass Kit,1
+freightchargecodes,LAA,Labor Charges,1
+freightchargecodes,LAB,Extra Labor (Helper Service),1
+freightchargecodes,LAC,Lading Adjustment Charge,1
+freightchargecodes,LAD,Labor (Repair and Return Orders),1
+freightchargecodes,LAE,One-Time License Fee,1
+freightchargecodes,LAL,Labor Adjustment Allowance,1
+freightchargecodes,LAS,Commingling/Loss Allowance Charge,1
+freightchargecodes,LAT,License and Title,1
+freightchargecodes,LAY,Layover Charges,1
+freightchargecodes,LBR,Light Bar Service Charge,1
+freightchargecodes,LC2,Land Currency Adjustment Factor - 20 Foot Container,1
+freightchargecodes,LC4,Land Currency Adjustment Factor - 40 Foot Container,1
+freightchargecodes,LCG,Late Order Charge,1
+freightchargecodes,LCL,Percent Differential - Less than Container,1
+freightchargecodes,LCR,Labor Cost of Removal,1
+freightchargecodes,LDA,Loading Allowance,1
+freightchargecodes,LDG,Loading,1
+freightchargecodes,LDL,Unloading Allowance,1
+freightchargecodes,LDS,Locomotive Delayed in Switching Service,1
+freightchargecodes,LEC,Less than Container,1
+freightchargecodes,LFC,Lift Charge (Intermodal),1
+freightchargecodes,LFD,Linehaul from Port of Debarkation,1
+freightchargecodes,LFT,Lift Gate (Truck) or Forklift Service at Pickup/Delivery,1
+freightchargecodes,LGD,Lodging,1
+freightchargecodes,LHS,Linehaul Service,1
+freightchargecodes,LID,Recurring License Fee,1
+freightchargecodes,LIE,Liability of Carrier Charge,1
+freightchargecodes,LLB,Limited Liability,1
+freightchargecodes,LLC,Lot Charge,1
+freightchargecodes,LLD,Lead Factor,1
+freightchargecodes,LLF,Loan Fee,1
+freightchargecodes,LLS,Local Sales Tax (All Applicable Sales Taxes by Taxing Authorities Below the State Level),1
+freightchargecodes,LMC,Labor Modify,1
+freightchargecodes,LMD,Liner Terms at Port of Debarkation,1
+freightchargecodes,LME,Liner Terms at Port of Embarkation,1
+freightchargecodes,LNT,Labor No Trouble Found,1
+freightchargecodes,LOA,Loading (Labor Charges),1
+freightchargecodes,LOC,Local Delivery/Drayage,1
+freightchargecodes,LPC,Late payment charge,1
+freightchargecodes,LPD,Linehaul Percent Differential,1
+freightchargecodes,LPF,Laboratory Pack Fee,1
+freightchargecodes,LQD,Liquidated Damages,1
+freightchargecodes,LSC,Labor Service,1
+freightchargecodes,LSH,Lashing,1
+freightchargecodes,LSS,Lifeline Surcharge,1
+freightchargecodes,LTC,Labor Test and Calibrate,1
+freightchargecodes,LTE,Linehaul to Port of Embarkation,1
+freightchargecodes,LUB,Lubricant Charge,1
+freightchargecodes,LUP,Locomotive Under Own Power,1
+freightchargecodes,LUS,Leaking underground storage tax (LUST),1
+freightchargecodes,LYC,Layover Service Charge,1
+freightchargecodes,MAA,Metals Surcharge,1
+freightchargecodes,MAB,Mileage or Travel,1
+freightchargecodes,MAC,Mileage Fee (For Repair and Return),1
+freightchargecodes,MAD,Minimum Order/Minimum Billing Charge,1
+freightchargecodes,MAE,Monthly Rental,1
+freightchargecodes,MAR,Marriage Rule,1
+freightchargecodes,MAT,Modified Atmosphere,1
+freightchargecodes,MCC,Machining Charge,1
+freightchargecodes,MDG,Molding,1
+freightchargecodes,MDM,Mount/Demount,1
+freightchargecodes,MEA,Meals or Lodging Charge,1
+freightchargecodes,MEN,Escort Service with Overnight Subsistence,1
+freightchargecodes,MES,Escort Service,1
+freightchargecodes,MET,Escort Service (Telephone),1
+freightchargecodes,MFC,Manifest Charge,1
+freightchargecodes,MFG,Manufacturing,1
+freightchargecodes,MGA,Message Rate Adjustment,1
+freightchargecodes,MGC,Message Charge,1
+freightchargecodes,MIC,Minimum Charge,1
+freightchargecodes,MIL,Special Mileage Movements,1
+freightchargecodes,MIN,Minimum Guarantee,1
+freightchargecodes,MKU,Markup Charge,1
+freightchargecodes,MLB,Minimum Bill of Lading Charge,1
+freightchargecodes,MLS,Meals,1
+freightchargecodes,MMC,Minimum/Maximum Charge,1
+freightchargecodes,MMF,Mill Freight,1
+freightchargecodes,MMS,Market Development Funds,1
+freightchargecodes,MMT,Metropolitan Transit Tax,1
+freightchargecodes,MNC,Notify Consignee,1
+freightchargecodes,MNS,Motor Surveillance Service,1
+freightchargecodes,MPC,Miscellaneous Parts Charge,1
+freightchargecodes,MRK,Marking or Tagging Charge,1
+freightchargecodes,MRP,Medical Report Charge,1
+freightchargecodes,MSC,Other Accessorial Service Charge,1
+freightchargecodes,MSG,Miscellaneous Charge,1
+freightchargecodes,MTR,Meter Charge,1
+freightchargecodes,MUS,Municipal Surcharge,1
+freightchargecodes,MVR,Motor Vehicle Report (MVR) Charge,1
+freightchargecodes,MVS,Special Motor Surveillance Charge,1
+freightchargecodes,MVT,Venting Instructions,1
+freightchargecodes,NAA,Non Generated Freight,1
+freightchargecodes,NAB,New Store Allowance,1
+freightchargecodes,NAL,Nozzle Charge,1
+freightchargecodes,NCH,Order Notify Charge,1
+freightchargecodes,NDA,Next Day Air Service,1
+freightchargecodes,NDS,Non-document Surcharge,1
+freightchargecodes,NFY,Carrier Notification Charge,1
+freightchargecodes,NHB,N.H.D. Wharfage,1
+freightchargecodes,NSD,New Store Discount,1
+freightchargecodes,NWD,New Warehouse Discount,1
+freightchargecodes,NYD,New York Delivery Charge,1
+freightchargecodes,NYP,New York Pickup Charge,1
+freightchargecodes,OAA,O.T.O. Charge,1
+freightchargecodes,OAB,Overrun Charge,1
+freightchargecodes,OAC,Overtime Loading,1
+freightchargecodes,OCH,Ocean Charges -- Hazardous,1
+freightchargecodes,OCN,Over Height Container,1
+freightchargecodes,OCP,On Call Pickup Service,1
+freightchargecodes,ODF,Collect on Delivery Deletion Charge,1
+freightchargecodes,OFR,Official Report Charge,1
+freightchargecodes,OFU,Fumigation,1
+freightchargecodes,ONC,On Carriage,1
+freightchargecodes,OOC,Option Charge (Color Fabric Office Furniture),1
+freightchargecodes,OOD,On Deck Break Bulk Differential,1
+freightchargecodes,OOF,Order-Flat,1
+freightchargecodes,OPC,Optional Charge,1
+freightchargecodes,ORC,Operator Credit,1
+freightchargecodes,ORM,Out of Route Miles,1
+freightchargecodes,ORS,Receipt/Issue Overtime Normal Business Hours Charge,1
+freightchargecodes,OSC,Outside Charge,1
+freightchargecodes,OSO,Optional Software Support for Operational Support Systems,1
+freightchargecodes,OSS,Optional Software Support for Switching Systems,1
+freightchargecodes,OUT,Out of Zone Pickup or Delivery,1
+freightchargecodes,OVN,Overnight Service,1
+freightchargecodes,OVR,Over Dimension,1
+freightchargecodes,OWC,Over Width Container,1
+freightchargecodes,PAA,Percent of Product,1
+freightchargecodes,PAC,Pump Air Charge,1
+freightchargecodes,PAD,Premium Charge,1
+freightchargecodes,PAE,Premium Transportation,1
+freightchargecodes,PAF,Price Deviation,1
+freightchargecodes,PAG,Professional Fees,1
+freightchargecodes,PAH,Promotional Allowance,1
+freightchargecodes,PAI,Promotional Discount,1
+freightchargecodes,PAJ,Pump Charge,1
+freightchargecodes,PAK,Preparation and Delivery,1
+freightchargecodes,PAL,Parts Adjustment Allowance,1
+freightchargecodes,PAR,Parts Charge,1
+freightchargecodes,PAT,Priced Parts Charge,1
+freightchargecodes,PAV,Pickup of Shipments on Saturday; Sunday; and/or Holidays Requiring Absolute Next Day Delivery Charge,1
+freightchargecodes,PBA,Prior billing amount,1
+freightchargecodes,PBE,Permits Bonds Escort Attendant,1
+freightchargecodes,PBL,Pier Charges Other Than Wharfage,1
+freightchargecodes,PCH,Protective Service Charge,1
+freightchargecodes,PCT,City Pickup,1
+freightchargecodes,PDB,Prior Delivery Of Bill Charge,1
+freightchargecodes,PDC,Preloading Charge,1
+freightchargecodes,PDS,Pickup and Delivery from Storage in Transit,1
+freightchargecodes,PDY,Pickup and Delivery Beyond Service Area Charge,1
+freightchargecodes,PEC,Pallet Exchange Charge,1
+freightchargecodes,PEN,Penalty Charge,1
+freightchargecodes,PER,Permit Charge,1
+freightchargecodes,PFA,Power Factor Adjustment,1
+freightchargecodes,PHC,Photocopy,1
+freightchargecodes,PHG,Photographs,1
+freightchargecodes,PIR,Pier Pickup and/or Delivery,1
+freightchargecodes,PKS,Packing Surcharge,1
+freightchargecodes,PLC,Insurance Placement Cost Charge,1
+freightchargecodes,PLT,Pallets/Skids/Platforms,1
+freightchargecodes,PMC,Prior Month Credit,1
+freightchargecodes,PMR,Paint and Materials,1
+freightchargecodes,PMS,Pickup of Shipments Requiring Same Day Delivery Service Charge,1
+freightchargecodes,PMT,Pickup of Shipments Requiring Same Day Delivery Service and/or Delivery at a Specified Time Charge,1
+freightchargecodes,PMU,Normal Pump Charge,1
+freightchargecodes,PMX,Special Pump Charge,1
+freightchargecodes,PNA,Prior Period Net Adjustment,1
+freightchargecodes,POC,Piano/Organ Carry,1
+freightchargecodes,POD,Proof of Delivery,1
+freightchargecodes,POL,Police Report Charge,1
+freightchargecodes,POS,Positioning at Origin,1
+freightchargecodes,PPC,Per Pound Charge,1
+freightchargecodes,PPD,Pickup and Delivery Service for Perishables Charge,1
+freightchargecodes,PPH,Per Item Charge,1
+freightchargecodes,PPI,Pick/Up Allowance,1
+freightchargecodes,PPM,Precious Metal Content,1
+freightchargecodes,PPN,Pallet Charge,1
+freightchargecodes,PPO,Per Order Charge,1
+freightchargecodes,PPR,Performance Award,1
+freightchargecodes,PPS,Placement and/or Removal Charge,1
+freightchargecodes,PPT,Parish/County Sales Tax (only),1
+freightchargecodes,PPU,Prepaid Usage Allowance,1
+freightchargecodes,PRB,Prior Balance,1
+freightchargecodes,PRC,Pre-carriage,1
+freightchargecodes,PRE,Pre-carriage Excess,1
+freightchargecodes,PRK,Parking,1
+freightchargecodes,PRL,Prelodge Charge,1
+freightchargecodes,PRM,Premise Use,1
+freightchargecodes,PRP,Prior Period Rebook,1
+freightchargecodes,PRS,Stuffing Charge,1
+freightchargecodes,PRV,Prior Period Reversal,1
+freightchargecodes,PSC,Protective Service - Cold,1
+freightchargecodes,PSD,Preparation of Special Documents,1
+freightchargecodes,PSG,Protective Service Security with Armed Guards,1
+freightchargecodes,PSH,Protective Service - Heat,1
+freightchargecodes,PSS,Protective Service Security,1
+freightchargecodes,PST,Postage,1
+freightchargecodes,PTC,Tobacco Products Report Charge,1
+freightchargecodes,PTS,Protective Tarp for Security Purposes,1
+freightchargecodes,PUC,Pickup Charge,1
+freightchargecodes,PUD,Pickup and Delivery,1
+freightchargecodes,PUK,Pack and Unpack,1
+freightchargecodes,PVB,Bonded Privately Owned Vehicle Charge,1
+freightchargecodes,PVD,Detention of Privately Owned Vehicle Charge,1
+freightchargecodes,PVI,Inoperable Privately Owned Vehicle Charge,1
+freightchargecodes,PVL,Loading/Unloading of Privately Owned Vehicle Charge,1
+freightchargecodes,PVP,Privately Owned Vehicle Processing,1
+freightchargecodes,PVS,Stop-offs for Privately Owned Vehicle Shipment Charge,1
+freightchargecodes,PVT,Privately Owned Vehicle in Truckaway Service Charge,1
+freightchargecodes,PWH,Pier Charges - Wharfage,1
+freightchargecodes,PWT,Pallet Allowance,1
+freightchargecodes,PYS,Priority Service Charge,1
+freightchargecodes,QAA,Quantity Surcharge,1
+freightchargecodes,QQD,Quantity Discount,1
+freightchargecodes,RAA,Rebate,1
+freightchargecodes,RAB,Reclamation Federal,1
+freightchargecodes,RAC,Reclamation State,1
+freightchargecodes,RAD,Recovery Allowance,1
+freightchargecodes,RAE,Redistribution Allowance,1
+freightchargecodes,RAF,Rental Deduction,1
+freightchargecodes,RAG,Repack Charge,1
+freightchargecodes,RAH,Retainer,1
+freightchargecodes,RAI,Resellers Discount,1
+freightchargecodes,RAJ,Restocking Charge,1
+freightchargecodes,RAK,Royalties,1
+freightchargecodes,RAL,Roll Rebate,1
+freightchargecodes,RAM,Ramping,1
+freightchargecodes,RCA,No Return Credit Allowance,1
+freightchargecodes,RCB,Repair at buyers expense charge,1
+freightchargecodes,RCC,Reconsignment Charge,1
+freightchargecodes,RCD,Reconsign Consignee Charge,1
+freightchargecodes,RCE,Repair at customer expense charge,1
+freightchargecodes,RCG,Repair at government expense charge,1
+freightchargecodes,RCL,Redelivery,1
+freightchargecodes,RCP,Recoopering (at Owner's or Shipper's Expense),1
+freightchargecodes,RCS,Reconnect charge,1
+freightchargecodes,RDC,Reconsign Delivery Charge,1
+freightchargecodes,RDF,Research & development fee,1
+freightchargecodes,RDH,Railhead Handling,1
+freightchargecodes,REC,Return Cargo Charge,1
+freightchargecodes,REE,Regulatory Fee,1
+freightchargecodes,REF,Refrigeration,1
+freightchargecodes,REG,Regulatory tax,1
+freightchargecodes,REL,Requested Labor Charge,1
+freightchargecodes,REP,Residential Pickup,1
+freightchargecodes,REQ,Request Via Canada,1
+freightchargecodes,RES,Residential Delivery,1
+freightchargecodes,RET,Returned Load,1
+freightchargecodes,RFD,Refund,1
+freightchargecodes,RFM,Reefer Maintenance,1
+freightchargecodes,RGA,Regain Allowance,1
+freightchargecodes,RGC,Regain Charge,1
+freightchargecodes,RHM,Recurring Hardware Maintenance Charge,1
+freightchargecodes,RID,Riding Attendant Charge,1
+freightchargecodes,RIE,Released Value Charge in Excess of Carrier Maximum Liability Charge,1
+freightchargecodes,RIS,Rail Inspection Service,1
+freightchargecodes,RLA,Retail Loss Allowance,1
+freightchargecodes,RLC,Rents and Leases,1
+freightchargecodes,RLQ,Relinquishment Charge,1
+freightchargecodes,RLS,Relocation of Vehicle,1
+freightchargecodes,RMB,Rocky Mountain Bureau 583 Item 1100 Arbitrary Charge,1
+freightchargecodes,RMC,Return of Empty Container Charge,1
+freightchargecodes,RMD,Refrigeration/Mechanical Detention,1
+freightchargecodes,RMP,Return Movement of Pallet Charge,1
+freightchargecodes,RMS,Rail Surveillance,1
+freightchargecodes,ROC,Roll Out Adjustment,1
+freightchargecodes,RPC,Reduction Prepalletized Cargo,1
+freightchargecodes,RPD,Reefer Cargo Percent Differential,1
+freightchargecodes,RRC,Reel Cable,1
+freightchargecodes,RRD,Reel Deposit,1
+freightchargecodes,RRF,Refurbishing Charge,1
+freightchargecodes,RRN,Rental Charge,1
+freightchargecodes,RRP,Repair Charge,1
+freightchargecodes,RRR,Regulatory required refund,1
+freightchargecodes,RSM,Recurring Software Maintenance Charge,1
+freightchargecodes,RSP,Reshipment,1
+freightchargecodes,RSS,Restricted Speeds,1
+freightchargecodes,RST,Respotting,1
+freightchargecodes,RSV,Reservations,1
+freightchargecodes,RTC,Rate Code,1
+freightchargecodes,SAA,Subject to Cooperative Advertising Allowance,1
+freightchargecodes,SAB,Shipping and Handling,1
+freightchargecodes,SAC,Service Charge (with Cash Discount),1
+freightchargecodes,SAD,Scrap Allowance,1
+freightchargecodes,SAE,Shrink-Wrap Charge,1
+freightchargecodes,SAF,Special Credit,1
+freightchargecodes,SAG,State Motor Fuel,1
+freightchargecodes,SAH,Stenciling Charge,1
+freightchargecodes,SAI,Super Fund Excise Tax,1
+freightchargecodes,SAJ,Surcharge (Dollar Value),1
+freightchargecodes,SAK,Surcharge (Percentage),1
+freightchargecodes,SAM,Stopcharge,1
+freightchargecodes,SAN,State Sales Charge,1
+freightchargecodes,SAP,Service Assistance Program Surcharge,1
+freightchargecodes,SAS,Shipment Holdover on Weekends Charge,1
+freightchargecodes,SAT,Saturday Pickup or Delivery Charge,1
+freightchargecodes,SBC,Standby Charge,1
+freightchargecodes,SBL,Sublet,1
+freightchargecodes,SCC,Special Seal Charge,1
+freightchargecodes,SCD,Special Containers,1
+freightchargecodes,SCG,Small Order Charge,1
+freightchargecodes,SCL,Scale Charge,1
+freightchargecodes,SCN,Second Day Service,1
+freightchargecodes,SCU,Scale Charge Unloading,1
+freightchargecodes,SDC,Special Detention Charge,1
+freightchargecodes,SDL,Split Delivery,1
+freightchargecodes,SDS,Special Dromedary Service,1
+freightchargecodes,SDW,Second Day Hundredweight Service,1
+freightchargecodes,SEC,Special Equipment Charge,1
+freightchargecodes,SEE,Stairs; Elevator; Excess Carry,1
+freightchargecodes,SEG,Segregating (Sorting),1
+freightchargecodes,SEL,Self Unloader,1
+freightchargecodes,SEQ,Ship Exact Quantity Charge,1
+freightchargecodes,SER,Service Charge,1
+freightchargecodes,SEV,Security Escort Vehicle Service,1
+freightchargecodes,SFB,Single Factor Origination/Destination,1
+freightchargecodes,SFC,Stuffing Charge,1
+freightchargecodes,SFD,Single Factor Origination/Port of Debarkation,1
+freightchargecodes,SFE,Single Factor Port of Embarkation/Destination,1
+freightchargecodes,SFT,Special Train Movement,1
+freightchargecodes,SGL,Single Pickup,1
+freightchargecodes,SHH,Shipment Holdover on Holidays Charge,1
+freightchargecodes,SHL,Shipper Load,1
+freightchargecodes,SHS,State Hazardous Substance Tax,1
+freightchargecodes,SHW,Shipment Holdover on Weekdays Charge,1
+freightchargecodes,SKT,Skirting and Unskirting,1
+freightchargecodes,SLC,Street lamps charge,1
+freightchargecodes,SLP,Slip Sheet Charge,1
+freightchargecodes,SMS,State/Metropolitan Transit Authority Surcharge,1
+freightchargecodes,SNS,Satellite Surveillance Service,1
+freightchargecodes,SNT,Shipment from Non-temp Storage,1
+freightchargecodes,SOC,Stop-off Charge,1
+freightchargecodes,SOP,Stop-off at Pier Charge,1
+freightchargecodes,SPA,Special Allowance,1
+freightchargecodes,SPB,Special Buy,1
+freightchargecodes,SPC,Special Permits,1
+freightchargecodes,SPD,Spreader Charge,1
+freightchargecodes,SPL,Spool Charge,1
+freightchargecodes,SPP,Split Pickup at Pier Charge,1
+freightchargecodes,SPS,Special Freight Supplements,1
+freightchargecodes,SPT,Spotting of Trailer,1
+freightchargecodes,SPU,Split Pickup,1
+freightchargecodes,SRG,Storage,1
+freightchargecodes,SRS,Surveying Routes,1
+freightchargecodes,SSA,Salvage,1
+freightchargecodes,SSB,Super Bag Charge,1
+freightchargecodes,SSC,Stripping; Sorting; and Consolidation,1
+freightchargecodes,SSF,Single Shipment Fee,1
+freightchargecodes,SSL,Select Charge,1
+freightchargecodes,SSO,Pole; Wood-service Charge,1
+freightchargecodes,SSP,Shipside Pickup,1
+freightchargecodes,SSR,Safe Haven Secure Holding Refusal,1
+freightchargecodes,SSS,Software Support Service,1
+freightchargecodes,SST,Sales Tax (State and Local),1
+freightchargecodes,SSU,Pole Lashing Equipment (PLE) Surcharge,1
+freightchargecodes,SSX,Sales and Use Tax,1
+freightchargecodes,STA,Conductivity/Anti-static Additive,1
+freightchargecodes,STC,State Surcharge,1
+freightchargecodes,STD,Stop-off at Destination,1
+freightchargecodes,STF,Container Stuffing,1
+freightchargecodes,STG,Standard Ground Service,1
+freightchargecodes,STL,Standard Labor Charge,1
+freightchargecodes,STM,Steaming Charge,1
+freightchargecodes,STO,Stowage Charge,1
+freightchargecodes,STP,Stopping in Transit,1
+freightchargecodes,STQ,Stop-off at Origination,1
+freightchargecodes,STR,Storage in Transit,1
+freightchargecodes,STW,Special tooling rework charge,1
+freightchargecodes,SUC,Special Use,1
+freightchargecodes,SUF,Sufferance Warehouse Charge (Export or Import),1
+freightchargecodes,SUP,Supervisor Charge,1
+freightchargecodes,SUR,Surcharge,1
+freightchargecodes,SVA,Single Invoice Allowance,1
+freightchargecodes,SVL,Manual Surveillance of Shipment,1
+freightchargecodes,SVS,Storage of Vehicles,1
+freightchargecodes,SWC,Switching Charge,1
+freightchargecodes,TAA,Telephone Charge,1
+freightchargecodes,TAB,Tank Rental,1
+freightchargecodes,TAC,Temporary Allowance,1
+freightchargecodes,TAD,Tax on Transportation,1
+freightchargecodes,TAE,Temporary Voluntary Allowance,1
+freightchargecodes,TAF,Terminal Differential,1
+freightchargecodes,TAG,Testing Charge,1
+freightchargecodes,TAH,Tool Charge,1
+freightchargecodes,TAI,Testing Allowance,1
+freightchargecodes,TAJ,Trade In,1
+freightchargecodes,TAK,Transportation and Setup,1
+freightchargecodes,TAL,Truckload Discount,1
+freightchargecodes,TAR,Tarping Charge,1
+freightchargecodes,TAX,Tax Charge,1
+freightchargecodes,TAY,Governmental Tax,1
+freightchargecodes,TCB,Telegram Chargeback,1
+freightchargecodes,TCM,Transportation Charge (Minimum Rate),1
+freightchargecodes,TDT,Truck Detention,1
+freightchargecodes,TER,Terminal Charge,1
+freightchargecodes,TLC,Trimming Charge,1
+freightchargecodes,TMS,Multi-Tank Surveillance Service,1
+freightchargecodes,TMV,Tendering of Multiple Vehicles,1
+freightchargecodes,TOA,Total Assessorial Charges,1
+freightchargecodes,TOC,TOFC Service Charge,1
+freightchargecodes,TOW,Motor Tow Away Service,1
+freightchargecodes,TPA,Carrier Equipment Pool Charge,1
+freightchargecodes,TPC,Throughput Container Charge,1
+freightchargecodes,TPS,Third-Party Service,1
+freightchargecodes,TRA,Travel Charge,1
+freightchargecodes,TRC,Trailer Rental Charge,1
+freightchargecodes,TRE,Travel Expense,1
+freightchargecodes,TRF,Transfer Charge,1
+freightchargecodes,TRM,Termination,1
+freightchargecodes,TRN,Transit,1
+freightchargecodes,TRP,Process in Transit Privilege,1
+freightchargecodes,TRS,Transferred Charges,1
+freightchargecodes,TRU,Thruway Charge,1
+freightchargecodes,TSC,Testing Services Charge,1
+freightchargecodes,TSS,Tank Surveillance Service,1
+freightchargecodes,TST,Track Storage,1
+freightchargecodes,TTA,Tank Car Allowance,1
+freightchargecodes,TTB,Transportation-Direct Billing,1
+freightchargecodes,TTD,Trade Discount,1
+freightchargecodes,TTL,Local Tax,1
+freightchargecodes,TTM,Tax on Miscellaneous Charges,1
+freightchargecodes,TTP,Third Party Allowance,1
+freightchargecodes,TTR,Throughput Allowance,1
+freightchargecodes,TTS,State Tax,1
+freightchargecodes,TTT,Transportation - Third Party Billing,1
+freightchargecodes,TTU,Tire Repair and Replace,1
+freightchargecodes,TTV,Transportation - Vendor Provided,1
+freightchargecodes,TUR,Turning Charge,1
+freightchargecodes,TWO,Two Door Pickup,1
+freightchargecodes,UFC,Under Carriage Furnished By Carrier Charge,1
+freightchargecodes,UND,Unloading,1
+freightchargecodes,UNL,Unloading (Labor Charges),1
+freightchargecodes,UPD,Usage Plan Detail Charge,1
+freightchargecodes,UPK,Unpacking,1
+freightchargecodes,URC,Unloading/Reloading Charge,1
+freightchargecodes,USF,Use - Special Type Flat Car,1
+freightchargecodes,USV,U.S. Vehicles,1
+freightchargecodes,USW,Unabsorbed Switching,1
+freightchargecodes,UTL,Utilities Disconnect and Connect,1
+freightchargecodes,UTP,Use charge tooling/personnel,1
+freightchargecodes,UUC,Up Charge,1
+freightchargecodes,UUM,Unsalable Merchandise Allowance,1
+freightchargecodes,UUT,Use Tax,1
+freightchargecodes,VAA,Vendor Freight,1
+freightchargecodes,VAB,Volume Discount,1
+freightchargecodes,VCL,Van Cleaning,1
+freightchargecodes,VCR,Voluntary contribution charge,1
+freightchargecodes,VEX,Excess Mileage for Stop-off Delivery of Personal Vehicles Charge,1
+freightchargecodes,VFN,Vehicles Furnished But Not Used,1
+freightchargecodes,VIS,Vehicles Inoperable,1
+freightchargecodes,VIT,Virgin Island Transfer Charge,1
+freightchargecodes,VOR,Vehicle Ordered but Not Used,1
+freightchargecodes,VSO,Stop-off Delivery of Personal Vehicles Charge,1
+freightchargecodes,VTS,Vehicles in Truckway,1
+freightchargecodes,VVL,Vehicle Load Allowance,1
+freightchargecodes,VVP,Vehicle Prep Charge (courtesy delivery),1
+freightchargecodes,WAR,War Risk Surcharge,1
+freightchargecodes,WAT,Wide Area Telephone Service (WATS) Usage Credit,1
+freightchargecodes,WBB,Wharfage - Breakbulk,1
+freightchargecodes,WCT,Wharfage - Container,1
+freightchargecodes,WDS,Waterfront Delivery Charge,1
+freightchargecodes,WEA,Weather Protection,1
+freightchargecodes,WEI,Weighing Charge (Intermodal),1
+freightchargecodes,WFG,Wharfage,1
+freightchargecodes,WFH,Wharfage & Handling,1
+freightchargecodes,WFT,Wasted/Futile Trip,1
+freightchargecodes,WHC,Warehouse Charge,1
+freightchargecodes,WRB,War Risk Crew Bonus,1
+freightchargecodes,WRC,Load Weighing Charge,1
+freightchargecodes,WRE,Empty Weighing Charge,1
+freightchargecodes,WRI,War Risk Insurance,1
+freightchargecodes,WSA,Warehouse Allowance,1
+freightchargecodes,WTG,Waiting Time,1
+freightchargecodes,WTM,Waiting Time Service Charge,1
+freightchargecodes,WTV,Weight Verification Charge,1
+freightchargecodes,WWC,Wharfage Charge,1
+freightchargecodes,Z01,Protective Service Rule 25,1
+freightchargecodes,Z02,Protective Service Rule 27,1
+freightchargecodes,Z03,Protective Service Rule 37,1
+freightchargecodes,Z04,Protective Service Rule 75,1
+freightchargecodes,Z05,Protective Service Rule 95,1
+freightchargecodes,Z06,Protective Service Rule 140,1
+freightchargecodes,Z07,Protective Service Rule 160,1
+freightchargecodes,Z08,Protective Service Rule 165,1
+freightchargecodes,Z09,Protective Service Rule 500,1
+freightchargecodes,Z10,Protective Service Rule 510,1
+freightchargecodes,Z11,Protective Service Rule 518,1
+freightchargecodes,Z12,Protective Service Rule 530,1
+freightchargecodes,Z13,Protective Service Rule 531,1
+freightchargecodes,Z14,Protective Service Rule 545,1
+freightchargecodes,Z15,Protective Service Rule 565,1
+freightchargecodes,Z16,Protective Service Rule 570,1
+freightchargecodes,Z17,Protective Service Rule 580,1
+freightchargecodes,Z18,Protective Service Rule 581,1
+freightchargecodes,Z19,Protective Service Rule 705,1
+freightchargecodes,Z20,Protective Service Rule 710,1
+freightchargecodes,Z21,Protective Service Rule 711,1
+freightchargecodes,Z22,Protective Service Rule 712,1
+freightchargecodes,Z23,Protective Service Rule 716,1
+freightchargecodes,Z24,Protective Service Rule 720,1
+freightchargecodes,Z25,Protective Service Rule 725,1
+freightchargecodes,Z26,Protective Service Rule 727,1
+freightchargecodes,Z27,Protective Service Rule 735,1
+freightchargecodes,Z28,Protective Service Rule 740,1
+freightchargecodes,Z29,Protective Service Rule 760,1
+freightchargecodes,Z30,Protective Service Rule 815,1
+freightchargecodes,Z31,Quality Differential,1
+freightchargecodes,Z32,Protective Service Rule 26,1
+freightchargecodes,Z33,Protective Service Rule 715,1
+freightchargecodes,Z34,Protective Service Rule 745,1
+freightchargecodes,Z35,Protective Service Rule 755,1
+freightchargecodes,ZFF,First Flight Out,1
+freightchargecodes,ZZZ,Mutually Defined,1
+freightdatecodes,78,Delivery Appointment Scheduled Date,1
+freightdatecodes,77,Pickup Appointment Scheduled Date,1
+freightdatecodes,79,Pickup Requested Scheduled Date,1
+freightdatecodes,80,Delivery Requested Scheduled Date,1
+freightdatecodes,81,Pickup Appointment Granted Date,1
+freightdatecodes,82,Delivery Appointment Granted Date,1
+freightdatecodes,69,Scheduled Pickup Date,1
+freightdatecodes,70,Scheduled Delivery Date,1
+freightdatecodes,37,Ship Not Before Date,1
+freightdatecodes,38,Ship Not Later Than Date,1
+freightdatecodes,53,Deliver Not Before Date,1
+freightdatecodes,54,Deliver No Later Than Date,1
+freighttimecodes,ED,Earliest Delivery Time,1
+freighttimecodes,EP,Earliest Pickup Time,1
+freighttimecodes,LD,Latest Delivery Time,1
+freighttimecodes,LP,Latest Pickup Time,1
+freighttimecodes,2,Pickup Appointment Scheduled Time,1
+freighttimecodes,3,Delivery Appointment Scheduled Time,1
+freighttimecodes,G,Earliest Requested Deliver Time,1
+freighttimecodes,I,Earliest Requested Pickup Time,1
+freighttimecodes,K,Latest Requested Pickup Time,1
+freighttimecodes,L,Latest Requested Delivery Time,1
+freighttimecodes,X,Scheduled Delivery Time,1
+freighttimecodes,U,Scheduled Pickup Time,1
+freighttimecodes,Y,Requested Pickup Time,1
+freighttimecodes,Z,Requested Delivery Time,1
+freightrejectioncodes,A13,Other,1
+freightrejectioncodes,CPT,Capacity Type,1
+freightrejectioncodes,CPU,Capacity Unavailable,1
+freightrejectioncodes,EQT,Equipment Type,1
+freightrejectioncodes,EQU,Equipment Unavailable,1
+freightrejectioncodes,LNH,Length Of Haul,1
+freightrejectioncodes,PRM,Permits,1
+freightrejectioncodes,WGT,Weight,1
+freightstatuseventcodes,A3,Shipment Returned to Shipper,1
+freightstatuseventcodes,A7,Refused by Consignee,1
+freightstatuseventcodes,A9,Shipment Damaged,1
+freightstatuseventcodes,AF,Carrier Departed Pickup Location with Shipment,1
+freightstatuseventcodes,AG,Estimated Delivery,1
+freightstatuseventcodes,AH,Attempted Delivery,1
+freightstatuseventcodes,AI,Shipment has been Reconsigned,1
+freightstatuseventcodes,AJ,Tendered for Delivery,1
+freightstatuseventcodes,AL,Shipment Conveyance Loaded to Rail Car,1
+freightstatuseventcodes,AM,Loaded on Truck,1
+freightstatuseventcodes,AN,Diverted to Air Carrier,1
+freightstatuseventcodes,AP,Delivery Not Completed,1
+freightstatuseventcodes,AR,Rail Arrival at Destination Intermodal Ramp,1
+freightstatuseventcodes,AV,Available for Delivery,1
+freightstatuseventcodes,AW,Shipment Available for Pick-up,1
+freightstatuseventcodes,B6,Estimated to Arrive at Carrier Terminal,1
+freightstatuseventcodes,BA,Connecting Line or Cartage Pickup,1
+freightstatuseventcodes,BC,Storage in Transit,1
+freightstatuseventcodes,BO,Shipment Conveyance Reported Bad Order,1
+freightstatuseventcodes,BR,Shipment Conveyance Released From Bad Order,1
+freightstatuseventcodes,C1,Estimated to Depart Terminal Location,1
+freightstatuseventcodes,C2,Delivered Empty,1
+freightstatuseventcodes,C3,Picked-up Empty,1
+freightstatuseventcodes,CA,Shipment Cancelled,1
+freightstatuseventcodes,CB,Completed Shipment,1
+freightstatuseventcodes,CD,Carrier Departed Delivery Location,1
+freightstatuseventcodes,CL,Trailer Closed Out,1
+freightstatuseventcodes,CP,Completed Loading at Pickup Location,1
+freightstatuseventcodes,D1,Completed Unloading at Delivery Location,1
+freightstatuseventcodes,DE,Last Free Day without Demurrage for Shipment,1
+freightstatuseventcodes,DO,Shipment Delivery Order Received,1
+freightstatuseventcodes,I1,In-Gate,1
+freightstatuseventcodes,J1,Delivered to Connecting Line,1
+freightstatuseventcodes,K1,Arrived at Customs,1
+freightstatuseventcodes,K2,Customs Released,1
+freightstatuseventcodes,L1,Loading,1
+freightstatuseventcodes,LC,Shipment Container Loaded to Chassis,1
+freightstatuseventcodes,NB,Shipment Conveyance Received Without Paperwork,1
+freightstatuseventcodes,OA,Out-Gate,1
+freightstatuseventcodes,OO,Paperwork Received - Did not Receive Shipment or Equipment,1
+freightstatuseventcodes,P1,Departed Terminal Location,1
+freightstatuseventcodes,PA,Partial Shipment,1
+freightstatuseventcodes,PD,Last Free Day without Per Diem for Shipment,1
+freightstatuseventcodes,PR,U.S. Customs Hold at In-Bond Location,1
+freightstatuseventcodes,R1,Received from Prior Carrier,1
+freightstatuseventcodes,RA,Carrier Arrived at Rail Ramp,1
+freightstatuseventcodes,RD,Carrier Departed Rail Ramp,1
+freightstatuseventcodes,RH,Shipment Conveyance Released from Hold,1
+freightstatuseventcodes,RL,Rail Departure from Origin Intermodal Ramp,1
+freightstatuseventcodes,S1,Trailer Spotted at Consignee's Location,1
+freightstatuseventcodes,SD,Shipment Delayed,1
+freightstatuseventcodes,UC,Shipment Container Unloaded from Chassis,1
+freightstatuseventcodes,UR,Shipment Conveyance Unloaded From Rail Car,1
+freightstatuseventcodes,X1,Arrived at Delivery Location,1
+freightstatuseventcodes,X2,Estimated Date and/or Time of Arrival at Consignee's Location,1
+freightstatuseventcodes,X3,Arrived at Pickup Location,1
+freightstatuseventcodes,X4,Arrived at Terminal Location,1
+freightstatuseventcodes,X5,Arrived at Delivery Location Loading Dock,1
+freightstatuseventcodes,X6,En Route to Delivery Location,1
+freightstatuseventcodes,X8,Arrived at Pickup Location Loading Dock,1
+freightstatuseventcodes,X9,Arrived at Carrier's Warehouse,1
+freightstatuseventcodes,XB,Shipment Acknowledged,1
+freightstatusreasoncodes,A1,Missed Delivery,1
+freightstatusreasoncodes,A2,Incorrect Address,1
+freightstatusreasoncodes,A3,Indirect Delivery,1
+freightstatusreasoncodes,A5,Unable to Locate,1
+freightstatusreasoncodes,A6,Address Corrected - Delivery Attempted,1
+freightstatusreasoncodes,AA,Mis-sort,1
+freightstatusreasoncodes,AD,Customer Requested Future Delivery,1
+freightstatusreasoncodes,AE,Restricted Articles Unacceptable,1
+freightstatusreasoncodes,AF,Accident,1
+freightstatusreasoncodes,AG,Consignee Related,1
+freightstatusreasoncodes,AH,Driver Related,1
+freightstatusreasoncodes,AI,Mechanical Breakdown,1
+freightstatusreasoncodes,AJ,Other Carrier Related,1
+freightstatusreasoncodes,AK,Damaged/Rewrapped in Hub,1
+freightstatusreasoncodes,AL,Previous Stop,1
+freightstatusreasoncodes,AM,Shipper Related,1
+freightstatusreasoncodes,AN,Holiday - Closed,1
+freightstatusreasoncodes,AO,Weather or Natural Disaster Related,1
+freightstatusreasoncodes,AP,Awaiting Export,1
+freightstatusreasoncodes,AQ,Recipient Unavailable - Delivery Delayed,1
+freightstatusreasoncodes,AR,Improper International Paperwork,1
+freightstatusreasoncodes,AS,Hold Due to Customs Documentation Problems,1
+freightstatusreasoncodes,AT,Unable to Contact Recipient for Broker Information,1
+freightstatusreasoncodes,AU,Civil Event Related Delay,1
+freightstatusreasoncodes,AV,Exceeds Service Limitations,1
+freightstatusreasoncodes,AW,Past Cut-off Time,1
+freightstatusreasoncodes,AX,Insufficient Pickup Time,1
+freightstatusreasoncodes,AY,Missed Pickup,1
+freightstatusreasoncodes,AZ,Alternate Carrier Delivered,1
+freightstatusreasoncodes,B1,Consignee Closed,1
+freightstatusreasoncodes,B2,Trap for Customer,1
+freightstatusreasoncodes,B4,Held for Payment,1
+freightstatusreasoncodes,B5,Held for Consignee,1
+freightstatusreasoncodes,B8,Improper Unloading Facility or Equipment,1
+freightstatusreasoncodes,B9,Receiving Time Restricted,1
+freightstatusreasoncodes,BB,Held per Shipper,1
+freightstatusreasoncodes,BC,Missing Documents,1
+freightstatusreasoncodes,BD,Border Clearance,1
+freightstatusreasoncodes,BE,Road Conditions,1
+freightstatusreasoncodes,BF,Carrier Keying Error,1
+freightstatusreasoncodes,BG,Other,1
+freightstatusreasoncodes,BH,Insufficient Time to Complete Delivery,1
+freightstatusreasoncodes,BI,Cartage Agent,1
+freightstatusreasoncodes,BJ,Customer Wanted Earlier Delivery,1
+freightstatusreasoncodes,BK,Prearranged Appointment,1
+freightstatusreasoncodes,BL,Held for Protective Service,1
+freightstatusreasoncodes,BM,Flatcar Shortage,1
+freightstatusreasoncodes,BN,Failed to Release Billing,1
+freightstatusreasoncodes,BO,Railroad Failed to Meet Schedule,1
+freightstatusreasoncodes,BP,Load Shifted,1
+freightstatusreasoncodes,BQ,Shipment Overweight,1
+freightstatusreasoncodes,BR,Train Derailment,1
+freightstatusreasoncodes,BS,Refused by Customer,1
+freightstatusreasoncodes,BT,Returned to Shipper,1
+freightstatusreasoncodes,C1,Waiting for Customer Pickup,1
+freightstatusreasoncodes,C2,Credit Hold,1
+freightstatusreasoncodes,C3,Suspended at Customer Request,1
+freightstatusreasoncodes,C4,Customer Vacation,1
+freightstatusreasoncodes,C5,Customer Strike,1
+freightstatusreasoncodes,C6,Waiting Shipping Instructions,1
+freightstatusreasoncodes,C7,Waiting for Customer Specified Carrier,1
+freightstatusreasoncodes,C8,Collect on Delivery Required,1
+freightstatusreasoncodes,C9,Cash Not Available From Consignee,1
+freightstatusreasoncodes,CA,Customs (Import or Export),1
+freightstatusreasoncodes,CB,No Requested Arrival Date Provided by Shipper,1
+freightstatusreasoncodes,CC,No Requested Arrival Time Provided by Shipper,1
+freightstatusreasoncodes,D1,Carrier Dispatch Error,1
+freightstatusreasoncodes,D2,Driver Not Available,1
+freightstatusreasoncodes,F1,Non-Express Clearance Delay,1
+freightstatusreasoncodes,F2,International Non-carrier Delay,1
+freightstatusreasoncodes,HB,Held Pending Appointment,1
+freightstatusreasoncodes,P1,Processing Delay,1
+freightstatusreasoncodes,P2,Waiting Inspection,1
+freightstatusreasoncodes,P3,Production Falldown,1
+freightstatusreasoncodes,P4,Held for Full Carrier Load,1
+freightstatusreasoncodes,RC,Reconsigned,1
+freightstatusreasoncodes,S1,Delivery Shortage,1
+freightstatusreasoncodes,T1,Tractor With Sleeper Car Not Available,1
+freightstatusreasoncodes,T2,Tractor Conventional Not Available,1
+freightstatusreasoncodes,T3,Trailer not Available,1
+freightstatusreasoncodes,T4,Trailer Not Usable Due to Prior Product,1
+freightstatusreasoncodes,T5,Trailer Class Not Available,1
+freightstatusreasoncodes,T6,Trailer Volume Not Available,1
+freightstatusreasoncodes,T7,Insufficient Delivery Time,1
+freightstatusreasoncodes,NS,Normal Status,1
+freightstatusreasoncodes,NA,Normal Appointment,1

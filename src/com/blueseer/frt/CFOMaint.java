@@ -63,6 +63,7 @@ import static com.blueseer.frt.frtData.getCFORevisions;
 import static com.blueseer.frt.frtData.getCFOSOS;
 import static com.blueseer.frt.frtData.getDriverInfo;
 import static com.blueseer.frt.frtData.getDriverPhone;
+import static com.blueseer.frt.frtData.getFreightCodeByCodeKey;
 import static com.blueseer.frt.frtData.updateCFORejection;
 import static com.blueseer.frt.frtData.updateCFOTransaction;
 import com.blueseer.shp.shpData;
@@ -98,7 +99,6 @@ import com.blueseer.utl.DTData;
 import com.blueseer.utl.EDData;
 import static com.blueseer.utl.EDData.hasEDIXref;
 import com.blueseer.utl.IBlueSeerT;
-import static com.blueseer.utl.OVData.getCodeValueByCodeKey;
 import static com.blueseer.utl.OVData.isValidShipper;
 import static com.blueseer.utl.OVData.updateFreightOrderStatus;
 import java.awt.Color;
@@ -1396,9 +1396,9 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         lual = new ActionListener() {
         public void actionPerformed(ActionEvent event) {
         if (lurb1.isSelected()) {  
-         luModel = DTData.getGenCodeBrowseUtilByCode(luinput.getText(),0, "code_key", "freightchargecodes"); 
+         luModel = DTData.getFreightCodeBrowseUtilByCode(luinput.getText(),0, "freight_key", "freightchargecodes"); 
         } else {
-         luModel = DTData.getGenCodeBrowseUtilByCode(luinput.getText(),0, "code_value", "freightchargecodes");    
+         luModel = DTData.getFreightCodeBrowseUtilByCode(luinput.getText(),0, "freight_value", "freightchargecodes");    
         }
         luTable.setModel(luModel);
         luTable.getColumnModel().getColumn(0).setMaxWidth(50);
@@ -1438,9 +1438,9 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         lual = new ActionListener() {
         public void actionPerformed(ActionEvent event) {
         if (lurb1.isSelected()) {  
-         luModel = DTData.getGenCodeBrowseUtilByCode(luinput.getText(),0, "code_key", "freighteqptype"); 
+         luModel = DTData.getFreightCodeBrowseUtilByCode(luinput.getText(),0, "freight_key", "freighteqptype"); 
         } else {
-         luModel = DTData.getGenCodeBrowseUtilByCode(luinput.getText(),0, "code_value", "freighteqptype");    
+         luModel = DTData.getFreightCodeBrowseUtilByCode(luinput.getText(),0, "freight_value", "freighteqptype");    
         }
         luTable.setModel(luModel);
         luTable.getColumnModel().getColumn(0).setMaxWidth(50);
@@ -1520,7 +1520,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         cbedi.setSelected(BlueSeerUtils.ConvertStringToBool(x.cfo_edi()));
         ddservicetype.setSelectedItem(x.cfo_servicetype());
         tbequiptype.setText(x.cfo_equipmenttype());
-        lblequiptype.setText(OVData.getCodeValueByCodeKey("freighteqptype", x.cfo_equipmenttype()));
+        lblequiptype.setText(getFreightCodeByCodeKey("freighteqptype", x.cfo_equipmenttype()));
         tbvehicle.setText(x.cfo_truckid());
         tbtrailer.setText(x.cfo_trailernbr());
         ddorderstatus.setSelectedItem(x.cfo_orderstatus());
@@ -1769,7 +1769,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
              tbnumber.getText(), // cust fo
              currformatDoubleUS(totamtLessCharge),  // formatUSC(tbcost.getText()), // netprice
              "0", // taxamt
-             OVData.getCodeValueByCodeKey("freightchargecodes", "DLH"),  // desc
+             getFreightCodeByCodeKey("freightchargecodes", "DLH"),  // desc
              ddratetype.getSelectedItem().toString() // sku -- holds rate type 
              };
         list.add(s);
@@ -4631,7 +4631,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     private void ddchargecodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddchargecodeActionPerformed
         if (! isLoad) {
             if (ddchargecode.getSelectedItem() != null && ! ddchargecode.getSelectedItem().toString().isBlank() ) {
-                tbsacdesc.setText(OVData.getCodeValueByCodeKey("freightchargecodes", ddchargecode.getSelectedItem().toString()));
+                tbsacdesc.setText(getFreightCodeByCodeKey("freightchargecodes", ddchargecode.getSelectedItem().toString()));
             }
             if (ddchargecode.getSelectedItem() != null && ddchargecode.getSelectedItem().toString().isBlank() ) {
                 tbsacdesc.setText("");
