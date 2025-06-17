@@ -16,6 +16,7 @@
 	<parameter name="site_csz" class="java.lang.String"/>
 	<parameter name="vend_csz" class="java.lang.String"/>
 	<parameter name="poa_csz" class="java.lang.String"/>
+	<parameter name="ship_csz" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[select po_nbr, it_desc, po_vend, po_rmks, po_due_date, 
 po_terms, po_shipvia, pod_item, pod_venditem, 
@@ -180,7 +181,7 @@ inner join site_mstr on site_site = po_site where pod_nbr =  $P{myid};]]>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{poa_csz}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{ship_csz}]]></textFieldExpression>
 			</textField>
 			<rectangle>
 				<reportElement x="0" y="79" width="109" height="30" uuid="a8bfe80a-7d14-452a-afe5-2cb9bca9b4de"/>

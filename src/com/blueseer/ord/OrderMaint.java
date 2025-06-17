@@ -791,8 +791,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             return false;
         }
         
-        if (x.delete.name().equals("delete")) {  // maintain order after canupdate check
-            return true;
+        if (x.equals("delete")) {  // maintain order after canupdate check
+           return true;
         }
         
         Map<String,Integer> f = OVData.getTableInfo(new String[]{"so_mstr"});
@@ -818,13 +818,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             remarks.requestFocus();
             return false;
         }
-        
-        if (orddet.getRowCount() == 0) {
-            bsmf.MainFrame.show(getMessageTag(1089));
-            tbshipto.requestFocus();
-            return false;
-        }
-
 
         if (ddsite.getSelectedItem() == null || ddsite.getSelectedItem().toString().isEmpty()) {
             bsmf.MainFrame.show(getMessageTag(1024, "site"));
@@ -878,6 +871,12 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 return false;
             }
         }
+        
+        if (orddet.getRowCount() == 0) {
+            bsmf.MainFrame.show(getMessageTag(1089));
+            tbshipto.requestFocus();
+            return false;
+        }
               
         return true;
     }
@@ -920,12 +919,12 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
      m = addOrderTransaction(createDetRecord(), createRecord(), createTaxRecord(), createTaxDetRecord(), createSOSRecord());
      
       //  add someta
-        if (! tbtracking.getText().isBlank()) {
+        if (m[0].equals("0") && ! tbtracking.getText().isBlank()) {
             addUpdateSOMeta(tbkey.getText(), "header", "trackingnumber", tbtracking.getText());
         }
      
       // if autoinvoice
-        if (OVData.isAutoInvoice()) {
+        if (m[0].equals("0") && OVData.isAutoInvoice()) {
         boolean sure = bsmf.MainFrame.warn("This is an auto-invoice order...Are you sure you want to auto-invoice?");     
             if (sure) {     
                m = autoInvoice();
