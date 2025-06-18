@@ -67,6 +67,7 @@ import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeer;
 import com.blueseer.utl.OVData;
+import static com.blueseer.utl.OVData.getSysMetaValue;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -118,6 +119,7 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
                 String basecurr = "";
                 int j = 0;
                 HashSet<String> assignedlabels = new HashSet<String>();
+                boolean autoconfirm = false;
     
     // global datatablemodel declarations 
     javax.swing.table.DefaultTableModel serialmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -368,7 +370,10 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
      
     public void setComponentDefaultValues() {
        isLoad = true;
-        tbkey.setText("");
+        
+        autoconfirm = BlueSeerUtils.ConvertStringToBool(getSysMetaValue("system", "shippercontrol", "auto_confirm_shipper_build"));
+       
+         tbkey.setText("");
          terms = "";
          aracct = "";
          arcc = "";
@@ -527,7 +532,9 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
             updateLabelStatus(label, "1");
         }
         shpData.updateShipperSAC(tbkey.getText());
+        if (autoconfirm) {
         confirmShipperTransaction("", tbkey.getText(), dcdate.getDate());
+        }
         return m;
     }
      

@@ -107,6 +107,7 @@ public class ShipScanMaint extends javax.swing.JPanel {
                 String firstbillto = "";
                 String[] custinfo = null;
                 String shipper = "";
+                boolean autoconfirm = false;
     
     // global datatablemodel declarations 
     javax.swing.table.DefaultTableModel serialmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -241,6 +242,7 @@ public class ShipScanMaint extends javax.swing.JPanel {
     } 
     
     public void setComponentDefaultValues() {
+      autoconfirm = BlueSeerUtils.ConvertStringToBool(getSysMetaValue("system", "shippercontrol", "auto_confirm_shipper_scan"));
         
       tbscan.setText("");
        
@@ -381,7 +383,10 @@ public class ShipScanMaint extends javax.swing.JPanel {
             updateLabelStatus(label, "1");
         }
         shpData.updateShipperSAC(String.valueOf(shipperid));
+        
+        if (autoconfirm) {
         confirmShipperTransaction("", String.valueOf(shipperid), new java.util.Date());
+        }
         return m;
     }
     

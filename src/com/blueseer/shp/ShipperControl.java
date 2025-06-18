@@ -38,12 +38,15 @@ import com.blueseer.utl.BlueSeerUtils;
 import com.blueseer.utl.BlueSeerUtils.dbaction;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import com.blueseer.utl.IBlueSeerc;
+import com.blueseer.utl.OVData;
+import static com.blueseer.utl.OVData.getSysMetaData;
 import java.awt.Component;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -208,6 +211,7 @@ public class ShipperControl extends javax.swing.JPanel implements IBlueSeerc {
     
     public String[] updateRecord(String[] x) {
      String[] m = addUpdateSHCtrl(createRecord());
+     SysMeta();
         return m;
      }
       
@@ -226,8 +230,25 @@ public class ShipperControl extends javax.swing.JPanel implements IBlueSeerc {
     public void updateForm() {
     cbconfirm.setSelected(BlueSeerUtils.ConvertStringToBool(x.shc_confirm()));
     cbcustitem.setSelected(BlueSeerUtils.ConvertStringToBool(x.shc_custitemonly()));
+    
+    // get sysmeta recs
+    ArrayList<String[]> obc = getSysMetaData("system", "shippercontrol");
+        for (String[] s : obc) {
+            if (s[0].equals("auto_confirm_shipper_scan")) {
+                cbautoconfscan.setSelected(BlueSeerUtils.ConvertStringToBool(s[1]));
+            }
+            if (s[0].equals("auto_confirm_shipper_build")) {
+                cbautoconfbuild.setSelected(BlueSeerUtils.ConvertStringToBool(s[1]));
+            }
+        } 
+    
     }
     
+    
+    public void SysMeta() {
+      OVData.addUpdateSysMeta("system", "shippercontrol", "auto_confirm_shipper_scan", BlueSeerUtils.boolToString(cbautoconfscan.isSelected())); 
+      OVData.addUpdateSysMeta("system", "shippercontrol", "auto_confirm_shipper_build", BlueSeerUtils.boolToString(cbautoconfbuild.isSelected())); 
+    }
     
   
     /**
@@ -243,6 +264,8 @@ public class ShipperControl extends javax.swing.JPanel implements IBlueSeerc {
         cbconfirm = new javax.swing.JCheckBox();
         btupdate = new javax.swing.JButton();
         cbcustitem = new javax.swing.JCheckBox();
+        cbautoconfscan = new javax.swing.JCheckBox();
+        cbautoconfbuild = new javax.swing.JCheckBox();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -263,20 +286,23 @@ public class ShipperControl extends javax.swing.JPanel implements IBlueSeerc {
         cbcustitem.setText("Customer Item Only?");
         cbcustitem.setName("cbcustitem"); // NOI18N
 
+        cbautoconfscan.setText("Auto Confirm Shipper Scan");
+
+        cbautoconfbuild.setText("Auto Confirm Shipper Build");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(btupdate)
-                    .addComponent(cbconfirm))
-                .addGap(25, 25, 25))
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(cbcustitem)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cbautoconfbuild)
+                    .addComponent(cbcustitem)
+                    .addComponent(cbautoconfscan)
+                    .addComponent(cbconfirm)
+                    .addComponent(btupdate))
+                .addContainerGap(66, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -285,9 +311,13 @@ public class ShipperControl extends javax.swing.JPanel implements IBlueSeerc {
                 .addComponent(cbconfirm, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbcustitem)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(cbautoconfscan)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(cbautoconfbuild)
+                .addGap(18, 24, Short.MAX_VALUE)
                 .addComponent(btupdate)
-                .addGap(21, 21, 21))
+                .addContainerGap())
         );
 
         add(jPanel1);
@@ -303,6 +333,8 @@ public class ShipperControl extends javax.swing.JPanel implements IBlueSeerc {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btupdate;
+    private javax.swing.JCheckBox cbautoconfbuild;
+    private javax.swing.JCheckBox cbautoconfscan;
     private javax.swing.JCheckBox cbconfirm;
     private javax.swing.JCheckBox cbcustitem;
     private javax.swing.JPanel jPanel1;

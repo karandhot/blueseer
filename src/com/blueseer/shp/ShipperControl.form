@@ -34,18 +34,16 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="1" attributes="0">
-                  <EmptySpace max="32767" attributes="0"/>
-                  <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="btupdate" min="-2" max="-2" attributes="0"/>
-                      <Component id="cbconfirm" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
-              </Group>
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="cbcustitem" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="cbautoconfbuild" min="-2" max="-2" attributes="0"/>
+                      <Component id="cbcustitem" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="cbautoconfscan" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="cbconfirm" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="btupdate" alignment="0" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace pref="66" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -56,9 +54,13 @@
                   <Component id="cbconfirm" min="-2" pref="34" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="cbcustitem" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="10" max="32767" attributes="0"/>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                  <Component id="cbautoconfscan" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                  <Component id="cbautoconfbuild" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace type="separate" pref="24" max="32767" attributes="0"/>
                   <Component id="btupdate" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -83,6 +85,16 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Customer Item Only?"/>
             <Property name="name" type="java.lang.String" value="cbcustitem" noResource="true"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JCheckBox" name="cbautoconfscan">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Auto Confirm Shipper Scan"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JCheckBox" name="cbautoconfbuild">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Auto Confirm Shipper Build"/>
           </Properties>
         </Component>
       </SubComponents>

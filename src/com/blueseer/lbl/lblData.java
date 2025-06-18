@@ -54,8 +54,8 @@ public class lblData {
         String sqlInsert = "insert into label_mstr (lbl_id, lbl_item, lbl_custitem, lbl_id_str, lbl_conttype, lbl_name, lbl_qty, lbl_po, "
                         + "lbl_billto, lbl_order, lbl_line, lbl_ref, lbl_lot, lbl_parent, lbl_parent_str, "
                         + "lbl_addrcode, lbl_addrname, lbl_addr1, lbl_addr2, lbl_addrcity, lbl_addrstate, lbl_addrzip, lbl_addrcountry, "
-                        + "lbl_crt_date, lbl_ship_date, lbl_userid, lbl_printer, lbl_prog, lbl_site, lbl_loc, lbl_trantype, lbl_type)  " +
-                " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                        + "lbl_crt_date, lbl_ship_date, lbl_userid, lbl_printer, lbl_prog, lbl_site, lbl_loc, lbl_trantype, lbl_type, lbl_shipto)  " +
+                " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
              PreparedStatement ps = con.prepareStatement(sqlSelect);) {
              ps.setString(1, x.lbl_id);
@@ -94,6 +94,7 @@ public class lblData {
             psi.setString(30, x.lbl_loc);
             psi.setString(31, x.lbl_trantype);
             psi.setString(32, x.lbl_type);
+            psi.setString(33, x.lbl_shipto);
             int rows = psi.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
             } else {
