@@ -56,7 +56,7 @@ import com.blueseer.utl.DTData;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.checkForCustomPath;
 import static com.blueseer.utl.OVData.getSystemLabelDirectory;
-import static com.blueseer.utl.OVData.printSSCC18J;
+import static com.blueseer.utl.OVData.printJasperLabel;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -651,20 +651,27 @@ String carrier = "";
         
         try {
 
-            String label = "sscc18J";
+            String cust = cusData.getCustFromOrder(tbordnbr.getText());
+            String label = cusData.getCustLabel(cust);
+            label  = (label.isBlank()) ? "sscc18J" : label; 
+            
             label_zebra lz = getLabelZebraMstr(new String[]{label});
 
             labelname = label;
 
             serialno = OVData.getNextNbr("label");
             serialno_str = String.valueOf(serialno);
-            serialno_display = checkDigitUCC18(serialno);
-
+            if (label.equals("sscc18J")) {
+             serialno_display = checkDigitUCC18(serialno);
+            } else {
+             serialno_display = serialno_str;   
+            }
+            
              // ok....apparently we have a label/printer match.... lets create the label_mstr record for this label
             addLabelMstr(createRecord()); 
 
-            if (lz.lblz_code().toLowerCase().equals("sscc18j")) {
-                printSSCC18J(tbordnbr.getText(), tbline.getText(), serialno_display, tbref.getText(), tbqty.getText());
+            if (lz.lblz_file().endsWith("jasper")) {
+                printJasperLabel(tbordnbr.getText(), tbline.getText(), serialno_display, tbref.getText(), tbqty.getText(), lz.lblz_file());
             }
 
         } catch (Exception e) {

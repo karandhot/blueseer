@@ -56,7 +56,7 @@ import com.blueseer.utl.DTData;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.checkForCustomPath;
 import static com.blueseer.utl.OVData.getSystemLabelDirectory;
-import static com.blueseer.utl.OVData.printSSCC18J;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;

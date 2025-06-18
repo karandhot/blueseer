@@ -575,7 +575,7 @@ public class lblData {
                  res = st.executeQuery("select lbld_id, lbld_order, lbld_line, lbld_item, lbld_qty, lbl_type, sod_desc, sod_custitem, sod_wh, sod_loc, sod_uom, sod_netprice, sod_po " +
                          " from label_det inner join label_mstr on lbl_id = lbld_id " +
                          " inner join sod_det on sod_nbr = lbld_order and sod_line = lbld_line " +
-                         " where lbl_scan = '0' and lbl_type = 'h' and lbl_billto = " + "'" + billto + "'" 
+                         " where lbl_scan = '0' and lbl_type = 'mixed' and lbl_billto = " + "'" + billto + "'" 
                          + " ;");
                while (res.next()) {
                    list.add(new String[]{res.getString("lbld_id"),

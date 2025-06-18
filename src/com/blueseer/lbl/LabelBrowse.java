@@ -99,7 +99,7 @@ public class LabelBrowse extends javax.swing.JPanel {
                             getGlobalColumnTag("order"), 
                             getGlobalColumnTag("line"), 
                             getGlobalColumnTag("reference"), 
-                            getGlobalColumnTag("lot"), 
+                            getGlobalColumnTag("type"), 
                             getGlobalColumnTag("createdate"), 
                             getGlobalColumnTag("status"), 
                             getGlobalColumnTag("void")}){
@@ -124,6 +124,14 @@ public class LabelBrowse extends javax.swing.JPanel {
                             getGlobalColumnTag("quantity"), 
                             getGlobalColumnTag("type"), 
                             getGlobalColumnTag("date")});
+    
+    MyTableModel modeldetail = new LabelBrowse.MyTableModel(new Object[][]{},
+                        new String[]{getGlobalColumnTag("serial"), 
+                            getGlobalColumnTag("order"),
+                            getGlobalColumnTag("line"),
+                            getGlobalColumnTag("item"),
+                            getGlobalColumnTag("description"),
+                            getGlobalColumnTag("quantity")});
     /**
      * Creates new form ScrapReportPanel
      */
@@ -256,9 +264,10 @@ public class LabelBrowse extends javax.swing.JPanel {
        }
     }
     
-    public void getdetail(String serial) {
+    public void getDetailTrans(String serial) {
       
          modeltrans.setNumRows(0);
+         
          double total = 0.00;
          DecimalFormat df = new DecimalFormat("#0.00", new DecimalFormatSymbols(Locale.US));
         
@@ -275,7 +284,6 @@ public class LabelBrowse extends javax.swing.JPanel {
             ResultSet res = null;
             try {
                 int i = 0;
-                String blanket = "";
                 res = st.executeQuery("select * from tran_mstr " +
                         " where tr_serial = " + "'" + serial + "'" + ";");
                 while (res.next()) {
@@ -309,6 +317,60 @@ public class LabelBrowse extends javax.swing.JPanel {
 
     }
     
+    public void getDetailLabels(String serial) {
+      
+         modeldetail.setNumRows(0);
+         double total = 0.00;
+         DecimalFormat df = new DecimalFormat("#0.00", new DecimalFormatSymbols(Locale.US));
+        
+        
+        try {
+
+            Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                int i = 0;
+                res = st.executeQuery("select * from label_det " +
+                        " where lbld_id = " + "'" + serial + "'" + ";");
+                while (res.next()) {
+                   modeldetail.addRow(new Object[]{ 
+                      res.getString("lbld_id"), 
+                       res.getString("lbld_order"),
+                       res.getString("lbld_line"),
+                       res.getString("lbld_item"),
+                       res.getString("lbld_desc"),
+                       res.getInt("lbld_qty")});
+                }
+               
+               
+                tabletran.setModel(modeldetail);
+                this.repaint();
+
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+
+    }
+    
+    
     public void initvars(String[] arg) {
         mymodel.setRowCount(0);
          java.util.Date now = new java.util.Date();
@@ -319,7 +381,7 @@ public class LabelBrowse extends javax.swing.JPanel {
         modeltrans.setNumRows(0);
         tablelabel.setModel(mymodel);
         tabletran.setModel(modeltrans);
-        
+        cbtransactions.setSelected(false);
         
         tablelabel.getTableHeader().setReorderingAllowed(false); 
         tablelabel.getColumnModel().getColumn(0).setMaxWidth(100);
@@ -358,6 +420,7 @@ public class LabelBrowse extends javax.swing.JPanel {
         jLabel5 = new javax.swing.JLabel();
         btdetail = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
+        cbtransactions = new javax.swing.JCheckBox();
         tablepanel = new javax.swing.JPanel();
         summarypanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -426,6 +489,8 @@ public class LabelBrowse extends javax.swing.JPanel {
         jLabel4.setText("To Part");
         jLabel4.setName("lbltoitem"); // NOI18N
 
+        cbtransactions.setText("Transactions");
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -462,7 +527,9 @@ public class LabelBrowse extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btexport)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btdetail)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btdetail)
+                    .addComponent(cbtransactions))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -498,7 +565,8 @@ public class LabelBrowse extends javax.swing.JPanel {
                             .addComponent(tblblto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel6)
                             .addComponent(jLabel4)
-                            .addComponent(tbtopart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(tbtopart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(cbtransactions))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -700,7 +768,7 @@ try {
                                 res.getString("lbl_order"),
                                 res.getString("lbl_line"),
                                 res.getString("lbl_ref"),
-                                res.getString("lbl_lot"),
+                                res.getString("lbl_type"),
                                 res.getString("lbl_crt_date"),
                                 res.getString("lbl_scan"),
                                 res.getString("lbl_void")
@@ -736,7 +804,11 @@ try {
         int row = tablelabel.rowAtPoint(evt.getPoint());
         int col = tablelabel.columnAtPoint(evt.getPoint());
         if ( col == 0) {
-            getdetail(tablelabel.getValueAt(row, 1).toString());
+            if (cbtransactions.isSelected()) {
+            getDetailTrans(tablelabel.getValueAt(row, 1).toString());    
+            } else {
+            getDetailLabels(tablelabel.getValueAt(row, 1).toString());
+            }
             btdetail.setEnabled(true);
             detailpanel.setVisible(true);
         }
@@ -752,6 +824,7 @@ try {
     private javax.swing.JButton btRun;
     private javax.swing.JButton btdetail;
     private javax.swing.JButton btexport;
+    private javax.swing.JCheckBox cbtransactions;
     private com.toedter.calendar.JDateChooser dcFrom;
     private com.toedter.calendar.JDateChooser dcTo;
     private javax.swing.JPanel detailpanel;

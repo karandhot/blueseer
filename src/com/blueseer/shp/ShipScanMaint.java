@@ -58,7 +58,6 @@ import static com.blueseer.inv.invData.getWHLOCfromSerialNumber;
 import com.blueseer.inv.invData.inv_ctrl;
 import static com.blueseer.lbl.lblData.getLabelMstrByStrID;
 import static com.blueseer.lbl.lblData.getLabelStatus;
-import static com.blueseer.lbl.lblData.getLabelTableRecs;
 import com.blueseer.lbl.lblData.label_mstr;
 import static com.blueseer.lbl.lblData.updateLabelStatus;
 import static com.blueseer.ord.ordData.getOrderLineInfo;

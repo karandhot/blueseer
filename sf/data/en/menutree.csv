@@ -69,9 +69,9 @@ EDICommMenu,AS2Maint,4,JMenuItem,AS2 Maintenance,,,,1,1
 EDICommMenu,AS2Browse,5,JMenuItem,AS2 Browse,,1,,1,1
 EDICommMenu,AS2Log,6,JMenuItem,AS2 Log,,,,1,1
 EDICommMenu,FTPMaint,7,JMenuItem,FTP/sFTP Maintenance,,,,1,1
-LabelMenu,PalletLabelMaint,1,JMenuItem,Pallet/Container (PDF) Labels,,,,1,1
-LabelMenu,LabelsContGeneric,2,JMenuItem,Container Labels,,,,1,1
-LabelMenu,LabelMixedContMaint,3,JMenuItem,Container Mixed Labels,,,,1,1
+LabelMenu,LabelsContGeneric,1,JMenuItem,Container Labels,,,,1,1
+LabelMenu,LabelMixedContMaint,2,JMenuItem,Container Mixed Labels,,,,1,1
+LabelMenu,PalletLabelMaint,3,JMenuItem,Container PDF Labels,,,,1,1
 LabelMenu,AddrLabel,4,JMenuItem,Address Labels,,,,1,1
 LabelMenu,LabelBrowse,5,JMenuItem,Label Browse,,1,,1,1
 LabelMenu,LabelFileMaint,6,JMenuItem,Label File Maintenance,,,,1,1

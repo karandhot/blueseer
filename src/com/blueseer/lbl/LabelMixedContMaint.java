@@ -60,7 +60,6 @@ import com.blueseer.utl.DTData;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.checkForCustomPath;
 import static com.blueseer.utl.OVData.getSystemLabelDirectory;
-import static com.blueseer.utl.OVData.printSSCC18J;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -496,12 +495,12 @@ String carrier = "";
         DateFormat dfdate2 = new SimpleDateFormat("yyyy-MM-dd");
          label_mstr x = new label_mstr(null, 
                  serialno_str, 
-                 item, 
+                 "mixeditems", 
                  custitem, 
                  serialno_display, 
                  "XX", 
                  labelname,
-                 quantity, 
+                 "0", 
                  ponbr, 
                  billto,
                  ordernbr, 
@@ -526,7 +525,7 @@ String carrier = "";
                  OVData.getDefaultSite(), 
                  "", // loc
                  "CONT",
-                 "h",
+                 "mixed",
                  shipto
                 );
         return x;

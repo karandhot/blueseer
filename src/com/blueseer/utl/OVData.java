@@ -17531,7 +17531,7 @@ return mystring;
         }
     }    
     
-    public static void printSSCC18J(String order, String line, String serialno, String reference, String qty) {
+    public static void printJasperLabel(String order, String line, String serialno, String reference, String qty, String jasperfile) {
         try{
              
             Connection con = null;
@@ -17583,7 +17583,7 @@ return mystring;
                     logo = OVData.getSiteLogo(site);
                 }
                 
-                String jasperfile = "sscc18.jasper";                
+                //String jasperfile = "sscc18.jasper";                
                
               
                Path imagepath = FileSystems.getDefault().getPath(cleanDirString(getSystemImageDirectory()) + logo);
@@ -18523,7 +18523,7 @@ MainFrame.bslog(e);
              PrintService[] services = PrinterJob.lookupPrintServices();
               
                 for (int index = 0; service == null && index < services.length; index++) {
-                    System.out.println("printers: " + services[index].getName());
+                 //   System.out.println("printers: " + services[index].getName());
                     if (services[index].getName().equalsIgnoreCase(prt[0])) {
                         service = services[index];
                     }
