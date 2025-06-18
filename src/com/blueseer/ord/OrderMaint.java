@@ -160,6 +160,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 boolean canupdate = false;
                 String allocationStatus = "";
                 String currentline = "";
+                boolean isSOCommitted = false;
                 public static so_mstr so = null;
                 public static ArrayList<sod_det> sodlist = null;
                 public static ArrayList<sos_det> soslist = null;
@@ -466,6 +467,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbkey.setEditable(true);
         tbkey.setForeground(Color.black);
         
+        isSOCommitted = false;
         
        
         attachmentmodel.setNumRows(0);
@@ -937,22 +939,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         String[] m = new String[2];
         // first delete any sod_det line records that have been
         // disposed from the current orddet table
-        ArrayList<String> lines = new ArrayList<String>();
-        ArrayList<String> badlines = new ArrayList<String>();
-        boolean goodLine = false;
-        
-        lines = getOrderLines(tbkey.getText());
-       for (String line : lines) {
-          goodLine = false;
-          for (int j = 0; j < orddet.getRowCount(); j++) {
-             if (orddet.getValueAt(j, 0).toString().equals(line)) {
-                 goodLine = true;
-             }
-          }
-          if (! goodLine) {
-              badlines.add(line);
-          }
-        }
+        ArrayList<String> badlines = getBadLines(tbkey.getText());
         
         // now update
         m = updateOrderTransaction(tbkey.getText(), badlines, createDetRecord(), createRecord(), createTaxRecord(), createTaxDetRecord(), createSOSRecord());
@@ -1022,6 +1009,10 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
       sodtaxlist = z.sodtax();
       cms = z.cms();
       someta = z.someta();
+      
+      if (so != null) {
+          isSOCommitted = true;
+      }
       
       getAttachments(key[0]);
       if (bsmf.MainFrame.debug) {
@@ -1652,6 +1643,26 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     // custom funcs 
+    public ArrayList<String> getBadLines(String key) {
+        ArrayList<String> lines = new ArrayList<String>();
+        ArrayList<String> badlines = new ArrayList<String>();
+        boolean goodLine = false;
+        
+        lines = getOrderLines(key);
+       for (String line : lines) {
+          goodLine = false;
+          for (int j = 0; j < orddet.getRowCount(); j++) {
+             if (orddet.getValueAt(j, 0).toString().equals(line)) {
+                 goodLine = true;
+             }
+          }
+          if (! goodLine) {
+              badlines.add(line);
+          }
+        }
+       return badlines;
+    }
+    
     public String[] Run_autoInvoice() {
         
         String[] m = autoInvoice();
@@ -3858,7 +3869,15 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         lbuomtext.setText("");
         tbpackqty.setText("");
         tbaltitem.setText("");
+        
+        // now update
+        if (isSOCommitted) {   // assuming the order already exists in DB
+           ArrayList<String> badlines = getBadLines(tbkey.getText());
+           updateOrderTransaction(tbkey.getText(), badlines, createDetRecord(), createRecord(), null, createTaxDetRecord(), null);
         }
+        
+        
+        } // can proceed
         
     }//GEN-LAST:event_btadditemActionPerformed
 
@@ -3898,7 +3917,12 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         }
         
-       
+       // now update
+        if (isSOCommitted) {   // assuming the order already exists in DB
+           ArrayList<String> badlines = getBadLines(tbkey.getText());
+           updateOrderTransaction(tbkey.getText(), badlines, createDetRecord(), createRecord(), null, createTaxDetRecord(), null);
+        } 
+        
                 refreshDisplayTotals();         
                 listprice.setText("");
                 netprice.setText("");
@@ -3911,6 +3935,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 lbuomtext.setText("");
                 tbpackqty.setText("");
                 tbaltitem.setText("");
+                
     }//GEN-LAST:event_btdelitemActionPerformed
 
     private void btupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateActionPerformed
@@ -4368,6 +4393,13 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 }
             }
         }
+        
+       
+        
+        // now update
+        ArrayList<String> badlines = getBadLines(tbkey.getText());
+        
+        updateOrderTransaction(tbkey.getText(), badlines, createDetRecord(), createRecord(), null, createTaxDetRecord(), null);
         
         
     }//GEN-LAST:event_btupdateitemActionPerformed

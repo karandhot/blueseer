@@ -550,17 +550,21 @@ public class ordData {
                 }
                 _updateOrderDet(z, so, bscon, ps, res);
             }
-            _deleteOrderTaxMstr(so.so_nbr, bscon);
-            for (so_tax z : sot) {
-                _addOrderTaxMstr(z, bscon, ps, res);
+            if (sot != null) {
+                _deleteOrderTaxMstr(so.so_nbr, bscon);
+                for (so_tax z : sot) {
+                    _addOrderTaxMstr(z, bscon, ps, res);
+                }
             }
             _deleteOrderTaxDet(so.so_nbr, bscon);
             for (sod_tax z : sotd) {
                 _addOrderTaxDet(z, bscon, ps, res);
             }
-            _deleteOrderSummaryDet(so.so_nbr, bscon);
-            for (sos_det z : sos) {
-                _addOrderSummaryDet(z, bscon, ps, res);
+            if (sos != null) {
+                _deleteOrderSummaryDet(so.so_nbr, bscon);
+                for (sos_det z : sos) {
+                    _addOrderSummaryDet(z, bscon, ps, res);
+                }
             }
              _updateOrderMstr(so, bscon, ps);  // update so_mstr
             bscon.commit();
