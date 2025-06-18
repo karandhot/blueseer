@@ -561,7 +561,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         custnumber.setText("");
         
         tbdesc.setForeground(Color.black);
-        tbdesc.setEditable(false);
+       // tbdesc.setEditable(false);
         tbdesc.setText("");
         
         tbpackqty.setEditable(false);
