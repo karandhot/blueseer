@@ -194,15 +194,6 @@ where sod_nbr =  $P{mynbr} and sod_line = $P{myline}]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{reference}]]></textFieldExpression>
 			</textField>
-			<componentElement>
-				<reportElement positionType="FixRelativeToBottom" x="-10" y="214" width="270" height="61" uuid="0078660d-65b2-4094-8120-80425980703f">
-					<property name="com.jaspersoft.studio.unit.barWidth" value="px"/>
-				</reportElement>
-				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="Code128" drawText="false" checksumRequired="false">
-					<jr:codeExpression><![CDATA[$F{so_po}]]></jr:codeExpression>
-					<jr:applicationIdentifierExpression><![CDATA[0]]></jr:applicationIdentifierExpression>
-				</jr:barbecue>
-			</componentElement>
 		</band>
 	</pageHeader>
 	<detail>

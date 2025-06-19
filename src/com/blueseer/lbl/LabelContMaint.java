@@ -339,7 +339,7 @@ String carrier = "";
       
         ddprinter.removeAllItems();
         OVData.getPrinterList().stream().forEach((s) -> ddprinter.addItem(s));
-       
+        ddprinter.insertItemAt("<record only>",0);
         
         getSiteAddress(OVData.getDefaultSite());
         
@@ -583,7 +583,7 @@ String carrier = "";
                     .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -721,110 +721,105 @@ String carrier = "";
        
         int nbroflabels = Integer.valueOf(tblblqty.getText());
        
-        
-        
-      
-        
-        try {
 
-            
-  //          FileOutputStream fos = new FileOutputStream("10.17.4.99");
- //           PrintStream ps = new PrintStream(fos);
+    String cust = cusData.getCustFromOrder(tbordnbr.getText());
+    String label = cusData.getCustLabel(cust);
 
-String cust = cusData.getCustFromOrder(tbordnbr.getText());
-String label = cusData.getCustLabel(cust);
+    label  = (label.isBlank()) ? "generic" : label; 
 
-label  = (label.isBlank()) ? "generic" : label; 
+    label_zebra lz = getLabelZebraMstr(new String[]{label});
 
-label_zebra lz = getLabelZebraMstr(new String[]{label});
+    labelname = label;
 
-labelname = label;
+    serialno = OVData.getNextNbr("label");
+    serialno_str = String.valueOf(serialno);
 
-serialno = OVData.getNextNbr("label");
-serialno_str = String.valueOf(serialno);
+    if (lz.lblz_type().toLowerCase().equals("ucc")) {
+        serialno_display = checkDigitUCC18(serialno);
+    } else {
+        serialno_display = serialno_str;
+    }
 
-if (lz.lblz_type().toLowerCase().equals("ucc")) {
-    serialno_display = checkDigitUCC18(serialno);
-} else {
-    serialno_display = serialno_str;
-}
+    // ok....apparently we have a label/printer match.... lets create the label_mstr record for this label
+    String[] x = addLabelMstr(createRecord()); 
+    if (ddprinter.getSelectedItem() != null && ddprinter.getSelectedItem().toString().equals("<record only>")) {
+          bsmf.MainFrame.show("label <record only> created");
+          return;
+    }          
 
+    // if sscc18J type label
+    if (lz.lblz_file().endsWith("jasper") &&
+       ddprinter.getSelectedItem() != null && ! ddprinter.getSelectedItem().toString().equals("<record only>") ) {
+       // printSSCC18J(tbordnbr.getText(), tbline.getText(), serialno_display, tbref.getText(), tbqty.getText());
+        bsmf.MainFrame.show("Customer has jasper label assignment.  sscc18J label format only supported by PDF Label Print program");
+        return;
+    }
 
-// if sscc18J type label
-        if (lz.lblz_code().toLowerCase().equals("sscc18j")) {
-           // printSSCC18J(tbordnbr.getText(), tbline.getText(), serialno_display, tbref.getText(), tbqty.getText());
-            bsmf.MainFrame.show("Customer has sscc18J label assignment.  sscc18J label format only supported by Pallet Label Maint");
+    if (ddprinter.getSelectedItem() != null && ! ddprinter.getSelectedItem().toString().equals("<record only>")) {
+        try {  
+        Path template = checkForCustomPath(getSystemLabelDirectory(), lz.lblz_file());
+
+        if (template == null) {
+            bsmf.MainFrame.show("unable to get path of background label file");
             return;
         }
 
+        File f = template.toFile();
+        if(f.exists() && !f.isDirectory()) { 
 
-//Path template = FileSystems.getDefault().getPath(cleanDirString(getSystemLabelDirectory()) + label);
-Path template = checkForCustomPath(getSystemLabelDirectory(), lz.lblz_file());
-File f = template.toFile();
-if(f.exists() && !f.isDirectory()) { 
-    
-      // ok....apparently we have a label/printer match.... lets create the label_mstr record for this label
-      String[] x = addLabelMstr(createRecord()); 
-    
-    
-BufferedReader fsr = new BufferedReader(new FileReader(f, StandardCharsets.UTF_8));
-String line = "";
-String concatline = "";
-
-while ((line = fsr.readLine()) != null) {
-    concatline += line;
-}
-fsr.close();
-// fos.write(concatline.getBytes());
+              
 
 
-concatline = concatline.replace("$PART", item);
-concatline = concatline.replace("$CUSTPART", custitem);
+        BufferedReader fsr = new BufferedReader(new FileReader(f, StandardCharsets.UTF_8));
+        String line = "";
+        String concatline = "";
+
+        while ((line = fsr.readLine()) != null) {
+            concatline += line;
+        }
+        fsr.close();
+        // fos.write(concatline.getBytes());
 
 
-concatline = concatline.replace("$SERIALNO", serialno_display);
-concatline = concatline.replace("$QUANTITY", quantity);
+        concatline = concatline.replace("$PART", item);
+        concatline = concatline.replace("$CUSTPART", custitem);
+        concatline = concatline.replace("$SERIALNO", serialno_display);
+        concatline = concatline.replace("$QUANTITY", quantity);
+        concatline = concatline.replace("$DESCRIPTION", partdesc);
+        concatline = concatline.replace("$CUSTCODE", billto);
+        concatline = concatline.replace("$PART", "");
+        concatline = concatline.replace("$ADDRNAME", "");
+        concatline = concatline.replace("$REV", revnbr);
+        concatline = concatline.replace("$PONUMBER", ponbr);
+        concatline = concatline.replace("$SONBR", ordernbr);
+        concatline = concatline.replace("$SOLINE", linenbr);
+        concatline = concatline.replace("$CARRIER", carrier);
+        concatline = concatline.replace("$SITENAME", sitename);
+        concatline = concatline.replace("$SITEADDR", siteaddr);
+        concatline = concatline.replace("$SITEPHONE", sitephone);
+        concatline = concatline.replace("$SITECSZ", sitecitystatezip);
+        concatline = concatline.replace("$SHIPNAME", shipname);
+        concatline = concatline.replace("$SHIPADDR1", shipaddr1);
+        concatline = concatline.replace("$SHIPADDR2", shipaddr2);
+        concatline = concatline.replace("$SHIPZIP", shipzip);
+        concatline = concatline.replace("$SHIPCSZ", shipcsz);
+        concatline = concatline.replace("$TODAYDATE", dfdate.format(now));
+        concatline = concatline.replace("$TODAYTIME", dftime.format(now));
 
 
-
-concatline = concatline.replace("$DESCRIPTION", partdesc);
-concatline = concatline.replace("$CUSTCODE", billto);
-concatline = concatline.replace("$PART", "");
-concatline = concatline.replace("$ADDRNAME", "");
-concatline = concatline.replace("$REV", revnbr);
-concatline = concatline.replace("$PONUMBER", ponbr);
-concatline = concatline.replace("$SONBR", ordernbr);
-concatline = concatline.replace("$SOLINE", linenbr);
+            OVData.printLabelStream(concatline, ddprinter.getSelectedItem().toString());
 
 
-concatline = concatline.replace("$CARRIER", carrier);
-
-concatline = concatline.replace("$SITENAME", sitename);
-concatline = concatline.replace("$SITEADDR", siteaddr);
-concatline = concatline.replace("$SITEPHONE", sitephone);
-concatline = concatline.replace("$SITECSZ", sitecitystatezip);
-
-concatline = concatline.replace("$SHIPNAME", shipname);
-concatline = concatline.replace("$SHIPADDR1", shipaddr1);
-concatline = concatline.replace("$SHIPADDR2", shipaddr2);
-concatline = concatline.replace("$SHIPZIP", shipzip);
-concatline = concatline.replace("$SHIPCSZ", shipcsz);
-
-concatline = concatline.replace("$TODAYDATE", dfdate.format(now));
-concatline = concatline.replace("$TODAYTIME", dftime.format(now));
-
- OVData.printLabelStream(concatline, ddprinter.getSelectedItem().toString());
-
- 
- initvars(null);
-} else {
-    bsmf.MainFrame.show(getMessageTag(1142,template.toString()));
-}
+         initvars(null);
+        } else {
+            bsmf.MainFrame.show(getMessageTag(1142,template.toString()));
+        }
 
 
-} catch (Exception e) {
-MainFrame.bslog(e);
-}
+        } catch (Exception e) {
+        MainFrame.bslog(e);
+        }
+    }
     }//GEN-LAST:event_btprintActionPerformed
 
     private void btlookupOrderLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupOrderLineActionPerformed

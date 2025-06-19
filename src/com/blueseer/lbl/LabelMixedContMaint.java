@@ -345,7 +345,7 @@ String carrier = "";
       
         ddprinter.removeAllItems();
         OVData.getPrinterList().stream().forEach((s) -> ddprinter.addItem(s));
-       
+        ddprinter.insertItemAt("<record only>",0);
         
         getSiteAddress(OVData.getDefaultSite());
         
@@ -581,7 +581,6 @@ String carrier = "";
         btclear = new javax.swing.JButton();
         lblcust = new javax.swing.JLabel();
         lblship = new javax.swing.JLabel();
-        btnoprint = new javax.swing.JButton();
         lblitem = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(0, 102, 204));
@@ -672,13 +671,6 @@ String carrier = "";
             }
         });
 
-        btnoprint.setText("Record Without Print");
-        btnoprint.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnoprintActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -720,12 +712,9 @@ String carrier = "";
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addContainerGap()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 544, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addComponent(btnoprint)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(btprint))))
+                                    .addComponent(btprint)))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGap(48, 48, 48)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -790,9 +779,7 @@ String carrier = "";
                             .addComponent(ddprinter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel2))
                         .addGap(31, 31, 31)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(btprint)
-                            .addComponent(btnoprint))
+                        .addComponent(btprint)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addGap(34, 34, 34))
         );
@@ -825,70 +812,80 @@ String carrier = "";
             serialno_display = serialno_str;
         }
         
+        String[] x = addMixedLabelTransaction(createDetRecord(),createRecord());
+        if (ddprinter.getSelectedItem() != null && ddprinter.getSelectedItem().toString().equals("<record only>")) {
+          bsmf.MainFrame.show("label <record only> created");
+          return;
+        }
+        
         
         // if sscc18J type label
-        if (lz.lblz_code().toLowerCase().equals("sscc18j")) {
+        if (lz.lblz_file().endsWith("jasper") &&
+            ddprinter.getSelectedItem() != null && ! ddprinter.getSelectedItem().toString().equals("<record only>") ) {
            // printSSCC18J(tbordnbr.getText(), tbline.getText(), serialno_display, tbref.getText(), tbqty.getText());
-            bsmf.MainFrame.show("Customer has sscc18J label assignment.  sscc18J label format only supported by Pallet Label Maint");
+            bsmf.MainFrame.show("Customer has jasper label assignment.  sscc18J label format only supported by PDF Container Label");
             return;
         }
         
         
         // else all other type of labels 
-    try {
-        Path template = checkForCustomPath(getSystemLabelDirectory(), lz.lblz_file());
-        File f = template.toFile();
-        if(f.exists() && !f.isDirectory()) { 
-            String[] x = addMixedLabelTransaction(createDetRecord(),createRecord());
-            // get zpl string from file
-            BufferedReader fsr = new BufferedReader(new FileReader(f, StandardCharsets.UTF_8));
-            String line = "";
-            String concatline = "";
-            while ((line = fsr.readLine()) != null) {
-                concatline += line;
+        if (ddprinter.getSelectedItem() != null && ! ddprinter.getSelectedItem().toString().equals("<record only>")) {
+            try {
+        
+            Path template = checkForCustomPath(getSystemLabelDirectory(), lz.lblz_file());
+            File f = template.toFile();
+            if(f.exists() && !f.isDirectory()) { 
+                
+                // get zpl string from file
+                BufferedReader fsr = new BufferedReader(new FileReader(f, StandardCharsets.UTF_8));
+                String line = "";
+                String concatline = "";
+                while ((line = fsr.readLine()) != null) {
+                    concatline += line;
+                }
+                fsr.close();
+                // replace variables with values
+                concatline = concatline.replace("$PART", item);
+                concatline = concatline.replace("$CUSTPART", custitem);
+                concatline = concatline.replace("$SERIALNO", serialno_display);
+                concatline = concatline.replace("$QUANTITY", quantity);
+                concatline = concatline.replace("$DESCRIPTION", partdesc);
+                concatline = concatline.replace("$CUSTCODE", billto);
+                concatline = concatline.replace("$PART", "");
+                concatline = concatline.replace("$ADDRNAME", "");
+                concatline = concatline.replace("$REV", revnbr);
+                concatline = concatline.replace("$PONUMBER", ponbr);
+                concatline = concatline.replace("$REF", ref);
+                concatline = concatline.replace("$SONBR", ordernbr);
+                concatline = concatline.replace("$SOLINE", linenbr);
+                concatline = concatline.replace("$CARRIER", carrier);
+                concatline = concatline.replace("$SITENAME", sitename);
+                concatline = concatline.replace("$SITEADDR", siteaddr);
+                concatline = concatline.replace("$SITEPHONE", sitephone);
+                concatline = concatline.replace("$SITECSZ", sitecitystatezip);
+                concatline = concatline.replace("$SHIPNAME", shipname);
+                concatline = concatline.replace("$SHIPADDR1", shipaddr1);
+                concatline = concatline.replace("$SHIPADDR2", shipaddr2);
+                concatline = concatline.replace("$SHIPZIP", shipzip);
+                concatline = concatline.replace("$SHIPCSZ", shipcsz);
+                java.util.Date now = new java.util.Date();
+                DateFormat dfdate = new SimpleDateFormat("MM/dd/yyyy");
+                DateFormat dftime = new SimpleDateFormat("hh:mm");
+                concatline = concatline.replace("$TODAYDATE", dfdate.format(now));
+                concatline = concatline.replace("$TODAYTIME", dftime.format(now));
+
+
+                   OVData.printLabelStream(concatline, ddprinter.getSelectedItem().toString());
+
+
+                 initvars(null);
+            } else {
+                bsmf.MainFrame.show(getMessageTag(1142,template.toString()));
             }
-            fsr.close();
-            // replace variables with values
-            concatline = concatline.replace("$PART", item);
-            concatline = concatline.replace("$CUSTPART", custitem);
-            concatline = concatline.replace("$SERIALNO", serialno_display);
-            concatline = concatline.replace("$QUANTITY", quantity);
-            concatline = concatline.replace("$DESCRIPTION", partdesc);
-            concatline = concatline.replace("$CUSTCODE", billto);
-            concatline = concatline.replace("$PART", "");
-            concatline = concatline.replace("$ADDRNAME", "");
-            concatline = concatline.replace("$REV", revnbr);
-            concatline = concatline.replace("$PONUMBER", ponbr);
-            concatline = concatline.replace("$REF", ref);
-            concatline = concatline.replace("$SONBR", ordernbr);
-            concatline = concatline.replace("$SOLINE", linenbr);
-            concatline = concatline.replace("$CARRIER", carrier);
-            concatline = concatline.replace("$SITENAME", sitename);
-            concatline = concatline.replace("$SITEADDR", siteaddr);
-            concatline = concatline.replace("$SITEPHONE", sitephone);
-            concatline = concatline.replace("$SITECSZ", sitecitystatezip);
-            concatline = concatline.replace("$SHIPNAME", shipname);
-            concatline = concatline.replace("$SHIPADDR1", shipaddr1);
-            concatline = concatline.replace("$SHIPADDR2", shipaddr2);
-            concatline = concatline.replace("$SHIPZIP", shipzip);
-            concatline = concatline.replace("$SHIPCSZ", shipcsz);
-            java.util.Date now = new java.util.Date();
-            DateFormat dfdate = new SimpleDateFormat("MM/dd/yyyy");
-            DateFormat dftime = new SimpleDateFormat("hh:mm");
-            concatline = concatline.replace("$TODAYDATE", dfdate.format(now));
-            concatline = concatline.replace("$TODAYTIME", dftime.format(now));
 
-            OVData.printLabelStream(concatline, ddprinter.getSelectedItem().toString());
-
-
-             initvars(null);
-        } else {
-            bsmf.MainFrame.show(getMessageTag(1142,template.toString()));
-        }
-
-
-        } catch (Exception e) {
-        MainFrame.bslog(e);
+            } catch (Exception e) {
+            MainFrame.bslog(e);
+            }
         }
     }//GEN-LAST:event_btprintActionPerformed
 
@@ -927,40 +924,6 @@ String carrier = "";
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 
-    private void btnoprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnoprintActionPerformed
-        if (! validateInput()) {
-            return;
-        }
-        
-        
-        
-        quantity = tbqty.getText();
-        ref = tbref.getText();
-        int nbroflabels = Integer.valueOf(tblblqty.getText());
-        String cust = cusData.getCustFromOrder(tbordnbr.getText());
-        String label = cusData.getCustLabel(cust);
-        label  = (label.isBlank()) ? "generic" : label; 
-        label_zebra lz = getLabelZebraMstr(new String[]{label});
-        labelname = label;
-        serialno = OVData.getNextNbr("label");
-        serialno_str = String.valueOf(serialno);
-       // bsmf.MainFrame.show(lz.lblz_code() + "/" + lz.lblz_type());
-        if (lz.lblz_type().toLowerCase().equals("ucc")) {
-            serialno_display = checkDigitUCC18(serialno);
-        } else {
-            serialno_display = serialno_str;
-        }
-        
-        String[] x = addMixedLabelTransaction(createDetRecord(),createRecord());
-        if (x[0].equals("0")) {
-            bsmf.MainFrame.show("Record added");
-        } else {
-            bsmf.MainFrame.show("Unable to add label record..." + x[1]);
-        }
-        initvars(null);
-        
-    }//GEN-LAST:event_btnoprintActionPerformed
-
     private void tblineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tblineActionPerformed
        if (! tbordnbr.getText().isBlank() && ! tbline.getText().isBlank()) {
        String[] info = getOrderLineInfo(tbordnbr.getText(), tbline.getText());
@@ -976,7 +939,6 @@ String carrier = "";
     private javax.swing.JButton btdeleteitem;
     private javax.swing.JButton btlookupLine;
     private javax.swing.JButton btlookupOrder;
-    private javax.swing.JButton btnoprint;
     private javax.swing.JButton btprint;
     private javax.swing.JComboBox ddprinter;
     private javax.swing.JTable itemtable;
