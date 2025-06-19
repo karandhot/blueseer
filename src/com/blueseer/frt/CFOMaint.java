@@ -192,6 +192,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     public String rejectionreason = "";
     public boolean lock_ddshipper = false;
     public int currentstopline = 0;
+    boolean isCFOCommitted = false;
     boolean isLoad = false;
     public boolean carrierPOV = true;
     public static cfo_mstr x = null;
@@ -527,7 +528,8 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     kvstop.clear();
     itemmap.clear();
     stk.clear();
-       
+    
+    isCFOCommitted = false;
        
        fc = getCFOCtrl(null);
        // note:  fc.frtc_function() = 1 for Trucking POV...and 0 for Customer POV
@@ -972,22 +974,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     public String[] updateRecord(String[] x) {
       String[] m = new String[2];
            
-        ArrayList<String> lines = new ArrayList<String>();
-        ArrayList<String> badlines = new ArrayList<String>();
-        boolean goodLine = false;
-        
-        lines = getCFOLines(tbkey.getText());
-       for (String line : lines) {
-          goodLine = false;
-          for (int j = 0; j < orddet.getRowCount(); j++) {
-             if (orddet.getValueAt(j, 0).toString().equals(line)) {
-                 goodLine = true;
-             }
-          }
-          if (! goodLine) {
-              badlines.add(line);
-          }
-        }
+        ArrayList<String> badlines = getBadLines(tbkey.getText());
      
        m = updateCFOTransaction(tbkey.getText(), ddrevision.getSelectedItem().toString(), badlines, createDetRecord(), createRecord(), createItemRecord(), createSOSRecord());
      
@@ -1059,6 +1046,11 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
        cfoitemlist = getCFOItem(key[0], x.cfo_revision()); 
        soslist = getCFOSOS(key[0], x.cfo_revision());
        getAttachments(key[0]);
+       
+       if (x != null) {
+          isCFOCommitted = true;
+      }
+       
         return x.m();
     }
     
@@ -1182,9 +1174,9 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                 s[2], // item
                 s[3], // desc
                 s[4], // order
-                s[5], // qty
-                s[6], // pallets
-                s[7], // weight
+                (s[5].isBlank()) ? "0" : s[5], // qty
+                (s[6].isBlank()) ? "0" : s[6], // pallets
+                (s[7].isBlank()) ? "0" : s[7], // weight
                 s[8], // ref
                 s[9] // remarks
                 );  
@@ -1672,6 +1664,26 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     
     // misc
+    public ArrayList<String> getBadLines(String key) {
+        ArrayList<String> lines = new ArrayList<String>();
+        ArrayList<String> badlines = new ArrayList<String>();
+        boolean goodLine = false;
+        
+        lines = getCFOLines(key);
+       for (String line : lines) {
+          goodLine = false;
+          for (int j = 0; j < orddet.getRowCount(); j++) {
+             if (orddet.getValueAt(j, 0).toString().equals(line)) {
+                 goodLine = true;
+             }
+          }
+          if (! goodLine) {
+              badlines.add(line);
+          }
+        }
+       return badlines;
+    }
+    
     
     public String[] Run_autoInvoice() {
         
@@ -3858,6 +3870,13 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         summarize();
         clearStopFields();    
         setStopState(false);
+        
+        // now update
+        if (isCFOCommitted) {   // assuming the order already exists in DB
+           ArrayList<String> badlines = getBadLines(tbkey.getText());
+           updateCFOTransaction(tbkey.getText(), ddrevision.getSelectedItem().toString(), badlines, createDetRecord(), createRecord(), createItemRecord(), null);
+        }
+        
         bsmf.MainFrame.show("STOP: " + currentstopline + " has been added");
         
     }//GEN-LAST:event_btaddstopActionPerformed
@@ -3886,6 +3905,11 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         }
         summarize();
+        // now update
+        if (isCFOCommitted) {   // assuming the order already exists in DB
+           ArrayList<String> badlines = getBadLines(tbkey.getText());
+           updateCFOTransaction(tbkey.getText(), ddrevision.getSelectedItem().toString(), badlines, createDetRecord(), createRecord(), createItemRecord(), null);
+        }
     }//GEN-LAST:event_btdeletestopActionPerformed
 
     private void btupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateActionPerformed
@@ -4342,6 +4366,12 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
         
        summarize();
        clearStopFields();
+       
+       // now update
+        if (isCFOCommitted) {   // assuming the order already exists in DB
+           ArrayList<String> badlines = getBadLines(tbkey.getText());
+           updateCFOTransaction(tbkey.getText(), ddrevision.getSelectedItem().toString(), badlines, createDetRecord(), createRecord(), createItemRecord(), null);
+        }
         
         
     }//GEN-LAST:event_btupdatestopActionPerformed

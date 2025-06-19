@@ -1679,9 +1679,11 @@ public class frtData {
                     _addCFOItem(z, bscon, ps, res);
                 }
             }
-             _deleteCFOSummaryDet(cfo.cfo_nbr, cfo.cfo_revision, bscon);
-            for (cfo_sos z : cfos) {
-                _addCFOSummaryDet(z, bscon, ps, res);
+            if (cfos != null) {
+                _deleteCFOSummaryDet(cfo.cfo_nbr, cfo.cfo_revision, bscon);
+               for (cfo_sos z : cfos) {
+                   _addCFOSummaryDet(z, bscon, ps, res);
+               }
             }
             
             bscon.commit();
@@ -1857,7 +1859,7 @@ public class frtData {
     
     private static int _addCFOItem(cfo_item x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
         int rows = 0;
-        bsmf.MainFrame.show(x.cfoi_nbr + "/" + x.cfoi_revision + "/" + x.cfoi_stopline + "/" + x.cfoi_itemline);
+       // bsmf.MainFrame.show(x.cfoi_nbr + "/" + x.cfoi_revision + "/" + x.cfoi_stopline + "/" + x.cfoi_itemline);
        /*
         String cfoi_nbr, String cfoi_stopline, String cfoi_itemline,
         String cfoi_item, String cfoi_itemdesc, String cfoi_order, 
