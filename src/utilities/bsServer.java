@@ -42,12 +42,14 @@ import com.blueseer.srv.dataServ;
 import com.blueseer.srv.dataServFIN;
 import com.blueseer.srv.webServ;
 import static com.blueseer.utl.BlueSeerUtils.isParsableToInt;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -98,7 +100,8 @@ public class bsServer {
             "REMOTE_ADDR" };
     
     public static void main(String[] args) throws Exception {
-         
+        
+        boolean isDebug = false;
         String configfile = "";
         if (args != null && args.length > 0) {
         int i = 0;
@@ -115,6 +118,7 @@ public class bsServer {
         
         
         
+        
 	ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setInitParameter("org.eclipse.jetty.servlet.Default.useFileMappedBuffer", "false");
         context.setContextPath("/bsapi"); 
@@ -125,8 +129,10 @@ public class bsServer {
         int serverport = 8088;
         for (String s : args) {
             System.out.println(String.valueOf(i+1) + " argument passed: " + s);
-             if (s.equalsIgnoreCase("-debug"))
+             if (s.equalsIgnoreCase("-debug")) {
                  context.setAttribute("debug", "true");
+                 isDebug = true;
+             }
              if (s.equalsIgnoreCase("-port")) {
                  if (args[i+1] != null && ! args[i+1].isBlank() && isParsableToInt(args[i+1])) {
                      serverport = Integer.valueOf(args[i+1]);
@@ -135,8 +141,22 @@ public class bsServer {
              i++;
         }
         
+        Properties prop = new Properties();
+        try( FileInputStream fis = new FileInputStream("conf/web.properties")) {
+            prop.load(fis);
+            if (isDebug) {
+                System.out.println("debug:  ...loading web.properties");
+            }
+        }
+        catch(Exception e) {
+            System.out.println("Unable to find the specified web.properties file");
+            e.printStackTrace();
+            return;
+        }
         
-        Server server = createServerBS(serverport, 8443, true);
+        
+        
+        Server server = createServerBS(serverport, 8443, true, prop);
 
         // Extra options
         server.setDumpAfterStart(true);
@@ -188,7 +208,7 @@ public class bsServer {
 	        
 	 }      
     
-    public static Server createServerBS(int port, int securePort, boolean addDebugListener) throws Exception {
+    public static Server createServerBS(int port, int securePort, boolean addDebugListener, Properties prop) throws Exception {
        
 
         // === jetty.xml ===
@@ -230,18 +250,18 @@ public class bsServer {
         
         // === jetty-https.xml ===
         // SSL Context Factory
-        Path keystorePath = Paths.get("edi/certs/boo.p12").toAbsolutePath();
+        Path keystorePath = Paths.get(prop.getProperty("keystore")).toAbsolutePath();
         if (!Files.exists(keystorePath))
             throw new FileNotFoundException(keystorePath.toString());
         SslContextFactory sslContextFactory = new SslContextFactory.Server();
         sslContextFactory.setKeyStorePath(keystorePath.toString());
       //  sslContextFactory.setKeyStorePassword("OBF:1vny1zlo1x8e1vnw1vn61x8g1zlu1vn4");
       //  sslContextFactory.setKeyManagerPassword("OBF:1u2u1wml1z7s1z7a1wnl1u2g");
-        sslContextFactory.setKeyStorePassword("bstest");
-        sslContextFactory.setKeyManagerPassword("bstest");
+        sslContextFactory.setKeyStorePassword(prop.getProperty("storepass"));
+        sslContextFactory.setKeyManagerPassword(prop.getProperty("keypass"));
         sslContextFactory.setTrustStorePath(keystorePath.toString());
       //  sslContextFactory.setTrustStorePassword("OBF:1vny1zlo1x8e1vnw1vn61x8g1zlu1vn4");
-        sslContextFactory.setTrustStorePassword("bstest");
+        sslContextFactory.setTrustStorePassword(prop.getProperty("storepass"));
 
         // SSL HTTP Configuration
         HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
