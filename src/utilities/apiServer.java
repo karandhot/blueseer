@@ -128,7 +128,6 @@ public class apiServer {
         
         int i = 0;
         int port = 8088;
-        int secureport = 8443;
         for (String s : args) {
             System.out.println(String.valueOf(i+1) + " argument passed: " + s);
              if (s.equalsIgnoreCase("-debug")) {
@@ -143,30 +142,26 @@ public class apiServer {
                      port = Integer.valueOf(args[i+1]);
                  }
              }
-             if (s.equalsIgnoreCase("-secureport")) {
-                 if (args[i+1] != null && ! args[i+1].isBlank() && isParsableToInt(args[i+1])) {
-                     secureport = Integer.valueOf(args[i+1]);
-                 }
-             }
              i++;
         }
         
-        Properties prop = new Properties();
-        try( FileInputStream fis = new FileInputStream("conf/web.properties")) {
-            prop.load(fis);
-            if (isDebug) {
-                System.out.println("debug:  ...loading web.properties");
-            }
-        }
-        catch(Exception e) {
-            System.out.println("Unable to find the specified web.properties file");
-            e.printStackTrace();
-            return;
-        }
+        
         
         Server server = null;
         if (isSSL) {
-            server = createServerBS(port, secureport, true, prop);
+            Properties prop = new Properties();
+                try( FileInputStream fis = new FileInputStream("conf/web.properties")) {
+                    prop.load(fis);
+                    if (isDebug) {
+                        System.out.println("debug:  ...loading web.properties");
+                    }
+                }
+                catch(Exception e) {
+                    System.out.println("Unable to find the specified web.properties file");
+                    e.printStackTrace();
+                    return;
+                }
+            server = createServerBS(port, true, prop);
         } else {
             server = new Server(port);
         }
@@ -207,7 +202,7 @@ public class apiServer {
 	 }      
     
     
-    public static Server createServerBS(int port, int secureport, boolean addDebugListener, Properties prop) throws Exception {
+    public static Server createServerBS(int port, boolean addDebugListener, Properties prop) throws Exception {
        
 
         // === jetty.xml ===
@@ -224,7 +219,7 @@ public class apiServer {
         // HTTP Configuration
         HttpConfiguration httpConfig = new HttpConfiguration();
         httpConfig.setSecureScheme("https");
-        httpConfig.setSecurePort(secureport);
+        httpConfig.setSecurePort(port);
         httpConfig.setOutputBufferSize(32768);
         httpConfig.setRequestHeaderSize(8192);
         httpConfig.setResponseHeaderSize(8192);
@@ -241,13 +236,13 @@ public class apiServer {
        
 
         // === jetty-http.xml ===
-        
+        /*
         ServerConnector http = new ServerConnector(server,
             new HttpConnectionFactory(httpConfig));
         http.setPort(port);
         http.setIdleTimeout(30000);
         server.addConnector(http);
-        
+        */
         
         // === jetty-https.xml ===
         // SSL Context Factory
@@ -272,7 +267,7 @@ public class apiServer {
         ServerConnector sslConnector = new ServerConnector(server,
             new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()),
             new HttpConnectionFactory(httpsConfig));
-        sslConnector.setPort(secureport);
+        sslConnector.setPort(port);
         server.addConnector(sslConnector);
 
        
