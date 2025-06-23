@@ -794,71 +794,7 @@ public class OrderRpt extends javax.swing.JPanel {
                         " AND so_cust <= " + "'" + tocust + "'" + 
                         " AND so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
                          " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;");
-                 
-                 /*
-                 if (dddatetype.getSelectedItem().toString().equals("create")) {
-                    res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
-                        " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
-                        " sum(sod_taxamt) as matltax, " +
-                        " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
-                        " (select sum(case when (sos_type = 'charge' or sos_type = 'shipping ADD') and sos_amttype = 'amount' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'charge'," + 
-                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = so_nbr)as 'taxpercent', " +
-                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = so_nbr) as 'taxcharge' " +
-                        " FROM  so_mstr left outer join sod_det on sod_nbr = so_nbr " +
-                        " where so_create_date >= " + "'" + setDateDB(dcFrom.getDate())  + "'" + 
-                        " AND so_create_date <= " + "'" + setDateDB(dcTo.getDate()) + "'" + 
-                        " AND so_cust >= " + "'" + fromcust + "'" + 
-                        " AND so_cust <= " + "'" + tocust + "'" + 
-                        " AND so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
-                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;"); 
-                 } else if (dddatetype.getSelectedItem().toString().equals("due")) {
-                        res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
-                        " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
-                        " sum(sod_taxamt) as matltax, " +
-                        " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
-                        " (select sum(case when (sos_type = 'charge' or sos_type = 'shipping ADD') and sos_amttype = 'amount' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'charge'," + 
-                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = so_nbr)as 'taxpercent', " +
-                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = so_nbr) as 'taxcharge' " +
-                        " FROM  so_mstr left outer join sod_det on sod_nbr = so_nbr " +
-                        " where so_due_date >= " + "'" + setDateDB(dcFrom.getDate())  + "'" + 
-                        " AND so_due_date <= " + "'" + setDateDB(dcTo.getDate()) + "'" + 
-                        " AND so_cust >= " + "'" + fromcust + "'" + 
-                        " AND so_cust <= " + "'" + tocust + "'" + 
-                        " AND so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
-                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;");
-                 } else if (dddatetype.getSelectedItem().toString().equals("modified")) {
-                        res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
-                        " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
-                        " sum(sod_taxamt) as matltax, " +
-                        " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
-                        " (select sum(case when (sos_type = 'charge' or sos_type = 'shipping ADD') and sos_amttype = 'amount' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'charge'," + 
-                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = so_nbr)as 'taxpercent', " +
-                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = so_nbr) as 'taxcharge' " +
-                        " FROM  so_mstr left outer join sod_det on sod_nbr = so_nbr " +
-                        " where so_mod_date >= " + "'" + setDateDB(dcFrom.getDate())  + "'" + 
-                        " AND so_mod_date <= " + "'" + setDateDB(dcTo.getDate()) + "'" + 
-                        " AND so_cust >= " + "'" + fromcust + "'" + 
-                        " AND so_cust <= " + "'" + tocust + "'" + 
-                        " AND so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
-                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;");       
-                 } else {
-                        res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
-                        " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
-                        " sum(sod_taxamt) as matltax, " +
-                        " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
-                        " (select sum(case when (sos_type = 'charge' or sos_type = 'shipping ADD') and sos_amttype = 'amount' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'charge'," + 
-                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = so_nbr)as 'taxpercent', " +
-                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = so_nbr) as 'taxcharge' " +
-                        " FROM  so_mstr left outer join sod_det on sod_nbr = so_nbr " +
-                        " where so_ord_date >= " + "'" + setDateDB(dcFrom.getDate())  + "'" + 
-                        " AND so_ord_date <= " + "'" + setDateDB(dcTo.getDate()) + "'" + 
-                        " AND so_cust >= " + "'" + fromcust + "'" + 
-                        " AND so_cust <= " + "'" + tocust + "'" + 
-                        " AND so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
-                         " group by so_nbr, so_rmks, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status order by so_nbr asc ;");
-                 }
-                
-                  */
+                              
                 
                     while (res.next()) {
                     total = 0;
