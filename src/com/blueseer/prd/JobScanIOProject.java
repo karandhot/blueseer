@@ -772,7 +772,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
 
         try {
         
-        ChartUtilities.saveChartAsJPEG(new File(chartfilepath), chart, (panelChart.getWidth() - 70), this.getHeight() - 200);
+        ChartUtilities.saveChartAsJPEG(new File(chartfilepath), chart, (panelChart.getWidth() - 70), panelChart.getHeight() - 100);
         } catch (IOException e) {
             MainFrame.bslog(e);
         }
@@ -1349,7 +1349,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
             .addGroup(panelMainLayout.createSequentialGroup()
                 .addGap(81, 81, 81)
                 .addComponent(tbitem, javax.swing.GroupLayout.PREFERRED_SIZE, 286, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(406, 441, Short.MAX_VALUE))
             .addGroup(panelMainLayout.createSequentialGroup()
                 .addGap(25, 25, 25)
                 .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -1626,7 +1626,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
 
         add(panelClock);
 
-        panelChart.setPreferredSize(new java.awt.Dimension(800, 550));
+        panelChart.setPreferredSize(new java.awt.Dimension(800, 575));
 
         jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("Data Charts"));
 
@@ -1657,7 +1657,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                 .addComponent(jLabel18)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(ddchart, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 409, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 493, Short.MAX_VALUE)
                 .addComponent(btrefreshchart)
                 .addContainerGap())
             .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1670,14 +1670,14 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(ddchart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel18))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout panelChartLayout = new javax.swing.GroupLayout(panelChart);
         panelChart.setLayout(panelChartLayout);
         panelChartLayout.setHorizontalGroup(
             panelChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 800, Short.MAX_VALUE)
+            .addGap(0, 884, Short.MAX_VALUE)
             .addGroup(panelChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(panelChartLayout.createSequentialGroup()
                     .addContainerGap()
@@ -1686,11 +1686,12 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
         );
         panelChartLayout.setVerticalGroup(
             panelChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 550, Short.MAX_VALUE)
+            .addGap(0, 667, Short.MAX_VALUE)
             .addGroup(panelChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(panelChartLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addContainerGap()))
         );
 
         add(panelChart);
