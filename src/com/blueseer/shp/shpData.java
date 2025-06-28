@@ -681,7 +681,6 @@ public class shpData {
         String acct = cm.cm_ar_acct();
         String cc = cm.cm_ar_cc();
         String terms = cm.cm_terms();
-        String carrier = cm.cm_carrier();
         String onhold = cm.cm_onhold();
      //   if (taxcode == null || taxcode.isEmpty()) {
      //   taxcode = cm.cm_tax_code();
@@ -691,10 +690,7 @@ public class shpData {
         if (shiptype.equals("A")) {
             terms = "N00";
         }
-        // override default cust carrier from inbound shipvia variable
-        if (! shipvia.isEmpty()) {
-            carrier = shipvia;
-        }  
+       
         // override cust currency with order currency
         String order_curr = ordData.getOrderCurrency(so);
         if (! order_curr.isEmpty()) {
@@ -706,7 +702,7 @@ public class shpData {
                 shipto,
                 0, // pallets
                 0,  // boxes
-                carrier,  
+                shipvia,  
                 shipdate,
                 orddate,
                 ref,
