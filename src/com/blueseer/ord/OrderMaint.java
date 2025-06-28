@@ -1313,7 +1313,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         luTable.addMouseListener(luml);
       
         
-        callDialog(getClassLabelTag("lblcust", this.getClass().getSimpleName()), 
+        callDialog(getClassLabelTag("lblcode", this.getClass().getSimpleName()), 
                 getClassLabelTag("lblname", this.getClass().getSimpleName()),
                 getClassLabelTag("lblzip", this.getClass().getSimpleName())); 
         
@@ -1375,7 +1375,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         luTable.addMouseListener(luml);
       
         
-        callDialog(getClassLabelTag("lblcust", this.getClass().getSimpleName()), 
+        callDialog(getClassLabelTag("lblcode", this.getClass().getSimpleName()), 
                 getClassLabelTag("lblname", this.getClass().getSimpleName()),
                 getClassLabelTag("lblzip", this.getClass().getSimpleName())); 
         
@@ -1462,7 +1462,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         };
         luTable.addMouseListener(luml);
       
-        callDialog(getClassLabelTag("lblcustitem", this.getClass().getSimpleName())); 
+        callDialog(getClassLabelTag("lblcustnumber", this.getClass().getSimpleName())); 
         
         
     }
