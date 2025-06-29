@@ -269,7 +269,7 @@ where sod_nbr =  $P{mynbr} and sod_line = $P{myline}]]>
 		<band height="80">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<componentElement>
-				<reportElement positionType="FixRelativeToBottom" x="100" y="-10" width="370" height="60" uuid="84234ae2-f2c7-4ba0-b6f0-dcacb1bdc3e6">
+				<reportElement positionType="FixRelativeToBottom" x="140" y="-10" width="370" height="60" uuid="84234ae2-f2c7-4ba0-b6f0-dcacb1bdc3e6">
 					<property name="com.jaspersoft.studio.unit.barWidth" value="px"/>
 				</reportElement>
 				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="Code128" drawText="true" checksumRequired="false">
