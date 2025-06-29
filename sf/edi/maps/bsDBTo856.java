@@ -41,12 +41,14 @@ import com.blueseer.utl.OVData;
         commitSegment("TD5");
 
         mapSegment("REF","e01", "BM");
-        mapSegment("REF","e02",h[7]);
-        commitSegment("REF");
-
-        mapSegment("REF","e01", "CN");
         mapSegment("REF","e02",shipper);
         commitSegment("REF");
+
+        if (! h[7].isEmpty()) {
+        mapSegment("REF","e01", "CN");
+        mapSegment("REF","e02",h[7]);
+        commitSegment("REF");
+        }
 
         mapSegment("DTM","e01", "011");
         mapSegment("DTM","e02",h[5].replace("-",""));

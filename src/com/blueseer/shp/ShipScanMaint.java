@@ -57,6 +57,7 @@ import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.getWHLOCfromSerialNumber;
 import com.blueseer.inv.invData.inv_ctrl;
 import static com.blueseer.lbl.lblData.getLabelMstrByStrID;
+import static com.blueseer.lbl.lblData.getLabelSerialDisplay;
 import static com.blueseer.lbl.lblData.getLabelStatus;
 import com.blueseer.lbl.lblData.label_mstr;
 import static com.blueseer.lbl.lblData.updateLabelStatus;
@@ -365,6 +366,54 @@ public class ShipScanMaint extends javax.swing.JPanel {
         return list;        
     }
    
+    public ArrayList<shpData.ship_tree> createTreeRecord(String shipper) {
+        ArrayList<shpData.ship_tree> list = new ArrayList<shpData.ship_tree>();
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        
+        // create shipper parent node with child containers
+        for (String s : assignedlabels) {
+            shpData.ship_tree x = new shpData.ship_tree(null,
+            shipper,
+            s,
+            serialdet.getValueAt(0,14).toString(),
+            "c",
+            shipper,
+            "",
+            "",
+            "",
+            "",
+            "container",
+            1.0,
+            getLabelSerialDisplay(s) // get display serial
+            );
+            
+            list.add(x);
+            // now items of container
+            for (int j = 0; j < serialdet.getRowCount(); j++) { 
+                if (serialdet.getValueAt(j, 0).toString().equals(s)) {
+                    shpData.ship_tree y = new shpData.ship_tree(null,
+                    s,
+                    serialdet.getValueAt(j, 3).toString() + "," + serialdet.getValueAt(j, 4).toString() + "," + serialdet.getValueAt(j, 5).toString(),
+                    serialdet.getValueAt(0,14).toString(),
+                    "i",
+                    shipper,
+                    String.valueOf(j + 1),
+                    serialdet.getValueAt(j, 3).toString(),
+                    serialdet.getValueAt(j, 4).toString(),
+                    serialdet.getValueAt(j, 13).toString(),
+                    serialdet.getValueAt(j, 5).toString(),
+                    bsParseDouble(serialdet.getValueAt(j, 10).toString().replace(defaultDecimalSeparator, '.')),
+                    "" // get display serial
+                    );
+                    list.add(y);
+                }
+            }
+        }
+       
+        return list;        
+    }
+    
+
         
     public boolean isDuplicate(String serial_id_str) {
         for (int j = 0; j < serialdet.getRowCount(); j++) {
@@ -378,7 +427,7 @@ public class ShipScanMaint extends javax.swing.JPanel {
     public String[] postShip() {
       int shipperid = OVData.getNextNbr("shipper");  
       shipper = String.valueOf(shipperid);
-      String[] m = addShipperTransaction(createDetRecord(String.valueOf(shipperid)), createRecord(String.valueOf(shipperid)), null);
+      String[] m = addShipperTransaction(createDetRecord(String.valueOf(shipperid)), createRecord(String.valueOf(shipperid)), createTreeRecord(String.valueOf(shipperid)));
         for (String label : assignedlabels) {
             updateLabelStatus(label, "1");
         }
