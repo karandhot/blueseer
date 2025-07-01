@@ -2,63 +2,68 @@ import com.blueseer.shp.shpData;
 import com.blueseer.ctr.cusData;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
+import com.blueseer.edi.EDI;
 
-     com.blueseer.edi.EDI edi = new com.blueseer.edi.EDI();
-     String doctype = c[1];
-     String key = doc.get(0).toString();
-    
-        
-    String[] h = shpData.getShipperHeader(key);  // 13 elements...see declaration
-    
+ 
+    String doctype = c[1];
+    String key = doc.get(0).toString();
+    EDI.edi810 e = EDI.init810DB(key); // future use
+
      /* Begin Mapping Segments */ 
-    mapSegment("BIG","e01",h[5].replace("-", ""));
+    mapSegment("BIG","e01",e.confdate().replace("-", ""));
     mapSegment("BIG","e02",key);
-    mapSegment("BIG","e03",h[4].replace("-", ""));
-    mapSegment("BIG","e04",h[3]);
+    mapSegment("BIG","e03",e.confdate().replace("-", ""));
+    mapSegment("BIG","e04",e.po());
     commitSegment("BIG");
     
     mapSegment("REF","e01","ST");
-    mapSegment("REF","e02",h[1]);
+    mapSegment("REF","e02",e.bs_shipto());
     commitSegment("REF");
     
     mapSegment("N1","e01","RE");
-    mapSegment("N1","e02",OVData.getDefaultSiteName());
+    mapSegment("N1","e02",e.site());
     mapSegment("N1","e03","92");
-    mapSegment("N1","e04",h[1]);
+    mapSegment("N1","e04",e.site());
     commitSegment("N1");
     
     mapSegment("DTM","e01","011");
-    mapSegment("DTM","e02",h[5].replace("-", ""));
+    mapSegment("DTM","e02",e.shipdate().replace("-", ""));
     commitSegment("DTM");    
     
                
         // detail
          int i = 0;
-         int sumqty = 0;
+         double sumqty = 0;
          double sumamt = 0;
          double sumlistamt = 0;
          double sumamtTDS = 0;
          String sku = "";
-         // item, custitem, qty, po, cumqty, listprice, netprice, reference, sku, desc
-         ArrayList<String[]> lines = shpData.getShipperLines(key);
-              for (String[] d : lines) {
+
+         ArrayList<shpData.ship_det> lines = e.lines();
+
+       
+              for (shpData.ship_det d : lines) {
                   i++;
-                  if (d[8].isEmpty() && d[8] != null) {
-                      sku = cusData.getCustAltItem(h[0], d[0]);
+                  if (d.shd_custitem().isEmpty() && d.shd_custitem() != null) {
+                      sku = cusData.getCustAltItem(e.bs_billto(), d.shd_item());
+                  }
+
+                  if (sku.isEmpty()) {
+                   sku = "boo";
                   }
                                     
-                  sumqty = sumqty + Integer.valueOf(d[2]);
-                  sumamt = sumamt + (BlueSeerUtils.bsParseDouble(d[2]) * BlueSeerUtils.bsParseDouble(d[6]));
-                  sumlistamt = sumlistamt + (BlueSeerUtils.bsParseDouble(d[2]) * BlueSeerUtils.bsParseDouble(d[5]));
+                  sumqty = sumqty + d.shd_qty();
+                  sumamt = sumamt + (d.shd_qty() * d.shd_netprice());
+                  sumlistamt = sumlistamt + (d.shd_qty() * d.shd_listprice());
                   
                 mapSegment("IT1","e01",String.valueOf(i));
-                mapSegment("IT1","e02",d[2]);
+                mapSegment("IT1","e02",snum(d.shd_qty()));
                 mapSegment("IT1","e03","EA");
-                mapSegment("IT1","e04",formatNumber(BlueSeerUtils.bsParseDouble(d[5]),"2"));
+                mapSegment("IT1","e04",formatNumber(d.shd_listprice(),"2"));
                 mapSegment("IT1","e06","IN");
                 mapSegment("IT1","e07",sku);
                 mapSegment("IT1","e08","VP");
-                mapSegment("IT1","e09",d[0]);
+                mapSegment("IT1","e09",d.shd_item());
                 commitSegment("IT1");
                   
               }

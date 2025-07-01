@@ -60,6 +60,9 @@ import static com.blueseer.adm.SystemControl.newFile;
 import com.blueseer.edi.EDI.AnnoDoc;
 import static com.blueseer.edi.EDI.createIMAP;
 import static com.blueseer.edi.EDI.createMAPUNE;
+import com.blueseer.edi.EDI.edi810;
+import com.blueseer.edi.EDI.edi850;
+import com.blueseer.edi.EDI.edi856;
 import static com.blueseer.edi.EDI.edilog;
 import static com.blueseer.edi.EDI.escapeDelimiter;
 import static com.blueseer.edi.EDI.getEDIType;
@@ -79,6 +82,7 @@ import static com.blueseer.edi.ediData.isValidDFSid;
 import static com.blueseer.edi.ediData.isValidMapid;
 import com.blueseer.edi.ediData.map_mstr;
 import static com.blueseer.edi.ediData.updateMapMstr;
+import com.blueseer.shp.shpData.ship_det;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.checkLength;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
@@ -125,6 +129,7 @@ import java.io.FilenameFilter;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -1353,6 +1358,46 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
                             tainstruct.append(segment);
                             tainstruct.append("\n");
             }
+           
+            // special case for DB objects
+            if (ddifs.getSelectedItem().toString().equals("DB")) {
+                if (ddindoctype.getSelectedItem().toString().equals("856db")) {
+                    Class<?> cl = new edi856().getClass();
+                    Field[] fields = cl.getDeclaredFields();
+                    for (Field field : fields) {
+                        String fieldName = field.getName();
+                        String fieldType = field.getType().getName();
+                        tainstruct.append("Header Field Name: " + fieldName );
+                        tainstruct.append("\n");
+                    }
+                    cl = new ship_det(null).getClass(); 
+                    fields = cl.getDeclaredFields();
+                    for (Field field : fields) {
+                        String fieldName = field.getName();
+                        String fieldType = field.getType().getName();
+                        tainstruct.append("Detail Field Name: " + fieldName );
+                        tainstruct.append("\n");
+                    }
+                }
+                if (ddindoctype.getSelectedItem().toString().equals("810db")) {
+                    Class<?> cl = new edi810().getClass(); 
+                    Field[] fields = cl.getDeclaredFields();
+                    for (Field field : fields) {
+                        String fieldName = field.getName();
+                        String fieldType = field.getType().getName();
+                        tainstruct.append("Header Field Name: " + fieldName );
+                        tainstruct.append("\n");
+                    }
+                    cl = new ship_det(null).getClass(); 
+                    fields = cl.getDeclaredFields();
+                    for (Field field : fields) {
+                        String fieldName = field.getName();
+                        String fieldType = field.getType().getName();
+                        tainstruct.append("Detail Field Name: " + fieldName );
+                        tainstruct.append("\n");
+                    }
+                }
+            }
             tainstruct.setCaretPosition(0);
         }
         if (taname.equals("taoutstruct")) {
@@ -1361,6 +1406,25 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
             for (String segment : lines ) {
                             taoutstruct.append(segment);
                             taoutstruct.append("\n");
+            }
+            // special case for DB objects
+            if (ddofs.getSelectedItem().toString().equals("DB")) {
+                if (ddoutdoctype.getSelectedItem().toString().equals("850db")) {
+                    Class<?> cl = new edi850().getClass();
+                    Field[] fields = cl.getDeclaredFields();
+                    for (Field field : fields) {
+                        String fieldName = field.getName();
+                        String fieldType = field.getType().getName();
+                        if (fieldName.startsWith("det")) {
+                            taoutstruct.append("Detail Field Name: " + fieldName );
+                            taoutstruct.append("\n");
+                        } else {
+                            taoutstruct.append("Header Field Name: " + fieldName );
+                            taoutstruct.append("\n");
+                        }
+                        
+                    }
+                }
             }
             taoutstruct.setCaretPosition(0);
         }

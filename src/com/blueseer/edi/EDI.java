@@ -4227,6 +4227,9 @@ public class EDI {
     public static int Create855(String order)  {
         int errorcode = 0;
         // errorcode = 0 ... clean exit
+        // errorcode = 1 ... no record found in getEDIXrefOut/getEDITPDefaults
+        // errorcode = 2 ... any catch error below ...try running from command line to see trace dump
+        // errorcode = 3 ... error in map...see edi log
         
         String doctype = "855db";
         String map = "";
@@ -4663,6 +4666,9 @@ public class EDI {
     public static int Create940(String nbr)  {
         int errorcode = 0;
         // errorcode = 0 ... clean exit
+        // errorcode = 1 ... no record found in getEDIXrefOut/getEDITPDefaults
+        // errorcode = 2 ... any catch error below ...try running from command line to see trace dump
+        // errorcode = 3 ... error in map...see edi log
         
         String doctype = "940db";
         String map = "";
@@ -4800,6 +4806,9 @@ public class EDI {
     public static int Create990(String nbr)  {
         int errorcode = 0;
         // errorcode = 0 ... clean exit
+        // errorcode = 1 ... no record found in getEDIXrefOut/getEDITPDefaults
+        // errorcode = 2 ... any catch error below ...try running from command line to see trace dump
+        // errorcode = 3 ... error in map...see edi log
         
         String doctype = "990db";
         String map = "";
@@ -4933,6 +4942,9 @@ public class EDI {
     public static int Create214(String nbr, String key)  {
         int errorcode = 0;
         // errorcode = 0 ... clean exit
+        // errorcode = 1 ... no record found in getEDIXrefOut/getEDITPDefaults
+        // errorcode = 2 ... any catch error below ...try running from command line to see trace dump
+        // errorcode = 3 ... error in map...see edi log
         
         String doctype = "214db";
         String map = "";
@@ -5067,7 +5079,10 @@ public class EDI {
         
     public static int Create204(String nbr)  {
         int errorcode = 0;
-        
+        // errorcode = 0 ... clean exit
+        // errorcode = 1 ... no record found in getEDIXrefOut/getEDITPDefaults
+        // errorcode = 2 ... any catch error below ...try running from command line to see trace dump
+        // errorcode = 3 ... error in map...see edi log
         
         String doctype = "204db";
         String map = "";
@@ -5185,6 +5200,17 @@ public class EDI {
         return errorcode;
      }
     
+    
+    // EDI object inits from DB 
+    public static edi856 init856DB(String key) {
+        edi856 e = shpData.init_edi856_object(key);    
+        return e;
+    }
+    
+    public static edi810 init810DB(String key) {
+        edi810 e = shpData.init_edi810_object(key);
+        return e;
+    }
     
     
      // remoteDB tools
@@ -9030,6 +9056,36 @@ public class EDI {
         
     }
     
+     public record edi856 (String bs_billto, String bs_shipto, String so, String po, String podate, String shipdate,
+                          String remarks, String ref, String shipvia, String grosswt, String netwt, String trailer,
+                          String site, String curr, String shipfrom, String cm_misc1, String bt_name, String bt_line1,
+                          String bt_city, String bt_state, String bt_zip, String bt_country, 
+                          String st_name, String st_line1, String st_city, String st_state, String st_zip, String st_country,
+                          String stsite, String termcode, String termdesc, String termdiscpercent, String termdays,
+                          String termduedate, String confdate, ArrayList<shpData.ship_det> lines) {
+        public edi856() {
+            this("","","","","","","","","","",
+                 "","","","","","","","","","",
+                 "","","","","","","","","","",
+                 "","","","","", null );
+        }
+    }
+    
+    public record edi810 (String bs_billto, String bs_shipto, String so, String po, String podate, String shipdate,
+                          String remarks, String ref, String shipvia, String grosswt, String netwt, String trailer,
+                          String site, String curr, String shipfrom, String cm_misc1, String bt_name, String bt_line1,
+                          String bt_city, String bt_state, String bt_zip, String bt_country, 
+                          String st_name, String st_line1, String st_city, String st_state, String st_zip, String st_country,
+                          String stsite, String termcode, String termdesc, String termdiscpercent, String termdays,
+                          String termduedate, String confdate, ArrayList<shpData.ship_det> lines) {
+        public edi810() {
+            this("","","","","","","","","","",
+                 "","","","","","","","","","",
+                 "","","","","","","","","","",
+                 "","","","","", null );
+        }
+    } 
+     
     @Retention(RUNTIME)
     @Target(value = METHOD)
     public @interface AnnoDoc {

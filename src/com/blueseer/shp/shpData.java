@@ -35,6 +35,8 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
 import com.blueseer.ctr.cusData.cm_mstr;
+import com.blueseer.edi.EDI.edi810;
+import com.blueseer.edi.EDI.edi856;
 import com.blueseer.fap.fapData;
 import static com.blueseer.fap.fapData.VouchAndPayTransaction;
 import static com.blueseer.fap.fapData.VoucherTransaction;
@@ -728,7 +730,7 @@ public class shpData {
     public static ArrayList<ship_det> createShipDetJRT(ArrayList<String[]> detail, String shippernbr, String shipdate, String site) {
         ArrayList<ship_det> list = new ArrayList<ship_det>();
         for (String[] d : detail) {            
-            // field order:  "Line", "Part", "CustPart", "SO", "PO", "Qty", "UOM", "ListPrice", "Discount", "NetPrice", "QtyShip", "Status", "WH", "LOC", "Desc", "Taxamt"
+            // field order:  Line, Part, CustPart, SO, PO, Qty, UOM, ListPrice, Discount, NetPrice,QtyShip,Status,WH, LOC, Desc, Taxamt,cont, ref, serial, site, bom
             // service order field order:  line, item, type, desc, order, qty, price, uom
             ship_det x = new ship_det(null,
                   shippernbr,
@@ -2120,6 +2122,233 @@ public class shpData {
          return billto;
      }
 
+    public static edi856 init_edi856_object(String shipper) {
+        edi856 e = null;
+        ArrayList<ship_det> lines = new ArrayList<ship_det>();
+        try{
+
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+
+            // get shipper lines first ...to be included in edi856 object record
+               res = st.executeQuery("select * from ship_det where shd_id = " + "'" + shipper + "'" +";");
+                while (res.next()) {
+                    ship_det shd = new ship_det(null,
+                    shipper,
+                    bsParseInt(res.getString("shd_line")), //shline
+                    res.getString("shd_item"),
+                    res.getString("shd_custitem"), 
+                    res.getString("shd_so"), // so
+                    bsParseInt(res.getString("shd_soline")), // soline = shline  
+                    res.getString("shd_date"), //shipdate
+                    res.getString("shd_po"), // po
+                    bsParseDouble(res.getString("shd_qty")), // qty 
+                    res.getString("shd_uom"), // uom
+                    "", // currency  
+                    bsParseDouble(res.getString("shd_netprice")), // netprice
+                    bsParseDouble(res.getString("shd_disc")), // disc
+                    bsParseDouble(res.getString("shd_listprice")), // listprice
+                    res.getString("shd_desc"), // desc
+                    res.getString("shd_wh"), // wh
+                    res.getString("shd_loc"), // loc
+                    bsParseDouble(res.getString("shd_taxamt")), // taxamt
+                    res.getString("shd_cont"), // cont
+                    res.getString("shd_ref"), // ref
+                    res.getString("shd_serial"), // serial
+                    res.getString("shd_site"),
+                    res.getString("shd_bom") // bom
+                    );
+                    lines.add(shd);
+                }
+
+                res = st.executeQuery("select * from ship_mstr " +
+                        " inner join cm_mstr on cm_code = sh_cust " +
+                        " inner join cms_det on cms_det.cms_shipto = sh_ship and cms_det.cms_code = sh_cust " +
+                        " inner join cust_term on cm_terms = cut_code " +
+                        " inner join ar_mstr on ar_nbr = sh_id and ar_type = 'I' " +
+                        " where sh_id = " + "'" + shipper + "'" +";");
+                while (res.next()) {
+                    e = new edi856(res.getString("sh_cust"),
+                    res.getString("sh_ship"),
+                    res.getString("sh_so"),
+                    res.getString("sh_po"),
+                    res.getString("sh_po_date"),
+                    res.getString("sh_shipdate"),
+                    res.getString("sh_rmks"),
+                    res.getString("sh_ref"),
+                    res.getString("sh_shipvia"),
+                    res.getString("sh_gross_wt"),
+                    res.getString("sh_net_wt"),
+                    res.getString("sh_trailer"),
+                    res.getString("sh_site"),
+                    res.getString("sh_curr"),
+                    res.getString("sh_shipfrom"),
+                    res.getString("cm_misc1"),
+                    res.getString("cm_name"),
+                    res.getString("cm_line1"),
+                    res.getString("cm_city"),
+                    res.getString("cm_state"),
+                    res.getString("cm_zip"),
+                    res.getString("cm_country"),
+                    res.getString("cms_name"),
+                    res.getString("cms_line1"),
+                    res.getString("cms_city"),
+                    res.getString("cms_state"),
+                    res.getString("cms_zip"),
+                    res.getString("cms_country"),
+                    res.getString("sh_site"),
+                    res.getString("cut_code"),
+                    res.getString("cut_desc"),
+                    res.getString("cut_discpercent"),
+                    res.getString("cut_days"),
+                    res.getString("ar_duedate"),
+                    res.getString("sh_confdate"), lines);
+                }
+                
+               
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+
+        } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+    }
+    catch (Exception ex){
+        MainFrame.bslog(ex);
+
+    }
+        
+        return e;
+    }
+    
+    public static edi810 init_edi810_object(String shipper) {
+        edi810 e = null;
+        ArrayList<ship_det> lines = new ArrayList<ship_det>();
+        try{
+
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+
+            // get shipper lines first ...to be included in edi856 object record
+               res = st.executeQuery("select * from ship_det where shd_id = " + "'" + shipper + "'" +";");
+                while (res.next()) {
+                    ship_det shd = new ship_det(null,
+                    shipper,
+                    bsParseInt(res.getString("shd_line")), //shline
+                    res.getString("shd_item"),
+                    res.getString("shd_custitem"), 
+                    res.getString("shd_so"), // so
+                    bsParseInt(res.getString("shd_soline")), // soline = shline  
+                    res.getString("shd_date"), //shipdate
+                    res.getString("shd_po"), // po
+                    bsParseDouble(res.getString("shd_qty")), // qty 
+                    res.getString("shd_uom"), // uom
+                    "", // currency  
+                    bsParseDouble(res.getString("shd_netprice")), // netprice
+                    bsParseDouble(res.getString("shd_disc")), // disc
+                    bsParseDouble(res.getString("shd_listprice")), // listprice
+                    res.getString("shd_desc"), // desc
+                    res.getString("shd_wh"), // wh
+                    res.getString("shd_loc"), // loc
+                    bsParseDouble(res.getString("shd_taxamt")), // taxamt
+                    res.getString("shd_cont"), // cont
+                    res.getString("shd_ref"), // ref
+                    res.getString("shd_serial"), // serial
+                    res.getString("shd_site"),
+                    res.getString("shd_bom") // bom
+                    );
+                    lines.add(shd);
+                }
+
+                res = st.executeQuery("select * from ship_mstr " +
+                        " inner join cm_mstr on cm_code = sh_cust " +
+                        " inner join cms_det on cms_det.cms_shipto = sh_ship and cms_det.cms_code = sh_cust " +
+                        " inner join cust_term on cm_terms = cut_code " +
+                        " inner join ar_mstr on ar_nbr = sh_id and ar_type = 'I' " +
+                        " where sh_id = " + "'" + shipper + "'" +";");
+                while (res.next()) {
+                    e = new edi810(res.getString("sh_cust"),
+                    res.getString("sh_ship"),
+                    res.getString("sh_so"),
+                    res.getString("sh_po"),
+                    res.getString("sh_po_date"),
+                    res.getString("sh_shipdate"),
+                    res.getString("sh_rmks"),
+                    res.getString("sh_ref"),
+                    res.getString("sh_shipvia"),
+                    res.getString("sh_gross_wt"),
+                    res.getString("sh_net_wt"),
+                    res.getString("sh_trailer"),
+                    res.getString("sh_site"),
+                    res.getString("sh_curr"),
+                    res.getString("sh_shipfrom"),
+                    res.getString("cm_misc1"),
+                    res.getString("cm_name"),
+                    res.getString("cm_line1"),
+                    res.getString("cm_city"),
+                    res.getString("cm_state"),
+                    res.getString("cm_zip"),
+                    res.getString("cm_country"),
+                    res.getString("cms_name"),
+                    res.getString("cms_line1"),
+                    res.getString("cms_city"),
+                    res.getString("cms_state"),
+                    res.getString("cms_zip"),
+                    res.getString("cms_country"),
+                    res.getString("sh_site"),
+                    res.getString("cut_code"),
+                    res.getString("cut_desc"),
+                    res.getString("cut_discpercent"),
+                    res.getString("cut_days"),
+                    res.getString("ar_duedate"),
+                    res.getString("sh_confdate"), lines);
+                }
+                
+               
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+
+        } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+    }
+    catch (Exception ex){
+        MainFrame.bslog(ex);
+
+    }
+        
+        return e;
+    }
+    
+    
     public static String[] getShipperHeader(String shipper) {
 
           String[] H = new String[35];
@@ -3460,5 +3689,7 @@ public class shpData {
         }
     }
 
+   
+    
     
 }
