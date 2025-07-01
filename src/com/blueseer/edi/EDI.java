@@ -3345,17 +3345,17 @@ public class EDI {
         String order = "";
         String line = "";
         
-            control[7] = e.ov_shipto;
+            control[7] = e.bs_shipto;
            EDData.writeEDILog(control, "INFO", "Load");
             // control = e.isaSenderID + "," + e.doctype + "," + e.isaCtrlNum + "," + e.po ;
              
              
              
-             //EDData.CreateSalesOrderHdr(control, String.valueOf(sonbr), e.ov_billto, shipto, e.po, e.duedate, e.podate, e.remarks);
+             //EDData.CreateSalesOrderHdr(control, String.valueOf(sonbr), e.bs_billto, shipto, e.po, e.duedate, e.podate, e.remarks);
                for (int j = 0; j < e.getDetCount(); j++ ) {
                   
                // find the blanket order type with key shipto, part, po ...if not availabe raise error and next loop    
-               orderline = EDData.GetBlanketOrderLine(control, e.ov_shipto, e.getDetItem(j), e.getDetPO(j));
+               orderline = EDData.GetBlanketOrderLine(control, e.bs_shipto, e.getDetItem(j), e.getDetPO(j));
                
                
                    if (! orderline.isEmpty()) {
@@ -3396,17 +3396,17 @@ public class EDI {
         String order = "";
         String line = "";
         
-         control[7] = e.ov_shipto;
+         control[7] = e.bs_shipto;
         EDData.writeEDILog(control, "INFO", "Load");
         //   control = e.isaSenderID + "," + e.doctype + "," + e.isaCtrlNum + "," + e.po ;
              
              
              
-             //EDData.CreateSalesOrderHdr(control, String.valueOf(sonbr), e.ov_billto, shipto, e.po, e.duedate, e.podate, e.remarks);
+             //EDData.CreateSalesOrderHdr(control, String.valueOf(sonbr), e.bs_billto, shipto, e.po, e.duedate, e.podate, e.remarks);
                for (int j = 0; j < e.getDetCount(); j++ ) {
                   
                // find the blanket order type with key shipto, part, po ...if not availabe raise error and next loop    
-               orderline = EDData.GetBlanketOrderLine(control, e.ov_shipto, e.getDetItem(j), e.getDetPO(j));
+               orderline = EDData.GetBlanketOrderLine(control, e.bs_shipto, e.getDetItem(j), e.getDetPO(j));
                
                
                    if (! orderline.isEmpty()) {
@@ -3508,17 +3508,16 @@ public class EDI {
             
             return m;
      }
-        
-    
+       
     public static String[] createSOFrom850(edi850 e, String[] control) {
         String[] m = new String[]{"",""};
         
         // check for duplication PO
         String SuppressDuplicate = getSysMetaValue("system", "ordercontrol", "suppressduplicate");
         if (! SuppressDuplicate.isBlank() && SuppressDuplicate.equals("1")) {
-            if (isDuplicatePO(e.ov_billto, e.po)) {
+            if (isDuplicatePO(e.bs_billto, e.po)) {
                 m[0] = "1";
-                m[1] = "duplicate PO for this BillTo/PO: " + e.ov_billto + "/" + e.po;
+                m[1] = "duplicate PO for this BillTo/PO: " + e.bs_billto + "/" + e.po;
                 return m;
             }
         }
@@ -3526,13 +3525,13 @@ public class EDI {
         int sonbr = OVData.getNextNbr("order");
         String shipto;
         
-        if (e.ov_shipto.isEmpty()) {
-            shipto = OVData.CreateShipTo(e.ov_billto, e.st_name, e.st_line1, e.st_line2, e.st_line3, e.st_city, e.st_state, e.st_zip, e.st_country, e.shipto);
+        if (e.bs_shipto.isEmpty()) {
+            shipto = OVData.CreateShipTo(e.bs_billto, e.st_name, e.st_line1, e.st_line2, e.st_line3, e.st_city, e.st_state, e.st_zip, e.st_country, e.shipto);
             addOrUpdateEDIXref(new edi_xref(null, e.gsReceiverID, e.shipto, shipto, e.gsSenderID, "ST", control[39]));
         } else {
-            shipto = e.ov_shipto;
+            shipto = e.bs_shipto;
         }
-        String[] custinfo = cusData.getCustInfo(e.ov_billto);
+        String[] custinfo = cusData.getCustInfo(e.bs_billto);
         String site = OVData.getDefaultSite();
         String isconfirm = getSysMetaValue("system", "ordercontrol", "autoconfirm");
         if (isconfirm.isBlank()) {
@@ -3540,7 +3539,7 @@ public class EDI {
         }
         ordData.so_mstr so = new ordData.so_mstr(null, 
                 String.valueOf(sonbr),
-                 e.ov_billto,
+                 e.bs_billto,
                  shipto,
                  site,
                  OVData.getDefaultCurrency(),   
@@ -3636,15 +3635,15 @@ public class EDI {
         String[] m = new String[]{"",""};
         String shipto;
         String now = bsmf.MainFrame.dfdate.format(new Date());
-        if (e.ov_shipto.isEmpty())
-            shipto = OVData.CreateShipTo(e.ov_billto, e.st_name, e.st_line1, e.st_line2, e.st_line3, e.st_city, e.st_state, e.st_zip, e.st_country, e.shipto);
+        if (e.bs_shipto.isEmpty())
+            shipto = OVData.CreateShipTo(e.bs_billto, e.st_name, e.st_line1, e.st_line2, e.st_line3, e.st_city, e.st_state, e.st_zip, e.st_country, e.shipto);
         else
-            shipto = e.ov_shipto;
+            shipto = e.bs_shipto;
     
         if (e.duedate.isBlank()) {
            e.duedate = now; 
         }
-        String[] custinfo = cusData.getCustInfo(e.ov_billto);
+        String[] custinfo = cusData.getCustInfo(e.bs_billto);
        // String changeid = e.po + "-" + Long.toHexString(System.currentTimeMillis());
         ordData.so_chg soc = new ordData.so_chg(null, 
                  e.changeid,  // unique id
@@ -3652,7 +3651,7 @@ public class EDI {
                  e.changetype, // type  
                  now, // change date
                  e.duedate,
-                 e.ov_billto,
+                 e.bs_billto,
                  shipto,
                  "", // ref
                 "", // misc1
@@ -3709,8 +3708,7 @@ public class EDI {
         
         return m;
     }
-    
-    
+        
     public static void createShipperFrom945(edi945 e, String[] control) {
         
         int shipperid = 0;
@@ -3724,12 +3722,12 @@ public class EDI {
              EDData.writeEDILog(control, "INFO", "Load");
            //  control = ((edi850)e.get(i)).isaSenderID + "," + ((edi850)e.get(i)).doctype + "," + ((edi850)e.get(i)).isaCtrlNum + "," + ((edi850)e.get(i)).po ;
              
-             if (e.ov_shipto.isEmpty())
-                 shipto = OVData.CreateShipTo(e.ov_billto, e.st_name, e.st_line1, e.st_line2, e.st_line3, e.st_city, e.st_state, e.st_zip, e.st_country, e.shipto);
+             if (e.bs_shipto.isEmpty())
+                 shipto = OVData.CreateShipTo(e.bs_billto, e.st_name, e.st_line1, e.st_line2, e.st_line3, e.st_city, e.st_state, e.st_zip, e.st_country, e.shipto);
              else
-                 shipto = e.ov_shipto; 
+                 shipto = e.bs_shipto; 
              
-             error = EDData.CreateShipperHdrEDI(control, String.valueOf(shipperid), e.shipper, e.ov_billto, shipto, e.so, e.po, e.shipdate, e.podate, e.remarks, e.shipmethod);     
+             error = EDData.CreateShipperHdrEDI(control, String.valueOf(shipperid), e.shipper, e.bs_billto, shipto, e.so, e.po, e.shipdate, e.podate, e.remarks, e.shipmethod);     
              if (! error) {  
              for (int j = 0; j < e.getDetCount(); j++ ) {
                  
@@ -3988,12 +3986,12 @@ public class EDI {
              EDData.writeEDILog(control, "INFO", "Load");
            //  control = ((edi850)e.get(i)).isaSenderID + "," + ((edi850)e.get(i)).doctype + "," + ((edi850)e.get(i)).isaCtrlNum + "," + ((edi850)e.get(i)).po ;
              
-             if (((edi850) e.get(i)).ov_shipto.isEmpty())
-                 shipto = OVData.CreateShipTo(((edi850) e.get(i)).ov_billto, ((edi850) e.get(i)).st_name, ((edi850) e.get(i)).st_line1, ((edi850) e.get(i)).st_line2, ((edi850) e.get(i)).st_line3, ((edi850) e.get(i)).st_city, ((edi850) e.get(i)).st_state, ((edi850) e.get(i)).st_zip, ((edi850) e.get(i)).st_country, ((edi850) e.get(i)).shipto);
+             if (((edi850) e.get(i)).bs_shipto.isEmpty())
+                 shipto = OVData.CreateShipTo(((edi850) e.get(i)).bs_billto, ((edi850) e.get(i)).st_name, ((edi850) e.get(i)).st_line1, ((edi850) e.get(i)).st_line2, ((edi850) e.get(i)).st_line3, ((edi850) e.get(i)).st_city, ((edi850) e.get(i)).st_state, ((edi850) e.get(i)).st_zip, ((edi850) e.get(i)).st_country, ((edi850) e.get(i)).shipto);
              else
-                 shipto = ((edi850) e.get(i)).ov_shipto;
+                 shipto = ((edi850) e.get(i)).bs_shipto;
              
-             EDData.CreateSalesOrderHdr(control, String.valueOf(sonbr), ((edi850) e.get(i)).ov_billto, shipto, ((edi850) e.get(i)).po, ((edi850) e.get(i)).duedate, ((edi850) e.get(i)).podate, ((edi850) e.get(i)).remarks, ((edi850) e.get(i)).shipmethod);
+             EDData.CreateSalesOrderHdr(control, String.valueOf(sonbr), ((edi850) e.get(i)).bs_billto, shipto, ((edi850) e.get(i)).po, ((edi850) e.get(i)).duedate, ((edi850) e.get(i)).podate, ((edi850) e.get(i)).remarks, ((edi850) e.get(i)).shipmethod);
                for (int j = 0; j < ((edi850) e.get(i)).getDetCount(); j++ ) {
                  
                    // error trigger logic ...missing internal item
@@ -4005,7 +4003,7 @@ public class EDI {
                       error = true;
                   
                EDData.CreateSalesOrderDet(String.valueOf(sonbr), 
-                       ((edi850) e.get(i)).ov_billto,
+                       ((edi850) e.get(i)).bs_billto,
                        ((edi850) e.get(i)).getDetItem(j), 
                        ((edi850) e.get(i)).getDetCustItem(j), 
                        ((edi850) e.get(i)).getDetSku(j), 
@@ -4039,12 +4037,12 @@ public class EDI {
              EDData.writeEDILog(control, "INFO", "Load");
            //  control = ((edi850)e.get(i)).isaSenderID + "," + ((edi850)e.get(i)).doctype + "," + ((edi850)e.get(i)).isaCtrlNum + "," + ((edi850)e.get(i)).po ;
              
-             if (((edi850) e.get(i)).ov_shipto.isEmpty())
-                 shipto = OVData.CreateShipTo(((edi850) e.get(i)).ov_billto, ((edi850) e.get(i)).st_name, ((edi850) e.get(i)).st_line1, ((edi850) e.get(i)).st_line2, ((edi850) e.get(i)).st_line3, ((edi850) e.get(i)).st_city, ((edi850) e.get(i)).st_state, ((edi850) e.get(i)).st_zip, ((edi850) e.get(i)).st_country, ((edi850) e.get(i)).shipto);
+             if (((edi850) e.get(i)).bs_shipto.isEmpty())
+                 shipto = OVData.CreateShipTo(((edi850) e.get(i)).bs_billto, ((edi850) e.get(i)).st_name, ((edi850) e.get(i)).st_line1, ((edi850) e.get(i)).st_line2, ((edi850) e.get(i)).st_line3, ((edi850) e.get(i)).st_city, ((edi850) e.get(i)).st_state, ((edi850) e.get(i)).st_zip, ((edi850) e.get(i)).st_country, ((edi850) e.get(i)).shipto);
              else
-                 shipto = ((edi850) e.get(i)).ov_shipto;
+                 shipto = ((edi850) e.get(i)).bs_shipto;
              
-             EDData.CreateSalesOrderHdr(control, String.valueOf(sonbr), ((edi850) e.get(i)).ov_billto, shipto, ((edi850) e.get(i)).po, ((edi850) e.get(i)).duedate, ((edi850) e.get(i)).podate, ((edi850) e.get(i)).remarks, ((edi850) e.get(i)).shipmethod);
+             EDData.CreateSalesOrderHdr(control, String.valueOf(sonbr), ((edi850) e.get(i)).bs_billto, shipto, ((edi850) e.get(i)).po, ((edi850) e.get(i)).duedate, ((edi850) e.get(i)).podate, ((edi850) e.get(i)).remarks, ((edi850) e.get(i)).shipmethod);
                for (int j = 0; j < ((edi850) e.get(i)).getDetCount(); j++ ) {
                  
                    // error trigger logic ...missing internal item
@@ -4056,7 +4054,7 @@ public class EDI {
                       error = true;
                   
                EDData.CreateSalesOrderDet(String.valueOf(sonbr), 
-                       ((edi850) e.get(i)).ov_billto,
+                       ((edi850) e.get(i)).bs_billto,
                        ((edi850) e.get(i)).getDetItem(j), 
                        ((edi850) e.get(i)).getDetCustItem(j), 
                        ((edi850) e.get(i)).getDetSku(j), 
@@ -4079,7 +4077,6 @@ public class EDI {
      
       
     // outbound
-    
     public static int Create856(String shipper)  {
         int errorcode = 0;
         // errorcode = 0 ... clean exit
@@ -4521,156 +4518,6 @@ public class EDI {
          
      }
     
-    public static int CreateInvoices(String shipper)  {
-        int errorcode = 0;
-        // errorcode = 0 ... clean exit
-        // errorcode = 1 ... no record found in getEDIXrefOut/getEDITPDefaults
-        // errorcode = 2 ... any catch error below ...try running from command line to see trace dump
-        // errorcode = 3 ... error in map...see edi log
-        
-        
-        String doctype = "";
-        String gs01code = "";
-        
-        String map = "";
-        ArrayList<String[]> messages = new ArrayList<String[]>();
-         
-        ship_mstr sh = shpData.getShipMstr(new String[]{shipper});
-        
-        if (sh.sh_type().equals("F")) {
-            doctype = "210db";
-            gs01code = "IM";
-        } else {
-            doctype = "810db";
-            gs01code = "PY";
-        }
-        
-        messages.add(new String[]{"info","exporting: " + doctype + " invoice: " + shipper + " for billto: " + sh.sh_cust()});
-        
-        int comkey = OVData.getNextNbr("edilog");
-        
-        String[] c = initEDIControl();   
-        
-        c[1] = doctype;
-        c[2] = "";
-        c[3] = "";
-        c[4] = "";
-        c[5] = "";
-        c[6] = "";
-        c[7] = shipper;
-        
-        c[12] = ""; // is override
-        c[22] = String.valueOf(comkey);
-        c[28] = "DB";
-        c[17] = "0";
-        c[18] = "999999";
-        c[19] = "0";
-        c[20] = "999999";
-        c[39] = sh.sh_site();
-        
-        int idxnbr = EDData.writeEDIIDX(c);
-        c[16] = String.valueOf(idxnbr);
-        
-        // get Delimiters from Cust Defaults
-        String[] ids = EDData.getEDIXrefOut(sh.sh_cust(), gs01code); // bsgs, tpgs, tpaddr, bsaddr, type
-        if (ids[0].isBlank()) {
-        messages.add(new String[]{"error","810 no edi_xref found for keys(billto/type): " + sh.sh_cust() + "/" + gs01code} );
-        EDData.writeEDILogMulti(c, messages);
-        messages.clear();  // clear message here
-        return 1;
-        } else {
-        messages.add(new String[]{"info","edi_xref: " + ids[0] + "/" + ids[1] + "/" + ids[2] + "/" + ids[3] + "/" + ids[4]});
-        }    
-        
-        String[] defaults = EDData.getEDITPDefaults(doctype, ids[0], ids[1]  ); //810, ourGS, theirsGS
-        if (defaults[19].isBlank()) { // if edi_doc is blank...no default found
-        messages.add(new String[]{"error","no EDITPDefaults found for (doctype/senderGS/receiverGS): " + doctype + "/" + ids[0] + "/" + ids[1]} );
-        EDData.writeEDILogMulti(c, messages);
-        messages.clear();  // clear message here
-        return 1;   
-        } else {
-        messages.add(new String[]{"info","edi_mstr (id,doc): " + defaults[18] + "/" + defaults[19]});
-        messages.add(new String[]{"info","edi_mstr (sndISA/GS,rcvISA/GS): " + defaults[0] + "/" + defaults[2] + "/" + defaults[3] + "/" + defaults[5]});
-        }
-        c[9] = defaults[7]; 
-        c[10] = defaults[6]; 
-        c[11] = defaults[8]; 
-        
-        c[0] = defaults[2];
-        c[21] = defaults[5];
-        c[29] = defaults[15]; // outfiletype
-        c[15] = defaults[14]; // outdoctype
-        
-        map = defaults[24];         
-        c[2] = map;
-        
-          if (map.isEmpty()) {
-            errorcode = 1;
-            messages.add(new String[]{"error", doctype + " : map variable is empty for billto/gs02/gs03/doc: " + sh.sh_cust() + "/" + defaults[2] + "/" + defaults[5] + "/" + c[1]});
-            EDData.writeEDILogMulti(c, messages);
-            messages.clear();  // clear message here
-            return errorcode;
-        } 
-          
-        if (! BlueSeerUtils.isEDIClassFile(map)) {
-            errorcode = 1;
-            messages.add(new String[]{"error", doctype + " : unable to locate compiled map (" + map + ") billto/gs02/gs03/doc: " + sh.sh_cust() + "/" + defaults[2] + "/" + defaults[5] + " / " + c[1]});
-            EDData.writeEDILogMulti(c, messages);
-            messages.clear();  // clear message here
-            return errorcode;
-        }     
-        messages.add(new String[]{"info","using map: " + map});
-       
-        
-        // Mapdata method call below requires two parameters (ArrayList, String[]) ...doc and c
-        ArrayList doc = new ArrayList();
-        doc.add(shipper);
-        
-        
-         // call map 
-        try {
-        URLClassLoader cl = getEDIClassLoader();  
-        Class cls = Class.forName(map,true,cl); 
-        Object obj = cls.getDeclaredConstructor().newInstance();
-        Method method = cls.getDeclaredMethod("Mapdata", ArrayList.class, String[].class, ArrayList.class);
-        Object oc = method.invoke(obj, doc, c, messages);
-        String[] oString = (String[]) oc;
-        messages.add(new String[]{oString[0], oString[1]});
-        EDData.updateEDIIDX(idxnbr, c); 
-        if (oString[0].equals("error")) {
-            errorcode = 3;
-        }
-        } catch (InvocationTargetException ex) {
-        errorcode = 2;    
-        if (c[12].isEmpty()) {
-        messages.add(new String[]{"error", "invocation exception in map class " + map + "/" + c[0] + " / " + c[1]});    
-        clearStaticVariables();
-        }
-        edilog(ex); 
-        } catch (ClassNotFoundException ex) {
-        errorcode = 2;    
-        if (c[12].isEmpty()) {
-        messages.add(new String[]{"error", "Map Class not found " + map + "/" + c[0] + " / " + c[1]});        
-        }
-        edilog(ex); 
-        } catch (IllegalAccessException |
-             InstantiationException | NoSuchMethodException ex
-            ) {
-        errorcode = 2;    
-        if (c[12].isEmpty()) {
-        messages.add(new String[]{"error", "IllegalAccess|Instantiation|NoSuchMethod " + map + "/" + c[0] + " / " + c[1]});        
-       }
-        edilog(ex);
-       } finally {
-          EDData.writeEDILogMulti(c, messages);
-          messages.clear();  // clear message here...and at 997...and at end   
-       }
-         
-       return errorcode; 
-         
-     }
-    
-    
     public static int Create850(String po)  {
         int errorcode = 0;
         // errorcode = 0 ... clean exit
@@ -4812,8 +4659,7 @@ public class EDI {
        return errorcode; 
          
      }
-       
-   
+          
     public static int Create940(String nbr)  {
         int errorcode = 0;
         // errorcode = 0 ... clean exit
@@ -4950,8 +4796,7 @@ public class EDI {
        return errorcode; 
          
      }
-    
-    
+        
     public static int Create990(String nbr)  {
         int errorcode = 0;
         // errorcode = 0 ... clean exit
@@ -5219,8 +5064,7 @@ public class EDI {
        return errorcode; 
          
      }
-    
-    
+        
     public static int Create204(String nbr)  {
         int errorcode = 0;
         
@@ -5340,7 +5184,9 @@ public class EDI {
         
         return errorcode;
      }
-       
+    
+    
+    
      // remoteDB tools
     public static String getFilesOfDir(String dir) {
         StringBuilder sb = new StringBuilder();
@@ -6619,8 +6465,8 @@ public class EDI {
     public String rlse = "";
     public String billto = "";
     public String shipto = "";
-    public String ov_billto = "";
-    public String ov_shipto = "";
+    public String bs_billto = "";
+    public String bs_shipto = "";
     public String remarks = "";
     public String shipmethod = "";
     public String duedate = "";
@@ -6781,10 +6627,10 @@ public class EDI {
            this.billto = v;
         }
         public void setOVShipTo(String v) {
-            this.ov_shipto = v;
+            this.bs_shipto = v;
         }
         public void setOVBillTo(String v) {
-            this.ov_billto = v;
+            this.bs_billto = v;
         }
         public String getPO() {
            return this.po;
@@ -6829,10 +6675,10 @@ public class EDI {
            return this.billto;
         }
         public String getOVShipTo() {
-           return this.ov_shipto;
+           return this.bs_shipto;
         }
         public String getOVBillTo() {
-           return this.ov_billto;
+           return this.bs_billto;
         }
         public String getISASenderID() {
            return this.isaSenderID;
@@ -6924,8 +6770,8 @@ public class EDI {
     public String po = "";
     public String billto = "";
     public String shipto = "";
-    public String ov_billto = "";
-    public String ov_shipto = "";
+    public String bs_billto = "";
+    public String bs_shipto = "";
     public String remarks = "";
     public String shipmethod = "";
     public String duedate = "";
@@ -6939,6 +6785,7 @@ public class EDI {
     public String st_zip = "";
     public String st_country = "";
     
+    // Notes field
     public ArrayList<String> notes = new ArrayList<String>();
     
     // Detail fields      
@@ -6976,14 +6823,17 @@ public class EDI {
             this.doctype = doctype;
         }
         
+        // method to init Notes
         public void addNotes(String j) {
             this.notes.add(j);
         }
         
+        // method to get Notes
         public ArrayList<String> getNotes() {
            return this.notes;
         }
         
+        // method to init Detail
         public void addDetail() {
             this.detitem.add("");
             this.detuom.add("");
@@ -7002,68 +6852,24 @@ public class EDI {
             this.detpackqty.add("");
         }
         
-        public void setDetItem(int i, String v) {
-           this.detitem.set(i,v);
-        }
-        public void setDetUOM(int i, String v) {
-           this.detuom.set(i,v);
-        }
-        public void setDetCustItem(int i, String v) {
-           this.detcustitem.set(i,v);
-        }
-        public void setDetSku(int i, String v) {
-           this.detsku.set(i,v);
-        }
-        public void setDetUpc(int i, String v) {
-           this.detupc.set(i,v);
-        }
-        public void setDetAltItem(int i, String v) {
-           this.detaltitem.set(i,v);
-        }
-        public void setDetPackQty(int i, String v) {
-           this.detpackqty.set(i,v);
-        }
         
-        public void setDetRef(int i, String v) {
-           this.detref.set(i,v);
-        }
-        public void setDetPO(int i, String v) {
-           this.detpo.set(i,v);
-        }
-        public void setDetLine(int i, String v) {
-           this.detline.set(i,v);
-        }
-        public void setDetQty(int i, String v) {
-           this.detqty.set(i,v);
-        }
-        public void setDetListPrice(int i, String v) {
-           this.detlistprice.set(i,v);
-        }
-        public void setDetNetPrice(int i, String v) {
-           this.detnetprice.set(i,v);
-        }
-        public void setDetDisc(int i, String v) {
-           this.detdisc.set(i,v);
-        }
-        public void setDetDesc(int i, String v) {
-           this.detdesc.set(i,v);
-        }
+         // Setters for Header
         public void setPO(String v) {
            this.po = v;
         }
         public void setPODate(String v) {
            this.podate = v;
         }
-         public void setDueDate(String v) {
+        public void setDueDate(String v) {
            this.duedate = v;
         }
         public void setShipTo(String v) {
            this.shipto = v;
         }
-         public void setShipVia(String v) {
+        public void setShipVia(String v) {
            this.shipmethod = v;
         }
-          public void setRemarks(String v) {
+        public void setRemarks(String v) {
            this.remarks = v;
         }
         public void setShipToName(String v) {
@@ -7094,11 +6900,13 @@ public class EDI {
            this.billto = v;
         }
         public void setOVShipTo(String v) {
-            this.ov_shipto = v;
+            this.bs_shipto = v;
         }
         public void setOVBillTo(String v) {
-            this.ov_billto = v;
+            this.bs_billto = v;
         }
+        
+        // Getters for Header
         public String getPO() {
            return this.po;
         }
@@ -7108,10 +6916,10 @@ public class EDI {
         public String getShipTo() {
            return this.shipto;
         }
-          public String getRemarks() {
+        public String getRemarks() {
            return this.remarks;
         }
-            public String getShipVia() {
+        public String getShipVia() {
            return this.shipmethod;
         }
         public String getShipToName() {
@@ -7142,10 +6950,10 @@ public class EDI {
            return this.billto;
         }
         public String getOVShipTo() {
-           return this.ov_shipto;
+           return this.bs_shipto;
         }
         public String getOVBillTo() {
-           return this.ov_billto;
+           return this.bs_billto;
         }
         public String getISASenderID() {
            return this.isaSenderID;
@@ -7159,14 +6967,63 @@ public class EDI {
         public String getDocID() {
            return this.docid;
         }
-         public String getHdrDueDate() {
+        public String getHdrDueDate() {
            return this.duedate;
         }
-
         public String getIsaSenderID() {
             return isaSenderID;
         }
 
+        
+        // Setters for Detail
+        public void setDetItem(int i, String v) {
+           this.detitem.set(i,v);
+        }
+        public void setDetUOM(int i, String v) {
+           this.detuom.set(i,v);
+        }
+        public void setDetCustItem(int i, String v) {
+           this.detcustitem.set(i,v);
+        }
+        public void setDetSku(int i, String v) {
+           this.detsku.set(i,v);
+        }
+        public void setDetUpc(int i, String v) {
+           this.detupc.set(i,v);
+        }
+        public void setDetAltItem(int i, String v) {
+           this.detaltitem.set(i,v);
+        }
+        public void setDetPackQty(int i, String v) {
+           this.detpackqty.set(i,v);
+        }
+        public void setDetRef(int i, String v) {
+           this.detref.set(i,v);
+        }
+        public void setDetPO(int i, String v) {
+           this.detpo.set(i,v);
+        }
+        public void setDetLine(int i, String v) {
+           this.detline.set(i,v);
+        }
+        public void setDetQty(int i, String v) {
+           this.detqty.set(i,v);
+        }
+        public void setDetListPrice(int i, String v) {
+           this.detlistprice.set(i,v);
+        }
+        public void setDetNetPrice(int i, String v) {
+           this.detnetprice.set(i,v);
+        }
+        public void setDetDisc(int i, String v) {
+           this.detdisc.set(i,v);
+        }
+        public void setDetDesc(int i, String v) {
+           this.detdesc.set(i,v);
+        }
+        
+       
+        // Getters for Detail
         public String getDetItem(int i) {
             return detitem.get(i);
         }
@@ -7235,8 +7092,8 @@ public class EDI {
     public String po = "";
     public String billto = "";
     public String shipto = "";
-    public String ov_billto = "";
-    public String ov_shipto = "";
+    public String bs_billto = "";
+    public String bs_shipto = "";
     public String remarks = "";
     public String shipmethod = "";
     public String duedate = "";
@@ -7392,10 +7249,10 @@ public class EDI {
            this.billto = v;
         }
         public void setOVShipTo(String v) {
-            this.ov_shipto = v;
+            this.bs_shipto = v;
         }
         public void setOVBillTo(String v) {
-            this.ov_billto = v;
+            this.bs_billto = v;
         }
         public String getPO() {
            return this.po;
@@ -7450,10 +7307,10 @@ public class EDI {
            return this.billto;
         }
         public String getOVShipTo() {
-           return this.ov_shipto;
+           return this.bs_shipto;
         }
         public String getOVBillTo() {
-           return this.ov_billto;
+           return this.bs_billto;
         }
         public String getISASenderID() {
            return this.isaSenderID;
@@ -7721,8 +7578,8 @@ public class EDI {
     public String shipper = "";
     public String billto = "";
     public String shipto = "";
-    public String ov_billto = "";
-    public String ov_shipto = "";
+    public String bs_billto = "";
+    public String bs_shipto = "";
     public String remarks = "";
     public String shipmethod = "";
     public String duedate = "";
@@ -7934,10 +7791,10 @@ public class EDI {
            this.billto = v;
         }
         public void setOVShipTo(String v) {
-            this.ov_shipto = v;
+            this.bs_shipto = v;
         }
         public void setOVBillTo(String v) {
-            this.ov_billto = v;
+            this.bs_billto = v;
         }
         
         // header getters
@@ -7990,10 +7847,10 @@ public class EDI {
            return this.billto;
         }
         public String getOVShipTo() {
-           return this.ov_shipto;
+           return this.bs_shipto;
         }
         public String getOVBillTo() {
-           return this.ov_billto;
+           return this.bs_billto;
         }
         public String getISASenderID() {
            return this.isaSenderID;
@@ -8890,8 +8747,8 @@ public class EDI {
     public String rlse = "";
     public String billto = "";
     public String shipto = "";
-    public String ov_billto = "";
-    public String ov_shipto = "";
+    public String bs_billto = "";
+    public String bs_shipto = "";
     public String remarks = "";
     public String shipmethod = "";
     public String duedate = "";
@@ -9043,10 +8900,10 @@ public class EDI {
            this.billto = v;
         }
         public void setOVShipTo(String v) {
-            this.ov_shipto = v;
+            this.bs_shipto = v;
         }
         public void setOVBillTo(String v) {
-            this.ov_billto = v;
+            this.bs_billto = v;
         }
         public String getPO() {
            return this.po;
@@ -9091,10 +8948,10 @@ public class EDI {
            return this.billto;
         }
         public String getOVShipTo() {
-           return this.ov_shipto;
+           return this.bs_shipto;
         }
         public String getOVBillTo() {
-           return this.ov_billto;
+           return this.bs_billto;
         }
         public String getISASenderID() {
            return this.isaSenderID;
