@@ -452,22 +452,24 @@ String carrier = "";
     }
 
     public boolean validateInput(boolean itemlevel) {
-         if (! BlueSeerUtils.isNumeric(tbqty.getText())) {
-            bsmf.MainFrame.show(getMessageTag(1028));
-            tbqty.requestFocus();
-            tbqty.setBackground(Color.yellow);
-            return false;
-        } else {
-            tbqty.setBackground(Color.white);
+        
+        if (itemlevel) {
+            if (! BlueSeerUtils.isNumeric(tbqty.getText())) {
+                bsmf.MainFrame.show(getMessageTag(1028));
+                tbqty.requestFocus();
+                tbqty.setBackground(Color.yellow);
+                return false;
+            } else {
+                tbqty.setBackground(Color.white);
+            }
         }
         
-        
-        if (tbordnbr.getText().isEmpty()) {
+        if (itemlevel && tbordnbr.getText().isEmpty()) {
             bsmf.MainFrame.show(getMessageTag(1024));
             tbordnbr.requestFocus();
             return false;
         }
-        if (tbline.getText().isEmpty()) {
+        if (itemlevel && tbline.getText().isEmpty()) {
             bsmf.MainFrame.show(getMessageTag(1024));
             tbline.requestFocus();
             return false;
@@ -482,8 +484,12 @@ String carrier = "";
             tblblqty.setBackground(Color.white);
         }
         
-        if (ddprinter.getSelectedItem() == null) {
+        if (! itemlevel && ddprinter.getSelectedItem() == null) {
             bsmf.MainFrame.show(getMessageTag(1140));
+            return false;
+        }
+        if (! itemlevel && itemtable.getRowCount() == 0) {
+            bsmf.MainFrame.show(getMessageTag(1164));
             return false;
         }
         
