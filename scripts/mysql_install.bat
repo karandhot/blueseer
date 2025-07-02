@@ -14,13 +14,13 @@ exit /b
 ) 
 
 
-set /p IP=Enter the database server IP addr (ex: 10.15.2.2 or localhost):%=%
+set /p IP=Enter the database server IP addr ex: 10.15.2.2 or localhost (default localhost):%=%
 
 set /p pass=Enter the administrator password for the MySQL Database:%=%
 
 set /p DB=Enter the database name (default: bsdb ):%=%
 
-set /p lang=Enter the two character language code (en,de,fr,es,tr,etc):%=%
+set /p lang=Enter the two character language code (default: en):%=%
 
 if not defined lang (
 set "lang=en"
