@@ -347,7 +347,7 @@ public class LabelBrowse extends javax.swing.JPanel {
                        res.getString("lbld_line"),
                        res.getString("lbld_item"),
                        res.getString("lbld_desc"),
-                       res.getInt("lbld_qty")});
+                       res.getDouble("lbld_qty")});
                 }
                
                

@@ -180,7 +180,7 @@ public class lblData {
             psi.setString(3, x.lbld_line);
             psi.setString(4, x.lbld_item);
             psi.setString(5, x.lbld_desc);
-            psi.setInt(6, x.lbld_qty);
+            psi.setDouble(6, x.lbld_qty);
             int rows = psi.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
             } else {
@@ -215,7 +215,7 @@ public class lblData {
             ps.setString(3, x.lbld_line);
             ps.setString(4, x.lbld_item);
             ps.setString(5, x.lbld_desc);
-            ps.setInt(6, x.lbld_qty);
+            ps.setDouble(6, x.lbld_qty);
             rows = ps.executeUpdate();
             } 
             return rows;
@@ -867,7 +867,7 @@ public class lblData {
     }
     
     public record label_det(String[] m, String lbld_id, String lbld_order, String lbld_line, String lbld_item, 
-        String lbld_desc, int lbld_qty) {
+        String lbld_desc, double lbld_qty) {
         public label_det(String[]m) {
             this(m, "", "", "", "", "", 0);
         }

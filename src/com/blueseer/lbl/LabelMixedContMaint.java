@@ -437,7 +437,7 @@ String carrier = "";
                 if ( column == 0) {
                 ludialog.dispose();
                 tbline.setText(target.getValueAt(row,1).toString());
-                tbqty.setText(target.getValueAt(row,4).toString());
+                tbqty.setText(BlueSeerUtils.bsNumber(target.getValueAt(row,4).toString()));
                 lblitem.setText(target.getValueAt(row,2).toString() + " " + target.getValueAt(row,3).toString());
                 }
             }
@@ -451,13 +451,14 @@ String carrier = "";
         
     }
 
-    public boolean validateInput() {
-        Pattern p = Pattern.compile("^[1-9]\\d*$");
-        Matcher m = p.matcher(tbqty.getText());
-        if (!m.find() || tbqty.getText() == null) {
-            bsmf.MainFrame.show(getMessageTag(1026));
+    public boolean validateInput(boolean itemlevel) {
+         if (! BlueSeerUtils.isNumeric(tbqty.getText())) {
+            bsmf.MainFrame.show(getMessageTag(1028));
             tbqty.requestFocus();
-           return false;
+            tbqty.setBackground(Color.yellow);
+            return false;
+        } else {
+            tbqty.setBackground(Color.white);
         }
         
         
@@ -472,12 +473,13 @@ String carrier = "";
             return false;
         }
         
-        p = Pattern.compile("^[1-9]\\d*$");
-        m = p.matcher(tblblqty.getText());
-        if (!m.find() || tblblqty.getText() == null) {
-            bsmf.MainFrame.show(getMessageTag(1026));
+        if (! itemlevel && ! BlueSeerUtils.isNumeric(tblblqty.getText())) {
+            bsmf.MainFrame.show(getMessageTag(1028));
             tblblqty.requestFocus();
+            tblblqty.setBackground(Color.yellow);
             return false;
+        } else {
+            tblblqty.setBackground(Color.white);
         }
         
         if (ddprinter.getSelectedItem() == null) {
@@ -540,7 +542,7 @@ String carrier = "";
                  itemtable.getValueAt(j, 0).toString(),
                  itemtable.getValueAt(j, 1).toString(),
                  itemtable.getValueAt(j, 2).toString(),
-                 BlueSeerUtils.bsParseInt(itemtable.getValueAt(j, 4).toString()) // label qty
+                 BlueSeerUtils.bsParseDouble(itemtable.getValueAt(j, 4).toString()) // label qty
                 );
          det.add(x);
          }
@@ -602,6 +604,12 @@ String carrier = "";
         jLabel2.setText("Printer");
         jLabel2.setName("lblprinter"); // NOI18N
 
+        tbqty.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                tbqtyFocusLost(evt);
+            }
+        });
+
         jLabel4.setText("Qty On Label");
         jLabel4.setName("lblqty"); // NOI18N
 
@@ -616,6 +624,12 @@ String carrier = "";
 
         jLabel6.setText("Order Line");
         jLabel6.setName("lblorderline"); // NOI18N
+
+        tblblqty.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                tblblqtyFocusLost(evt);
+            }
+        });
 
         jLabel7.setText("Number of Labels");
         jLabel7.setName("lblnumber"); // NOI18N
@@ -789,7 +803,7 @@ String carrier = "";
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
 
-        if (! validateInput()) {
+        if (! validateInput(false)) {
             return;
         }
         
@@ -814,7 +828,7 @@ String carrier = "";
         
         String[] x = addMixedLabelTransaction(createDetRecord(),createRecord());
         if (ddprinter.getSelectedItem() != null && ddprinter.getSelectedItem().toString().equals("<record only>")) {
-          bsmf.MainFrame.show("label <record only> created");
+          bsmf.MainFrame.show("label created: " + serialno);
           return;
         }
         
@@ -898,6 +912,12 @@ String carrier = "";
     }//GEN-LAST:event_btlookupLineActionPerformed
 
     private void btadditemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btadditemActionPerformed
+        
+        if (! validateInput(true)) {
+            return;
+        }
+
+        
         String[] x = getOrderLineInfo(tbordnbr.getText(), tbline.getText());
         if (x == null) {
             return;
@@ -931,6 +951,28 @@ String carrier = "";
        lblitem.setText(info[0] + " " + info[1]);
        }
     }//GEN-LAST:event_tblineActionPerformed
+
+    private void tbqtyFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbqtyFocusLost
+         if (! BlueSeerUtils.isNumeric(tbqty.getText())) {
+            bsmf.MainFrame.show(getMessageTag(1028));
+            tbqty.requestFocus();
+            tbqty.setBackground(Color.yellow);
+            return;
+        } else {
+            tbqty.setBackground(Color.white);
+        }
+    }//GEN-LAST:event_tbqtyFocusLost
+
+    private void tblblqtyFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tblblqtyFocusLost
+        if (! BlueSeerUtils.isNumeric(tblblqty.getText())) {
+            bsmf.MainFrame.show(getMessageTag(1028));
+            tblblqty.requestFocus();
+            tblblqty.setBackground(Color.yellow);
+            return;
+        } else {
+            tblblqty.setBackground(Color.white);
+        }
+    }//GEN-LAST:event_tblblqtyFocusLost
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

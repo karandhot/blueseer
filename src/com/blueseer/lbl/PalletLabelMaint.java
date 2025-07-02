@@ -38,6 +38,7 @@ import static com.blueseer.lbl.lblData.addLabelMstr;
 import static com.blueseer.lbl.lblData.getLabelZebraMstr;
 import com.blueseer.lbl.lblData.label_mstr;
 import com.blueseer.lbl.lblData.label_zebra;
+import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.checkDigitUCC18;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
@@ -157,14 +158,15 @@ String carrier = "";
     }
 
     public boolean validateInput() {
-        Pattern p = Pattern.compile("^[1-9]\\d*$");
-        Matcher m = p.matcher(tbqty.getText());
-        if (!m.find() || tbqty.getText() == null) {
-            bsmf.MainFrame.show(getMessageTag(1026));
+       
+        if (! BlueSeerUtils.isNumeric(tbqty.getText())) {
+            bsmf.MainFrame.show(getMessageTag(1028));
             tbqty.requestFocus();
-           return false;
+            tbqty.setBackground(Color.yellow);
+            return false;
+        } else {
+            tbqty.setBackground(Color.white);
         }
-        
         
         if (tbordnbr.getText().isEmpty()) {
             bsmf.MainFrame.show(getMessageTag(1024));
@@ -439,7 +441,7 @@ String carrier = "";
                 if ( column == 0) {
                 ludialog.dispose();
                 tbline.setText(target.getValueAt(row,1).toString());
-                tbqty.setText(target.getValueAt(row,4).toString());
+                tbqty.setText(BlueSeerUtils.bsNumber(target.getValueAt(row,4).toString()));
                 lblitem.setText(target.getValueAt(row,2).toString() + " " + target.getValueAt(row,3).toString());
                 }
             }
@@ -466,7 +468,7 @@ String carrier = "";
                  serialno_display, 
                  "XX", 
                  labelname,
-                 quantity, 
+                 tbqty.getText(), 
                  ponbr,
                  billto,
                  ordernbr, 
@@ -537,6 +539,17 @@ String carrier = "";
 
         jLabel3.setText("Order Number");
         jLabel3.setName("lblorder"); // NOI18N
+
+        tbqty.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                tbqtyFocusLost(evt);
+            }
+        });
+        tbqty.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tbqtyActionPerformed(evt);
+            }
+        });
 
         jLabel4.setText("Quantity");
         jLabel4.setName("lblqty"); // NOI18N
@@ -686,6 +699,21 @@ String carrier = "";
     private void btlookupLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupLineActionPerformed
         lookUpFrameLine();
     }//GEN-LAST:event_btlookupLineActionPerformed
+
+    private void tbqtyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbqtyActionPerformed
+                
+    }//GEN-LAST:event_tbqtyActionPerformed
+
+    private void tbqtyFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbqtyFocusLost
+        if (! BlueSeerUtils.isNumeric(tbqty.getText())) {
+            bsmf.MainFrame.show(getMessageTag(1028));
+            tbqty.requestFocus();
+            tbqty.setBackground(Color.yellow);
+            return;
+        } else {
+            tbqty.setBackground(Color.white);
+        }
+    }//GEN-LAST:event_tbqtyFocusLost
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

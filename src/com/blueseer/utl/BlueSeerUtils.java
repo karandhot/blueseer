@@ -1498,8 +1498,10 @@ public class BlueSeerUtils {
     }
     
     public static boolean isParsableToDouble(String i) {
+        // use of NumberFormat was necessary for non-english locale (could not use Double.parseDouble) but will not completely 
+        // work for instances such as 4.8x or 4.3.3 which should return false
         try {
-           // Double.parseDouble(i);
+           // Double.parseDouble(i);  
             DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.getDefault());
             df.parse(i);
             return true;
@@ -1507,6 +1509,32 @@ public class BlueSeerUtils {
             return false;
         } catch (ParseException ex) {
             return false;
+        }
+    }
+   
+    public static boolean isNumeric(String i) {
+        
+        if (Locale.getDefault().getLanguage().equals("en")) {
+            try {
+                if (i == null || i.isEmpty()) {
+                return false;
+                }
+                Double.parseDouble(i);
+                return true;
+            } catch (NumberFormatException nfe) {
+                return false;
+            }
+        } else {
+            try {
+           // Double.parseDouble(i);  
+            DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.getDefault());
+            df.parse(i);
+            return true;
+        } catch (NumberFormatException nfe) {
+            return false;
+        } catch (ParseException ex) {
+            return false;
+        }
         }
     }
     

@@ -38,6 +38,7 @@ import static com.blueseer.lbl.lblData.addLabelMstr;
 import static com.blueseer.lbl.lblData.getLabelZebraMstr;
 import com.blueseer.lbl.lblData.label_mstr;
 import com.blueseer.lbl.lblData.label_zebra;
+import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.checkDigitUCC18;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
@@ -156,6 +157,40 @@ String carrier = "";
         setLanguageTags(this);
     }
 
+    public boolean validateInput() {
+       
+        if (! BlueSeerUtils.isNumeric(tbqty.getText())) {
+            bsmf.MainFrame.show(getMessageTag(1028));
+            tbqty.requestFocus();
+            tbqty.setBackground(Color.yellow);
+            return false;
+        } else {
+            tbqty.setBackground(Color.white);
+        }
+        
+        if (! BlueSeerUtils.isNumeric(tblblqty.getText())) {
+            bsmf.MainFrame.show(getMessageTag(1028));
+            tblblqty.requestFocus();
+            tblblqty.setBackground(Color.yellow);
+            return false;
+        } else {
+            tblblqty.setBackground(Color.white);
+        }
+        
+        if (tbordnbr.getText().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1024));
+            tbordnbr.requestFocus();
+            return false;
+        }
+        if (tbline.getText().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1024));
+            tbline.requestFocus();
+            return false;
+        }
+        
+        return true;
+    }
+    
     
     public void getSiteAddress(String site) {
         try {
@@ -429,7 +464,7 @@ String carrier = "";
                 if ( column == 0) {
                 ludialog.dispose();
                 tbline.setText(target.getValueAt(row,1).toString());
-                tbqty.setText(target.getValueAt(row,4).toString());
+                tbqty.setText(BlueSeerUtils.bsNumber(target.getValueAt(row,4).toString()));
                 lblitem.setText(target.getValueAt(row,2).toString() + " " + target.getValueAt(row,3).toString());
                 }
             }
@@ -537,6 +572,12 @@ String carrier = "";
         jLabel2.setText("Printer");
         jLabel2.setName("lblprinter"); // NOI18N
 
+        tbqty.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                tbqtyFocusLost(evt);
+            }
+        });
+
         jLabel4.setText("Quantity");
         jLabel4.setName("lblqty"); // NOI18N
 
@@ -545,6 +586,12 @@ String carrier = "";
 
         jLabel6.setText("Order Line");
         jLabel6.setName("lblorderline"); // NOI18N
+
+        tblblqty.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                tblblqtyFocusLost(evt);
+            }
+        });
 
         jLabel7.setText("Number of Labels");
         jLabel7.setName("lblnumber"); // NOI18N
@@ -665,6 +712,10 @@ String carrier = "";
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
 
+        if (! validateInput()) {
+            return;
+        }
+        
         java.util.Date now = new java.util.Date();
         DateFormat dfdate = new SimpleDateFormat("MM/dd/yyyy");
         DateFormat dftime = new SimpleDateFormat("hh:mm");
@@ -676,14 +727,7 @@ String carrier = "";
         
         
         quantity = tbqty.getText();
-        
-        Pattern p = Pattern.compile("^[1-9]\\d*$");
-        Matcher m = p.matcher(tbqty.getText());
-        if (!m.find() || tbqty.getText() == null) {
-            bsmf.MainFrame.show(getMessageTag(1026));
-            tbqty.requestFocus();
-           return;
-        }
+               
         
         
         if (tbordnbr.getText().isEmpty()) {
@@ -697,13 +741,6 @@ String carrier = "";
             return;
         }
         
-        p = Pattern.compile("^[1-9]\\d*$");
-        m = p.matcher(tblblqty.getText());
-        if (!m.find() || tblblqty.getText() == null) {
-            bsmf.MainFrame.show(getMessageTag(1026));
-            tblblqty.requestFocus();
-           return;
-        }
         
         if (ddprinter.getSelectedItem() == null) {
             bsmf.MainFrame.show(getMessageTag(1140));
@@ -743,7 +780,7 @@ String carrier = "";
     // ok....apparently we have a label/printer match.... lets create the label_mstr record for this label
     String[] x = addLabelMstr(createRecord()); 
     if (ddprinter.getSelectedItem() != null && ddprinter.getSelectedItem().toString().equals("<record only>")) {
-          bsmf.MainFrame.show("label <record only> created");
+          bsmf.MainFrame.show("label created: " + serialno);
           return;
     }          
 
@@ -829,6 +866,28 @@ String carrier = "";
     private void btlookupLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupLineActionPerformed
         lookUpFrameLine();
     }//GEN-LAST:event_btlookupLineActionPerformed
+
+    private void tbqtyFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbqtyFocusLost
+        if (! BlueSeerUtils.isNumeric(tbqty.getText())) {
+            bsmf.MainFrame.show(getMessageTag(1028));
+            tbqty.requestFocus();
+            tbqty.setBackground(Color.yellow);
+            return;
+        } else {
+            tbqty.setBackground(Color.white);
+        }
+    }//GEN-LAST:event_tbqtyFocusLost
+
+    private void tblblqtyFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tblblqtyFocusLost
+        if (! BlueSeerUtils.isNumeric(tblblqty.getText())) {
+            bsmf.MainFrame.show(getMessageTag(1028));
+            tblblqty.requestFocus();
+            tblblqty.setBackground(Color.yellow);
+            return;
+        } else {
+            tblblqty.setBackground(Color.white);
+        }
+    }//GEN-LAST:event_tblblqtyFocusLost
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
