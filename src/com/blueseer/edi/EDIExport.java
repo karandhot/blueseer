@@ -261,7 +261,7 @@ public class EDIExport extends javax.swing.JPanel {
         int l_error = 0;
         int g_error = 0;
         String status = "";
-        tacomments.append("See edilog (document view) for any errors.\n");
+        tacomments.append("Document count: " + list.size() + "\n");
         for (String x : list) {
           l_error = EDI.Create850(x); 
           if (l_error == 0) {
@@ -286,7 +286,7 @@ public class EDIExport extends javax.swing.JPanel {
         int l_error = 0;
         int g_error = 0;
         String status = "";
-        tacomments.append("See edilog (document view) for any errors.\n");
+        tacomments.append("Document count: " + list.size() + "\n");
         for (String x : list) {
           l_error = EDI.Create810(x); 
           if (l_error == 0) {
@@ -310,7 +310,7 @@ public class EDIExport extends javax.swing.JPanel {
         int l_error = 0;
         int g_error = 0;
         String status = "";
-        tacomments.append("See edilog (document view) for any errors.\n");
+        tacomments.append("Document count: " + list.size() + "\n");
         for (String x : list) {
           l_error = EDI.Create856(x); 
           if (l_error == 0) {
@@ -334,7 +334,7 @@ public class EDIExport extends javax.swing.JPanel {
         int l_error = 0;
         int g_error = 0;
         String status = "";
-        tacomments.append("See edilog (document view) for any errors.\n");
+        tacomments.append("Document count: " + list.size() + "\n");
         for (String x : list) {
           l_error = EDI.Create855(x); 
           if (l_error == 0) {
