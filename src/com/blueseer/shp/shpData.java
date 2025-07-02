@@ -36,6 +36,7 @@ import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
 import com.blueseer.ctr.cusData.cm_mstr;
 import com.blueseer.edi.EDI.edi810;
+import com.blueseer.edi.EDI.edi855;
 import com.blueseer.edi.EDI.edi856;
 import com.blueseer.fap.fapData;
 import static com.blueseer.fap.fapData.VouchAndPayTransaction;
@@ -2347,6 +2348,7 @@ public class shpData {
         
         return e;
     }
+    
     
     
     public static String[] getShipperHeader(String shipper) {

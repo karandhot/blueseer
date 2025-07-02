@@ -5212,6 +5212,11 @@ public class EDI {
         return e;
     }
     
+    public static edi855 init855DB(String key) {
+        edi855 e = ordData.init_edi855_object(key);
+        return e;
+    }
+    
     
      // remoteDB tools
     public static String getFilesOfDir(String dir) {
@@ -9085,7 +9090,18 @@ public class EDI {
                  "","","","","", null );
         }
     } 
+    
+    
+    public record edi855 (String so_nbr, String so_po, String so_cust, String so_ship, String so_site, String so_type, String so_ord_date,
+                          String so_due_date, String so_shipvia, String so_rmks, String so_curr, String so_status,
+                          ArrayList<ordData.sod_det> lines) {
+        public edi855() {
+            this("","","","","","","","","","",
+                 "", "", null );
+        }
+    } 
      
+    
     @Retention(RUNTIME)
     @Target(value = METHOD)
     public @interface AnnoDoc {

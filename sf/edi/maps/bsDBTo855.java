@@ -1,27 +1,21 @@
 import com.blueseer.ctr.cusData;
 import java.util.ArrayList;
 import com.blueseer.edi.EDI;
-import static com.blueseer.ord.ordData.getSOMstrHeaderEDI;
-import static com.blueseer.ord.ordData.getSOMstrdetailsEDI;
+import com.blueseer.ord.ordData;
 import com.blueseer.pur.purData;
 import com.blueseer.shp.shpData;
-import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import com.blueseer.utl.OVData;
 import java.io.IOException;
 import java.text.DecimalFormat;
 
 
-     com.blueseer.edi.EDI edi = new com.blueseer.edi.EDI();
      String doctype = c[1];
      String key = doc.get(0).toString();
+     EDI.edi855 e = EDI.init855DB(key); 
+   
     
-        
-        
-    String[] h = getSOMstrHeaderEDI(key);  // 13 elements...see declaration 
-    // so, po, cust, ship, site, type, orddate, duedate, shipvia, rmks, cur, status
-    
-    if (h[0] == null || h[0].isEmpty()) {
+    if (e == null || e.so_nbr().isEmpty()) {
     setError("Cannot find order number:" + key);
     return error; 
     }
@@ -29,21 +23,21 @@ import java.text.DecimalFormat;
      /* Begin Mapping Segments */ 
     String status = "AD";  // accept by default
     String itemstatus = "IA"; // accept by default
-    if (h[11].equals("rejected")) {
+    if (e.so_status().equals("rejected")) {
         status = "RJ";
         itemstatus = "IR";  // if one then all
     }
     mapSegment("BAK","e01","00");
     mapSegment("BAK","e02",status);
-    mapSegment("BAK","e03",h[1]);
-    mapSegment("BAK","e05",h[6].replace("-", ""));
+    mapSegment("BAK","e03",e.so_po());
+    mapSegment("BAK","e05",e.so_ord_date().replace("-", ""));
     commitSegment("BAK");
     
     mapSegment("REF","e01","OR");
-    mapSegment("REF","e02",h[0]);
+    mapSegment("REF","e02",e.so_nbr());
     commitSegment("REF");
     
-    String[] shipaddr = cusData.getShipAddressInfo(h[2], h[3]);
+    String[] shipaddr = cusData.getShipAddressInfo(e.so_cust(), e.so_ship());
     mapSegment("N1","e01", "ST");
     mapSegment("N1","e02",shipaddr[1]);
     mapSegment("N1","e03","92");
@@ -57,49 +51,49 @@ import java.text.DecimalFormat;
     commitSegment("N4");
     
     mapSegment("N1","e01","VN");
-    mapSegment("N1","e02",OVData.getDefaultSiteName());
+    mapSegment("N1","e02",e.so_site());
     mapSegment("N1","e03","92");
-    mapSegment("N1","e04",h[4]);
+    mapSegment("N1","e04",e.so_site());
     commitSegment("N1");
     
     mapSegment("DTM","e01","067");
-    mapSegment("DTM","e02",h[7].replace("-", ""));
+    mapSegment("DTM","e02",e.so_due_date().replace("-", ""));
     commitSegment("DTM");    
     
                
         // detail
          int i = 0;
-         int sumqty = 0;
+         double sumqty = 0;
          double sumamt = 0;
          // line, item, custitem, qty, price, uom, desc, custline, custuom, custprice
-         ArrayList<String[]> lines = getSOMstrdetailsEDI(key);
-              for (String[] d : lines) {
+         ArrayList<ordData.sod_det> lines = e.lines();
+              for (ordData.sod_det d : lines) {
                   i++;
                                     
-                  sumqty = sumqty + Integer.valueOf(d[3]);
-                  sumamt = sumamt + (bsParseDouble(d[3]) * bsParseDouble(d[4]));
+                  sumqty = sumqty + d.sod_ord_qty();
+                  sumamt = sumamt + (d.sod_ord_qty() * d.sod_netprice());
                   
-                mapSegment("PO1","e01",d[7]);
-                mapSegment("PO1","e02",d[3]);
-                mapSegment("PO1","e03",d[5]);
-                mapSegment("PO1","e04",currformatDouble(bsParseDouble(d[4])));
-                mapSegment("PO1","e06","BP");
-                mapSegment("PO1","e07",d[1]);
-                if (! d[2].isEmpty()) {
-                mapSegment("PO1","e08","VP");
-                mapSegment("PO1","e09",d[2]);
+                mapSegment("PO1","e01",snum(d.sod_line()));
+                mapSegment("PO1","e02",formatNumber(d.sod_ord_qty(),"0"));
+                mapSegment("PO1","e03",d.sod_uom());
+                mapSegment("PO1","e04",currformatDouble(d.sod_netprice()));
+                mapSegment("PO1","e06","VN");
+                mapSegment("PO1","e07",d.sod_item());
+                if (! d.sod_custitem().isEmpty()) {
+                mapSegment("PO1","e08","BP");
+                mapSegment("PO1","e09",d.sod_custitem());
                 }
                 commitSegment("PO1");
                 
                 mapSegment("PID","e01","F");
-                mapSegment("PID","e05",d[6]);
+                mapSegment("PID","e05",d.sod_desc());
                 commitSegment("PID");
                 
                 mapSegment("ACK","e01",itemstatus);
-                mapSegment("ACK","e02",d[3]);
-                mapSegment("ACK","e03",d[5]);
+                mapSegment("ACK","e02",formatNumber(d.sod_ord_qty(),"0"));
+                mapSegment("ACK","e03",d.sod_uom());
                 mapSegment("ACK","e04","076");
-                mapSegment("ACK","e05",h[7].replace("-", ""));
+                mapSegment("ACK","e05",e.so_due_date().replace("-", ""));
                 commitSegment("ACK");
               }
          

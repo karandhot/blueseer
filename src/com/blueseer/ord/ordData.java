@@ -39,6 +39,7 @@ import com.blueseer.ctr.cusData;
 import static com.blueseer.ctr.cusData._getCMSDet;
 import com.blueseer.ctr.cusData.cms_det;
 import static com.blueseer.ctr.cusData.getCustInfo;
+import com.blueseer.edi.EDI.edi855;
 import static com.blueseer.edi.ediData.getEDIMetaValueAsKVStringPair;
 import com.blueseer.shp.shpData;
 import static com.blueseer.shp.shpData._addShipperTransaction;
@@ -3888,6 +3889,75 @@ public class ordData {
         MainFrame.bslog(e);
     }
         return lines;
+    }
+    
+    public static edi855 init_edi855_object(String order) {
+        edi855 e = null;
+        ArrayList<sod_det> lines = new ArrayList<sod_det>();
+        try{
+
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+
+            // get shipper lines first ...to be included in edi856 object record
+               res = st.executeQuery("select * from sod_det where sod_nbr = " + "'" + order + "'" +";");
+       
+                while (res.next()) {
+                    sod_det sod = new sod_det(null, res.getString("sod_nbr"), res.getInt("sod_line"), res.getString("sod_item"),
+                    res.getString("sod_custitem"), res.getString("sod_po"), res.getDouble("sod_ord_qty"), res.getString("sod_uom"), res.getDouble("sod_all_qty"),
+                    res.getDouble("sod_listprice"), res.getDouble("sod_disc"), res.getDouble("sod_netprice"), res.getString("sod_ord_date"), res.getString("sod_due_date"),
+                    res.getDouble("sod_shipped_qty"), res.getString("sod_status"), res.getString("sod_wh"), res.getString("sod_loc"), 
+                    res.getString("sod_desc"), res.getDouble("sod_taxamt"), res.getString("sod_site"), res.getString("sod_bom"), res.getString("sod_ship"),
+                    res.getString("sod_char1"),res.getString("sod_char2"),res.getString("sod_char3"));
+                    lines.add(sod);
+                }
+
+                res = st.executeQuery("SELECT * from so_mstr " +
+                   " where so_nbr = " + "'" + order + "'" + ";");
+                        while (res.next()) {
+                          e = new edi855(res.getString("so_nbr"),
+                          res.getString("so_po"),
+                          res.getString("so_cust"),
+                          res.getString("so_ship"),
+                          res.getString("so_site"),
+                          res.getString("so_type"),
+                          res.getString("so_ord_date"),
+                          res.getString("so_due_date"),
+                          res.getString("so_shipvia"),
+                          res.getString("so_rmks"),
+                          res.getString("so_curr"),
+                          res.getString("so_status"), lines);
+                        }
+               
+                
+               
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+
+        } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+    }
+    catch (Exception ex){
+        MainFrame.bslog(ex);
+
+    }
+        
+        return e;
     }
     
     

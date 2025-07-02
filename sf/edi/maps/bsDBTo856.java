@@ -1,25 +1,27 @@
 import com.blueseer.ctr.cusData;
 import com.blueseer.shp.shpData;
+import com.blueseer.edi.EDI;
 import com.blueseer.utl.BlueSeerUtils;
 import com.blueseer.utl.OVData;
 
-     com.blueseer.edi.EDI edi = new com.blueseer.edi.EDI();
-     String doctype = c[1];
-     String shipper = doc.get(0).toString();
+     
+     	String doctype = c[1];
+     	String shipper = doc.get(0).toString();
+	EDI.edi856 e = EDI.init856DB(shipper); 
 
-		    String  now = now();
-		    int i = 0;
-		    int hlcounter = 0;
-		    int itemLoopCount = 0;
-		    double totalqty = 0;    
-    String[] h = shpData.getShipperHeader(shipper);  // 13 elements...see declaration
+	String  now = now();
+	int i = 0;
+	int hlcounter = 0;
+	int itemLoopCount = 0;
+	double totalqty = 0;    
+    
     
      /* Begin Mapping Segments */ 
-    mapSegment("BSN","e01","00");
-    mapSegment("BSN","e02",shipper);
-    mapSegment("BSN","e03",now.substring(0,8));
-    mapSegment("BSN","e04",now.substring(8,12));
-    commitSegment("BSN");
+    	mapSegment("BSN","e01","00");
+    	mapSegment("BSN","e02",shipper);
+    	mapSegment("BSN","e03",now.substring(0,8));
+    	mapSegment("BSN","e04",now.substring(8,12));
+    	commitSegment("BSN");
     
      hlcounter++;   
         mapSegment("HL","e01", snum(hlcounter));
@@ -35,8 +37,8 @@ import com.blueseer.utl.OVData;
         commitSegment("TD1");
 
         mapSegment("TD5","e02", "2");
-        mapSegment("TD5","e03",h[8]);
-        mapSegment("TD5","e05",h[8]);
+        mapSegment("TD5","e03",e.shipvia());
+        mapSegment("TD5","e05",e.shipvia());
         mapSegment("TD5","e06","CC");
         commitSegment("TD5");
 
@@ -44,18 +46,18 @@ import com.blueseer.utl.OVData;
         mapSegment("REF","e02",shipper);
         commitSegment("REF");
 
-        if (! h[7].isEmpty()) {
+        if (! e.ref().isEmpty()) {
         mapSegment("REF","e01", "CN");
-        mapSegment("REF","e02",h[7]);
+        mapSegment("REF","e02",e.ref());
         commitSegment("REF");
         }
 
         mapSegment("DTM","e01", "011");
-        mapSegment("DTM","e02",h[5].replace("-",""));
+        mapSegment("DTM","e02",e.confdate().replace("-",""));
         commitSegment("DTM");
 
         // addresses
-        String[] shipaddr = cusData.getShipAddressInfo(h[0], h[1]);
+        String[] shipaddr = cusData.getShipAddressInfo(e.bs_billto(), e.bs_shipto());
         mapSegment("N1","e01", "ST");
         mapSegment("N1","e02",shipaddr[1]);
         mapSegment("N1","e03","92");
@@ -71,11 +73,10 @@ import com.blueseer.utl.OVData;
 	
 
         // Item Loop 
-        // item, custitem, qty, po, cumqty, listprice, netprice, reference, sku, desc
-         ArrayList<String[]> lines = shpData.getShipperLines(shipper);
-              for (String[] d : lines) {
+         ArrayList<shpData.ship_det> lines = e.lines();
+              for (shpData.ship_det d : lines) {
                 itemLoopCount++;
-                totalqty += Double.valueOf(d[2]);
+                totalqty += d.shd_qty();
 
                 // do PRF once...this map is one PRF only
                 if (itemLoopCount == 1) {
@@ -85,7 +86,7 @@ import com.blueseer.utl.OVData;
                 mapSegment("HL","e03","O");
                 mapSegment("HL","e04","1");
                 commitSegment("HL");
-                mapSegment("PRF","e01", d[3]);
+                mapSegment("PRF","e01", d.shd_po());
                 commitSegment("PRF");
                 }
                 
@@ -98,30 +99,27 @@ import com.blueseer.utl.OVData;
 
 
                 mapSegment("LIN","e04","VN");
-                mapSegment("LIN","e05",d[0]);
-                if (! d[1].isEmpty()) {
+                mapSegment("LIN","e05",d.shd_item());
+                if (! d.shd_custitem().isEmpty()) {
                   mapSegment("LIN","e06","BP");
-                  mapSegment("LIN","e07",d[1]);
+                  mapSegment("LIN","e07",d.shd_custitem());
                 } 
                 commitSegment("LIN");
 
 
-                if (BlueSeerUtils.isParsableToDouble(d[2])) {
-                    mapSegment("SN1","e02",formatNumber(Double.valueOf(d[2]),"0"));
-                } else {
-                    mapSegment("SN1","e02","0");	
-                }
+                
+                mapSegment("SN1","e02",formatNumber(d.shd_qty(),"0"));
                 mapSegment("SN1","e03","PC");
                 commitSegment("SN1");
 
                 mapSegment("PO4","e01","1");
-                mapSegment("PO4","e02",d[2]);
+                mapSegment("PO4","e02",formatNumber(d.shd_qty(),"0"));
                 mapSegment("PO4","e03","PC");
                 commitSegment("PO4");
 
 
                 mapSegment("PID","e01","F");
-                mapSegment("PID","e05",d[9]);
+                mapSegment("PID","e05",d.shd_desc());
                 commitSegment("PID");
 
         }
@@ -129,6 +127,6 @@ import com.blueseer.utl.OVData;
             /* end of item loop */
 
         mapSegment("CTT","e01",snum(hlcounter));
-        mapSegment("CTT","e02",snum(totalqty));
+        mapSegment("CTT","e02",formatNumber(totalqty,"0"));
         commitSegment("CTT");
 

@@ -7,7 +7,7 @@ import com.blueseer.edi.EDI;
  
     String doctype = c[1];
     String key = doc.get(0).toString();
-    EDI.edi810 e = EDI.init810DB(key); // future use
+    EDI.edi810 e = EDI.init810DB(key); 
 
      /* Begin Mapping Segments */ 
     mapSegment("BIG","e01",e.confdate().replace("-", ""));
@@ -18,6 +18,10 @@ import com.blueseer.edi.EDI;
     
     mapSegment("REF","e01","ST");
     mapSegment("REF","e02",e.bs_shipto());
+    commitSegment("REF");
+
+    mapSegment("REF","e01","ON");
+    mapSegment("REF","e02",e.so());
     commitSegment("REF");
     
     mapSegment("N1","e01","RE");
@@ -49,7 +53,7 @@ import com.blueseer.edi.EDI;
                   }
 
                   if (sku.isEmpty()) {
-                   sku = "boo";
+                   sku = "somevalue";
                   }
                                     
                   sumqty = sumqty + d.shd_qty();
@@ -57,13 +61,13 @@ import com.blueseer.edi.EDI;
                   sumlistamt = sumlistamt + (d.shd_qty() * d.shd_listprice());
                   
                 mapSegment("IT1","e01",String.valueOf(i));
-                mapSegment("IT1","e02",snum(d.shd_qty()));
+                mapSegment("IT1","e02",formatNumber(d.shd_qty(),"0"));
                 mapSegment("IT1","e03","EA");
                 mapSegment("IT1","e04",formatNumber(d.shd_listprice(),"2"));
                 mapSegment("IT1","e06","IN");
-                mapSegment("IT1","e07",sku);
+                mapSegment("IT1","e07",sku.toUpperCase());
                 mapSegment("IT1","e08","VP");
-                mapSegment("IT1","e09",d.shd_item());
+                mapSegment("IT1","e09",d.shd_item().toUpperCase());
                 commitSegment("IT1");
                   
               }
