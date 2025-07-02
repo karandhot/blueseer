@@ -7,8 +7,8 @@
 
 @echo "NOTE!!!:  This script should only be executed ONCE.   This script will blow away the previously successful install of the database and data and it will install a clean schema with default data."
 
-set /p IP=Previous Data will be lost...are you sure you want to install database? (enter: yes or no):%=%
-if /I not "%IP%"=="yes" (
+set /p var=Previous Data will be lost...are you sure you want to install database? (enter: yes or no):%=%
+if /I not "%var%"=="yes" (
 @echo "Exiting..."
 exit /b
 ) 

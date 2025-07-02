@@ -1118,7 +1118,7 @@ CREATE TABLE IF NOT EXISTS `label_mstr` (
   `lbl_id_str` varchar(30) NOT NULL  DEFAULT '',
   `lbl_conttype` varchar(30) NOT NULL  DEFAULT '',
   `lbl_name` varchar(40) NOT NULL  DEFAULT '',
-  `lbl_qty` int(11) NOT NULL DEFAULT '0',
+  `lbl_qty` decimal(14,5) NOT NULL DEFAULT '0',
   `lbl_po` varchar(30) NOT NULL  DEFAULT '',
   `lbl_billto` varchar(30) NOT NULL  DEFAULT '',
   `lbl_order` varchar(30) NOT NULL  DEFAULT '',
