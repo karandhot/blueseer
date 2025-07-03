@@ -3173,6 +3173,41 @@ public class EDData {
         
     }
     
+    public static String getSystemEncKeyAlt(String id) {
+       String mystring = "";
+        try{
+            Class.forName(driver);
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try{
+                
+
+                res = st.executeQuery("select as2_sysenccert from as2_mstr where as2_id = " + "'" + id + "'" + ";");
+               while (res.next()) {
+                   mystring = res.getString("as2_sysenccert");
+                }
+               
+           }
+            catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return mystring;
+        
+    }
+    
     public static String getSystemSignKey() {
        String mystring = "";
         try{
@@ -3200,6 +3235,41 @@ public class EDData {
                if (res != null) res.close();
                if (st != null) st.close();
                if (con != null) con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return mystring;
+        
+    }
+    
+    public static String getSystemSignKeyAlt(String id) {
+       String mystring = "";
+        try{
+            Class.forName(driver);
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try{
+                
+
+                res = st.executeQuery("select as2_syssigncert from as2_mstr where as2_id = " + "'" + id + "'" + ";");
+               while (res.next()) {
+                   mystring = res.getString("as2_syssigncert");
+                }
+               
+           }
+            catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
             }
         }
         catch (Exception e){
