@@ -3175,6 +3175,7 @@ public class EDData {
     
     public static String getSystemEncKeyAlt(String id) {
        String mystring = "";
+       // alt method temporary
         try{
             Class.forName(driver);
             Connection con = null;
