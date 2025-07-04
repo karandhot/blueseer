@@ -2645,13 +2645,29 @@ public class apiUtils {
         char[] keyPassword = bsmf.MainFrame.PassWord("1", pkid.pks_pass().toCharArray()).toCharArray();  
         KeyStore keystore = KeyStore.getInstance("PKCS12");
         
-        FileInputStream fis = new FileInputStream(FileSystems.getDefault().getPath(pkstore.pks_file()).toString());
-        if (pkstore.pks_storepass().isBlank()) {
-            keystore.load(fis, null);
-        } else {
-            keystore.load(fis, bsmf.MainFrame.PassWord("1", pkstore.pks_storepass().toCharArray()).toCharArray());
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(FileSystems.getDefault().getPath(pkstore.pks_file()).toString());
+            if (pkstore.pks_storepass().isBlank()) {
+               keystore.load(fis, null);
+           } else {
+               keystore.load(fis, bsmf.MainFrame.PassWord("1", pkstore.pks_storepass().toCharArray()).toCharArray());
+           }
+        } catch (FileNotFoundException ex) {
+          logdet.add(new String[]{parentkey, "error", "Unable to locate keystore file for " + pkid.pks_id()}); 
+          writeAS2LogDetail(logdet);
+          return "Unable to locate keystore file for " + pkid.pks_id(); 
+        } finally {
+            if (fis != null ) {
+              try {
+                  fis.close();
+              } catch (IOException ex) {
+                  bslog(ex);
+              }
+          }
         }
-        fis.close();
+        
+        
         
         key = (PrivateKey) keystore.getKey(pkid.pks_user(), keyPassword);
         signcertificate = (X509Certificate) keystore.getCertificate(pkid.pks_user());
