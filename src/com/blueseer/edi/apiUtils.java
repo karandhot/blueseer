@@ -2626,6 +2626,12 @@ public class apiUtils {
         logdet.add(new String[]{parentkey, "info", "Encryption Expiration Window: " + encryptcertificate.getNotBefore() + "/" + encryptcertificate.getNotAfter()});
         
         pks_mstr pkid = admData.getPksMstr(new String[]{signkeyid});
+        if (pkid == null || pkid.m()[0].equals("1")) {
+          logdet.add(new String[]{parentkey, "error", "Unable to retrieve pks_mstr signing key for " + signkeyid}); 
+          writeAS2LogDetail(logdet);
+          return "Unable to retrieve pks_mstr signing key for  " + signkeyid;
+        }
+        
         pks_mstr pkstore = admData.getPksMstr(new String[]{pkid.pks_parent()});
       //  String[] k = new String[]{"","","","",""};
         X509Certificate signcertificate = null; 
