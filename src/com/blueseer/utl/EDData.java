@@ -3190,8 +3190,15 @@ public class EDData {
                 
 
                 res = st.executeQuery("select as2_sysenccert from as2_mstr where as2_id = " + "'" + id + "'" + ";");
-               while (res.next()) {
+                while (res.next()) {
                    mystring = res.getString("as2_sysenccert");
+                }
+                // if it cannot find a as2 id related sysenc...then get the default system enc
+                if (mystring.isBlank()) {
+                    res = st.executeQuery("select edic_enckey from edi_ctrl ;");
+                    while (res.next()) {
+                        mystring = res.getString("edic_enckey");
+                    }
                 }
                
            }
@@ -3261,8 +3268,15 @@ public class EDData {
                 
 
                 res = st.executeQuery("select as2_syssigncert from as2_mstr where as2_id = " + "'" + id + "'" + ";");
-               while (res.next()) {
+                while (res.next()) {
                    mystring = res.getString("as2_syssigncert");
+                }
+                // if it cannot find a as2 id related sys sign...then get the default system sign
+                if (mystring.isBlank()) {
+                    res = st.executeQuery("select edic_signkey from edi_ctrl ;");
+                    while (res.next()) {
+                        mystring = res.getString("edic_signkey");
+                    }
                 }
                
            }

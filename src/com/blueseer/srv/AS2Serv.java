@@ -48,7 +48,7 @@ import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.createMessage;
 import static com.blueseer.utl.BlueSeerUtils.createMessageJSON;
 import com.blueseer.utl.EDData;
-import static com.blueseer.utl.EDData.getSystemEncKey;
+import static com.blueseer.utl.EDData.getSystemEncKeyAlt;
 import static com.blueseer.utl.EDData.writeAS2Log;
 import static com.blueseer.utl.EDData.writeAS2LogDetail;
 import static com.blueseer.utl.EDData.writeAS2LogStop;
@@ -188,7 +188,7 @@ public class AS2Serv extends HttpServlet {
     public static mdn processRequest(HttpServletRequest request, boolean isDebug) throws IOException {
         String defaultsite = OVData.getDefaultSite();
         BufferedWriter output = null;
-        String[] elementals = new String[]{"","","","","",""};
+        String[] elementals = new String[]{"","","","","","",""};
         HashMap<String, String> returnheaders = new HashMap<String, String>();
         mdn mymdn = null;
         String  now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
@@ -325,7 +325,7 @@ public class AS2Serv extends HttpServlet {
         }
         
         
-        
+        elementals[6] = info[0];
         
         
         if (isDebug)
@@ -356,8 +356,8 @@ public class AS2Serv extends HttpServlet {
          // now decrypt as necessary
          String systemEncKey = null;
          if (isEncrypted) {
-          systemEncKey = getSystemEncKey();   
-          finalContent = apiUtils.decryptData(content, apiUtils.getPrivateKey(getSystemEncKey()) );
+          systemEncKey = getSystemEncKeyAlt(info[0]);   
+          finalContent = apiUtils.decryptData(content, apiUtils.getPrivateKey(getSystemEncKeyAlt(info[0])) );
            if (finalContent == null) {
              writeAS2LogStop(new String[]{"0","unknown","in","error","Unable to decrypt...possible incorrect public key " + sender + "/" + receiver,now,"", info[22]}); 
              return createMDN("3003", elementals, returnheaders, isDebug);

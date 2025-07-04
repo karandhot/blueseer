@@ -46,6 +46,7 @@ import com.blueseer.utl.BlueSeerUtils;
 import com.blueseer.utl.BlueSeerUtils.bsr;
 import com.blueseer.utl.EDData;
 import static com.blueseer.utl.EDData.getSystemSignKey;
+import static com.blueseer.utl.EDData.getSystemSignKeyAlt;
 import static com.blueseer.utl.EDData.updateAS2LogMDNFile;
 import static com.blueseer.utl.EDData.writeAS2Log;
 import static com.blueseer.utl.EDData.writeAS2LogDetail;
@@ -2596,7 +2597,8 @@ public class apiUtils {
         String as2From = as2m.as2_sysas2id();
         String internalURL = edic.edic_as2url();
         String sourceDir = as2m.as2_outdir();
-        String signkeyid = edic.edic_signkey();  
+      //  String signkeyid = edic.edic_signkey();  
+        String signkeyid = getSystemSignKeyAlt(as2m.as2_id());  //TEV 20250704 check for as2 partner level signing key...which if empty defaults to system sign key
         String contenttype = as2m.as2_contenttype();
         
         
@@ -3063,7 +3065,7 @@ public class apiUtils {
         return sslcsf;
     }
          
-    public static MimeMultipart bundleit(String z, String receiver, String messageid, String mic, String status) {
+    public static MimeMultipart bundleit(String z, String receiver, String messageid, String mic, String status, String[] elementals) {
         MimeBodyPart mbp = new MimeBodyPart();
         MimeBodyPart mbp2 = new MimeBodyPart();
         MimeBodyPart mbp3 = new MimeBodyPart();
@@ -3107,9 +3109,14 @@ public class apiUtils {
             bOut.close();
             byte[] data = bOut.toByteArray();
             
+            // Giant question mark??
+            // if elementals[6] is blank...i.e...a as2 record cannot be identified because of some failure before identifying as2-from/as2-to headers
+            // then should the MDN be signed?   Currently...if elementals[6] is blank...the system sign key will be retrieved...which may or may not be
+            // associated with the public key given to the trading partner...and they therefore are unabled to confirm signing.
+            // May need to consider no signing of MDNs for failures before critical identification
             
             try {
-               mpInner = signMDN(data, getSystemSignKey(), "", boundary); // need to get tp[19] here for signing algo
+               mpInner = signMDN(data, getSystemSignKeyAlt(elementals[6]), "", boundary); // need to get tp[19] here for signing algo
              // mbp3.setContent(mpInner);
              // mpInner = signMDNexp(mbp3, getSystemSignKey(), boundary); 
             } catch (Exception ex) {
@@ -3132,7 +3139,15 @@ public class apiUtils {
         return mpInner;
     }
           
-    public static mmpx code1000(String sender, String receiver, String subject, String filename, String messageid, String mic) {
+    public static mmpx code1000(String[] elementals) {
+        String sender = elementals[0];
+        String receiver = elementals[1];
+        String subject = elementals[2];
+        String filename = elementals[3];
+        String messageid = elementals[4];
+        String mic = elementals[5];
+        String as2id = elementals[6];
+        
         mmpx mymmpx = null;
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
@@ -3148,7 +3163,7 @@ public class apiUtils {
             zb.append("Note: The origin and integrity of the message have been verified.");
             
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "processed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "processed", elementals);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3159,7 +3174,14 @@ public class apiUtils {
       //  return mymmpx;
     }
         
-    public static mmpx code2000(String sender, String receiver, String subject, String filename, String messageid, String mic) {
+    public static mmpx code2000(String[] elementals) {
+        String sender = elementals[0];
+        String receiver = elementals[1];
+        String subject = elementals[2];
+        String filename = elementals[3];
+        String messageid = elementals[4];
+        String mic = elementals[5];
+        String as2id = elementals[6];
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mpInner = new MimeMultipart();
@@ -3170,7 +3192,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append("\r").append("\n");
             zb.append("was not signed.");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3180,7 +3202,14 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
         
-    public static mmpx code2005(String sender, String receiver, String subject, String filename, String messageid, String mic) {
+    public static mmpx code2005(String[] elementals) {
+        String sender = elementals[0];
+        String receiver = elementals[1];
+        String subject = elementals[2];
+        String filename = elementals[3];
+        String messageid = elementals[4];
+        String mic = elementals[5];
+        String as2id = elementals[6];
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mpInner = new MimeMultipart();
@@ -3194,7 +3223,7 @@ public class apiUtils {
              
                
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3204,7 +3233,14 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
     
-    public static mmpx code2010(String sender, String receiver, String subject, String filename, String messageid, String mic) {
+    public static mmpx code2010(String[] elementals) {
+        String sender = elementals[0];
+        String receiver = elementals[1];
+        String subject = elementals[2];
+        String filename = elementals[3];
+        String messageid = elementals[4];
+        String mic = elementals[5];
+        String as2id = elementals[6];
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mpInner = new MimeMultipart();
@@ -3216,7 +3252,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append("\r").append("\n");
             zb.append("failed. Error: unable to retrieve contents of File. Error:  FileBytesRead is null  ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3226,7 +3262,14 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
     
-    public static mmpx code2015(String sender, String receiver, String subject, String filename, String messageid, String mic) {
+    public static mmpx code2015(String[] elementals) {
+        String sender = elementals[0];
+        String receiver = elementals[1];
+        String subject = elementals[2];
+        String filename = elementals[3];
+        String messageid = elementals[4];
+        String mic = elementals[5];
+        String as2id = elementals[6];
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mpInner = new MimeMultipart();
@@ -3237,7 +3280,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: Signature content is null  ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3247,7 +3290,14 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
     
-    public static mmpx code2020(String sender, String receiver, String subject, String filename, String messageid, String mic) {
+    public static mmpx code2020(String[] elementals) {
+        String sender = elementals[0];
+        String receiver = elementals[1];
+        String subject = elementals[2];
+        String filename = elementals[3];
+        String messageid = elementals[4];
+        String mic = elementals[5];
+        String as2id = elementals[6];
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mpInner = new MimeMultipart();
@@ -3259,7 +3309,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: Invalid Signature  ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3269,7 +3319,14 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
     
-    public static mmpx code3000(String sender, String receiver, String subject, String filename, String messageid, String mic) {
+    public static mmpx code3000(String[] elementals) {
+        String sender = elementals[0];
+        String receiver = elementals[1];
+        String subject = elementals[2];
+        String filename = elementals[3];
+        String messageid = elementals[4];
+        String mic = elementals[5];
+        String as2id = elementals[6];
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mpInner = new MimeMultipart();
@@ -3282,7 +3339,7 @@ public class apiUtils {
             zb.append("Error: The message was transmitted with null content.  ");
         
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3292,7 +3349,14 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
      
-    public static mmpx code3003(String sender, String receiver, String subject, String filename, String messageid, String mic) {
+    public static mmpx code3003(String[] elementals) {
+        String sender = elementals[0];
+        String receiver = elementals[1];
+        String subject = elementals[2];
+        String filename = elementals[3];
+        String messageid = elementals[4];
+        String mic = elementals[5];
+        String as2id = elementals[6];
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mpInner = new MimeMultipart();
@@ -3304,7 +3368,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: Unable to decrypt message transmitted at <%s>.  Potential bad public key.  ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3314,7 +3378,14 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
         
-    public static mmpx code3005(String sender, String receiver, String subject, String filename, String messageid, String mic) {
+    public static mmpx code3005(String[] elementals) {
+        String sender = elementals[0];
+        String receiver = elementals[1];
+        String subject = elementals[2];
+        String filename = elementals[3];
+        String messageid = elementals[4];
+        String mic = elementals[5];
+        String as2id = elementals[6];
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mpInner = new MimeMultipart();
@@ -3326,7 +3397,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: The message had unrecognizable HTTP headers.  ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3336,7 +3407,14 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
     
-    public static mmpx code3007(String sender, String receiver, String subject, String filename, String messageid, String mic) {
+    public static mmpx code3007(String[] elementals) {
+        String sender = elementals[0];
+        String receiver = elementals[1];
+        String subject = elementals[2];
+        String filename = elementals[3];
+        String messageid = elementals[4];
+        String mic = elementals[5];
+        String as2id = elementals[6];
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mpInner = new MimeMultipart();
@@ -3348,7 +3426,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: The message had zero HTTP headers.  ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3358,7 +3436,14 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
    
-    public static mmpx code3100(String sender, String receiver, String subject, String filename, String messageid, String mic) {
+    public static mmpx code3100(String[] elementals) {
+        String sender = elementals[0];
+        String receiver = elementals[1];
+        String subject = elementals[2];
+        String filename = elementals[3];
+        String messageid = elementals[4];
+        String mic = elementals[5];
+        String as2id = elementals[6];
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mpInner = new MimeMultipart();
@@ -3370,7 +3455,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: The message was transmitted to unknown receiver ID.  ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3380,7 +3465,14 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
     
-    public static mmpx code3200(String sender, String receiver, String subject, String filename, String messageid, String mic) {
+    public static mmpx code3200(String[] elementals) {
+        String sender = elementals[0];
+        String receiver = elementals[1];
+        String subject = elementals[2];
+        String filename = elementals[3];
+        String messageid = elementals[4];
+        String mic = elementals[5];
+        String as2id = elementals[6];
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mpInner = new MimeMultipart();
@@ -3392,7 +3484,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: The message was transmitted by unknown sender ID.  ");
        try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3402,7 +3494,14 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
     
-    public static mmpx code3300(String sender, String receiver, String subject, String filename, String messageid, String mic) {
+    public static mmpx code3300(String[] elementals) {
+        String sender = elementals[0];
+        String receiver = elementals[1];
+        String subject = elementals[2];
+        String filename = elementals[3];
+        String messageid = elementals[4];
+        String mic = elementals[5];
+        String as2id = elementals[6];
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mpInner = new MimeMultipart();
@@ -3414,7 +3513,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: unable to determine sender / receiver keys  ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3424,7 +3523,14 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
     
-    public static mmpx code3400(String sender, String receiver, String subject, String filename, String messageid, String mic) {
+    public static mmpx code3400(String[] elementals) {
+        String sender = elementals[0];
+        String receiver = elementals[1];
+        String subject = elementals[2];
+        String filename = elementals[3];
+        String messageid = elementals[4];
+        String mic = elementals[5];
+        String as2id = elementals[6];
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mpInner = new MimeMultipart();
@@ -3436,7 +3542,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: encryption is required  ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3446,7 +3552,14 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
         
-    public static mmpx code9999(String sender, String receiver, String subject, String filename, String messageid, String mic) {
+    public static mmpx code9999(String[] elementals) {
+        String sender = elementals[0];
+        String receiver = elementals[1];
+        String subject = elementals[2];
+        String filename = elementals[3];
+        String messageid = elementals[4];
+        String mic = elementals[5];
+        String as2id = elementals[6];
         MimeBodyPart mbp = new MimeBodyPart();
         String boundary = "";
         MimeMultipart mpInner = new MimeMultipart();
@@ -3458,7 +3571,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: Internal server error 9999 ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed");
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3480,93 +3593,93 @@ public class apiUtils {
         switch (code) {
             case "1000" :
           //  mbp.setContent(code1000(e[0], e[1], e[2], e[3], e[4], e[5]));
-           mymmpx = code1000(e[0], e[1], e[2], e[3], e[4], e[5]);
+           mymmpx = code1000(e);
            mbp.setContent(mymmpx.mmp());
            boundary = mymmpx.boundary();
             break;     
             
             case "2000" :
             // mbp.setContent(code2000(e[0], e[1], e[2], e[3], e[4], e[5]));
-           mymmpx = code2000(e[0], e[1], e[2], e[3], e[4], e[5]);
+           mymmpx = code2000(e);
            mbp.setContent(mymmpx.mmp());
            boundary = mymmpx.boundary();
             break;
             
             case "3000" :
-            mymmpx = code3000(e[0], e[1], e[2], e[3], e[4], e[5]);
+            mymmpx = code3000(e);
            mbp.setContent(mymmpx.mmp());
            boundary = mymmpx.boundary();
             break;
             
             case "3003" :
-            mymmpx = code3003(e[0], e[1], e[2], e[3], e[4], e[5]);
+            mymmpx = code3003(e);
            mbp.setContent(mymmpx.mmp());
            boundary = mymmpx.boundary();
             break;
             
             case "3005" :
-            mymmpx = code3005(e[0], e[1], e[2], e[3], e[4], e[5]);
+            mymmpx = code3005(e);
            mbp.setContent(mymmpx.mmp());
            boundary = mymmpx.boundary();
             break;
            
             case "3007" :
-            mymmpx = code3007(e[0], e[1], e[2], e[3], e[4], e[5]);
+            mymmpx = code3007(e);
            mbp.setContent(mymmpx.mmp());
            boundary = mymmpx.boundary();
             break;
             
             case "3100" :
-            mymmpx = code3100(e[0], e[1], e[2], e[3], e[4], e[5]);
+            mymmpx = code3100(e);
            mbp.setContent(mymmpx.mmp());
            boundary = mymmpx.boundary();
             break;
             
             case "3200" :
-            mymmpx = code3200(e[0], e[1], e[2], e[3], e[4], e[5]);
+            mymmpx = code3200(e);
            mbp.setContent(mymmpx.mmp());
            boundary = mymmpx.boundary();
             break;
             
             case "3300" :
-            mymmpx = code3300(e[0], e[1], e[2], e[3], e[4], e[5]);
+            mymmpx = code3300(e);
            mbp.setContent(mymmpx.mmp());
            boundary = mymmpx.boundary();
             break;
             
             case "3400" :
-            mymmpx = code3400(e[0], e[1], e[2], e[3], e[4], e[5]);
+            mymmpx = code3400(e);
            mbp.setContent(mymmpx.mmp());
            boundary = mymmpx.boundary();
             break;
             
             case "2005" :
             //  mbp.setContent(code2005(e[0], e[1], e[2], e[3], e[4], e[5]));
-            mymmpx = code2005(e[0], e[1], e[2], e[3], e[4], e[5]);
+            mymmpx = code2005(e);
             mbp.setContent(mymmpx.mmp());
             boundary = mymmpx.boundary();
             break;
             
             case "2010" :
-            mymmpx = code2010(e[0], e[1], e[2], e[3], e[4], e[5]);
+            mymmpx = code2010(e);
            mbp.setContent(mymmpx.mmp());
            boundary = mymmpx.boundary();
             break;
             
             case "2015" :
-            mymmpx = code2015(e[0], e[1], e[2], e[3], e[4], e[5]);
+            mymmpx = code2015(e);
            mbp.setContent(mymmpx.mmp());
            boundary = mymmpx.boundary();
             break;
             
             case "2020" :
-            mymmpx = code2020(e[0], e[1], e[2], e[3], e[4], e[5]);
+            mymmpx = code2020(e);
            mbp.setContent(mymmpx.mmp());
            boundary = mymmpx.boundary();
             break;
                         
             default:
-            mymmpx = code9999(e[0], e[1], e[2], e[3], e[4], e[5]);
+            mymmpx = code9999(e);
             mbp.setContent(mymmpx.mmp());
             boundary = mymmpx.boundary();
             
