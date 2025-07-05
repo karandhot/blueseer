@@ -188,7 +188,7 @@ public class AS2Serv extends HttpServlet {
     public static mdn processRequest(HttpServletRequest request, boolean isDebug) throws IOException {
         String defaultsite = OVData.getDefaultSite();
         BufferedWriter output = null;
-        String[] elementals = new String[]{"","","","","","",""};
+        String[] elementals = new String[]{"","","","","","","","1"}; // default elementals[7] to '1'...to sign MDN...can be override below once as2_id is determinable
         HashMap<String, String> returnheaders = new HashMap<String, String>();
         mdn mymdn = null;
         String  now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
@@ -325,8 +325,8 @@ public class AS2Serv extends HttpServlet {
         }
         
         
-        elementals[6] = info[0];
-        
+        elementals[6] = info[0];  // assigns 6th element the value of as2_id
+        elementals[7] = info[23]; // whether to sign mdn
         
         if (isDebug)
         System.out.println("here--> Request Content Type: " + request.getContentType());    

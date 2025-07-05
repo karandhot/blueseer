@@ -3175,7 +3175,7 @@ public class EDData {
     
     public static String getSystemEncKeyAlt(String id) {
        String mystring = "";
-       // alt method temporary
+       String sysoverride = "";
         try{
             Class.forName(driver);
             Connection con = null;
@@ -3187,20 +3187,17 @@ public class EDData {
             Statement st = con.createStatement();
             ResultSet res = null;
             try{
-                
-
-                res = st.executeQuery("select as2_sysenccert from as2_mstr where as2_id = " + "'" + id + "'" + ";");
+                res = st.executeQuery("select as2_sysenccert, as2_syscert_bool from as2_mstr where as2_id = " + "'" + id + "'" + ";");
                 while (res.next()) {
                    mystring = res.getString("as2_sysenccert");
+                   sysoverride = res.getString("as2_syscert_bool");
                 }
-                // if it cannot find a as2 id related sysenc...then get the default system enc
-                if (mystring.isBlank()) {
+                if (sysoverride.equals("1")) {
                     res = st.executeQuery("select edic_enckey from edi_ctrl ;");
                     while (res.next()) {
                         mystring = res.getString("edic_enckey");
                     }
                 }
-               
            }
             catch (SQLException s) {
                 MainFrame.bslog(s);
@@ -3254,6 +3251,8 @@ public class EDData {
     
     public static String getSystemSignKeyAlt(String id) {
        String mystring = "";
+       String sysoverride = "";
+       
         try{
             Class.forName(driver);
             Connection con = null;
@@ -3267,12 +3266,12 @@ public class EDData {
             try{
                 
 
-                res = st.executeQuery("select as2_syssigncert from as2_mstr where as2_id = " + "'" + id + "'" + ";");
+                res = st.executeQuery("select as2_syssigncert, as2_syscert_bool from as2_mstr where as2_id = " + "'" + id + "'" + ";");
                 while (res.next()) {
                    mystring = res.getString("as2_syssigncert");
+                   sysoverride = res.getString("as2_syscert_bool");
                 }
-                // if it cannot find a as2 id related sys sign...then get the default system sign
-                if (mystring.isBlank()) {
+                if (sysoverride.equals("1")) {
                     res = st.executeQuery("select edic_signkey from edi_ctrl ;");
                     while (res.next()) {
                         mystring = res.getString("edic_signkey");

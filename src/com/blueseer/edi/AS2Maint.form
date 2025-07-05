@@ -725,38 +725,53 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="cboutputsign" min="-2" max="-2" attributes="0"/>
-                                          <Component id="cboutputencryption" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="cbforceencryption" min="-2" max="-2" attributes="0"/>
-                                          <Component id="cbforcesigning" min="-2" max="-2" attributes="0"/>
-                                      </Group>
+                                  <Component id="cboutputsign" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cboutputencryption" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="cbforceencryption" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbforcesigning" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="cbsystemcert" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbsignmdn" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                  <Component id="ddsigncert" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="ddenccert" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="ddsignalgo" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="ddencalgo" alignment="0" pref="130" max="32767" attributes="0"/>
+                                  <Component id="ddmicalgo" alignment="1" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <Component id="jLabel25" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="ddsysenccert" min="-2" pref="116" max="-2" attributes="0"/>
                                   </Group>
-                                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                                      <Component id="ddsigncert" alignment="0" max="32767" attributes="0"/>
-                                      <Component id="ddenccert" alignment="0" max="32767" attributes="0"/>
-                                      <Component id="ddsignalgo" alignment="0" max="32767" attributes="0"/>
-                                      <Component id="ddencalgo" alignment="0" pref="130" max="32767" attributes="0"/>
-                                      <Component id="ddmicalgo" alignment="1" max="32767" attributes="0"/>
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <Component id="jLabel26" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="ddsyssigncert" min="-2" pref="116" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace pref="16" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="tbapikey" min="-2" pref="99" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="jLabel11" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="tbpass" min="-2" pref="106" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="39" max="-2" attributes="0"/>
                           </Group>
                       </Group>
+                      <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -767,21 +782,27 @@
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="cboutputencryption" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="cbforceencryption" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbsignmdn" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="cboutputsign" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="cbforcesigning" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbsystemcert" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jLabel18" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="ddenccert" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="ddsysenccert" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel25" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="ddsigncert" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="ddsyssigncert" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel26" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -931,6 +952,46 @@
             <Component class="javax.swing.JLabel" name="jLabel11">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Password"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JComboBox" name="ddsysenccert">
+              <Properties>
+                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                  <StringArray count="0"/>
+                </Property>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel25">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="System Encryption Cert"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JComboBox" name="ddsyssigncert">
+              <Properties>
+                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                  <StringArray count="0"/>
+                </Property>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel26">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="System Sign Cert"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="cbsignmdn">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="MDN Sign"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="cbsystemcert">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="System Enc/Sign Cert"/>
               </Properties>
             </Component>
           </SubComponents>

@@ -3130,17 +3130,13 @@ public class apiUtils {
             bOut.flush();
             bOut.close();
             byte[] data = bOut.toByteArray();
-            
-            // Giant question mark??
-            // if elementals[6] is blank...i.e...a as2 record cannot be identified because of some failure before identifying as2-from/as2-to headers
-            // then should the MDN be signed?   Currently...if elementals[6] is blank...the system sign key will be retrieved...which may or may not be
-            // associated with the public key given to the trading partner...and they therefore are unabled to confirm signing.
-            // May need to consider no signing of MDNs for failures before critical identification
+                       
             
             try {
-               mpInner = signMDN(data, getSystemSignKeyAlt(elementals[6]), "", boundary); // need to get tp[19] here for signing algo
-             // mbp3.setContent(mpInner);
-             // mpInner = signMDNexp(mbp3, getSystemSignKey(), boundary); 
+               if (! elementals[6].isBlank() && elementals[7].equals("1")) { // decided 20250705 to not sign the MDN in cases where the incoming message fails early (before as2_id can be identified) for whatever reason
+                // elementals[7] is defined by as2_signmdn...and determines at the as2_mstr level whether to sign MDN...defaults to '1' in init of elementals array 
+                mpInner = signMDN(data, getSystemSignKeyAlt(elementals[6]), "", boundary); // need to get tp[19] here for signing algo
+               }
             } catch (Exception ex) {
                 bslog(ex);
             }

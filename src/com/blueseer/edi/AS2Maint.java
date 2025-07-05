@@ -332,18 +332,28 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
            cbforceencryption.setSelected(true);
            cbforcesigning.setSelected(true);
            cbdebug.setSelected(false);
+           cbsignmdn.setSelected(true);
+           cbsystemcert.setSelected(true);
            
            ddsigncert.removeAllItems();
            ddenccert.removeAllItems();
+           ddsysenccert.removeAllItems();
+           ddsyssigncert.removeAllItems();
         ArrayList<String> keys = admData.getAllPKSKeysExceptStore();
         for (String code : keys) {
             ddsigncert.addItem(code);
             ddenccert.addItem(code);
+            ddsysenccert.addItem(code);
+            ddsyssigncert.addItem(code);
         }
         ddsigncert.insertItemAt("", 0);
         ddenccert.insertItemAt("", 0);
+        ddsysenccert.insertItemAt("", 0);
+        ddsyssigncert.insertItemAt("", 0);
         ddsigncert.setSelectedIndex(0);
         ddenccert.setSelectedIndex(0); 
+        ddsysenccert.setSelectedIndex(0);
+        ddsyssigncert.setSelectedIndex(0);
         if (! ddcontenttype.getItemAt(0).isBlank()) {
          ddcontenttype.insertItemAt("", 0);
         }
@@ -505,7 +515,11 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
                 tbsysas2id.getText(),
                 ddsite.getSelectedItem().toString(),
                 ddinworkflow.getSelectedItem().toString(),
-                ddoutworkflow.getSelectedItem().toString()
+                ddoutworkflow.getSelectedItem().toString(),
+                ddsysenccert.getSelectedItem().toString(),
+                ddsyssigncert.getSelectedItem().toString(),
+                String.valueOf(BlueSeerUtils.boolToInt(cbsystemcert.isSelected())),
+                String.valueOf(BlueSeerUtils.boolToInt(cbsignmdn.isSelected()))
                 );
         return x;
     }
@@ -567,6 +581,8 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
         tboutdir.setText(x.as2_outdir());
         tbindir.setText(x.as2_indir());
         ddenccert.setSelectedItem(x.as2_enccert());
+        ddsysenccert.setSelectedItem(x.as2_sysenccert());
+        ddsyssigncert.setSelectedItem(x.as2_syssigncert());
         cboutputsign.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.as2_signed())));
         cboutputencryption.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.as2_encrypted())));
         ddsigncert.setSelectedItem(x.as2_signcert());
@@ -581,6 +597,8 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
         ddsite.setSelectedItem(x.as2_site());
         ddinworkflow.setSelectedItem(x.as2_inwkf());
         ddoutworkflow.setSelectedItem(x.as2_outwkf());
+        cbsignmdn.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.as2_signmdn())));
+        cbsystemcert.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.as2_syscert_bool())));
         getAttributes(x.as2_id());
         setAction(x.m());
     }
@@ -750,6 +768,12 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
         tbpass = new javax.swing.JPasswordField();
         jLabel8 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
+        ddsysenccert = new javax.swing.JComboBox<>();
+        jLabel25 = new javax.swing.JLabel();
+        ddsyssigncert = new javax.swing.JComboBox<>();
+        jLabel26 = new javax.swing.JLabel();
+        cbsignmdn = new javax.swing.JCheckBox();
+        cbsystemcert = new javax.swing.JCheckBox();
         lblstatus = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(0, 102, 204));
@@ -1114,6 +1138,14 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
 
         jLabel11.setText("Password");
 
+        jLabel25.setText("System Encryption Cert");
+
+        jLabel26.setText("System Sign Cert");
+
+        cbsignmdn.setText("MDN Sign");
+
+        cbsystemcert.setText("System Enc/Sign Cert");
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -1130,28 +1162,40 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(cboutputsign)
-                                    .addComponent(cboutputencryption))
-                                .addGap(40, 40, 40)
-                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(cbforceencryption)
-                                    .addComponent(cbforcesigning)))
-                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(ddsigncert, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(ddenccert, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(ddsignalgo, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(ddencalgo, javax.swing.GroupLayout.Alignment.LEADING, 0, 130, Short.MAX_VALUE)
-                                .addComponent(ddmicalgo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .addContainerGap(16, Short.MAX_VALUE))
+                            .addComponent(cboutputsign)
+                            .addComponent(cboutputencryption))
+                        .addGap(40, 40, 40)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cbforceencryption)
+                            .addComponent(cbforcesigning))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cbsystemcert)
+                            .addComponent(cbsignmdn)))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(ddsigncert, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(ddenccert, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(ddsignalgo, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(ddencalgo, javax.swing.GroupLayout.Alignment.LEADING, 0, 130, Short.MAX_VALUE)
+                            .addComponent(ddmicalgo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                                .addComponent(jLabel25)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(ddsysenccert, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                                .addComponent(jLabel26)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(ddsyssigncert, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addComponent(tbapikey, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
                         .addComponent(jLabel11)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tbpass, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(39, 39, 39))))
+                        .addComponent(tbpass, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(20, 20, 20))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1159,19 +1203,25 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cboutputencryption)
-                    .addComponent(cbforceencryption))
+                    .addComponent(cbforceencryption)
+                    .addComponent(cbsignmdn))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cboutputsign)
-                    .addComponent(cbforcesigning))
+                    .addComponent(cbforcesigning)
+                    .addComponent(cbsystemcert))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel18)
-                    .addComponent(ddenccert, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(ddenccert, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ddsysenccert, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel25))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(ddsigncert, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(ddsigncert, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ddsyssigncert, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel26))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(ddencalgo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1349,6 +1399,8 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JCheckBox cbforcesigning;
     private javax.swing.JCheckBox cboutputencryption;
     private javax.swing.JCheckBox cboutputsign;
+    private javax.swing.JCheckBox cbsignmdn;
+    private javax.swing.JCheckBox cbsystemcert;
     private javax.swing.JComboBox<String> ddclass;
     private javax.swing.JComboBox<String> ddcontenttype;
     private javax.swing.JComboBox<String> ddencalgo;
@@ -1360,6 +1412,8 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JComboBox<String> ddsignalgo;
     private javax.swing.JComboBox<String> ddsigncert;
     private javax.swing.JComboBox<String> ddsite;
+    private javax.swing.JComboBox<String> ddsysenccert;
+    private javax.swing.JComboBox<String> ddsyssigncert;
     private javax.swing.JList<String> headerlist;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -1378,6 +1432,8 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel24;
+    private javax.swing.JLabel jLabel25;
+    private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;

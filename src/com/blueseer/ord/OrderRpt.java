@@ -611,6 +611,9 @@ public class OrderRpt extends javax.swing.JPanel {
         for (String d : dar) {
             String[] s = d.split(",", -1);
             
+            if (s == null || s.length != 11) {
+                continue;
+            }
             
             total = 0;
                   

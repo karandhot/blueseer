@@ -1474,8 +1474,9 @@ public class ediData {
         String sqlInsert = "insert into as2_mstr (as2_id, as2_desc, as2_version," +
         " as2_url, as2_port, as2_path, as2_user, " +
         " as2_pass, as2_key, as2_protocol, as2_class, as2_indir, as2_outdir, as2_encrypted, as2_signed, as2_enccert, " +
-                " as2_forceencrypted, as2_forcesigned, as2_signcert, as2_encalgo, as2_signalgo, as2_micalgo, as2_contenttype, as2_enabled ) " +
-                " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                " as2_forceencrypted, as2_forcesigned, as2_signcert, as2_encalgo, as2_signalgo, as2_micalgo, as2_contenttype, as2_enabled, as2_sysas2id, as2_site, " +
+                " as2_inwkf, as2_outwkf, as2_sysenccert, as2_syssigncert, as2_syscert_bool, as2_signmdn ) " +
+                " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
              PreparedStatement ps = con.prepareStatement(sqlSelect);) {
              ps.setString(1, x.as2_id);
@@ -1506,6 +1507,14 @@ public class ediData {
             ps.setString(22, x.as2_micalgo);
             ps.setString(23, x.as2_contenttype);
             ps.setString(24, x.as2_enabled);
+            ps.setString(25, x.as2_sysas2id);
+            ps.setString(26, x.as2_site);
+            ps.setString(27, x.as2_inwkf);
+            ps.setString(28, x.as2_outwkf);
+            ps.setString(29, x.as2_sysenccert);
+            ps.setString(30, x.as2_syssigncert);
+            ps.setString(31, x.as2_syscert_bool);
+            ps.setString(32, x.as2_signmdn);
             
             int rows = psi.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
@@ -1568,8 +1577,8 @@ public class ediData {
         " as2_pass, as2_key, as2_protocol, as2_class, as2_indir, as2_outdir, " +
                 " as2_encrypted, as2_signed, as2_enccert, as2_forceencrypted, as2_forcesigned, as2_signcert, " +
                 " as2_encalgo, as2_signalgo, as2_micalgo, as2_contenttype, as2_enabled, as2_sysas2id, as2_site, " +
-                " as2_inwkf, as2_outwkf ) " +
-                " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                " as2_inwkf, as2_outwkf, as2_sysenccert, as2_syssigncert, as2_syscert_bool, as2_signmdn ) " +
+                " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
        
           ps = con.prepareStatement(sqlSelect); 
           ps.setString(1, x.as2_id);
@@ -1604,6 +1613,10 @@ public class ediData {
             ps.setString(26, x.as2_site);
             ps.setString(27, x.as2_inwkf);
             ps.setString(28, x.as2_outwkf);
+            ps.setString(29, x.as2_sysenccert);
+            ps.setString(30, x.as2_syssigncert);
+            ps.setString(31, x.as2_syscert_bool);
+            ps.setString(32, x.as2_signmdn);
             rows = ps.executeUpdate();
             } 
             return rows;
@@ -1810,7 +1823,9 @@ public class ediData {
                 " as2_indir = ?, as2_outdir = ?, " +
                 " as2_encrypted = ?, as2_signed = ?, as2_enccert = ?, " +
                 " as2_forceencrypted = ?, as2_forcesigned = ?, as2_signcert = ?, " +
-                " as2_encalgo = ?, as2_signalgo = ?, as2_micalgo = ?, as2_contenttype = ?, as2_enabled = ? " +
+                " as2_encalgo = ?, as2_signalgo = ?, as2_micalgo = ?, as2_contenttype = ?, as2_enabled = ?,  " +
+                "as2_sysas2id = ?, as2_site = ?, as2_inwkf = ?, as2_outwkf = ?, as2_sysenccert = ?, as2_syssigncert = ?, " +
+                " as2_syscert_bool = ?, as2_signmdn = ? " +
                 "  where as2_id = ? ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql)) {
@@ -1837,7 +1852,15 @@ public class ediData {
         ps.setString(21, x.as2_micalgo);
         ps.setString(22, x.as2_contenttype);
         ps.setString(23, x.as2_enabled);
-        ps.setString(24, x.as2_id);
+        ps.setString(24, x.as2_sysas2id);
+        ps.setString(25, x.as2_site);
+        ps.setString(26, x.as2_inwkf);
+        ps.setString(27, x.as2_outwkf);
+        ps.setString(28, x.as2_sysenccert);
+        ps.setString(29, x.as2_syssigncert);
+        ps.setString(30, x.as2_syscert_bool);
+        ps.setString(31, x.as2_signmdn);
+        ps.setString(32, x.as2_id);
         int rows = ps.executeUpdate();
         m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
         } catch (SQLException s) {
@@ -1887,7 +1910,8 @@ public class ediData {
                 " as2_encrypted = ?, as2_signed = ?, as2_enccert = ?, " +
                 " as2_forceencrypted = ?, as2_forcesigned = ?, as2_signcert = ?, " +
                 " as2_encalgo = ?, as2_signalgo = ?, as2_micalgo = ?, as2_contenttype = ?, " +
-                " as2_enabled = ?, as2_sysas2id = ?, as2_site = ?, as2_inwkf = ?, as2_outwkf = ? " +
+                " as2_enabled = ?, as2_sysas2id = ?, as2_site = ?, as2_inwkf = ?, as2_outwkf = ?, as2_sysenccert = ?, as2_syssigncert = ?, " +
+                " as2_syscert_bool = ?, as2_signmdn = ? " +
                 "  where as2_id = ? ";
 	ps = con.prepareStatement(sql) ;
         ps.setString(1, x.as2_desc);
@@ -1917,7 +1941,11 @@ public class ediData {
         ps.setString(25, x.as2_site);
         ps.setString(26, x.as2_inwkf);
         ps.setString(27, x.as2_outwkf);
-        ps.setString(28, x.as2_id);
+        ps.setString(28, x.as2_sysenccert);
+        ps.setString(29, x.as2_syssigncert);
+        ps.setString(30, x.as2_syscert_bool);
+        ps.setString(31, x.as2_signmdn);
+        ps.setString(32, x.as2_id);
             rows = ps.executeUpdate();
         return rows;
     }
@@ -2409,7 +2437,11 @@ public class ediData {
                             res.getString("as2_sysas2id"),
                             res.getString("as2_site"),
                             res.getString("as2_inwkf"),
-                            res.getString("as2_outwkf")
+                            res.getString("as2_outwkf"),
+                            res.getString("as2_sysenccert"),
+                            res.getString("as2_syssigncert"),
+                            res.getString("as2_syscert_bool"),
+                            res.getString("as2_signmdn")
                         );
                     }
                 }
@@ -3617,7 +3649,7 @@ public class ediData {
         ps.setString(2, receiver);
              try (ResultSet res = ps.executeQuery();) {
                while (res.next()) {
-               info = new String[23];     
+               info = new String[24];     
                info[0] = res.getString("as2_id");
                info[1] = res.getString("as2_url");
                info[2] = res.getString("as2_port");
@@ -3642,6 +3674,7 @@ public class ediData {
                info[21] = res.getString("as2_contenttype");
                info[21] = res.getString("as2_enabled");
                info[22] = res.getString("as2_site");
+               info[23] = res.getString("as2_signmdn");
                }
             }
         }
@@ -5557,11 +5590,13 @@ public class ediData {
         String as2_indir, String as2_outdir, String as2_encrypted, String as2_signed, String as2_enccert,
         String as2_forceencrypted, String as2_forcesigned, String as2_signcert,
         String as2_encalgo, String as2_signalgo, String as2_micalgo, String as2_contenttype, 
-        String as2_enabled, String as2_sysas2id, String as2_site, String as2_inwkf, String as2_outwkf) {
+        String as2_enabled, String as2_sysas2id, String as2_site, String as2_inwkf, String as2_outwkf,
+        String as2_sysenccert, String as2_syssigncert, String as2_syscert_bool, String as2_signmdn) {
         public as2_mstr(String[] m) {
             this(m, "", "", "", "", "", "", "", "", "", "", 
                     "", "", "", "", "", "", "", "", "", "",
-                    "", "", "", "", "", "", "", "");
+                    "", "", "", "", "", "", "", "", "", "",
+                    "", "");
         }
     }
     
