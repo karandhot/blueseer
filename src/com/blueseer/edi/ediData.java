@@ -3640,7 +3640,7 @@ public class ediData {
         String[] info = null;
         String sql = "select as2_id, as2_url, as2_port, as2_path, as2_user, as2_sysas2id, edic_as2id, edic_as2url, " +
                 " as2_encrypted, as2_signed, as2_enccert, as2_forceencrypted, as2_forcesigned, as2_signcert, as2_protocol, as2_indir, as2_outdir, " +
-                " edic_signkey, edic_enckey, as2_encalgo, as2_signalgo, as2_micalgo, as2_contenttype, as2_enabled, as2_site " +
+                " edic_signkey, edic_enckey, as2_encalgo, as2_signalgo, as2_micalgo, as2_contenttype, as2_enabled, as2_site, as2_signmdn " +
                 " from as2_mstr " +
                 " inner join edi_ctrl where as2_user = ? and as2_sysas2id = ?;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());

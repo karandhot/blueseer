@@ -3192,7 +3192,7 @@ public class EDData {
                    mystring = res.getString("as2_sysenccert");
                    sysoverride = res.getString("as2_syscert_bool");
                 }
-                if (sysoverride.equals("1")) {
+                if (sysoverride.equals("1") || mystring.isBlank()) {
                     res = st.executeQuery("select edic_enckey from edi_ctrl ;");
                     while (res.next()) {
                         mystring = res.getString("edic_enckey");
@@ -3271,7 +3271,7 @@ public class EDData {
                    mystring = res.getString("as2_syssigncert");
                    sysoverride = res.getString("as2_syscert_bool");
                 }
-                if (sysoverride.equals("1")) {
+                if (sysoverride.equals("1") || mystring.isBlank()) {
                     res = st.executeQuery("select edic_signkey from edi_ctrl ;");
                     while (res.next()) {
                         mystring = res.getString("edic_signkey");
