@@ -6,13 +6,13 @@ Discounts,Freight,Freight,1
 Discounts,Volume,Volume,1
 Discounts,Other,Other,1
 Discounts,Promo,Promo,1
-orderstatus,cancel,,1
-orderstatus,closed,,1
-orderstatus,error,,1
-orderstatus,hold,,1
-orderstatus,open,,1
+orderstatus,annulla,,1
+orderstatus,chiuso,,1
+orderstatus,errore,,1
+orderstatus,in sospeso,,1
+orderstatus,aperto,,1
 orderstatus,commit,,1
-orderstatus,backorder,,1
+orderstatus,ordine arretrato,,1
 engineer,frank,,1
 ItemType,CONT,Container,1
 ItemType,FG,Finished Goods,1
