@@ -45,6 +45,7 @@ Name: "german"; Description: "German"; Flags: exclusive
 Name: "romanian"; Description: "Romanian"; Flags: exclusive
 Name: "spanish"; Description: "Spanish"; Flags: exclusive
 Name: "turkish"; Description: "Turkish"; Flags: exclusive
+Name: "italian"; Description: "Italian"; Flags: exclusive
 
 [Files]
 Source: "C:\bs\blueseer\scripts\login.bat"; DestDir: "{app}"; Flags: ignoreversion
@@ -62,6 +63,7 @@ Source: "C:\bs\blueseer\sf\data\en\bsdb.db"; components: english; DestDir: "{app
 Source: "C:\bs\blueseer\sf\data\tr\bsdb.db"; components: turkish; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\bs\blueseer\sf\data\de\bsdb.db"; components: german; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\bs\blueseer\sf\data\ro\bsdb.db"; components: romanian; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\bs\blueseer\sf\data\it\bsdb.db"; components: italian; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\bs\blueseer\dist\*"; DestDir: "{app}\dist"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\bs\blueseer\sf\temp\*"; DestDir: "{app}\temp"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\bs\blueseer\sf\logs\*"; DestDir: "{app}\logs"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -95,6 +97,10 @@ Name: "{commondesktop}\{#MyAppName}";  components: chinese; Filename: "{app}\jre
 ;french
 Name: "{commonprograms}\{#MyAppName}"; components: french; Filename: "{app}\jre17\bin\javaw.exe"; WorkingDir: "{app}"; Parameters: "-Djava.util.logging.config.file=bslogging.properties -Duser.language=fr -Duser.country=FR -cp dist/* bsmf.MainFrame" ; Tasks: desktopicon ; IconFilename: "{app}\images\bs.ico"
 Name: "{commondesktop}\{#MyAppName}";  components: french; Filename: "{app}\jre17\bin\javaw.exe"; WorkingDir: "{app}"; Parameters: "-Djava.util.logging.config.file=bslogging.properties -Duser.language=fr -Duser.country=FR -cp dist/* bsmf.MainFrame" ; Tasks: desktopicon ; IconFilename: "{app}\images\bs.ico"
+
+;italian
+Name: "{commonprograms}\{#MyAppName}"; components: italian; Filename: "{app}\jre17\bin\javaw.exe"; WorkingDir: "{app}"; Parameters: "-Djava.util.logging.config.file=bslogging.properties -Duser.language=it -Duser.country=IT -cp dist/* bsmf.MainFrame" ; Tasks: desktopicon ; IconFilename: "{app}\images\bs.ico"
+Name: "{commondesktop}\{#MyAppName}";  components: italian; Filename: "{app}\jre17\bin\javaw.exe"; WorkingDir: "{app}"; Parameters: "-Djava.util.logging.config.file=bslogging.properties -Duser.language=it -Duser.country=IT -cp dist/* bsmf.MainFrame" ; Tasks: desktopicon ; IconFilename: "{app}\images\bs.ico"
 
 ;spanish
 Name: "{commonprograms}\{#MyAppName}"; components: spanish; Filename: "{app}\jre17\bin\javaw.exe"; WorkingDir: "{app}"; Parameters: "-Djava.util.logging.config.file=bslogging.properties -Duser.language=es -Duser.country=ES -cp dist/* bsmf.MainFrame" ; Tasks: desktopicon ; IconFilename: "{app}\images\bs.ico"
@@ -133,6 +139,7 @@ begin
   if IsComponentSelected('arabic') then begin mylang := 'LANGUAGE=ar'; mycountry := 'COUNTRY=SA'; end;
   if IsComponentSelected('chinese') then begin mylang := 'LANGUAGE=zh'; mycountry := 'COUNTRY=CN'; end;
   if IsComponentSelected('french') then begin mylang := 'LANGUAGE=fr'; mycountry := 'COUNTRY=FR'; end;
+  if IsComponentSelected('italian') then begin mylang := 'LANGUAGE=it'; mycountry := 'COUNTRY=IT'; end;
   if IsComponentSelected('spanish') then begin mylang := 'LANGUAGE=es'; mycountry := 'COUNTRY=ES'; end;
   if IsComponentSelected('turkish') then begin mylang := 'LANGUAGE=tr'; mycountry := 'COUNTRY=TR'; end;
   if IsComponentSelected('german') then begin mylang := 'LANGUAGE=de'; mycountry := 'COUNTRY=DE'; end;
