@@ -9,6 +9,7 @@ jre11
 jre16
 jre17
 nbproject
+test2
 !scripts/build.xml
 **/nbproject/private/
 **/nbproject/Makefile-*.mk
