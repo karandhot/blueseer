@@ -391,7 +391,7 @@ public class GLAcctBalRpt3 extends javax.swing.JPanel {
         if (xData != null) {  
         String[] arrdata = xData.split("\n", -1);
         for (String x : arrdata) {
-            String[] s = x.split(",",-1);
+            String[] s = x.split(";",-1);
             
             if (s.length < 8) {
                 continue;  // must be blank lines

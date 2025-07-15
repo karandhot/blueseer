@@ -72,6 +72,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsFormatInt;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
+import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
@@ -345,7 +346,7 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
       //  System.out.println("HERE IT IS: " + data);
         String[] arrdata = data.split("\n", -1);
         for (String x : arrdata) {
-            String[] s = x.split(",",-1);
+            String[] s = x.split(";",-1);
             
             if (s.length < 8) {
                 continue;  // must be blank lines
@@ -357,9 +358,9 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
             mymodel.addRow(new Object[]{BlueSeerUtils.clickbasket, s[0], s[2], s[3],
                                 s[4],
                                 s[5],
-                                bsParseDouble(s[6]),
-                                bsParseDouble(s[7]),
-                                bsParseDouble(s[8])
+                                currformat(s[6]),
+                                currformat(s[7]),
+                                currformat(s[8])
                             });
                     // now sum for the total labels display
                      totendbal = totendbal + bsParseDouble(s[8]);

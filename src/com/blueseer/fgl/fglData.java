@@ -1319,9 +1319,9 @@ public class fglData {
                         " group by acb_cc ;");
                 
                        while (res.next()) {
-                          endbal = 0;
-                          activity = 0;
-                          begbal = 0;
+                          endbal = 0.00;
+                          activity = 0.00;
+                          begbal = 0.00;
                           begbal = res.getDouble("sum");
                           
                            // now activity
@@ -1342,14 +1342,14 @@ public class fglData {
                                begbal = begbal - activity;
                                endbal = begbal + activity;
                         if (in_accttype.equals(getGlobalProgTag("all"))) {       
-                            sb.append(acctid + "," +
-                            res.getString("acb_cc") + "," +
-                            accttype + "," + 
-                            acctcurr + "," +
-                            acctdesc + "," +
-                            site + "," +
-                                currformatDouble(begbal) + "," +
-                            currformatDouble(activity) + "," +
+                            sb.append(acctid + ";" +
+                            res.getString("acb_cc") + ";" +
+                            accttype + ";" + 
+                            acctcurr + ";" +
+                            acctdesc + ";" +
+                            site + ";" +
+                                currformatDouble(begbal) + ";" +
+                            currformatDouble(activity) + ";" +
                             currformatDouble(endbal)
                             );
                             sb.append("\n");
@@ -1357,14 +1357,14 @@ public class fglData {
                             
                         } else {
                           if (accttype.equals(in_accttype))  {
-                          sb.append(acctid + "," +
-                            res.getString("acb_cc") + "," +
-                            accttype + "," + 
-                            acctcurr + "," +
-                            acctdesc + "," +
-                            site + "," +
-                                currformatDouble(begbal) + "," +
-                            currformatDouble(activity) + "," +
+                          sb.append(acctid + ";" +
+                            res.getString("acb_cc") + ";" +
+                            accttype + ";" + 
+                            acctcurr + ";" +
+                            acctdesc + ";" +
+                            site + ";" +
+                                currformatDouble(begbal) + ";" +
+                            currformatDouble(activity) + ";" +
                             currformatDouble(endbal)
                             );
                             sb.append("\n");
@@ -1386,7 +1386,7 @@ public class fglData {
                           
                        
                           begbal = res.getDouble("sum");
-                        
+                          
                                     // now activity
                                       res2= st2.executeQuery("select sum(acb_amt) as sum from acb_mstr where acb_year = " +
                                 "'" + String.valueOf(year) + "'" + 
@@ -1404,29 +1404,32 @@ public class fglData {
                             
                                begbal = begbal - activity;
                                endbal = begbal + activity;
+                               
+                        
+                               
                     if (in_accttype.equals(getGlobalProgTag("all"))) {       
-                            sb.append(acctid + "," +
-                            res.getString("acb_cc") + "," +
-                            accttype + "," + 
-                            acctcurr + "," +
-                            acctdesc + "," +
-                            site + "," +
-                                currformatDouble(begbal) + "," +
-                            currformatDouble(activity) + "," +
+                            sb.append(acctid + ";" +
+                            res.getString("acb_cc") + ";" +
+                            accttype + ";" + 
+                            acctcurr + ";" +
+                            acctdesc + ";" +
+                            site + ";" +
+                                currformatDouble(begbal) + ";" +
+                            currformatDouble(activity) + ";" +
                             currformatDouble(endbal)
                             );
                             sb.append("\n");
                            
                     } else {
                         if (accttype.equals(in_accttype)) {
-                        sb.append(acctid + "," +
-                            res.getString("acb_cc") + "," +
-                            accttype + "," + 
-                            acctcurr + "," +
-                            acctdesc + "," +
-                            site + "," +
-                                currformatDouble(begbal) + "," +
-                            currformatDouble(activity) + "," +
+                        sb.append(acctid + ";" +
+                            res.getString("acb_cc") + ";" +
+                            accttype + ";" + 
+                            acctcurr + ";" +
+                            acctdesc + ";" +
+                            site + ";" +
+                                currformatDouble(begbal) + ";" +
+                            currformatDouble(activity) + ";" +
                             currformatDouble(endbal)
                             );
                             sb.append("\n");
@@ -1538,31 +1541,31 @@ public class fglData {
                                
                  endbal = begbal + activity;
                  
-               
+              
                 
                if (in_accttype.equals(getGlobalProgTag("all"))) {
-                sb.append(acctid + "," + 
-                            "" + "," + 
-                            accttype + "," +  
-                            acctcurr + "," + 
-                            acctdesc + "," + 
-                            site + "," + 
-                            currformatDouble(begbal) + "," + 
-                            currformatDouble(activity) + "," + 
+                sb.append(acctid + ";" + 
+                            "" + ";" + 
+                            accttype + ";" +  
+                            acctcurr + ";" + 
+                            acctdesc + ";" + 
+                            site + ";" + 
+                            currformatDouble(begbal) + ";" + 
+                            currformatDouble(activity) + ";" + 
                             currformatDouble(endbal)
                             );
                 sb.append("\n");
                
                } else {
                   if (accttype.equals(in_accttype)) {
-                  sb.append(acctid + "," + 
-                            "" + "," + 
-                            accttype + "," +  
-                            acctcurr + "," + 
-                            acctdesc + "," + 
-                            site + "," + 
-                            currformatDouble(begbal) + "," + 
-                            currformatDouble(activity) + "," + 
+                  sb.append(acctid + ";" + 
+                            "" + ";" + 
+                            accttype + ";" +  
+                            acctcurr + ";" + 
+                            acctdesc + ";" + 
+                            site + ";" + 
+                            currformatDouble(begbal) + ";" + 
+                            currformatDouble(activity) + ";" + 
                             currformatDouble(endbal)
                             );
                 sb.append("\n");
@@ -1681,19 +1684,19 @@ public class fglData {
                  
                   } // k
                  
-                 sb.append(acctid + "," + 
-                            acctdesc + "," + 
-                            str_activity[0] + "," + 
-                            str_activity[1] + "," + 
-                            str_activity[2] + "," + 
-                            str_activity[3] + "," + 
-                            str_activity[4] + "," + 
-                            str_activity[5] + "," + 
-                            str_activity[6] + "," + 
-                            str_activity[7] + "," + 
-                            str_activity[8] + "," + 
-                            str_activity[9] + "," + 
-                            str_activity[10] + "," + 
+                 sb.append(acctid + ";" + 
+                            acctdesc + ";" + 
+                            str_activity[0] + ";" + 
+                            str_activity[1] + ";" + 
+                            str_activity[2] + ";" + 
+                            str_activity[3] + ";" + 
+                            str_activity[4] + ";" + 
+                            str_activity[5] + ";" + 
+                            str_activity[6] + ";" + 
+                            str_activity[7] + ";" + 
+                            str_activity[8] + ";" + 
+                            str_activity[9] + ";" + 
+                            str_activity[10] + ";" + 
                             str_activity[11]
                             );
                 sb.append("\n");

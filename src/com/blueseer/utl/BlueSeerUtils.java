@@ -1113,8 +1113,10 @@ public class BlueSeerUtils {
          
         String x = "0";
         String pattern = "#0.00###";
+        String adjvalue = invalue;
         if (! invalue.isBlank()) {
-        String adjvalue = invalue.replace('.', defaultDecimalSeparator);
+           adjvalue = invalue.replace('.', defaultDecimalSeparator);
+        
        // DecimalFormat df = new DecimalFormat("#0.00###", new DecimalFormatSymbols(Locale.getDefault())); 
      //  NumberFormat nf = NumberFormat.getInstance(Locale.getDefault()); 
        DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.getDefault());
@@ -1131,13 +1133,51 @@ public class BlueSeerUtils {
             bslog(ex);
         }
         }
+       // System.out.println(invalue + "/" + adjvalue + "/" + x);
         return x;
     }
     
+    public static String currformatDouble(double invalue) {
+        // invalue will come over as a . decimal regardless of Locale
+        // currformat will return 3,56 for the following scenarios if
+        // default separator is ','   
+        // currformat("3.56")
+        // currformat("3,56") 
+        
+        if (invalue == 0) {
+            return "0";
+        }
+        
+        String x = "0";
+        String pattern = "#0.00###";
+        String adjvalue = String.valueOf(invalue);
+      
+           adjvalue = adjvalue.replace('.', defaultDecimalSeparator);
+       // System.out.println("before: " + invalue + "/" + adjvalue + "/" + x);
+       // DecimalFormat df = new DecimalFormat("#0.00###", new DecimalFormatSymbols(Locale.getDefault())); 
+     //  NumberFormat nf = NumberFormat.getInstance(Locale.getDefault()); 
+       DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.getDefault());
+        df.applyPattern(pattern);
+        try { 
+            if (Locale.getDefault().getLanguage().equals("zh") && ! Locale.getDefault().getCountry().equals("US")) {
+            Locale cn = new Locale("C@numbers=hans");
+            com.ibm.icu.text.NumberFormat formatter = com.ibm.icu.text.NumberFormat.getInstance(cn);
+            x = formatter.format(Double.valueOf(invalue));
+            } else {
+            x = df.format(df.parse(adjvalue));
+            }
+        } catch (ParseException ex) {
+            bslog(ex);
+        }
+        
+       // System.out.println("after: " + invalue + "/" + adjvalue + "/" + x);
+        return x;
+    }
     
+    /*
     public static String currformatDouble(double invalue) {
         String x = "";
-        String pattern = "#0.00";
+        String pattern = "#0.00###";
        // DecimalFormat df = new DecimalFormat("#0.00###", new DecimalFormatSymbols(Locale.getDefault())); 
         DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.getDefault());
         df.applyPattern(pattern);
@@ -1150,7 +1190,7 @@ public class BlueSeerUtils {
         }
         return x;
     }
-    
+    */
     public static String currformatDoubleWithSymbol(double invalue, String currency) {
         String x = "";
         String pattern = "#0.00";
