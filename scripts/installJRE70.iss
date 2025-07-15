@@ -29,6 +29,7 @@ SolidCompression=yes
 PrivilegesRequired=poweruser
 DisableDirPage=no
 OutputDir=c:\bs\wip
+SignTool=mysigner
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
