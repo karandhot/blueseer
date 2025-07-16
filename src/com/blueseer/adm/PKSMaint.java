@@ -119,6 +119,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
         boolean isLoad = false;
         boolean isNew = false;
         public static pks_mstr x = null;
+        boolean isUploaded = false;
     
     
                 
@@ -455,6 +456,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
      String returned_keyid = "";
      
      if (ddtype.getSelectedItem().toString().equals("store")) {
+         // Note:  if .p12 store file already exists...createKeyStore method will simply return true...without modification or overwrite
          if (bsmf.MainFrame.remoteDB) {
                     ArrayList<String[]> arr = new ArrayList<String[]>();
                     arr.add(new String[]{"id","createKeyStore"});
@@ -545,6 +547,8 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
              }  
          }
      }
+     
+     
      String[] m = addPksMstr(createRecord(), returned_keyid); 
          return m;
      }
@@ -766,6 +770,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                 r = getSystemEDIDirectory() + "/certs/" + Sourcefile;
                 }
                 cbexternal.setSelected(true);
+                isUploaded = true;
                 
                 
             } catch (Exception ex) {

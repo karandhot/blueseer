@@ -1333,6 +1333,12 @@ public class apiUtils {
 
          // --- store PKCS#12 as file
         Path filepath = FileSystems.getDefault().getPath(filename);
+        
+        // if store file already exists...then simply return (to prevent overwriting a .p12 that is has already been placed their via 'upload' or manual creation)
+        if (Files.exists(filepath)) {
+            return true;
+        }
+        
         try (FileOutputStream p12 = new FileOutputStream(filepath.toFile())) {
             pkcs12.store(p12, passphrase.toCharArray());
         }
