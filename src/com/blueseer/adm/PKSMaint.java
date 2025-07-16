@@ -473,7 +473,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
          }
      }
      
-     if (ddtype.getSelectedItem().toString().equals("keypair")) {
+     if (ddtype.getSelectedItem().toString().equals("keypair") && ! cbrecordonly.isSelected()) {
          
          if (ddstandard.getSelectedItem().toString().equals("X.509")) {
              
@@ -892,6 +892,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel13 = new javax.swing.JLabel();
         btupload = new javax.swing.JButton();
         btcertinfo = new javax.swing.JButton();
+        cbrecordonly = new javax.swing.JCheckBox();
 
         jTextField1.setText("jTextField1");
 
@@ -1041,6 +1042,8 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
+        cbrecordonly.setText("Record Only?");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -1087,12 +1090,14 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                                             .addComponent(ddencalgo, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                             .addComponent(ddsigalgo, javax.swing.GroupLayout.Alignment.LEADING, 0, 111, Short.MAX_VALUE))
                                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                .addComponent(cbexternal)
-                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                                    .addComponent(ddparent, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                    .addComponent(ddstandard, javax.swing.GroupLayout.Alignment.LEADING, 0, 111, Short.MAX_VALUE)))
-                                            .addGap(122, 122, 122)))
+                                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                                .addComponent(ddparent, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(ddstandard, javax.swing.GroupLayout.Alignment.LEADING, 0, 111, Short.MAX_VALUE))
+                                            .addGap(122, 122, 122))
+                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                            .addComponent(cbexternal)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(cbrecordonly)))
                                     .addComponent(tbfile, javax.swing.GroupLayout.PREFERRED_SIZE, 333, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btupload, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1148,7 +1153,9 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                             .addComponent(ddparent, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel13))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbexternal)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(cbexternal)
+                            .addComponent(cbrecordonly))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
@@ -1406,6 +1413,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btupload;
     private javax.swing.JButton btviewkey;
     private javax.swing.JCheckBox cbexternal;
+    private javax.swing.JCheckBox cbrecordonly;
     private javax.swing.JComboBox<String> ddencalgo;
     private javax.swing.JComboBox<String> ddformat;
     private javax.swing.JComboBox<String> ddparent;
