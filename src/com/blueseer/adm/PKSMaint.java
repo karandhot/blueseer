@@ -44,6 +44,7 @@ import static com.blueseer.edi.apiUtils.exportPGPKeyFiles;
 import static com.blueseer.edi.apiUtils.genereatePGPKeyPair;
 import static com.blueseer.edi.apiUtils.getAsciiDumpPGPKey;
 import static com.blueseer.edi.apiUtils.getCertInfo;
+import static com.blueseer.edi.apiUtils.getCertInfo_Str;
 
 import static com.blueseer.edi.apiUtils.getPublicKeyAsOPENSSH;
 import static com.blueseer.edi.apiUtils.getPublicKeyAsPEM;
@@ -119,7 +120,6 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
         boolean isLoad = false;
         boolean isNew = false;
         public static pks_mstr x = null;
-        boolean isUploaded = false;
     
     
                 
@@ -313,6 +313,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
        isLoad = true;
        isNew = false;
        
+        cbphantom.setSelected(false);
         tbkey.setText("");
         tbdesc.setText("");
         tbuser.setText("");
@@ -475,7 +476,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
          }
      }
      
-     if (ddtype.getSelectedItem().toString().equals("keypair") && ! cbrecordonly.isSelected()) {
+     if (ddtype.getSelectedItem().toString().equals("keypair") && ! cbphantom.isSelected()) {
          
          if (ddstandard.getSelectedItem().toString().equals("X.509")) {
              
@@ -770,7 +771,6 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                 r = getSystemEDIDirectory() + "/certs/" + Sourcefile;
                 }
                 cbexternal.setSelected(true);
-                isUploaded = true;
                 
                 
             } catch (Exception ex) {
@@ -786,7 +786,24 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
         JScrollPane scroll = new JScrollPane(ta);
         scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
        
-        String[] info = getCertInfo(key);
+        String s = "";
+        if (bsmf.MainFrame.remoteDB) {
+            ArrayList<String[]> arr = new ArrayList<String[]>();
+            arr.add(new String[]{"id","getCertInfo_Str"});
+            arr.add(new String[]{"pksid", tbkey.getText()});
+            try {  
+                s = sendServerPost(arr, "", null);
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+              s = getCertInfo_Str(key);  
+        }
+        
+        
+        
+       // String[] info = getCertInfo(key);
+       String[] info = s.split("\\|");
         
         if (info != null) {
         ta.setText("  " + "\n\n");
@@ -897,7 +914,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel13 = new javax.swing.JLabel();
         btupload = new javax.swing.JButton();
         btcertinfo = new javax.swing.JButton();
-        cbrecordonly = new javax.swing.JCheckBox();
+        cbphantom = new javax.swing.JCheckBox();
 
         jTextField1.setText("jTextField1");
 
@@ -1047,7 +1064,12 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
-        cbrecordonly.setText("Record Only?");
+        cbphantom.setText("Phantom");
+        cbphantom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbphantomActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -1102,7 +1124,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                                         .addGroup(jPanel1Layout.createSequentialGroup()
                                             .addComponent(cbexternal)
                                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                            .addComponent(cbrecordonly)))
+                                            .addComponent(cbphantom)))
                                     .addComponent(tbfile, javax.swing.GroupLayout.PREFERRED_SIZE, 333, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btupload, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1160,7 +1182,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(cbexternal)
-                            .addComponent(cbrecordonly))
+                            .addComponent(cbphantom))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
@@ -1312,6 +1334,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
       if (! isLoad || ! isNew) {
         switch (ddtype.getSelectedItem().toString()) {
             case "keypair" :
+                cbphantom.setEnabled(true);
                 ddyears.setEnabled(true);
                 ddstrength.setEnabled(true);
                 ddsigalgo.setEnabled(true);
@@ -1326,6 +1349,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
             break;
             
             case "privatekey" :
+                cbphantom.setEnabled(false);
                 ddyears.setEnabled(true);
                 ddstrength.setEnabled(true);
                 ddsigalgo.setEnabled(true);
@@ -1340,6 +1364,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
             break;
             
             case "store" :
+                cbphantom.setEnabled(false);
                 ddyears.setEnabled(false);
                 ddstrength.setEnabled(false);
                 ddsigalgo.setEnabled(false);
@@ -1354,6 +1379,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
             break; 
             
             case "publickey" :
+                cbphantom.setEnabled(false);
                 ddyears.setEnabled(false);
                 ddstrength.setEnabled(false);
                 ddsigalgo.setEnabled(false);
@@ -1405,6 +1431,22 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
         showCertInfo(tbkey.getText());
     }//GEN-LAST:event_btcertinfoActionPerformed
 
+    private void cbphantomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbphantomActionPerformed
+        if (cbphantom.isSelected()) {
+            ddyears.setEnabled(false);
+            ddstrength.setEnabled(false);
+            ddsigalgo.setEnabled(false);
+            ddencalgo.setEnabled(false);
+            tbuser.setEnabled(true);
+            tbpass.setEnabled(true);
+            tbstorepass.setEnabled(false);
+            tbfile.setEnabled(false);
+            ddstandard.setEnabled(false);
+            ddparent.setEnabled(false);
+            btcertinfo.setEnabled(false);
+        }
+    }//GEN-LAST:event_cbphantomActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btadd;
@@ -1418,7 +1460,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btupload;
     private javax.swing.JButton btviewkey;
     private javax.swing.JCheckBox cbexternal;
-    private javax.swing.JCheckBox cbrecordonly;
+    private javax.swing.JCheckBox cbphantom;
     private javax.swing.JComboBox<String> ddencalgo;
     private javax.swing.JComboBox<String> ddformat;
     private javax.swing.JComboBox<String> ddparent;

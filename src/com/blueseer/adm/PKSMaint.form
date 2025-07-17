@@ -98,7 +98,7 @@
                                           <Group type="102" alignment="0" attributes="0">
                                               <Component id="cbexternal" min="-2" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="cbrecordonly" min="-2" max="-2" attributes="0"/>
+                                              <Component id="cbphantom" min="-2" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
                                       <Component id="tbfile" min="-2" pref="333" max="-2" attributes="0"/>
@@ -175,7 +175,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="cbexternal" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="cbrecordonly" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="cbphantom" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
@@ -552,10 +552,13 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btcertinfoActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JCheckBox" name="cbrecordonly">
+        <Component class="javax.swing.JCheckBox" name="cbphantom">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Record Only?"/>
+            <Property name="text" type="java.lang.String" value="Phantom"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cbphantomActionPerformed"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>

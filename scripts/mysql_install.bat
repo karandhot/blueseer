@@ -49,6 +49,9 @@ set "country=DE"
 if "%lang%"=="ro" (
 set "country=RO"
 )
+if "%lang%"=="it" (
+set "country=IT"
+)
 
 
 set "ROOT=root"

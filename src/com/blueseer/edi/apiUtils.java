@@ -762,6 +762,71 @@ public class apiUtils {
         return r;
     }
     
+    public static String getCertInfo_Str(String user)  {
+        X509Certificate cert = null;
+        FileInputStream fis = null;
+        String r = null;
+        
+        pks_mstr pks = admData.getPksMstr(new String[]{user});
+        try {
+        String[] k = getKeyStoreByUser(user); // store, storeuser, storepass, user, pass
+        k[2] = bsmf.MainFrame.PassWord("1", k[2].toCharArray());
+        k[4] = bsmf.MainFrame.PassWord("1", k[4].toCharArray());
+        KeyStore keystore = KeyStore.getInstance("PKCS12");
+        
+        if (pks.pks_type().equals("keypair")) {
+        fis = new FileInputStream(FileSystems.getDefault().getPath(k[0]).toString());
+        keystore.load(fis, k[2].toCharArray());
+        cert = (X509Certificate) keystore.getCertificate(pks.pks_user());
+        }
+        
+        if (pks.pks_type().equals("publickey")) {
+        Path certfilepath = FileSystems.getDefault().getPath(pks.pks_file());
+                if (Files.exists(certfilepath)) {
+                    CertificateFactory certFactory = CertificateFactory.getInstance("X.509", "BC");
+                    try (FileInputStream fiscert = new FileInputStream(certfilepath.toFile())) {
+                        cert = (X509Certificate) certFactory.generateCertificate(fiscert);
+                    } catch (IOException ex) {
+                        bslog(ex);
+                    }
+                }
+        }
+        
+        
+        if (cert != null) {
+            r = cert.getSubjectX500Principal().getName() + "|" +
+                cert.getIssuerX500Principal().getName()+ "|" + 
+                cert.getSigAlgName()+ "|" +
+                cert.getSerialNumber().toString()+ "|" +
+                cert.getNotBefore().toString()+ "|" +
+                cert.getNotAfter().toString();
+        }
+        } catch (KeyStoreException ex) {
+            bslog(ex);
+        } catch (FileNotFoundException ex) {
+            bslog(ex);
+        } catch (IOException ex) {
+            bslog(ex);
+        } catch (NoSuchAlgorithmException ex) {
+            bslog(ex);
+        } catch (CertificateException ex) {
+            bslog(ex);
+        } catch (NoSuchProviderException ex) {
+             bslog(ex);
+         } finally {
+          if (fis != null ) {
+              try {
+                  fis.close();
+              } catch (IOException ex) {
+                  bslog(ex);
+              }
+          }
+          
+        }
+        
+        return r;
+    }
+    
     
     // redo or scrap
     public static PGPPublicKey getPGPPublicKeyFromKeyStore(String user)  {
@@ -1205,17 +1270,6 @@ public class apiUtils {
                return "cannot access keystore";
             }
             
-            /*
-            PublicKey pubkey = cert.getPublicKey();
-            AsymmetricKeyParameter bpuv;
-            try {
-                bpuv = PublicKeyFactory.createKey(pubkey.getEncoded());
-                byte[] opuv = OpenSSHPublicKeyUtil.encodePublicKey(bpuv);
-            } catch (IOException ex) {
-                Logger.getLogger(apiUtils.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            */
-            
             StringWriter writer = new StringWriter();
             PemWriter pemWriter = new PemWriter(writer);
                 try {
@@ -1233,15 +1287,7 @@ public class apiUtils {
             }
             
             //System.out.println("here-->" + cert.getSerialNumber());
-        } catch (KeyStoreException ex) {
-            bslog(ex);
-        } catch (FileNotFoundException ex) {
-            bslog(ex);
-        } catch (NoSuchAlgorithmException ex) {
-            bslog(ex);
-        } catch (CertificateException ex) {
-            bslog(ex);
-        } catch (NoSuchProviderException ex) {
+        } catch (KeyStoreException | FileNotFoundException | NoSuchAlgorithmException | CertificateException | NoSuchProviderException ex) {
             bslog(ex);
         } 
         

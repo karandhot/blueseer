@@ -48,6 +48,7 @@ import static com.blueseer.edi.apiUtils.createKeyStore;
 import static com.blueseer.edi.apiUtils.createNewKeyPair;
 import static com.blueseer.edi.apiUtils.genereatePGPKeyPair;
 import static com.blueseer.edi.apiUtils.getAsciiDumpPGPKey;
+import static com.blueseer.edi.apiUtils.getCertInfo_Str;
 import static com.blueseer.edi.apiUtils.getPublicKeyAsOPENSSH;
 import static com.blueseer.edi.apiUtils.getPublicKeyAsPEM;
 import static com.blueseer.edi.apiUtils.postAS2;
@@ -216,6 +217,13 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                     } catch (Exception ex) {
                         response.getWriter().println("Exception (getAsciiDumpPGPKey): " + ex.getMessage());
                     }
+                } else if (id.equals("getCertInfo_Str")) { 
+                  String pksid = request.getHeader("pksid");
+                    try {  
+                        response.getWriter().println(getCertInfo_Str(pksid));
+                    } catch (Exception ex) {
+                        response.getWriter().println("Exception (getCertInfo_Str): " + ex.getMessage());
+                    }    
                 } else if (id.equals("getPublicKeyAsPEM")) { 
                   String key = request.getHeader("key");
                     try {  
