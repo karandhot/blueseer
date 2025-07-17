@@ -11,7 +11,8 @@ $BACKUPDIR = "C:\mysqlbackup"
 $TS = Get-Date -Format "yyyyMMdd_HHmmss"
 $filename = "$DB_$TS.sql"
 $targetpath = Join-Path $BACKUPDIR $filename
-$rotation = 30
+$logpath = Join-Path $BACKUPDIR "log.txt"
+$rotation = 7
 
 
 if (-not($db)) { throw "You must supply a target databasename" }
@@ -22,37 +23,36 @@ If (-not (Test-Path $BACKUPDIR)) {
     try {
     New-Item -Path $BACKUPDIR -ItemType Directory | Out-Null
     } catch {
-     write-error "Cannot find nor create backup dir:  $BACKUPDIR"
-     write-error "Error: $($_.Exception.Message)"
+     add-content -path $logpath -value "$TS Cannot find nor create backup dir:  $BACKUPDIR"
+     add-content -path $logpath -value "$TS Error:  $($_.Exception.Message)"
      exit 1
     }
 }
 
-$passwd = "-p" + $passwd.trim()
 
 
 
-Write-Host "Creating backup of database '$db' to '$targetpath'..."
+add-content -path $logpath -value "$TS Creating backup of database $db to $targetpath"
 try {
     & "mysqldump" --user="root" --password="$passwd" --databases "$DB" --result-file="$targetpath"
-    Write-Host "Backup created successfully."
+    add-content -path $logpath -value "$TS Backup created successfully"
 } catch {
-    Write-Error "Error during mysqldump: $($_.Exception.Message)"
+    add-content -path $logpath -value "$TS Error during mysqldump:  $($_.Exception.Message)"
     exit 1
 }
 
 
 
-Write-Host "Performing backup rotation..."
+add-content -path $logpath -value "$TS Performing backup rotation"
 $cutoffDate = (Get-Date).AddDays(-$rotation)
 
 Get-ChildItem -Path $BACKUPDIR -Filter "*.sql" | ForEach-Object {
     if ($_.CreationTime -lt $cutoffDate) {
-        Write-Host "Deleting old backup: $($_.Name)"
+	add-content -path $logpath -value "$TS Deleting old backup:  $($_.Name)"
         Remove-Item $_.FullName -Force
     }
 }
-Write-Host "Backup rotation complete."
+add-content -path $logpath -value "$TS backup rotation complete"
 
 
 
