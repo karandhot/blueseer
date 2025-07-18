@@ -159,6 +159,26 @@ String carrier = "";
 
     public boolean validateInput() {
        
+        
+        
+        if (tbordnbr.getText().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1024));
+            tbordnbr.requestFocus();
+            tbordnbr.setBackground(Color.yellow);
+            return false;
+        } else {
+            tbordnbr.setBackground(Color.white);
+        }
+        
+        if (tbline.getText().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1024));
+            tbline.requestFocus();
+            tbline.setBackground(Color.yellow);
+            return false;
+        } else {
+            tbline.setBackground(Color.white);
+        }
+        
         if (! BlueSeerUtils.isNumeric(tbqty.getText())) {
             bsmf.MainFrame.show(getMessageTag(1028));
             tbqty.requestFocus();
@@ -175,17 +195,6 @@ String carrier = "";
             return false;
         } else {
             tblblqty.setBackground(Color.white);
-        }
-        
-        if (tbordnbr.getText().isEmpty()) {
-            bsmf.MainFrame.show(getMessageTag(1024));
-            tbordnbr.requestFocus();
-            return false;
-        }
-        if (tbline.getText().isEmpty()) {
-            bsmf.MainFrame.show(getMessageTag(1024));
-            tbline.requestFocus();
-            return false;
         }
         
         return true;

@@ -253,7 +253,7 @@ public class OrderRpt extends javax.swing.JPanel {
             if (this.action.equals("exportOrderDetail")) {
                 if (rData != null && ! rData.isBlank()) {
                   createExportFile(rData);
-                  bsmf.MainFrame.show("export file created");
+                  bsmf.MainFrame.show(getMessageTag(1126));
                 }
             }
             if (this.action.equals("runRemoteOrderReport")) {
@@ -542,7 +542,7 @@ public class OrderRpt extends javax.swing.JPanel {
                 
                 } // for each line in tablereport
                 
-                bsmf.MainFrame.show("export file created");
+                bsmf.MainFrame.show(getMessageTag(1126));
                 
            }
             catch (SQLException s){
@@ -1343,7 +1343,7 @@ public class OrderRpt extends javax.swing.JPanel {
     private void btcsvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcsvActionPerformed
        if (tableorder != null && mymodel.getRowCount() > 0) {
         OVData.exportCSV(tableorder);
-        bsmf.MainFrame.show("export file created");
+        bsmf.MainFrame.show(getMessageTag(1126));
        }
     }//GEN-LAST:event_btcsvActionPerformed
 

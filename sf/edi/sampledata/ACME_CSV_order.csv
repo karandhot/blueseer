@@ -1,5 +1,5 @@
 PONumberLM,custcode,custname,shipcode,shipname,item,sku,qty,uom,price,reference
-mypo,ACME,ACME MFG CO.,ACMEST,ACME Plant,huffybike,5,EA,134.54,ref
-mypo,ACME,ACME MFG CO.,ACMEST,ACME Plant,tricycle,9,EA,65.98,ref
-mypo,ACME,ACME MFG CO.,ACMEST,ACME Plant,trekbike,3,EA,738.00,ref
-mypo,ACME,ACME MFG CO.,ACMEST,ACME Plant,schwinnbike,2,EA,250.00,ref
+mypo,ACME,ACME MFG CO.,ACMEST,ACME Plant,huffybike,hf111,5,EA,134.54,ref
+mypo,ACME,ACME MFG CO.,ACMEST,ACME Plant,tricycle,tc222,9,EA,65.98,ref
+mypo,ACME,ACME MFG CO.,ACMEST,ACME Plant,trekbike,tb333,3,EA,738.00,ref
+mypo,ACME,ACME MFG CO.,ACMEST,ACME Plant,schwinnbike,sb444,2,EA,250.00,ref

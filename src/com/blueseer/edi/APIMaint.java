@@ -829,7 +829,7 @@ public class APIMaint extends javax.swing.JPanel implements IBlueSeerT {
        // taoutput.removeAll();
         taoutput.setText("");
         if (rows.length == 0 || tburlstring.getText().isBlank()) {
-            bsmf.MainFrame.show("no method selected in detail table");
+            bsmf.MainFrame.show(getMessageTag(1081)); 
             return;
         }
         
@@ -1884,13 +1884,13 @@ public class APIMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btadddetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btadddetailActionPerformed
         if (! isAPIMethodUnique(tbkey.getText(), tbmethod.getText())) {
-           bsmf.MainFrame.show("Method name must be unique for this API...already committed to DB");
+           bsmf.MainFrame.show(getMessageTag(1198));
            tbmethod.requestFocus();
            return;
         }
         for (int j = 0; j < tabledetail.getRowCount(); j++) {
              if (tabledetail.getModel().getValueAt(j, 0).toString().toLowerCase().equals(tbmethod.getText().toLowerCase())) {
-                 bsmf.MainFrame.show("Method name must be unique for this API...already in table");
+                 bsmf.MainFrame.show(getMessageTag(1198));
                  tbmethod.requestFocus();
                  return;
              }

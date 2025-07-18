@@ -182,7 +182,7 @@ public class ShipScanMaint extends javax.swing.JPanel {
            
             BlueSeerUtils.endTask(message);
             if (message[0].equals("0")) {
-            bsmf.MainFrame.show("Successfully created shipper: " + shipper);
+            bsmf.MainFrame.show(getMessageTag(1205,shipper));
             }
             initvars(null);
             } catch (Exception e) {
@@ -772,12 +772,12 @@ public class ShipScanMaint extends javax.swing.JPanel {
     private void btcommitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcommitActionPerformed
         // aracct, arcc, currency, bank, terms, carrier, onhold, site, taxcode
         if (custinfo == null) {
-            bsmf.MainFrame.show("missing data...unable to determine billto");
+            bsmf.MainFrame.show(getMessageTag(1104)); 
             return;
         }
         
         if (serialdet.getRowCount() < 1) {
-            bsmf.MainFrame.show("unable to create shipper...no rows in table");
+            bsmf.MainFrame.show(getMessageTag(1188));
             return;
         }
         

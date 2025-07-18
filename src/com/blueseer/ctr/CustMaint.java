@@ -2338,7 +2338,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
             if (x.equals("error")) {
                 tbcreditlimit.setText("");
                 tbcreditlimit.setBackground(Color.yellow);
-                bsmf.MainFrame.show("Non-Numeric character in textbox");
+                bsmf.MainFrame.show(getMessageTag(1000));   
                 tbcreditlimit.requestFocus();
             } else {
                 tbcreditlimit.setText(x);

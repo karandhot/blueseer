@@ -683,7 +683,7 @@ public class ProdEntryMaint extends javax.swing.JPanel {
             String[] v = getWHLOCfromSerialNumber(c,serial);
             if (v == null || serial.isBlank()) {
               error = true;
-              bsmf.MainFrame.show("serial number does not exist for this item: " + c);
+              bsmf.MainFrame.show(getMessageTag(1204,c));
               break;
             }
             String[] values = new String[]{serial, "", ""};  // defaults to blank wh / loc

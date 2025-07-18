@@ -546,7 +546,7 @@ public class ReqControl extends javax.swing.JPanel {
         if (BlueSeerUtils.isParsableToInt(tbsequence.getText())) {
         authmodel.addRow(new Object[]{ddallusers.getSelectedItem().toString(), tbdesc.getText(), tbsequence.getText(), cbenabled.isSelected(), cbemail.isSelected()});
         } else {
-            bsmf.MainFrame.show("Sequence must be integer value");
+            bsmf.MainFrame.show(getMessageTag(1028));
             tbsequence.requestFocus();
         }
     }//GEN-LAST:event_btaddauthActionPerformed

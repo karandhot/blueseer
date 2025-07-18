@@ -2061,20 +2061,20 @@ public class QuoteMaint extends javax.swing.JPanel implements IBlueSeerT {
         if (ddquotetype.getSelectedItem().equals("discrete")) {
             m = createSO();
             if (m[0].equals("0")) {
-            bsmf.MainFrame.show("Quote has been converted to Order: " + m[1]);
+            bsmf.MainFrame.show(getMessageTag(1201,m[1]));
             ordData.updateQuoteStatus(tbkey.getText(), "closed", m[1]);
             initvars(new String[]{tbkey.getText()});
             } else {
-                bsmf.MainFrame.show("Problem converting quote to order");
+                bsmf.MainFrame.show(getMessageTag(1202,m[1])); 
             }
         } else {
             // volume pricing additions to cpr_mstr table
             if (addCustPriceList(createVolumePricing(), ":")) {
-             bsmf.MainFrame.show("Volume pricing has been committed to pricing tables ");  
+             bsmf.MainFrame.show(getMessageTag(1203));  
              ordData.updateQuoteStatus(tbkey.getText(), "closed", m[1]);
              initvars(new String[]{tbkey.getText()});
             } else {
-             bsmf.MainFrame.show("Problem committing records to pricing tables");   
+             bsmf.MainFrame.show(getMessageTag(1202,m[1]));   
             }
         }
         

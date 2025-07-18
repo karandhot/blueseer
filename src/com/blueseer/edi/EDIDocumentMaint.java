@@ -1470,7 +1470,7 @@ public class EDIDocumentMaint extends javax.swing.JPanel  {
         if (! newkey.isBlank() && ! isValidEDDid(newkey)) {
          String[] m = copyRecord(newkey);
         } else {
-            bsmf.MainFrame.show("key is already in use");
+            bsmf.MainFrame.show(getMessageTag(1180));
         }
     }//GEN-LAST:event_btcopyActionPerformed
 

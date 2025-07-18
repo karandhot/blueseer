@@ -345,8 +345,8 @@ public class AcctMaint extends javax.swing.JPanel implements IBlueSeerT  {
 
         if (n != 0) {
             if (n >= 99000000 && n <= 99999999) {
-                BlueSeerUtils.message(new String[] {"1", "Account numbers between 99000000 and 99999999 are system reserved"});
-                bsmf.MainFrame.show("Account numbers between 99000000 and 99999999 are system reserved");
+                BlueSeerUtils.message(new String[] {"1", getMessageTag(1200)});
+                bsmf.MainFrame.show(getMessageTag(1200));
                 tbkey.requestFocus();
                 return false;
             } 

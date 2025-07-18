@@ -31,6 +31,7 @@ import static bsmf.MainFrame.tags;
 import static com.blueseer.edi.EDI.edilog;
 import static com.blueseer.edi.EDI.packageEnvelopes;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Date;
@@ -523,7 +524,7 @@ public class EDIExport extends javax.swing.JPanel {
         }
        
         if (dddoctype.getSelectedItem() == null || dddoctype.getSelectedItem().toString().isEmpty()) {
-            bsmf.MainFrame.show("Must choose a valid selection");
+            bsmf.MainFrame.show(getMessageTag(1026)); 
             dddoctype.requestFocus();
             return ;
         }

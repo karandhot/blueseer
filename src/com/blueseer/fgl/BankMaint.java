@@ -335,26 +335,36 @@ public class BankMaint extends javax.swing.JPanel implements IBlueSeerT {
         if (tbkey.getText().length() > fc || tbkey.getText().isEmpty()) {
             bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
             tbkey.requestFocus();
+            tbkey.setBackground(Color.yellow);
             return false;
+        } else {
+            tbkey.setBackground(Color.white);
         }   
         
         fc = checkLength(f,"bk_desc");
         if (tbdesc.getText().length() > fc || tbdesc.getText().isEmpty()) {
             bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
             tbdesc.requestFocus();
+            tbdesc.setBackground(Color.yellow);
             return false;
-        }
+        } else {
+            tbdesc.setBackground(Color.white);
+        }   
         
         if (ddsite.getSelectedItem() == null || ddsite.getSelectedItem().toString().isEmpty()) {
-            bsmf.MainFrame.show("must choose a site");
+            bsmf.MainFrame.show(getMessageTag(1026)); 
+            ddsite.requestFocus();
             return false;
         }
         
         if (tbacct.getText().isEmpty() || ! OVData.isValidGLAcct(tbacct.getText())) {
-            bsmf.MainFrame.show("must choose a valid account");
+            bsmf.MainFrame.show(getMessageTag(1026));
             tbacct.requestFocus();
+            tbacct.setBackground(Color.yellow);
             return false;
-        }
+        } else {
+            tbacct.setBackground(Color.white);
+        }   
         
         fc = checkLength(f,"bk_route");
         if (tbroute.getText().length() > fc) {
@@ -371,9 +381,13 @@ public class BankMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
         
         if (ddcurr.getSelectedItem() == null || ddcurr.getSelectedItem().toString().isEmpty()) {
-            bsmf.MainFrame.show("must choose a currency");
+            bsmf.MainFrame.show(getMessageTag(1026));
+            ddcurr.requestFocus();
+            ddcurr.setBackground(Color.yellow);
             return false;
-        }    
+        } else {
+            ddcurr.setBackground(Color.white);
+        }
                
         return true;
     }

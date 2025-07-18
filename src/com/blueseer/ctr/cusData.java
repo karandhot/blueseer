@@ -2067,7 +2067,7 @@ public class cusData {
                
            }
             catch (SQLException s){
-                 bsmf.MainFrame.show("SQL cannot get Cust list");
+                 MainFrame.bslog(s);
             } finally {
                 if (res != null) {
                     res.close();
@@ -2109,7 +2109,7 @@ public class cusData {
                 }
            }
             catch (SQLException s){
-                 bsmf.MainFrame.show("SQL cannot get disc price list");
+                 MainFrame.bslog(s);
             } finally {
                 if (res != null) {
                     res.close();
@@ -2152,7 +2152,7 @@ public class cusData {
                 }
            }
             catch (SQLException s){
-                 bsmf.MainFrame.show("SQL cannot get disc price list");
+                 MainFrame.bslog(s);
             } finally {
                 if (res != null) {
                     res.close();
@@ -2236,7 +2236,7 @@ public class cusData {
                
            }
             catch (SQLException s){
-                 bsmf.MainFrame.show("SQL cannot get Cust list");
+                 MainFrame.bslog(s);
             } finally {
                 if (res != null) {
                     res.close();
@@ -2278,7 +2278,7 @@ public class cusData {
                 }
 
             } catch (SQLException s) {
-                bsmf.MainFrame.show("SQL cannot get Cust list");
+                MainFrame.bslog(s);
             } finally {
                 if (res != null) {
                     res.close();
@@ -2315,7 +2315,7 @@ public class cusData {
                 }
 
             } catch (SQLException s) {
-                bsmf.MainFrame.show("SQL cannot get Cust list");
+                MainFrame.bslog(s);
             } finally {
                 if (res != null) {
                     res.close();
@@ -2353,7 +2353,7 @@ public class cusData {
                 }
 
             } catch (SQLException s) {
-                bsmf.MainFrame.show("SQL cannot get cms_det list");
+                MainFrame.bslog(s);
             } finally {
                 if (res != null) {
                     res.close();

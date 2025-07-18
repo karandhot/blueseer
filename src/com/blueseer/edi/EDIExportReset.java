@@ -119,7 +119,7 @@ public class EDIExportReset extends javax.swing.JPanel  {
             String[] message = get();
            
             BlueSeerUtils.endTask(message);
-            bsmf.MainFrame.show("updated key: " + key[0]);
+            bsmf.MainFrame.show(getMessageTag(1199,key[0]));
             initvars(null);
             } catch (Exception e) {
                 MainFrame.bslog(e);
@@ -199,7 +199,7 @@ public class EDIExportReset extends javax.swing.JPanel  {
         boolean b = true;
             
         if (! isValidShipper(tbkey.getText())) {
-            bsmf.MainFrame.show("invalid key");
+            bsmf.MainFrame.show(getMessageTag(1026)); 
             return false;
         }
                // nothing here
