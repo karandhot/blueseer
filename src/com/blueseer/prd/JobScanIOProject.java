@@ -486,9 +486,10 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
            tbitem.setEnabled(false);
            ddtooling.setEnabled(false);
            ddmaterial.setEnabled(true);
-           if (! isServiceOrderGeneric(tborder.getText())) {
+           if (! tborder.getText().equals("0") && ! isServiceOrderGeneric(tborder.getText())) {
                btaddop.setEnabled(false);
            }
+           
            if (isOpScan) {
                ddop.setEnabled(false);
            }
@@ -500,6 +501,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                btaddmatl.setEnabled(false);
                btdeletematl.setEnabled(false);
                btupdate.setEnabled(false);
+               btaddop.setEnabled(false);
            }
            
            if (planstatus == 0 && ! plantype.equals("SRVC")) {
@@ -509,6 +511,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                btaddmatl.setEnabled(false);
                btdeletematl.setEnabled(false);
                btupdate.setEnabled(false);
+               btaddop.setEnabled(false);
            }
            
         } else {
@@ -877,7 +880,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
          tbtothours.setText(bsFormatDouble(tothours));
     }
     
-    public void printticket(String jobid, String bustitle, String operation) {
+    public void printticket(String jobid, String bustitle, String operation, String order) {
         
        try {
             Connection con = null;
@@ -886,9 +889,9 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
             } else {
               con = DriverManager.getConnection(url + db, user, pass);  
             }
-                String jasperfile = "jobSVticket.jasper";
+                String jasperfile = (order.equals("0")) ? "jobGRticket.jasper" : "jobSVticket.jasper";
                 if (! operation.isBlank()) {
-                 jasperfile = "operationSVticket.jasper";
+                 jasperfile = (order.equals("0")) ? "operationGRticket.jasper" : "operationSVticket.jasper";  
                  bustitle = "Operation Ticket";
                 } 
                 
@@ -967,10 +970,17 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
     
     public String[] autoInvoiceServiceOrder(String nbr, String jobid) {
         
-         java.util.Date now = new java.util.Date();
+        if (nbr.equals("0")) {
+            // just a generic order with no ties to service orders...just close it
+            if (schData.updatePlanOrderStatus(tbkey.getText(),"closed")) {
+             return new String[]{"0", "Generic order is closed"};   
+            }
+        }
+        
+        java.util.Date now = new java.util.Date();
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
         int shipperid = OVData.getNextNbr("shipper");   
-        ordData.sv_mstr sv = getServiceOrderMstr(new String[]{nbr});  
+        ordData.sv_mstr sv = getServiceOrderMstr(new String[]{nbr});          
         shpData.ship_mstr sh = shpData.createShipMstrJRT(String.valueOf(shipperid), sv.sv_site(),
                              String.valueOf(shipperid), 
                               sv.sv_cust(),
@@ -1371,7 +1381,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
 
         cbconsumable.setText("Consumable");
 
-        btgeneric.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/file.png"))); // NOI18N
+        btgeneric.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/newfile.png"))); // NOI18N
         btgeneric.setToolTipText("Clear");
         btgeneric.setFocusable(false);
         btgeneric.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -1412,7 +1422,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                                 .addComponent(ddop, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btaddop, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 30, Short.MAX_VALUE)
                                 .addComponent(btupdate, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(tbopdesc, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1432,7 +1442,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(btclear)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btgeneric, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(btgeneric, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(btprint, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1500,7 +1510,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(btclock)
                     .addComponent(btbrowse, javax.swing.GroupLayout.DEFAULT_SIZE, 27, Short.MAX_VALUE)
                     .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(btgeneric, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btgeneric)
                         .addComponent(btprint)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -1933,7 +1943,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btupdatenotesActionPerformed
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
-        printticket(jobop[0], "Job Service Ticket", ddop.getSelectedItem().toString());
+        printticket(jobop[0], "Job (Generic) Ticket", ddop.getSelectedItem().toString(), tborder.getText());
     }//GEN-LAST:event_btprintActionPerformed
 
     private void btcommitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcommitActionPerformed
