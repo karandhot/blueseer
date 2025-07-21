@@ -134,7 +134,49 @@ public class schData {
         return m;
     }
     
+    public static String[] updatePlanMstr(plan_mstr x) {
+       /* status must be defined as below...within x prior to call
+       if (status.equals(getGlobalProgTag("open"))) { status = "0"; }
+       if (status.equals(getGlobalProgTag("closed"))) { status = "1"; }
+       if (status.equals(getGlobalProgTag("void"))) { status = "-1"; }
+        */
+       
+        String[] m = new String[2];
+        String sql = "update plan_mstr set plan_rmks = ?, plan_status = ? "
+                        + " where plan_nbr = ? ;"; 
+        
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(2, x.plan_rmks());
+            ps.setInt(1, x.plan_status());
+            int rows = ps.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+
     
+    public static String[] deletePlanMstr(plan_mstr x) {
+        String[] m;
+        String sqlDelete = "delete from plan_mstr where plan_nbr = ? ;"; 
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+             PreparedStatement ps = con.prepareStatement(sqlDelete);) {
+             ps.setInt(1, x.plan_nbr());
+             int rows = ps.executeUpdate();
+             if (rows > 0) {
+                m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess}; 
+             } else {
+                m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError}; 
+             }
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
     
     public static String[] addPlanOperationTrans(ArrayList<plan_operation> plo) {
          String[] m = new String[2];

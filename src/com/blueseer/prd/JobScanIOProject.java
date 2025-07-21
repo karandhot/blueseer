@@ -59,11 +59,14 @@ import static com.blueseer.prd.prdData.updatePlanOPDesc;
 import static com.blueseer.prd.prdData.updatePlanOPNotes;
 import static com.blueseer.prd.prdData.updatePlanOPOperator;
 import com.blueseer.sch.schData;
+import static com.blueseer.sch.schData.addPlanMstr;
 import static com.blueseer.sch.schData.addPlanOperation;
+import static com.blueseer.sch.schData.deletePlanMstr;
 import static com.blueseer.sch.schData.getPlanMstr;
 import static com.blueseer.sch.schData.getPlanOperation;
 import com.blueseer.sch.schData.plan_mstr;
 import com.blueseer.sch.schData.plan_operation;
+import static com.blueseer.sch.schData.updatePlanMstr;
 import com.blueseer.shp.shpData;
 import static com.blueseer.shp.shpData.confirmShipperTransaction;
 import com.blueseer.utl.BlueSeerUtils;
@@ -145,7 +148,7 @@ import org.jfree.data.general.DefaultPieDataset;
  *
  * @author vaughnte
  */
-public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT { 
+public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {  
 
     // global variable declarations
     boolean isLoad = false;
@@ -155,6 +158,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
     int planstatus = 0;
     String plantype = "";
     String chartfilepath = OVData.getSystemTempDirectory() + "/" + "jobm.jpg";
+    boolean isAdd = false;
     
     public static plan_mstr x = null;
     public static ArrayList<plan_operation> plolist = null;
@@ -457,15 +461,18 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public void newAction(String x) {
+        // non-standard newAction
         setPanelComponentState(this, true);
         setComponentDefaultValues();
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         
-        tbkey.setEditable(true);
+        tbkey.setEditable(false);
+        tborder.setEditable(false);
+        tborder.setText("0");
         tbkey.setForeground(Color.blue);
-        if (! x.isEmpty()) {
-          tbkey.setText(String.valueOf(OVData.getNextNbr(x)));  
-          tbkey.setEditable(false);
+        if (x.isEmpty()) {
+          tbkey.setText(String.valueOf(OVData.getNextNbr("plan"))); 
+          addRecord(new String[]{tbkey.getText()});  // non-standard newAction
         } 
         tbkey.requestFocus();
     }
@@ -525,6 +532,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
        setPanelComponentState(this, false); 
        setComponentDefaultValues();
         btlookup.setEnabled(true);
+        btgeneric.setEnabled(true);
         
         if (arg != null && arg.length > 0) {
             executeTask(dbaction.get,arg);
@@ -537,20 +545,20 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public String[] addRecord(String[] x) {
-     String[] m = addUOMMstr(createRecord());
+     String[] m = addPlanMstr(createRecord());
      return m;
      }
      
     public String[] updateRecord(String[] x) {
-     String[] m = updateUOMMstr(createRecord());
+     String[] m = updatePlanMstr(createRecord());
      return m;
      }
-     
+         
     public String[] deleteRecord(String[] x) {
       String[] m;
         boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
         if (proceed) {
-         m = deleteUOMMstr(createRecord()); 
+         m = deletePlanMstr(createRecord()); 
         } else {
            m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordCanceled}; 
         }
@@ -562,16 +570,16 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
       if (key[0].contains("-")) {
           isOpScan = true;
           jobop = key[0].split("-",-1);
-          jobop[1] = "SRVC"; // override jobop[1] assignment
+         // jobop[1] = (cbgeneric.isSelected()) ? "GNRC" : "SRVC"; // override jobop[1] assignment
           x = getPlanMstr(jobop);
       } else {
           isOpScan = false;
           jobop[0] = key[0];
-          jobop[1] = "SRVC";
-          if (key.length > 1 && ! key[1].isBlank()) {
-              jobop[1] = key[1];
-          }
-          
+        //  jobop[1] = (cbgeneric.isSelected()) ? "GNRC" : "SRVC";
+        //  if (key.length > 1 && ! key[1].isBlank()) {
+        //      jobop[1] = key[1];
+        //  }
+         // bsmf.MainFrame.show(jobop[0] + "/" + jobop[1]);
           x = getPlanMstr(jobop); 
       }
       
@@ -581,10 +589,29 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
       return x.m();  
     }
     
-    public invData.uom_mstr createRecord() {
-        invData.uom_mstr x = new invData.uom_mstr(null, 
-           tbkey.getText(),
-           tbitem.getText()
+    public plan_mstr createRecord() {
+        java.util.Date now = new java.util.Date();
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");  
+        int nbr = bsParseInt(tbkey.getText());
+       // if (isAdd) {
+        //    nbr = OVData.getNextNbr("plan");
+        //}
+        plan_mstr x = new plan_mstr(null, nbr,
+        "generic", // item
+        OVData.getDefaultSiteForUserid(bsmf.MainFrame.userid), // site
+        0, // qty
+        0,
+        0,
+        dfdate.format(now),
+        dfdate.format(now),
+        null,
+        0, // status
+        "", // remarks
+        "0", // order
+        "0", // line
+        "SRVC", // type
+        "", // cell
+        0 // issched
         );
         return x;
     }
@@ -1061,6 +1088,8 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
         tbopdesc = new javax.swing.JTextField();
         btbrowse = new javax.swing.JButton();
         cbconsumable = new javax.swing.JCheckBox();
+        btgeneric = new javax.swing.JButton();
+        cbgeneric = new javax.swing.JCheckBox();
         panelNotes = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -1174,7 +1203,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(jLabel12, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(tbopmatlcost, javax.swing.GroupLayout.DEFAULT_SIZE, 60, Short.MAX_VALUE)
+                    .addComponent(tbopmatlcost)
                     .addComponent(tbophours)
                     .addComponent(tbopmatlcosttot))
                 .addGap(18, 18, Short.MAX_VALUE)
@@ -1185,7 +1214,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(tbtotalcost, javax.swing.GroupLayout.DEFAULT_SIZE, 60, Short.MAX_VALUE)
+                    .addComponent(tbtotalcost)
                     .addComponent(tboplaborcosttot)
                     .addComponent(tboplaborcost)
                     .addComponent(tbtothours))
@@ -1247,7 +1276,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1342,6 +1371,19 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
 
         cbconsumable.setText("Consumable");
 
+        btgeneric.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/file.png"))); // NOI18N
+        btgeneric.setToolTipText("Clear");
+        btgeneric.setFocusable(false);
+        btgeneric.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btgeneric.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btgeneric.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btgenericActionPerformed(evt);
+            }
+        });
+
+        cbgeneric.setText("Generic");
+
         javax.swing.GroupLayout panelMainLayout = new javax.swing.GroupLayout(panelMain);
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
@@ -1370,7 +1412,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                                 .addComponent(ddop, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btaddop, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
                                 .addComponent(btupdate, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(tbopdesc, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1384,19 +1426,24 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                                     .addComponent(tborder, javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(tbkey, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btlookup, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btclear)
-                                .addGap(34, 34, 34)
-                                .addComponent(btprint, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btclock, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btbrowse, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btcommit)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lblmessage, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(panelMainLayout.createSequentialGroup()
+                                        .addComponent(btlookup, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btclear)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btgeneric, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btprint, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btclock, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btbrowse, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btcommit)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(lblmessage, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(cbgeneric))))
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(panelMainLayout.createSequentialGroup()
                         .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1430,7 +1477,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                                         .addComponent(rbservice)
                                         .addGap(18, 18, 18)
                                         .addComponent(cbconsumable)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 27, Short.MAX_VALUE)))
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(20, 20, 20))))
             .addGroup(panelMainLayout.createSequentialGroup()
@@ -1448,11 +1495,13 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                             .addComponent(jLabel1))
                         .addComponent(btlookup)
                         .addComponent(btclear, javax.swing.GroupLayout.Alignment.LEADING))
-                    .addComponent(btprint)
                     .addComponent(btcommit)
                     .addComponent(lblmessage, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btclock)
-                    .addComponent(btbrowse, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(btbrowse, javax.swing.GroupLayout.DEFAULT_SIZE, 27, Short.MAX_VALUE)
+                    .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(btgeneric, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btprint)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(panelMainLayout.createSequentialGroup()
@@ -1460,7 +1509,8 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                             .addGroup(panelMainLayout.createSequentialGroup()
                                 .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(tborder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel3))
+                                    .addComponent(jLabel3)
+                                    .addComponent(cbgeneric))
                                 .addGap(9, 9, 9)
                                 .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1975,6 +2025,15 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
         reinitpanels(mypanel, true, args);
     }//GEN-LAST:event_btbrowseActionPerformed
 
+    private void btgenericActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btgenericActionPerformed
+        boolean proceed = bsmf.MainFrame.warn("This action will create a 'generic' Job unrelated to an order...do you wish to proceed?");
+        if (proceed) {
+         isAdd = true;
+         newAction("");
+        }
+        
+    }//GEN-LAST:event_btgenericActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btaddmatl;
@@ -1984,6 +2043,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btclock;
     private javax.swing.JButton btcommit;
     private javax.swing.JButton btdeletematl;
+    private javax.swing.JButton btgeneric;
     private javax.swing.JButton btlookup;
     private javax.swing.JButton btprint;
     private javax.swing.JButton btrefreshchart;
@@ -1991,6 +2051,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btupdatenotes;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JCheckBox cbconsumable;
+    private javax.swing.JCheckBox cbgeneric;
     private com.toedter.calendar.JDateChooser dcdate;
     private javax.swing.JComboBox<String> ddchart;
     private javax.swing.JComboBox<String> ddmaterial;
