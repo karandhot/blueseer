@@ -115,7 +115,7 @@ public class ShipScanMaint extends javax.swing.JPanel {
             new String[]{
                 getGlobalColumnTag("label"),
                 getGlobalColumnTag("customer"),
-                getGlobalColumnTag("shipto"),
+                getGlobalColumnTag("shipcode"),
                 getGlobalColumnTag("order"),
                 getGlobalColumnTag("line"),
                 getGlobalColumnTag("item"), 
