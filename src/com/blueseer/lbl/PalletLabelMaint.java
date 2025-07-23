@@ -685,6 +685,8 @@ String carrier = "";
 
             if (lz.lblz_file().endsWith("jasper")) {
                 printJasperLabel(tbordnbr.getText(), tbline.getText(), serialno_display, tbref.getText(), tbqty.getText(), lz.lblz_file());
+            } else {
+                bsmf.MainFrame.show(getMessageTag(1206));  
             }
 
         } catch (Exception e) {

@@ -18504,10 +18504,10 @@ MainFrame.bslog(e);
             }
           
           if (prt[2].equals("DirectToIP")) {
-            Socket soc = null;
-            DataOutputStream dos = null;
-             soc = new Socket(prt[0], Integer.valueOf(prt[1]));
-                    dos= new DataOutputStream(soc.getOutputStream());
+            Socket soc;
+            DataOutputStream dos;
+             soc = new Socket(prt[0], Integer.parseInt(prt[1]));
+                    dos = new DataOutputStream(soc.getOutputStream());
                     dos.writeBytes(text);
 
              dos.close();
