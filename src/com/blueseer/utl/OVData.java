@@ -20855,18 +20855,19 @@ MainFrame.bslog(e);
             try {
 
             ArrayList a_order =  new ArrayList();
+            ArrayList a_remarks =  new ArrayList();
             ArrayList a_duedate =  new ArrayList();
             int k = 0;
 
           if (isMulti) {  
-            res = st.executeQuery("select  sv_nbr, sv_due_date, coalesce(plan_nbr,0) as 'plan_nbr'" +
+            res = st.executeQuery("select  sv_nbr, sv_rmks, sv_due_date, coalesce(plan_nbr,0) as 'plan_nbr'" +
                   " from sv_mstr " +
                   " left outer join plan_mstr on plan_site = sv_site and plan_order = sv_nbr " +
                   " where sv_site = " + "'" + site + "'" +
                   " and sv_status = " + "'" + getGlobalProgTag("open") + "'" +
                                  ";" );
           } else {
-            res = st.executeQuery("select sv_nbr, sv_due_date, coalesce(plan_nbr,0) as 'plan_nbr'" +
+            res = st.executeQuery("select sv_nbr, sv_rmks, sv_due_date, coalesce(plan_nbr,0) as 'plan_nbr'" +
                   " from sv_mstr " +
                   " left outer join plan_mstr on plan_site = sv_site and plan_order = sv_nbr " +
                   " where sv_nbr = " + "'" + serviceorder + "'" +
@@ -20877,6 +20878,7 @@ MainFrame.bslog(e);
                 while (res.next()) {
                     if (res.getString("plan_nbr").equals("0")) {
                                  a_order.add(res.getString("sv_nbr"));
+                                 a_remarks.add(res.getString("sv_rmks"));
                                  a_duedate.add(res.getString("sv_due_date"));
                     }
                 }  
@@ -20892,7 +20894,7 @@ MainFrame.bslog(e);
                     }
                     recnumber++;
                         st.executeUpdate("insert into plan_mstr "
-                            + "(plan_nbr, plan_order, plan_line, plan_item, plan_qty_req, plan_date_create, plan_date_due, plan_type, plan_site, plan_is_sched, plan_qty_sched ) "
+                            + "(plan_nbr, plan_order, plan_line, plan_item, plan_qty_req, plan_date_create, plan_date_due, plan_type, plan_site, plan_rmks, plan_is_sched, plan_qty_sched ) "
                             + " values ( " + "'" + nbr + "'" + ","
                             + "'" + a_order.get(z) + "'" + ","
                             + "'" + "1" + "'" + ","
@@ -20902,6 +20904,7 @@ MainFrame.bslog(e);
                             + "'" + a_duedate.get(z) + "'" + ","
                             + "'SRVC'" + ","
                             + "'" + site + "'" + ","
+                            + "'" + a_remarks.get(z) + "'" + ","        
                             + "'" + schedstatus + "'" + "," 
                             + "'" + qtysched + "'"
                             + ")"

@@ -2142,7 +2142,7 @@ public class DTData {
     
     public static DefaultTableModel getJobSRVCBrowseUtil( String str, int state, String myfield) {
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
-                      new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("id"), getGlobalColumnTag("order"), getGlobalColumnTag("customer")})
+                      new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("id"), getGlobalColumnTag("description"), getGlobalColumnTag("order"), getGlobalColumnTag("customer")})
                 {
                       @Override  
                       public Class getColumnClass(int col) {  
@@ -2164,19 +2164,19 @@ public class DTData {
             ResultSet res = null;
             try{
                 if (state == 1) { // begins
-                    res = st.executeQuery(" SELECT plan_nbr, plan_order, sv_cust " +
+                    res = st.executeQuery(" SELECT plan_nbr, plan_rmks, plan_order, sv_cust " +
                         " FROM  plan_mstr  left outer join sv_mstr on sv_nbr = plan_order " +
                         " where plan_type = 'SRVC' and " + myfield + " like " + "'" + str + "%'" +
                         " order by plan_nbr ;");
                 }
                 if (state == 2) { // ends
-                    res = st.executeQuery(" SELECT plan_nbr, plan_order, sv_cust " +
+                    res = st.executeQuery(" SELECT plan_nbr, plan_rmks, plan_order, sv_cust " +
                         " FROM  plan_mstr  left outer join sv_mstr on sv_nbr = plan_order " +
                         " where plan_type = 'SRVC' and " + myfield + " like " + "'%" + str + "'" +
                         " order by plan_nbr ;");
                 }
                  if (state == 0) { // match
-                 res = st.executeQuery(" SELECT plan_nbr, plan_order, sv_cust   " +
+                 res = st.executeQuery(" SELECT plan_nbr, plan_rmks, plan_order, sv_cust   " +
                          " FROM  plan_mstr  left outer join sv_mstr on sv_nbr = plan_order " +
                         " where plan_type = 'SRVC' and " + myfield + " like " + "'%" + str + "%'" +
                         " order by plan_nbr ;");
@@ -2184,6 +2184,7 @@ public class DTData {
                     while (res.next()) {
                         mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, 
                            res.getString("plan_nbr"),
+                           res.getString("plan_rmks"),
                            res.getString("plan_order"),
                            res.getString("sv_cust")
                         });

@@ -956,6 +956,39 @@ public class schData {
       return myreturn;
   }
     
+    public static void updatePlanOrderRemarks(String order, String remarks) {
+    try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                st.executeUpdate("update plan_mstr set "       
+                    + "plan_rmks = " + "'" + remarks + "'"
+                    + " where plan_nbr = " + "'" + order + "'" 
+                    + ";");
+           
+        } catch (SQLException s) {
+            MainFrame.bslog(s);
+        } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+    } catch (Exception e) {
+        MainFrame.bslog(e);
+    }
+  }
+    
+    
     public static boolean updatePlanOperationStatusQty(String plan, String op, String status, double qty) {
       boolean x = false;  
       try {
