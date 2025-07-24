@@ -39,6 +39,7 @@
 		<![CDATA[SELECT
      plan_nbr,
      plan_item,
+     plan_rmks,
      plan_qty_req,
      plan_qty_sched,
      plan_date_due,
@@ -100,6 +101,7 @@ where plan_nbr = $P{myid};]]>
 	<field name="plo_operatorname" class="java.lang.String"/>
 	<field name="plo_notes" class="java.lang.String"/>
 	<field name="plo_date" class="java.lang.String"/>
+	<field name="plan_rmks" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -287,6 +289,22 @@ where plan_nbr = $P{myid};]]>
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{jasper.opticket.lblname}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="20" y="93" width="47" height="14" uuid="828de5a3-e60d-4441-8c5f-45e68444ee53"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{jasper.opticket.lblremarks}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="71" y="94" width="140" height="17" uuid="e7f4e1f5-4ad1-4e91-be17-7243cc6cfb54">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{plan_rmks}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>

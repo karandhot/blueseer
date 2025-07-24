@@ -39,6 +39,7 @@
 		<![CDATA[SELECT
      plan_nbr,
      plan_item,
+     plan_rmks,
      plan_qty_req,
      plan_qty_sched,
      plan_date_due,
@@ -96,6 +97,7 @@ where plan_nbr = $P{myid};]]>
 	<field name="plo_op" class="java.lang.String"/>
 	<field name="plo_notes" class="java.lang.String"/>
 	<field name="plo_desc" class="java.lang.String"/>
+	<field name="plan_rmks" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -221,7 +223,7 @@ where plan_nbr = $P{myid};]]>
 				<textElement>
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{plan_item}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{plan_rmks}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
