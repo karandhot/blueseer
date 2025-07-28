@@ -237,7 +237,7 @@ where plan_nbr = $P{myid};]]>
 				<textFieldExpression><![CDATA[$R{jasper.opticket.lbloperation}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="330" y="0" width="112" height="20" uuid="92a31bb1-e9d8-470d-9922-7458fc88f16b"/>
+				<reportElement x="354" y="0" width="112" height="20" uuid="92a31bb1-e9d8-470d-9922-7458fc88f16b"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
@@ -247,26 +247,33 @@ where plan_nbr = $P{myid};]]>
 				<reportElement x="4" y="19" width="756" height="1" uuid="c9e36006-c5df-41ef-96b1-529b4e6ddb52"/>
 			</line>
 			<textField>
-				<reportElement x="91" y="0" width="79" height="19" uuid="464508d8-3bf4-4dd7-9818-32d281acf332"/>
+				<reportElement x="80" y="0" width="79" height="19" uuid="464508d8-3bf4-4dd7-9818-32d281acf332"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{jasper.opticket.lbldesc}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="220" y="1" width="79" height="19" uuid="d198c844-14f2-4790-b8ae-c513ce665638"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{jasper.opticket.lblname}]]></textFieldExpression>
 			</textField>
 		</band>
 	</columnHeader>
 	<detail>
 		<band height="40" splitType="Stretch">
 			<textField>
-				<reportElement stretchType="RelativeToTallestObject" x="19" y="0" width="62" height="20" uuid="978682a3-4259-41c3-adae-54872ecfe90a"/>
+				<reportElement stretchType="RelativeToTallestObject" x="19" y="0" width="52" height="20" uuid="978682a3-4259-41c3-adae-54872ecfe90a"/>
 				<textFieldExpression><![CDATA[$F{plo_op}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="91" y="0" width="229" height="20" uuid="edbe7124-d60b-42b0-a896-8522f841a299"/>
+				<reportElement x="81" y="0" width="129" height="20" uuid="edbe7124-d60b-42b0-a896-8522f841a299"/>
 				<textFieldExpression><![CDATA[$F{plo_desc}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
-				<reportElement x="330" y="0" width="430" height="20" uuid="055e9b32-4e85-4874-963c-4da1a982fa9b"/>
+				<reportElement x="354" y="0" width="406" height="20" uuid="055e9b32-4e85-4874-963c-4da1a982fa9b"/>
 				<textElement markup="none"/>
 				<textFieldExpression><![CDATA[$F{plo_notes}]]></textFieldExpression>
 			</textField>
@@ -281,6 +288,10 @@ where plan_nbr = $P{myid};]]>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "jobopdet.jasper"]]></subreportExpression>
 			</subreport>
+			<textField>
+				<reportElement x="220" y="0" width="110" height="20" uuid="cc2a8c16-f84e-4b08-b4b1-70c30f6dfaaa"/>
+				<textFieldExpression><![CDATA[$F{plo_operatorname}]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 	<summary>
