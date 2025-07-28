@@ -458,6 +458,8 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
         ddtooling.insertItemAt("", 0);
         ddtooling.setSelectedIndex(0);
         
+        ddop.removeAllItems();
+        
        isLoad = false;
     }
     
@@ -503,7 +505,6 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                btaddmatl.setEnabled(false);
                btdeletematl.setEnabled(false);
                btupdate.setEnabled(false);
-               btupdateop.setEnabled(false);
                btaddop.setEnabled(false);
            }
            
@@ -514,7 +515,6 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                btaddmatl.setEnabled(false);
                btdeletematl.setEnabled(false);
                btupdate.setEnabled(false);
-               btupdateop.setEnabled(false);
                btaddop.setEnabled(false);
            }
            
@@ -1061,7 +1061,6 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
         btgeneric = new javax.swing.JButton();
         tbdesc = new javax.swing.JTextField();
         jLabel20 = new javax.swing.JLabel();
-        btupdateop = new javax.swing.JButton();
         panelNotes = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -1357,13 +1356,6 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
         jLabel20.setText("Description:");
         jLabel20.setName("lbldesc"); // NOI18N
 
-        btupdateop.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/save.png"))); // NOI18N
-        btupdateop.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btupdateopActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout panelMainLayout = new javax.swing.GroupLayout(panelMain);
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
@@ -1402,9 +1394,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                                             .addComponent(tbkey, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))
                                         .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, panelMainLayout.createSequentialGroup()
-                                                .addGap(8, 8, 8)
-                                                .addComponent(btupdateop, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addGap(41, 41, 41)
                                                 .addComponent(tbopdesc, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE))
                                             .addGroup(panelMainLayout.createSequentialGroup()
                                                 .addComponent(btlookup, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1497,24 +1487,21 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                                     .addComponent(jLabel3))
                                 .addGap(9, 9, 9)
                                 .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelMainLayout.createSequentialGroup()
+                                        .addComponent(btaddop, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(8, 8, 8))
                                     .addGroup(panelMainLayout.createSequentialGroup()
                                         .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelMainLayout.createSequentialGroup()
-                                                .addComponent(btaddop, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addGap(8, 8, 8))
-                                            .addGroup(panelMainLayout.createSequentialGroup()
-                                                .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                        .addComponent(ddop, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addComponent(jLabel4))
-                                                    .addComponent(tbopdesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                                        .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                            .addComponent(ddoperator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(jLabel16))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(dcdate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(btupdateop)))
+                                            .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                .addComponent(ddop, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(jLabel4))
+                                            .addComponent(tbopdesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                                .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(ddoperator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel16))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(dcdate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(panelMainLayout.createSequentialGroup()
                                 .addGap(0, 0, Short.MAX_VALUE)
                                 .addComponent(jLabel19)))
@@ -1842,7 +1829,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_rbserviceActionPerformed
 
     private void ddopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddopActionPerformed
-         if (! isLoad && ddop.getSelectedItem() != null) {
+         if (! isLoad && ddop.getSelectedItem() != null && ! jobop[0].isBlank()) {
              if (ddop.getSelectedItem().toString().isBlank()) {
                 tbopdesc.setText("");
                 materialmodel.setNumRows(0);
@@ -1866,7 +1853,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
                 tbopdesc.setText(plo.plo_desc()); 
                 materialmodel.setNumRows(0);
                 ddoperator.setSelectedItem(plo.plo_operatorname());
-                dcdate.setDate(parseDate(plo.plo_date()));
+                dcdate.setDate(parseDate(plo.plo_date())); 
                 for (String[] s : plodmatl) {
                     if (s[2].equals(ddop.getSelectedItem().toString()) && (s[3].equals("material") || s[3].equals("tooling") || s[3].equals("service"))) {
                     materialmodel.addRow(new Object[] { 
@@ -1951,6 +1938,23 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
     private void btupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateActionPerformed
         
         updatePlanOrderRemarks(tbkey.getText(), tbdesc.getText());
+        if (ddop.getItemCount() > 0 && ! ddop.getSelectedItem().toString().isBlank()) {
+           updatePlanOPDesc(tbkey.getText(), ddop.getSelectedItem().toString(), tbopdesc.getText());
+           
+           if (ddoperator.getItemCount() > 0 && ddoperator.getSelectedItem() != null) {
+            if (ddoperator.getSelectedItem().toString().isBlank()) {
+                updatePlanOPOperator(tbkey.getText(), ddop.getSelectedItem().toString(), "", "");
+            } else {
+                updatePlanOPOperator(tbkey.getText(), ddop.getSelectedItem().toString(), getEmpIDByFormalName(ddoperator.getSelectedItem().toString()), ddoperator.getSelectedItem().toString());
+            }
+            
+            }
+            if (dcdate.getDate() != null) {
+                updatePlanOPDate(tbkey.getText(), ddop.getSelectedItem().toString(), setDateDB(dcdate.getDate())); 
+            }
+           
+        }
+        
         bsmf.MainFrame.show("job has been updated");
         
        
@@ -1967,6 +1971,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btaddopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddopActionPerformed
         if (! tbkey.getText().isBlank()) {
+                
         int newop = getPlanOpLastOp(tbkey.getText());
         String opdesc = bsmf.MainFrame.input("Enter Operation Description: ");
         plan_operation x = new plan_operation(null, 
@@ -1986,11 +1991,17 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
              );
         String[] m = addPlanOperation(x);
             if (m[0].equals("0")) {
+                ddop.addItem(bsNumber(newop + 1));
+                ddop.setSelectedItem(bsNumber(newop + 1));
                 bsmf.MainFrame.show("operation added");
-                initvars(new String[]{tbkey.getText()});
+                // initvars(new String[]{tbkey.getText()});
             } else {
                 bsmf.MainFrame.show("operation not added..." + m[1]);
             }
+            
+            
+            ddoperator.setSelectedIndex(0);
+            dcdate.setDate(null);
         }
     }//GEN-LAST:event_btaddopActionPerformed
 
@@ -2010,29 +2021,6 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
         
     }//GEN-LAST:event_btgenericActionPerformed
 
-    private void btupdateopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateopActionPerformed
-        if (ddop.getItemCount() > 0 && ddop.getSelectedItem().toString().isBlank()) {
-            bsmf.MainFrame.show("Must choose an operation");
-            return;
-        }
-        
-        updatePlanOPDesc(tbkey.getText(), ddop.getSelectedItem().toString(), tbopdesc.getText());
-        
-        
-        if (ddoperator.getItemCount() > 0 && ddoperator.getSelectedItem() != null) {
-            if (ddoperator.getSelectedItem().toString().isBlank()) {
-                updatePlanOPOperator(tbkey.getText(), ddop.getSelectedItem().toString(), "", "");
-            } else {
-                updatePlanOPOperator(tbkey.getText(), ddop.getSelectedItem().toString(), getEmpIDByFormalName(ddoperator.getSelectedItem().toString()), ddoperator.getSelectedItem().toString());
-            }
-            
-        }
-        if (dcdate.getDate() != null) {
-            updatePlanOPDate(tbkey.getText(), ddop.getSelectedItem().toString(), setDateDB(dcdate.getDate())); 
-        }
-        bsmf.MainFrame.show("Operation has been updated");
-    }//GEN-LAST:event_btupdateopActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btaddmatl;
@@ -2048,7 +2036,6 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btrefreshchart;
     private javax.swing.JButton btupdate;
     private javax.swing.JButton btupdatenotes;
-    private javax.swing.JButton btupdateop;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JCheckBox cbconsumable;
     private com.toedter.calendar.JDateChooser dcdate;
