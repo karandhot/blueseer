@@ -1072,18 +1072,20 @@ public class Scheduler extends javax.swing.JPanel {
             } else {
             component[z + 6 + (offset - 1)].setForeground(Color.black);
             }
-            x = cal.get(Calendar.YEAR) + "-" + (cal.get(Calendar.MONTH) + 1) + "-" + String.format("%02d", z) ;
+            x = cal.get(Calendar.YEAR) + "-" + String.format("%02d",(cal.get(Calendar.MONTH) + 1)) + "-" + String.format("%02d", z) ;
             sum = 0;
             if (ddcellchoice.getSelectedItem().toString().equals("ALL")) {
             for (String[] k : list) {
+               // bsmf.MainFrame.show("HERE: " + x + "/" + k[0]);
                 if (k[0].equals(x)) {
                     sum += Double.valueOf(k[2]);
                 }
             }
+            // bsmf.MainFrame.show("HERE: " + x + "/" + sum + "/" + sumOfAllCells);
                 if (sum >= sumOfAllCells) {
                      cal.set(Calendar.DAY_OF_MONTH,z);
                      component[z + 6 + (offset - 1)].setBackground(Color.green);
-                     // bsmf.MainFrame.show(x + "/" + z + "/" + offset);
+                  //   bsmf.MainFrame.show("HERE: " + x + "/" + z + "/" + offset);
                 } else if (sum > 0 && sum < sumOfAllCells) {
                      cal.set(Calendar.DAY_OF_MONTH,z);
                      component[z + 6 + (offset - 1)].setBackground(Color.yellow);

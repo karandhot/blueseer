@@ -184,7 +184,7 @@
                                                   <Group type="103" groupAlignment="1" attributes="0">
                                                       <Component id="topart" alignment="0" max="32767" attributes="0"/>
                                                       <Component id="frompart" alignment="0" max="32767" attributes="0"/>
-                                                      <Component id="dcfrom" alignment="0" pref="160" max="32767" attributes="0"/>
+                                                      <Component id="dcfrom" alignment="0" max="32767" attributes="0"/>
                                                       <Component id="dcto" alignment="0" max="32767" attributes="0"/>
                                                   </Group>
                                                   <EmptySpace max="-2" attributes="0"/>
