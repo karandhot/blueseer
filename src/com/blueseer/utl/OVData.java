@@ -20792,6 +20792,7 @@ MainFrame.bslog(e);
                             + ";");
                         
                       //  ArrayList<String> ops = getItemWFOPs(a_part.get(z).toString());
+                       if (a_ops.get(z) != null) {
                         String[] ops = a_ops.get(z).toString().split(",", -1);
                         for (String op : ops) {
                             st.executeUpdate("insert into plan_operation "
@@ -20802,6 +20803,7 @@ MainFrame.bslog(e);
                             + ")"
                             + ";");
                         }
+                       }
                 }
        } catch (SQLException s) {
             MainFrame.bslog(s);
@@ -20825,6 +20827,7 @@ MainFrame.bslog(e);
         MainFrame.bslog(e);
 
     }
+     
     return recnumber;
    }
   

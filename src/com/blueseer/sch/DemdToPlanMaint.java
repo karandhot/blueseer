@@ -25,6 +25,7 @@ SOFTWARE.
  */
 package com.blueseer.sch;
 
+import bsmf.MainFrame;
 import com.blueseer.utl.OVData;
 import java.awt.Toolkit;
 import java.text.DateFormat;
@@ -36,6 +37,7 @@ import static bsmf.MainFrame.tags;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -51,7 +53,7 @@ import javax.swing.JTabbedPane;
  */
 public class DemdToPlanMaint extends javax.swing.JPanel {
 
-    int numberrecords = 0;
+    
     /**
      * Creates new form PostGLPanel
      */
@@ -127,23 +129,32 @@ public class DemdToPlanMaint extends javax.swing.JPanel {
         
     }
     
-     class Task extends SwingWorker<Void, Void> {
+     class Task extends SwingWorker<String[], Void> {
         /*
          * Main task. Executed in background thread.
          */
         @Override
-        public Void doInBackground() {
-       numberrecords = OVData.createPlanFromDemand(ddsite.getSelectedItem().toString(), tborderfrom.getText(), tborderto.getText());
-       return null;
+        public String[] doInBackground() { 
+       int numberrecords = OVData.createPlanFromDemand(ddsite.getSelectedItem().toString(), tborderfrom.getText(), tborderto.getText());
+       return new String[]{String.valueOf(numberrecords)};
        }
  
         /*
          * Executed in event dispatch thread
          */
         public void done() {
-            bsmf.MainFrame.show(getMessageTag(1121,String.valueOf(numberrecords)));
-            MainProgressBar.setEnabled(false);
-            MainProgressBar.setIndeterminate(false);
+            
+            try {
+                String[] r = get();
+                if (r != null) {
+                  bsmf.MainFrame.show(getMessageTag(1121,r[0]));  
+                }
+            } catch (Exception e) {
+                bsmf.MainFrame.bslog(e);
+            }
+            
+                MainProgressBar.setEnabled(false);
+                MainProgressBar.setIndeterminate(false);
         }
     }  
     
@@ -243,7 +254,6 @@ public class DemdToPlanMaint extends javax.swing.JPanel {
         MainProgressBar.setEnabled(true);
         MainProgressBar.setVisible(true);
         MainProgressBar.setIndeterminate(true);
-        numberrecords = 0; 
         Task task = new Task();
         task.execute();
     }//GEN-LAST:event_btpostActionPerformed
