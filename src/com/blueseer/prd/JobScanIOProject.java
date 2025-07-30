@@ -1343,7 +1343,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
         cbconsumable.setText("Consumable");
 
         btgeneric.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/newfile.png"))); // NOI18N
-        btgeneric.setToolTipText("Clear");
+        btgeneric.setToolTipText("New Job");
         btgeneric.setFocusable(false);
         btgeneric.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btgeneric.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
