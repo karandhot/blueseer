@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -138,8 +139,25 @@ public static void main(String args[]) throws IOException {
 
 
  public static String[] checkargs(String[] args) {
-        List<String> legitargs = Arrays.asList("-if", "-of", "-id", "-od", "-m", "-x", "-ff", "-fd", "-ad", "-td", "-tf", "-e", "-debug", "-ftp", "-pd", "-pdr", "-site" );
-     
+        HashMap<String, String> arguments = new HashMap<>();
+        arguments.put("-h", "Help");
+        arguments.put("-if", "inbound single file");
+        arguments.put("-of", "outbound single file");
+        arguments.put("-id", "inbound directory containing files to process.  Note -if and -id are mutually exclusive operations");
+        arguments.put("-od", "outbound directory where files will be deposited");
+        arguments.put("-m", "Map to be executed");
+        arguments.put("-x", "override");
+        arguments.put("-ff", "single file filtering operation");
+        arguments.put("-fd", "directory of filtering operation");
+        arguments.put("-ad", "archive directory");
+        arguments.put("-td", "traffic directory");
+        arguments.put("-tf", "traffic file");
+        arguments.put("-e", "Extract file");
+        arguments.put("-debug", "Debugging output to terminal");
+        arguments.put("-ftp", "ftp command line processing");
+        arguments.put("-pd", "purge directory");
+        arguments.put("-pdr", "purge directory recursive");
+        arguments.put("-site", "Site");
         String[] vals = new String[10]; // last element is now 'site'
         Arrays.fill(vals, "");
         
@@ -149,6 +167,14 @@ public static void main(String args[]) throws IOException {
          boolean isSingle = false ;
          boolean isMultiple = false ;
          for (String s : args) {
+             if (s.equalsIgnoreCase("-h")) {
+                 System.out.println("\nHelp output ...allowed parameters: \n");
+                  for (String key : arguments.keySet()) {
+                     System.out.println(key + "\t" + arguments.get(key));
+                  }
+                  System.out.println("\n Sample Execution: jre17/bin/java -cp custom/*;dist/* com.blueseer.edi.EDIbs -if edi/sampledata/acme_850.txt -of temp/test.txt -m bs850ToCSV -x \n");
+                 System.exit(0);
+             }
              if (s.equalsIgnoreCase("-if") || s.equalsIgnoreCase("-of"))
                  isSingle = true;
              if (s.equalsIgnoreCase("-id") || s.equalsIgnoreCase("-od"))
@@ -174,17 +200,18 @@ public static void main(String args[]) throws IOException {
         for (int i = 0; i < args.length ;i++) {
             if (args[i].substring(0,1).equals("-")) {
               
-              // first make sure -xx argument qualifier is legit  
-              if (! legitargs.contains(args[i])) {
+              
+              if (! arguments.containsKey(args[i])) {
                   System.out.println("Bad Qualifier");
                   System.exit(1);
               }
+             
               
               
               
-               if ( (args.length > i+1 && args[i+1] != null) || (args[i].toString().equals("-x")) || (args[i].toString().equals("-debug")) || (args[i].toString().equals("-ff") || (args[i].toString().equals("-fd"))) ) {
+               if ( (args.length > i+1 && args[i+1] != null) || (args[i].equals("-x")) || (args[i].equals("-debug")) || (args[i].equals("-ff") || (args[i].equals("-fd"))) ) {
                 
-                 switch (args[i].toString().toLowerCase()) {
+                 switch (args[i].toLowerCase()) {
         
                     case "-if" :
                         vals[0] = args[i+1]; 
