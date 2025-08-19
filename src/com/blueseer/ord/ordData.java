@@ -4188,7 +4188,7 @@ public class ordData {
 
     }
 
-    public static double getOrderTotalTax(int nbr) {
+    public static double getOrderTotalTax(String nbr) {
        double tax = 0;
      try{
         Connection con = null;
@@ -4248,7 +4248,7 @@ public class ordData {
 
     }
     
-    public static double getSVOrderTotalTax(int nbr) {
+    public static double getSVOrderTotalTax(String nbr) {
        double tax = 0;
      try{
         Connection con = null;

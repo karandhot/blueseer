@@ -120,6 +120,7 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
                 int j = 0;
                 HashSet<String> assignedlabels = new HashSet<String>();
                 boolean autoconfirm = false;
+                boolean autonumber = true;
     
     // global datatablemodel declarations 
     javax.swing.table.DefaultTableModel serialmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -372,6 +373,7 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
        isLoad = true;
         
         autoconfirm = BlueSeerUtils.ConvertStringToBool(getSysMetaValue("system", "shippercontrol", "auto_confirm_shipper_build"));
+        autonumber = BlueSeerUtils.ConvertStringToBool(getSysMetaValue("system", "shippercontrol", "auto_generate_shipper_number"));
        
          tbkey.setText("");
          terms = "";
@@ -442,8 +444,12 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
         tbkey.setEditable(true);
         tbkey.setForeground(Color.blue);
         if (! x.isEmpty()) {
+          if (autonumber) {  
           tbkey.setText(String.valueOf(OVData.getNextNbr(x)));  
           tbkey.setEditable(false);
+          } else {
+              tbkey.setText("");
+          }
         } 
         tbkey.requestFocus();
     }
@@ -467,12 +473,7 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
     
     public boolean validateInput(String x) {
         boolean b = true;
-                //String line = checkqty();
-               // if (! line.isEmpty()) {
-               //     b = false;
-               //     bsmf.MainFrame.show(getMessageTag(1169,line));
-              //      return b;  
-              //  }
+           
         
                 if (ddsite.getSelectedItem() == null || ddsite.getSelectedItem().toString().isEmpty()) {
                     b = false;

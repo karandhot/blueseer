@@ -387,7 +387,7 @@ public class ARAgingView extends javax.swing.JPanel {
                     i++;
                         modeldetail.addRow(new Object[]{
                             BlueSeerUtils.clickflag,
-                            bsNumber(res.getString("ar_nbr")),
+                            res.getString("ar_nbr"),
                             res.getString("ar_rmks"),
                             res.getString("ar_type"),
                             getDateDB(res.getString("ar_effdate")),
@@ -1227,7 +1227,7 @@ try {
         int col = tabledetail.columnAtPoint(evt.getPoint());
            if ( col == 0) {     
                if (! checkperms("InvoiceMaint")) { return; }
-               String[] args = new String[]{bsNumberToUS(tabledetail.getValueAt(row, 1).toString())};
+               String[] args = new String[]{tabledetail.getValueAt(row, 1).toString()};
                reinitpanels("InvoiceMaint", true, args);
            }
     }//GEN-LAST:event_tabledetailMouseClicked

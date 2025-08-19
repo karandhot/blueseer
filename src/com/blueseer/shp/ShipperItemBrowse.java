@@ -710,7 +710,7 @@ public class ShipperItemBrowse extends javax.swing.JPanel {
                          totqty = totqty + res.getDouble("shd_qty");
                         
                          mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, 
-                                bsNumber(res.getString("shd_id")),
+                                res.getString("shd_id"),
                                 res.getString("shd_so"),
                                 res.getString("sh_cust"),
                                 getDateDB(res.getString("shd_date")),
@@ -751,7 +751,7 @@ public class ShipperItemBrowse extends javax.swing.JPanel {
         if ( col == 0) {
                 String mypanel = "ShipMaint";
                if (! checkperms(mypanel)) { return; }
-               String[] args = new String[]{bsNumberToUS(tablereport.getValueAt(row, 1).toString())};
+               String[] args = new String[]{tablereport.getValueAt(row, 1).toString()};
                reinitpanels(mypanel, true, args);
         }
     }//GEN-LAST:event_tablereportMouseClicked

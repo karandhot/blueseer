@@ -735,7 +735,7 @@ public class ShipperMaint extends javax.swing.JPanel {
                 while (res.next()) {
                     i++;
                     
-                    tbkey.setText(bsNumber(res.getString("sh_id")));
+                    tbkey.setText(res.getString("sh_id"));
                     ddbillto.setSelectedItem(res.getString("sh_cust"));
                     ddshipto.setSelectedItem(res.getString("sh_ship"));
                     tbref.setText(res.getString("sh_ref"));

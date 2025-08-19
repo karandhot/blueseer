@@ -304,7 +304,7 @@ public class ShipperBrowse extends javax.swing.JPanel {
                     totalsales = totalsales + (res.getDouble("shd_qty") * res.getDouble("shd_netprice"));
                     totalqty = totalqty + res.getDouble("shd_qty");
                    modeldetail.addRow(new Object[]{ 
-                      bsNumber(res.getString("shd_id")), 
+                      res.getString("shd_id"), 
                       res.getString("shd_item"),
                       res.getString("shd_custitem"),
                       res.getString("shd_so"),
@@ -807,7 +807,7 @@ public class ShipperBrowse extends javax.swing.JPanel {
                          totqty = totqty + res.getDouble("qty");
                          
                          mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, BlueSeerUtils.clickbasket, 
-                                bsNumber(res.getString("sh_id")),
+                                res.getString("sh_id"),
                                 res.getString("sh_cust"),
                                 getDateDB(res.getString("sh_shipdate")),
                                 getDateDB(res.getString("sh_confdate")),
@@ -851,18 +851,18 @@ public class ShipperBrowse extends javax.swing.JPanel {
         int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
         if ( col == 1) {
-                getdetail(bsNumberToUS(tablereport.getValueAt(row, 2).toString()));
+                getdetail(tablereport.getValueAt(row, 2).toString());
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
         }
         if ( col == 0) {
                 String mypanel = "ShipMaint";
                if (! checkperms(mypanel)) { return; }
-               String[] args = new String[]{bsNumberToUS(tablereport.getValueAt(row, 2).toString())};
+               String[] args = new String[]{tablereport.getValueAt(row, 2).toString()};
                reinitpanels(mypanel, true, args);
         }
         if (col == 10) {
-            OVData.printInvoice(bsNumberToUS(tablereport.getValueAt(row, 2).toString()), true); 
+            OVData.printInvoice(tablereport.getValueAt(row, 2).toString(), true); 
         }
         if (col == 11) {
             if (sending) {

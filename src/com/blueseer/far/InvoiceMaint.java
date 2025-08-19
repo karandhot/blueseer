@@ -788,7 +788,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
                 while (res.next()) {
                     i++;
                     
-                    tbkey.setText(bsNumber(res.getString("sh_id")));
+                    tbkey.setText(res.getString("sh_id"));
                     tbcust.setText(res.getString("sh_cust"));
                     lbcust.setText(res.getString("cm_name"));
                     tbship.setText(res.getString("sh_ship"));

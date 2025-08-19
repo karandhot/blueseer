@@ -17132,7 +17132,7 @@ return mystring;
                         " inner join cm_mstr on cm_code = quo_cust " +
                         " left outer join cms_det on cms_code = quo_cust and cms_shipto = quo_ship " +
                         " inner join site_mstr on site_site = quo_site " +
-                        " where quo_nbr = " + "'" + bsParseInt(nbr) + "'" + ";");
+                        " where quo_nbr = " + "'" + nbr + "'" + ";");
                        while (res.next()) {
                           cust = res.getString("quo_cust");
                           site = res.getString("quo_site");
@@ -17161,7 +17161,7 @@ return mystring;
                Path imagepath = FileSystems.getDefault().getPath(cleanDirString(getSystemImageDirectory()) + logo);
                 HashMap hm = new HashMap();
                 hm.put("REPORT_TITLE", "QUOTE");
-                hm.put("myid",  bsParseInt(nbr));
+                hm.put("myid",  nbr);
                 hm.put("site_csz", site_csz);
                 hm.put("bill_csz", bill_csz);
                 hm.put("ship_csz", ship_csz);
@@ -17224,7 +17224,7 @@ return mystring;
                         " inner join cm_mstr on cm_code = quo_cust " +
                         " left outer join cms_det on cms_code = quo_cust and cms_shipto = quo_ship " +
                         " inner join site_mstr on site_site = quo_site " +
-                        " where quo_nbr = " + "'" + bsParseInt(nbr) + "'" + ";");
+                        " where quo_nbr = " + "'" + nbr + "'" + ";");
                        while (res.next()) {
                           cust = res.getString("quo_cust");
                           site = res.getString("quo_site");
@@ -17253,7 +17253,7 @@ return mystring;
                Path imagepath = FileSystems.getDefault().getPath(cleanDirString(getSystemImageDirectory()) + logo);
                 HashMap hm = new HashMap();
                 hm.put("REPORT_TITLE", "QUOTE");
-                hm.put("myid",  bsParseInt(nbr));
+                hm.put("myid",  nbr);
                 hm.put("site_csz", site_csz);
                 hm.put("bill_csz", bill_csz);
                 hm.put("ship_csz", ship_csz);
@@ -17315,7 +17315,7 @@ return mystring;
                  String ship_csz = "";
                  int linecount = 0;
                 res = st.executeQuery("select shd_line from ship_det " +
-                        " where shd_id = " + "'" + bsParseInt(invoice) + "'" + ";"); 
+                        " where shd_id = " + "'" + invoice + "'" + ";"); 
                 while (res.next()) {
                     linecount++;
                 }
@@ -17329,7 +17329,7 @@ return mystring;
                         " inner join cm_mstr on cm_code = sh_cust " +
                         " left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship " +
                         " inner join site_mstr on site_site = sh_site " +
-                        " where sh_id = " + "'" + bsParseInt(invoice) + "'" + ";");
+                        " where sh_id = " + "'" + invoice + "'" + ";");
                        while (res.next()) {
                           cust = res.getString(("sh_cust"));
                           site = res.getString(("sh_site"));
@@ -17385,7 +17385,7 @@ return mystring;
                Path imagepath = FileSystems.getDefault().getPath(cleanDirString(getSystemImageDirectory()) + logo);
                 HashMap hm = new HashMap();
                 hm.put("REPORT_TITLE", "INVOICE");
-                hm.put("myid",  bsParseInt(invoice));
+                hm.put("myid",  invoice);
                 if (shtype.equals("F")) {
                    hm.put("myfreightnbr", shorder); 
                    hm.put("linecount", linecount);
@@ -17459,7 +17459,7 @@ return mystring;
                         " inner join cm_mstr on cm_code = sh_cust " +
                         " left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship " +
                         " inner join site_mstr on site_site = sh_site " +
-                        " where shd_so = " + "'" + bsParseInt(order) + "'" + ";");
+                        " where shd_so = " + "'" + order + "'" + ";");
                        int i = 0;
                        while (res.next()) {
                           i++;
@@ -17743,7 +17743,7 @@ return mystring;
                         " inner join cm_mstr on cm_code = sh_cust " +
                         " left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship " +
                         " inner join site_mstr on site_site = sh_site " +
-                        " where sh_id = " + "'" + bsParseInt(shipper) + "'" + ";");
+                        " where sh_id = " + "'" + shipper + "'" + ";");
                        while (res.next()) {
                           cust = res.getString(("sh_cust"));
                           site = res.getString(("sh_site"));
@@ -17763,7 +17763,7 @@ return mystring;
                Path imagepath = FileSystems.getDefault().getPath(cleanDirString(getSystemImageDirectory()) + logo);
                 HashMap hm = new HashMap();
                 hm.put("REPORT_TITLE", "RECEIPT");
-                hm.put("myid",  bsParseInt(shipper));
+                hm.put("myid",  shipper);
                 hm.put("site_csz", site_csz);
                 hm.put("bill_csz", bill_csz);
                 hm.put("ship_csz", ship_csz);
@@ -17947,7 +17947,7 @@ return mystring;
                         " inner join cm_mstr on cm_code = sh_cust " +
                         " left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship " +
                         " inner join site_mstr on site_site = sh_site " +
-                        " where sh_id = " + "'" + bsParseInt(shipper) + "'" + ";");
+                        " where sh_id = " + "'" + shipper + "'" + ";");
                        while (res.next()) {
                           cust = res.getString(("sh_cust"));
                           site = res.getString(("sh_site"));
@@ -17969,7 +17969,7 @@ return mystring;
                Path imagepath = FileSystems.getDefault().getPath(cleanDirString(getSystemImageDirectory()) + logo);
                 HashMap hm = new HashMap();
                 hm.put("REPORT_TITLE", "SHIPPER");
-                hm.put("myid",  bsParseInt(shipper));
+                hm.put("myid",  shipper);
                 hm.put("site_csz", site_csz);
                 hm.put("bill_csz", bill_csz);
                 hm.put("ship_csz", ship_csz);
@@ -18023,7 +18023,7 @@ return mystring;
                         " inner join cm_mstr on cm_code = sh_cust " +
                         " left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship " +
                         " inner join site_mstr on site_site = sh_site " +
-                        " where shd_so = " + "'" + bsParseInt(order) + "'" + ";");
+                        " where shd_so = " + "'" + order + "'" + ";");
                        int i = 0;
                        while (res.next()) {
                           i++;
@@ -18115,7 +18115,7 @@ return mystring;
                         " inner join vd_mstr on vd_addr = po_vend " +
                         " inner join po_addr on poa_code = po_nbr" +
                         " inner join site_mstr on site_site = po_site " +
-                        " where po_nbr = " + "'" + bsParseInt(po) + "'" + ";");
+                        " where po_nbr = " + "'" + po + "'" + ";");
                        while (res.next()) {
                           vend = res.getString("po_vend");
                           site = res.getString("po_site");
@@ -18148,7 +18148,7 @@ return mystring;
                Path imagepath = FileSystems.getDefault().getPath(cleanDirString(getSystemImageDirectory()) + logo);
                 HashMap hm = new HashMap();
                 hm.put("REPORT_TITLE", "SHIPPER");
-                hm.put("myid",  bsParseInt(po));
+                hm.put("myid",  po);
                 hm.put("site_csz", site_csz);
                 hm.put("vend_csz", vend_csz);
                 hm.put("ship_csz", ship_csz);
@@ -18211,14 +18211,14 @@ return mystring;
                 String site_csz = "";
                 String bill_csz = "";
                 String ship_csz = "";
-                double taxes = getOrderTotalTax(bsParseInt(order));
+                double taxes = getOrderTotalTax(order); 
                 res = st.executeQuery("select so_cust, so_site, so_curr, " +
                         " cm_city, cm_state, cm_zip, cm_country, cms_city, cms_state, cms_zip, cms_country, site_city, site_state, site_zip, site_country " +
                         " from so_mstr " +
                         " inner join cm_mstr on cm_code = so_cust " +
                         " left outer join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
                         " inner join site_mstr on site_site = so_site " +
-                        " where so_nbr = " + "'" + bsParseInt(order) + "'" + ";");
+                        " where so_nbr = " + "'" + order + "'" + ";");
                        while (res.next()) {
                           cust = res.getString(("so_cust"));
                           site = res.getString(("so_site"));
@@ -18245,7 +18245,7 @@ return mystring;
                Path imagepath = FileSystems.getDefault().getPath(cleanDirString(getSystemImageDirectory()) + logo);
                 HashMap hm = new HashMap();
                 hm.put("REPORT_TITLE", "ORDER");
-                hm.put("myid",  bsParseInt(order));
+                hm.put("myid",  order);
                 hm.put("site_csz", site_csz);
                 hm.put("bill_csz", bill_csz);
                 hm.put("ship_csz", ship_csz);
@@ -18301,7 +18301,7 @@ return mystring;
                 String site_csz = "";
                 String bill_csz = "";
                 String ship_csz = "";
-                double taxes = getSVOrderTotalTax(bsParseInt(order));
+                double taxes = getSVOrderTotalTax(order);
                 res = st.executeQuery("select sv_cust, sv_site, sv_type, sv_curr, " +
                         " cm_city, cm_state, cm_zip, cm_country, cms_country, site_country, " +
                         " cms_city, cms_state, cms_zip, site_city, site_state, site_zip " +
@@ -18309,7 +18309,7 @@ return mystring;
                         " inner join cm_mstr on cm_code = sv_cust " +
                         " left outer join cms_det on cms_code = sv_cust and cms_shipto = sv_ship " +
                         " inner join site_mstr on site_site = sv_site " +
-                        " where sv_nbr = " + "'" + bsParseInt(order) + "'" + ";");
+                        " where sv_nbr = " + "'" + order + "'" + ";");
                        while (res.next()) {
                           cust = res.getString("sv_cust");
                           site = res.getString("sv_site");
@@ -18342,7 +18342,7 @@ return mystring;
                 } else {
                 hm.put("REPORT_TITLE", getGlobalTag("jasper.srvorder.quotetitle"));    
                 }
-                hm.put("myid",  bsParseInt(order));
+                hm.put("myid",  order);
                 hm.put("site_csz", site_csz);
                 hm.put("bill_csz", bill_csz);
                 hm.put("ship_csz", ship_csz);
@@ -18594,7 +18594,7 @@ MainFrame.bslog(e);
                         " from cfo_mstr " +
                         " inner join cm_mstr on cm_code = cfo_cust " +
                         " inner join site_mstr on site_site = cfo_site " +
-                        " where cfo_nbr = " + "'" + bsParseInt(id) + "'" + 
+                        " where cfo_nbr = " + "'" + id + "'" + 
                         " and cfo_defaultrev = '1' " +
                                 ";");
                        while (res.next()) {
@@ -18607,13 +18607,13 @@ MainFrame.bslog(e);
                 
                 
                     res = st.executeQuery("select cfod_date from cfo_det " +
-                            " where cfod_nbr = " + "'" + bsParseInt(id) + "'" + 
+                            " where cfod_nbr = " + "'" + id + "'" + 
                             " and cfod_type = 'Unload Complete' " + ";"); 
                     while (res.next()) {
                         deliverydate = res.getString(("cfod_date"));
                     }
                     res = st.executeQuery("select cfo_mileage, cfo_weight from cfo_mstr " +
-                            " where cfo_nbr = " + "'" + bsParseInt(id) + "'"  + 
+                            " where cfo_nbr = " + "'" + id + "'"  + 
                             " and cfo_defaultrev = '1' " +
                                 ";");
                     while (res.next()) {
@@ -18631,7 +18631,7 @@ MainFrame.bslog(e);
                 Path imagepath = FileSystems.getDefault().getPath(cleanDirString(getSystemImageDirectory()) + logo);
                 HashMap hm = new HashMap();
                 hm.put("REPORT_TITLE", "FREIGHT ORDER");
-                hm.put("myid",  bsParseInt(id));
+                hm.put("myid",  id);
                 hm.put("imagepath", imagepath.toString());
                 hm.put("deliverydate", deliverydate);
                 hm.put("miles", miles);
