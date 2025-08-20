@@ -2109,6 +2109,11 @@ public class BlueSeerUtils {
            bsmf.MainFrame.messagelabel.setForeground(Color.RED);  
            return;
          }
+         if (message[0] == null || message[1] == null) {
+           bsmf.MainFrame.messagelabel.setText("message arguments are null: " + message);
+           bsmf.MainFrame.messagelabel.setForeground(Color.RED);  
+           return;
+         }
           bsmf.MainFrame.messagelabel.setText(message[1]);   
          if (message[0].equals("1")) {
             bsmf.MainFrame.messagelabel.setForeground(Color.RED); 
