@@ -66,6 +66,7 @@ import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.DTData;
 import static com.blueseer.utl.OVData.canUpdate;
+import static com.blueseer.utl.OVData.getSysMetaValue;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -116,7 +117,7 @@ public class ShipperMaint extends javax.swing.JPanel {
                 String status = "";
                 String curr = "";
                 boolean isLoad = false;
-                
+                boolean autonumber = true;
                 
                 
     
@@ -365,7 +366,7 @@ public class ShipperMaint extends javax.swing.JPanel {
         ordercount = 0;
         
         tbkey.setText("");
-        tbkey.setEnabled(false);
+        
       
         
         ddwh.removeAllItems();
@@ -595,14 +596,28 @@ public class ShipperMaint extends javax.swing.JPanel {
     
     public void initnew() {
         
+        isLoad = true;
+        autonumber = BlueSeerUtils.ConvertStringToBool(getSysMetaValue("system", "shippercontrol", "auto_generate_shipper_number"));
+        
+        
+          if (autonumber) {  
+              tbkey.setText(bsNumber(OVData.getNextNbr("shipper")));
+              tbkey.setEditable(false);
+              tbkey.setEnabled(false);
+          } else {
+              tbkey.setText("");
+              tbkey.setEditable(true);
+              tbkey.setEnabled(true);
+          }
+       
+        
         ordercount = 0;
         
         rborder.setEnabled(true);
         rbnonorder.setEnabled(true);
        // rbnonorder.setSelected(true);
         
-        isLoad = true;
-        tbkey.setText("");
+        
         tbordernbr.setText("");
         tborderline.setText("");
         
@@ -2596,7 +2611,7 @@ public class ShipperMaint extends javax.swing.JPanel {
 
     private void btnewshipperActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnewshipperActionPerformed
                 initnew();
-                tbkey.setText(bsNumber(OVData.getNextNbr("shipper")));
+                
                 java.util.Date now = new java.util.Date();
                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
                 DateFormat dftime = new SimpleDateFormat("HH:mm:ss");
