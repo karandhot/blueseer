@@ -24,6 +24,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 package utilities;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -36,8 +51,8 @@ public class bsComm {
 
     public void startService() {
         scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(new MyScheduledTask(), 0, 10, TimeUnit.SECONDS);
-        System.out.println("Service started. Task scheduled every 10 seconds.");
+        scheduler.scheduleAtFixedRate(new MyScheduledTask(), 0, 30, TimeUnit.SECONDS);
+        System.out.println("Service started. Task scheduled every 30 seconds.");
 
         // Register shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdownService()));
@@ -78,7 +93,62 @@ public class bsComm {
         @Override
         public void run() {
             System.out.println("Executing task. Count: " + ++counter);
-            // Your task logic here
+            
+            String  now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+            ArrayList<String[]> trafficarray = new ArrayList<String[]>();
+            Path filePath = Paths.get("bscomm.cfg");
+                try {                    
+                    List<String> lines = Files.readAllLines(filePath);
+                    for (String line : lines) {
+                       trafficarray.add(line.split(",", -1));  // tpname, source dir, dest dir, arch dir
+                    }                   
+                } catch (IOException ex) {
+                    System.out.println(now + " No config file or unable to read config file");
+                    return;
+                } 
+                
+                // validate proper config file
+                for (String[] s : trafficarray) {
+                    if (s.length != 4) {
+                        System.out.println(now + " invalid config file format...each line must have 4 elements");
+                        return;
+                    }
+                }
+                
+                FileFilter byfiletype = new FileFilter() {
+                @Override
+                    public boolean accept(File f) {
+                        // We want to find only .c files
+                        return f.isFile();
+                    }
+                };
+                // move and archive files
+                for (String[] s : trafficarray) {
+                    File folder = new File(s[1]);
+                    File[] listOfFiles = folder.listFiles(byfiletype); // files only
+                  
+                    if (listOfFiles.length == 0) {
+                        System.out.println(now + "client: " + s[0] + " no files to process ");
+                    }
+                    
+                    for (int i = 0; i < listOfFiles.length; i++) {
+                        Path sourcepath = Paths.get(listOfFiles[i].getPath());
+                        Path destinationpath = FileSystems.getDefault().getPath(s[2] + "/" + listOfFiles[i].getName());
+                        Path archivefilepath = FileSystems.getDefault().getPath(s[3] + "/" + listOfFiles[i].getName() + "." + Long.toHexString(System.currentTimeMillis()));
+                        try {
+                            Files.copy(sourcepath, archivefilepath, StandardCopyOption.REPLACE_EXISTING); 
+                        } catch (IOException ex) {
+                            System.out.println(now + "client: " + s[0] + " unable to archive file: " + listOfFiles[i].getName());
+                        }
+                        try {
+                            Files.move(sourcepath, destinationpath, StandardCopyOption.REPLACE_EXISTING);
+                            System.out.println(now + "client: " + s[0] + " moved file: " + listOfFiles[i].getName());
+                        } catch (IOException ex) {
+                            System.out.println(now + "client: " + s[0] + " unable to move file: " + listOfFiles[i].getName());
+                        }
+                    }
+                }
+                
         }
     }
 }
