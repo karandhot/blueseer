@@ -2686,6 +2686,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         cbenvelope = new javax.swing.JCheckBox();
         ddsite = new javax.swing.JComboBox<>();
         jLabel13 = new javax.swing.JLabel();
+        cbdebug = new javax.swing.JCheckBox();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -2775,7 +2776,6 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         jLabel6.setName("lblfromreceiver"); // NOI18N
 
         toolbar.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        toolbar.setFloatable(false);
         toolbar.setRollover(true);
 
         btnew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/newfile.png"))); // NOI18N
@@ -3025,6 +3025,8 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
 
         jLabel13.setText("Site");
 
+        cbdebug.setText("Debug");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -3093,7 +3095,10 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cbenvelope)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(cbenvelope)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cbdebug))
                     .addComponent(ddenvelope, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -3129,7 +3134,8 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
                                 .addComponent(ddinfiletype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(jLabel2)
                                 .addComponent(jLabel7)
-                                .addComponent(cbenvelope)))
+                                .addComponent(cbenvelope)
+                                .addComponent(cbdebug)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel6)
@@ -3449,6 +3455,9 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
                 Class<?> cls = Class.forName(x.map_id(),true,cl);
                 Object obj = cls.getDeclaredConstructor().newInstance();
                 Method method = cls.getDeclaredMethod("Mapdata", ArrayList.class, String[].class, ArrayList.class);
+                if (cbdebug.isSelected()) {
+                System.out.println("class loader= " + cls.getClassLoader());
+                }
                 Object oc = method.invoke(obj, doc, c, messages);
                 String[] oString = (String[]) oc;
                 taoutput.setText(oString[0]);
@@ -3928,6 +3937,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
     private javax.swing.JButton btupdate;
     private javax.swing.JButton btupload;
     private javax.swing.JButton btzip;
+    private javax.swing.JCheckBox cbdebug;
     private javax.swing.JCheckBox cbenvelope;
     private javax.swing.JCheckBox cbinternal;
     private javax.swing.JComboBox<String> ddenvelope;

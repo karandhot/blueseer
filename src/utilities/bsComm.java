@@ -128,7 +128,7 @@ public class bsComm {
                     File[] listOfFiles = folder.listFiles(byfiletype); // files only
                   
                     if (listOfFiles.length == 0) {
-                        System.out.println(now + "client: " + s[0] + " no files to process ");
+                        System.out.println(now + " client: " + s[0] + " no files to process ");
                     }
                     
                     for (int i = 0; i < listOfFiles.length; i++) {
@@ -136,15 +136,11 @@ public class bsComm {
                         Path destinationpath = FileSystems.getDefault().getPath(s[2] + "/" + listOfFiles[i].getName());
                         Path archivefilepath = FileSystems.getDefault().getPath(s[3] + "/" + listOfFiles[i].getName() + "." + Long.toHexString(System.currentTimeMillis()));
                         try {
-                            Files.copy(sourcepath, archivefilepath, StandardCopyOption.REPLACE_EXISTING); 
-                        } catch (IOException ex) {
-                            System.out.println(now + "client: " + s[0] + " unable to archive file: " + listOfFiles[i].getName());
-                        }
-                        try {
                             Files.move(sourcepath, destinationpath, StandardCopyOption.REPLACE_EXISTING);
-                            System.out.println(now + "client: " + s[0] + " moved file: " + listOfFiles[i].getName());
+                            Files.copy(destinationpath, archivefilepath, StandardCopyOption.REPLACE_EXISTING); 
+                            System.out.println(now + " client: " + s[0] + " moved file: " + listOfFiles[i].getName());
                         } catch (IOException ex) {
-                            System.out.println(now + "client: " + s[0] + " unable to move file: " + listOfFiles[i].getName());
+                            System.out.println(now + " client: " + s[0] + " unable to move file: " + listOfFiles[i].getName());
                         }
                     }
                 }
