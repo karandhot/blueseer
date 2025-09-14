@@ -3940,12 +3940,14 @@ public class ediData {
                 break;      
                 
             case "APICall" :
+                suppress = true;
                 rr = wkfaction_apicall(wkd, getWkfdMeta(wkd.wkfd_id(), wkd.wkfd_line()));
-                lgd[3] = rr.status();
-                lgd[4] = r[1];
-                // null rr array
-                if (! r[0].equals("0")) {
-                    logdetail.add(lgd);
+                if (rr.rarray != null && ! rr.rarray().isEmpty()) {
+                    for (String k : rr.rarray()) {
+                     logdetail.add(new String[]{wkd.wkfd_action(), eventtime, "", rr.status(), k});   
+                    }
+                }
+                if (! rr.status().equals("0")) {
                     break forloop;
                 } 
                 break;     
@@ -4803,7 +4805,7 @@ public class ediData {
     
     public static JRRT wkfaction_apicall(wkf_det wkfd, ArrayList<wkfd_meta> list) {
        
-        
+        ArrayList<String> logdetails = new ArrayList<String>();
         String apiid = "";
         String apimethod = "";
         String filedest = "";
@@ -4831,13 +4833,18 @@ public class ediData {
         
         if (apiid.isBlank()) {
            status = "1";
-           messg = "ERROR WorkFlowID: " + wkfd.wkfd_id + " action: " + wkfd.wkfd_action + "->"  + "api ID is blank"; 
-           return new JRRT(status, messg, null);
+           logdetails.add("ERROR WorkFlowID: " + wkfd.wkfd_id + " action: " + wkfd.wkfd_action + "->"  + "api ID is blank"); 
+           return new JRRT(status, messg, logdetails);
         }
         if (apimethod.isBlank()) {
            status = "1";
-           messg = "ERROR WorkFlowID: " + wkfd.wkfd_id + " action: " + wkfd.wkfd_action + "->"  + "apimethod is blank"; 
-           return new JRRT(status, messg, null);
+           logdetails.add("ERROR WorkFlowID: " + wkfd.wkfd_id + " action: " + wkfd.wkfd_action + "->"  + "apimethod is blank");
+           return new JRRT(status, messg, logdetails);
+        }
+        if (filedest.isBlank()) {
+           status = "1";
+           logdetails.add("ERROR WorkFlowID: " + wkfd.wkfd_id + " action: " + wkfd.wkfd_action + "->"  + " destination file parameter is empty");
+           return new JRRT(status, messg, logdetails);
         }
         
         
@@ -4845,8 +4852,15 @@ public class ediData {
         api_det apid = getAPIDet(apiid, apimethod);
         
         if (api.m[0].equals("0") && apid.m[0].equals("0")) { 
-        String[] r = runAPICall(api, apid, destinationpath, sourcepath);
-           return new JRRT(r[0], r[1], null);
+           String[] r;
+           try { 
+             r = runAPICall(api, apid, destinationpath, sourcepath);
+             logdetails.add(r[1]);
+             return new JRRT(r[0], r[1], logdetails);
+           } catch (Exception e) {
+             logdetails.add("ERROR WorkFlowID: " + wkfd.wkfd_id + " action: " + wkfd.wkfd_action + "->"  + e.getMessage());  
+             return new JRRT("1", "error", logdetails); 
+           }
         } else {
           status = "1";
           messg = "ERROR WorkFlowID: " + wkfd.wkfd_id + " action: " + wkfd.wkfd_action + "->"  + "unable to get retrieve api/apid JRT"; 

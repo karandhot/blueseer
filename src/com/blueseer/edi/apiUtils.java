@@ -295,12 +295,8 @@ public class apiUtils {
     public static String[] runAPICall(api_mstr api, api_det apid, Path destinationpath, Path sourcepath) {
         String[] r = new String[]{"0",""};
        
-        int k = 0;
-        String method = "";
-        String verb = "";
-        String value = apid.apid_value();
-        String urlstring = "";
-        String port = "";
+        String verb = apid.apid_verb();
+        String urlstring = setURL(api, apid);
         HttpURLConnection conn = null;
         
         if (api.m()[0].equals("1") || api.api_id().isBlank()) {
@@ -323,34 +319,9 @@ public class apiUtils {
         
         
             try {
-                
-                
-                if (! apid.apid_value().isBlank()) {
-                    ArrayList<String[]> list = apidm.get(apid.apid_method());
-                if (list != null) {
-                    value = "?";
-                    for (String[] s : list) {
-                        value = value + s[0] + "=" + s[1] + "&";
-                    }
-                    if (value.endsWith("&")) {
-                        value = value.substring(0, value.length() - 1);
-                    }
-                }
-                }
-                if (api.api_port().isBlank()) {  
-                   port = ""; 
-                } else {
-                   port = ":" + api.api_port();
-                }
-                
-                if (apid.apid_verb().equals("NONE")) {
-                    urlstring = api.api_protocol() + "://" + api.api_url() + port + api.api_path() + value;
-                } else {
-                    urlstring = api.api_protocol() + "://" + api.api_url() + port + api.api_path() + apid.apid_verb().toLowerCase() ;
-                }
-                
+              
                 URL url = new URL(urlstring);
-                
+               // System.out.println("API: " + url.toURI());
                 if (destinationpath == null) {
                     destinationpath = FileSystems.getDefault().getPath(apid.apid_destination());
                 }
@@ -358,13 +329,59 @@ public class apiUtils {
                     sourcepath = FileSystems.getDefault().getPath(apid.apid_source());
                 }
              
-                // sourcepath api 'push' unfinished
                 
-		conn = (HttpURLConnection) url.openConnection();
-		if (! apid.apid_verb().equals("NONE")) {
+                
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestProperty("Content-Type", api.api_contenttype());
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
+            
+            if (api.api_auth().equals("BASIC AUTH")) {
+               if (! api.api_user().isBlank() && api.api_pass().length() > 0) {
+                String userCredentials = new String(api.api_user() + ":" + api.api_pass());
+                String basicAuth = "Basic " + Base64.toBase64String(userCredentials.getBytes());
+                conn.setRequestProperty("Authorization", basicAuth);
+                } 
+            }
+            
+            StringBuilder requestHeaders = new StringBuilder();
+            
+            
+            if (api.api_class().equals("REST")) {
                 conn.setRequestMethod(verb);
+                if (verb.equals("POST") || verb.equals("PUT")) {
+                conn.setDoOutput(true);
                 }
-		conn.setRequestProperty("Accept", "application/json");
+            }
+            
+            if (! api.api_class().equals("PARAM")) {
+                ArrayList<ediData.apid_meta> headertags = getAPIDMeta(api.api_id());
+                for (ediData.apid_meta am : headertags) {
+                        if (am.apidm_method().equals(apid.apid_method())) {
+                       // System.out.println(am.apidm_key() + "=" + am.apidm_value());
+                        conn.setRequestProperty(am.apidm_key(),am.apidm_value());
+                        }
+                }
+            }
+            
+            // let's see what request headers look like
+            // call getRequestProperties before opening connection...otherwise generates exception already connected
+            Map<String, List<String>> headers = conn.getRequestProperties();
+            for (Map.Entry<String, List<String>> z : headers.entrySet()) {
+            requestHeaders.append(z.getKey() + " : " + String.join(";", z.getValue()) + "\n");
+            }
+                
+                
+            // if posting data...add file
+            // calling this opens the connection
+            if (api.api_class().equals("REST") && (verb.equals("POST") || verb.equals("PUT"))) {
+                if (Files.exists(sourcepath)) {
+                    DataOutputStream dos = new DataOutputStream( conn.getOutputStream());
+                    dos.write(Files.readAllBytes(sourcepath));
+                    dos.flush();
+                    dos.close();
+                }
+            }
 
                 BufferedReader br = null;
 		if (conn.getResponseCode() != 200) {
@@ -554,6 +571,44 @@ public class apiUtils {
         return sb.toString();
     }
     
+    public static String setURL(api_mstr api, api_det apid) {
+        String methodpath = apid.apid_value();
+        String port;
+        String urlstring;
+        if (apid.apid_value().isBlank() && api.api_class().equals("PARAM")) {
+                    ArrayList<String[]> list = apidm.get(apid.apid_method());
+                    if (list != null) {
+                        for (String[] s : list) {
+                            if (s[2].equals("NO")) {  // param type KV
+                             methodpath = methodpath + s[0] + "=" + s[1] + "&";
+                            }
+                        }
+                        if (methodpath.endsWith("&")) {
+                            methodpath = methodpath.substring(0, methodpath.length() - 1);
+                        }
+                    }
+                }
+                
+                if (api.api_auth().equals("APIKEY")) {
+                    if (! api.api_key().isBlank()) {
+                    methodpath = methodpath + "&" + api.api_keylabel() + "=" + api.api_key();   
+                    }
+                }
+
+                if (! methodpath.isBlank() && api.api_class().equals("PARAM")) {
+                methodpath = "?" + methodpath;
+                }
+                
+                if (api.api_port().isBlank()) {  
+                   port = ""; 
+                } else {
+                   port = ":" + api.api_port();
+                }
+                
+                urlstring = api.api_protocol() + "://" + api.api_url() + port + api.api_path() + methodpath;
+        
+        return urlstring;
+    }
     
     public static PrivateKey getPrivateKey(String user)  {
         PrivateKey key = null;

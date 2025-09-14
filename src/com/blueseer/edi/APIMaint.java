@@ -32,6 +32,7 @@ import bsmf.MainFrame;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static bsmf.MainFrame.tags;
+import static com.blueseer.edi.apiUtils.setURL;
 import static com.blueseer.edi.ediData.addAPITransaction;
 import com.blueseer.edi.ediData.api_det;
 import com.blueseer.edi.ediData.api_mstr;
@@ -769,7 +770,7 @@ public class APIMaint extends javax.swing.JPanel implements IBlueSeerT {
         setAction(x.m());
     }
     
-    public void setURL() {
+    public void setLocalURL() {
         tburlstring.setText("");
         int i = tabledetail.getSelectedRow();
         String method = tabledetail.getModel().getValueAt(i, 0).toString();
@@ -801,11 +802,7 @@ public class APIMaint extends javax.swing.JPanel implements IBlueSeerT {
                 methodpath = methodpath + "&" + tbkeylabel.getText() + "=" + tbapikey.getText();   
                 }
         }
-        /*
-        if (! tbapikey.getText().isBlank()) {
-            value = value + "api_key=" + tbapikey.getText();
-        }
-        */
+     
         if (! methodpath.isBlank() && ddclass.getSelectedItem().toString().equals("PARAM")) {
         methodpath = "?" + methodpath;
         }
@@ -885,17 +882,17 @@ public class APIMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
                 
                 
-                // if posting data...add file
-                // calling this opens the connection
-                if (ddclass.getSelectedItem().toString().equals("REST") && (verb.equals("POST") || verb.equals("PUT"))) {
-                    if (! tbsourcedir.getText().isBlank()) {
-                        DataOutputStream dos = new DataOutputStream( conn.getOutputStream());
-                        Path sourcepath = FileSystems.getDefault().getPath(tbsourcedir.getText());
-                        dos.write(Files.readAllBytes(sourcepath));
-                        dos.flush();
-                        dos.close();
-                    }
+            // if posting data...add file
+            // calling this opens the connection
+            if (ddclass.getSelectedItem().toString().equals("REST") && (verb.equals("POST") || verb.equals("PUT"))) {
+                if (! tbsourcedir.getText().isBlank()) {
+                    DataOutputStream dos = new DataOutputStream( conn.getOutputStream());
+                    Path sourcepath = FileSystems.getDefault().getPath(tbsourcedir.getText());
+                    dos.write(Files.readAllBytes(sourcepath));
+                    dos.flush();
+                    dos.close();
                 }
+            }
            
             jTabbedPane1.setSelectedIndex(2);
             
@@ -1790,16 +1787,15 @@ public class APIMaint extends javax.swing.JPanel implements IBlueSeerT {
         kvmodel.removeAllElements();
        
         
-        ArrayList<String[]> x = apidm.get(tabledetail.getModel().getValueAt(row, 0).toString());
+        ArrayList<String[]> xarr = apidm.get(tabledetail.getModel().getValueAt(row, 0).toString());
         int i = 0;
-        if (x != null) {
-            for (String[] xs : x) {
+        if (xarr != null) {
+            for (String[] xs : xarr) {
             kvmodel.add(i, xs[0] + "|" + xs[1] + "|" + xs[2]);
             i++;
             }
-        } 
-       
-        setURL();  
+        }        
+        tburlstring.setText(setURL(x, getAPIDet(x.api_id(), tbmethod.getText())));
         tburlstring.setEnabled(false);
         btrun.setEnabled(true);
         isLoad = false;
@@ -1942,8 +1938,8 @@ public class APIMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
         
         updateAPIDetTransaction(tbkey.getText(), createAPIDMetaRecord(), createDetRecord());
+        tburlstring.setText(setURL(x, getAPIDet(x.api_id(), tbmethod.getText())));
         
-        setURL();
     }//GEN-LAST:event_btupdatedetailActionPerformed
 
 
