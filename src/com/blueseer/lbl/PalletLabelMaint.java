@@ -674,7 +674,7 @@ String carrier = "";
 
             serialno = OVData.getNextNbr("label");
             serialno_str = String.valueOf(serialno);
-            if (label.equals("sscc18J")) {
+            if (label.startsWith("sscc18")) {
              serialno_display = checkDigitUCC18(serialno);
             } else {
              serialno_display = serialno_str;   

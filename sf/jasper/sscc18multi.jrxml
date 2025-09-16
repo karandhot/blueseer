@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ucc_sample" pageWidth="288" pageHeight="450" columnWidth="278" leftMargin="10" rightMargin="0" topMargin="0" bottomMargin="0" uuid="6d90ba31-e206-4399-afc6-41f6d6dfcc48">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<parameter name="mynbr" class="java.lang.String"/>
+	<parameter name="site_csz" class="java.lang.String"/>
+	<parameter name="ship_csz" class="java.lang.String"/>
+	<parameter name="myline" class="java.lang.String"/>
+	<parameter name="serialno" class="java.lang.String"/>
+	<parameter name="mydate" class="java.lang.String"/>
+	<parameter name="reference" class="java.lang.String"/>
+	<parameter name="quantity" class="java.lang.String"/>
+	<parameter name="zip" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select so_nbr, sod_item, sod_desc, sod_ord_qty,
+so_cust, so_due_date, so_shipvia,  
+so_po, sod_ord_qty, sod_uom 
+cm_code, cm_name, cm_line1, 
+cm_line2, 
+cms_name, cms_line1, cms_line2, cms_zip, cms_plantcode,
+site_desc, site_line1 
+from sod_det 
+inner join so_mstr on so_nbr = sod_nbr 
+inner join cm_mstr on cm_code = so_cust 
+left outer join cms_det on cms_code = so_cust and cms_shipto = so_ship 
+inner join site_mstr on site_site = so_site 
+where sod_nbr =  $P{mynbr} and sod_line = $P{myline}]]>
+	</queryString>
+	<field name="site_desc" class="java.lang.String"/>
+	<field name="site_line1" class="java.lang.String"/>
+	<field name="so_po" class="java.lang.String"/>
+	<field name="sod_item" class="java.lang.String"/>
+	<field name="sod_desc" class="java.lang.String"/>
+	<field name="cms_name" class="java.lang.String"/>
+	<field name="cms_line1" class="java.lang.String"/>
+	<field name="so_due_date" class="java.lang.String"/>
+	<field name="sod_ord_qty" class="java.lang.String"/>
+	<field name="so_nbr" class="java.lang.String"/>
+	<field name="so_shipvia" class="java.lang.String"/>
+	<field name="cms_zip" class="java.lang.String"/>
+	<field name="cms_plantcode" class="java.lang.String"/>
+	<background>
+		<band splitType="Prevent"/>
+	</background>
+	<detail>
+		<band height="438">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<componentElement>
+				<reportElement positionType="FixRelativeToBottom" x="-8" y="338" width="266" height="92" uuid="84234ae2-f2c7-4ba0-b6f0-dcacb1bdc3e6">
+					<property name="com.jaspersoft.studio.unit.barWidth" value="px"/>
+					<property name="com.jaspersoft.studio.unit.barHeight" value="px"/>
+				</reportElement>
+				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="SSCC18" drawText="true" checksumRequired="false" barHeight="85">
+					<jr:codeExpression><![CDATA[$P{serialno}]]></jr:codeExpression>
+					<jr:applicationIdentifierExpression><![CDATA[0]]></jr:applicationIdentifierExpression>
+				</jr:barbecue>
+			</componentElement>
+			<staticText>
+				<reportElement x="2" y="11" width="75" height="14" uuid="9d54aed3-ed99-4ca0-b1a3-714e5465c3b1"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[FROM:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="126" y="10" width="56" height="20" uuid="ac6771fd-d864-4cb8-a6ef-376b070241d1"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TO:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="2" y="25" width="106" height="20" uuid="473526ba-2786-4434-ae98-740d223fff89"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{site_desc}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="2" y="44" width="106" height="19" uuid="4d32bb91-fce1-4bc4-97be-6b3e8cd24346"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{site_line1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="2" y="62" width="106" height="18" uuid="cf0af0d9-4ad3-43f7-8f18-217e5a3a8f09"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{site_csz}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="126" y="24" width="130" height="20" uuid="2d280a71-631f-45a1-8199-54f3d68ce8db"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cms_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="126" y="61" width="130" height="20" uuid="5dd29376-5b72-4bb7-9bef-2dc5f25ea031"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{ship_csz}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="126" y="43" width="130" height="19" uuid="95b6399e-4543-412a-9648-7695bdbf0b99"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cms_line1}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="3" y="82" width="100" height="14" uuid="64575e2f-7f42-49b7-9bbe-d14b60b652bd"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ship to postal code:]]></text>
+			</staticText>
+			<componentElement>
+				<reportElement positionType="FixRelativeToBottom" x="-1" y="111" width="113" height="46" uuid="c1cdbf5e-c119-4ad3-b551-20651ebefe44">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.barWidth" value="px"/>
+					<property name="com.jaspersoft.studio.unit.barHeight" value="px"/>
+				</reportElement>
+				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="Code128" drawText="false" checksumRequired="false" barHeight="85" rotation="None">
+					<jr:codeExpression><![CDATA[$F{cms_zip}]]></jr:codeExpression>
+					<jr:applicationIdentifierExpression><![CDATA[420]]></jr:applicationIdentifierExpression>
+				</jr:barbecue>
+			</componentElement>
+			<staticText>
+				<reportElement x="129" y="83" width="56" height="12" uuid="8bf2d23e-c29e-4165-8c3f-e17ea33c289e"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[CARRIER:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="129" y="114" width="56" height="12" uuid="55b8980a-73ea-4b6a-9d93-322d64f3f0b5"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[BOL#:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="129" y="96" width="130" height="16" uuid="5e29eeb9-c3e4-4dd1-8e8f-d2315a95b854"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{so_shipvia}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="129" y="126" width="130" height="16" uuid="9ab3e585-67df-40e9-a574-b07794fe1ce3"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{mynbr}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="-4" y="157" width="266" height="1" uuid="c9de9cb7-961b-45c5-8a5e-5e8eb92e7f3d"/>
+			</line>
+			<staticText>
+				<reportElement x="4" y="176" width="20" height="22" uuid="7d76acdc-5fb2-499a-8ebc-5d9da956ab4b"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[PO:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="24" y="176" width="94" height="22" uuid="299afeb8-9165-4bd5-8a31-98ef276cd24d"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{so_po}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="4" y="203" width="20" height="22" uuid="52020dc8-3120-4a14-881b-08910d77986a"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[QTY:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="26" y="200" width="94" height="22" uuid="b6885088-d87e-43aa-aaf2-31acdfc521e1"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{quantity}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="126" y="184" width="70" height="16" uuid="908702bc-a687-43d8-9319-2f964c8ca09f"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[STYLE:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="126" y="200" width="70" height="16" uuid="008be89e-e555-4b55-901e-bb6fbae7a0fc"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[COLOR:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="126" y="216" width="70" height="14" uuid="d4b82a60-b34e-45fa-a708-d31c4d3d4a33"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SIZE:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2" y="234" width="110" height="16" uuid="618026bc-c25c-4713-9de8-41ce38381383"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[STORE NUMBER:]]></text>
+			</staticText>
+			<line>
+				<reportElement x="-18" y="230" width="286" height="1" uuid="0c468089-127f-474a-a139-0098fdc582ac"/>
+			</line>
+			<componentElement>
+				<reportElement positionType="FixRelativeToBottom" x="-2" y="270" width="116" height="50" uuid="c6084d59-43db-48dd-88ed-108ed4fee736">
+					<property name="com.jaspersoft.studio.unit.barWidth" value="px"/>
+					<property name="com.jaspersoft.studio.unit.barHeight" value="px"/>
+				</reportElement>
+				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="EAN128" drawText="false" checksumRequired="false" barHeight="85">
+					<jr:codeExpression><![CDATA[$F{cms_plantcode}]]></jr:codeExpression>
+					<jr:applicationIdentifierExpression><![CDATA[90]]></jr:applicationIdentifierExpression>
+				</jr:barbecue>
+			</componentElement>
+			<textField>
+				<reportElement x="126" y="267" width="130" height="20" uuid="2642df6a-200d-4381-b815-8100c982d410"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cms_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="126" y="288" width="130" height="19" uuid="4bf3a568-8f4a-427e-b14a-e2110c6fc7a6"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cms_line1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="126" y="307" width="130" height="20" uuid="22b3b9dd-5e78-48ef-846b-91b07f2342ce"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{ship_csz}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="126" y="247" width="130" height="20" uuid="c76ab86f-e0e6-4283-959d-c2737e82783f"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cms_name}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="126" y="234" width="56" height="16" uuid="f48cf387-0821-4c90-9ce6-ab236ebf6bc6"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[FOR:]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="80" width="259" height="1" uuid="e31c8aed-21fc-4545-a9c2-66bf8571b344"/>
+			</line>
+			<line>
+				<reportElement x="0" y="327" width="259" height="1" uuid="d90d0875-5cf4-48e2-a200-e4c4fe2a813d"/>
+			</line>
+			<textField>
+				<reportElement x="126" y="165" width="78" height="20" uuid="728c0165-a38d-4c9b-91b1-24953683ef8d"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["CARTON: "+$V{PAGE_NUMBER}+"  of "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="204" y="165" width="38" height="20" uuid="582cea67-5e11-4185-bf5b-b3d3f075957f"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="118" y="0" width="3" height="157" uuid="3dba9772-e02d-4740-a21a-9a5dd0282825"/>
+			</line>
+			<staticText>
+				<reportElement x="10" y="95" width="22" height="18" uuid="649d9b24-be1e-4b88-a397-87e010903979"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[(420)]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="32" y="93" width="67" height="16" uuid="46c2fd5a-3e4d-4d6c-89d3-91fb51ea723c"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cms_zip}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="19" y="250" width="22" height="18" uuid="88039ea6-c68a-4d21-843f-0254338bd49b"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[(91)]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="40" y="248" width="67" height="16" uuid="a1dd1caf-ff5e-40b1-8227-2ac45952da0b"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cms_plantcode}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="120" y="230" width="1" height="97" uuid="79cb6a7a-a0f6-42b8-824a-7883f4b48086"/>
+			</line>
+		</band>
+	</detail>
+</jasperReport>

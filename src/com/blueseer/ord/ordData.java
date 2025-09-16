@@ -4453,7 +4453,7 @@ public class ordData {
     
     
     public static String[] getOrderLineInfo(String order, String line) {
-        String[] x = null;  // returns item, desc, ordqty, uom, netprice
+        String[] x = null;  // returns item, desc, ordqty, uom, netprice, custitem, wh, loc, po
         try{
         Connection con = null;
         if (ds != null) {
@@ -4471,7 +4471,11 @@ public class ordData {
                         res.getString("sod_desc"), 
                         res.getString("sod_ord_qty"),
                         res.getString("sod_uom"),
-                        res.getString("sod_netprice")};
+                        res.getString("sod_netprice"),
+                        res.getString("sod_custitem"),
+                        res.getString("sod_wh"),
+                        res.getString("sod_loc"),
+                        res.getString("sod_po")};
                 }
             }
             catch (SQLException s){

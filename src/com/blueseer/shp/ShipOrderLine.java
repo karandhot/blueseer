@@ -1,0 +1,1505 @@
+/*
+The MIT License (MIT)
+
+Copyright (c) Terry Evans Vaughn 
+
+All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ */
+package com.blueseer.shp;
+
+
+import com.blueseer.lbl.*;
+import bsmf.MainFrame;
+import static bsmf.MainFrame.db;
+import static bsmf.MainFrame.defaultDecimalSeparator;
+import static bsmf.MainFrame.ds;
+import static bsmf.MainFrame.pass;
+import static bsmf.MainFrame.tags;
+import static bsmf.MainFrame.url;
+import static bsmf.MainFrame.user;
+import com.blueseer.ctr.cusData;
+import static com.blueseer.lbl.lblData.addLabelMstr;
+import static com.blueseer.lbl.lblData.addMixedLabelTransaction;
+import static com.blueseer.lbl.lblData.getLabelSerialDisplay;
+import static com.blueseer.lbl.lblData.getLabelZebraMstr;
+import com.blueseer.lbl.lblData.label_det;
+import com.blueseer.lbl.lblData.label_mstr;
+import com.blueseer.lbl.lblData.label_zebra;
+import static com.blueseer.lbl.lblData.updateLabelStatus;
+import static com.blueseer.ord.ordData.getOrderLineInfo;
+import static com.blueseer.shp.shpData.addShipperTransaction;
+import static com.blueseer.shp.shpData.confirmShipperTransaction;
+import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
+import static com.blueseer.utl.BlueSeerUtils.callDialog;
+import static com.blueseer.utl.BlueSeerUtils.checkDigitUCC18;
+import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
+import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
+import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
+import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.luModel;
+import static com.blueseer.utl.BlueSeerUtils.luTable;
+import static com.blueseer.utl.BlueSeerUtils.lual;
+import static com.blueseer.utl.BlueSeerUtils.ludialog;
+import static com.blueseer.utl.BlueSeerUtils.luinput;
+import static com.blueseer.utl.BlueSeerUtils.luml;
+import static com.blueseer.utl.BlueSeerUtils.lurb1;
+import static com.blueseer.utl.BlueSeerUtils.parseDate;
+import static com.blueseer.utl.BlueSeerUtils.setDateDB;
+import static com.blueseer.utl.BlueSeerUtils.setDateFormat;
+import com.blueseer.utl.DTData;
+import com.blueseer.utl.OVData;
+import static com.blueseer.utl.OVData.checkForCustomPath;
+import static com.blueseer.utl.OVData.getSystemLabelDirectory;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.print.PrinterJob;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.print.Doc;
+import javax.print.DocFlavor;
+import javax.print.DocPrintJob;
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
+import javax.print.SimpleDoc;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.standard.Copies;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JViewport;
+import javax.swing.SwingWorker;
+import javax.swing.table.DefaultTableModel;
+
+/**
+ *
+ * @author vaughnte
+ */
+public class ShipOrderLine extends javax.swing.JPanel {
+
+String item = "";
+String revnbr = "";
+String custitem = "";
+String partdesc = "";
+String billto = "";
+String shipto = "";
+String ref = "";
+String ordernbr = "";
+String linenbr = "";
+String ponbr = "";
+int serialno = 0;
+String serialno_str = "";
+String serialno_display = "";
+String quantity = "";
+String labelname = "";
+
+String sitename = "";
+String siteaddr = "";
+String sitephone = "";
+String sitecitystatezip = "";
+
+String shipname = "";
+String shipaddr1 = "";
+String shipaddr2 = "";
+String shipcity = "";
+String shipstate = "";
+String shipzip = "";
+String shipcountry = "";
+String shipcsz = "";
+
+String carrier = "";
+
+
+    HashSet<String> assignedlabels = new HashSet<String>();
+    boolean autoconfirm = false;
+    boolean autonumber = true;
+
+   javax.swing.table.DefaultTableModel itemmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+            new String[]{
+                getGlobalColumnTag("line"), 
+                getGlobalColumnTag("item"), 
+                getGlobalColumnTag("description"),
+                getGlobalColumnTag("orderqty"),
+                "Label Quantity"
+            }); 
+   ShipTableModel shipmodel = new ShipTableModel(new Object[][]{},
+            new String[]{
+                getGlobalColumnTag("label"), // label serial
+                getGlobalColumnTag("order"),
+                getGlobalColumnTag("line"),
+                getGlobalColumnTag("item"), 
+                getGlobalColumnTag("description"), 
+                getGlobalColumnTag("custitem"), 
+                getGlobalColumnTag("warehouse"), 
+                getGlobalColumnTag("location"), 
+                getGlobalColumnTag("qty"),
+                getGlobalColumnTag("uom"),
+                getGlobalColumnTag("price"),
+                getGlobalColumnTag("po")
+            });
+    
+   class ShipTableModel extends DefaultTableModel {  
+      
+        public ShipTableModel(Object rowData[][], Object columnNames[]) {  
+             super(rowData, columnNames);  
+          }
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+             boolean[] canEdit = new boolean[]{false, false, false, false, false, false, true, false, false, false}; 
+            return canEdit[columnIndex];
+        }
+   
+        /*
+        public Class getColumnClass(int column) {
+               if (column == 6 || column == 7)       
+                return Double.class; 
+            else return String.class;  //other columns accept String values 
+        }
+       
+        */
+        
+   }    
+    
+    
+    /**
+     * Creates new form CarrierMaintPanel
+     */
+    public ShipOrderLine() {
+        initComponents();
+        setLanguageTags(this);
+    }
+
+     public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+       
+          String type = "";
+          String[] key = null;
+          
+          public Task(String type, String[] key) { 
+              this.type = type;
+              this.key = key;
+          } 
+           
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+             switch(this.type) {
+                case "add":
+                    message = addRecord(key);
+                    break;
+                case "update":
+                    message = updateRecord(key);
+                    break;
+                case "delete":
+                    message = deleteRecord(key);    
+                    break;
+                case "get":
+                    message = getRecord(key);    
+                    break;    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+           if (this.type.equals("delete")) {
+             initvars(null);  
+           } else if (this.type.equals("get") && message[0].equals("1")) {
+             tbkey.requestFocus();
+           } else if (this.type.equals("get") && message[0].equals("0")) {
+             tbkey.requestFocus();
+           } else if (this.type.equals("add") && message[0].equals("0")) {
+             initvars(key);
+           } else {
+             initvars(null);  
+           }
+           
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+   
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        JScrollPane scrollpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else if (myobj instanceof JScrollPane) {
+           scrollpane = (JScrollPane) myobj;    
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                if (component instanceof JScrollPane) {
+                    setPanelComponentState((JScrollPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    
+                    component.setEnabled(b);
+                    
+                }
+            }
+            if (scrollpane != null) {
+                scrollpane.setEnabled(b);
+                JViewport viewport = scrollpane.getViewport();
+                Component[] componentspane = viewport.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
+    
+    public void setLanguageTags(Object myobj) {
+       JPanel panel = null;
+        JTabbedPane tabpane = null;
+        JScrollPane scrollpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else if (myobj instanceof JScrollPane) {
+           scrollpane = (JScrollPane) myobj;    
+        } else {
+            return;
+        }
+       Component[] components = panel.getComponents();
+       for (Component component : components) {
+           if (component instanceof JPanel) {
+                    if (tags.containsKey(this.getClass().getSimpleName() + ".panel." + component.getName())) {
+                       ((JPanel) component).setBorder(BorderFactory.createTitledBorder(tags.getString(this.getClass().getSimpleName() +".panel." + component.getName())));
+                    } 
+                    setLanguageTags((JPanel) component);
+                }
+                if (component instanceof JLabel ) {
+                    if (tags.containsKey(this.getClass().getSimpleName() + ".label." + component.getName())) {
+                       ((JLabel) component).setText(tags.getString(this.getClass().getSimpleName() +".label." + component.getName()));
+                    }
+                }
+                if (component instanceof JButton ) {
+                    if (tags.containsKey("global.button." + component.getName())) {
+                       ((JButton) component).setText(tags.getString("global.button." + component.getName()));
+                    }
+                }
+                if (component instanceof JCheckBox) {
+                    if (tags.containsKey(this.getClass().getSimpleName() + ".label." + component.getName())) {
+                       ((JCheckBox) component).setText(tags.getString(this.getClass().getSimpleName() +".label." + component.getName()));
+                    } 
+                }
+                if (component instanceof JRadioButton) {
+                    if (tags.containsKey(this.getClass().getSimpleName() + ".label." + component.getName())) {
+                       ((JRadioButton) component).setText(tags.getString(this.getClass().getSimpleName() +".label." + component.getName()));
+                    } 
+                }
+       }
+    }
+    
+     public String[] addRecord(String[] x) {
+        String[] m = addShipperTransaction(createDetRecord(), createRecord(), createTreeRecord());
+        for (String label : assignedlabels) {
+            updateLabelStatus(label, "1");
+        }
+        shpData.updateShipperSAC(tbkey.getText());
+        if (autoconfirm) {
+        confirmShipperTransaction("", tbkey.getText(), dcdate.getDate());
+        }
+        return m;
+    }
+     
+    public String[] updateRecord(String[] x) {
+     String[] m = new String[]{BlueSeerUtils.ErrorBit, "This update functionality is not implemented at this time"};
+     return m;
+     }
+     
+    public String[] deleteRecord(String[] x) {
+     String[] m = new String[]{BlueSeerUtils.ErrorBit, "This delete functionality is not implemented at this time"};
+     return m;
+     }
+      
+    public String[] getRecord(String[] x) {
+       String[] m = new String[2];
+        
+       try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                int i = 0;
+                int d = 0;
+                res = st.executeQuery("select * from ship_mstr where sh_id = " + "'" + x[0] + "'" + ";");
+                while (res.next()) {
+                  i++;
+                     tbkey.setText(res.getString("sh_id"));
+                     dcdate.setDate(parseDate(res.getString("sh_shipdate")));
+                     tbref.setText(res.getString("sh_ref"));
+                     tbrmks.setText(res.getString("sh_rmks"));
+                     ddcust.setSelectedItem(res.getString("sh_cust"));
+                     ddship.setSelectedItem(res.getString("sh_ship"));
+                     ddsite.setSelectedItem(res.getString("sh_site"));
+                     tbtracking.setText(res.getString("sh_trailer"));
+                }
+                
+                res = st.executeQuery("select * from ship_det where shd_id = " + "'" + x[0] + "'" + ";");
+                while (res.next()) {
+                // line, item, desc, serial, warehouse, loc, qty, price, bom
+                     shipmodel.addRow(new Object[] { res.getString("shd_line"),
+                                              res.getString("shd_item"),
+                                              res.getString("shd_desc"),
+                                              res.getString("shd_serial"),
+                                              res.getString("shd_wh"),
+                                              res.getString("shd_loc"),
+                                              res.getString("shd_qty"),
+                                              res.getString("shd_netprice"),
+                                              res.getString("shd_bom")
+                                              });
+                 
+                  
+                  actamt += (res.getDouble("shd_qty") * res.getDouble("shd_netprice"));
+                d++;
+                }
+               
+                // set Action if Record found (i > 0)
+                m = setAction(i);
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordSQLError};  
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordConnError};  
+        }
+      return m;
+    }
+   
+    public shpData.ship_mstr createRecord() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+       
+        
+        shpData.ship_mstr x = new shpData.ship_mstr(null, 
+                tbkey.getText(),
+                ddcust.getSelectedItem().toString(),
+                ddship.getSelectedItem().toString(),
+                0, // pallets
+                0, // boxes
+                "", // shipvia  
+                setDateDB(dcdate.getDate()),
+                null, // po date
+                tbref.getText().replace("'", ""),
+                "", // po number
+                tbrmks.getText(),
+                bsmf.MainFrame.userid,
+                ddsite.getSelectedItem().toString(),
+                curr,
+                "", // wh
+                terms,
+                "", // taxcode
+                aracct,
+                arcc,
+                "S", // type
+                "", // sh_so 
+                ddsite.getSelectedItem().toString(),
+                tbtracking.getText());
+                
+        return x;        
+    }
+    
+    public ArrayList<shpData.ship_det> createDetRecord() {
+        ArrayList<shpData.ship_det> list = new ArrayList<shpData.ship_det>();
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        
+        // line, item, order, orderline, po, qty, netprice, desc, wh, loc, disc, listprice, tax, cont, serial
+        for (int j = 0; j < shipdet.getRowCount(); j++) { 
+            shpData.ship_det x = new shpData.ship_det(null, 
+                tbkey.getText(), // shipper
+                j + 1, //shline
+                shipdet.getValueAt(j, 3).toString(), // item
+                shipdet.getValueAt(j, 5).toString(), // custimtem
+                shipdet.getValueAt(j, 1).toString(),  // order
+                bsParseInt(shipdet.getValueAt(j, 2).toString()), //soline    
+                setDateDB(dcdate.getDate()),
+                shipdet.getValueAt(j, 11).toString(), // po
+                bsParseDouble(shipdet.getValueAt(j, 8).toString().replace(defaultDecimalSeparator, '.')), // qty
+                shipdet.getValueAt(j, 9).toString(), //uom
+                curr, //currency
+                bsParseDouble(shipdet.getValueAt(j, 10).toString().replace(defaultDecimalSeparator, '.')), // net price
+                0, // disc
+                bsParseDouble(shipdet.getValueAt(j, 10).toString().replace(defaultDecimalSeparator, '.')), // list price
+                shipdet.getValueAt(j, 4).toString(), // desc
+                shipdet.getValueAt(j, 6).toString(), // wh
+                shipdet.getValueAt(j, 7).toString(), // loc
+                0, // taxamt
+                "0", // cont
+                tbref.getText(), // ref
+                shipdet.getValueAt(j, 5).toString(), // serial   
+                ddsite.getSelectedItem().toString(),
+                "" // bom
+                );
+        list.add(x);
+        }      
+        return list;        
+    }
+    
+    public ArrayList<shpData.ship_tree> createTreeRecord() {
+        ArrayList<shpData.ship_tree> list = new ArrayList<shpData.ship_tree>();
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        
+        // create shipper parent node with child containers
+        for (String s : assignedlabels) {
+            shpData.ship_tree x = new shpData.ship_tree(null,
+            tbkey.getText(),
+            s,
+            ddsite.getSelectedItem().toString(),
+            "c",
+            tbkey.getText(),
+            "",
+            "",
+            "",
+            "",
+            "container",
+            1.0,
+            getLabelSerialDisplay(s) // get display serial
+            );
+            
+            list.add(x);
+            // now items of container
+            for (int j = 0; j < shipdet.getRowCount(); j++) { 
+                if (shipdet.getValueAt(j, 0).toString().equals(s)) {
+                    shpData.ship_tree y = new shpData.ship_tree(null,
+                    s,
+                    shipdet.getValueAt(j, 1).toString() + "," + shipdet.getValueAt(j, 2).toString() + "," + shipdet.getValueAt(j, 3).toString(),
+                    ddsite.getSelectedItem().toString(),
+                    "i",
+                    tbkey.getText(),
+                    String.valueOf(j + 1),
+                    shipdet.getValueAt(j, 1).toString(),
+                    shipdet.getValueAt(j, 2).toString(),
+                    shipdet.getValueAt(j, 11).toString(),
+                    shipdet.getValueAt(j, 3).toString(),
+                    bsParseDouble(shipdet.getValueAt(j, 8).toString().replace(defaultDecimalSeparator, '.')),
+                    "" // get display serial
+                    );
+                    list.add(y);
+                }
+            }
+        }
+       
+        return list;        
+    }
+    
+    
+    public void getSiteAddress(String site) {
+        try {
+
+            Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                int i = 0;
+                                
+                res = st.executeQuery("select * from site_mstr where site_site = " + "'" + site + "'" +";");
+                while (res.next()) {
+                    i++;
+                   sitename = res.getString("site_desc").replace("'", "");
+                   siteaddr = res.getString("site_line1").replace("'", "");
+                   sitephone = res.getString("site_phone");
+                   sitecitystatezip = res.getString("site_city") + ", " + res.getString("site_state") + " " + res.getString("site_zip");
+                  
+                }
+               
+                if (i == 0)
+                    bsmf.MainFrame.show(getMessageTag(1141,site));
+
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+    }
+    
+    public void getOrderInfo(String order) {
+         try {
+
+            Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                int i = 0;
+                                
+                res = st.executeQuery("select so_nbr, so_cust, so_po, so_shipvia, so_ship from so_mstr " 
+                        + " where so_nbr = " + "'" + order + "'"
+                        + ";");
+                while (res.next()) {
+                    i++;
+                   billto = res.getString("so_cust");
+                   shipto = res.getString("so_ship");
+                   ponbr = res.getString("so_po");
+                   ordernbr = res.getString("so_nbr");
+                   carrier = res.getString("so_shipvia");
+                   
+                }
+               
+                
+                if (i == 0)
+                    bsmf.MainFrame.show(getMessageTag(1143, order));
+                
+                
+                // get shipto addr info
+                if (! shipto.isEmpty() && ! billto.isEmpty()) {
+                    res = st.executeQuery("select * from cms_det inner join cm_mstr on cm_code = cms_code where cms_shipto = " + "'" + shipto + "'" 
+                            + " AND cms_code = " + "'" + billto + "'" + ";");
+                }
+                 while (res.next()) {
+                 shipname = res.getString("cms_name").replace("'", "");
+                 shipaddr1 = res.getString("cms_line1").replace("'", "");
+                 shipaddr2 = res.getString("cms_line2").replace("'", "");
+                 shipcity = res.getString("cms_city").replace("'", "");
+                 shipstate = res.getString("cms_state").replace("'", "");
+                 shipzip = res.getString("cms_zip").replace("'", "");
+                 shipcountry = res.getString("cms_country").replace("'", "");
+                 shipcsz = shipcity + ", " + shipstate + " " + shipzip;
+                 lblcust.setText(res.getString("cm_name"));
+                 lblship.setText(res.getString("cms_name") + "  " + shipcsz);
+                 
+                 }
+
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+    }
+    
+    public void initvars(String[] arg) {
+        lblcust.setText("");
+        lblship.setText("");
+        lblitem.setText("");
+        tbqty.setText("");
+        tbordnbr.setText("");
+        tbline.setText("");
+        tbqty.setText("");
+        tblblqty.setText("1");
+        tbordnbr.setEditable(true);
+        btprint.setEnabled(true);
+        
+        itemmodel.setRowCount(0);
+        shiptable.setModel(itemmodel);
+        shiptable.getTableHeader().setReorderingAllowed(false);
+        
+        ArrayList mylist = OVData.getPrinterList();
+        for (int i = 0; i < mylist.size(); i++) {
+            ddprinter.addItem(mylist.get(i));
+        }
+      
+        ddprinter.removeAllItems();
+        OVData.getPrinterList().stream().forEach((s) -> ddprinter.addItem(s));
+        ddprinter.insertItemAt("<record only>",0);
+        
+        getSiteAddress(OVData.getDefaultSite());
+        
+         if (ddprinter.getItemCount() == 0) {
+            bsmf.MainFrame.show("No Printers Available");
+            btprint.setEnabled(false);
+        }
+        
+    }
+    
+    public void lookUpFrameOrder() {
+        
+        luinput.removeActionListener(lual);
+        lual = new ActionListener() {
+        public void actionPerformed(ActionEvent event) {
+         
+        if (lurb1.isSelected()) {  
+         luModel = DTData.getOrderBrowseUtil(luinput.getText(), 0, "so_nbr" );
+        } else {
+         luModel = DTData.getOrderBrowseUtil(luinput.getText(), 0, "so_cust" );
+        }    
+        
+         
+        luTable.setModel(luModel);
+        luTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        if (luModel.getRowCount() < 1) {
+            ludialog.setTitle(getMessageTag(1001));
+        } else {
+            ludialog.setTitle(getMessageTag(1002, String.valueOf(luModel.getRowCount())));
+        }
+        }
+        };
+        luinput.addActionListener(lual);
+        
+        luTable.removeMouseListener(luml);
+        luml = new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                JTable target = (JTable)e.getSource();
+                int row = target.getSelectedRow();
+                int column = target.getSelectedColumn();
+                if ( column == 0) {
+                ludialog.dispose();
+                tbordnbr.setText(target.getValueAt(row,1).toString());
+                tbordnbr.setEditable(false);
+                getOrderInfo(tbordnbr.getText());
+                //tbline.setText(target.getValueAt(row,2).toString());
+                }
+            }
+        };
+        luTable.addMouseListener(luml);
+      
+        
+        callDialog(getGlobalColumnTag("order"), 
+                getGlobalColumnTag("customer"));
+        
+        
+    }
+
+    public void lookUpFrameLine() {
+        
+        luinput.removeActionListener(lual);
+        lual = new ActionListener() {
+        public void actionPerformed(ActionEvent event) {
+         
+        if (lurb1.isSelected()) {  
+         luModel = DTData.getOrderLineBrowseUtil(luinput.getText(), "sod_item", tbordnbr.getText() );
+        } else {
+         luModel = DTData.getOrderLineBrowseUtil(luinput.getText(), "sod_desc", tbordnbr.getText());
+        }    
+        
+         
+        luTable.setModel(luModel);
+        luTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        if (luModel.getRowCount() < 1) {
+            ludialog.setTitle(getMessageTag(1001));
+        } else {
+            ludialog.setTitle(getMessageTag(1002, String.valueOf(luModel.getRowCount())));
+        }
+        }
+        };
+        luinput.addActionListener(lual);
+        
+        luTable.removeMouseListener(luml);
+        luml = new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                JTable target = (JTable)e.getSource();
+                int row = target.getSelectedRow();
+                int column = target.getSelectedColumn();
+                if ( column == 0) {
+                ludialog.dispose();
+                tbline.setText(target.getValueAt(row,1).toString());
+                tbqty.setText(BlueSeerUtils.bsNumber(target.getValueAt(row,4).toString()));
+                lblitem.setText(target.getValueAt(row,2).toString() + " " + target.getValueAt(row,3).toString());
+                }
+            }
+        };
+        luTable.addMouseListener(luml);
+      
+        
+        callDialog(getGlobalColumnTag("item"), 
+                getGlobalColumnTag("description"));
+        
+        
+    }
+
+    public boolean validateInput(boolean itemlevel) {
+        
+        if (itemlevel) {
+            if (! BlueSeerUtils.isNumeric(tbqty.getText())) {
+                bsmf.MainFrame.show(getMessageTag(1028));
+                tbqty.requestFocus();
+                tbqty.setBackground(Color.yellow);
+                return false;
+            } else {
+                tbqty.setBackground(Color.white);
+            }
+        }
+        
+        if (itemlevel && tbordnbr.getText().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1024));
+            tbordnbr.requestFocus();
+            return false;
+        }
+        if (itemlevel && tbline.getText().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1024));
+            tbline.requestFocus();
+            return false;
+        }
+        
+        if (! itemlevel && ! BlueSeerUtils.isNumeric(tblblqty.getText())) {
+            bsmf.MainFrame.show(getMessageTag(1028));
+            tblblqty.requestFocus();
+            tblblqty.setBackground(Color.yellow);
+            return false;
+        } else {
+            tblblqty.setBackground(Color.white);
+        }
+        
+        if (! itemlevel && ddprinter.getSelectedItem() == null) {
+            bsmf.MainFrame.show(getMessageTag(1140));
+            return false;
+        }
+        if (! itemlevel && shiptable.getRowCount() == 0) {
+            bsmf.MainFrame.show(getMessageTag(1164));
+            return false;
+        }
+        
+        return true;
+    }
+    
+    public label_mstr createRecord() { 
+        java.util.Date now = new java.util.Date();
+        DateFormat dfdate = new SimpleDateFormat("MM/dd/yyyy");
+        DateFormat dftime = new SimpleDateFormat("hh:mm");
+        DateFormat dfdate2 = new SimpleDateFormat("yyyy-MM-dd");
+         label_mstr x = new label_mstr(null, 
+                 serialno_str, 
+                 "mixeditems", 
+                 custitem, 
+                 serialno_display, 
+                 "XX", 
+                 labelname,
+                 "0", 
+                 ponbr, 
+                 billto,
+                 ordernbr, 
+                 linenbr, 
+                 ref, 
+                 "",  // lot 
+                 "0", 
+                 "0", 
+                 shipname, 
+                 shipaddr1, 
+                 shipaddr2, 
+                 shipcity, 
+                 shipstate, 
+                 shipstate, 
+                 shipzip, 
+                 shipcountry, 
+                 setDateFormat(now), 
+                 setDateFormat(now), 
+                 bsmf.MainFrame.userid, 
+                 ddprinter.getSelectedItem().toString(), 
+                 "LabelContPanel", 
+                 OVData.getDefaultSite(), 
+                 "", // loc
+                 "CONT",
+                 "mixed",
+                 shipto
+                );
+        return x;
+    }
+   
+    public ArrayList<label_det> createDetRecord() { 
+        ArrayList<label_det> det = new ArrayList<label_det>();
+         for (int j = 0; j < shiptable.getRowCount(); j++) {
+         label_det x = new label_det(null,
+                 serialno_str,
+                 tbordnbr.getText(),
+                 shiptable.getValueAt(j, 0).toString(),
+                 shiptable.getValueAt(j, 1).toString(),
+                 shiptable.getValueAt(j, 2).toString(),
+                 BlueSeerUtils.bsParseDouble(shiptable.getValueAt(j, 4).toString()) // label qty
+                );
+         det.add(x);
+         }
+        return det;
+    }
+   
+    
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jPanel1 = new javax.swing.JPanel();
+        btprint = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+        ddprinter = new javax.swing.JComboBox();
+        jLabel2 = new javax.swing.JLabel();
+        tbqty = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        lblstatus = new javax.swing.JLabel();
+        tbordnbr = new javax.swing.JTextField();
+        tbline = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        tblblqty = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
+        tbref = new javax.swing.JTextField();
+        jLabel8 = new javax.swing.JLabel();
+        btlookupOrder = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        shiptable = new javax.swing.JTable();
+        btadditem = new javax.swing.JButton();
+        btdeleteitem = new javax.swing.JButton();
+        btlookupLine = new javax.swing.JButton();
+        btclear = new javax.swing.JButton();
+        lblcust = new javax.swing.JLabel();
+        lblship = new javax.swing.JLabel();
+        lblitem = new javax.swing.JLabel();
+        btnew = new javax.swing.JButton();
+        tbcontcount = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        btadd = new javax.swing.JButton();
+        btupdate = new javax.swing.JButton();
+        btdelete = new javax.swing.JButton();
+        tbkey = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+
+        setBackground(new java.awt.Color(0, 102, 204));
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Shipper By Order/Line With Labels"));
+        jPanel1.setName("panelmain"); // NOI18N
+
+        btprint.setText("Print");
+        btprint.setName("btprint"); // NOI18N
+        btprint.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btprintActionPerformed(evt);
+            }
+        });
+
+        jLabel3.setText("Order Number");
+        jLabel3.setName("lblorder"); // NOI18N
+
+        jLabel2.setText("Printer");
+        jLabel2.setName("lblprinter"); // NOI18N
+
+        tbqty.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                tbqtyFocusLost(evt);
+            }
+        });
+
+        jLabel4.setText("Total Ship Qty");
+        jLabel4.setName("lblqty"); // NOI18N
+
+        lblstatus.setBackground(java.awt.Color.white);
+        lblstatus.setForeground(java.awt.Color.red);
+
+        tbline.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tblineActionPerformed(evt);
+            }
+        });
+
+        jLabel6.setText("Order Line");
+        jLabel6.setName("lblorderline"); // NOI18N
+
+        tblblqty.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                tblblqtyFocusLost(evt);
+            }
+        });
+
+        jLabel7.setText("Number of Labels");
+        jLabel7.setName("lblnumber"); // NOI18N
+
+        jLabel8.setText("Reference");
+        jLabel8.setName("lblref"); // NOI18N
+
+        btlookupOrder.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/find.png"))); // NOI18N
+        btlookupOrder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btlookupOrderActionPerformed(evt);
+            }
+        });
+
+        shiptable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane1.setViewportView(shiptable);
+
+        btadditem.setText("Add Item");
+        btadditem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btadditemActionPerformed(evt);
+            }
+        });
+
+        btdeleteitem.setText("Delete Item");
+        btdeleteitem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btdeleteitemActionPerformed(evt);
+            }
+        });
+
+        btlookupLine.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/find.png"))); // NOI18N
+        btlookupLine.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btlookupLineActionPerformed(evt);
+            }
+        });
+
+        btclear.setText("Clear");
+        btclear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btclearActionPerformed(evt);
+            }
+        });
+
+        btnew.setText("New");
+
+        jLabel1.setText("Number of Cotainers");
+
+        btadd.setText("Add");
+        btadd.setName("btadd"); // NOI18N
+        btadd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btaddActionPerformed(evt);
+            }
+        });
+
+        btupdate.setText("Update");
+        btupdate.setName("btupdate"); // NOI18N
+        btupdate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btupdateActionPerformed(evt);
+            }
+        });
+
+        btdelete.setText("Delete");
+        btdelete.setName("btdelete"); // NOI18N
+        btdelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btdeleteActionPerformed(evt);
+            }
+        });
+
+        jLabel5.setText("Shipper Key");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jScrollPane1))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(48, 48, 48)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel8, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(btprint)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(btdelete)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btupdate)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btadd))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(ddprinter, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(tbref, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(tblblqty, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(0, 0, Short.MAX_VALUE))))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(63, 63, 63)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel6)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel5))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(tbordnbr, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btlookupOrder, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 162, Short.MAX_VALUE)
+                                .addComponent(btadditem)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btdeleteitem))
+                            .addComponent(lblcust, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(lblship, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btnew)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btclear))
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addComponent(tbline, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btlookupLine, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(lblitem, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addComponent(tbcontcount, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                                        .addComponent(tbqty, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGap(0, 0, Short.MAX_VALUE)))))
+                .addGap(12, 12, 12)
+                .addComponent(lblstatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(20, 20, 20))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnew)
+                    .addComponent(btclear)
+                    .addComponent(jLabel5))
+                .addGap(7, 7, 7)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel3)
+                        .addComponent(tbordnbr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btlookupOrder))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(tbline, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel6))
+                    .addComponent(btlookupLine, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lblitem, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(9, 9, 9)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbqty, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbcontcount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
+                .addGap(5, 5, 5)
+                .addComponent(lblcust, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(27, 27, 27)
+                        .addComponent(lblstatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(lblship, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btadditem)
+                            .addComponent(btdeleteitem))
+                        .addGap(5, 5, 5)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(tblblqty, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel7))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(tbref, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel8))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(ddprinter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2))
+                        .addGap(31, 31, 31)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btprint)
+                            .addComponent(btadd)
+                            .addComponent(btupdate)
+                            .addComponent(btdelete))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addGap(34, 34, 34))
+        );
+
+        add(jPanel1);
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
+
+        if (! validateInput(false)) {
+            return;
+        }
+        
+        
+        
+        quantity = tbqty.getText();
+        ref = tbref.getText();
+        item = lblitem.getText();
+        linenbr = tbline.getText();
+        String cust = cusData.getCustFromOrder(tbordnbr.getText());
+        String label = cusData.getCustLabel(cust);
+        label  = (label.isBlank()) ? "generic" : label; 
+        label_zebra lz = getLabelZebraMstr(new String[]{label});
+        labelname = label;
+        serialno = OVData.getNextNbr("label");
+        serialno_str = String.valueOf(serialno);
+        if (lz.lblz_type().toLowerCase().equals("ucc")) {
+            serialno_display = checkDigitUCC18(serialno);
+        } else {
+            serialno_display = serialno_str;
+        }
+        
+        String[] x = addMixedLabelTransaction(createDetRecord(),createRecord());
+        if (ddprinter.getSelectedItem() != null && ddprinter.getSelectedItem().toString().equals("<record only>")) {
+          bsmf.MainFrame.show("label created: " + serialno);
+          return;
+        }
+        
+        
+        // if sscc18J type label
+        if (lz.lblz_file().endsWith("jasper") &&
+            ddprinter.getSelectedItem() != null && ! ddprinter.getSelectedItem().toString().equals("<record only>") ) {
+           // printSSCC18J(tbordnbr.getText(), tbline.getText(), serialno_display, tbref.getText(), tbqty.getText());
+            bsmf.MainFrame.show("Customer has jasper label assignment.  sscc18J label format only supported by PDF Container Label");
+            return;
+        }
+        
+        
+        // else all other type of labels 
+        if (ddprinter.getSelectedItem() != null && ! ddprinter.getSelectedItem().toString().equals("<record only>")) {
+            try {
+        
+            Path template = checkForCustomPath(getSystemLabelDirectory(), lz.lblz_file());
+            File f = template.toFile();
+            if(f.exists() && !f.isDirectory()) { 
+                
+                // get zpl string from file
+                BufferedReader fsr = new BufferedReader(new FileReader(f, StandardCharsets.UTF_8));
+                String line = "";
+                String concatline = "";
+                while ((line = fsr.readLine()) != null) {
+                    concatline += line;
+                }
+                fsr.close();
+                // replace variables with values
+                concatline = concatline.replace("$PART", item);
+                concatline = concatline.replace("$CUSTPART", custitem);
+                concatline = concatline.replace("$SERIALNO", serialno_display);
+                concatline = concatline.replace("$QUANTITY", quantity);
+                concatline = concatline.replace("$DESCRIPTION", partdesc);
+                concatline = concatline.replace("$CUSTCODE", billto);
+                concatline = concatline.replace("$PART", "");
+                concatline = concatline.replace("$ADDRNAME", "");
+                concatline = concatline.replace("$REV", revnbr);
+                concatline = concatline.replace("$PONUMBER", ponbr);
+                concatline = concatline.replace("$REF", ref);
+                concatline = concatline.replace("$SONBR", ordernbr);
+                concatline = concatline.replace("$SOLINE", linenbr);
+                concatline = concatline.replace("$CARRIER", carrier);
+                concatline = concatline.replace("$SITENAME", sitename);
+                concatline = concatline.replace("$SITEADDR", siteaddr);
+                concatline = concatline.replace("$SITEPHONE", sitephone);
+                concatline = concatline.replace("$SITECSZ", sitecitystatezip);
+                concatline = concatline.replace("$SHIPNAME", shipname);
+                concatline = concatline.replace("$SHIPADDR1", shipaddr1);
+                concatline = concatline.replace("$SHIPADDR2", shipaddr2);
+                concatline = concatline.replace("$SHIPZIP", shipzip);
+                concatline = concatline.replace("$SHIPCSZ", shipcsz);
+                java.util.Date now = new java.util.Date();
+                DateFormat dfdate = new SimpleDateFormat("MM/dd/yyyy");
+                DateFormat dftime = new SimpleDateFormat("hh:mm");
+                concatline = concatline.replace("$TODAYDATE", dfdate.format(now));
+                concatline = concatline.replace("$TODAYTIME", dftime.format(now));
+
+
+                   OVData.printLabelStream(concatline, ddprinter.getSelectedItem().toString());
+
+
+                 initvars(null);
+            } else {
+                bsmf.MainFrame.show(getMessageTag(1142,template.toString()));
+            }
+
+            } catch (Exception e) {
+            MainFrame.bslog(e);
+            }
+        }
+    }//GEN-LAST:event_btprintActionPerformed
+
+    private void btlookupOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupOrderActionPerformed
+        lookUpFrameOrder();
+    }//GEN-LAST:event_btlookupOrderActionPerformed
+
+    private void btlookupLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupLineActionPerformed
+        lookUpFrameLine();
+    }//GEN-LAST:event_btlookupLineActionPerformed
+
+    private void btadditemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btadditemActionPerformed
+        
+        if (! validateInput(true)) {
+            return;
+        }
+
+        
+        String[] x = getOrderLineInfo(tbordnbr.getText(), tbline.getText());  // returns item, desc, ordqty, uom, netprice, custitem, wh, loc, po
+        if (x == null) {
+            return;
+        }
+        /*
+        for (int j = 0; j < itemtable.getRowCount(); j++) {
+             if (itemtable.getValueAt(j, 0).toString().equals(tbline.getText())) {
+                 bsmf.MainFrame.show("line item already added");
+                 return;
+             } 
+         }
+        */
+        
+        // generate label numbers here
+        // divide total by cont qty and add 1 for remainder
+                        
+        shipmodel.addRow(new Object[]{ "", tbordnbr.getText(), tbline.getText(), x[0], x[1], x[5], x[6], x[7], x[2], tbqty.getText(), x[3], x[4], x[8] }); 
+    }//GEN-LAST:event_btadditemActionPerformed
+
+    private void btdeleteitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteitemActionPerformed
+        int[] rows = shiptable.getSelectedRows();
+        for (int i : rows) {
+            bsmf.MainFrame.show(getMessageTag(1031,String.valueOf(i)));
+            ((javax.swing.table.DefaultTableModel) shiptable.getModel()).removeRow(i);
+            
+        }
+    }//GEN-LAST:event_btdeleteitemActionPerformed
+
+    private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
+        initvars(null);
+    }//GEN-LAST:event_btclearActionPerformed
+
+    private void tblineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tblineActionPerformed
+       if (! tbordnbr.getText().isBlank() && ! tbline.getText().isBlank()) {
+       String[] info = getOrderLineInfo(tbordnbr.getText(), tbline.getText());
+       tbqty.setText(info[2]);
+       lblitem.setText(info[0] + " " + info[1]);
+       }
+    }//GEN-LAST:event_tblineActionPerformed
+
+    private void tbqtyFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbqtyFocusLost
+         if (! BlueSeerUtils.isNumeric(tbqty.getText())) {
+            bsmf.MainFrame.show(getMessageTag(1028));
+            tbqty.requestFocus();
+            tbqty.setBackground(Color.yellow);
+            return;
+        } else {
+            tbqty.setBackground(Color.white);
+        }
+    }//GEN-LAST:event_tbqtyFocusLost
+
+    private void tblblqtyFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tblblqtyFocusLost
+        if (! BlueSeerUtils.isNumeric(tblblqty.getText())) {
+            bsmf.MainFrame.show(getMessageTag(1028));
+            tblblqty.requestFocus();
+            tblblqty.setBackground(Color.yellow);
+            return;
+        } else {
+            tblblqty.setBackground(Color.white);
+        }
+    }//GEN-LAST:event_tblblqtyFocusLost
+
+    private void btaddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddActionPerformed
+        if (! validateInput("addRecord")) {
+            return;
+        }
+        setPanelComponentState(this, false);
+        executeTask("add", new String[]{tbkey.getText()});
+    }//GEN-LAST:event_btaddActionPerformed
+
+    private void btupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateActionPerformed
+        if (! validateInput("updateRecord")) {
+            return;
+        }
+        setPanelComponentState(this, false);
+        executeTask("update", new String[]{tbkey.getText()});
+    }//GEN-LAST:event_btupdateActionPerformed
+
+    private void btdeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteActionPerformed
+        if (! validateInput("deleteRecord")) {
+            return;
+        }
+        setPanelComponentState(this, false);
+        executeTask("delete", new String[]{tbkey.getText()});
+    }//GEN-LAST:event_btdeleteActionPerformed
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btadd;
+    private javax.swing.JButton btadditem;
+    private javax.swing.JButton btclear;
+    private javax.swing.JButton btdelete;
+    private javax.swing.JButton btdeleteitem;
+    private javax.swing.JButton btlookupLine;
+    private javax.swing.JButton btlookupOrder;
+    private javax.swing.JButton btnew;
+    private javax.swing.JButton btprint;
+    private javax.swing.JButton btupdate;
+    private javax.swing.JComboBox ddprinter;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lblcust;
+    private javax.swing.JLabel lblitem;
+    private javax.swing.JLabel lblship;
+    private javax.swing.JLabel lblstatus;
+    private javax.swing.JTable shiptable;
+    private javax.swing.JTextField tbcontcount;
+    private javax.swing.JTextField tbkey;
+    private javax.swing.JTextField tblblqty;
+    private javax.swing.JTextField tbline;
+    private javax.swing.JTextField tbordnbr;
+    private javax.swing.JTextField tbqty;
+    private javax.swing.JTextField tbref;
+    // End of variables declaration//GEN-END:variables
+}
