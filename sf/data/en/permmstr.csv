@@ -406,3 +406,4 @@ admin,EDIExportReset,0
 admin,CFOStatus,0
 admin,FreightCodeMaint,0
 admin,FreightCodeBrowse,0
+admin,ShipOrderLine,0

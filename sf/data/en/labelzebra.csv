@@ -3,5 +3,6 @@ address,Address Labels for Shiptos,address.prn,addr
 ucc,UCC label generic,ucc.prn,ucc
 aiag,AIAG label generic,aiag.prn,cont
 sscc18J,gstin-128 Jasper,sscc18.jasper,ucc
+sscc18Jm,gstin-128 Jasper,sscc18multi.jasper,ucc
 code39E,code 39 ext Jasper,code39E.jasper,ucc
 uccpdf,code128 ext Jasper,ucc128.jasper,ucc

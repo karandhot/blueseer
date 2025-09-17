@@ -274,6 +274,65 @@ public class lblData {
     return m;
     }
     
+    public static String[] addMultiLabelTransaction(ArrayList<label_det> lbld, ArrayList<label_mstr> lbl) {
+        String[] m = new String[2];
+        Connection bscon = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            if (ds != null) {
+              bscon = ds.getConnection();
+            } else {
+              bscon = DriverManager.getConnection(url + db, user, pass);  
+            }
+            bscon.setAutoCommit(false);
+           // _addLabelMstr(lbl, bscon, ps, res);  
+            for (label_mstr z : lbl) {
+                _addLabelMstr(z, bscon, ps, res);
+            }
+            if (lbld != null) {
+                for (label_det z : lbld) {
+                    _addLabelDet(z, bscon, ps, res);
+                }
+            }
+            bscon.commit();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             try {
+                 bscon.rollback();
+                 m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordError};
+             } catch (SQLException rb) {
+                 MainFrame.bslog(rb);
+             }
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.setAutoCommit(true);
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+    
+    
     public static label_mstr getLabelMstr(String x) {
         label_mstr r = null;
         String[] m = new String[2];

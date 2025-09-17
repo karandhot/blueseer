@@ -4464,7 +4464,7 @@ public class ordData {
         Statement st = con.createStatement();
         ResultSet res = null;
             try{
-                res = st.executeQuery("select sod_item, sod_desc, sod_ord_qty, sod_uom, sod_netprice from sod_det where sod_nbr = " + "'" + order + "'" + 
+                res = st.executeQuery("select sod_item, sod_desc, sod_ord_qty, sod_uom, sod_netprice, sod_custitem, sod_wh, sod_loc, sod_po from sod_det where sod_nbr = " + "'" + order + "'" + 
                         " and sod_line = " + "'" + line + "'" + ";");
                 while (res.next()) {
                     x = new String[]{res.getString("sod_item"), 
