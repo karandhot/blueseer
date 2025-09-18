@@ -53,10 +53,15 @@ import static com.blueseer.lbl.lblData.updateLabelStatus;
 import static com.blueseer.ord.ordData.getOrderLineInfo;
 import static com.blueseer.ord.ordData.getOrderMstr;
 import com.blueseer.ord.ordData.so_mstr;
+import com.blueseer.shp.shpData.Shipper;
 import static com.blueseer.shp.shpData.addShipperTransaction;
 import static com.blueseer.shp.shpData.confirmShipperTransaction;
 import static com.blueseer.shp.shpData.getShipperBillto;
+import static com.blueseer.shp.shpData.getShipperMstrSet;
+import com.blueseer.shp.shpData.ship_det;
+import com.blueseer.shp.shpData.ship_mstr;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
@@ -143,6 +148,10 @@ import javax.swing.table.TableColumnModel;
 public class ShipOrderLine extends javax.swing.JPanel {
 
 
+     // global variable declarations
+                boolean isLoad = false;
+                public static ship_mstr sh = null;
+                public static ArrayList<ship_det> shdlist = null;
     HashSet<String> assignedlabels = new HashSet<String>();
     boolean autoconfirm = false;
     boolean autonumber = true;
@@ -247,8 +256,10 @@ public class ShipOrderLine extends javax.swing.JPanel {
            if (this.type.equals("delete")) {
              initvars(null);  
            } else if (this.type.equals("get") && message[0].equals("1")) {
+             updateForm();  
              tbkey.requestFocus();
            } else if (this.type.equals("get") && message[0].equals("0")) {
+             updateForm();  
              tbkey.requestFocus();
            } else if (this.type.equals("add") && message[0].equals("0")) {
              initvars(key);
@@ -333,6 +344,29 @@ public class ShipOrderLine extends javax.swing.JPanel {
             }
     } 
     
+    public void setComponentDefaultValues() {
+        lblcust.setText("");
+        lblship.setText("");
+        lblitem.setText("");
+        tbqty.setText("");
+        tbordnbr.setText("");
+        tbline.setText("");
+        tbqty.setText("");
+        tbordnbr.setEditable(true);
+        btprint.setEnabled(true);
+        
+        shipmodel.setRowCount(0);
+        shiptable.setModel(shipmodel);
+        shiptable.getTableHeader().setReorderingAllowed(false);
+        
+        if (! hasInit) {
+            TableColumnModel tcm = shiptable.getColumnModel();
+        tcm.removeColumn(tcm.getColumn(11));   // remove last three columns from view
+        tcm.removeColumn(tcm.getColumn(11));
+        tcm.removeColumn(tcm.getColumn(11));
+        hasInit = true;
+        }
+    }
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -377,9 +411,9 @@ public class ShipOrderLine extends javax.swing.JPanel {
        }
     }
     
-    public String[] setAction(int i) {
+    public String[] setAction(String[] x) {
         String[] m = new String[2];
-        if (i > 0) {
+        if (x[0].equals("0")) {
             m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};  
                    setPanelComponentState(this, true);
                    btadd.setEnabled(false);
@@ -426,70 +460,10 @@ public class ShipOrderLine extends javax.swing.JPanel {
      }
       
     public String[] getRecord(String[] x) {
-       String[] m = new String[2];
-        
-       try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-                int i = 0;
-                int d = 0;
-                res = st.executeQuery("select * from ship_mstr where sh_id = " + "'" + x[0] + "'" + ";");
-                while (res.next()) {
-                  i++;
-                     tbkey.setText(res.getString("sh_id"));
-                     tbref.setText(res.getString("sh_ref"));
-                     firstbillto = res.getString("sh_cust");
-                     firstshipto = res.getString("sh_ship");
-                }
-                
-                res = st.executeQuery("select * from ship_det where shd_id = " + "'" + x[0] + "'" + ";");
-                while (res.next()) {
-            
-                     shipmodel.addRow(new Object[] { res.getString("shd_po"), 
-                      res.getString("shd_so"),
-                      res.getString("shd_soline"),
-                      res.getString("shd_item"),
-                      res.getString("shd_desc"),
-                      res.getString("shd_custitem"),
-                      res.getString("shd_wh"),
-                      res.getString("shd_loc"),
-                      res.getString("shd_qty"),
-                      res.getString("shd_uom"),
-                      res.getString("shd_netprice"),
-                      "",
-                      "",
-                      ""
-                    });
-                 
-                  
-                //  actamt += (res.getDouble("shd_qty") * res.getDouble("shd_netprice"));
-                d++;
-                }
-               
-                // set Action if Record found (i > 0)
-                m = setAction(i);
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordSQLError};  
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordConnError};  
-        }
-      return m;
+      Shipper z = getShipperMstrSet(x);
+      sh = z.sh();
+      shdlist = z.shd();
+      return z.m();
     }
    
     public shpData.ship_mstr createRecord(so_mstr so, cm_mstr cm) {
@@ -608,46 +582,56 @@ public class ShipOrderLine extends javax.swing.JPanel {
         return list;        
     }
       
-    
-    public void initvars(String[] arg) {
-        lblcust.setText("");
-        lblship.setText("");
-        lblitem.setText("");
-        tbqty.setText("");
-        tbordnbr.setText("");
-        tbline.setText("");
-        tbqty.setText("");
-        tblblqty.setText("1");
-        tbordnbr.setEditable(true);
-        btprint.setEnabled(true);
+    public void updateForm() throws ParseException {
         
         shipmodel.setRowCount(0);
-        shiptable.setModel(shipmodel);
-        shiptable.getTableHeader().setReorderingAllowed(false);
         
-        if (! hasInit) {
-            TableColumnModel tcm = shiptable.getColumnModel();
-        tcm.removeColumn(tcm.getColumn(11));   // remove last three columns from view
-        tcm.removeColumn(tcm.getColumn(11));
-        tcm.removeColumn(tcm.getColumn(11));
-        hasInit = true;
+        tbkey.setText(sh.sh_id());
+        
+        for (ship_det shd : shdlist) {
+            shipmodel.addRow(new Object[]{
+                shd.shd_po(), 
+                shd.shd_so(),
+                shd.shd_soline(),
+                shd.shd_item(),
+                shd.shd_desc(),
+                shd.shd_custitem(),
+                shd.shd_wh(),
+                shd.shd_loc(),  
+                bsFormatDouble(shd.shd_qty()), 
+                shd.shd_uom(), 
+                bsFormatDouble(shd.shd_netprice()), 
+                "",
+                "",
+                "" });
         }
         
-        ArrayList mylist = OVData.getPrinterList();
-        for (int i = 0; i < mylist.size(); i++) {
-            ddprinter.addItem(mylist.get(i));
+       // getAttachments(tbkey.getText());
+        
+        setAction(sh.m()); 
+        
+        sh = null;
+        shdlist = null;
+
+    }
+    
+    
+    public void initvars(String[] arg) {
+        
+        
+       setPanelComponentState(this, false); 
+       setComponentDefaultValues();
+        btnew.setEnabled(true);
+        btlookup.setEnabled(true);
+        
+        if (arg != null && arg.length > 0) {
+            executeTask("get",arg);
+        } else {
+            tbkey.setEnabled(true);
+            tbkey.setEditable(true);
+            tbkey.requestFocus();
         }
-      
-        ddprinter.removeAllItems();
-        OVData.getPrinterList().stream().forEach((s) -> ddprinter.addItem(s));
-        ddprinter.insertItemAt("<record only>",0);
         
-        
-        
-         if (ddprinter.getItemCount() == 0) {
-            bsmf.MainFrame.show("No Printers Available");
-            btprint.setEnabled(false);
-        }
         
     }
     
@@ -746,6 +730,48 @@ public class ShipOrderLine extends javax.swing.JPanel {
         
     }
 
+    public void lookUpFrame() {
+        
+        luinput.removeActionListener(lual);
+        lual = new ActionListener() {
+        public void actionPerformed(ActionEvent event) {
+        if (lurb1.isSelected()) {  
+         luModel = DTData.getShipperBrowseUtil(luinput.getText(),0, "sh_id");
+        } else {
+         luModel = DTData.getShipperBrowseUtil(luinput.getText(),0, "sh_cust");   
+        }
+        luTable.setModel(luModel);
+        luTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        if (luModel.getRowCount() < 1) {
+            ludialog.setTitle(getMessageTag(1001));
+        } else {
+            ludialog.setTitle(getMessageTag(1002, String.valueOf(luModel.getRowCount())));
+        }
+        }
+        };
+        luinput.addActionListener(lual);
+        
+        luTable.removeMouseListener(luml);
+        luml = new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                JTable target = (JTable)e.getSource();
+                int row = target.getSelectedRow();
+                int column = target.getSelectedColumn();
+                if ( column == 0) {
+                ludialog.dispose();
+                initvars(new String[]{target.getValueAt(row,1).toString(), target.getValueAt(row,2).toString()});
+                }
+            }
+        };
+        luTable.addMouseListener(luml);
+      
+        
+        callDialog(getClassLabelTag("lblid", this.getClass().getSimpleName()), 
+                getClassLabelTag("lblcust", this.getClass().getSimpleName())); 
+        
+    }
+
+    
     public boolean validateInput(boolean itemlevel) {
         
         if (itemlevel) {
@@ -770,19 +796,9 @@ public class ShipOrderLine extends javax.swing.JPanel {
             return false;
         }
         
-        if (! itemlevel && ! BlueSeerUtils.isNumeric(tblblqty.getText())) {
-            bsmf.MainFrame.show(getMessageTag(1028));
-            tblblqty.requestFocus();
-            tblblqty.setBackground(Color.yellow);
-            return false;
-        } else {
-            tblblqty.setBackground(Color.white);
-        }
+       
         
-        if (! itemlevel && ddprinter.getSelectedItem() == null) {
-            bsmf.MainFrame.show(getMessageTag(1140));
-            return false;
-        }
+       
         if (! itemlevel && shiptable.getRowCount() == 0) {
             bsmf.MainFrame.show(getMessageTag(1164));
             return false;
@@ -843,7 +859,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
                      setDateFormat(now), 
                      setDateFormat(now), 
                      bsmf.MainFrame.userid, 
-                     ddprinter.getSelectedItem().toString(), 
+                     "", // printer 
                      "ShipOrderLine", 
                      cm.cm_site(), 
                      "", // loc
@@ -890,7 +906,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
                      setDateFormat(now), 
                      setDateFormat(now), 
                      bsmf.MainFrame.userid, 
-                     ddprinter.getSelectedItem().toString(), 
+                     "", // printer 
                      "ShipOrderLine", 
                      cm.cm_site(), 
                      "", // loc
@@ -918,16 +934,12 @@ public class ShipOrderLine extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         btprint = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
-        ddprinter = new javax.swing.JComboBox();
-        jLabel2 = new javax.swing.JLabel();
         tbqty = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         lblstatus = new javax.swing.JLabel();
         tbordnbr = new javax.swing.JTextField();
         tbline = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
-        tblblqty = new javax.swing.JTextField();
-        jLabel7 = new javax.swing.JLabel();
         tbref = new javax.swing.JTextField();
         jLabel8 = new javax.swing.JLabel();
         btlookupOrder = new javax.swing.JButton();
@@ -948,6 +960,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
         btdelete = new javax.swing.JButton();
         tbkey = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
+        btlookup = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -964,9 +977,6 @@ public class ShipOrderLine extends javax.swing.JPanel {
 
         jLabel3.setText("Order Number");
         jLabel3.setName("lblorder"); // NOI18N
-
-        jLabel2.setText("Printer");
-        jLabel2.setName("lblprinter"); // NOI18N
 
         tbqty.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
@@ -988,15 +998,6 @@ public class ShipOrderLine extends javax.swing.JPanel {
 
         jLabel6.setText("Order Line");
         jLabel6.setName("lblorderline"); // NOI18N
-
-        tblblqty.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                tblblqtyFocusLost(evt);
-            }
-        });
-
-        jLabel7.setText("Number of Labels");
-        jLabel7.setName("lblnumber"); // NOI18N
 
         jLabel8.setText("Reference");
         jLabel8.setName("lblref"); // NOI18N
@@ -1079,6 +1080,13 @@ public class ShipOrderLine extends javax.swing.JPanel {
 
         jLabel5.setText("Shipper Key");
 
+        btlookup.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/lookup.png"))); // NOI18N
+        btlookup.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btlookupActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -1089,27 +1097,14 @@ public class ShipOrderLine extends javax.swing.JPanel {
                         .addContainerGap()
                         .addComponent(jScrollPane1))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(48, 48, 48)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel8, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.TRAILING))
-                        .addGap(18, 18, 18)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(btprint)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(btdelete)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btupdate)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btadd))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(ddprinter, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tbref, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tblblqty, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(0, 0, Short.MAX_VALUE))))
+                        .addGap(160, 160, 160)
+                        .addComponent(btprint)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btdelete)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btupdate)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btadd))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(63, 63, 63)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -1117,9 +1112,12 @@ public class ShipOrderLine extends javax.swing.JPanel {
                             .addComponent(jLabel4)
                             .addComponent(jLabel6)
                             .addComponent(jLabel1)
-                            .addComponent(jLabel5))
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel8))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblship, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(lblcust, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(tbordnbr, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1128,16 +1126,9 @@ public class ShipOrderLine extends javax.swing.JPanel {
                                 .addComponent(btadditem)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btdeleteitem))
-                            .addComponent(lblcust, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(lblship, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btnew)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btclear))
+                                    .addComponent(tbref, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGroup(jPanel1Layout.createSequentialGroup()
                                         .addComponent(tbline, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1146,7 +1137,15 @@ public class ShipOrderLine extends javax.swing.JPanel {
                                         .addComponent(lblitem, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                         .addComponent(tbpackqty, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
-                                        .addComponent(tbqty, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                        .addComponent(tbqty, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btlookup, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(21, 21, 21)
+                                        .addComponent(btnew)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btclear)))
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addGap(12, 12, 12)
                 .addComponent(lblstatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1155,11 +1154,13 @@ public class ShipOrderLine extends javax.swing.JPanel {
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnew)
-                    .addComponent(btclear)
-                    .addComponent(jLabel5))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnew)
+                        .addComponent(btclear)
+                        .addComponent(jLabel5))
+                    .addComponent(btlookup))
                 .addGap(7, 7, 7)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1181,14 +1182,18 @@ public class ShipOrderLine extends javax.swing.JPanel {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbpackqty, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
-                .addGap(5, 5, 5)
-                .addComponent(lblcust, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbref, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel8))
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(27, 27, 27)
+                        .addGap(49, 49, 49)
                         .addComponent(lblstatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(10, 10, 10)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblcust, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(3, 3, 3)
                         .addComponent(lblship, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1196,19 +1201,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
                             .addComponent(btdeleteitem))
                         .addGap(5, 5, 5)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(tblblqty, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel7))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(tbref, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel8))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(ddprinter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel2))
-                        .addGap(31, 31, 31)
+                        .addGap(106, 106, 106)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(btprint)
                             .addComponent(btadd)
@@ -1338,17 +1331,6 @@ public class ShipOrderLine extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_tbqtyFocusLost
 
-    private void tblblqtyFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tblblqtyFocusLost
-        if (! BlueSeerUtils.isNumeric(tblblqty.getText())) {
-            bsmf.MainFrame.show(getMessageTag(1028));
-            tblblqty.requestFocus();
-            tblblqty.setBackground(Color.yellow);
-            return;
-        } else {
-            tblblqty.setBackground(Color.white);
-        }
-    }//GEN-LAST:event_tblblqtyFocusLost
-
     private void btaddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddActionPerformed
         if (! validateInput(false)) {
             return;
@@ -1373,6 +1355,10 @@ public class ShipOrderLine extends javax.swing.JPanel {
         executeTask("delete", new String[]{tbkey.getText()});
     }//GEN-LAST:event_btdeleteActionPerformed
 
+    private void btlookupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupActionPerformed
+        lookUpFrame();
+    }//GEN-LAST:event_btlookupActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btadd;
@@ -1380,19 +1366,17 @@ public class ShipOrderLine extends javax.swing.JPanel {
     private javax.swing.JButton btclear;
     private javax.swing.JButton btdelete;
     private javax.swing.JButton btdeleteitem;
+    private javax.swing.JButton btlookup;
     private javax.swing.JButton btlookupLine;
     private javax.swing.JButton btlookupOrder;
     private javax.swing.JButton btnew;
     private javax.swing.JButton btprint;
     private javax.swing.JButton btupdate;
-    private javax.swing.JComboBox ddprinter;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
@@ -1402,7 +1386,6 @@ public class ShipOrderLine extends javax.swing.JPanel {
     private javax.swing.JLabel lblstatus;
     private javax.swing.JTable shiptable;
     private javax.swing.JTextField tbkey;
-    private javax.swing.JTextField tblblqty;
     private javax.swing.JTextField tbline;
     private javax.swing.JTextField tbordnbr;
     private javax.swing.JTextField tbpackqty;

@@ -677,6 +677,128 @@ public class shpData {
         return r;
     }
    
+    public static Shipper getShipperMstrSet(String[] x ) {
+        Shipper r = null;
+        String[] m = new String[2];
+        Connection bscon = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            
+            if (ds != null) {
+              bscon = ds.getConnection();
+            } else {
+              bscon = DriverManager.getConnection(url + db, user, pass);  
+            }
+            
+            ship_mstr sh = _getShipMstr(x, bscon, ps, res);
+            ArrayList<ship_det> shd = _getShipDet(x, bscon, ps, res);
+            
+            
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+            r = new Shipper(m, sh, shd);
+            
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+             r = new Shipper(m);
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return r;
+    }
+    
+    private static ship_mstr _getShipMstr(String[] x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        ship_mstr r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from ship_mstr where sh_id = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x[0]);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new ship_mstr(m);
+            } else {
+                while(res.next()) {
+                    m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                    r = new ship_mstr(m, 
+                                res.getString("sh_id"), 
+                                res.getString("sh_cust"),
+                                res.getString("sh_ship"), 
+                                res.getInt("sh_pallets"),
+                                res.getInt("sh_boxes"), 
+                                res.getString("sh_shipvia"),
+                                res.getString("sh_shipdate"), 
+                                res.getString("sh_po_date"),
+                                res.getString("sh_ref"), 
+                                res.getString("sh_po"),
+                                res.getString("sh_rmks"), 
+                                res.getString("sh_userid"),
+                                res.getString("sh_site"),
+                                res.getString("sh_curr"),
+                                res.getString("sh_wh"),
+                                res.getString("sh_cust_terms"),
+                                res.getString("sh_taxcode"),
+                                res.getString("sh_ar_acct"),
+                                res.getString("sh_ar_cc"),
+                                res.getString("sh_type"),
+                                res.getString("sh_so"),
+                                res.getString("sh_shipfrom"),
+                                res.getString("sh_trailer")
+                            );
+                }
+            }
+            return r;
+    }
+    
+    private static ArrayList<ship_det> _getShipDet(String[] x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        ArrayList<ship_det> list = new ArrayList<ship_det>();
+        ship_det r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from ship_det where shd_id = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x[0]);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new ship_det(m);
+            } else {
+                while(res.next()) {
+                    m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                    
+                    r = new ship_det(m, res.getString("shd_id"), res.getInt("shd_line"), res.getString("shd_item"), 
+                    res.getString("shd_custitem"), res.getString("shd_so"), res.getInt("shd_soline"), res.getString("shd_date"), res.getString("shd_po"),
+                    res.getDouble("shd_qty"), res.getString("shd_uom"), res.getString("shd_curr"),
+                    res.getDouble("shd_netprice"), res.getDouble("shd_disc"), res.getDouble("shd_listprice"), res.getString("shd_desc"), 
+                    res.getString("shd_wh"), res.getString("shd_loc"), res.getDouble("shd_taxamt"),
+                    res.getString("shd_cont"), res.getString("shd_ref"), res.getString("shd_serial"), res.getString("shd_site"), 
+                    res.getString("shd_bom") );
+                    list.add(r);
+                    }
+            }
+            return list;
+    }
+    
     
     public static ship_mstr createShipMstrJRT(String nbr, String site, String bol, String billto, String shipto, String so, String po, String ref, String shipdate, String orddate, String remarks, String shipvia, String shiptype, String taxcode, String shipfrom, String tracking) {
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
@@ -3691,7 +3813,11 @@ public class shpData {
         }
     }
 
-   
+   public record Shipper(String[] m, ship_mstr sh, ArrayList<ship_det> shd) {
+        public Shipper(String[] m) {
+            this (m, null, null);
+        }
+    }
     
     
 }
