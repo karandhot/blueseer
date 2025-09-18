@@ -4,43 +4,43 @@
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
-	<parameter name="mynbr" class="java.lang.String"/>
+	<parameter name="shipper" class="java.lang.String"/>
 	<parameter name="site_csz" class="java.lang.String"/>
 	<parameter name="ship_csz" class="java.lang.String"/>
-	<parameter name="myline" class="java.lang.String"/>
-	<parameter name="serialno" class="java.lang.String"/>
 	<parameter name="mydate" class="java.lang.String"/>
 	<parameter name="reference" class="java.lang.String"/>
 	<parameter name="quantity" class="java.lang.String"/>
 	<parameter name="zip" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[select so_nbr, sod_item, sod_desc, sod_ord_qty,
-so_cust, so_due_date, so_shipvia,  
-so_po, sod_ord_qty, sod_uom 
+		<![CDATA[select sh_id, shd_so, lbl_id, lbl_id_str, lbl_item, shd_desc, lbl_qty,
+sh_cust,  sh_shipvia,  
+lbl_po, shd_uom, 
 cm_code, cm_name, cm_line1, 
 cm_line2, 
 cms_name, cms_line1, cms_line2, cms_zip, cms_plantcode,
 site_desc, site_line1 
-from sod_det 
-inner join so_mstr on so_nbr = sod_nbr 
-inner join cm_mstr on cm_code = so_cust 
-left outer join cms_det on cms_code = so_cust and cms_shipto = so_ship 
-inner join site_mstr on site_site = so_site 
-where sod_nbr =  $P{mynbr} and sod_line = $P{myline}]]>
+from label_mstr
+inner join ship_det on shd_id = $P{shipper} and shd_so = lbl_order and shd_soline = lbl_line 
+inner join ship_mstr on sh_id = $P{shipper}
+inner join cm_mstr on cm_code = sh_cust 
+left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship 
+inner join site_mstr on site_site = sh_site 
+where lbl_ref = $P{shipper}
+]]>
 	</queryString>
 	<field name="site_desc" class="java.lang.String"/>
 	<field name="site_line1" class="java.lang.String"/>
-	<field name="so_po" class="java.lang.String"/>
-	<field name="sod_item" class="java.lang.String"/>
-	<field name="sod_desc" class="java.lang.String"/>
+	<field name="lbl_po" class="java.lang.String"/>
+	<field name="lbl_item" class="java.lang.String"/>
+	<field name="shd_desc" class="java.lang.String"/>
 	<field name="cms_name" class="java.lang.String"/>
 	<field name="cms_line1" class="java.lang.String"/>
-	<field name="so_due_date" class="java.lang.String"/>
-	<field name="sod_ord_qty" class="java.lang.String"/>
-	<field name="so_nbr" class="java.lang.String"/>
-	<field name="so_shipvia" class="java.lang.String"/>
+	<field name="lbl_qty" class="java.lang.String"/>
+	<field name="sh_id" class="java.lang.String"/>
+	<field name="sh_shipvia" class="java.lang.String"/>
 	<field name="cms_zip" class="java.lang.String"/>
 	<field name="cms_plantcode" class="java.lang.String"/>
+	<field name="lbl_id_str" class="java.lang.String"/>
 	<background>
 		<band splitType="Prevent"/>
 	</background>
@@ -49,11 +49,11 @@ where sod_nbr =  $P{mynbr} and sod_line = $P{myline}]]>
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<componentElement>
 				<reportElement positionType="FixRelativeToBottom" x="-8" y="338" width="266" height="92" uuid="84234ae2-f2c7-4ba0-b6f0-dcacb1bdc3e6">
-					<property name="com.jaspersoft.studio.unit.barWidth" value="px"/>
 					<property name="com.jaspersoft.studio.unit.barHeight" value="px"/>
+					<property name="com.jaspersoft.studio.unit.barWidth" value="px"/>
 				</reportElement>
 				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="SSCC18" drawText="true" checksumRequired="false" barHeight="85">
-					<jr:codeExpression><![CDATA[$P{serialno}]]></jr:codeExpression>
+					<jr:codeExpression><![CDATA[$F{lbl_id_str}]]></jr:codeExpression>
 					<jr:applicationIdentifierExpression><![CDATA[0]]></jr:applicationIdentifierExpression>
 				</jr:barbecue>
 			</componentElement>
@@ -150,14 +150,14 @@ where sod_nbr =  $P{mynbr} and sod_line = $P{myline}]]>
 				<textElement>
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{so_shipvia}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{sh_shipvia}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="129" y="126" width="130" height="16" uuid="9ab3e585-67df-40e9-a574-b07794fe1ce3"/>
 				<textElement>
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{mynbr}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{sh_id}]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement x="-4" y="157" width="266" height="1" uuid="c9de9cb7-961b-45c5-8a5e-5e8eb92e7f3d"/>
@@ -174,7 +174,7 @@ where sod_nbr =  $P{mynbr} and sod_line = $P{myline}]]>
 				<textElement>
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{so_po}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{lbl_po}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="4" y="203" width="20" height="22" uuid="52020dc8-3120-4a14-881b-08910d77986a"/>
@@ -188,7 +188,7 @@ where sod_nbr =  $P{mynbr} and sod_line = $P{myline}]]>
 				<textElement>
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{quantity}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{lbl_qty}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="126" y="184" width="70" height="16" uuid="908702bc-a687-43d8-9319-2f964c8ca09f"/>

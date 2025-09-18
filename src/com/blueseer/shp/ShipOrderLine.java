@@ -453,7 +453,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
                 res = st.executeQuery("select * from ship_det where shd_id = " + "'" + x[0] + "'" + ";");
                 while (res.next()) {
             
-                     shipmodel.addRow(new Object[] { "", // reserved label serial
+                     shipmodel.addRow(new Object[] { res.getString("shd_po"), 
                       res.getString("shd_so"),
                       res.getString("shd_soline"),
                       res.getString("shd_item"),
@@ -464,8 +464,10 @@ public class ShipOrderLine extends javax.swing.JPanel {
                       res.getString("shd_qty"),
                       res.getString("shd_uom"),
                       res.getString("shd_netprice"),
-                      res.getString("shd_po")
-                                              });
+                      "",
+                      "",
+                      ""
+                    });
                  
                   
                 //  actamt += (res.getDouble("shd_qty") * res.getDouble("shd_netprice"));
@@ -1221,10 +1223,11 @@ public class ShipOrderLine extends javax.swing.JPanel {
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
 
+        /*
         if (! validateInput(false)) {
             return;
         }
-        
+        */
         try {
 
             String cust = getShipperBillto(tbkey.getText());

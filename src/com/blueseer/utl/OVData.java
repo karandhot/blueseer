@@ -17647,7 +17647,6 @@ return mystring;
                  String site = ""; 
                 
                  String site_csz = "";
-                 String bill_csz = "";
                  String ship_csz = "";
                  String  now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
                  
@@ -17664,7 +17663,6 @@ return mystring;
                           cust = res.getString(("sh_cust"));
                           site = res.getString(("sh_site"));
                           site_csz = res.getString(("site_city")) + " " + res.getString(("site_state")) + " " + res.getString(("site_zip")) + " " + res.getString(("site_country"));
-                          bill_csz = res.getString(("cm_city")) + " " + res.getString(("cm_state")) + " " + res.getString(("cm_zip")) + " " + res.getString(("cm_country"));
                           ship_csz = res.getString(("cms_city")) + " " + res.getString(("cms_state")) + " " + res.getString(("cms_zip")) + "  " + res.getString(("cms_country"));
                          
                           if (i > 1) {
@@ -17690,7 +17688,6 @@ return mystring;
                 hm.put("mydate",  now);
                 hm.put("shipper", shipper);
                 hm.put("site_csz", site_csz);
-                hm.put("bill_csz", bill_csz);
                 hm.put("ship_csz", ship_csz);
                 hm.put("imagepath", imagepath.toString());
                 hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
