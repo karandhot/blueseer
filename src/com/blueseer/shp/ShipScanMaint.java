@@ -359,7 +359,9 @@ public class ShipScanMaint extends javax.swing.JPanel {
                 "", // ref
                 serialdet.getValueAt(j, 0).toString(), // serial   
                 serialdet.getValueAt(j, 14).toString(),
-                "" // bom
+                "", // bom
+                0,  // packqty
+                "" // kvpair    
                 );
         list.add(x);
         }      

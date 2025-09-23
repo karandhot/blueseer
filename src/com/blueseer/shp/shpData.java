@@ -138,8 +138,8 @@ public class shpData {
         int rows = 0;
         String sqlSelect = "select * from ship_det where shd_id = ? and shd_line = ?";
         String sqlInsert = "insert into ship_det (shd_id, shd_line, shd_item, shd_so, shd_soline, shd_date, shd_po, shd_qty, shd_curr, shd_uom, "
-                        + "shd_netprice, shd_disc, shd_listprice, shd_desc, shd_wh, shd_loc, shd_taxamt, shd_cont, shd_serial, shd_site, shd_bom, shd_custitem ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                        + "shd_netprice, shd_disc, shd_listprice, shd_desc, shd_wh, shd_loc, shd_taxamt, shd_cont, shd_serial, shd_site, shd_bom, shd_custitem, shd_packqty, shd_kvpair ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
        
           ps = con.prepareStatement(sqlSelect); 
           ps.setString(1, x.shd_id);
@@ -169,6 +169,8 @@ public class shpData {
             ps.setString(20, x.shd_site);
             ps.setString(21, x.shd_bom);
             ps.setString(22, x.shd_custitem);
+            ps.setDouble(23, x.shd_packqty);
+            ps.setString(24, x.shd_kvpair);
             rows = ps.executeUpdate();
             } 
             return rows;
@@ -501,13 +503,13 @@ public class shpData {
                 "shd_soline = ?, shd_date = ?, shd_po = ?, shd_qty = ?, " +
                 " shd_netprice = ?, shd_disc = ?, shd_listprice = ?, shd_desc = ?, " +
                 "shd_wh = ?, shd_loc = ?, shd_taxamt = ?, shd_cont = ?, shd_serial = ?, " +
-                " shd_site = ?, shd_bom = ?" +
+                " shd_site = ?, shd_bom = ?, shd_packqty = ?" +
                  " where shd_id = ? and shd_line = ? ; ";
         String sqlInsert = "insert into ship_det (shd_id, shd_line, shd_item, shd_so, shd_soline, " 
                         + " shd_date, shd_po, shd_qty,"
                         + "shd_netprice, shd_disc, shd_listprice, shd_desc, shd_wh, "
-                        + " shd_loc, shd_taxamt, shd_cont, shd_serial, shd_site, shd_bom  ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); ";
+                        + " shd_loc, shd_taxamt, shd_cont, shd_serial, shd_site, shd_bom, shd_packqty, shd_kvpair  ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); ";
         ps = con.prepareStatement(sqlSelect); 
         ps.setString(1, x.shd_id);
         ps.setInt(2, x.shd_line);
@@ -533,6 +535,8 @@ public class shpData {
             ps.setString(17, x.shd_serial);
             ps.setString(18, x.shd_site); 
             ps.setString(19, x.shd_bom); 
+            ps.setDouble(20, x.shd_packqty);
+            ps.setString(21, x.shd_kvpair);
             rows = ps.executeUpdate();
         } else {    // update
          ps = con.prepareStatement(sqlUpdate) ;
@@ -555,13 +559,14 @@ public class shpData {
             ps.setString(15, x.shd_serial);
             ps.setString(16, x.shd_site); 
             ps.setString(17, x.shd_bom);
+            ps.setDouble(18, x.shd_packqty);
             rows = ps.executeUpdate();
         }
             
         return rows;
     }
     
-    public static String[] updateShipTransaction(String x, ArrayList<String> lines, ArrayList<ship_det> shd, ship_mstr sh) {
+    public static String[] updateShipTransaction(ArrayList<String> lines, ArrayList<ship_det> shd, ship_mstr sh) {
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -573,9 +578,13 @@ public class shpData {
               bscon = DriverManager.getConnection(url + db, user, pass);  
             }
             bscon.setAutoCommit(false);
-            for (String line : lines) {
-               _deleteShipperLines(x, line, bscon);  // discard unwanted lines
+            if (lines != null) {
+             for (String line : lines) {
+               _deleteShipperLines(sh.sh_id(), line, bscon);  // discard unwanted lines
              }
+            } else {
+                _deleteShipperLines(sh.sh_id(), bscon);  // delete all lines
+            }
             for (ship_det z : shd) {
                 _updateShipDet(z, bscon, ps, res);
             }
@@ -616,6 +625,64 @@ public class shpData {
         }
     return m;
     }
+    
+    public static String[] deleteShipMstr(String x) { 
+        String[] m = new String[2];
+        if (x == null) {
+            return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
+        }
+        Connection con = null;
+        try { 
+            con = DriverManager.getConnection(url + db, user, pass);
+            _deleteShipMstr(x, con);  
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
+        } finally {
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+   
+    private static void _deleteShipMstr(String x, Connection con) throws SQLException { 
+        String sql = "delete from ship_det where shd_id = ?; ";
+        PreparedStatement ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        sql = "delete from shs_det where shs_nbr = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        sql = "delete from ship_tree where ship_sh = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        sql = "delete from ship_log where shl_id = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        sql = "delete from ship_mstr where sh_id = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        ps.close();
+    }
+    
+    private static void _deleteShipperLines(String x, Connection con) throws SQLException { 
+        String sql = "delete from ship_det where shd_id = ?; ";
+        PreparedStatement ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        ps.close();
+    }
+    
     
     private static void _deleteShipperLines(String x, String line, Connection con) throws SQLException { 
         String sql = "delete from ship_det where shd_id = ? and shd_line = ?; ";
@@ -792,7 +859,7 @@ public class shpData {
                     res.getDouble("shd_netprice"), res.getDouble("shd_disc"), res.getDouble("shd_listprice"), res.getString("shd_desc"), 
                     res.getString("shd_wh"), res.getString("shd_loc"), res.getDouble("shd_taxamt"),
                     res.getString("shd_cont"), res.getString("shd_ref"), res.getString("shd_serial"), res.getString("shd_site"), 
-                    res.getString("shd_bom") );
+                    res.getString("shd_bom"), res.getDouble("shd_packqty"), res.getString("shd_kvpair") );
                     list.add(r);
                     }
             }
@@ -878,7 +945,9 @@ public class shpData {
                   "", // ref
                   "", // serial
                   site,
-                  d[16] // bom
+                  d[16], // bom
+                  0, // packqty
+                  "" // shd_kvpair
                   );
           list.add(x);
         }
@@ -912,7 +981,9 @@ public class shpData {
                   "", // ref
                   "", // serial
                   site,
-                  "" // bom
+                  "", // bom
+                  0, // packqty
+                  "" // shd_kvpair  
                   );
           list.add(x);
         }
@@ -947,7 +1018,9 @@ public class shpData {
                   "", // ref
                   "", // serial
                   site,
-                  "" // bom
+                  "", // bom
+                  0, // packqty
+                  "" // shd_kvpair  
                   );
           list.add(x);
         }
@@ -2198,6 +2271,52 @@ public class shpData {
          return r;
      }
 
+    public static String getShipperStatus(String shipper) {
+         String r = "";
+          try{
+
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+            
+           java.util.Date now = new java.util.Date();
+            DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+            DateFormat dftime = new SimpleDateFormat("HH:mm:ss");
+            String mydate = dfdate.format(now);
+
+
+
+                  res = st.executeQuery("select sh_status from ship_mstr where sh_id = " + "'" + shipper + "'" +";");
+                while (res.next()) {
+                    r = res.getString("sh_status");
+                }
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+
+        } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+
+    }
+         return r;
+     }
+
     
     public static String getShipperRef(String shipper) {
          String billto = "";
@@ -2286,7 +2405,9 @@ public class shpData {
                     res.getString("shd_ref"), // ref
                     res.getString("shd_serial"), // serial
                     res.getString("shd_site"),
-                    res.getString("shd_bom") // bom
+                    res.getString("shd_bom"), // bom
+                    res.getDouble("shd_packqty"),
+                    res.getString("shd_kvpair")
                     );
                     lines.add(shd);
                 }
@@ -2399,7 +2520,9 @@ public class shpData {
                     res.getString("shd_ref"), // ref
                     res.getString("shd_serial"), // serial
                     res.getString("shd_site"),
-                    res.getString("shd_bom") // bom
+                    res.getString("shd_bom"), // bom
+                    res.getDouble("shd_packqty"),
+                    res.getString("shd_kvpair")
                     );
                     lines.add(shd);
                 }
@@ -3781,11 +3904,11 @@ public class shpData {
         int shd_soline, String shd_date, String shd_po, double shd_qty, String shd_uom, String shd_curr,
         double shd_netprice, double shd_disc, double shd_listprice, String shd_desc, 
         String shd_wh, String shd_loc, double shd_taxamt, String shd_cont, String shd_ref,
-        String shd_serial, String shd_site, String shd_bom) {
+        String shd_serial, String shd_site, String shd_bom, double shd_packqty, String shd_kvpair) {
         public ship_det(String[] m) {
             this(m, "", 0, "", "", "", 0, "", "", 0, "",
                     "", 0, 0, 0, "", "", "", 0, "", "",
-                    "", "", ""
+                    "", "", "", 0, ""
             );
         }
     }

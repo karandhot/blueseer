@@ -44,6 +44,7 @@ import static com.blueseer.ctr.cusData.getCustMstr;
 import static com.blueseer.lbl.lblData.addLabelMstr;
 import static com.blueseer.lbl.lblData.addMixedLabelTransaction;
 import static com.blueseer.lbl.lblData.addMultiLabelTransaction;
+import static com.blueseer.lbl.lblData.deleteLabelByShipper;
 import static com.blueseer.lbl.lblData.getLabelSerialDisplay;
 import static com.blueseer.lbl.lblData.getLabelZebraMstr;
 import com.blueseer.lbl.lblData.label_det;
@@ -56,10 +57,13 @@ import com.blueseer.ord.ordData.so_mstr;
 import com.blueseer.shp.shpData.Shipper;
 import static com.blueseer.shp.shpData.addShipperTransaction;
 import static com.blueseer.shp.shpData.confirmShipperTransaction;
+import static com.blueseer.shp.shpData.deleteShipMstr;
 import static com.blueseer.shp.shpData.getShipperBillto;
 import static com.blueseer.shp.shpData.getShipperMstrSet;
+import static com.blueseer.shp.shpData.getShipperStatus;
 import com.blueseer.shp.shpData.ship_det;
 import com.blueseer.shp.shpData.ship_mstr;
+import static com.blueseer.shp.shpData.updateShipTransaction;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
@@ -159,6 +163,8 @@ public class ShipOrderLine extends javax.swing.JPanel {
     String firstbillto = "";
     boolean hasInit = false;
   
+  
+   
    ShipTableModel shipmodel = new ShipTableModel(new Object[][]{},
             new String[]{
                 getGlobalColumnTag("po"), 
@@ -167,15 +173,14 @@ public class ShipOrderLine extends javax.swing.JPanel {
                 getGlobalColumnTag("item"), 
                 getGlobalColumnTag("description"), 
                 getGlobalColumnTag("custitem"), 
-                getGlobalColumnTag("warehouse"), 
-                getGlobalColumnTag("location"), 
                 getGlobalColumnTag("qty"),
-                getGlobalColumnTag("uom"),
-                getGlobalColumnTag("price"),
                 getGlobalColumnTag("packqty"),
                 getGlobalColumnTag("contqty"),
-                getGlobalColumnTag("remainder")
-                //    po, order, line, item, desc, custitem, wh, loc, qty, uom, price, packqty, contqty, remainder
+                getGlobalColumnTag("remainder"),
+                getGlobalColumnTag("uom"),
+                getGlobalColumnTag("price"),
+                getGlobalColumnTag("warehouse"), 
+                getGlobalColumnTag("location")
             });
     
    class ShipTableModel extends DefaultTableModel {  
@@ -351,9 +356,10 @@ public class ShipOrderLine extends javax.swing.JPanel {
         tbqty.setText("");
         tbordnbr.setText("");
         tbline.setText("");
-        tbqty.setText("");
-        tbordnbr.setEditable(true);
-        btprint.setEnabled(true);
+        tbpackqty.setText("");
+        tbkey.setText("");
+       
+       
         
         shipmodel.setRowCount(0);
         shiptable.setModel(shipmodel);
@@ -361,12 +367,15 @@ public class ShipOrderLine extends javax.swing.JPanel {
         
         if (! hasInit) {
             TableColumnModel tcm = shiptable.getColumnModel();
-        tcm.removeColumn(tcm.getColumn(11));   // remove last three columns from view
-        tcm.removeColumn(tcm.getColumn(11));
-        tcm.removeColumn(tcm.getColumn(11));
+        tcm.removeColumn(tcm.getColumn(10));   // remove last four columns from view
+        tcm.removeColumn(tcm.getColumn(10));
+        tcm.removeColumn(tcm.getColumn(10));
+        tcm.removeColumn(tcm.getColumn(10));
         hasInit = true;
         }
+        
     }
+    
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -419,6 +428,11 @@ public class ShipOrderLine extends javax.swing.JPanel {
                    btadd.setEnabled(false);
                    tbkey.setEditable(false);
                    tbkey.setForeground(Color.blue);
+                   if (getShipperStatus(tbkey.getText()).equals("1")) {
+                      btadd.setEnabled(false);
+                      btupdate.setEnabled(false);
+                      btdelete.setEnabled(false);
+                   }
         } else {
            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};  
                    tbkey.setForeground(Color.red); 
@@ -426,11 +440,27 @@ public class ShipOrderLine extends javax.swing.JPanel {
         return m;
     }
     
-     public String[] addRecord(String[] x) {
+    public void newAction(String x) {
+      setPanelComponentState(this, true);
+        setComponentDefaultValues();
+        BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
+        btupdate.setEnabled(false);
+        btprint.setEnabled(false);
+        btdelete.setEnabled(false);
+        btnew.setEnabled(false);
+        tbkey.setForeground(Color.blue);
+        tbkey.requestFocus();
+        if (! x.isEmpty()) {
+          tbkey.setText(String.valueOf(OVData.getNextNbr(x)));  
+          tbkey.setEditable(false);
+        } 
+    }
+    
+    public String[] addRecord(String[] x) {
         so_mstr so = getOrderMstr(new String[]{shiptable.getValueAt(0, 1).toString()});  // get first orderline of table
-       // String[] custinfo = getCustInfo(so.so_cust());  // aracct, arcc, currency, bank, terms, carrier, onhold, site, taxcode 
         cm_mstr cm = getCustMstr(new String[]{so.so_cust()});
         cms_det cms = getCMSDet(so.so_cust(), so.so_ship());
+        
         // add label records
         String[] m = addMultiLabelTransaction(null, createLabelRecord(cm, cms));
         if (! m[0].equals("0")) {
@@ -450,12 +480,27 @@ public class ShipOrderLine extends javax.swing.JPanel {
     }
      
     public String[] updateRecord(String[] x) {
-     String[] m = new String[]{BlueSeerUtils.ErrorBit, "This update functionality is not implemented at this time"};
+     so_mstr so = getOrderMstr(new String[]{shiptable.getValueAt(0, 1).toString()});  // get first orderline of table
+     cm_mstr cm = getCustMstr(new String[]{so.so_cust()});
+     cms_det cms = getCMSDet(so.so_cust(), so.so_ship());
+     
+     String[] m = updateShipTransaction(null, createDetRecord(so, cm), createRecord(so, cm));
+     
+     if (m[0].equals("0")) {
+         deleteLabelByShipper(x[0]);
+         addMultiLabelTransaction(null, createLabelRecord(cm, cms));
+     }
+     
      return m;
      }
      
     public String[] deleteRecord(String[] x) {
-     String[] m = new String[]{BlueSeerUtils.ErrorBit, "This delete functionality is not implemented at this time"};
+        String[] m = null;
+        boolean proceed = bsmf.MainFrame.warn("Are you sure?");
+        if (proceed) {
+            deleteLabelByShipper(x[0]);
+            m = deleteShipMstr(x[0]);
+        } 
      return m;
      }
       
@@ -508,27 +553,29 @@ public class ShipOrderLine extends javax.swing.JPanel {
             shpData.ship_det x = new shpData.ship_det(null, 
                 tbkey.getText(), // shipper
                 j + 1, //shline
-                shiptable.getValueAt(j, 3).toString(), // item
-                shiptable.getValueAt(j, 5).toString(), // custimtem
-                shiptable.getValueAt(j, 1).toString(),  // order
-                bsParseInt(shiptable.getValueAt(j, 2).toString()), //soline    
+                shiptable.getModel().getValueAt(j, 3).toString(), // item
+                shiptable.getModel().getValueAt(j, 5).toString(), // custimtem
+                shiptable.getModel().getValueAt(j, 1).toString(),  // order
+                bsParseInt(shiptable.getModel().getValueAt(j, 2).toString()), //soline    
                 setDateDB(new java.util.Date()),
-                shiptable.getValueAt(j, 0).toString(), // po
-                bsParseDouble(shiptable.getValueAt(j, 8).toString().replace(defaultDecimalSeparator, '.')), // qty
-                shiptable.getValueAt(j, 9).toString(), //uom
-                so.so_curr(), //currency
-                bsParseDouble(shiptable.getValueAt(j, 10).toString().replace(defaultDecimalSeparator, '.')), // net price
+                shiptable.getModel().getValueAt(j, 0).toString(), // po
+                bsParseDouble(shiptable.getModel().getValueAt(j, 6).toString().replace(defaultDecimalSeparator, '.')), // qty
+                shiptable.getModel().getValueAt(j, 10).toString(), //uom
+                so.so_curr(), //currency 
+                bsParseDouble(shiptable.getModel().getValueAt(j, 11).toString().replace(defaultDecimalSeparator, '.')), // net price
                 0, // disc
-                bsParseDouble(shiptable.getValueAt(j, 10).toString().replace(defaultDecimalSeparator, '.')), // list price
-                shiptable.getValueAt(j, 4).toString(), // desc
-                shiptable.getValueAt(j, 6).toString(), // wh
-                shiptable.getValueAt(j, 7).toString(), // loc
+                bsParseDouble(shiptable.getModel().getValueAt(j, 11).toString().replace(defaultDecimalSeparator, '.')), // list price
+                shiptable.getModel().getValueAt(j, 4).toString(), // desc
+                shiptable.getModel().getValueAt(j, 12).toString(), // wh
+                shiptable.getModel().getValueAt(j, 13).toString(), // loc
                 0, // taxamt
                 "0", // cont
                 tbref.getText(), // ref
-                shiptable.getValueAt(j, 5).toString(), // serial   
+                shiptable.getModel().getValueAt(j, 5).toString(), // serial   
                 so.so_site(),
-                "" // bom
+                "", // bom
+                bsParseDouble(shiptable.getModel().getValueAt(j, 7).toString().replace(defaultDecimalSeparator, '.')),  // packqty
+                "" // kvpair    
                 );
         list.add(x);
         }      
@@ -559,19 +606,19 @@ public class ShipOrderLine extends javax.swing.JPanel {
             list.add(x);
             // now items of container
             for (int j = 0; j < shiptable.getRowCount(); j++) { 
-                if (shiptable.getValueAt(j, 0).toString().equals(s)) {
+                if (shiptable.getModel().getValueAt(j, 0).toString().equals(s)) {
                     shpData.ship_tree y = new shpData.ship_tree(null,
                     s,
-                    shiptable.getValueAt(j, 1).toString() + "," + shiptable.getValueAt(j, 2).toString() + "," + shiptable.getValueAt(j, 3).toString(),
+                    shiptable.getModel().getValueAt(j, 1).toString() + "," + shiptable.getModel().getValueAt(j, 2).toString() + "," + shiptable.getModel().getValueAt(j, 3).toString(),
                     so.so_site(),
                     "i",
                     tbkey.getText(),
                     String.valueOf(j + 1),
-                    shiptable.getValueAt(j, 1).toString(),
-                    shiptable.getValueAt(j, 2).toString(),
-                    shiptable.getValueAt(j, 0).toString(),
-                    shiptable.getValueAt(j, 3).toString(),
-                    bsParseDouble(shiptable.getValueAt(j, 8).toString().replace(defaultDecimalSeparator, '.')),
+                    shiptable.getModel().getValueAt(j, 1).toString(),
+                    shiptable.getModel().getValueAt(j, 2).toString(),
+                    shiptable.getModel().getValueAt(j, 0).toString(),
+                    shiptable.getModel().getValueAt(j, 3).toString(),
+                    bsParseDouble(shiptable.getModel().getValueAt(j, 8).toString().replace(defaultDecimalSeparator, '.')),
                     "" // get display serial
                     );
                     list.add(y);
@@ -589,6 +636,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
         tbkey.setText(sh.sh_id());
         
         for (ship_det shd : shdlist) {
+            /*
             shipmodel.addRow(new Object[]{
                 shd.shd_po(), 
                 shd.shd_so(),
@@ -604,6 +652,32 @@ public class ShipOrderLine extends javax.swing.JPanel {
                 "",
                 "",
                 "" });
+            */
+            
+        int nbrOfContainers = 0;
+        int remainder = 0;
+        if (shd.shd_packqty() > 0) {
+            nbrOfContainers = ( (int) shd.shd_qty() / (int) shd.shd_packqty());
+            remainder = ( (int) shd.shd_qty() % (int) shd.shd_packqty());
+        } 
+       
+            
+            shipmodel.addRow(new Object[]{
+                shd.shd_po(), 
+                shd.shd_so(),
+                shd.shd_soline(),
+                shd.shd_item(),
+                shd.shd_desc(),
+                shd.shd_custitem(),
+                bsFormatDouble(shd.shd_qty()),
+                bsFormatDouble(shd.shd_packqty()),
+                bsFormatDouble(nbrOfContainers), 
+                bsFormatDouble(remainder),
+                shd.shd_uom(),
+                shd.shd_netprice(),
+                shd.shd_wh(),
+                shd.shd_loc()});
+            
         }
         
        // getAttachments(tbkey.getText());
@@ -766,11 +840,9 @@ public class ShipOrderLine extends javax.swing.JPanel {
         luTable.addMouseListener(luml);
       
         
-        callDialog(getClassLabelTag("lblid", this.getClass().getSimpleName()), 
-                getClassLabelTag("lblcust", this.getClass().getSimpleName())); 
+        callDialog(getGlobalColumnTag("id"), getGlobalColumnTag("customer")); 
         
     }
-
     
     public boolean validateInput(boolean itemlevel) {
         
@@ -820,8 +892,8 @@ public class ShipOrderLine extends javax.swing.JPanel {
         String serialno_str = "";
         String serialno_display = "";
         for (int j = 0; j < shiptable.getRowCount(); j++) {
-             conts = Integer.parseInt(shiptable.getModel().getValueAt(j, 12).toString());
-             remainder = Integer.parseInt(shiptable.getModel().getValueAt(j, 13).toString());
+             conts = Integer.parseInt(shiptable.getModel().getValueAt(j, 8).toString());
+             remainder = Integer.parseInt(shiptable.getModel().getValueAt(j, 9).toString());
             for (int k = 0; k < conts; k++ ) {
                 
             serialno = OVData.getNextNbr("label");            
@@ -839,7 +911,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
                      serialno_display, 
                      "XX", 
                      label,
-                     shiptable.getModel().getValueAt(j, 11).toString(), // qty (pack) 
+                     shiptable.getModel().getValueAt(j, 7).toString(), // qty (pack) 
                      shiptable.getModel().getValueAt(j, 0).toString(), // po 
                      cm.cm_code(),
                      shiptable.getModel().getValueAt(j, 1).toString(), // order
@@ -1020,6 +1092,11 @@ public class ShipOrderLine extends javax.swing.JPanel {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        shiptable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                shiptableMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(shiptable);
 
         btadditem.setText("Add Item");
@@ -1051,6 +1128,11 @@ public class ShipOrderLine extends javax.swing.JPanel {
         });
 
         btnew.setText("New");
+        btnew.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnewActionPerformed(evt);
+            }
+        });
 
         jLabel1.setText("Pack Quantity");
 
@@ -1282,7 +1364,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
             nbrOfContainers = Integer.valueOf(tbqty.getText()) / Integer.valueOf(tbpackqty.getText());
             remainder = Integer.valueOf(tbqty.getText()) % Integer.valueOf(tbpackqty.getText());
         }    
-              
+         /*     
         shipmodel.addRow(new Object[]{ x[8], // po 
             tbordnbr.getText(), 
             tbline.getText(), 
@@ -1297,6 +1379,28 @@ public class ShipOrderLine extends javax.swing.JPanel {
             tbpackqty.getText(), 
             nbrOfContainers, 
             remainder }); 
+        */
+        shipmodel.addRow(new Object[]{ x[8], // po 
+            tbordnbr.getText(), 
+            tbline.getText(), 
+            x[0], 
+            x[1], 
+            x[5], 
+            tbqty.getText(),   
+            tbpackqty.getText(), 
+            nbrOfContainers, 
+            remainder,
+            x[3], 
+            x[4],
+            x[6], 
+            x[7]}); 
+        
+        tbqty.setText("");
+        tbpackqty.setText("");
+        tbref.setText("");
+        tbordnbr.setText("");
+        tbline.setText("");
+        
     }//GEN-LAST:event_btadditemActionPerformed
 
     private void btdeleteitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteitemActionPerformed
@@ -1306,6 +1410,12 @@ public class ShipOrderLine extends javax.swing.JPanel {
             ((javax.swing.table.DefaultTableModel) shiptable.getModel()).removeRow(i);
             
         }
+        
+        tbqty.setText("");
+        tbpackqty.setText("");
+        tbref.setText("");
+        tbordnbr.setText("");
+        tbline.setText("");
     }//GEN-LAST:event_btdeleteitemActionPerformed
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
@@ -1358,6 +1468,19 @@ public class ShipOrderLine extends javax.swing.JPanel {
     private void btlookupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupActionPerformed
         lookUpFrame();
     }//GEN-LAST:event_btlookupActionPerformed
+
+    private void btnewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnewActionPerformed
+        newAction("");
+    }//GEN-LAST:event_btnewActionPerformed
+
+    private void shiptableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_shiptableMouseClicked
+        int row = shiptable.rowAtPoint(evt.getPoint());
+        tbqty.setText(shiptable.getModel().getValueAt(row, 6).toString());
+        tbpackqty.setText(shiptable.getModel().getValueAt(row, 7).toString());
+        tbref.setText("");
+        tbordnbr.setText(shiptable.getModel().getValueAt(row, 1).toString());
+        tbline.setText(shiptable.getModel().getValueAt(row, 2).toString());  
+    }//GEN-LAST:event_shiptableMouseClicked
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

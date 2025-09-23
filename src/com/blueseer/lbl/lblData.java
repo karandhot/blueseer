@@ -620,6 +620,33 @@ public class lblData {
           return shiptocode;
       }
     
+    
+    public static void deleteLabelByShipper(String shipper) {
+          try {
+            Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+            Statement st = con.createStatement();
+            try {
+                 st.executeUpdate("delete from label_mstr where lbl_ref = " + "'" + shipper + "'" 
+                         + " ;");
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+      }
+    
+    
     public static ArrayList<String[]> getLabelTableRecs(String billto) {
         ArrayList<String[]> list = new ArrayList<String[]>();
         try {

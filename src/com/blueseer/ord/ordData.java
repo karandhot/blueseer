@@ -3173,7 +3173,9 @@ public class ordData {
                 "", // ref
                 "", // serial   
                 bm.bill_site(),
-                "" // bom
+                "", // bom
+                0,  // packqty
+                "" // kvpair    
                 );
         shd.add(x);
         amt += Double.valueOf(bdline.billd_netprice() * bdline.billd_qty());

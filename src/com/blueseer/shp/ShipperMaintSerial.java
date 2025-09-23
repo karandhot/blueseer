@@ -658,7 +658,9 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
                 "", // ref
                 shipdet.getValueAt(j, 3).toString(), // serial   
                 ddsite.getSelectedItem().toString(),
-                shipdet.getValueAt(j, 9).toString() // bom
+                shipdet.getValueAt(j, 9).toString(), // bom
+                0,  // packqty
+                "" // kvpair    
                 );
         list.add(x);
         }      

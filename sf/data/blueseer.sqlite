@@ -1954,7 +1954,9 @@ CREATE TABLE "ship_det" (
   "shd_desc" varchar(50) NOT NULL COLLATE NOCASE DEFAULT '',
   "shd_uom" varchar(3) NOT NULL COLLATE NOCASE DEFAULT '',
   "shd_cont" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
-  "shd_bom" varchar(36) NOT NULL COLLATE NOCASE DEFAULT ''
+  "shd_bom" varchar(36) NOT NULL COLLATE NOCASE DEFAULT '',
+  "shd_packqty" decimal(14,4) NOT NULL DEFAULT '0',
+  "shd_kvpair" varchar(500) NOT NULL COLLATE NOCASE DEFAULT ''
 );
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

@@ -676,7 +676,9 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
                 tbref.getText(), // ref
                 shipdet.getValueAt(j, 5).toString(), // serial   
                 ddsite.getSelectedItem().toString(),
-                "" // bom
+                "", // bom
+                0,  // packqty
+                "" // kvpair    
                 );
         list.add(x);
         }      

@@ -1699,7 +1699,9 @@ CREATE TABLE IF NOT EXISTS `ship_det` (
   `shd_desc` varchar(50) NOT NULL  DEFAULT '',
   `shd_uom` varchar(3) NOT NULL  DEFAULT '',
   `shd_cont` varchar(30) NOT NULL  DEFAULT '',
-  `shd_bom` varchar(36) NOT NULL  DEFAULT ''
+  `shd_bom` varchar(36) NOT NULL  DEFAULT '',
+  `shd_packqty` decimal(14,4) NOT NULL  DEFAULT '0.00',
+  `shd_kvpair` varchar(500) NOT NULL  DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `dod_mstr` (
   `dod_nbr` varchar(8) NOT NULL  DEFAULT '',

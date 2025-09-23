@@ -1557,7 +1557,9 @@ public class ShipperMaint extends javax.swing.JPanel {
                 "", // ref
                 tabledetail.getValueAt(j, 13).toString(),  // serial   
                 ddsite.getSelectedItem().toString(),
-                tabledetail.getValueAt(j, 15).toString() // bom
+                tabledetail.getValueAt(j, 15).toString(), // bom
+                0,  // packqty
+                "" // kvpair
                 );
         list.add(x);
         }      

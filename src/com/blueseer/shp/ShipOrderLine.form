@@ -270,6 +270,9 @@
                   </Table>
                 </Property>
               </Properties>
+              <Events>
+                <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="shiptableMouseClicked"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>
@@ -317,6 +320,9 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="New"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnewActionPerformed"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JTextField" name="tbpackqty">
         </Component>
