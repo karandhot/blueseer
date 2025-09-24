@@ -27,6 +27,8 @@ select @field, case when @Cnt > 0 then 'Exists' else 'Inserting' end as status;
 
 /* alter table pod_mstr modify pod_ord_qty decimal(14,5); */
 
+alter table ship_det add column shd_packqty decimal(14,4) NOT NULL DEFAULT '0';
+alter table ship_det add column shd_kvpair varchar(500) NOT NULL DEFAULT '';
 
 /* drop table if exists map_struct; */
 

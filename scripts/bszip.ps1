@@ -40,6 +40,7 @@ $patchmain = "blueseer.patch.ver." + $version + "." + "zip"
 mkdir $patchdir
 mkdir $patchdir\dist
 cp ..\.patch $patchdir\
+cp .patchsqlv70 $patchdir\
 cp patch_install.bat $patchdir\
 cp patch_install.sh $patchdir\
 cp ..\sf\patches\patch_instructions.pdf $patchdir\
