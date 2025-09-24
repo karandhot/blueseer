@@ -66,7 +66,7 @@ import com.blueseer.utl.EDData;
             e.setShipToCity(getInput(i,"N1:N4",1));
             e.setShipToState(getInput(i,"N1:N4",2));
             e.setShipToZip(getInput(i,"N1:N4",3));
-            e.setOVShipTo(EDData.getEDIXrefIn(getInputISA(6), getInputGS(2), "ST", getInput(i,"N1",4)));
+            e.setOVShipTo(EDData.getEDIXrefIn(getInputGS(3), getInputGS(2), "ST", getInput(i,"N1",4)));
         }
     }  // shipto loop
 
