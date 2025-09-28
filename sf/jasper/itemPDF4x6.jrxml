@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ucc_sample" pageWidth="288" pageHeight="450" columnWidth="278" leftMargin="10" rightMargin="0" topMargin="0" bottomMargin="0" uuid="6d90ba31-e206-4399-afc6-41f6d6dfcc48">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<parameter name="item" class="java.lang.String"/>
+	<parameter name="mydate" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select it_item, it_desc
+from item_mstr
+where it_item = $P{item}]]>
+	</queryString>
+	<field name="it_item" class="java.lang.String"/>
+	<field name="it_desc" class="java.lang.String"/>
+	<background>
+		<band splitType="Prevent"/>
+	</background>
+	<detail>
+		<band height="438">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<staticText>
+				<reportElement x="2" y="11" width="101" height="19" uuid="9d54aed3-ed99-4ca0-b1a3-714e5465c3b1"/>
+				<textElement>
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ITEM:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="0" y="40" width="268" height="18" uuid="cf0af0d9-4ad3-43f7-8f18-217e5a3a8f09"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{it_item}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="-8" y="80" width="286" height="1" uuid="c9de9cb7-961b-45c5-8a5e-5e8eb92e7f3d"/>
+			</line>
+			<textField>
+				<reportElement x="2" y="120" width="266" height="22" uuid="299afeb8-9165-4bd5-8a31-98ef276cd24d"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{it_desc}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="2" y="90" width="101" height="20" uuid="908702bc-a687-43d8-9319-2f964c8ca09f"/>
+				<textElement>
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[DESCRIPTION:]]></text>
+			</staticText>
+			<line>
+				<reportElement x="-8" y="160" width="286" height="1" uuid="0c468089-127f-474a-a139-0098fdc582ac"/>
+			</line>
+			<componentElement>
+				<reportElement positionType="FixRelativeToBottom" x="0" y="210" width="259" height="90" uuid="c6084d59-43db-48dd-88ed-108ed4fee736">
+					<property name="com.jaspersoft.studio.unit.barWidth" value="px"/>
+					<property name="com.jaspersoft.studio.unit.barHeight" value="px"/>
+				</reportElement>
+				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="Code39 (Extended)" drawText="false" checksumRequired="false" barHeight="85">
+					<jr:codeExpression><![CDATA[$F{it_item}]]></jr:codeExpression>
+					<jr:applicationIdentifierExpression><![CDATA[90]]></jr:applicationIdentifierExpression>
+				</jr:barbecue>
+			</componentElement>
+			<staticText>
+				<reportElement x="0" y="170" width="101" height="20" uuid="d9a85c5f-5bcf-41bd-8611-1c4bc5ac861f"/>
+				<textElement>
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Barcode(39e):]]></text>
+			</staticText>
+		</band>
+	</detail>
+</jasperReport>
