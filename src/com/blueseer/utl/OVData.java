@@ -17720,6 +17720,41 @@ return mystring;
         }
     }    
     
+    public static void printJasperItem(String item, String jasperfile) {
+        try{ 
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            
+                String  now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+                HashMap hm = new HashMap();
+                hm.put("REPORT_TITLE", "");
+                hm.put("mydate",  now);
+                hm.put("item", item);
+                hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+              
+               Path template = checkForCustomPath(getSystemJasperDirectory(), jasperfile);
+               JasperPrint jasperPrint = JasperFillManager.fillReport(template.toString(), hm, con );
+               
+              //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
+                
+                JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+                jasperViewer.setVisible(true);
+                jasperViewer.setTitle("Viewer");
+                jasperViewer.setIconImage(null);
+                jasperViewer.setFitPageZoomRatio();
+            
+            con.close();
+            
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+    }    
+    
     
     public static void printJTableToJasper(String reportname, JTable tablereport, String type) {
         HashMap hm = new HashMap();
@@ -18515,7 +18550,7 @@ return mystring;
         }
     }    
         
-    public static void printLabelItem(String item, String printer) throws IOException, PrintException {
+    public static void printLabelItem(String item, String printer, String labelfile) throws IOException, PrintException {
           String this_printer = "";
           try {
 
@@ -18535,7 +18570,7 @@ return mystring;
         }
         
         
-        Path template = checkForCustomPath(getSystemLabelDirectory(), "item.prn");       
+        Path template = checkForCustomPath(getSystemLabelDirectory(), labelfile);       
                 
         BufferedReader fsr = new BufferedReader(new FileReader(template.toFile(), StandardCharsets.UTF_8));
         String line = "";

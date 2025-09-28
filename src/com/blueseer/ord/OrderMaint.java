@@ -483,7 +483,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         java.util.Date now = new java.util.Date();
        
         lblstatus.setText("");
-        lblstatus.setForeground(Color.black);
+        lblstatus.setForeground(Color.black); 
        
         cbissourced.setSelected(false);
         cbisallocated.setSelected(false);
@@ -504,6 +504,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbsacdesc.setText("");
         tbsacamt.setText("");
         duedate.setDate(now);
+        duedate.setDateFormatString("dd-MM-yyyy");
         
         
         orddate.setDate(now);

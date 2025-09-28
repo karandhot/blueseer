@@ -43,6 +43,8 @@ import static com.blueseer.inv.invData.getItemMstr;
 import static com.blueseer.inv.invData.resetBOMDefault;
 import static com.blueseer.inv.invData.updateCurrentItemCost;
 import static com.blueseer.inv.invData.updateItemMstr;
+import com.blueseer.lbl.lblData;
+import static com.blueseer.lbl.lblData.getLabelZebraMstr;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDoubleZ;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatInt;
@@ -74,6 +76,8 @@ import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerT;
 import static com.blueseer.utl.OVData.canUpdate;
 import static com.blueseer.utl.OVData.printImageJasper;
+import static com.blueseer.utl.OVData.printJasperItem;
+import static com.blueseer.utl.OVData.printJasperLabelMulti;
 import static com.blueseer.utl.OVData.showPDFusingIcePDF;
 import java.awt.Color;
 import java.awt.Component;
@@ -1168,6 +1172,8 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
         btprintlabel = new javax.swing.JButton();
         tbexpiredays = new javax.swing.JTextField();
         jLabel11 = new javax.swing.JLabel();
+        ddlabel = new javax.swing.JComboBox<>();
+        jLabel13 = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
         tablelocqty = new javax.swing.JTable();
@@ -1620,6 +1626,10 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
         jLabel11.setText("Expire Days");
         jLabel11.setName("lblexpiredays"); // NOI18N
 
+        ddlabel.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "itemPDF", "itemZPL" }));
+
+        jLabel13.setText("Label");
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -1637,7 +1647,8 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
                     .addComponent(jLabel75)
                     .addComponent(jLabel71)
                     .addComponent(jLabel79)
-                    .addComponent(jLabel80))
+                    .addComponent(jLabel80)
+                    .addComponent(jLabel13))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel4Layout.createSequentialGroup()
@@ -1719,7 +1730,10 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(tbcontqty, javax.swing.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)
-                            .addComponent(tbexpiredays))))
+                            .addComponent(tbexpiredays)))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(ddlabel, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
@@ -1743,7 +1757,7 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
                     .addComponent(tbdrawing, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel61)
                     .addComponent(jLabel67))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbcreatedate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel80)
@@ -1779,17 +1793,21 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
                     .addComponent(jLabel75)
                     .addComponent(tbexpiredays, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel11))
-                .addGap(3, 3, 3)
+                .addGap(5, 5, 5)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel71)
                             .addComponent(ddrouting, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(10, 10, 10)
+                        .addGap(5, 5, 5)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(ddtax, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel79))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(ddlabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel13))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(btadd)
                             .addComponent(btupdate)
@@ -2694,18 +2712,25 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
 
     private void btprintlabelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintlabelActionPerformed
         String printer = OVData.getDefaultLabelPrinter();
+        lblData.label_zebra lz = getLabelZebraMstr(new String[]{ddlabel.getSelectedItem().toString()});
+
+            if (lz.lblz_file().endsWith("jasper")) {
+                printJasperItem(tbkey.getText(), lz.lblz_file());
+            } else {
+                //bsmf.MainFrame.show(getMessageTag(1206));  
         
-        if (OVData.isValidPrinter(printer)) {
-            try {
-                OVData.printLabelItem(tbkey.getText(), printer);
-            } catch (IOException ex) { 
-                ex.printStackTrace();
-            } catch (PrintException ex) {
-                ex.printStackTrace();
-            } 
-        } else {
-            bsmf.MainFrame.show(getMessageTag(1139));
-        }
+                if (OVData.isValidPrinter(printer)) {
+                    try {
+                        OVData.printLabelItem(tbkey.getText(), printer, lz.lblz_file());
+                    } catch (IOException ex) { 
+                        ex.printStackTrace();
+                    } catch (PrintException ex) {
+                        ex.printStackTrace();
+                    } 
+                } else {
+                    bsmf.MainFrame.show(getMessageTag(1139));
+                }
+            }
     }//GEN-LAST:event_btprintlabelActionPerformed
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
@@ -2790,6 +2815,7 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
     private com.toedter.calendar.JDateChooser dcexpire;
     private javax.swing.JComboBox ddcode;
     private javax.swing.JComboBox<String> ddimage;
+    private javax.swing.JComboBox<String> ddlabel;
     private javax.swing.JComboBox<String> ddloc;
     private javax.swing.JComboBox ddprodcode;
     private javax.swing.JComboBox<String> ddrouting;
@@ -2805,6 +2831,7 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel23;
