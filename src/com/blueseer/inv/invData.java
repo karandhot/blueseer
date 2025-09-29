@@ -193,8 +193,8 @@ public class invData {
                         + "it_sell_price, it_pur_price, it_ovh_cost, it_out_cost, it_mtl_cost, it_code, it_type, it_group, "
                         + "it_prodline, it_drawing, it_rev, it_custrev, it_wh, it_loc, it_site, it_comments, "
                         + "it_status, it_uom, it_net_wt, it_ship_wt, it_cont, it_contqty, "
-                        + "it_leadtime, it_safestock, it_minordqty, it_mrp, it_sched, it_plan, it_wf, it_taxcode, it_createdate, it_expire, it_expiredays, it_phantom ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                        + "it_leadtime, it_safestock, it_minordqty, it_mrp, it_sched, it_plan, it_wf, it_taxcode, it_createdate, it_expire, it_expiredays, it_phantom, it_label ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
         String sqlUpdate = "update item_mstr set it_desc = ?, it_lotsize = ?, " +
                 "it_sell_price = ?, it_pur_price = ?, it_ovh_cost = ?, it_out_cost = ?, it_mtl_cost = ?, it_code = ?, it_type = ?, it_group = ?, " +
                 "it_prodline = ?, it_drawing = ?, it_rev = ?, it_custrev = ?, it_wh = ?, it_loc = ?, it_site = ?, it_comments = ?, " +
@@ -245,10 +245,11 @@ public class invData {
             psi.setString(35, x.it_expire);
             psi.setInt(36, x.it_expiredays);
             psi.setString(37, x.it_phantom);
+            psi.setString(38, x.it_label);
             rows = psi.executeUpdate();
             } else {
                 if (addupdate) {
-                  psu.setString(37, x.it_item);
+                  psu.setString(38, x.it_item);
             psu.setString(1, x.it_desc);
             psu.setInt(2, x.it_lotsize);
             psu.setDouble(3, x.it_sell_price);
@@ -285,6 +286,7 @@ public class invData {
             psu.setString(34, x.it_expire);
             psu.setInt(35, x.it_expiredays);
             psu.setString(36, x.it_phantom);
+            psu.setString(37, x.it_label);
             rows = psu.executeUpdate();
                 }
             }
@@ -401,10 +403,10 @@ public class invData {
                 "it_prodline = ?, it_drawing = ?, it_rev = ?, it_custrev = ?, it_wh = ?, it_loc = ?, it_site = ?, it_comments = ?, " +
                 "it_status = ?, it_uom = ?, it_net_wt = ?, it_ship_wt = ?, it_cont = ?, it_contqty = ?, " +
                 "it_leadtime = ?, it_safestock = ?, it_minordqty = ?, it_mrp = ?, it_sched = ?, it_plan = ?, it_wf = ?, it_taxcode = ?, it_createdate = ?, " +
-                "it_expire = ?, it_expiredays = ?, it_phantom = ? " +
+                "it_expire = ?, it_expiredays = ?, it_phantom = ?, it_label = ? " +
                 " where it_item = ? ; ";
         PreparedStatement psu = con.prepareStatement(sql);
-            psu.setString(37, x.it_item);
+            psu.setString(38, x.it_item);
             psu.setString(1, x.it_desc);
             psu.setInt(2, x.it_lotsize);
             psu.setDouble(3, x.it_sell_price);
@@ -441,6 +443,7 @@ public class invData {
             psu.setString(34, x.it_expire);
             psu.setInt(35, x.it_expiredays);
             psu.setString(36, x.it_phantom);
+            psu.setString(37, x.it_label);
             rows = psu.executeUpdate();
             psu.close();
         return rows;
