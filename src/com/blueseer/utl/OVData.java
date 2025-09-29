@@ -44,14 +44,12 @@ import com.blueseer.ctr.cusData;
 import static com.blueseer.edi.EDI.getFileContentBytes;
 import static com.blueseer.edi.EDI.writeFile;
 import static com.blueseer.edi.ediData.getEDIMetaValueAsKVString;
-import static com.blueseer.edi.ediData.getEDIMetaValueAsRow;
 import com.blueseer.fgl.fglData;
 import static com.blueseer.fgl.fglData.setGLRecNbr;
 import com.blueseer.hrm.hrmData;
 import com.blueseer.inv.calcCost;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData._updateInventoryBalance;
-import static com.blueseer.inv.invData.getItemWFOPs;
 import static com.blueseer.ord.ordData.getOrderTotalTax;
 import static com.blueseer.ord.ordData.getSVOrderTotalTax;
 import static com.blueseer.pur.purData.getPOTotalTax;
@@ -7877,73 +7875,35 @@ public class OVData {
 }   
   
     public static String getVersion() {
-    String x = "";
-    try{
-
-    Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+     String r = "";        
+        String sql = "select ov_version from ov_ctrl;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+            try (ResultSet res = ps.executeQuery();) {
+               while (res.next()) {
+                r = res.getString("ov_version");                    
+                }
             }
-    Statement st = con.createStatement();
-    ResultSet res = null;
-    try{
-        res = st.executeQuery("select ov_version from ov_ctrl;" );
-       while (res.next()) {
-        x = res.getString("ov_version");                    
-        }
-
-    }
-    catch (SQLException s){
-         MainFrame.bslog(s);
-    } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               con.close();
-            }
-    }
-    catch (Exception e){
-        MainFrame.bslog(e);
-    }
-    return x;
-
-}   
+        } catch (SQLException e){
+            MainFrame.bslog(e);
+        } 
+        return r;
+    }   
   
     public static String getDefaultSite() {
-           String myitem = null;
-         try{
-            
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-                res = st.executeQuery("select ov_site from ov_mstr;" );
+        String r = "";        
+        String sql = "select ov_site from ov_mstr;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+            try (ResultSet res = ps.executeQuery();) {
                while (res.next()) {
-                myitem = res.getString("ov_site");                    
+                r = res.getString("ov_site");                    
                 }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
             }
-        }
-        catch (Exception e){
+        } catch (SQLException e){
             MainFrame.bslog(e);
-        }
-        return myitem;
+        } 
+        return r;
         
     }
               

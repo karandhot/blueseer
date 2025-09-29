@@ -3253,43 +3253,34 @@ public class EDData {
     public static String getSystemSignKeyAlt(String id) {
        String mystring = "";
        String sysoverride = "";
+       Statement st = null;
+       ResultSet res = null;
+       Connection con = null;
        
         try{
-            Class.forName(driver);
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+            con = (ds == null) ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection();
+            st = con.createStatement();
+            res = st.executeQuery("select as2_syssigncert, as2_syscert_bool from as2_mstr where as2_id = " + "'" + id + "'" + ";");
+            while (res.next()) {
+               mystring = res.getString("as2_syssigncert");
+               sysoverride = res.getString("as2_syscert_bool");
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-                
-
-                res = st.executeQuery("select as2_syssigncert, as2_syscert_bool from as2_mstr where as2_id = " + "'" + id + "'" + ";");
+            if (sysoverride.equals("1") || mystring.isBlank()) {
+                res = st.executeQuery("select edic_signkey from edi_ctrl ;");
                 while (res.next()) {
-                   mystring = res.getString("as2_syssigncert");
-                   sysoverride = res.getString("as2_syscert_bool");
+                    mystring = res.getString("edic_signkey");
                 }
-                if (sysoverride.equals("1") || mystring.isBlank()) {
-                    res = st.executeQuery("select edic_signkey from edi_ctrl ;");
-                    while (res.next()) {
-                        mystring = res.getString("edic_signkey");
-                    }
-                }
-               
-           }
-            catch (SQLException s) {
-                MainFrame.bslog(s);
-            } finally {
+            }
+        } catch (SQLException e){
+            MainFrame.bslog(e);
+        } finally {
+            try {
                if (res != null) res.close();
                if (st != null) st.close();
                if (con != null) con.close();
+            } catch (SQLException ex) {
+               MainFrame.bslog(ex);
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
         }
         return mystring;
         
