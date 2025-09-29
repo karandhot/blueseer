@@ -122,7 +122,8 @@ public class invData {
                 bsmf.MainFrame.dfdate.format(new Date()),
                 null, // expire date
                 0, // expire days
-                "0" // phantom boolean
+                "0", // phantom boolean
+                "" // label
                 );
                 item_cost y = new item_cost(null, 
                     ld[0], 
@@ -536,7 +537,9 @@ public class invData {
                     res.getString("it_loc"), res.getString("it_site"), res.getString("it_comments"), res.getString("it_status"), res.getString("it_uom"),
                     res.getDouble("it_net_wt"), res.getDouble("it_ship_wt"), res.getString("it_cont"), res.getInt("it_contqty"), 
                     res.getInt("it_leadtime"), res.getDouble("it_safestock"), res.getDouble("it_minordqty"), res.getString("it_mrp"), 
-                    res.getString("it_sched"), res.getString("it_plan"), res.getString("it_wf"), res.getString("it_taxcode"), res.getString("it_createdate"), res.getString("it_expire"), res.getInt("it_expiredays"), res.getString("it_phantom")
+                    res.getString("it_sched"), res.getString("it_plan"), res.getString("it_wf"), res.getString("it_taxcode"), 
+                    res.getString("it_createdate"), res.getString("it_expire"), res.getInt("it_expiredays"), 
+                    res.getString("it_phantom"), res.getString("it_label")
         );
                     }
                 }
@@ -6019,12 +6022,12 @@ public class invData {
         double it_net_wt, double it_ship_wt, String it_cont, int it_contqty,
         int it_leadtime, double it_safestock, double it_minordqty, String it_mrp,
         String it_sched, String it_plan, String it_wf, String it_taxcode, String it_createdate,
-        String it_expire, int it_expiredays, String it_phantom) {
+        String it_expire, int it_expiredays, String it_phantom, String it_label) {
         public item_mstr(String[] m) {
             this(m, "", "", 0, 0, 0, 0, 0, 0, "", "",
                     "", "", "", "", "", "", "", "", "", "",
                     "", 0, 0, "", 0, 0, 0, 0, "", "",
-                    "", "", "", "", "", 0, "");
+                    "", "", "", "", "", 0, "", "");
         }
     }
     

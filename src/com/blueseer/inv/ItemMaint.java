@@ -743,7 +743,8 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
                 bsmf.MainFrame.dfdate.format(new Date()),
                 expire,
                 bsParseInt(tbexpiredays.getText()),
-                BlueSeerUtils.boolToString(cbphantom.isSelected())
+                BlueSeerUtils.boolToString(cbphantom.isSelected()),
+                ddlabel.getSelectedItem().toString()
                 );
         return x;
     }
@@ -827,6 +828,7 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
         tboutcost.setText(bsFormatDouble(x.it_out_cost()));
         tbexpiredays.setText(bsFormatInt(x.it_expiredays()));
         dcexpire.setDate(BlueSeerUtils.parseDate(x.it_expire()));
+        ddlabel.setSelectedItem(x.it_label());
         bind_tree_op(x.it_item());                    
         getrecenttrans(x.it_item());                    
         getlocqty(x.it_item());                    

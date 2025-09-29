@@ -2686,6 +2686,7 @@ public class ediData {
                 if (st != null) {
                     st.close();
                 }
+                con.close();
             }
         } catch (Exception e) {
             MainFrame.bslog(e);
@@ -2746,6 +2747,7 @@ public class ediData {
                 if (st != null) {
                     st.close();
                 }
+                con.close();
             }
         } catch (Exception e) {
             MainFrame.bslog(e);

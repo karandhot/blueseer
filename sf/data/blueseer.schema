@@ -1089,7 +1089,8 @@ CREATE TABLE IF NOT EXISTS `item_mstr` (
   `it_contqty` int(8) NOT NULL DEFAULT '0',
   `it_expire` date DEFAULT NULL,
   `it_expiredays` int(4) NOT NULL DEFAULT '0', 
-  `it_phantom` tinyint(1) NOT NULL DEFAULT '0'
+  `it_phantom` tinyint(1) NOT NULL DEFAULT '0',
+  `it_label` varchar(30) not null default ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `itemr_cost` (
   `itr_item` varchar(36) NOT NULL,
