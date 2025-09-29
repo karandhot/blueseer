@@ -3204,6 +3204,7 @@ public class EDData {
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
+               con.close();
             }
         }
         catch (Exception e){
@@ -3284,6 +3285,7 @@ public class EDData {
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
+               if (con != null) con.close();
             }
         }
         catch (Exception e){
