@@ -49,6 +49,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -88,7 +89,7 @@ public class bsComm {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args)  {
     	bsComm service = new bsComm();
         service.startService();
         // Keep the main thread alive for the service to run (e.g., in a server application)
@@ -97,22 +98,22 @@ public class bsComm {
     
     
     
-    public class MyScheduledTask implements Runnable {
+    public class MyScheduledTask implements Runnable   {
         private int counter = 0;
 
         @Override
         public void run() {
             System.out.println("Executing task. Count: " + ++counter);
             
-            boolean eFlag = false;
-            String p = "";
+          //  boolean eFlag = false;
+          //  String p = "";
             String  now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
-            ArrayList<String[]> trafficarray = new ArrayList<String[]>();
+            ArrayList<String[]> trafficlist = new ArrayList<String[]>();
             Path filePath = Paths.get("bscomm.cfg");
                 try {                    
                     List<String> lines = Files.readAllLines(filePath);
                     for (String line : lines) {
-                       trafficarray.add(line.split(",", -1));  
+                       trafficlist.add(line.split(",", -1));  
                        // tpname, rectype, sourcedir|trantype, destdir, archdir, hasChildren, enabled, extract
                        // the rectype element (p or c) determines master directories to loop
                        // the hasChildren element (0 or 1) indicates a second loop through for transtype specific output directory
@@ -127,7 +128,7 @@ public class bsComm {
                 } 
                 
                 // validate proper config file
-                for (String[] s : trafficarray) {
+                for (String[] s : trafficlist) {
                     if (s.length != 7) {
                         System.out.println(now + " invalid config file format...each line must have 7 elements");
                         return;
@@ -141,7 +142,9 @@ public class bsComm {
                     }
                 };
                 // move and archive files
-                for (String[] s : trafficarray) {
+                for (String[] s : trafficlist) {
+                
+                try {
                     if (! s[1].equals("p")) {  // skip record if not a primary/parent record...ignore all 'c' records at this master loop level
                         continue;
                     }
@@ -152,51 +155,61 @@ public class bsComm {
                         System.out.println(now + " client: " + s[0] + " no files to process ");
                     }
                     
-                    for (int i = 0; i < listOfFiles.length; i++) {
-                        eFlag = false;
-                        Path sourcepath = Paths.get(listOfFiles[i].getPath()); 
-                        Path destinationpath = FileSystems.getDefault().getPath(s[3] + "/" + listOfFiles[i].getName());
-                        Path archivefilepath = FileSystems.getDefault().getPath(s[4] + "/" + listOfFiles[i].getName() + "." + Long.toHexString(System.currentTimeMillis()));
-                        
-                        if (s[5].equals("1")) { // parse file  
-                            try {
-                            // parse file for transaction type and re-assign destinationpath based on return value
-                            p = filterFile(sourcepath, s[0], trafficarray, s[3], s[6]);
-                            eFlag = (p.equals("extraction"));
-                            Path newpath = Paths.get(p);
-                                if (! p.isEmpty() && newpath != null) {
-                                      destinationpath = newpath;
+                    ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+                    
+                    
+                    for (File listOfFile : listOfFiles) {
+                        executor.submit(() -> {
+                            boolean eFlag = false;
+                            Path sourcepath = Paths.get(listOfFile.getPath());
+                            Path destinationpath = FileSystems.getDefault().getPath(s[3] + "/" + listOfFile.getName());
+                            Path archivefilepath = FileSystems.getDefault().getPath(s[4] + "/" + listOfFile.getName() + "." + Long.toHexString(System.currentTimeMillis()));
+                            String p = "";
+                            if (s[5].equals("1")) { // parse file  
+                                try {
+                                    // parse file for transaction type and re-assign destinationpath based on return value
+                                    p = filterFile(sourcepath, s[0], trafficlist, s[3], s[6]);
+                                    eFlag = (p.equals("extraction"));
+                                    Path newpath = Paths.get(p);
+                                    if (! p.isEmpty() && newpath != null) {
+                                        destinationpath = newpath;
+                                    }
+                                } catch (IOException ex) {
+                                    System.out.println(ex);
+                                } catch (Exception ex) {
+                                    System.out.println(ex);
                                 }
+                            }
+                            try {
+                                if (eFlag) { // parse/extraction...file movement done inside filterFile...just archive original and delete original
+                                    Files.copy(sourcepath, archivefilepath, StandardCopyOption.REPLACE_EXISTING);
+                                    Files.delete(sourcepath);
+                                } else {
+                                    Files.move(sourcepath, destinationpath, StandardCopyOption.REPLACE_EXISTING);
+                                    Files.copy(destinationpath, archivefilepath, StandardCopyOption.REPLACE_EXISTING);
+                                }
+                                System.out.println(now + " client: " + s[0] + " moved file: " + listOfFile.getName() + " p/eFlag=" + p + "/" + eFlag);
                             } catch (IOException ex) {
-                                System.out.println(ex);
-                            } catch (Exception ex) {
-                                System.out.println(ex);
+                                System.out.println(now + " client: " + s[0] + " unable to move file: " + listOfFile.getName() + "\n" + ex);
                             }
-                        }
-
-                        
-                        
-                        try {
-                            if (eFlag) { // parse/extraction...file movement done inside filterFile...just archive original and delete original
-                                Files.copy(sourcepath, archivefilepath, StandardCopyOption.REPLACE_EXISTING);
-                                Files.delete(sourcepath); 
-                            } else {
-                                Files.move(sourcepath, destinationpath, StandardCopyOption.REPLACE_EXISTING);
-                                Files.copy(destinationpath, archivefilepath, StandardCopyOption.REPLACE_EXISTING); 
-                            }
-                            
-                            System.out.println(now + " client: " + s[0] + " moved file: " + listOfFiles[i].getName() + " p/eFlag=" + p + "/" + eFlag );
-                        } catch (IOException ex) {
-                            System.out.println(now + " client: " + s[0] + " unable to move file: " + listOfFiles[i].getName() + "\n" + ex);
-                        }
-                    }
+                        });
+                    } // for each record
+                    
+                    executor.shutdown();
+                    executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS); // Wait indefinitely for tasks to complete    
+                } catch (InterruptedException ex) {
+                    System.out.println(now + "  Interrupted Exception ...\n" + ex);
+                }
+                    
+                    
+                    
                 }
                 
         }
     }
 
 
-     public String filterFile(Path infilepath, String tp, ArrayList<String[]> trafficarray, String defaultoutdir, String extract) throws FileNotFoundException, IOException, Exception {
+     public String filterFile(Path infilepath, String tp, ArrayList<String[]> trafficlist, String defaultoutdir, String extract) throws FileNotFoundException, IOException, Exception {
         String[] m = new String[]{"0","","","",""};  //status, message, doctype, tradeid, outdir
         Path r = null;
        
@@ -329,7 +342,7 @@ public class bsComm {
     for (Map.Entry<Integer, Object[]> isa : ISAmap.entrySet()) {
      q++;
      String[] control = (String[]) isa.getValue()[6];
-     for (String[] def : trafficarray) { 
+     for (String[] def : trafficlist) { 
                  if (def[0].equals(tp) && def[1].equals("c") && control[6].equals(def[2])) {
                    r = FileSystems.getDefault().getPath(def[3] + "/" + infilepath.getFileName());
                    break;
