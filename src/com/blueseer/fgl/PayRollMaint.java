@@ -139,7 +139,22 @@ public class PayRollMaint extends javax.swing.JPanel {
     boolean isnew = false;
     
      javax.swing.table.DefaultTableModel mymodel =  new javax.swing.table.DefaultTableModel(new Object[][]{},
-                      new String[]{"select", "RecID", "EmpID", "LastName", "FirstName", "MidName", "Dept", "Shift", "Supervisor", "Type", "Profile", "JobTitle", "Rate", "tothrs", "Amount", "PayDate"})
+                      new String[]{"select", 
+                          "RecID", 
+                          "EmpID", 
+                          "LastName", 
+                          "FirstName", 
+                          "MidName", 
+                          "Dept", 
+                          "Shift", 
+                          "Supervisor", 
+                          "Type", 
+                          "Profile", 
+                          "JobTitle", 
+                          "Rate", 
+                          "tothrs", 
+                          "Amount", 
+                          "PayDate"})
                        {
                       @Override  
                       public Class getColumnClass(int col) {  
@@ -345,7 +360,7 @@ public class PayRollMaint extends javax.swing.JPanel {
                          
                          
                          // now do earnings detail
-                         getEarnings(tablereport.getValueAt(j, 2).toString(), dfdate.format(dcfrom.getDate()).toString(), dfdate.format(dcto.getDate()).toString());
+                         getEarnings(tablereport.getValueAt(j, 2).toString(), tablereport.getValueAt(j, 2).toString(), dfdate.format(dcfrom.getDate()).toString(), dfdate.format(dcto.getDate()).toString(), bsParseDouble(tablereport.getValueAt(j, 14).toString()));
                          // "EmpID", "type", "code", "desc", "rate", "amt"
                               for (int e = 0; e < modelearnings.getRowCount() ; e++) {
                                       st.executeUpdate("insert into pay_line "
@@ -470,7 +485,7 @@ public class PayRollMaint extends javax.swing.JPanel {
         }
      }
       
-     public void getEarnings(String empnbr, String fromdate, String todate) {
+     public void getEarnings(String empnbr, String emptype, String fromdate, String todate, double amount) {
           modelearnings.setNumRows(0);
           jtpEarnings.setText("");
           jtpEarnings.setContentType("text/html");
@@ -486,9 +501,13 @@ public class PayRollMaint extends javax.swing.JPanel {
             Statement st = con.createStatement();
             ResultSet res = null;
             try {
+                
+                
                 int i = 0;
                 String html = "<html><body><table><tr><td align='right' style='color:blue;font-size:20px;'>Earnings:</td><td></td></tr></table>";
                 String codedesc = "";
+                String amtstring = "";
+                if (! emptype.equals("Salary")) {
                  res = st.executeQuery("SELECT sum(t.tothrs) as 't.tothrs', t.code_id as 't.code_id', " +
                            " t.emp_nbr as 't.emp_nbr',  " +
                            " e.emp_rate as 'e.emp_rate', clc_desc " +
@@ -500,7 +519,7 @@ public class PayRollMaint extends javax.swing.JPanel {
                                 " order by t.code_id " +      
                                ";" );
                  html += "<table>";
-                String amtstring = "";
+                
                 while (res.next()) {
                     codedesc = res.getString("t.code_id");
                     if (codedesc.equals("00") || codedesc.equals("77")) {
@@ -509,8 +528,8 @@ public class PayRollMaint extends javax.swing.JPanel {
                         codedesc = res.getString("clc_desc");
                     }
                     html += "<tr><td align='right'>" + codedesc + ":" + "</td><td>" + currformatDouble(res.getDouble("t.tothrs") * res.getDouble("e.emp_rate")) + "</td></tr>";
-                amtstring = currformatDouble(res.getDouble("t.tothrs") * res.getDouble("e.emp_rate"));
-                modelearnings.addRow(new Object []{empnbr,
+                    amtstring = currformatDouble(res.getDouble("t.tothrs") * res.getDouble("e.emp_rate"));
+                    modelearnings.addRow(new Object []{empnbr,
                                             "earnings",
                                             res.getString("t.code_id"),
                                             res.getString("clc_desc"),
@@ -518,6 +537,18 @@ public class PayRollMaint extends javax.swing.JPanel {
                                             amtstring.replace('.',defaultDecimalSeparator)
                                             } );
                 
+                }
+                
+                } else {
+                   html += "<tr><td align='right'>" + "Salary" + ":" + "</td><td>" + currformatDouble(amount) + "</td></tr>";
+                    amtstring = currformatDouble(amount);
+                    modelearnings.addRow(new Object []{empnbr,
+                                            "earnings",
+                                            "",
+                                            "salary",
+                                            amtstring.replace('.',defaultDecimalSeparator),
+                                            amtstring.replace('.',defaultDecimalSeparator)
+                                            } );  
                 }
              html += "</table></body></html>";
               jtpEarnings.setText(html);
@@ -1680,7 +1711,7 @@ public class PayRollMaint extends javax.swing.JPanel {
                        res = st.executeQuery("SELECT sum(t.tothrs) as 't.tothrs',  " +
                            " t.emp_nbr as 't.emp_nbr', e.emp_lname as 'e.emp_lname', e.emp_fname as 'e.emp_fname', e.emp_mname as 'e.emp_mname', e.emp_jobtitle as 'e.emp_jobtitle', " +
                            " e.emp_supervisor as 'e.emp_supervisor', e.emp_type as 'e.emp_type', e.emp_shift as 'e.emp_shift', e.emp_profile as 'e.emp_profile', e.emp_dept as 'e.emp_dept', e.emp_rate as 'e.emp_rate' " +
-                           "  FROM  time_clock t inner join emp_mstr e on e.emp_nbr = t.emp_nbr " +
+                           "  FROM  time_clock t inner join emp_mstr e on e.emp_nbr = t.emp_nbr and emp_type <> 'Salary' " +
                               " where t.indate >= " + "'" + dfdate.format(dcfrom.getDate()) + "'" +
                                " and t.indate <= " + "'" + dfdate.format(dcto.getDate()) + "'" + 
                                " and t.emp_nbr >= " + "'" + ddempfrom.getSelectedItem().toString() + "'" +
@@ -1827,7 +1858,8 @@ public class PayRollMaint extends javax.swing.JPanel {
                 detailpanel.setVisible(true);
                  chartpanel.setVisible(true);
                 getDeductions(tablereport.getValueAt(row, 2).toString(), bsParseDouble(tablereport.getValueAt(row, 14).toString()));
-                getEarnings(tablereport.getValueAt(row, 2).toString(), dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()) );
+                 getEarnings(tablereport.getValueAt(row, 2).toString(), tablereport.getValueAt(row, 9).toString(), dfdate.format(dcfrom.getDate()).toString(), dfdate.format(dcto.getDate()).toString(), bsParseDouble(tablereport.getValueAt(row, 14).toString()));
+                        
         }
     }//GEN-LAST:event_tablereportMouseClicked
 
