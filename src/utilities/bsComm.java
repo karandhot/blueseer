@@ -53,6 +53,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 /**
  *
  * @author TerryVa
@@ -98,7 +99,7 @@ public class bsComm {
     
     
     
-    public class MyScheduledTask implements Runnable   {
+    public class MyScheduledTask implements Runnable {
         private int counter = 0;
 
         @Override
@@ -107,19 +108,19 @@ public class bsComm {
             
           //  boolean eFlag = false;
           //  String p = "";
-            String  now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+            String  now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
             ArrayList<String[]> trafficlist = new ArrayList<String[]>();
             Path filePath = Paths.get("bscomm.cfg");
                 try {                    
                     List<String> lines = Files.readAllLines(filePath);
                     for (String line : lines) {
                        trafficlist.add(line.split(",", -1));  
-                       // tpname, rectype, sourcedir|trantype, destdir, archdir, hasChildren, enabled, extract
+                       // tpname, rectype, sourcedir|trantype, destdir, archdir, parse, extract
                        // the rectype element (p or c) determines master directories to loop
                        // the hasChildren element (0 or 1) indicates a second loop through for transtype specific output directory
-                       // parent example:  acme, p, /somesourcedir, /somedestdir, /somearchdir, 0, 1, 0   (no children transaction type determination...no file parsing...just movement)
-                       // parent example:  acme, p, /somesourcedir, /somedestdir, /somearchdir, 1, 1, 0   (parse each file for transaction type override of dest directory)
-                       // child example:   acme, c, trans type    , /somedestdir, /somearchdir, 0, 1, 0  
+                       // parent example:  acme, p, /somesourcedir, /somedestdir, /somearchdir, 0, 1   (no children transaction type determination...no file parsing...just movement)
+                       // parent example:  acme, p, /somesourcedir, /somedestdir, /somearchdir, 1, 1   (parse each file for transaction type override of dest directory)
+                       // child example:   acme, c, trans type    , /somedestdir, /somearchdir, 0, 1  
                     
                     }                   
                 } catch (IOException ex) {
@@ -141,26 +142,32 @@ public class bsComm {
                         return f.isFile();
                     }
                 };
+               
+                try {
+                ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+                
                 // move and archive files
                 for (String[] s : trafficlist) {
-                
-                try {
-                    if (! s[1].equals("p")) {  // skip record if not a primary/parent record...ignore all 'c' records at this master loop level
+                if (! s[1].equals("p")) {  // skip record if not a primary/parent record...ignore all 'c' records at this master loop level
                         continue;
-                    }
+                }
+                
+                executor.submit(() -> {
+                    
                     File folder = new File(s[2]);
                     File[] listOfFiles = folder.listFiles(byfiletype); // files only
                   
                     if (listOfFiles.length == 0) {
-                        System.out.println(now + " client: " + s[0] + " no files to process ");
+                        System.out.println(now + " Thread: " + Thread.currentThread().getName() + " client: " + s[0] + " no files to process ");
                     }
                     
-                    ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+                    
                     
                     
                     for (File listOfFile : listOfFiles) {
-                        executor.submit(() -> {
-                            boolean eFlag = false;
+                        
+                            //boolean eFlag = false;
+                            AtomicBoolean eFlag = new AtomicBoolean(false);
                             Path sourcepath = Paths.get(listOfFile.getPath());
                             Path destinationpath = FileSystems.getDefault().getPath(s[3] + "/" + listOfFile.getName());
                             Path archivefilepath = FileSystems.getDefault().getPath(s[4] + "/" + listOfFile.getName() + "." + Long.toHexString(System.currentTimeMillis()));
@@ -169,7 +176,7 @@ public class bsComm {
                                 try {
                                     // parse file for transaction type and re-assign destinationpath based on return value
                                     p = filterFile(sourcepath, s[0], trafficlist, s[3], s[6]);
-                                    eFlag = (p.equals("extraction"));
+                                    eFlag.set(p.equals("extraction"));
                                     Path newpath = Paths.get(p);
                                     if (! p.isEmpty() && newpath != null) {
                                         destinationpath = newpath;
@@ -181,29 +188,33 @@ public class bsComm {
                                 }
                             }
                             try {
-                                if (eFlag) { // parse/extraction...file movement done inside filterFile...just archive original and delete original
+                                if (eFlag.get()) { // parse/extraction...file movement done inside filterFile...just archive original and delete original
                                     Files.copy(sourcepath, archivefilepath, StandardCopyOption.REPLACE_EXISTING);
                                     Files.delete(sourcepath);
+                                    System.out.println(now + " Thread: " + Thread.currentThread().getName() + " client: " + s[0] + " moved file: " + listOfFile.getName() + " to " + " extraction override " + "  eFlag=" + eFlag.get());
                                 } else {
                                     Files.move(sourcepath, destinationpath, StandardCopyOption.REPLACE_EXISTING);
                                     Files.copy(destinationpath, archivefilepath, StandardCopyOption.REPLACE_EXISTING);
+                                    System.out.println(now + " Thread: " + Thread.currentThread().getName() +" client: " + s[0] + " moved file: " + listOfFile.getName() + " to " + destinationpath + "  eFlag=" + eFlag.get());
                                 }
-                                System.out.println(now + " client: " + s[0] + " moved file: " + listOfFile.getName() + " p/eFlag=" + p + "/" + eFlag);
+                                
                             } catch (IOException ex) {
                                 System.out.println(now + " client: " + s[0] + " unable to move file: " + listOfFile.getName() + "\n" + ex);
                             }
-                        });
+                        
                     } // for each record
                     
+                }); // executor.submit
+                    
+                } // for trafficlist
+                
                     executor.shutdown();
-                    executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS); // Wait indefinitely for tasks to complete    
+                    boolean hasStopped = executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS); // Wait indefinitely for tasks to complete    
+                    System.out.println("executor has stopped: " + hasStopped);
                 } catch (InterruptedException ex) {
                     System.out.println(now + "  Interrupted Exception ...\n" + ex);
-                }
-                    
-                    
-                    
-                }
+                } 
+                
                 
         }
     }
@@ -248,7 +259,7 @@ public class bsComm {
            Map<Integer, ArrayList> stse_hash = new HashMap<Integer, ArrayList>();
            ArrayList<Object> docs = new ArrayList<Object>();
           
-           System.out.println("beginning to parse file at cbuf ...length: " + cbuf.length);
+           System.out.println("beginning to parse file ...length: " + cbuf.length + " for file: " + infilepath.toString());
            
             for (int i = 0; i < cbuf.length; i++) {
                 
@@ -259,7 +270,7 @@ public class bsComm {
                     s = cbuf[i+105];
                     mark = i;
                     
-                    System.out.println("inside ISA");
+                   // System.out.println("inside ISA");
                     
                     // lets bale if not proper ISA envelope.....unless the 106 is carriage return...then ok
                     if (i == mark && cbuf[mark+106] != 'G' && cbuf[mark+107] != 'S' && ! String.format("%02x",(int) cbuf[mark+106]).equals("0a")) {
@@ -337,7 +348,7 @@ public class bsComm {
     
     
     
-    System.out.println("envelope count: " + ISAmap.size());
+    System.out.println("envelope count: " + ISAmap.size() + " for file: " + infilepath.toString());
     int q = 0;
     for (Map.Entry<Integer, Object[]> isa : ISAmap.entrySet()) {
      q++;
@@ -355,16 +366,16 @@ public class bsComm {
         Path destinationpath = FileSystems.getDefault().getPath(tempdest + "/" + infilepath.getFileName() + "_" + isa.getKey());
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(destinationpath.toFile()))) {
             writer.write(newarray);
-            System.out.println("envelope extraction successfully written to " + destinationpath.toString());
+            System.out.println("envelope extraction successfully written to " + destinationpath.toString() + " for file: " + infilepath.toString());
         } catch (IOException ioe) {
-            System.err.println("Error writing to file: " + destinationpath.toString() + "\n" + ioe.getMessage());
+            System.err.println("Error writing to file: " + destinationpath.toString() + " for file: " + infilepath.toString() + "\n" + ioe.getMessage());
         }
      }
      
      if (! extract.equals("1")) {
         System.out.println("ISA13: " + control[2] + " GS08: " + control[5] +  " GS01: " + control[6]  + " of envelope number " + isa.getKey() + " going to dest dir: " + r);
         if (q > 1) {
-            System.out.println("Multiple Envelopes in file...last GS01 defines destination of file.");
+            System.out.println("Multiple Envelopes in file...last GS01 defines destination of file." + " for file: " + infilepath.toString());
         }
      }
      
