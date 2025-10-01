@@ -3711,112 +3711,124 @@ public class apiUtils {
         MimeBodyPart mbp = new MimeBodyPart();
         
         String z;
+        int httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;  // init to bad request...code1000 MDN construct will flip to 200 if processed correctly
         
         String boundary = "";
         mmpx mymmpx = null;
         
         switch (code) {
-            case "1000" :
-          //  mbp.setContent(code1000(e[0], e[1], e[2], e[3], e[4], e[5]));
-           mymmpx = code1000(e);
-           mbp.setContent(mymmpx.mmp());
-           boundary = mymmpx.boundary();
+            case "1000" :  // hee haw!!!   success          
+            mymmpx = code1000(e);
+            mbp.setContent(mymmpx.mmp());
+            boundary = mymmpx.boundary();
+            httpResponseCode = HttpServletResponse.SC_OK;
             break;     
             
-            case "2000" :
-            // mbp.setContent(code2000(e[0], e[1], e[2], e[3], e[4], e[5]));
-           mymmpx = code2000(e);
-           mbp.setContent(mymmpx.mmp());
-           boundary = mymmpx.boundary();
+            case "2000" :  // was not signed
+            mymmpx = code2000(e);
+            mbp.setContent(mymmpx.mmp());
+            boundary = mymmpx.boundary();
+            httpResponseCode = HttpServletResponse.SC_NOT_ACCEPTABLE;
             break;
             
-            case "3000" :
-            mymmpx = code3000(e);
-           mbp.setContent(mymmpx.mmp());
-           boundary = mymmpx.boundary();
-            break;
-            
-            case "3003" :
-            mymmpx = code3003(e);
-           mbp.setContent(mymmpx.mmp());
-           boundary = mymmpx.boundary();
-            break;
-            
-            case "3005" :
-            mymmpx = code3005(e);
-           mbp.setContent(mymmpx.mmp());
-           boundary = mymmpx.boundary();
-            break;
-           
-            case "3007" :
-            mymmpx = code3007(e);
-           mbp.setContent(mymmpx.mmp());
-           boundary = mymmpx.boundary();
-            break;
-            
-            case "3100" :
-            mymmpx = code3100(e);
-           mbp.setContent(mymmpx.mmp());
-           boundary = mymmpx.boundary();
-            break;
-            
-            case "3200" :
-            mymmpx = code3200(e);
-           mbp.setContent(mymmpx.mmp());
-           boundary = mymmpx.boundary();
-            break;
-            
-            case "3300" :
-            mymmpx = code3300(e);
-           mbp.setContent(mymmpx.mmp());
-           boundary = mymmpx.boundary();
-            break;
-            
-            case "3400" :
-            mymmpx = code3400(e);
-           mbp.setContent(mymmpx.mmp());
-           boundary = mymmpx.boundary();
-            break;
-            
-            case "2005" :
-            //  mbp.setContent(code2005(e[0], e[1], e[2], e[3], e[4], e[5]));
+            case "2005" :  //  Error: MimeMultipart is incomplete            
             mymmpx = code2005(e);
             mbp.setContent(mymmpx.mmp());
             boundary = mymmpx.boundary();
+            httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
-            case "2010" :
+            case "2010" :  // Error: unable to retrieve contents of File. Error:  FileBytesRead is null             
             mymmpx = code2010(e);
-           mbp.setContent(mymmpx.mmp());
-           boundary = mymmpx.boundary();
+            mbp.setContent(mymmpx.mmp());
+            boundary = mymmpx.boundary();
+            httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
-            case "2015" :
+            case "2015" :  // Error: Signature content is null            
             mymmpx = code2015(e);
-           mbp.setContent(mymmpx.mmp());
-           boundary = mymmpx.boundary();
+            mbp.setContent(mymmpx.mmp());
+            boundary = mymmpx.boundary();
+            httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
-            case "2020" :
+            case "2020" :  // Error: Invalid Signature             
             mymmpx = code2020(e);
-           mbp.setContent(mymmpx.mmp());
-           boundary = mymmpx.boundary();
+            mbp.setContent(mymmpx.mmp());
+            boundary = mymmpx.boundary();
+            httpResponseCode = HttpServletResponse.SC_NOT_ACCEPTABLE;
             break;
-                        
-            default:
+            
+            case "3000" :  // Error: The message was transmitted with null content.
+            mymmpx = code3000(e);
+            mbp.setContent(mymmpx.mmp());
+            boundary = mymmpx.boundary();
+            httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
+            break;
+            
+            case "3003" :  // Error: Unable to decrypt message transmitted at <%s>.  Potential bad public key.
+            mymmpx = code3003(e);
+            mbp.setContent(mymmpx.mmp());
+            boundary = mymmpx.boundary();
+            httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
+            break;
+            
+            case "3005" : // Error: The message had unrecognizable HTTP headers.
+            mymmpx = code3005(e);
+            mbp.setContent(mymmpx.mmp());
+            boundary = mymmpx.boundary();
+            httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
+            break;
+           
+            case "3007" : // Error: The message had zero HTTP headers.
+            mymmpx = code3007(e);
+            mbp.setContent(mymmpx.mmp());
+            boundary = mymmpx.boundary();
+            httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
+            break;
+            
+            case "3100" : // Error: The message was transmitted to unknown receiver ID.
+            mymmpx = code3100(e);
+            mbp.setContent(mymmpx.mmp());
+            boundary = mymmpx.boundary();
+            httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
+            break;
+            
+            case "3200" : // Error: The message was transmitted by unknown sender ID. 
+            mymmpx = code3200(e);
+            mbp.setContent(mymmpx.mmp());
+            boundary = mymmpx.boundary();
+            httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
+            break;
+            
+            case "3300" : // Error: unable to determine sender / receiver keys  
+            mymmpx = code3300(e);
+            mbp.setContent(mymmpx.mmp());
+            boundary = mymmpx.boundary();
+            httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
+            break;
+            
+            case "3400" :
+            mymmpx = code3400(e); // Error: encryption is required 
+            mbp.setContent(mymmpx.mmp());
+            boundary = mymmpx.boundary();
+            httpResponseCode = HttpServletResponse.SC_NOT_ACCEPTABLE;
+            break;
+                                        
+            default:  // something unaccounted for...            
             mymmpx = code9999(e);
             mbp.setContent(mymmpx.mmp());
             boundary = mymmpx.boundary();
+            httpResponseCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
             
         }        
         
         
         
         if (mbp != null) {
-           // headers.put("Message-ID", "BlueSeer-unique." + "." + Long.toHexString(System.currentTimeMillis()));
             headers.put("Subject", "your requested MDN Response");            
             headers.put("AS2-Version", "1.2");
-            x = new mdn(HttpServletResponse.SC_OK, headers, new String(mbp.getInputStream().readAllBytes(), StandardCharsets.UTF_8), boundary);
+            x = new mdn(httpResponseCode, headers, new String(mbp.getInputStream().readAllBytes(), StandardCharsets.UTF_8), boundary);
         } else {
             x = new mdn(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, null, "problem creating MIME structure for MDN");
         }
