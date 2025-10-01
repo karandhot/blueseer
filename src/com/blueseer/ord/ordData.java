@@ -3057,19 +3057,21 @@ public class ordData {
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         try{
         Connection con = null;
+        ResultSet res = null;
+        PreparedStatement ps = null;
         if (ds != null) {
           con = ds.getConnection();
         } else {
           con = DriverManager.getConnection(url + db, user, pass);  
         }
         try{
-            Statement st = con.createStatement();
+          //  Statement st = con.createStatement();
             String sql = "SELECT bill_nbr from bill_mstr " +
                    " where bill_acctstatus <> 'closed' " +
                    " and bill_nextbilldate <= " + "'" + today + "'" +
                    " order by bill_nbr;";
-            PreparedStatement ps = con.prepareStatement(sql);
-            ResultSet res = ps.executeQuery();
+            ps = con.prepareStatement(sql);
+            res = ps.executeQuery();
                 while (res.next()) {
                   bills.add(res.getString("bill_nbr"));
                 }
@@ -3077,13 +3079,16 @@ public class ordData {
             for (String b : bills) {
                 _billTrans(_getBillMstr(b, con, ps, res), _getBillDet(b, con, ps, res), con);
             }            
-          st.close();
-          res.close();
+         // st.close();
+         // res.close();
         }
         catch (SQLException s){
              MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (ps != null) ps.close();
+               con.close();
         }
-        con.close();
     }
     catch (Exception e){
         MainFrame.bslog(e);
@@ -3118,7 +3123,10 @@ public class ordData {
            //xend = now.withDayOfMonth(now.lengthOfMonth());
            xend = now;
        } else {
-           xstart = parseDateLD(lasttran[3]).plusDays(1);
+         //  xstart = parseDateLD(lasttran[3]).plusDays(1);
+         //  xend = xstart.plusDays(xstart.lengthOfMonth()); // total for year should sum to 365 or 366
+           int day = parseDateLD(bm.bill_servicedate()).getDayOfMonth();
+           xstart = now.withDayOfMonth(day);
            xend = xstart.plusDays(xstart.lengthOfMonth()); // total for year should sum to 365 or 366
        }
         
@@ -3289,6 +3297,7 @@ public class ordData {
                 if (st != null) {
                     st.close();
                 }
+                con.close();
             }
         } catch (Exception e) {
             MainFrame.bslog(e);
@@ -3349,6 +3358,7 @@ public class ordData {
                 if (st != null) {
                     st.close();
                 }
+                con.close();
             }
         } catch (Exception e) {
             MainFrame.bslog(e);
