@@ -27,6 +27,7 @@ bsDBTo214,Database to Freight Status,generic,DB,X12214,214db,DB,214x12,X12,edi/m
 bsCSVTo850,CSV to Purchase Order,generic,CSVGenericOrder,X12850,850csv,CSV,850x12,X12,edi/maps/bsCSVTo850.java,,0,1000
 bsUNEordersToIDOC,UNE EDIFACT ORDERS to IDOC,generic,UNEorders,IDOCorders05,850une,UNE,850idoc,FF,edi/maps/bsUNEordersToiDOC.java,,0,1000
 bsIDOCToUNEorders,SAP IDOC ORDERS05 To EDIFACT orders,,IDOCorders05,UNEorders,850idoc,FF,850une,UNE,edi/maps/bsIDOCToUNEorders.java,,0,1000
+bs850uneToCSV,Edifact Order to CSV,,UNEorders,CSVGenericOrder,850une,UNE,850csv,CSV,edi/maps/bs850uneToCSV.java,,0,1000
 bs850ToCSV,X12 850 to CSV,,X12850,CSVGenericOrder,850x12,X12,850csv,CSV,edi/maps/bs850ToCSV.java,,0,1000
 bs810ToCSV,X12 810 to CSV,,X12810,CSVGenericInvoice,810x12,X12,810csv,CSV,edi/maps/bs810ToCSV.java,,0,1000
 bs850ToJSON,X12 850 to JSON,,X12850,JSONGenericOrder,850x12,X12,850json,JSON,edi/maps/bs850ToJSON.java,,0,1000

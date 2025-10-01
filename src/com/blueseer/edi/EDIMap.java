@@ -3455,7 +3455,7 @@ public abstract class EDIMap {  // took out the implements EDIMapi
          for (Map.Entry<String, String[]> z : mappedInput.entrySet()) {
              if (z.getKey().split("\\+")[0].equals(segment)) {
                  t = z.getValue();
-                 if (t != null && t.length >= Integer.valueOf(qualNbr) && t[Integer.valueOf(qualNbr)].trim().equals(q[1].toUpperCase())) {
+                 if (t != null && t.length >= qualNbr && t[qualNbr].trim().equals(q[1].toUpperCase())) {
                      k = t;
                  }
              }
@@ -3621,6 +3621,58 @@ public abstract class EDIMap {  // took out the implements EDIMapi
          return r;
      }
     
+    @EDI.AnnoDoc(desc = {"method reads composite element identified at segment and elementNumber and compNumber.",
+                        "Example:  getInput(\"UNB\",\"qualf:009\",2,2) returns: 2nd component of 2rd element of UNB segment (EDIFACT sender qualifier)"},
+            params = {"String segment","Integer ElementNumber","Integer compNumber"})      
+    public static String getInputComp(String segment, String qual, Integer elementNbr, Integer comp) {
+         String x = "";
+         String r = "";
+         String[] k = null;
+         String[] t = null;
+         
+         if (comp <= 0) {
+             return x;
+         }
+         
+         String[] q = qual.split(":",-1);
+         int qualNbr = getElementNumber(segment,q[0]);
+         if (qualNbr == 0) {
+             return x;
+         }
+         
+         if (segment.contains("+")) {  // overloading (again) as key type entry (used with getLoopKeys)
+           k = mappedInput.get(segment);  
+         } else { // else as actual segment entry
+           //  segment = ":" + segment; // preprend blank
+             for (Map.Entry<String, String[]> z : mappedInput.entrySet()) {
+                 if (z.getKey().split("\\+")[0].equals(segment)) {
+                    t = z.getValue();
+                    if (t != null && t.length >= qualNbr && t[qualNbr].trim().equals(q[1].toUpperCase())) {
+                        k = t;
+                    }
+                 }
+             }
+         }
+       
+         if (k != null && k.length > elementNbr && k[elementNbr] != null) {
+          x =  k[elementNbr].trim();
+         }
+        
+         if (x.contains(ud)) {
+            String[] y = x.split(ud,-1);
+            if (y != null && y.length >= comp) {
+              r = y[comp - 1].trim();  
+            }
+         }
+         
+         if (GlobalDebug) {
+         System.out.println("getInputComp:" + segment + "/" + r);
+         }
+         
+         return r;
+     }
+    
+    
     @EDI.AnnoDoc(desc = {"method reads composite element identified at segment and elementNumber and compNumber for a Group Segment.",
                       "Note:  this is typically used in a looping construct in conjunction with getGroupCount()",  
                       "Example:  getInput(i,\"LIN\",3, 2) returns: 2st composite value of 3th element of Edifact LIN segment in loop index 'i' "},
@@ -3651,6 +3703,50 @@ public abstract class EDIMap {  // took out the implements EDIMapi
          }
          return r;
      }
+    
+    @EDI.AnnoDoc(desc = {"method reads composite element identified at segment and elementNumber and compNumber for a Group Segment.",
+                      "Note:  this is typically used in a looping construct in conjunction with getGroupCount()",  
+                      "Example:  getInput(i,\"LIN\",\"qualf:009\",3, 2) returns: 2st composite value of 3th element of Edifact LIN segment in loop index 'i' "},
+            params = {"Integer LoopIndex", "String segment", "Integer ElementNumber", "Integer compNumber"})  
+    public static String getInputComp(Integer gloop, String segment, String qual, Integer elementNbr, Integer comp) {
+         String x = "";
+         String r = "";
+         String[] k = null;
+         String[] t = null;
+         if (comp <= 0) {
+             return x;
+         }
+         
+         String[] q = qual.split(":",-1);
+         int qualNbr = getElementNumber(segment,q[0]);
+         if (qualNbr == 0) {
+             return x;
+         }
+         
+        // segment = ":" + segment; // preprend blank
+         for (Map.Entry<String, String[]> z : mappedInput.entrySet()) {
+             String[] v = z.getKey().split("\\+");
+             if (v[0].equals(segment) && v[1].equals(String.valueOf(gloop))) {
+                 t = z.getValue();
+                 if (t != null && t.length >= qualNbr && t[qualNbr].trim().equals(q[1].toUpperCase())) {
+                     k = t;
+                 }
+             }
+         }
+         if (k != null && k.length > elementNbr && k[elementNbr] != null) {
+          x =  k[elementNbr].trim();
+         }
+         if (x.contains(ud)) {
+            String[] y = x.split(ud,-1);
+            if (y != null && y.length >= comp) {
+              r = y[comp - 1].trim();  
+            }
+         }
+         return r;
+     }
+    
+    
+    
     
     @EDI.AnnoDoc(desc = {"method concatenates values into String delimited by sub elmement delimiter (oud) ",
                         "Example:  composite(\"w\", \"x\", \"y\", \"z\") returns: \"w:x:y:z\" as String"},
