@@ -993,6 +993,9 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="System Enc/Sign Cert"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cbsystemcertActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>

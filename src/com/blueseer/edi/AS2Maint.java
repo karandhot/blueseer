@@ -390,6 +390,12 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
         btnew.setEnabled(false);
         tbkey.setEditable(true);
         tbkey.setForeground(Color.blue);
+        if (cbsystemcert.isSelected()) {
+                    ddsysenccert.setEnabled(false);
+                    ddsysenccert.setSelectedIndex(0);  // set to ""
+                    ddsyssigncert.setEnabled(false);
+                    ddsyssigncert.setSelectedIndex(0);  // set to ""
+        } 
         if (! x.isEmpty()) {
           tbkey.setText(String.valueOf(OVData.getNextNbr(x)));  
           tbkey.setEditable(false);
@@ -403,6 +409,12 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
                    btadd.setEnabled(false);
                    tbkey.setEditable(false);
                    tbkey.setForeground(Color.blue);
+                   if (cbsystemcert.isSelected()) {
+                    ddsysenccert.setEnabled(false);
+                    ddsysenccert.setSelectedIndex(0);  // set to ""
+                    ddsyssigncert.setEnabled(false);
+                    ddsyssigncert.setSelectedIndex(0);  // set to ""
+                    } 
         } else {
                    tbkey.setForeground(Color.red); 
         }
@@ -1145,6 +1157,11 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
         cbsignmdn.setText("MDN Sign");
 
         cbsystemcert.setText("System Enc/Sign Cert");
+        cbsystemcert.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbsystemcertActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -1381,6 +1398,18 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
         tbheadertag.setText("");
         tbheadervalue.setText("");
     }//GEN-LAST:event_btaddheaderActionPerformed
+
+    private void cbsystemcertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbsystemcertActionPerformed
+        if (cbsystemcert.isSelected()) {
+            ddsysenccert.setEnabled(false);
+            ddsysenccert.setSelectedIndex(0);  // set to ""
+            ddsyssigncert.setEnabled(false);
+            ddsyssigncert.setSelectedIndex(0);  // set to ""
+        } else {
+            ddsysenccert.setEnabled(true);
+            ddsyssigncert.setEnabled(true);
+        }
+    }//GEN-LAST:event_cbsystemcertActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
