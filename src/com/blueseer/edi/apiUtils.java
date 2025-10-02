@@ -2490,7 +2490,10 @@ public class apiUtils {
             
             MimeBodyPart tmpBody = new MimeBodyPart();
             tmpBody.setContent(signedData);
-            tmpBody.setHeader("Content-Type", signedData.getContentType().replace("sha-1", "sha1"));
+            String revisedContentType = signedData.getContentType();
+            revisedContentType = revisedContentType.replace("sha-1", "sha1");
+            revisedContentType = revisedContentType.replace("sha-256", "sha256");
+            tmpBody.setHeader("Content-Type", revisedContentType);
             
             return tmpBody;
 	}
