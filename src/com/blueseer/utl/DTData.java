@@ -984,8 +984,12 @@ public class DTData {
         try{
             
             // visible = <any char but '1' or blank>, not visible = 1
-            String internal;
+            String internal = "0";
             internal = OVData.getCodeValueByCodeKey("edimaps","internal"); 
+            internal = (internal.equals("1")) ? "1" : "x"; // wierd work around for below query mess
+                                                           // long story short...if intention is to prevent user access from sys map...then
+                                                           // code_value = '1'
+                                                           // else code_value = '0'...or no code_mstr record
             
             
             Connection con = null;
