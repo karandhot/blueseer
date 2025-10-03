@@ -2944,12 +2944,10 @@ public class apiUtils {
         
         String micdec = hashdigest(bytesToBeEncrypted, as2m.as2_micalgo());
         String micenc = hashdigest(sendbytes, as2m.as2_micalgo()); // calc the mic for debugging
-        String micise = hashdigest(ise.getContent().readAllBytes(), as2m.as2_micalgo()); // calc the mic for debugging
         
         
         logdet.add(new String[]{parentkey, "info", "MIC (dec): " + micdec});
         logdet.add(new String[]{parentkey, "info", "MIC (enc): " + micenc});
-        logdet.add(new String[]{parentkey, "info", "MIC (ise): " + micise});
         
         rb.setEntity(new BufferedHttpEntity(ise));
         HttpUriRequest request = rb.build();
@@ -2962,10 +2960,10 @@ public class apiUtils {
             try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
                 String micdebugdec = "DEBUG DEC MIC: " + micdec + "\n";
                 String micdebugenc = "DEBUG ENC MIC: " + micenc + "\n";
-                String micdebugise = "DEBUG ENC MIC: " + micise + "\n";
+               
                 stream.write(micdebugdec.getBytes());
                 stream.write(micdebugenc.getBytes());
-                stream.write(micdebugise.getBytes());
+               
                 for (Header x : headers) {
                     String h = x.getName() + ": " + x.getValue() + "\n";
                     stream.write(h.getBytes());
