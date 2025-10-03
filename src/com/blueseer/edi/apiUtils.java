@@ -2893,14 +2893,14 @@ public class apiUtils {
                continue; 
             }
             
-                    ByteArrayOutputStream aos = new ByteArrayOutputStream();
-                    MimeMultipart mmpg = (MimeMultipart) mbp.getContent();
-                    mmpg.getBodyPart(0).writeTo(aos);
-                    aos.close(); 
-                    byte[] FileWHeadersBytes = aos.toByteArray();
-                    // System.out.println("HERE MIC RAWFILE: " + hashdigest(dataPartBytes, as2m.as2_micalgo())); // calc the mic for debugging)
-                    //   System.out.println("HERE MIC FILEwHeaders: " + hashdigest(FileWHeadersBytes, as2m.as2_micalgo())); // calc the mic for debugging)    
-                    logdet.add(new String[]{parentkey, "info", "THE MIC: " + hashdigest(FileWHeadersBytes, as2m.as2_micalgo())});
+            // calculate MIC from file payload + headers ...which is BodyPart(0) of mimemultipart
+            ByteArrayOutputStream aos = new ByteArrayOutputStream();
+            MimeMultipart mmpg = (MimeMultipart) mbp.getContent();
+            mmpg.getBodyPart(0).writeTo(aos);
+            aos.close(); 
+            byte[] FileWHeadersBytes = aos.toByteArray();
+            String mic = hashdigest(FileWHeadersBytes, as2m.as2_micalgo());
+            logdet.add(new String[]{parentkey, "info", "THE MIC: " + mic});
        
         String newboundary = getPackagedBoundary(mbp);
         
@@ -2963,12 +2963,7 @@ public class apiUtils {
         InputStreamEntity ise = new InputStreamEntity(new ByteArrayInputStream(sendbytes));
         
         
-        String micdec = hashdigest(bytesToBeEncrypted, as2m.as2_micalgo());
-        String micenc = hashdigest(sendbytes, as2m.as2_micalgo()); // calc the mic for debugging
-        
-        
-        logdet.add(new String[]{parentkey, "info", "MIC (dec): " + micdec});
-        logdet.add(new String[]{parentkey, "info", "MIC (enc): " + micenc});
+       
         
         rb.setEntity(new BufferedHttpEntity(ise));
         HttpUriRequest request = rb.build();
@@ -2979,12 +2974,8 @@ public class apiUtils {
             Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
             Header[] headers = request.getAllHeaders();
             try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
-                String micdebugdec = "DEBUG DEC MIC: " + micdec + "\n";
-                String micdebugenc = "DEBUG ENC MIC: " + micenc + "\n";
-               
+                String micdebugdec = "DEBUG MIC: " + mic + "\n";
                 stream.write(micdebugdec.getBytes());
-                stream.write(micdebugenc.getBytes());
-               
                 for (Header x : headers) {
                     String h = x.getName() + ": " + x.getValue() + "\n";
                     stream.write(h.getBytes());
@@ -2997,9 +2988,9 @@ public class apiUtils {
         
         try (CloseableHttpResponse response = client.execute(request)) {
         if (response.getStatusLine().getStatusCode() != 200) {
-            r.append(response.getStatusLine().getStatusCode() + ": " + response.getStatusLine().getReasonPhrase());
+            r.append(response.getStatusLine().getStatusCode()).append(": ").append(response.getStatusLine().getReasonPhrase());
         } else {
-            r.append("SUCCESS: " + response.getStatusLine().getStatusCode() + ": " + response.getStatusLine().getReasonPhrase() + "\n");
+            r.append("SUCCESS: ").append(response.getStatusLine().getStatusCode()).append(": ").append(response.getStatusLine().getReasonPhrase()).append("\n");
         }
         
         
@@ -3007,15 +2998,14 @@ public class apiUtils {
         HttpEntity entity = response.getEntity();
         byte[] indata = EntityUtils.toByteArray(entity);
         String result = new String(indata); 
-        String micxxx = hashdigest(indata, as2m.as2_micalgo()); // calc the mic for debugging
-        logdet.add(new String[]{parentkey, "info", "MIC (xxx): " + micxxx});
+        
         if (isDebug) {
                 String filename = "response." + now + "." + Long.toHexString(System.currentTimeMillis());
                 Path path = FileSystems.getDefault().getPath("temp" + "/" + filename);
                 BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path.toFile())));
                 output.write(result);
                 output.close();
-        }
+        } 
         
         if (isDebug) { 
             String debugfile = "debugAS2responseHeaders." + now + "." + Long.toHexString(System.currentTimeMillis());
