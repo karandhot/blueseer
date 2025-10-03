@@ -2942,8 +2942,11 @@ public class apiUtils {
         
         InputStreamEntity ise = new InputStreamEntity(new ByteArrayInputStream(sendbytes));
         
-        String mic = hashdigest(sendbytes, as2m.as2_micalgo()); // calc the mic for debugging
+        String micdec = hashdigest(bytesToBeEncrypted, as2m.as2_micalgo());
+        String micenc = hashdigest(sendbytes, as2m.as2_micalgo()); // calc the mic for debugging
         
+        logdet.add(new String[]{parentkey, "info", "MIC (dec): " + micdec});
+        logdet.add(new String[]{parentkey, "info", "MIC (enc): " + micenc});
         
           rb.setEntity(new BufferedHttpEntity(ise));
           HttpUriRequest request = rb.build();
@@ -2953,8 +2956,10 @@ public class apiUtils {
             Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
             Header[] headers = request.getAllHeaders();
             try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
-                String micdebug = "DEBUG MIC: " + mic + "\n";
-                stream.write(micdebug.getBytes());
+                String micdebugdec = "DEBUG DEC MIC: " + micdec + "\n";
+                String micdebugenc = "DEBUG ENC MIC: " + micenc + "\n";
+                stream.write(micdebugdec.getBytes());
+                stream.write(micdebugenc.getBytes());
                 for (Header x : headers) {
                     String h = x.getName() + ": " + x.getValue() + "\n";
                     stream.write(h.getBytes());
