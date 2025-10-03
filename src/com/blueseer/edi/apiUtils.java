@@ -2484,7 +2484,10 @@ public class apiUtils {
          */
         
             byte[] dataPartBytes = dataPart.getInputStream().readAllBytes();
-        
+           // String micfile = hashdigest(filecontent, as2m.as2_micalgo()); // calc the mic for debugging
+            System.out.println("HERE MIC RAWFILE: " + hashdigest(data, as2m.as2_micalgo())); // calc the mic for debugging)
+            System.out.println("HERE MIC FILEwHeaders: " + hashdigest(dataPartBytes, as2m.as2_micalgo())); // calc the mic for debugging)
+            
             MimeMultipart signedData = sGen.generate(dataPart);
             
             
@@ -2941,6 +2944,7 @@ public class apiUtils {
             }
         
         InputStreamEntity ise = new InputStreamEntity(new ByteArrayInputStream(sendbytes));
+        
         
         String micdec = hashdigest(bytesToBeEncrypted, as2m.as2_micalgo());
         String micenc = hashdigest(sendbytes, as2m.as2_micalgo()); // calc the mic for debugging
