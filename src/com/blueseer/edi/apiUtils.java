@@ -2484,12 +2484,20 @@ public class apiUtils {
          */
         
             byte[] dataPartBytes = dataPart.getInputStream().readAllBytes();
+            
+            
+            
            // String micfile = hashdigest(filecontent, as2m.as2_micalgo()); // calc the mic for debugging
-            System.out.println("HERE MIC RAWFILE: " + hashdigest(data, as2m.as2_micalgo())); // calc the mic for debugging)
-            System.out.println("HERE MIC FILEwHeaders: " + hashdigest(dataPartBytes, as2m.as2_micalgo())); // calc the mic for debugging)
+           
             
             MimeMultipart signedData = sGen.generate(dataPart);
-            
+                    
+                    ByteArrayOutputStream aos = new ByteArrayOutputStream();
+                    signedData.getBodyPart(0).writeTo(aos);
+                    aos.close(); 
+                    byte[] FileWHeadersBytes = aos.toByteArray();
+                    System.out.println("HERE MIC RAWFILE: " + hashdigest(dataPartBytes, as2m.as2_micalgo())); // calc the mic for debugging)
+                    System.out.println("HERE MIC FILEwHeaders: " + hashdigest(FileWHeadersBytes, as2m.as2_micalgo())); // calc the mic for debugging)
             
             MimeBodyPart tmpBody = new MimeBodyPart();
             tmpBody.setContent(signedData);
