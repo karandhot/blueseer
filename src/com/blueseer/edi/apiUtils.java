@@ -2491,14 +2491,14 @@ public class apiUtils {
            
             
             MimeMultipart signedData = sGen.generate(dataPart);
-                    
+              /*      
                     ByteArrayOutputStream aos = new ByteArrayOutputStream();
                     signedData.getBodyPart(0).writeTo(aos);
                     aos.close(); 
                     byte[] FileWHeadersBytes = aos.toByteArray();
                     System.out.println("HERE MIC RAWFILE: " + hashdigest(dataPartBytes, as2m.as2_micalgo())); // calc the mic for debugging)
                     System.out.println("HERE MIC FILEwHeaders: " + hashdigest(FileWHeadersBytes, as2m.as2_micalgo())); // calc the mic for debugging)
-            
+            */
             MimeBodyPart tmpBody = new MimeBodyPart();
             tmpBody.setContent(signedData);
             String revisedContentType = signedData.getContentType();
@@ -2892,6 +2892,15 @@ public class apiUtils {
                bslog("file content is null in AS2Post");
                continue; 
             }
+            
+                    ByteArrayOutputStream aos = new ByteArrayOutputStream();
+                    MimeMultipart mmpg = (MimeMultipart) mbp.getContent();
+                    mmpg.getBodyPart(0).writeTo(aos);
+                    aos.close(); 
+                    byte[] FileWHeadersBytes = aos.toByteArray();
+                    // System.out.println("HERE MIC RAWFILE: " + hashdigest(dataPartBytes, as2m.as2_micalgo())); // calc the mic for debugging)
+                    //   System.out.println("HERE MIC FILEwHeaders: " + hashdigest(FileWHeadersBytes, as2m.as2_micalgo())); // calc the mic for debugging)    
+                    logdet.add(new String[]{parentkey, "info", "THE MIC: " + hashdigest(FileWHeadersBytes, as2m.as2_micalgo())});
        
         String newboundary = getPackagedBoundary(mbp);
         
