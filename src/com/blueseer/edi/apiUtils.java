@@ -2992,18 +2992,23 @@ public class apiUtils {
         
         
        
-      //  InputStreamEntity ise = new InputStreamEntity(new ByteArrayInputStream(sendbytes));
-      //  rb.setEntity(new BufferedHttpEntity(ise));
+      //  InputStreamEntity ise = new InputStreamEntity(new ByteArrayInputStream(sendbytes));  // original Entity used prior to 20251005
+      //  rb.setEntity(new BufferedHttpEntity(ise));  // original Entity used prior to 20251005
         
-        ByteArrayEntity baentity = new ByteArrayEntity(sendbytes);  // used for repeatable stream...for debugging prior to send
-        rb.setEntity(new BufferedHttpEntity(baentity));
+        ByteArrayEntity baentity = new ByteArrayEntity(sendbytes);  // after 20251005 used for repeatable stream...for debugging prior to send
+        rb.setEntity(new BufferedHttpEntity(baentity));  // after 20251005
+        
         
         HttpUriRequest request = rb.build();
         
           
         if (isDebug) { 
+            RequestBuilder rb_debug = RequestBuilder.post();
+            ByteArrayEntity baentity_debug = new ByteArrayEntity(bytesToBeEncrypted);  // used for repeatable stream...for debugging prior to send
+            rb_debug.setEntity(new BufferedHttpEntity(baentity_debug));
+            HttpUriRequest request_debug = rb_debug.build();
             String debugfile = "debugAS2http." + now + "." + Long.toHexString(System.currentTimeMillis());
-            saveRequestToFile(request, "temp" + "/" + debugfile);
+            saveRequestToFile(request_debug, "temp" + "/" + debugfile);
             /*
             String debugfile = "debugAS2http." + now + "." + Long.toHexString(System.currentTimeMillis());
             Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
