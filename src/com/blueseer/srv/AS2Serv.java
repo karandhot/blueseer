@@ -217,9 +217,9 @@ public class AS2Serv extends HttpServlet {
         HashMap<String, String> inHM = new HashMap<>();
         HashMap<String, String> outHM = new HashMap<>();
         
-        if (isDebug) {
-            System.out.println("SENDING IP: " + request.getRemoteAddr() + " / " + request.getRemoteHost());
-        }
+        
+        System.out.println("SENDING IP: " + request.getRemoteAddr() + " / " + request.getRemoteHost());
+        
         
         
         Enumeration<String> headerNames = request.getHeaderNames();
@@ -227,8 +227,6 @@ public class AS2Serv extends HttpServlet {
                 while (headerNames.hasMoreElements()) {
                         String key = (String) headerNames.nextElement();
                         inHM.putIfAbsent(key.toLowerCase(), request.getHeader(key));
-                        
-                        if (isDebug)
                         System.out.println("Header: " + key +  "=" + request.getHeader(key));
                 }
         } else {
@@ -237,18 +235,7 @@ public class AS2Serv extends HttpServlet {
             // return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "http header tags unrecognizable");
             return createMDN("3005", elementals, returnheaders, isDebug);
         }
-        
-        /*
-         headers += "\n";
-        byte[] combined = new byte[headers.getBytes().length + content.length]; 
-        for (int i = 0; i < combined.length; ++i) {
-          combined[i] = i < headers.getBytes().length ? headers.getBytes()[i] : content[i - headers.getBytes().length];
-        }
-        String mic = hashdigest(combined, "SHA-1");
-        if (mic == null) {
-            mic = "";
-        }
-        */
+    
         
         // check for sender / receiver
         String sender = "";
@@ -286,8 +273,7 @@ public class AS2Serv extends HttpServlet {
             michash = inHM.get("disposition-notification-options");
         }
         
-        if (isDebug)
-            System.out.println("here--> Requested MDN options: " + michash);
+        System.out.println("here--> Requested MDN options: " + michash);
         
         
         if (inHM.containsKey("as2-to")) {
@@ -328,15 +314,15 @@ public class AS2Serv extends HttpServlet {
         elementals[6] = info[0];  // assigns 6th element the value of as2_id
         elementals[7] = info[23]; // whether to sign mdn
         
-        if (isDebug)
+        
         System.out.println("here--> Request Content Type: " + request.getContentType());    
           
-        if (isDebug)
+        
         System.out.println("here--> encoding:" + request.getCharacterEncoding());
         
         boolean isSigned = false;
         
-         if (isDebug) { 
+        if (isDebug) { 
             String debugfile = "debugAS2enc." + now + "." + Long.toHexString(System.currentTimeMillis()); 
             Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
             try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
@@ -375,13 +361,7 @@ public class AS2Serv extends HttpServlet {
             stream.write(finalContent);
             }
         }
-        // perform Digest on decrypted Data
-        /*
-        String mic = hashdigest(content, info[20]);
-        if (mic == null) {
-            mic = "";
-        }
-        */
+      
         
         // if here...should have as2 sender / receiver / info data required to create legitimate MDN
         // write original master log record...retrieve log key for parent of detail to follow
@@ -402,17 +382,13 @@ public class AS2Serv extends HttpServlet {
         // establish mimemultipart format of decrypted data
         MimeMultipart mp  = new MimeMultipart(new ByteArrayDataSource(finalContent, request.getContentType()));
         
-        if (isDebug && mp.isComplete()) {
+        if (mp.isComplete()) {
         System.out.println("request ContentType=" + request.getContentType());
-        }
-        
-        if (mp.getContentType().isEmpty()) {
-            //return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "MimeMultipart is incomplete " + sender + "/" + receiver);  
-            return createMDN("2005", elementals, returnheaders, isDebug);
-        }
-        
-        if (isDebug && mp.isComplete()) {
         System.out.println("MimeMultipart count=" + mp.getCount() + "/" + mp.getContentType());
+        }
+        
+        if (mp.getContentType().isEmpty()) {  
+            return createMDN("2005", elementals, returnheaders, isDebug);
         }
         
         // if signed...should have a parent mp with two sub-mps (one the file and the other the sig)
@@ -426,9 +402,9 @@ public class AS2Serv extends HttpServlet {
                 continue;
             }
                       
-            if (isDebug) {
+            
             System.out.println("here--> level 1 mp count: " + i + " contentType: " + contentType);
-            }
+            
             
             // if signed...mpsub should have two parts (one the file and the other the sig)
             MimeMultipart mpsub = new MimeMultipart(new ByteArrayDataSource(finalContent, contentType));
@@ -463,34 +439,23 @@ public class AS2Serv extends HttpServlet {
                       }
                       logdet.add(new String[]{parentkey, "info", "inside non-pkcs7-signature bodypart: " + mbp.getContentType() + " filename: " + filename});
                       
-                      //  mic = calculateMIC(FileWHeadersBytes, "SHA-1");
+                     
                      if (mic.isBlank()) { // do only once
                         mic = hashdigest(FileWHeadersBytes, info[20]);
                         logdet.add(new String[]{parentkey, "info", "calculated MIC = " + mic});
                         elementals[5] = mic;
-                    }
+                     }
                       // now get file without headers into byte array
                       is = mbp.getInputStream();
                       FileBytes = is.readAllBytes();
                       is.close();
-                      
-                      //filename = mbp.getFileName();
-                      /*
-                      String[] elements = mbp.getContentType().split(";");
-                      for (String g : elements) {
-                          if (g.startsWith("file=")) {
-                              filename = g.substring(5);
-                          }
-                      }
-                      */
+                     
                     }
                     
                     if (mbp.getFileName() != null && mbp.getFileName().equals("smime.p7s")) { // must be sig
                         Signature = IOUtils.toByteArray((InputStream) mbp.getContent());
                     }
-                    
-                  
-                    if (isDebug)
+                   
                     System.out.println("here--> level 2 mp count: " + j + " contentType: " + mbp.getContentType() + "/" + mbp.getFileName());
                
                } // for each mpsub (should be two if signed) 
@@ -541,8 +506,6 @@ public class AS2Serv extends HttpServlet {
             
             // if it's not a valid signature and signing is required...then return fail mdn
             if (! validSignature && info[13].equals("1")) {
-             // return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "Signature could not be validated " + sender + "/" + receiver); 
-             // writeAS2LogStop(new String[]{"0","unknown","in","error","invalid signature " + sender + "/" + receiver,now,"", info[22]});
               logdet.add(new String[]{parentkey, "error", "invalid signature " + sender + "/" + receiver,now,"" });
               if (! logdet.isEmpty()) {
                     writeAS2LogDetail(logdet);
@@ -572,17 +535,11 @@ public class AS2Serv extends HttpServlet {
                 }
             }
            }
-
-           
-              
         }  // for parent mp ...should be just one
         
-        
-        
-        if (isDebug) {
         System.out.println("here--> mic: " + mic);
         System.out.println("here--> messageid: " + messageid);
-        }
+        
         
 
         // now save file
@@ -599,11 +556,7 @@ public class AS2Serv extends HttpServlet {
         
         logdet.add(new String[]{parentkey, "info", "receiving file = " + path + " at size: " + FileBytes.length});
         
-        /*
-        output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path.toFile())));
-        String datastring = new String(FileBytes);   
-        output.write(datastring);
-        */  
+      
         } catch (FileNotFoundException ex) {
             bslog(ex);
             return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, " File Not Found Error occurred");

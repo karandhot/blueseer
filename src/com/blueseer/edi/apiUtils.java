@@ -154,6 +154,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
@@ -167,6 +168,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.BufferedHttpEntity;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -2694,6 +2696,32 @@ public class apiUtils {
         return null;
     }
     
+    public static void saveRequestToFile(HttpUriRequest request, String filePath) throws IOException {
+        try (OutputStream fileOut = new FileOutputStream(new File(filePath))) {
+            // Write the request line (e.g., POST /api/data HTTP/1.1).
+            String requestLine = request.getRequestLine().toString() + "\r\n";
+            fileOut.write(requestLine.getBytes(StandardCharsets.UTF_8));
+
+            // Write all request headers.
+            for (Header header : request.getAllHeaders()) {
+                String headerLine = header.getName() + ": " + header.getValue() + "\r\n";
+                fileOut.write(headerLine.getBytes(StandardCharsets.UTF_8));
+            }
+            fileOut.write("\r\n".getBytes(StandardCharsets.UTF_8)); // Blank line separates headers from body.
+
+            // Write the request body if it exists.
+            if (request instanceof HttpEntityEnclosingRequest) {
+                HttpEntity entity = ((HttpEntityEnclosingRequest) request).getEntity();
+                if (entity != null) {
+                    // ByteArrayEntity is repeatable, so we can read its content safely.
+                    try (InputStream entityIn = entity.getContent()) {
+                        entityIn.transferTo(fileOut);
+                    }
+                }
+            }
+        }
+    }
+    
     public static String postAS2( String as2id, boolean isDebug) throws MalformedURLException, URISyntaxException, IOException, CertificateException, NoSuchProviderException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, CertificateEncodingException, CMSException, SMIMEException, Exception  {
         
         StringBuilder r = new StringBuilder();
@@ -2960,16 +2988,23 @@ public class apiUtils {
                 }
             }
         
-        InputStreamEntity ise = new InputStreamEntity(new ByteArrayInputStream(sendbytes));
+        
         
         
        
+      //  InputStreamEntity ise = new InputStreamEntity(new ByteArrayInputStream(sendbytes));
+      //  rb.setEntity(new BufferedHttpEntity(ise));
         
-        rb.setEntity(new BufferedHttpEntity(ise));
+        ByteArrayEntity baentity = new ByteArrayEntity(sendbytes);  // used for repeatable stream...for debugging prior to send
+        rb.setEntity(new BufferedHttpEntity(baentity));
+        
         HttpUriRequest request = rb.build();
         
           
         if (isDebug) { 
+            String debugfile = "debugAS2http." + now + "." + Long.toHexString(System.currentTimeMillis());
+            saveRequestToFile(request, "temp" + "/" + debugfile);
+            /*
             String debugfile = "debugAS2http." + now + "." + Long.toHexString(System.currentTimeMillis());
             Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
             Header[] headers = request.getAllHeaders();
@@ -2981,9 +3016,10 @@ public class apiUtils {
                     stream.write(h.getBytes());
                 }
             }  
+            */
         }
         
-        
+       
         
         
         try (CloseableHttpResponse response = client.execute(request)) {
