@@ -2932,7 +2932,14 @@ public class apiUtils {
        
         String newboundary = getPackagedBoundary(mbp);
         
-        byte[] bytesToBeEncrypted = buildMIME(mbp, isDebug);   
+        byte[] bytesToBeEncrypted;
+        
+        boolean smime_encapsulate = false;
+        if (smime_encapsulate) {
+             bytesToBeEncrypted = buildMIME(mbp, isDebug);
+        }  else {
+             bytesToBeEncrypted = mbp.getInputStream().readAllBytes();
+        } 
        
         
         if (isEncrypted) {
@@ -2964,19 +2971,24 @@ public class apiUtils {
         rb.addHeader("Recipient-Address", url.toString());
         rb.addHeader("EDIINT-Features", "CEM, multiple-attachments, AS2-Reliability");
         
-        if (! isSigned) {
-          rb.addHeader("Content-Type", "multipart/mixed; boundary=" + "\"" + newboundary + "\"" );
-        }        
-       
-        if (isSigned && ! isEncrypted) {
-          rb.addHeader("Content-Type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");
-        }
         
-        if (isSigned && isEncrypted) {
-        rb.addHeader("content-type", "application/pkcs7-mime; smime-type=enveloped-data; name=smime.p7m");
-        rb.addHeader("Content-Transfer-Encoding", "binary");
-        rb.addHeader("content-disposition", "attachment; filename=" + "\"" + "smime.p7m" + "\"");
-        rb.addHeader("connection", "close, TE");
+        if (smime_encapsulate) {
+            if (! isSigned) {
+              rb.addHeader("Content-Type", "multipart/mixed; boundary=" + "\"" + newboundary + "\"" );
+            }        
+
+            if (isSigned && ! isEncrypted) {
+              rb.addHeader("Content-Type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");
+            }
+
+            if (isSigned && isEncrypted) {
+            rb.addHeader("content-type", "application/pkcs7-mime; smime-type=enveloped-data; name=smime.p7m");
+            rb.addHeader("Content-Transfer-Encoding", "binary");
+            rb.addHeader("content-disposition", "attachment; filename=" + "\"" + "smime.p7m" + "\"");
+            rb.addHeader("connection", "close, TE");
+            }        
+        } else {
+            rb.addHeader("Content-Type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");
         }
         
         // add custom headers
