@@ -2934,12 +2934,12 @@ public class apiUtils {
         
         byte[] bytesToBeEncrypted;
         
-        boolean smime_encapsulate = false;
-        if (smime_encapsulate) {
+       // boolean smime_encapsulate = false;
+      //  if (smime_encapsulate) {
              bytesToBeEncrypted = buildMIME(mbp, isDebug);
-        }  else {
-             bytesToBeEncrypted = mbp.getInputStream().readAllBytes();
-        } 
+      //  }  else {
+      //       bytesToBeEncrypted = mbp.getInputStream().readAllBytes();
+       // } 
        
         
         if (isEncrypted) {
@@ -2972,7 +2972,7 @@ public class apiUtils {
         rb.addHeader("EDIINT-Features", "CEM, multiple-attachments, AS2-Reliability");
         
         
-        if (smime_encapsulate) {
+      //  if (smime_encapsulate) {
             if (! isSigned) {
               rb.addHeader("Content-Type", "multipart/mixed; boundary=" + "\"" + newboundary + "\"" );
             }        
@@ -2987,9 +2987,9 @@ public class apiUtils {
             rb.addHeader("content-disposition", "attachment; filename=" + "\"" + "smime.p7m" + "\"");
             rb.addHeader("connection", "close, TE");
             }        
-        } else {
-            rb.addHeader("Content-Type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");
-        }
+     //   } else {
+     //       rb.addHeader("Content-Type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");
+     //   }
         
         // add custom headers
         ArrayList<String> list = EDData.getAS2AttributesList(as2m.as2_id(), "httpheader");
