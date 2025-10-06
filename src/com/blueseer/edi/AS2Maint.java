@@ -728,6 +728,7 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
         ddinworkflow = new javax.swing.JComboBox<>();
         ddoutworkflow = new javax.swing.JComboBox<>();
         jLabel24 = new javax.swing.JLabel();
+        cbpayload = new javax.swing.JCheckBox();
         jPanel3 = new javax.swing.JPanel();
         btnew = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
@@ -837,6 +838,8 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
 
         jLabel24.setText("In Workflow");
 
+        cbpayload.setText("payload");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -852,35 +855,35 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
-                                .addComponent(tboutdir, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jLabel23)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(ddoutworkflow, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(jPanel2Layout.createSequentialGroup()
-                                        .addComponent(tbheadertag, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(89, 89, 89))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                                        .addComponent(jLabel24)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                                .addComponent(ddinworkflow, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap(69, Short.MAX_VALUE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(tbheadervalue, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(btdeleteheader, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btaddheader, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tbindir, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(cbenabled)
-                        .addGap(36, 36, 36))))
+                        .addGap(36, 36, 36))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(tbheadertag, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cbpayload))
+                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(ddinworkflow, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
+                                    .addComponent(tboutdir, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(jLabel23)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(ddoutworkflow, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(tbindir, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel24)))
+                        .addContainerGap(82, Short.MAX_VALUE))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -900,7 +903,8 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel19)
-                    .addComponent(tbheadertag, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(tbheadertag, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cbpayload))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btaddheader, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1378,6 +1382,7 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
     private void btdeleteheaderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteheaderActionPerformed
         boolean proceed = true;
 
+        
         if (headerlist.isSelectionEmpty()) {
             proceed = false;
             bsmf.MainFrame.show(getMessageTag(1029));
@@ -1385,15 +1390,16 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
             proceed = bsmf.MainFrame.warn(getMessageTag(1004));
         }
         if (proceed) {
-            String[] z = headerlist.getSelectedValue().toString().split(":");
-            EDData.deleteAS2attribute(tbkey.getText(), "httpheader", z[0]);
+            String tagtype = (cbpayload.isSelected()) ? "payloadheader" : "httpheader";
+            String[] z = headerlist.getSelectedValue().split(":");
+            EDData.deleteAS2attribute(tbkey.getText(), tagtype, z[0]);
             getAttributes(tbkey.getText());
         }
     }//GEN-LAST:event_btdeleteheaderActionPerformed
 
     private void btaddheaderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddheaderActionPerformed
-
-        EDData.addAS2AttributeRecord(tbkey.getText(), "httpheader", tbheadertag.getText(), tbheadervalue.getText());
+        String tagtype = (cbpayload.isSelected()) ? "payloadheader" : "httpheader";
+        EDData.addAS2AttributeRecord(tbkey.getText(), tagtype, tbheadertag.getText(), tbheadervalue.getText());
         getAttributes(tbkey.getText());
         tbheadertag.setText("");
         tbheadervalue.setText("");
@@ -1428,6 +1434,7 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JCheckBox cbforcesigning;
     private javax.swing.JCheckBox cboutputencryption;
     private javax.swing.JCheckBox cboutputsign;
+    private javax.swing.JCheckBox cbpayload;
     private javax.swing.JCheckBox cbsignmdn;
     private javax.swing.JCheckBox cbsystemcert;
     private javax.swing.JComboBox<String> ddclass;

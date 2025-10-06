@@ -2465,7 +2465,7 @@ public class apiUtils {
             dataPart.setHeader("Content-Disposition", "attachment; filename=" + filename);
             // dataPart.setHeader("Content-Transfer-Encoding", "binary");
             
-            ArrayList<String> list = EDData.getAS2AttributesList(as2m.as2_id(), "httpheader");
+            ArrayList<String> list = EDData.getAS2AttributesList(as2m.as2_id(), "payloadheader");
             for (String x : list) {
                 String[] h = x.split(":",-1);
                 if (h != null && h.length > 1) {
@@ -2923,8 +2923,12 @@ public class apiUtils {
             
             // calculate MIC from file payload + headers ...which is BodyPart(0) of mimemultipart
             ByteArrayOutputStream aos = new ByteArrayOutputStream();
-            MimeMultipart mmpg = (MimeMultipart) mbp.getContent();
-            mmpg.getBodyPart(0).writeTo(aos);
+            if (isSigned) {
+                MimeMultipart mmpg = (MimeMultipart) mbp.getContent();
+                mmpg.getBodyPart(0).writeTo(aos);
+            } else {
+                mbp.writeTo(aos);
+            }
             aos.close(); 
             byte[] FileWHeadersBytes = aos.toByteArray();
             String mic = hashdigest(FileWHeadersBytes, as2m.as2_micalgo());
@@ -2934,12 +2938,11 @@ public class apiUtils {
         
         byte[] bytesToBeEncrypted;
         
-       // boolean smime_encapsulate = false;
-      //  if (smime_encapsulate) {
+        if (isSigned && isEncrypted) {
              bytesToBeEncrypted = buildMIME(mbp, isDebug);
-      //  }  else {
-      //       bytesToBeEncrypted = mbp.getInputStream().readAllBytes();
-       // } 
+        } else {
+             bytesToBeEncrypted = mbp.getInputStream().readAllBytes();
+        }
        
         
         if (isEncrypted) {
@@ -2973,9 +2976,13 @@ public class apiUtils {
         
         
       //  if (smime_encapsulate) {
-            if (! isSigned) {
+            if (! isSigned && isEncrypted) {
               rb.addHeader("Content-Type", "multipart/mixed; boundary=" + "\"" + newboundary + "\"" );
-            }        
+            } 
+            if (! isSigned && ! isEncrypted) {
+              rb.addHeader("Content-Type", as2m.as2_contenttype());
+              rb.addHeader("Content-Disposition", "attachment; filename=" + listOfFiles[i].getName());  
+            }
 
             if (isSigned && ! isEncrypted) {
               rb.addHeader("Content-Type", "multipart/signed; protocol=\"application/pkcs7-signature\"; boundary=" + "\"" + newboundary + "\"" + "; micalg=sha1");
@@ -3157,7 +3164,7 @@ public class apiUtils {
     }
     
     public static byte[] buildMIME(MimeBodyPart tmpBody, boolean isDebug) throws MessagingException, IOException {
-            String h = "Content-Type: " + tmpBody.getHeader("content-type")[0] + "\n\n";
+            String h = "Content-Type: " + tmpBody.getHeader("content-type")[0] + "\r\n\r\n";
             byte[] byteheader = h.getBytes();
             byte[] bytestream = tmpBody.getInputStream().readAllBytes();
             byte[] r = new byte[byteheader.length + bytestream.length];
