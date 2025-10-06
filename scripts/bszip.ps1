@@ -21,7 +21,7 @@ $wip = "c:\bs\wip"
 
 
 # create jar only patch zip file
-$jaronly = "blueseer.jaronly.zip"
+$jaronly = "blueseer.jaronly." + $version + "." + $patch  + ".zip"
 rm $wip\$jaronly
 compress-archive -update -path ..\dist\blueseer.jar -destinationpath $wip\$jaronly
 compress-archive -update -path ..\dist\bsmf.jar -destinationpath $wip\$jaronly
@@ -29,6 +29,7 @@ compress-archive -update -path instructions.txt -destinationpath $wip\$jaronly
 
 # create jar and jasper patch zip file
 $jaronly = "blueseer.base.patch.zip"
+$jaronly = "blueseer.base.patch." + $version + "." + $patch  + ".zip"
 rm $wip\$jaronly
 compress-archive -update -path ..\dist\blueseer.jar -destinationpath $wip\$jaronly
 compress-archive -update -path ..\sf\jasper -destinationpath $wip\$jaronly
