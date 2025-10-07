@@ -187,6 +187,7 @@ import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.RFC4519Style;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.bcpg.HashAlgorithmTags;
@@ -2028,7 +2029,7 @@ public class apiUtils {
         
     }
     
-    public static boolean verifySignature(final byte[] plaintext, final byte[] signedData)  {
+    public static boolean verifySignature(final byte[] plaintext, final byte[] signedData, boolean isDebug)  {
         boolean x = false;
         if (plaintext == null || signedData == null) {
             return x;
@@ -2040,6 +2041,7 @@ public class apiUtils {
             SignerInformationStore signers = s.getSignerInfos();
             Collection<SignerInformation> c = signers.getSigners();
             SignerInformation signer = c.iterator().next();
+            
             
             
             
@@ -2066,7 +2068,10 @@ public class apiUtils {
             } catch (IOException ex) {
                 Logger.getLogger(apiUtils.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
+            */
+            if (isDebug) {
+            String signatureAlgName = signer.getDigestAlgorithmID().getAlgorithm().getId() + "with" + signer.getEncryptionAlgOID();
+            System.out.println("Composite signature algorithm (based on OIDs): " + signatureAlgName);
             AttributeTable attributes = signer.getSignedAttributes();
             Attribute attribute = attributes.get(CMSAttributes.messageDigest);
             DEROctetString digest = (DEROctetString) attribute.getAttrValues().getObjectAt(0);
@@ -2076,7 +2081,8 @@ public class apiUtils {
             System.out.println("signer hex string:");
             System.out.println(Hex.toHexString(signer.getContentDigest()));
             System.out.println("data size: " + plaintext.length);
-            */
+            }
+            
         } catch ( CMSException | OperatorCreationException | CertificateException ex) {
             bslog(ex);
         }
@@ -2315,7 +2321,7 @@ public class apiUtils {
         }
         if (FileWHeadersBytes != null && Signature != null) {  
            // System.out.println("verifyMDNSignature ...attempting to verify");
-        b = verifySignature(FileWHeadersBytes, Signature);
+        b = verifySignature(FileWHeadersBytes, Signature, false);
         }
         
         return b;

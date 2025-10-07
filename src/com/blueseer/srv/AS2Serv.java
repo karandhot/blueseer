@@ -499,7 +499,7 @@ public class AS2Serv extends HttpServlet {
             
             if (Signature != null) {
               logdet.add(new String[]{parentkey, "info", "signature check " + sender + "/" + receiver,now,"" });  
-              validSignature = verifySignature(FileWHeadersBytes, Signature); 
+              validSignature = verifySignature(FileWHeadersBytes, Signature, isDebug); 
               logdet.add(new String[]{parentkey, "info", "signature verification:  " + String.valueOf(validSignature),now,"" });
               logdet.add(new String[]{parentkey, "info", "signature required:  " + info[13] ,now,"" });
             }
