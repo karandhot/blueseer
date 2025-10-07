@@ -3023,14 +3023,14 @@ public class apiUtils {
         
           
         if (isDebug) { 
-            /*
+            
             RequestBuilder rb_debug = rb;
             ByteArrayEntity baentity_debug = new ByteArrayEntity(bytesToBeEncrypted);  // used for repeatable stream...for debugging prior to send
             rb_debug.setEntity(new BufferedHttpEntity(baentity_debug));
             HttpUriRequest request_debug = rb_debug.build();
             String debugfile = "debugAS2http." + now + "." + Long.toHexString(System.currentTimeMillis());
             saveRequestToFile(request_debug, "temp" + "/" + debugfile);
-            */
+            
             /*
             String debugfile = "debugAS2http." + now + "." + Long.toHexString(System.currentTimeMillis());
             Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
