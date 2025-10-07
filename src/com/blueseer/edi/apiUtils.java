@@ -2042,46 +2042,41 @@ public class apiUtils {
             Collection<SignerInformation> c = signers.getSigners();
             SignerInformation signer = c.iterator().next();
             
-            
-            
-            
-            Collection<X509CertificateHolder> certCollection = certstore.getMatches(signer.getSID());
-            Iterator<X509CertificateHolder> certIt = certCollection.iterator();
-            if (! certIt.hasNext()) {
-              //  System.out.println("inside verify: certIt has no next ");
+            if (signer == null) {
+                System.out.println("Error in verifySignature...signer is null");
                 return x;
             }
-            X509CertificateHolder certHolder = certIt.next();
             
-            try {
-                x = signer.verify(new JcaSimpleSignerInfoVerifierBuilder().build(certHolder));
-            } catch (CMSException ex) {
-                bslog(ex);
-            }
-            /*
-            String debugfile = "plaintext." +  "." + Long.toHexString(System.currentTimeMillis());
-            Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
-            try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
-            stream.write(plaintext);
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(apiUtils.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                Logger.getLogger(apiUtils.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            */
-            if (isDebug) {
-            String signatureAlgName = signer.getDigestAlgorithmID().getAlgorithm().getId() + "with" + signer.getEncryptionAlgOID();
-            System.out.println("Composite signature algorithm (based on OIDs): " + signatureAlgName);
-            AttributeTable attributes = signer.getSignedAttributes();
-            Attribute attribute = attributes.get(CMSAttributes.messageDigest);
-            DEROctetString digest = (DEROctetString) attribute.getAttrValues().getObjectAt(0);
-            // if these values are different, the exception is thrown
-            System.out.println("digest hex string:");
-            System.out.println(Hex.toHexString(digest.getOctets()));
-            System.out.println("signer hex string:");
-            System.out.println(Hex.toHexString(signer.getContentDigest()));
-            System.out.println("data size: " + plaintext.length);
-            }
+            
+                Collection<X509CertificateHolder> certCollection = certstore.getMatches(signer.getSID());
+                Iterator<X509CertificateHolder> certIt = certCollection.iterator(); 
+                if (! certIt.hasNext()) {
+                    System.out.println("ERROR:  inside verifySignature: certCollection.iterator() has no next ");
+                    return x;
+                }
+                X509CertificateHolder certHolder = certIt.next();
+
+                try {
+                    x = signer.verify(new JcaSimpleSignerInfoVerifierBuilder().build(certHolder));
+                    
+                    // This Debug statement must be ran 'after' verify....an exception is thrown otherwise
+                     if (isDebug) {
+                    String signatureAlgName = signer.getDigestAlgorithmID().getAlgorithm().getId() + "with" + signer.getEncryptionAlgOID();
+                    System.out.println("Composite signature algorithm (based on OIDs): " + signatureAlgName);
+                    AttributeTable attributes = signer.getSignedAttributes();
+                    Attribute attribute = attributes.get(CMSAttributes.messageDigest);
+                    DEROctetString digest = (DEROctetString) attribute.getAttrValues().getObjectAt(0);
+                    // if these values are different, the exception is thrown
+                    System.out.println("digest hex string:");
+                    System.out.println(Hex.toHexString(digest.getOctets()));
+                    System.out.println("signer hex string:");
+                    System.out.println(Hex.toHexString(signer.getContentDigest()));
+                    System.out.println("data size: " + plaintext.length);
+                    }
+                    
+                } catch (CMSException ex) {
+                    bslog(ex);
+                }
             
         } catch ( CMSException | OperatorCreationException | CertificateException ex) {
             bslog(ex);
@@ -3028,12 +3023,14 @@ public class apiUtils {
         
           
         if (isDebug) { 
+            /*
             RequestBuilder rb_debug = rb;
             ByteArrayEntity baentity_debug = new ByteArrayEntity(bytesToBeEncrypted);  // used for repeatable stream...for debugging prior to send
             rb_debug.setEntity(new BufferedHttpEntity(baentity_debug));
             HttpUriRequest request_debug = rb_debug.build();
             String debugfile = "debugAS2http." + now + "." + Long.toHexString(System.currentTimeMillis());
             saveRequestToFile(request_debug, "temp" + "/" + debugfile);
+            */
             /*
             String debugfile = "debugAS2http." + now + "." + Long.toHexString(System.currentTimeMillis());
             Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
@@ -3129,7 +3126,8 @@ public class apiUtils {
             } catch (MessagingException ex) {
               logdet.add(new String[]{parentkey, "error", " Messaging error; Bad MDN Boundary " + ex.getMessage()}); 
               writeAS2LogDetail(logdet);
-              r.append("Messaging error; Bad MDN Boundary ").append(ex.getMessage());
+              r.append("Messaging error; Bad MDN Boundary ").append(ex.getMessage()); 
+              ex.printStackTrace();
               return r.toString(); 
             }   
         } // if result is not blank

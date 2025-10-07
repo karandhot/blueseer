@@ -456,7 +456,7 @@ public class AS2Serv extends HttpServlet {
                         Signature = IOUtils.toByteArray((InputStream) mbp.getContent());
                     }
                    
-                    System.out.println("here--> level 2 mp count: " + j + " contentType: " + mbp.getContentType() + "/" + mbp.getFileName());
+                    System.out.println("here--> level 2 mp count: " + j + " contentType/fileName/transferEncoding: " + mbp.getContentType() + " / " + mbp.getFileName() + " / " + mbp.getEncoding());
                
                } // for each mpsub (should be two if signed) 
                
