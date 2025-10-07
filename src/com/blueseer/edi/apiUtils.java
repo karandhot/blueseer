@@ -3289,6 +3289,12 @@ public class apiUtils {
         MimeMultipart mpInner = new MimeMultipart();
         boolean unsigned = false;
         
+        as2_mstr as2m = getAS2Mstr(elementals[0], elementals[1]); 
+        String micalgo = as2m.as2_micalgo().toLowerCase();
+        micalgo = micalgo.replace("sha-1", "sha1");
+        micalgo = micalgo.replace("sha-256", "sha256");
+        micalgo = (micalgo.isBlank()) ? "sha1" : micalgo;
+        
         try {
             mbp.setText(z);
             mbp.setHeader("Content-Type", "text/plain");
@@ -3300,7 +3306,7 @@ public class apiUtils {
             yb.append("Final-Recipient: rfc822; ").append(receiver).append("\r").append("\n");
             yb.append("Original-Message-ID: ").append(messageid).append("\r").append("\n");
             yb.append("Disposition: automatic-action/MDN-sent-automatically; ").append(status).append("\r").append("\n");
-            yb.append("Received-Content-MIC: ").append(mic).append(", sha1");
+            yb.append("Received-Content-MIC: ").append(mic).append(", ").append(micalgo).append("\r").append("\n");
             /*
             String y = """
                        Reporting-UA: BlueSeer Software

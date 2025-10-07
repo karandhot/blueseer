@@ -2453,7 +2453,67 @@ public class ediData {
         }
         return r;
     }
-       
+    
+    public static as2_mstr getAS2Mstr(String senderAS2ID, String receiverAS2ID) {
+        as2_mstr r = null;
+        String[] m = new String[2];
+        String sql = "select * from as2_mstr where as2_user = ? and as2_sysas2id = ?;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, senderAS2ID);
+        ps.setString(2, receiverAS2ID);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new as2_mstr(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new as2_mstr(m, res.getString("as2_id"), 
+                            res.getString("as2_desc"),
+                            res.getString("as2_version"),
+                            res.getString("as2_url"),
+                            res.getString("as2_port"),
+                            res.getString("as2_path"),
+                            res.getString("as2_user"),
+                            res.getString("as2_pass"),
+                            res.getString("as2_key"),
+                            res.getString("as2_protocol"),
+                            res.getString("as2_class"),
+                            res.getString("as2_indir"),
+                            res.getString("as2_outdir"),
+                            res.getString("as2_encrypted"),
+                            res.getString("as2_signed"),
+                            res.getString("as2_enccert"),
+                            res.getString("as2_forceencrypted"),
+                            res.getString("as2_forcesigned"),
+                            res.getString("as2_signcert"),
+                            res.getString("as2_encalgo"),
+                            res.getString("as2_signalgo"),
+                            res.getString("as2_micalgo"),
+                            res.getString("as2_contenttype"),
+                            res.getString("as2_enabled"),
+                            res.getString("as2_sysas2id"),
+                            res.getString("as2_site"),
+                            res.getString("as2_inwkf"),
+                            res.getString("as2_outwkf"),
+                            res.getString("as2_sysenccert"),
+                            res.getString("as2_syssigncert"),
+                            res.getString("as2_syscert_bool"),
+                            res.getString("as2_signmdn")
+                        );
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new as2_mstr(m);
+        }
+        return r;
+    }
+    
+    
     public static ArrayList<api_det> getAPIDet(String code) {
         api_det r = null;
         String[] m = new String[2];

@@ -41,7 +41,9 @@ import static com.blueseer.edi.apiUtils.hashdigest;
 import com.blueseer.edi.apiUtils.mdn;
 import static com.blueseer.edi.apiUtils.verifySignature;
 import static com.blueseer.edi.apiUtils.verifySignatureView;
+import com.blueseer.edi.ediData.as2_mstr;
 import static com.blueseer.edi.ediData.getAS2InfoByIDs;
+import static com.blueseer.edi.ediData.getAS2Mstr;
 import com.blueseer.inv.invData;
 import com.blueseer.sch.schData;
 import com.blueseer.utl.BlueSeerUtils;
@@ -246,6 +248,7 @@ public class AS2Serv extends HttpServlet {
         String michash = "";
         String filename = "";
         String[] info = null;
+        as2_mstr as2m = null;
         boolean validSignature = false;
         byte[] FileWHeadersBytes = null;
         byte[] FileBytes = null;
@@ -293,7 +296,10 @@ public class AS2Serv extends HttpServlet {
             sender = inHM.get("as2-from");
             elementals[0] = sender;
             
-            info = getAS2InfoByIDs(sender , receiver);
+            info = getAS2InfoByIDs(sender , receiver); // need to remove this in favor of as2m
+            
+            
+            
             if (info == null) {
               writeAS2LogStop(new String[]{"0","unknown","in","error","AS2 sender / receiver unknown with keys: " + sender + "/" + receiver,now,"",defaultsite});  
               //return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "AS2 sender ID unknown with keys: " + sender + "/" + receiver);    
