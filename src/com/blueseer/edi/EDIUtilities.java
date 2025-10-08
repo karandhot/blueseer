@@ -36,6 +36,8 @@ import static com.blueseer.edi.apiUtils.calculateMIC;
 import static com.blueseer.edi.apiUtils.hashdigest;
 import static com.blueseer.edi.apiUtils.hashdigestString;
 import static com.blueseer.edi.apiUtils.verifySignatureView;
+import com.blueseer.edi.ediData.as2_mstr;
+import static com.blueseer.edi.ediData.getAS2Mstr;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import java.awt.Component;
@@ -910,6 +912,11 @@ public class EDIUtilities extends javax.swing.JPanel {
     }
     
     public void verifyHashSignature(boolean input) {
+        
+        if (!input) {
+        String g = bsmf.MainFrame.input("as2m ID: ");
+        
+        
         taoutput.setText("");
         String mic = "";
         String[] x = new String[]{"","","","","",""};
@@ -955,7 +962,7 @@ public class EDIUtilities extends javax.swing.JPanel {
         
         if (! tainput.getText().isEmpty()) {
             try { 
-                x = verifySignatureView(tainput.getText().getBytes(), "text/plain", null);
+                x = verifySignatureView(tainput.getText().getBytes(), "text/plain", null, g);
             } catch (MessagingException ex) {
                 Logger.getLogger(EDIUtilities.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
@@ -967,8 +974,12 @@ public class EDIUtilities extends javax.swing.JPanel {
                     "Data hex: " + x[2] + "\n" +
                     "Sig tostring: " + x[3] + "\n" +
                     "ByteCount FilewHeaders: " + x[4] + "\n" +
-                    "ByteCount signature: " + x[5] + "\n");
+                    "ByteCount signature: " + x[5] + "\n" +
+                    "NonBCverify: " + x[6] + "\n");
          }
+        
+        }
+        
     }
     
     

@@ -231,6 +231,8 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.mail.smime.SMIMEException;
 import org.bouncycastle.mail.smime.SMIMESigned;
 import org.bouncycastle.mail.smime.SMIMESignedGenerator;
+import org.bouncycastle.mail.smime.SMIMEToolkit;
+import org.bouncycastle.mail.smime.SMIMEUtil;
 import org.bouncycastle.openpgp.PGPCompressedData;
 import org.bouncycastle.openpgp.PGPEncryptedData;
 import org.bouncycastle.openpgp.PGPEncryptedDataGenerator;
@@ -276,6 +278,7 @@ import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.DigestCalculatorProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.OutputEncryptor;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -2084,9 +2087,9 @@ public class apiUtils {
         return x;
 }
     
-    public static String[] verifySignatureView(byte[] data, String contentType, CMSSignedData cs) throws MessagingException, IOException  {
+    public static String[] verifySignatureView(byte[] data, String contentType, CMSSignedData cs, String as2m) throws MessagingException, IOException  {
         boolean x = false;
-        String[] r = new String[]{"false","","","","",""};
+        String[] r = new String[]{"false","","","","","", ""};
 
         byte[] FileWHeadersBytes = null;
         byte[] Signature = null;
@@ -2212,6 +2215,15 @@ public class apiUtils {
             return new String[]{"false","plaintext or signedData is null","","","",""};
         }
         
+        
+         boolean maybe = false;
+         try {
+             maybe = verifySignatureNonBC(FileWHeadersBytes, Signature, as2m);
+         } catch (Exception ex) {
+             System.out.println(ex.getMessage()); 
+         }
+         
+        
         try {
           //  byte[] newdata = Arrays.copyOf(FileWHeadersBytes, FileWHeadersBytes.length - 4);
             CMSSignedData s = new CMSSignedData(new CMSProcessableByteArray(FileWHeadersBytes), Signature);
@@ -2220,6 +2232,7 @@ public class apiUtils {
             }
             
             
+           
             // ContentInfo conInf = signed.getContentInfo();
             // CMSProcessable sigContent = signed.getSignedContent();
             byte[] byte_out = null;
@@ -2267,6 +2280,7 @@ public class apiUtils {
             r[3] = digest.toString();
             r[4] = String.valueOf(FileWHeadersBytes.length);
             r[5] = String.valueOf(Signature.length);
+            r[6] = String.valueOf(maybe);
             
           
             
@@ -2274,8 +2288,13 @@ public class apiUtils {
             
         } catch ( CMSException | OperatorCreationException | CertificateException ex) {
             bslog(ex);
-        }
+        } catch (Exception ex) {
+             System.getLogger(apiUtils.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+         }
+
+
         return r;
+
 }
         
     public static boolean verifyMDNSignature(byte[] data, String contentType) throws MessagingException, IOException {
@@ -2320,6 +2339,62 @@ public class apiUtils {
         }
         
         return b;
+    }
+    
+    public static boolean verifyMDNSignatureNew(MimeMessage message, X509Certificate pubcert) throws Exception {
+        // Cast the message content to SMIMESigned if it's signed
+        DigestCalculatorProvider digestCalculatorProvider = 
+            new JcaDigestCalculatorProviderBuilder().setProvider("BC").build();
+
+        // 2. Instantiate SMIMEToolkit by passing the provider to the constructor.
+        SMIMEToolkit smimeToolkit = new SMIMEToolkit(digestCalculatorProvider);
+
+        if (! smimeToolkit.isSigned(message)) {   
+            System.err.println("Message is not S/MIME signed.");
+            return false;
+        }
+        
+        SMIMESigned s = new SMIMESigned((MimeMultipart) message.getContent());
+        Store certs = s.getCertificates();
+        SignerInformationStore signers = s.getSignerInfos();
+        
+        // Iterate through each signature
+        for (SignerInformation signer : signers.getSigners()) {
+            // Find the signing certificate in the certificates store
+            X509Certificate cert = (X509Certificate) certs.getMatches(signer.getSID()).iterator().next();
+
+            // Check if the signing certificate matches a trusted anchor (or is trusted in a chain)
+            if (cert.equals(pubcert)) {
+                // Verify the signature with the signer's certificate
+                if (signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider("BC").build(cert))) {
+                    System.out.println("NEW VERIFY MDN:  Signature verified successfully.");
+                    return true;
+                }
+            }
+        }
+        System.err.println("NEW VERIFY MDN:  Signature verification failed.");
+        return false;
+    }
+    
+    public static boolean verifySignatureNonBC(byte[] plaintex, byte[] signatureBytes, String as2id) throws Exception {
+        as2_mstr as2m = getAS2Mstr(new String[]{as2id});
+        String sigalgo = as2m.as2_signalgo();
+        String x = "";
+        if (sigalgo.equals("SHA-256")) {
+            x = "SHA256WithRSA";
+        } else if (sigalgo.equals("SHA-1")) {
+            x = "SHA1WithRSA";
+        } else if (sigalgo.equals("MD-5")) {
+            x = "MD5WithRSA";    
+        } else {
+           x = "SHA256WithRSA";  
+        }
+        Signature verifier = Signature.getInstance(x);
+        verifier.initVerify(getPublicKey(as2m.as2_signcert()));
+        verifier.update(plaintex);
+        boolean verified = verifier.verify(signatureBytes);
+        
+        return verified;
     }
     
     public static bsr encryptFile(byte[] indata, String keyid) throws IOException {
@@ -2521,10 +2596,15 @@ public class apiUtils {
       //  ByteArrayDataSource ds = new ByteArrayDataSource(targetStream, "multipart/mixed; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");  
       //  messagePart.setDataHandler(new DataHandler(ds));
             
-        InternetHeaders fileHeaders = new InternetHeaders();
-        fileHeaders.setHeader("Content-Type", "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");
-        fileHeaders.setHeader("Content-Transfer-Encoding", "binary");
-        MimeBodyPart messagePart = new MimeBodyPart(fileHeaders, messg);
+            MimeBodyPart messagePart = new MimeBodyPart();
+            InputStream targetStream = new ByteArrayInputStream(messg);
+            ByteArrayDataSource ds = new ByteArrayDataSource(targetStream, "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\""); 
+            messagePart.setDataHandler(new DataHandler(ds));
+      
+   //     InternetHeaders fileHeaders = new InternetHeaders();
+   //     fileHeaders.setHeader("Content-Type", "multipart/report; report-type=disposition-notification; boundary=" + "\"" + boundary + "\"");
+    //    fileHeaders.setHeader("Content-Transfer-Encoding", "binary");
+    //    MimeBodyPart messagePart = new MimeBodyPart(fileHeaders, messg);
         messagePart.removeHeader("Content-Type");
         messagePart.removeHeader("Content-Disposition");
           
@@ -2564,10 +2644,24 @@ public class apiUtils {
         messagePart.writeTo(xy);
         xy.flush();
         xy.close();
-            
+        
+        
             
         MimeMultipart signedContent = gen.generate(messagePart);
        
+       /*
+                String debugfile = "mdn_part_signed" + "." + Long.toHexString(System.currentTimeMillis()) + ".txt";
+                Path pathinput = FileSystems.getDefault().getPath("temp" + "/" + debugfile);
+                try (FileOutputStream stream = new FileOutputStream(pathinput.toFile())) {
+                  stream.write(messagePartBytes);
+                }
+                String debugfilex = "mdn_mmp" + "." + Long.toHexString(System.currentTimeMillis()) + ".txt";
+                Path pathinputx = FileSystems.getDefault().getPath("temp" + "/" + debugfilex);
+                try (FileOutputStream stream = new FileOutputStream(pathinputx.toFile())) {
+                  signedContent.writeTo(stream);
+                }
+            */
+        
         //MimeBodyPart xxx = gen.generateEncapsulated(messagePart);
         //MimeMultipart xxxmmp = new MimeMultipart();
         //xxxmmp.addBodyPart(xxx);
@@ -3107,6 +3201,20 @@ public class apiUtils {
                     // mbpr should be mimemulitpart containing two sub parts....the mdn and the signature
                     boolean isValidMDNSignature = verifyMDNSignature(indata, "multipart/signed; protocol=\"application/pkcs7-signature\"; micalg=sha-1;");
 
+                    /*
+                    Session session = Session.getDefaultInstance(new java.util.Properties()); // Or obtain a proper session
+                    //InputStream myis = new ByteArrayInputStream(indata);       // if indata has headers             
+                   // MimeMessage message = new MimeMessage(session, myis);      // if indata has headers
+                    
+                    ByteArrayDataSource dataSource = new ByteArrayDataSource(indata, "multipart/signed"); 
+                    MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
+                    MimeMessage message = new MimeMessage(session);
+                    message.setContent(mimeMultipart);
+                    
+                    boolean isValidMDNSignatureNew = verifyMDNSignatureNew(message, getPublicKeyAsCert(as2m.as2_signcert()));
+                    */ 
+                    
+                    
                     // log mdn filename into parent log entry
                     updateAS2LogMDNFile(parentkey, filename);
 
@@ -3379,7 +3487,7 @@ public class apiUtils {
             zb.append("The message ").append(filename).append(" with subject ").append(subject).append(" has been received.").append("\r").append("\n");
             zb.append("Message ").append(filename).append(" was sent from: ").append(sender).append(" to: ").append(receiver).append("\r").append("\n");
             zb.append(" Message received at ").append(now).append("\r").append("\n");
-            zb.append("Note: The origin and integrity of the message have been verified.");
+            zb.append("Note: The origin and integrity of the message have been verified.").append("\r").append("\n");
             
         try {
            mpInner = bundleit(zb.toString(), receiver, messageid, mic, "processed", elementals);
