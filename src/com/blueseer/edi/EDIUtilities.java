@@ -55,6 +55,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
+import java.security.Security;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -85,6 +86,7 @@ import javax.swing.text.JTextComponent;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
 
 /**
@@ -292,6 +294,9 @@ public class EDIUtilities extends javax.swing.JPanel {
       btdir.setVisible(false);
       taoutput.setText("");
       tainput.setText("");
+      
+      Security.addProvider(new BouncyCastleProvider());
+      
       isLoad = false;
     }
    
