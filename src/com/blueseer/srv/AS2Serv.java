@@ -460,10 +460,10 @@ public class AS2Serv extends HttpServlet {
                     
                     if (mbp.getFileName() != null && mbp.getFileName().equals("smime.p7s")) { // must be sig
                         Signature = IOUtils.toByteArray((InputStream) mbp.getContent());
-                        if (! mbp.getEncoding().toLowerCase().equals("base64")) {
-                          String sig = new String(Base64.encode(Signature));
-                          System.out.println("here--> signature content-transfer-encoding not provided...sig shown as base64 is: \n" + sig);
-                        }
+                      //  if (! mbp.getEncoding().toLowerCase().equals("base64")) {
+                      //    String sig = new String(Base64.encode(Signature));
+                      //    System.out.println("here--> signature content-transfer-encoding not provided...sig shown as base64 is: \n" + sig);
+                      //  }
                     }
                    
                     System.out.println("here--> level 2 mp count: " + j + " contentType/fileName/transferEncoding: " + mbp.getContentType() + " / " + mbp.getFileName() + " / " + mbp.getEncoding());
