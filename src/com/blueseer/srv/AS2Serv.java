@@ -199,6 +199,7 @@ public class AS2Serv extends HttpServlet {
         mdn mymdn = null;
         String  now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         ArrayList<String[]> logdet = new ArrayList<String[]>(); 
+        as2_mstr as2m = null;
         
         // request to inputstream as bytes        
         try {
@@ -211,7 +212,7 @@ public class AS2Serv extends HttpServlet {
         if (content == null) {
             writeAS2LogStop(new String[]{"0","unknown","in","error","null content",now,"",defaultsite});
            // return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "null content");
-            return createMDN("3000", elementals, returnheaders, isDebug);
+            return createMDN("3000", elementals, returnheaders, isDebug, as2m);
         }
         
        
@@ -239,7 +240,7 @@ public class AS2Serv extends HttpServlet {
             // header info unrecognizable...bail out
             writeAS2LogStop(new String[]{"0","unknown","in","error","http header tags unrecognizable",now,"", defaultsite});
             // return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "http header tags unrecognizable");
-            return createMDN("3005", elementals, returnheaders, isDebug);
+            return createMDN("3005", elementals, returnheaders, isDebug, as2m);
         }
     
         
@@ -252,7 +253,7 @@ public class AS2Serv extends HttpServlet {
         String michash = "";
         String filename = "";
         String[] info = null;
-        as2_mstr as2m = null;
+        
         boolean validSignature = false;
         byte[] FileWHeadersBytes = null;
         byte[] FileBytes = null;
@@ -263,7 +264,7 @@ public class AS2Serv extends HttpServlet {
         
         if (inHM == null || inHM.isEmpty()) {
           writeAS2LogStop(new String[]{"0","unknown","in","error","There are zero http headers",now,"", defaultsite});
-            return createMDN("3007", elementals, returnheaders, isDebug);   
+            return createMDN("3007", elementals, returnheaders, isDebug, as2m);   
         }
         
         if (inHM.containsKey("subject")) {
@@ -290,7 +291,7 @@ public class AS2Serv extends HttpServlet {
             elementals[1] = receiver;
         } else {
             writeAS2LogStop(new String[]{"0","unknown","in","error","AS2 receiver ID unrecognized",now,"", defaultsite});
-            return createMDN("3100", elementals, returnheaders, isDebug); 
+            return createMDN("3100", elementals, returnheaders, isDebug, as2m); 
         }
         
         if (inHM.containsKey("as2-from")) {
@@ -301,23 +302,23 @@ public class AS2Serv extends HttpServlet {
             elementals[0] = sender;
             
             info = getAS2InfoByIDs(sender , receiver); // need to remove this in favor of as2m
-            
+            as2m = getAS2Mstr(sender, receiver);
             
             
             if (info == null) {
               writeAS2LogStop(new String[]{"0","unknown","in","error","AS2 sender / receiver unknown with keys: " + sender + "/" + receiver,now,"",defaultsite});  
               //return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "AS2 sender ID unknown with keys: " + sender + "/" + receiver);    
-            return createMDN("3200", elementals, returnheaders, isDebug);
+            return createMDN("3200", elementals, returnheaders, isDebug, as2m);
             } 
         } else {
             writeAS2LogStop(new String[]{"0","unknown","in","error","AS2 sender ID unrecognized",now,"",info[22]});
             // return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "AS2 sender ID unrecognized"); 
-            return createMDN("3200", elementals, returnheaders, isDebug);
+            return createMDN("3200", elementals, returnheaders, isDebug, as2m);
         }
         
         if (info == null) { 
               writeAS2LogStop(new String[]{"0","unknown","in","error","unable to find sender / receiver keys: " + sender + "/" + receiver,now,"",info[22]});
-              return createMDN("3300", elementals, returnheaders, isDebug);   
+              return createMDN("3300", elementals, returnheaders, isDebug, as2m);   
         }
         
         
@@ -345,7 +346,7 @@ public class AS2Serv extends HttpServlet {
         
         if (! isEncrypted && info[12].equals("1")) {
            writeAS2LogStop(new String[]{"0","unknown","in","error","Encryption is required for this partner " + sender + "/" + receiver,now,"", info[22]}); 
-           return createMDN("3400", elementals, returnheaders, isDebug);
+           return createMDN("3400", elementals, returnheaders, isDebug, as2m);
         }
          
         byte[] finalContent = null;
@@ -356,7 +357,7 @@ public class AS2Serv extends HttpServlet {
           finalContent = apiUtils.decryptData(content, apiUtils.getPrivateKey(getSystemEncKeyAlt(info[0])) );
            if (finalContent == null) {
              writeAS2LogStop(new String[]{"0","unknown","in","error","Unable to decrypt...possible incorrect public key " + sender + "/" + receiver,now,"", info[22]}); 
-             return createMDN("3003", elementals, returnheaders, isDebug);
+             return createMDN("3003", elementals, returnheaders, isDebug, as2m);
            }  
          } else {
           finalContent = content;
@@ -387,6 +388,7 @@ public class AS2Serv extends HttpServlet {
         logdet.add(new String[]{parentkey, "info", "processing as2 for relationship " + sender + "/" + receiver});
         logdet.add(new String[]{parentkey, "info", "Incoming AS2 Message ID = " + messageid});
         logdet.add(new String[]{parentkey, "info", "Decryption system key = " + systemEncKey});
+        logdet.add(new String[]{parentkey, "info", "MDN flat/eol = " + as2m.as2_flatmdn() + "/" + as2m.as2_eol()});
         
         
         // establish mimemultipart format of decrypted data
@@ -398,7 +400,7 @@ public class AS2Serv extends HttpServlet {
         }
         
         if (mp.getContentType().isEmpty()) {  
-            return createMDN("2005", elementals, returnheaders, isDebug);
+            return createMDN("2005", elementals, returnheaders, isDebug, as2m);
         }
         
         // if signed...should have a parent mp with two sub-mps (one the file and the other the sig)
@@ -421,7 +423,7 @@ public class AS2Serv extends HttpServlet {
             
             if (mpsub.getCount() < 2 && info[13].equals("1") ) { // info[10] sig required
             //  return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, "Signature is required for this partner " + sender + "/" + receiver);    
-              return createMDN("2000", elementals, returnheaders, isDebug);
+              return createMDN("2000", elementals, returnheaders, isDebug, as2m);
             }
             
                
@@ -495,7 +497,7 @@ public class AS2Serv extends HttpServlet {
               if (! logdet.isEmpty()) {
                     writeAS2LogDetail(logdet);
               }
-                return createMDN("2010", elementals, returnheaders, isDebug);
+                return createMDN("2010", elementals, returnheaders, isDebug, as2m);
               }
               
            }
@@ -508,7 +510,7 @@ public class AS2Serv extends HttpServlet {
               if (! logdet.isEmpty()) {
                     writeAS2LogDetail(logdet);
               }
-                return createMDN("2015", elementals, returnheaders, isDebug);
+                return createMDN("2015", elementals, returnheaders, isDebug, as2m);
             } 
             
             if (Signature != null) {
@@ -524,7 +526,7 @@ public class AS2Serv extends HttpServlet {
               if (! logdet.isEmpty()) {
                     writeAS2LogDetail(logdet);
               }
-              return createMDN("2020", elementals, returnheaders, isDebug);
+              return createMDN("2020", elementals, returnheaders, isDebug, as2m);
             } 
             
         
@@ -570,7 +572,7 @@ public class AS2Serv extends HttpServlet {
         
         logdet.add(new String[]{parentkey, "info", "receiving file = " + path + " at size: " + FileBytes.length});
         
-      
+     
         } catch (FileNotFoundException ex) {
             bslog(ex);
             return new mdn(HttpServletResponse.SC_BAD_REQUEST, null, " File Not Found Error occurred");
@@ -588,7 +590,7 @@ public class AS2Serv extends HttpServlet {
              output.close(); 
             }
            try {
-            mymdn = createMDN("1000", elementals, returnheaders, isDebug);  // success assumes encryption and signed
+            mymdn = createMDN("1000", elementals, returnheaders, isDebug, as2m);  // success assumes encryption and signed
             } catch (MessagingException ex) {
                 bslog(ex);
             }

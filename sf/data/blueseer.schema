@@ -77,7 +77,8 @@ CREATE TABLE IF NOT EXISTS `as2_mstr` (
   `as2_syssigncert` varchar(120) NOT NULL DEFAULT '',
   `as2_syscert_bool` tinyint(1) NOT NULL DEFAULT '0',
   `as2_signmdn` tinyint(1) NOT NULL DEFAULT '0',
-  `as2_flatmdn` tinyint(1) NOT NULL DEFAULT '0'
+  `as2_flatmdn` tinyint(1) NOT NULL DEFAULT '0',
+  `as2_eol` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `api_mstr` (
   `api_id` varchar(30)  NOT NULL DEFAULT '',

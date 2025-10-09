@@ -335,6 +335,7 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
            cbsignmdn.setSelected(true);
            cbsystemcert.setSelected(true);
            cbflatmdn.setSelected(false);
+           cbeol.setSelected(false);
            
            ddsigncert.removeAllItems();
            ddenccert.removeAllItems();
@@ -533,7 +534,8 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
                 ddsyssigncert.getSelectedItem().toString(),
                 String.valueOf(BlueSeerUtils.boolToInt(cbsystemcert.isSelected())),
                 String.valueOf(BlueSeerUtils.boolToInt(cbsignmdn.isSelected())),
-                String.valueOf(BlueSeerUtils.boolToInt(cbflatmdn.isSelected()))
+                String.valueOf(BlueSeerUtils.boolToInt(cbflatmdn.isSelected())),
+                String.valueOf(BlueSeerUtils.boolToInt(cbeol.isSelected()))
                 );
         return x;
     }
@@ -614,6 +616,7 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
         cbsignmdn.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.as2_signmdn())));
         cbsystemcert.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.as2_syscert_bool())));
         cbflatmdn.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.as2_flatmdn())));
+        cbeol.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.as2_eol())));
         getAttributes(x.as2_id());
         setAction(x.m());
     }
@@ -791,6 +794,7 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
         cbsignmdn = new javax.swing.JCheckBox();
         cbsystemcert = new javax.swing.JCheckBox();
         cbflatmdn = new javax.swing.JCheckBox();
+        cbeol = new javax.swing.JCheckBox();
         lblstatus = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(0, 102, 204));
@@ -1173,6 +1177,8 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
 
         cbflatmdn.setText("Flat MDN");
 
+        cbeol.setText("crlf EOL");
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -1188,7 +1194,9 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
                         .addComponent(jLabel8))
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGap(18, 18, 18)
-                        .addComponent(cbflatmdn)))
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cbeol)
+                            .addComponent(cbflatmdn))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel4Layout.createSequentialGroup()
@@ -1241,7 +1249,8 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cboutputsign)
                     .addComponent(cbforcesigning)
-                    .addComponent(cbsystemcert))
+                    .addComponent(cbsystemcert)
+                    .addComponent(cbeol))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel18)
@@ -1441,6 +1450,7 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btupdate;
     private javax.swing.JCheckBox cbdebug;
     private javax.swing.JCheckBox cbenabled;
+    private javax.swing.JCheckBox cbeol;
     private javax.swing.JCheckBox cbflatmdn;
     private javax.swing.JCheckBox cbforceencryption;
     private javax.swing.JCheckBox cbforcesigning;

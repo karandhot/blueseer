@@ -731,7 +731,10 @@
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                              <Component id="cbflatmdn" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="cbeol" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbflatmdn" min="-2" max="-2" attributes="0"/>
+                              </Group>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -801,6 +804,7 @@
                           <Component id="cboutputsign" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="cbforcesigning" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="cbsystemcert" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbeol" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -1012,6 +1016,11 @@
             <Component class="javax.swing.JCheckBox" name="cbflatmdn">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Flat MDN"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="cbeol">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="crlf EOL"/>
               </Properties>
             </Component>
           </SubComponents>

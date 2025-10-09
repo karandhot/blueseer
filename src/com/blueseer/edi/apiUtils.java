@@ -3437,7 +3437,7 @@ public class apiUtils {
         return sslcsf;
     }
          
-    public static MimeMultipart bundleit(String z, String receiver, String messageid, String mic, String status, String[] elementals) {
+    public static MimeMultipart bundleit(String z, String receiver, String messageid, String mic, String status, String[] elementals, as2_mstr as2m) {
         MimeBodyPart mbp = new MimeBodyPart();
         MimeBodyPart mbp2 = new MimeBodyPart();
         MimeBodyPart mbp3 = new MimeBodyPart();
@@ -3446,7 +3446,7 @@ public class apiUtils {
         boolean unsigned = false;
         String boundary = "";
         
-        as2_mstr as2m = getAS2Mstr(elementals[0], elementals[1]); 
+        
         String micalgo = as2m.as2_micalgo().toLowerCase();
         micalgo = micalgo.replace("sha-1", "sha1");
         micalgo = micalgo.replace("sha-256", "sha256");
@@ -3458,12 +3458,22 @@ public class apiUtils {
             mbp.setHeader("Content-Transfer-Encoding", "binary");
             
             StringBuilder yb = new StringBuilder();
+            if (as2m.as2_eol().equals("1")) {
+            yb.append("Reporting-UA: BlueSeer Software").append("\r").append("\n");
+            yb.append("Original-Recipient: rfc822; ").append(receiver).append("\r").append("\n");
+            yb.append("Final-Recipient: rfc822; ").append(receiver).append("\r").append("\n");
+            yb.append("Original-Message-ID: ").append(messageid).append("\r").append("\n");
+            yb.append("Disposition: automatic-action/MDN-sent-automatically; ").append(status).append("\r").append("\n");
+            yb.append("Received-Content-MIC: ").append(mic).append(", ").append(micalgo).append("\r").append("\n");
+            } else {
             yb.append("Reporting-UA: BlueSeer Software").append("\n");
             yb.append("Original-Recipient: rfc822; ").append(receiver).append("\n");
             yb.append("Final-Recipient: rfc822; ").append(receiver).append("\n");
             yb.append("Original-Message-ID: ").append(messageid).append("\n");
             yb.append("Disposition: automatic-action/MDN-sent-automatically; ").append(status).append("\n");
             yb.append("Received-Content-MIC: ").append(mic).append(", ").append(micalgo).append("\n");
+            
+            }
             /*
             String y = """
                        Reporting-UA: BlueSeer Software
@@ -3528,7 +3538,7 @@ public class apiUtils {
         return mpInner;
     }
           
-    public static mmpx code1000(String[] elementals) {
+    public static mmpx code1000(String[] elementals, as2_mstr as2m) {
         String sender = elementals[0];
         String receiver = elementals[1];
         String subject = elementals[2];
@@ -3546,13 +3556,20 @@ public class apiUtils {
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
        
         StringBuilder zb = new StringBuilder();
+          if ( as2m.as2_eol().equals("0")) {  
             zb.append("The message ").append(filename).append(" with subject ").append(subject).append(" has been received.").append("\n");
             zb.append("Message ").append(filename).append(" was sent from: ").append(sender).append(" to: ").append(receiver).append("\n");
             zb.append(" Message received at ").append(now).append("\n");
             zb.append("Note: The origin and integrity of the message have been verified.").append("\n");
-            
+          } else {
+            zb.append("The message ").append(filename).append(" with subject ").append(subject).append(" has been received.").append("\r").append("\n");
+            zb.append("Message ").append(filename).append(" was sent from: ").append(sender).append(" to: ").append(receiver).append("\r").append("\n");
+            zb.append(" Message received at ").append(now).append("\r").append("\n");
+            zb.append("Note: The origin and integrity of the message have been verified.").append("\r").append("\n");
+          }
+          
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "processed", elementals);
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "processed", elementals, as2m);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3563,7 +3580,7 @@ public class apiUtils {
       //  return mymmpx;
     }
         
-    public static mmpx code2000(String[] elementals) {
+    public static mmpx code2000(String[] elementals, as2_mstr as2m) {
         String sender = elementals[0];
         String receiver = elementals[1];
         String subject = elementals[2];
@@ -3581,7 +3598,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append("\r").append("\n");
             zb.append("was not signed.");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals, as2m);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3591,7 +3608,7 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
         
-    public static mmpx code2005(String[] elementals) {
+    public static mmpx code2005(String[] elementals, as2_mstr as2m) {
         String sender = elementals[0];
         String receiver = elementals[1];
         String subject = elementals[2];
@@ -3612,7 +3629,7 @@ public class apiUtils {
              
                
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals, as2m);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3622,7 +3639,7 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
     
-    public static mmpx code2010(String[] elementals) {
+    public static mmpx code2010(String[] elementals, as2_mstr as2m) {
         String sender = elementals[0];
         String receiver = elementals[1];
         String subject = elementals[2];
@@ -3641,7 +3658,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append("\r").append("\n");
             zb.append("failed. Error: unable to retrieve contents of File. Error:  FileBytesRead is null  ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals, as2m);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3651,7 +3668,7 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
     
-    public static mmpx code2015(String[] elementals) {
+    public static mmpx code2015(String[] elementals, as2_mstr as2m) {
         String sender = elementals[0];
         String receiver = elementals[1];
         String subject = elementals[2];
@@ -3669,7 +3686,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: Signature content is null  ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals, as2m);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3679,7 +3696,7 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
     
-    public static mmpx code2020(String[] elementals) {
+    public static mmpx code2020(String[] elementals, as2_mstr as2m) {
         String sender = elementals[0];
         String receiver = elementals[1];
         String subject = elementals[2];
@@ -3698,7 +3715,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: Invalid Signature  ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals, as2m);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3708,7 +3725,7 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
     
-    public static mmpx code3000(String[] elementals) {
+    public static mmpx code3000(String[] elementals, as2_mstr as2m) {
         String sender = elementals[0];
         String receiver = elementals[1];
         String subject = elementals[2];
@@ -3728,7 +3745,7 @@ public class apiUtils {
             zb.append("Error: The message was transmitted with null content.  ");
         
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals, as2m);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3738,7 +3755,7 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
      
-    public static mmpx code3003(String[] elementals) {
+    public static mmpx code3003(String[] elementals, as2_mstr as2m) {
         String sender = elementals[0];
         String receiver = elementals[1];
         String subject = elementals[2];
@@ -3757,7 +3774,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: Unable to decrypt message transmitted at <%s>.  Potential bad public key.  ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals, as2m);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3767,7 +3784,7 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
         
-    public static mmpx code3005(String[] elementals) {
+    public static mmpx code3005(String[] elementals, as2_mstr as2m) {
         String sender = elementals[0];
         String receiver = elementals[1];
         String subject = elementals[2];
@@ -3786,7 +3803,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: The message had unrecognizable HTTP headers.  ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals, as2m);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3796,7 +3813,7 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
     
-    public static mmpx code3007(String[] elementals) {
+    public static mmpx code3007(String[] elementals, as2_mstr as2m) {
         String sender = elementals[0];
         String receiver = elementals[1];
         String subject = elementals[2];
@@ -3815,7 +3832,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: The message had zero HTTP headers.  ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals, as2m);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3825,7 +3842,7 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
    
-    public static mmpx code3100(String[] elementals) {
+    public static mmpx code3100(String[] elementals, as2_mstr as2m) {
         String sender = elementals[0];
         String receiver = elementals[1];
         String subject = elementals[2];
@@ -3844,7 +3861,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: The message was transmitted to unknown receiver ID.  ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals, as2m);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3854,7 +3871,7 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
     
-    public static mmpx code3200(String[] elementals) {
+    public static mmpx code3200(String[] elementals, as2_mstr as2m) {
         String sender = elementals[0];
         String receiver = elementals[1];
         String subject = elementals[2];
@@ -3873,7 +3890,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: The message was transmitted by unknown sender ID.  ");
        try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals, as2m);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3883,7 +3900,7 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
     
-    public static mmpx code3300(String[] elementals) {
+    public static mmpx code3300(String[] elementals, as2_mstr as2m) {
         String sender = elementals[0];
         String receiver = elementals[1];
         String subject = elementals[2];
@@ -3902,7 +3919,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: unable to determine sender / receiver keys  ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals, as2m);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3912,7 +3929,7 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
     
-    public static mmpx code3400(String[] elementals) {
+    public static mmpx code3400(String[] elementals, as2_mstr as2m) {
         String sender = elementals[0];
         String receiver = elementals[1];
         String subject = elementals[2];
@@ -3931,7 +3948,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: encryption is required  ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals, as2m);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3941,7 +3958,7 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
         
-    public static mmpx code9999(String[] elementals) {
+    public static mmpx code9999(String[] elementals, as2_mstr as2m) {
         String sender = elementals[0];
         String receiver = elementals[1];
         String subject = elementals[2];
@@ -3960,7 +3977,7 @@ public class apiUtils {
             zb.append(" at ").append(now).append(" failed.").append("\r").append("\n");
             zb.append("Error: Internal server error 9999 ");
         try {
-           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals);
+           mpInner = bundleit(zb.toString(), receiver, messageid, mic, "failed", elementals, as2m);
            ContentType ct = new ContentType(mpInner.getContentType());
            boundary = ct.getParameter("boundary");
         } catch (Exception ex) {
@@ -3970,7 +3987,7 @@ public class apiUtils {
         return new mmpx(mpInner, boundary);
     }
         
-    public static mdn createMDN(String code, String[] e, HashMap<String, String> headers, boolean isDebug) throws IOException, MessagingException {
+    public static mdn createMDN(String code, String[] e, HashMap<String, String> headers, boolean isDebug, as2_mstr as2m) throws IOException, MessagingException {
         mdn x = null;
         MimeBodyPart mbp = new MimeBodyPart();
         
@@ -3983,7 +4000,7 @@ public class apiUtils {
         
         switch (code) {
             case "1000" :  // hee haw!!!   success          
-            mymmpx = code1000(e);
+            mymmpx = code1000(e, as2m);
             if (mymmpx.mmp().getCount() == 1) {
                 mbp.setText(new String(mymmpx.mmp().getBodyPart(0).getInputStream().readAllBytes(), StandardCharsets.UTF_8));
                 isSigned = "0";
@@ -3995,98 +4012,98 @@ public class apiUtils {
             break;     
             
             case "2000" :  // was not signed
-            mymmpx = code2000(e);
+            mymmpx = code2000(e, as2m);
             mbp.setContent(mymmpx.mmp());
             boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_NOT_ACCEPTABLE;
             break;
             
             case "2005" :  //  Error: MimeMultipart is incomplete            
-            mymmpx = code2005(e);
+            mymmpx = code2005(e, as2m);
             mbp.setContent(mymmpx.mmp());
             boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
             case "2010" :  // Error: unable to retrieve contents of File. Error:  FileBytesRead is null             
-            mymmpx = code2010(e);
+            mymmpx = code2010(e, as2m);
             mbp.setContent(mymmpx.mmp());
             boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
             case "2015" :  // Error: Signature content is null            
-            mymmpx = code2015(e);
+            mymmpx = code2015(e, as2m);
             mbp.setContent(mymmpx.mmp());
             boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
             case "2020" :  // Error: Invalid Signature             
-            mymmpx = code2020(e);
+            mymmpx = code2020(e, as2m);
             mbp.setContent(mymmpx.mmp());
             boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_NOT_ACCEPTABLE;
             break;
             
             case "3000" :  // Error: The message was transmitted with null content.
-            mymmpx = code3000(e);
+            mymmpx = code3000(e, as2m);
             mbp.setContent(mymmpx.mmp());
             boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
             case "3003" :  // Error: Unable to decrypt message transmitted at <%s>.  Potential bad public key.
-            mymmpx = code3003(e);
+            mymmpx = code3003(e, as2m);
             mbp.setContent(mymmpx.mmp());
             boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
             case "3005" : // Error: The message had unrecognizable HTTP headers.
-            mymmpx = code3005(e);
+            mymmpx = code3005(e, as2m);
             mbp.setContent(mymmpx.mmp());
             boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
            
             case "3007" : // Error: The message had zero HTTP headers.
-            mymmpx = code3007(e);
+            mymmpx = code3007(e, as2m);
             mbp.setContent(mymmpx.mmp());
             boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
             case "3100" : // Error: The message was transmitted to unknown receiver ID.
-            mymmpx = code3100(e);
+            mymmpx = code3100(e, as2m);
             mbp.setContent(mymmpx.mmp());
             boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
             case "3200" : // Error: The message was transmitted by unknown sender ID. 
-            mymmpx = code3200(e);
+            mymmpx = code3200(e, as2m);
             mbp.setContent(mymmpx.mmp());
             boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
             case "3300" : // Error: unable to determine sender / receiver keys  
-            mymmpx = code3300(e);
+            mymmpx = code3300(e, as2m);
             mbp.setContent(mymmpx.mmp());
             boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
             case "3400" :
-            mymmpx = code3400(e); // Error: encryption is required 
+            mymmpx = code3400(e, as2m); // Error: encryption is required 
             mbp.setContent(mymmpx.mmp());
             boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_NOT_ACCEPTABLE;
             break;
                                         
             default:  // something unaccounted for...            
-            mymmpx = code9999(e);
+            mymmpx = code9999(e, as2m);
             mbp.setContent(mymmpx.mmp());
             boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
