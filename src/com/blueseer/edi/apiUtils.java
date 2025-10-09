@@ -2067,14 +2067,18 @@ public class apiUtils {
                     String signatureAlgName = signer.getDigestAlgorithmID().getAlgorithm().getId() + "with" + signer.getEncryptionAlgOID();
                     System.out.println("Composite signature algorithm (based on OIDs): " + signatureAlgName);
                     AttributeTable attributes = signer.getSignedAttributes();
-                    Attribute attribute = attributes.get(CMSAttributes.messageDigest);
-                    DEROctetString digest = (DEROctetString) attribute.getAttrValues().getObjectAt(0);
-                    // if these values are different, the exception is thrown
-                    System.out.println("digest hex string:");
-                    System.out.println(Hex.toHexString(digest.getOctets()));
-                    System.out.println("signer hex string:");
-                    System.out.println(Hex.toHexString(signer.getContentDigest()));
-                    System.out.println("data size: " + plaintext.length);
+                        if (attributes != null) {
+                            Attribute attribute = attributes.get(CMSAttributes.messageDigest);
+                            DEROctetString digest = (DEROctetString) attribute.getAttrValues().getObjectAt(0);
+                            // if these values are different, the exception is thrown
+                            System.out.println("digest hex string:");
+                            System.out.println(Hex.toHexString(digest.getOctets()));
+                            System.out.println("signer hex string:");
+                            System.out.println(Hex.toHexString(signer.getContentDigest()));
+                            System.out.println("data size: " + plaintext.length);
+                        } else {
+                            System.out.println("WARNING:  signer.getSignedAttributes() returned null attributes");
+                        }
                     }
                     
                 } catch (CMSException ex) {
