@@ -2093,7 +2093,7 @@ public class apiUtils {
     
     public static String[] verifySignatureView(byte[] data, String contentType, CMSSignedData cs, String as2m) throws MessagingException, IOException  {
         boolean x = false;
-        String[] r = new String[]{"false","","","","","", ""};
+        String[] r = new String[]{"false","","","","","",""};
 
         byte[] FileWHeadersBytes = null;
         byte[] Signature = null;

@@ -919,7 +919,7 @@ public class EDIUtilities extends javax.swing.JPanel {
         
         taoutput.setText("");
         String mic = "";
-        String[] x = new String[]{"","","","","",""};
+        String[] x = new String[]{"","","","","","",""};
         
         if (tainput.getText().isEmpty()) {    
         File file = getfile("open target file");
