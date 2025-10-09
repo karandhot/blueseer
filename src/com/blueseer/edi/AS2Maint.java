@@ -334,6 +334,7 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
            cbdebug.setSelected(false);
            cbsignmdn.setSelected(true);
            cbsystemcert.setSelected(true);
+           cbflatmdn.setSelected(false);
            
            ddsigncert.removeAllItems();
            ddenccert.removeAllItems();
@@ -531,7 +532,8 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
                 ddsysenccert.getSelectedItem().toString(),
                 ddsyssigncert.getSelectedItem().toString(),
                 String.valueOf(BlueSeerUtils.boolToInt(cbsystemcert.isSelected())),
-                String.valueOf(BlueSeerUtils.boolToInt(cbsignmdn.isSelected()))
+                String.valueOf(BlueSeerUtils.boolToInt(cbsignmdn.isSelected())),
+                String.valueOf(BlueSeerUtils.boolToInt(cbflatmdn.isSelected()))
                 );
         return x;
     }
@@ -611,6 +613,7 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
         ddoutworkflow.setSelectedItem(x.as2_outwkf());
         cbsignmdn.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.as2_signmdn())));
         cbsystemcert.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.as2_syscert_bool())));
+        cbflatmdn.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.as2_flatmdn())));
         getAttributes(x.as2_id());
         setAction(x.m());
     }
@@ -787,6 +790,7 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel26 = new javax.swing.JLabel();
         cbsignmdn = new javax.swing.JCheckBox();
         cbsystemcert = new javax.swing.JCheckBox();
+        cbflatmdn = new javax.swing.JCheckBox();
         lblstatus = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(0, 102, 204));
@@ -1167,18 +1171,24 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
+        cbflatmdn.setText("Flat MDN");
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel18)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel4)
-                    .addComponent(jLabel12)
-                    .addComponent(jLabel8))
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(jLabel18)
+                        .addComponent(jLabel2)
+                        .addComponent(jLabel3)
+                        .addComponent(jLabel4)
+                        .addComponent(jLabel12)
+                        .addComponent(jLabel8))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(cbflatmdn)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel4Layout.createSequentialGroup()
@@ -1225,7 +1235,8 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cboutputencryption)
                     .addComponent(cbforceencryption)
-                    .addComponent(cbsignmdn))
+                    .addComponent(cbsignmdn)
+                    .addComponent(cbflatmdn))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cboutputsign)
@@ -1430,6 +1441,7 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btupdate;
     private javax.swing.JCheckBox cbdebug;
     private javax.swing.JCheckBox cbenabled;
+    private javax.swing.JCheckBox cbflatmdn;
     private javax.swing.JCheckBox cbforceencryption;
     private javax.swing.JCheckBox cbforcesigning;
     private javax.swing.JCheckBox cboutputencryption;

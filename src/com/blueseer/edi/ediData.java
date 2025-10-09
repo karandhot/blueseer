@@ -1475,8 +1475,8 @@ public class ediData {
         " as2_url, as2_port, as2_path, as2_user, " +
         " as2_pass, as2_key, as2_protocol, as2_class, as2_indir, as2_outdir, as2_encrypted, as2_signed, as2_enccert, " +
                 " as2_forceencrypted, as2_forcesigned, as2_signcert, as2_encalgo, as2_signalgo, as2_micalgo, as2_contenttype, as2_enabled, as2_sysas2id, as2_site, " +
-                " as2_inwkf, as2_outwkf, as2_sysenccert, as2_syssigncert, as2_syscert_bool, as2_signmdn ) " +
-                " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                " as2_inwkf, as2_outwkf, as2_sysenccert, as2_syssigncert, as2_syscert_bool, as2_signmdn, as2_flatmdn ) " +
+                " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
              PreparedStatement ps = con.prepareStatement(sqlSelect);) {
              ps.setString(1, x.as2_id);
@@ -1515,6 +1515,7 @@ public class ediData {
             ps.setString(30, x.as2_syssigncert);
             ps.setString(31, x.as2_syscert_bool);
             ps.setString(32, x.as2_signmdn);
+            ps.setString(33, x.as2_flatmdn);
             
             int rows = psi.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
@@ -1577,8 +1578,8 @@ public class ediData {
         " as2_pass, as2_key, as2_protocol, as2_class, as2_indir, as2_outdir, " +
                 " as2_encrypted, as2_signed, as2_enccert, as2_forceencrypted, as2_forcesigned, as2_signcert, " +
                 " as2_encalgo, as2_signalgo, as2_micalgo, as2_contenttype, as2_enabled, as2_sysas2id, as2_site, " +
-                " as2_inwkf, as2_outwkf, as2_sysenccert, as2_syssigncert, as2_syscert_bool, as2_signmdn ) " +
-                " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                " as2_inwkf, as2_outwkf, as2_sysenccert, as2_syssigncert, as2_syscert_bool, as2_signmdn, as2_flatmdn ) " +
+                " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
        
           ps = con.prepareStatement(sqlSelect); 
           ps.setString(1, x.as2_id);
@@ -1617,6 +1618,7 @@ public class ediData {
             ps.setString(30, x.as2_syssigncert);
             ps.setString(31, x.as2_syscert_bool);
             ps.setString(32, x.as2_signmdn);
+            ps.setString(33, x.as2_flatmdn);
             rows = ps.executeUpdate();
             } 
             return rows;
@@ -1911,7 +1913,7 @@ public class ediData {
                 " as2_forceencrypted = ?, as2_forcesigned = ?, as2_signcert = ?, " +
                 " as2_encalgo = ?, as2_signalgo = ?, as2_micalgo = ?, as2_contenttype = ?, " +
                 " as2_enabled = ?, as2_sysas2id = ?, as2_site = ?, as2_inwkf = ?, as2_outwkf = ?, as2_sysenccert = ?, as2_syssigncert = ?, " +
-                " as2_syscert_bool = ?, as2_signmdn = ? " +
+                " as2_syscert_bool = ?, as2_signmdn = ?, as2_flatmdn = ? " +
                 "  where as2_id = ? ";
 	ps = con.prepareStatement(sql) ;
         ps.setString(1, x.as2_desc);
@@ -1945,7 +1947,8 @@ public class ediData {
         ps.setString(29, x.as2_syssigncert);
         ps.setString(30, x.as2_syscert_bool);
         ps.setString(31, x.as2_signmdn);
-        ps.setString(32, x.as2_id);
+        ps.setString(32, x.as2_flatmdn);
+        ps.setString(33, x.as2_id);
             rows = ps.executeUpdate();
         return rows;
     }
@@ -2441,7 +2444,8 @@ public class ediData {
                             res.getString("as2_sysenccert"),
                             res.getString("as2_syssigncert"),
                             res.getString("as2_syscert_bool"),
-                            res.getString("as2_signmdn")
+                            res.getString("as2_signmdn"),
+                            res.getString("as2_flatmdn")
                         );
                     }
                 }
@@ -2500,7 +2504,8 @@ public class ediData {
                             res.getString("as2_sysenccert"),
                             res.getString("as2_syssigncert"),
                             res.getString("as2_syscert_bool"),
-                            res.getString("as2_signmdn")
+                            res.getString("as2_signmdn"),
+                            res.getString("as2_flatmdn")
                         );
                     }
                 }
@@ -5667,12 +5672,12 @@ public class ediData {
         String as2_forceencrypted, String as2_forcesigned, String as2_signcert,
         String as2_encalgo, String as2_signalgo, String as2_micalgo, String as2_contenttype, 
         String as2_enabled, String as2_sysas2id, String as2_site, String as2_inwkf, String as2_outwkf,
-        String as2_sysenccert, String as2_syssigncert, String as2_syscert_bool, String as2_signmdn) {
+        String as2_sysenccert, String as2_syssigncert, String as2_syscert_bool, String as2_signmdn, String as2_flatmdn) {
         public as2_mstr(String[] m) {
             this(m, "", "", "", "", "", "", "", "", "", "", 
                     "", "", "", "", "", "", "", "", "", "",
                     "", "", "", "", "", "", "", "", "", "",
-                    "", "");
+                    "", "", "");
         }
     }
     

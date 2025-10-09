@@ -2738,6 +2738,28 @@ public class apiUtils {
         return signedContent;
     }
      
+    public static MimeMultipart signMDNFlat(MimeBodyPart mbp, String keyuser, String signalgo) throws Exception {
+        SMIMESignedGenerator gen = new SMIMESignedGenerator(false ? SMIMESignedGenerator.RFC3851_MICALGS : SMIMESignedGenerator.RFC5751_MICALGS);
+        
+        if (signalgo.isBlank()) {
+              signalgo = "SHA1withRSA";
+        }
+        
+        
+        X509Certificate certificate = getPublicKeyAsCert(keyuser);
+        PrivateKey privateKey = getPrivateKey(keyuser);
+        
+        List<X509Certificate> certList = new ArrayList<X509Certificate>();
+        certList.add(certificate);
+        Store certs = new JcaCertStore(certList);
+        
+        JcaSimpleSignerInfoGeneratorBuilder jSig = new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC");
+        SignerInfoGenerator sig = jSig.build(signalgo, privateKey, certificate);
+        gen.addCertificates(certs);
+        gen.addSignerInfoGenerator(sig); 
+        MimeMultipart signedContent = gen.generate(mbp);
+        return signedContent;
+    }
     
     public static boolean isEncrypted(byte[] encryptedData) {
             CMSEnvelopedData envelopedData;
@@ -3186,7 +3208,13 @@ public class apiUtils {
             if (h != null) {
                 mdncontenttype = h.getValue();
             }
+            
+            if (response.getFirstHeader("Content-Type").getValue().contains("signed")) {
+                
+            
+            
             MimeMultipart mpr  = new MimeMultipart(new ByteArrayDataSource(indata, mdncontenttype));
+            
             for (int z = 0; z < mpr.getCount(); z++) {
                 MimeBodyPart mbpr = (MimeBodyPart) mpr.getBodyPart(z);
                 if (mbpr.getContentType().contains("disposition")) {
@@ -3229,7 +3257,22 @@ public class apiUtils {
                     }
                 }
             }
-
+          } else { // unsigned
+                    String filename = "mdn." + now + "." + Long.toHexString(System.currentTimeMillis());
+                    Path path = FileSystems.getDefault().getPath("edi/mdn" + "/" + filename);
+                    BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path.toFile())));
+                    String datastring = new String(result);   
+                    output.write(datastring);
+                    output.close();
+                    Pattern p = Pattern.compile("Disposition:.*(error|failed).*");
+                    Matcher m = p.matcher(result);
+                    if (m.find()) {
+                        logdet.add(new String[]{parentkey, "error", "unsigned MDN error: " + filename}); 
+                    } else {
+                       logdet.add(new String[]{parentkey, "info", "unsigned MDN processed: " + filename}); 
+                       isSuccess = true;
+                    }  
+          }
 
             } catch (MessagingException ex) {
               logdet.add(new String[]{parentkey, "error", " Messaging error; Bad MDN Boundary " + ex.getMessage()}); 
@@ -3394,8 +3437,10 @@ public class apiUtils {
         MimeBodyPart mbp = new MimeBodyPart();
         MimeBodyPart mbp2 = new MimeBodyPart();
         MimeBodyPart mbp3 = new MimeBodyPart();
+        MimeBodyPart mbpflat = new MimeBodyPart();
         MimeMultipart mpInner = new MimeMultipart();
         boolean unsigned = false;
+        String boundary = "";
         
         as2_mstr as2m = getAS2Mstr(elementals[0], elementals[1]); 
         String micalgo = as2m.as2_micalgo().toLowerCase();
@@ -3409,12 +3454,12 @@ public class apiUtils {
             mbp.setHeader("Content-Transfer-Encoding", "binary");
             
             StringBuilder yb = new StringBuilder();
-            yb.append("Reporting-UA: BlueSeer Software").append("\r").append("\n");
-            yb.append("Original-Recipient: rfc822; ").append(receiver).append("\r").append("\n");
-            yb.append("Final-Recipient: rfc822; ").append(receiver).append("\r").append("\n");
-            yb.append("Original-Message-ID: ").append(messageid).append("\r").append("\n");
-            yb.append("Disposition: automatic-action/MDN-sent-automatically; ").append(status).append("\r").append("\n");
-            yb.append("Received-Content-MIC: ").append(mic).append(", ").append(micalgo).append("\r").append("\n");
+            yb.append("Reporting-UA: BlueSeer Software").append("\n");
+            yb.append("Original-Recipient: rfc822; ").append(receiver).append("\n");
+            yb.append("Final-Recipient: rfc822; ").append(receiver).append("\n");
+            yb.append("Original-Message-ID: ").append(messageid).append("\n");
+            yb.append("Disposition: automatic-action/MDN-sent-automatically; ").append(status).append("\n");
+            yb.append("Received-Content-MIC: ").append(mic).append(", ").append(micalgo).append("\n");
             /*
             String y = """
                        Reporting-UA: BlueSeer Software
@@ -3429,32 +3474,45 @@ public class apiUtils {
             mbp2.setHeader("Content-Type", "message/disposition-notification");
             mbp2.setHeader("Content-Transfer-Encoding", "binary");
             
-            mpInner.addBodyPart(mbp);
-            mpInner.addBodyPart(mbp2);
-            ContentType ct = new ContentType(mpInner.getContentType());
-            String boundary = ct.getParameter("boundary");
+            
+            
+            
+            if (as2m.as2_flatmdn().equals("1")) {
+                mbpflat = new MimeBodyPart();
+                mbpflat.setText(yb.toString());
+                mbpflat.setHeader("Content-Type", "message/disposition-notification");
+                mbpflat.setHeader("Content-Transfer-Encoding", "binary");
+                mpInner.addBodyPart(mbpflat);
+            } else {
+                mpInner.addBodyPart(mbp);
+                mpInner.addBodyPart(mbp2); 
+                ContentType ct = new ContentType(mpInner.getContentType());
+                boundary = ct.getParameter("boundary");
+            }
             
             ByteArrayOutputStream bOut = new ByteArrayOutputStream();
             mpInner.writeTo(bOut);
             bOut.flush();
             bOut.close();
             byte[] data = bOut.toByteArray();
-                       
+            
+            System.out.println("HERE:::");
+            System.out.println("HERE MP COUNT::: " + mpInner.getCount());
+            System.out.println(new String(data));
+            
             
             try {
                if (! elementals[6].isBlank() && elementals[7].equals("1")) { // decided 20250705 to not sign the MDN in cases where the incoming message fails early (before as2_id can be identified) for whatever reason
                 // elementals[7] is defined by as2_signmdn...and determines at the as2_mstr level whether to sign MDN...defaults to '1' in init of elementals array 
-                mpInner = signMDN(data, getSystemSignKeyAlt(elementals[6]), "", boundary); // need to get tp[19] here for signing algo
+                  if (as2m.as2_flatmdn().equals("0")) {
+                    mpInner = signMDN(data, getSystemSignKeyAlt(elementals[6]), as2m.as2_signalgo(), boundary); // need to get tp[19] here for signing algo
+                  } else {
+                    mpInner = signMDNFlat(mbpflat, getSystemSignKeyAlt(elementals[6]), as2m.as2_signalgo());  
+                  }
                }
             } catch (Exception ex) {
                 bslog(ex);
             }
-            
-            
-            
-          //  mp.addBodyPart(mbp);
-          //  mp.addBodyPart(mbp2);
-          //  mp.addBodyPart(mbp3);
             
             
         } catch (Exception ex) {
@@ -3484,10 +3542,10 @@ public class apiUtils {
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
        
         StringBuilder zb = new StringBuilder();
-            zb.append("The message ").append(filename).append(" with subject ").append(subject).append(" has been received.").append("\r").append("\n");
-            zb.append("Message ").append(filename).append(" was sent from: ").append(sender).append(" to: ").append(receiver).append("\r").append("\n");
-            zb.append(" Message received at ").append(now).append("\r").append("\n");
-            zb.append("Note: The origin and integrity of the message have been verified.").append("\r").append("\n");
+            zb.append("The message ").append(filename).append(" with subject ").append(subject).append(" has been received.").append("\n");
+            zb.append("Message ").append(filename).append(" was sent from: ").append(sender).append(" to: ").append(receiver).append("\n");
+            zb.append(" Message received at ").append(now).append("\n");
+            zb.append("Note: The origin and integrity of the message have been verified.").append("\n");
             
         try {
            mpInner = bundleit(zb.toString(), receiver, messageid, mic, "processed", elementals);
@@ -3913,6 +3971,7 @@ public class apiUtils {
         MimeBodyPart mbp = new MimeBodyPart();
         
         String z;
+        String isSigned = "1";
         int httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;  // init to bad request...code1000 MDN construct will flip to 200 if processed correctly
         
         String boundary = "";
@@ -3921,7 +3980,12 @@ public class apiUtils {
         switch (code) {
             case "1000" :  // hee haw!!!   success          
             mymmpx = code1000(e);
-            mbp.setContent(mymmpx.mmp());
+            if (mymmpx.mmp().getCount() == 1) {
+                mbp.setText(new String(mymmpx.mmp().getBodyPart(0).getInputStream().readAllBytes(), StandardCharsets.UTF_8));
+                isSigned = "0";
+            } else {
+                mbp.setContent(mymmpx.mmp());
+            }            
             boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_OK;
             break;     
@@ -4030,17 +4094,20 @@ public class apiUtils {
         if (mbp != null) {
             headers.put("Subject", "your requested MDN Response");            
             headers.put("AS2-Version", "1.2");
-            x = new mdn(httpResponseCode, headers, new String(mbp.getInputStream().readAllBytes(), StandardCharsets.UTF_8), boundary);
+            x = new mdn(httpResponseCode, headers, new String(mbp.getInputStream().readAllBytes(), StandardCharsets.UTF_8), boundary, isSigned);
         } else {
-            x = new mdn(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, null, "problem creating MIME structure for MDN");
+            x = new mdn(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, null, "problem creating MIME structure for MDN", isSigned); 
         }
         
         return x; 
     }
     
-    public record mdn(int status, HashMap<String, String> headers, String message, String boundary) {
-        public mdn(int i, HashMap<String, String> hm, String bs) {
-            this(i, hm, "", bs); 
+    public record mdn(int status, HashMap<String, String> headers, String message, String boundary, String isSigned) {       
+        public mdn(int i, HashMap<String, String> hm, String bs, String isSigned) { 
+            this(i, hm, bs, "", isSigned);     
+        } 
+        public mdn(int i, HashMap<String, String> hm, String bs) { 
+            this(i, hm, bs, "", "");     
         }
     }
     

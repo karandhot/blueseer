@@ -645,7 +645,8 @@ CREATE TABLE "as2_mstr" (
   "as2_sysenccert" varchar(120) NOT NULL COLLATE NOCASE DEFAULT '',
   "as2_syssigncert" varchar(120) NOT NULL COLLATE NOCASE DEFAULT '',
   "as2_syscert_bool" tinyint(1) NOT NULL COLLATE NOCASE DEFAULT '0',
-  "as2_signmdn" tinyint(1) NOT NULL COLLATE NOCASE DEFAULT '0'
+  "as2_signmdn" tinyint(1) NOT NULL COLLATE NOCASE DEFAULT '0',
+  "as2_flatmdn" tinyint(1) NOT NULL COLLATE NOCASE DEFAULT '0'
 
 );
 /*!40101 SET character_set_client = @saved_cs_client */;
