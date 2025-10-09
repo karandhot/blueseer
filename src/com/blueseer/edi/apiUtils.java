@@ -2108,7 +2108,7 @@ public class apiUtils {
         
         if (mp.getCount() < 1 ) { // ...must not be a signature...signed MDN required
             // need logging verbiage here
-            return new String[]{"false","MP count is less than 2","","","",""};
+            return new String[]{"false","MP count is less than 2","","","","",""};
         }
         
         if (mp.getCount() == 1 ) { 
@@ -2216,7 +2216,7 @@ public class apiUtils {
             
         
         if (FileWHeadersBytes == null || Signature == null) {
-            return new String[]{"false","plaintext or signedData is null","","","",""};
+            return new String[]{"false","plaintext or signedData is null","","","","",""};
         }
         
         
@@ -2256,7 +2256,7 @@ public class apiUtils {
             Iterator<X509CertificateHolder> certIt = certCollection.iterator();
             if (! certIt.hasNext()) {
               //  System.out.println("inside verify: certIt has no next ");
-                return new String[]{"false","no CertIt","","","",""};
+                return new String[]{"false","no CertIt","","","","",""};
             }
             X509CertificateHolder certHolder = certIt.next();
             
