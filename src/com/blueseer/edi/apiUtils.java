@@ -3510,11 +3510,6 @@ public class apiUtils {
             bOut.close();
             byte[] data = bOut.toByteArray();
             
-            System.out.println("HERE:::");
-            System.out.println("HERE MP COUNT::: " + mpInner.getCount());
-            System.out.println(new String(data));
-            
-            
             try {
                if (! elementals[6].isBlank() && elementals[7].equals("1")) { // decided 20250705 to not sign the MDN in cases where the incoming message fails early (before as2_id can be identified) for whatever reason
                 // elementals[7] is defined by as2_signmdn...and determines at the as2_mstr level whether to sign MDN...defaults to '1' in init of elementals array 
@@ -3556,6 +3551,7 @@ public class apiUtils {
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
        
         StringBuilder zb = new StringBuilder();
+         if (as2m != null) {
           if ( as2m.as2_eol().equals("0")) {  
             zb.append("The message ").append(filename).append(" with subject ").append(subject).append(" has been received.").append("\n");
             zb.append("Message ").append(filename).append(" was sent from: ").append(sender).append(" to: ").append(receiver).append("\n");
@@ -3567,6 +3563,7 @@ public class apiUtils {
             zb.append(" Message received at ").append(now).append("\r").append("\n");
             zb.append("Note: The origin and integrity of the message have been verified.").append("\r").append("\n");
           }
+         }
           
         try {
            mpInner = bundleit(zb.toString(), receiver, messageid, mic, "processed", elementals, as2m);

@@ -172,6 +172,9 @@ public class AS2Serv extends HttpServlet {
             
             
             if (isDebug) { 
+            System.out.println("sent MDN boundary: " + thismdn.boundary());    
+            System.out.println("sent MDN HTTP Status Code: " + thismdn.status());
+            System.out.println("sent MDN isSigned option: " + thismdn.isSigned());
             LocalDateTime localDateTime = LocalDateTime.now();
             String now = localDateTime.format(DateTimeFormatter.ISO_DATE);
             String debugfile = "debugMDN." + now + "." + Long.toHexString(System.currentTimeMillis());
