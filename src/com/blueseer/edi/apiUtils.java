@@ -3539,13 +3539,8 @@ public class apiUtils {
         String subject = elementals[2];
         String filename = elementals[3];
         String messageid = elementals[4];
-        String mic = elementals[5];
-        String as2id = elementals[6];
-        
-        mmpx mymmpx = null;
-        MimeBodyPart mbp = new MimeBodyPart();
+        String mic = elementals[5];      
         String boundary = "";
-        MimeMultipart mp = new MimeMultipart();
         MimeMultipart mpInner = new MimeMultipart();
         LocalDateTime localDateTime = LocalDateTime.now();
         String now = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -3985,7 +3980,7 @@ public class apiUtils {
     }
         
     public static mdn createMDN(String code, String[] e, HashMap<String, String> headers, boolean isDebug, as2_mstr as2m) throws IOException, MessagingException {
-        mdn x = null;
+        mdn x;
         MimeBodyPart mbp = new MimeBodyPart();
         
         String z;
@@ -3998,124 +3993,93 @@ public class apiUtils {
         switch (code) {
             case "1000" :  // hee haw!!!   success          
             mymmpx = code1000(e, as2m);
-            if (mymmpx.mmp().getCount() == 1) {
-                mbp.setText(new String(mymmpx.mmp().getBodyPart(0).getInputStream().readAllBytes(), StandardCharsets.UTF_8));
-                isSigned = "0";
-            } else {
-                mbp.setContent(mymmpx.mmp());
-            }            
-            boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_OK;
             break;     
             
             case "2000" :  // was not signed
             mymmpx = code2000(e, as2m);
-            mbp.setContent(mymmpx.mmp());
-            boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_NOT_ACCEPTABLE;
             break;
             
             case "2005" :  //  Error: MimeMultipart is incomplete            
             mymmpx = code2005(e, as2m);
-            mbp.setContent(mymmpx.mmp());
-            boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
             case "2010" :  // Error: unable to retrieve contents of File. Error:  FileBytesRead is null             
             mymmpx = code2010(e, as2m);
-            mbp.setContent(mymmpx.mmp());
-            boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
             case "2015" :  // Error: Signature content is null            
             mymmpx = code2015(e, as2m);
-            mbp.setContent(mymmpx.mmp());
-            boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
             case "2020" :  // Error: Invalid Signature             
             mymmpx = code2020(e, as2m);
-            mbp.setContent(mymmpx.mmp());
-            boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_NOT_ACCEPTABLE;
             break;
             
             case "3000" :  // Error: The message was transmitted with null content.
             mymmpx = code3000(e, as2m);
-            mbp.setContent(mymmpx.mmp());
-            boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
             case "3003" :  // Error: Unable to decrypt message transmitted at <%s>.  Potential bad public key.
             mymmpx = code3003(e, as2m);
-            mbp.setContent(mymmpx.mmp());
-            boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
             case "3005" : // Error: The message had unrecognizable HTTP headers.
             mymmpx = code3005(e, as2m);
-            mbp.setContent(mymmpx.mmp());
-            boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
            
             case "3007" : // Error: The message had zero HTTP headers.
             mymmpx = code3007(e, as2m);
-            mbp.setContent(mymmpx.mmp());
-            boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
             case "3100" : // Error: The message was transmitted to unknown receiver ID.
             mymmpx = code3100(e, as2m);
-            mbp.setContent(mymmpx.mmp());
-            boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
             case "3200" : // Error: The message was transmitted by unknown sender ID. 
             mymmpx = code3200(e, as2m);
-            mbp.setContent(mymmpx.mmp());
-            boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
             case "3300" : // Error: unable to determine sender / receiver keys  
             mymmpx = code3300(e, as2m);
-            mbp.setContent(mymmpx.mmp());
-            boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_BAD_REQUEST;
             break;
             
-            case "3400" :
-            mymmpx = code3400(e, as2m); // Error: encryption is required 
-            mbp.setContent(mymmpx.mmp());
-            boundary = mymmpx.boundary();
+            case "3400" : // Error: encryption is required 
+            mymmpx = code3400(e, as2m); 
             httpResponseCode = HttpServletResponse.SC_NOT_ACCEPTABLE;
             break;
                                         
             default:  // something unaccounted for...            
             mymmpx = code9999(e, as2m);
-            mbp.setContent(mymmpx.mmp());
-            boundary = mymmpx.boundary();
             httpResponseCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
             
         }        
         
-        
-        
-        if (mbp != null) {
-            headers.put("Subject", "your requested MDN Response");            
-            headers.put("AS2-Version", "1.2");
-            x = new mdn(httpResponseCode, headers, new String(mbp.getInputStream().readAllBytes(), StandardCharsets.UTF_8), boundary, isSigned);
+        if (mymmpx.mmp().getCount() == 1) { // must be flat mdn
+            mbp.setText(new String(mymmpx.mmp().getBodyPart(0).getInputStream().readAllBytes(), StandardCharsets.UTF_8)); 
+            isSigned = "0";
         } else {
-            x = new mdn(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, null, "problem creating MIME structure for MDN", isSigned); 
-        }
+            mbp.setContent(mymmpx.mmp());
+        }            
+        boundary = mymmpx.boundary();
+        
+        
+        headers.put("Subject", "your requested MDN Response");            
+        headers.put("AS2-Version", "1.2");
+        x = new mdn(httpResponseCode, headers, new String(mbp.getInputStream().readAllBytes(), StandardCharsets.UTF_8), boundary, isSigned);
+
         
         return x; 
     }
