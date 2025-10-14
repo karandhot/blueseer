@@ -4545,7 +4545,7 @@ public class DTData {
             try{
                  res = st.executeQuery(" select so_nbr, so_po, sod_line, sod_item, sod_desc, sod_ord_qty, sod_shipped_qty  " +
                         " FROM so_mstr " +
-                        " inner join sod_Det on sod_nbr = so_nbr " +
+                        " inner join sod_det on sod_nbr = so_nbr " +
                         " where " + 
                         " so_cust = " + "'" + cust + "'" +
                         " AND sod_ship = " + "'" + ship + "'" +
@@ -4605,7 +4605,7 @@ public class DTData {
             try{
                  res = st.executeQuery(" select so_nbr, so_po, sod_line, sod_item, sod_desc, sod_ord_qty, sod_shipped_qty  " +
                         " FROM so_mstr " +
-                        " inner join sod_Det on sod_nbr = so_nbr " +
+                        " inner join sod_det on sod_nbr = so_nbr " +
                         " where " + 
                         " so_nbr = " + "'" + order + "'" + 
                         " AND sod_status <> " + "'" + getGlobalProgTag("closed") + "'" +
