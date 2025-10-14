@@ -519,11 +519,11 @@ public class ShipOrderLine extends javax.swing.JPanel {
                 so.so_ship(),
                 0, // pallets
                 0, // boxes
-                "", // shipvia  
+                so.so_shipvia(), // shipvia  
                 setDateDB(new java.util.Date()),
-                null, // po date
+                so.so_ord_date(), // po date
                 tbref.getText().replace("'", ""),
-                "", // po number
+                so.so_po(), // po number
                 so.so_rmks(),
                 bsmf.MainFrame.userid,
                 so.so_site(),
@@ -534,7 +534,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
                 cm.cm_ar_acct(), // aracct
                 cm.cm_ar_cc(), // arcc
                 "S", // type
-                "", // sh_so 
+                so.so_nbr(), // sh_so 
                 so.so_site(),
                 "" // tracking number
                 );
