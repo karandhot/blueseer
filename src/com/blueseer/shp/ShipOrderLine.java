@@ -66,6 +66,7 @@ import com.blueseer.shp.shpData.ship_mstr;
 import static com.blueseer.shp.shpData.updateShipTransaction;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
@@ -359,7 +360,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
         tbpackqty.setText("");
         tbkey.setText("");
        
-       
+       assignedlabels.clear();
         
         shipmodel.setRowCount(0);
         shiptable.setModel(shipmodel);
@@ -460,15 +461,15 @@ public class ShipOrderLine extends javax.swing.JPanel {
         so_mstr so = getOrderMstr(new String[]{shiptable.getValueAt(0, 1).toString()});  // get first orderline of table
         cm_mstr cm = getCustMstr(new String[]{so.so_cust()});
         cms_det cms = getCMSDet(so.so_cust(), so.so_ship());
-        
+        ArrayList<label_mstr> lmarray = createLabelRecord(cm, cms);
         // add label records
-        String[] m = addMultiLabelTransaction(null, createLabelRecord(cm, cms));
+        String[] m = addMultiLabelTransaction(null, lmarray);
         if (! m[0].equals("0")) {
             return m;
         }
         
         // now add shipper
-        m = addShipperTransaction(createDetRecord(so, cm), createRecord(so, cm), createTreeRecord(so, cm));
+        m = addShipperTransaction(createDetRecord(so, cm), createRecord(so, cm), createTreeRecord(so, cm, lmarray));
         for (String label : assignedlabels) {
             updateLabelStatus(label, "1");
         }
@@ -582,43 +583,45 @@ public class ShipOrderLine extends javax.swing.JPanel {
         return list;        
     }
     
-    public ArrayList<shpData.ship_tree> createTreeRecord(so_mstr so, cm_mstr cm) {
+    public ArrayList<shpData.ship_tree> createTreeRecord(so_mstr so, cm_mstr cm, ArrayList<label_mstr> lmarray) {
         ArrayList<shpData.ship_tree> list = new ArrayList<shpData.ship_tree>();
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
         
         // create shipper parent node with child containers
         for (String s : assignedlabels) {
             shpData.ship_tree x = new shpData.ship_tree(null,
-            tbkey.getText(),
-            s,
-            so.so_site(),
-            "c",
-            tbkey.getText(),
-            "",
-            "",
-            "",
-            "",
-            "container",
-            1.0,
+            tbkey.getText(), // parent
+            s,   // child
+            so.so_site(), // site
+            "c", // type container
+            tbkey.getText(), // shipper
+            "",  // shipperline
+            "",  // so
+            "",  // soline
+            "",  // po
+            "container",  // item
+            1.0,  // qty
             getLabelSerialDisplay(s) // get display serial
             );
             
             list.add(x);
             // now items of container
-            for (int j = 0; j < shiptable.getRowCount(); j++) { 
-                if (shiptable.getModel().getValueAt(j, 0).toString().equals(s)) {
+            int j = 0;
+            for (label_mstr lm : lmarray) { 
+                if (lm.lbl_id().equals(s)) {
+                    j++;
                     shpData.ship_tree y = new shpData.ship_tree(null,
                     s,
-                    shiptable.getModel().getValueAt(j, 1).toString() + "," + shiptable.getModel().getValueAt(j, 2).toString() + "," + shiptable.getModel().getValueAt(j, 3).toString(),
+                    lm.lbl_order() + "," + lm.lbl_line() + "," + lm.lbl_item(),
                     so.so_site(),
                     "i",
                     tbkey.getText(),
-                    String.valueOf(j + 1),
-                    shiptable.getModel().getValueAt(j, 1).toString(),
-                    shiptable.getModel().getValueAt(j, 2).toString(),
-                    shiptable.getModel().getValueAt(j, 0).toString(),
-                    shiptable.getModel().getValueAt(j, 3).toString(),
-                    bsParseDouble(shiptable.getModel().getValueAt(j, 8).toString().replace(defaultDecimalSeparator, '.')),
+                    String.valueOf(j),
+                    lm.lbl_order(),
+                    lm.lbl_line(),
+                    lm.lbl_po(),
+                    lm.lbl_item(),
+                    bsParseDouble(lm.lbl_qty()),
                     "" // get display serial
                     );
                     list.add(y);
@@ -940,6 +943,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
                      cms.cms_shipto()
                     );
              mstr.add(x);
+             assignedlabels.add(serialno_str);
              }
              // then add one more for remainder > 0
              if (remainder > 0) {
@@ -987,6 +991,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
                      cms.cms_shipto()
                     );
              mstr.add(x);
+             assignedlabels.add(serialno_str);
              } // if remainder > 0
          }       
         
