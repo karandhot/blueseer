@@ -774,7 +774,7 @@ public class BlueSeerUtils {
                         number = nf.parse(x.trim());
                         }
                     } catch (ParseException ex) {
-                        bsmf.MainFrame.show(getMessageTag(1017) + "/d  " + x);
+                       // bsmf.MainFrame.show(getMessageTag(1017) + "/d  " + x);
                         ex.printStackTrace();
                     }
              z =  number.doubleValue();
@@ -798,7 +798,7 @@ public class BlueSeerUtils {
                         number = nf.parse(x.trim());
                         }
                     } catch (ParseException ex) {
-                        bsmf.MainFrame.show(getMessageTag(1017) + "/ " + x);
+                       // bsmf.MainFrame.show(getMessageTag(1017) + "/ " + x);
                         ex.printStackTrace();
                     }
              z =  number.intValue();

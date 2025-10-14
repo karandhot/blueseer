@@ -699,7 +699,8 @@ public class shpData {
         String sql = "select * from ship_mstr where sh_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
-        ps.setInt(1, bsParseInt(x[0]));
+      //  ps.setInt(1, bsParseInt(x[0]));  // may need to revisit for langpack issue
+        ps.setString(1, x[0]);
              try (ResultSet res = ps.executeQuery();) {
                 if (! res.isBeforeFirst()) {
                 m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
