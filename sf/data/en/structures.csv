@@ -73,6 +73,7 @@ JSONGenericOrder,item,items,1,0,0,packqty,Pack Qty,1,100,-,O,F
 JSONGenericOrder,item,items,1,0,0,packuom,Pack UOM,1,100,-,O,F
 JSONGenericOrder,item,items,1,0,0,packprice,Pack Price,1,100,-,O,F
 JSONGenericOrder,item,items,1,0,0,kvpair,Key Value field,1,500,-,O,F
+JSONGenericOrder,item,items,1,0,0,custline,custline,1,5,-,O,F
 JSONGenericOrder,sacs,order,5,1,1,landmark,landmark,9,9,-,M,F
 JSONGenericOrder,sac,sacs,5,1,1,landmark,landmark,9,9,-,M,F
 JSONGenericOrder,sac,sacs,1,0,0,sactype,SAC Type,1,40,-,O,F
@@ -148,6 +149,7 @@ JSONGenericInvoice,item,items,1,0,0,netprice,Net Price,1,40,-,O,F
 JSONGenericInvoice,item,items,1,0,0,discount,Discount Percent,1,40,-,O,F
 JSONGenericInvoice,item,items,1,0,0,location,Location,1,40,-,O,F
 JSONGenericInvoice,item,items,1,0,0,warehouse,Warehouse,1,40,-,O,F
+JSONGenericInvoice,item,items,1,0,0,custline,custline,1,5,-,O,F
 JSONGenericInvoice,summarysacs,invoice,5,1,1,landmark,landmark,9,9,-,M,F
 JSONGenericInvoice,sac,summarysacs,5,1,1,landmark,landmark,9,9,-,M,F
 JSONGenericInvoice,sac,summarysacs,1,0,0,sactype,SAC Type,1,40,-,O,F
@@ -228,6 +230,7 @@ JSONGenericASN,item,items,1,0,0,netprice,Net Price,1,40,-,O,F
 JSONGenericASN,item,items,1,0,0,discount,Discount Percent,1,40,-,O,F
 JSONGenericASN,item,items,1,0,0,location,Location,1,40,-,O,F
 JSONGenericASN,item,items,1,0,0,warehouse,Warehouse,1,40,-,O,F
+JSONGenericASN,item,items,1,0,0,custline,custline,1,5,-,O,F
 XMLGenericOrder,order,,1,0,1,landmark,landmark,10,10,-,M,N
 XMLGenericOrder,header,order,1,0,1,landmark,landmark,6,6,-,M,N
 XMLGenericOrder,header,order,1,0,0,type,type,1,40,-,O,A
