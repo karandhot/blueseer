@@ -2,7 +2,6 @@ build
 nbbuild
 dist
 target
-test
 nbdist
 jre8
 jre11
