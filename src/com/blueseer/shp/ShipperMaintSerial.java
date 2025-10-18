@@ -624,7 +624,9 @@ public class ShipperMaintSerial extends javax.swing.JPanel implements IBlueSeer 
                 "S", // type
                 "", // sh_so 
                 ddsite.getSelectedItem().toString(),
-                tbtracking.getText());
+                tbtracking.getText(), // tracking number
+                "" // status
+                );
                 
         return x;        
     }

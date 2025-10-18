@@ -27,10 +27,8 @@ SOFTWARE.
 package com.blueseer.fgl;
 
 import bsmf.MainFrame;
-import static bsmf.MainFrame.dfdate;
 import com.blueseer.utl.BlueSeerUtils;
 import com.blueseer.utl.OVData;
-import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import com.blueseer.fgl.fglData.BankMstr;
 import static com.blueseer.fgl.fglData.addBankMstr;
@@ -52,17 +50,11 @@ import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import com.blueseer.utl.DTData;
 import java.awt.Color;
 import java.awt.Component;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.SwingWorker;
-import com.blueseer.utl.IBlueSeer;
 import com.blueseer.utl.IBlueSeerT;
 import static com.blueseer.utl.OVData.canUpdate;
 import java.awt.event.ActionEvent;

@@ -26,7 +26,6 @@ SOFTWARE.
 package com.blueseer.shp;
 
 import bsmf.MainFrame;
-import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.defaultDecimalSeparator;
 import static bsmf.MainFrame.ds;
@@ -36,21 +35,40 @@ import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
+import com.blueseer.ctr.cusData.CustShipSet;
+import com.blueseer.ctr.cusData.cms_det;
+import static com.blueseer.ctr.cusData.getCustShipSet;
 import com.blueseer.inv.invData;
-import com.blueseer.ord.ordData;
+import static com.blueseer.inv.invData.getItemMstr;
+import com.blueseer.inv.invData.item_mstr;
+import static com.blueseer.ord.ordData.getOrderDet;
+import static com.blueseer.ord.ordData.getOrderMstr;
+import static com.blueseer.ord.ordData.getOrderMstrSet;
+import com.blueseer.ord.ordData.salesOrder;
+import com.blueseer.ord.ordData.so_mstr;
+import com.blueseer.ord.ordData.sod_det;
+import com.blueseer.ord.ordData.sos_det;
+import com.blueseer.shp.shpData.Shipper;
 import static com.blueseer.shp.shpData.addShipperTransaction;
 import static com.blueseer.shp.shpData.confirmShipperTransaction;
+import static com.blueseer.shp.shpData.getShipperLineNumbers;
+import static com.blueseer.shp.shpData.getShipperMstrSet;
+import com.blueseer.shp.shpData.sh_meta;
 import com.blueseer.shp.shpData.ship_det;
 import com.blueseer.shp.shpData.ship_mstr;
+import com.blueseer.shp.shpData.ship_tree;
+
+
+import com.blueseer.shp.shpData.shs_det;
+import static com.blueseer.shp.shpData.updateShipTransaction;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
-import static com.blueseer.utl.BlueSeerUtils.bsFormatIntUS;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
-import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.checkLength;
+import com.blueseer.utl.BlueSeerUtils.dbaction;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
@@ -65,17 +83,14 @@ import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.DTData;
+import com.blueseer.utl.IBlueSeerT;
 import static com.blueseer.utl.OVData.canUpdate;
-import static com.blueseer.utl.OVData.getSysMetaValue;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -83,12 +98,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
-import java.text.NumberFormat;
-import java.text.ParseException;
-import java.util.Locale;
 import java.util.Map;
 import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -98,6 +109,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.SwingWorker;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 
@@ -106,7 +118,7 @@ import javax.swing.table.DefaultTableModel;
  *
  * @author vaughnte
  */
-public class ShipperMaint extends javax.swing.JPanel {
+public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
 
                 String terms = "";
                 String taxcode = "";
@@ -118,7 +130,14 @@ public class ShipperMaint extends javax.swing.JPanel {
                 String curr = "";
                 boolean isLoad = false;
                 boolean autonumber = true;
-                
+                boolean canupdate = false;
+                boolean canconfirm = false;
+                public static ship_mstr sh = null;
+                public static ArrayList<ship_det> shdlist = null;
+                public static ArrayList<shs_det> shslist = null;
+                public static ArrayList<ship_tree> shtlist = null;
+                public static ArrayList<sh_meta> shmlist = null;
+                public static cms_det cms = null;
                 
     
     /**
@@ -249,53 +268,142 @@ public class ShipperMaint extends javax.swing.JPanel {
             return false;
         }
 
+        if (lbladdr.getText().isBlank()) {
+            
+            if (rbnonorder.isSelected()) {
+            bsmf.MainFrame.show("ship to has not been set");
+            } else {
+            bsmf.MainFrame.show("single order ship to has not been set");    
+            }
+            
+            return false;
+        }
               
         return true;
     }
     
-    
-    public Integer getmaxline() {
-        int max = 0;
-        int current = 0;
-        for (int j = 0; j < tabledetail.getRowCount(); j++) {
-            current = Integer.valueOf(tabledetail.getValueAt(j, 0).toString()); 
-            if (current > max) {
-                max = current;
+    public void executeTask(dbaction x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+       
+          String type = "";
+          String[] key = null;
+          
+          public Task(dbaction type, String[] key) { 
+              this.type = type.name();
+              this.key = key;
+          } 
+           
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+             switch(this.type) {
+                case "add":
+                    message = addRecord(key);
+                    break;
+                case "update":
+                    message = updateRecord(key);
+                    break;
+                case "delete":
+                    message = deleteRecord(key);    
+                    break;
+                case "get":
+                    message = getRecord(key);    
+                    break; 
+                default:
+                    message = new String[]{"1", "unknown action"};
             }
-         }
-        return max;
-    }
-    
-    public void sumlinecount() {
-         totlines.setText(String.valueOf(tabledetail.getRowCount()));
-    }
-     
-    public void sumqty() {
-        double qty = 0.00;
-         for (int j = 0; j < tabledetail.getRowCount(); j++) {
-             qty = qty + Double.valueOf(tabledetail.getValueAt(j, 5).toString()); 
-         }
-         tbtotqty.setText(String.valueOf(qty));
-    }
-    
-    public void sumdollars() {
-        
-        double dol = 0;
-         for (int j = 0; j < tabledetail.getRowCount(); j++) {
-             dol = dol + ( bsParseDouble(tabledetail.getValueAt(j, 5).toString()) * bsParseDouble(tabledetail.getValueAt(j, 6).toString()) ); 
-         }
-         // now add trailer/summary charges if any
-         for (int j = 0; j < sactable.getRowCount(); j++) {
-            if (sactable.getValueAt(j,2).toString().equals("charge"))
-            dol += bsParseDouble(sactable.getValueAt(j,4).toString());
+            
+            return message;
         }
-         tbtotdollars.setText(bsFormatDouble(dol));
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+           if (this.type.equals("delete")) {
+             initvars(null);  
+           } else if (this.type.equals("get") && message[0].equals("1")) {
+             updateForm();
+             tbkey.requestFocus();
+           } else if (this.type.equals("get") && message[0].equals("0")) {
+             updateForm();
+             tbkey.requestFocus();
+           } else if (this.type.equals("add") && message[0].equals("0")) {
+             initvars(key);
+           } else if (this.type.equals("update") && message[0].equals("0")) {
+             initvars(key);    
+           } else if (this.type.equals("run")) {
+             initvars(null);  
+           } else {
+             initvars(null);  
+           }
+           
+          
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
     }
-     
-    public void retotal() {
-         
-    }
-    
+        
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
+          
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -339,10 +447,10 @@ public class ShipperMaint extends javax.swing.JPanel {
                 }
        }
     }
-         
-    public void initvars(String[] arg) {
+     
+    public void setComponentDefaultValues() {
         
-        isLoad = true;
+        ArrayList<String[]> initDataSets = shpData.getShipperMaintInit(this.getClass().getName());
         
         jTabbedPane1.removeAll();
         jTabbedPane1.add("Main", panelMain);
@@ -360,80 +468,102 @@ public class ShipperMaint extends javax.swing.JPanel {
         sacmodel.setRowCount(0);
         
         rborder.setEnabled(false);
-        rbnonorder.setSelected(true);
         rbnonorder.setEnabled(false);
         
         ordercount = 0;
         
         tbkey.setText("");
         
-      
+        java.util.Date now = new java.util.Date();
+        dcshipdate.setDate(now);
         
-        ddwh.removeAllItems();
-        ddshipfrom.removeAllItems();
-        ArrayList<String> whs = OVData.getWareHouseList();
-        for (String wh : whs) {
-            ddwh.addItem(wh);
-            ddshipfrom.addItem(wh);
+        String defaultsite = null;
+         ddwh.removeAllItems();
+         ddshipfrom.removeAllItems();
+         ddloc.removeAllItems();
+         dduom.removeAllItems();
+         ddcont.removeAllItems();
+         ddshipto.removeAllItems();
+         ddbillto.removeAllItems();
+         ddorder.removeAllItems();
+         ddshipvia.removeAllItems();
+         ddsite.removeAllItems();
+         
+        for (String[] s : initDataSets) {
+           
+            if (s[0].equals("canupdate")) {
+              canupdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }  
+            if (s[0].equals("canconfirm")) {
+              canconfirm = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultsite = s[1]; 
+            }
+            if (s[0].equals("warehouses")) {
+              ddwh.addItem(s[1]); 
+              ddshipfrom.addItem(s[1]); 
+            }
+            if (s[0].equals("locations")) {
+              ddloc.addItem(s[1]); 
+            }           
+            if (s[0].equals("uoms")) {
+              dduom.addItem(s[1]); 
+            }           
+            if (s[0].equals("customers")) {
+              ddbillto.addItem(s[1]); 
+            }
+            if (s[0].equals("carriers")) {
+              ddshipvia.addItem(s[1]); 
+            }
+            if (s[0].equals("items")) {
+              ddcont.addItem(s[1]); 
+            }
+            if (s[0].equals("orders")) {
+              ddorder.addItem(s[1]); 
+            }
+            if (s[0].equals("autonumber")) {
+                autonumber = BlueSeerUtils.ConvertStringToBool(s[1]);
+            }
         }
+        
+             
         ddwh.insertItemAt("", 0);
         ddwh.setSelectedIndex(0);
         ddshipfrom.insertItemAt("", 0);
         ddshipfrom.setSelectedIndex(0);
         
-        
-         ddloc.removeAllItems();
-        ArrayList<String> loc = OVData.getLocationList();
-        for (String lc : loc) {
-            ddloc.addItem(lc);
-        }
         ddloc.insertItemAt("", 0);
         ddloc.setSelectedIndex(0);
+                
+        dduom.insertItemAt("", 0);
+        dduom.setSelectedIndex(0);
         
-        dduom.removeAllItems();
-        ArrayList<String> uom = OVData.getUOMList();
-        for (String code : uom) {
-            dduom.addItem(code);
-        }
-        
-        ddcont.removeAllItems();
-        ArrayList<String> conts = invData.getItemsByType("CONT");
-        for (String cont : conts) {
-            ddcont.addItem(cont);
-        }
         ddcont.insertItemAt("", 0);
         ddcont.setSelectedIndex(0);
         
-        
-         ddshipto.removeAllItems();
-         ddshipto.insertItemAt("", 0);
+                 
+        ddshipto.insertItemAt("", 0);
         ddshipto.setSelectedIndex(0);
-        ArrayList<String> myshipto = cusData.getCustShipToListAll(); 
-        for (int i = 0; i < myshipto.size(); i++) {
-            ddshipto.addItem(myshipto.get(i));
-        }
-        ddshipto.setEnabled(false);
-        btshipto.setEnabled(false);
-        
-        
-          ddbillto.removeAllItems();
-         ddbillto.insertItemAt("", 0);
+          
+        ddbillto.insertItemAt("", 0);
         ddbillto.setSelectedIndex(0);
-        ArrayList<String> mybillto = cusData.getcustmstrlist(); 
-        for (int i = 0; i < mybillto.size(); i++) {
-            ddbillto.addItem(mybillto.get(i));
-        }
-        ddbillto.setEnabled(false);
         
-        
-        ddorder.removeAllItems();
-         ddorder.insertItemAt("", 0);
-         ddorder.insertItemAt("none",1);
+        ddorder.insertItemAt("", 0);
+        ddorder.insertItemAt("none",1);
         ddorder.setSelectedIndex(0);
-        ArrayList<String> myorders = ordData.getOpenOrdersList(); 
-        for (int i = 0; i < myorders.size(); i++) {
-            ddorder.addItem(myorders.get(i));
-        }
+               
+        ddshipvia.insertItemAt("", 0);
+        ddshipvia.setSelectedIndex(0);
+        
+        ddsite.setSelectedItem(defaultsite);
+        
+        
+        
+        btshipto.setEnabled(false);
         btorder.setEnabled(false);
         ddorder.setEnabled(false);
         
@@ -450,33 +580,18 @@ public class ShipperMaint extends javax.swing.JPanel {
         tbcontqty.setText("");
         
         lbladdr.setText("");
-        
-        ddshipvia.removeAllItems();
-        ArrayList<String> mylist = OVData.getfreightlist();   
-        for (int i = 0; i < mylist.size(); i++) {
-            ddshipvia.addItem(mylist.get(i));
-        }
-        ddshipvia.insertItemAt("", 0);
-        ddshipvia.setSelectedIndex(0);
-        
-         ddsite.removeAllItems();
-         
-        mylist = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (String code : mylist) {
-            ddsite.addItem(code);
-        }
-        ddsite.setSelectedItem(OVData.getDefaultSite());
+                
         
         tbqty.setText("");
         tbdesc.setText("");
         tbprice.setText("");
        
          btlookup.setEnabled(true);
-         btnewshipper.setEnabled(true);
-         btedit.setEnabled(true);
+         btnew.setEnabled(true);
+         btupdate.setEnabled(true);
          btadd.setEnabled(true);
-         btPrintShp.setEnabled(false);
-         btPrintInv.setEnabled(false);
+         btprintshipper.setEnabled(false);
+         btprintinvoice.setEnabled(false);
          btcommit.setEnabled(false);
          
          lblstatus.setText("");
@@ -492,844 +607,113 @@ public class ShipperMaint extends javax.swing.JPanel {
         tabledetail.getColumnModel().getColumn(11).setMinWidth(0);
         tabledetail.getColumnModel().getColumn(11).setPreferredWidth(0);
         
-        
-        disableLowerInputs();
-     
-        isLoad = false;
-        
-         if (arg != null && arg.length > 0) {
-            getshipperinfo(arg[0]);
-        }
-     
     }
     
-    public void enableLowerInputs() {
-       
-        ddsite.setEnabled(true);
-        ddshipfrom.setEnabled(true);
-        ddwh.setEnabled(true);
-        ddloc.setEnabled(true);
-        dcshipdate.setEnabled(true);
-        tbtrailer.setEnabled(true);
-        ddshipvia.setEnabled(true);
-       
-        tbremarks.setEnabled(true);
-        tbref.setEnabled(true);
-        tbpallets.setEnabled(true);
-        tbboxes.setEnabled(true);
-       
-        tbtotdollars.setEnabled(true);
-        tbtotqty.setEnabled(true);
-        totlines.setEnabled(true);
-        tbtotdollars.setEditable(false);
-        tbtotqty.setEditable(false);
-        totlines.setEditable(false);
+    public void setAction(String[] x) {
         
-        
-        dduom.setEnabled(true);
-        tborderline.setEnabled(true);
-        tbordernbr.setEnabled(true);
-        tbcontqty.setEnabled(true);
-        ddcont.setEnabled(true);
-        tbserial.setEnabled(true);
-        
-        tbqty.setEnabled(true);
-        tbpo.setEnabled(true);
-        tbdesc.setEnabled(true);
-        tbitem.setEnabled(true);
-        tbprice.setEnabled(true);
-        tbdesc.setEditable(false);
-        tbitem.setEditable(false);
-        tbprice.setEditable(false);
-        tborderline.setEditable(false);
-        tbordernbr.setEditable(false);
-        
-        btadditem.setEnabled(true);
-        btdelitem.setEnabled(true);
-        btupdateitem.setEnabled(true);
-        
-        
-        tabledetail.setEnabled(true);
-        
-        
-    }
-   
-    public void disableLowerInputs() {
-     
-        ddsite.setEnabled(false);
-        ddshipfrom.setEnabled(false);
-        ddwh.setEnabled(false);
-        ddloc.setEnabled(false);
-        dcshipdate.setEnabled(false);
-        tbtrailer.setEnabled(false);
-        ddshipvia.setEnabled(false);
-        
-        tbremarks.setEnabled(false);
-        tbref.setEnabled(false);
-        tbpallets.setEnabled(false);
-        tbboxes.setEnabled(false);
-       
-        tborderline.setEnabled(false);
-        tbordernbr.setEnabled(false);
-        tbcontqty.setEnabled(false);
-        ddcont.setEnabled(false);
-        tbserial.setEnabled(false);
-        
-        dduom.setEnabled(false);
-        
-        tbtotdollars.setEnabled(false);
-        tbtotqty.setEnabled(false);
-        totlines.setEnabled(false);
-        
-        tbqty.setEnabled(false);
-        tbdesc.setEnabled(false);
-        tbpo.setEnabled(false);
-        tbitem.setEnabled(false);
-        tbprice.setEnabled(false);
-        btadditem.setEnabled(false);
-        btdelitem.setEnabled(false);
-        btadd.setEnabled(false);
-        btedit.setEnabled(false);
-        
-        tabledetail.setEnabled(false);
-    }
-    
-    public void initnew() {
-        
-        isLoad = true;
-        autonumber = BlueSeerUtils.ConvertStringToBool(getSysMetaValue("system", "shippercontrol", "auto_generate_shipper_number"));
-        
-        
-          if (autonumber) {  
-              tbkey.setText(bsNumber(OVData.getNextNbr("shipper")));
-              tbkey.setEditable(false);
-              tbkey.setEnabled(false);
-          } else {
-              tbkey.setText("");
-              tbkey.setEditable(true);
-              tbkey.setEnabled(true);
-          }
-       
-        
-        ordercount = 0;
-        
-        rborder.setEnabled(true);
-        rbnonorder.setEnabled(true);
-       // rbnonorder.setSelected(true);
-        
-        
-        tbordernbr.setText("");
-        tborderline.setText("");
-        
-        
-        lbqtyshipped.setText("");
-        
-        
-        
-        ddshipto.removeAllItems();
-                
-        ddbillto.setSelectedIndex(0);
-        ddorder.setSelectedIndex(0);
-       
-        sacmodel.setRowCount(0);
-        
-        
-        tbtrailer.setText("");
-        tbremarks.setText("");
-        tbref.setText("");
-        tbpallets.setText("");
-        tbboxes.setText("");
-       
-        
-        
-        
-        tbqty.setText("");
-        tbdesc.setText("");
-       
-        tbprice.setText("");
-        tbitem.setText("");
-         btlookup.setEnabled(false);
-         btnewshipper.setEnabled(false);
-         btedit.setEnabled(false);
-         btadd.setEnabled(true);
-         btPrintShp.setEnabled(false);
-         btPrintInv.setEnabled(false);
-        
-        tabledetail.setModel(myshipdetmodel);
-        myshipdetmodel.setRowCount(0);
-        
-        isLoad = false;
-      
-    }
-    
-    public void disableshipto() {
-        btshipto.setEnabled(false);
-        ddshipto.setEnabled(false);
-        ddbillto.setEnabled(false);
-         btorder.setEnabled(true);
-         ddorder.setEnabled(true);
-    }
-     
-    public void enableshipto() {
-         ddshipto.setEnabled(true);
-         ddbillto.setEnabled(true);
-         btshipto.setEnabled(true);
-         btorder.setEnabled(false);
-         ddorder.setEnabled(false);
-         
-         
-         if (ddbillto.getItemCount() > 0) {
-             ddbillto.setSelectedIndex(0);
-         }
-    }
-    
-    public void disablechoices() {
-        btorder.setEnabled(false);
-        btshipto.setEnabled(false);
-        ddorder.setEnabled(false);
-        ddshipto.setEnabled(false);
-        ddbillto.setEnabled(false);
-        
-    }
-    
-    public void disableradiobuttons() {
-        rborder.setEnabled(false);
-        rbnonorder.setEnabled(false);
-    }
-    
-    public void reinitshippervariables(String myshipper) {
-       
-        tbkey.setText(bsNumber(myshipper));
-        if (myshipper.compareTo("") == 0) {
-            btadd.setEnabled(true);
-
-        } else {
-            btadd.setEnabled(false);
-        }
-
-
-       
-        tbkey.setText(bsNumber(myshipper));
-        
-        tbqty.setText("");
-        tbdesc.setText("");
-        tbref.setText("");
-        tbboxes.setText("");
-        tbpallets.setText("");
-        
-        
-        
-        tabledetail.setModel(myshipdetmodel);
-        myshipdetmodel.setRowCount(0);
-        btlookup.setEnabled(true);
-        btnewshipper.setEnabled(true);
-        btPrintShp.setEnabled(true);
-
-     
-    }
-     
-      
-    public void getshipperinfo(String myshipper) {
-        initvars(null);
-        try {
-     
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;int i = 0;
-            int d = 0;
-            String uniqpo = null;
-            try {
-                String status = "";
-
-                res = st.executeQuery("select * from ship_mstr left outer join cms_det on cms_shipto = sh_ship where sh_id = " + "'" + myshipper + "'" + ";");
-                while (res.next()) {
-                    i++;
+        if (x[0].equals("0")) {
+           
+                   setPanelComponentState(this, true);
+                   btadd.setEnabled(false);
+                   tbkey.setEditable(false);
+                   tbkey.setForeground(Color.blue);
+                    // custom set
                     
-                    tbkey.setText(res.getString("sh_id"));
-                    ddbillto.setSelectedItem(res.getString("sh_cust"));
-                    ddshipto.setSelectedItem(res.getString("sh_ship"));
-                    tbref.setText(res.getString("sh_ref"));
-                    tbboxes.setText(res.getString("sh_boxes"));
-                    tbpallets.setText(res.getString("sh_pallets"));
-                    tbremarks.setText(res.getString("sh_rmks"));
-                    tbtrailer.setText(res.getString("sh_trailer"));
-                   // ddpo.setSelectedItem(res.getString("sh_po"));
-                    dcshipdate.setDate(parseDate(res.getString("sh_shipdate")));
-                    ddshipvia.setSelectedItem(res.getString("sh_shipvia"));
-                    ddsite.setSelectedItem(res.getString("sh_site"));
-                    ddshipfrom.setSelectedItem(res.getString("sh_shipfrom"));
-                    status = res.getString("sh_status");
-                    lbladdr.setText(res.getString("cms_name") + "  " + res.getString("cms_line1") + "..." + res.getString("cms_city") +
-                                    ", " + res.getString("cms_state") + " " + res.getString("cms_zip"));
-                                
-                }
-                
-                
-         
-                res = st.executeQuery("select * from ship_det where shd_id = " + "'" + myshipper + "'" + ";");
-                while (res.next()) {
-                  myshipdetmodel.addRow(new Object[]{res.getString("shd_soline"), res.getString("shd_item"), 
-                      res.getString("shd_so"),
-                      res.getString("shd_soline"),
-                      res.getString("shd_po"), 
-                      res.getString("shd_qty").replace('.', defaultDecimalSeparator), 
-                      res.getString("shd_netprice").replace('.', defaultDecimalSeparator),
-                      res.getString("shd_desc"),
-                      res.getString("shd_wh"),
-                      res.getString("shd_loc"),
-                      res.getString("shd_disc").replace('.', defaultDecimalSeparator),
-                      res.getString("shd_listprice").replace('.', defaultDecimalSeparator),
-                      res.getString("shd_taxamt").replace('.', defaultDecimalSeparator),
-                      res.getString("shd_serial"),
-                      res.getString("shd_cont"),
-                      res.getString("shd_bom"),
-                      res.getString("shd_qty").replace('.', defaultDecimalSeparator), // cont qty
-                      res.getString("shd_uom")
-                      
-                  });
-                
-                }
-                tabledetail.setModel(myshipdetmodel);
-                if (i > 0) {
-                    enableLowerInputs();
-                    btnewshipper.setEnabled(false);
+                    // refreshDisplayTotals();
+                   
+                    if (status.equals("1")) {
                     btadd.setEnabled(false);
-                }
-                i = 0;
-                
-                if (status.equals("1")) {
-                    btadd.setEnabled(false);
-                    btedit.setEnabled(false);
+                    btupdate.setEnabled(false);
                     btcommit.setEnabled(false);
                     btupdateitem.setEnabled(false);
                     btadditem.setEnabled(false);
                     btdelitem.setEnabled(false);
                     lblstatus.setText(getMessageTag(1148));
                     lblstatus.setForeground(Color.blue);
-                    btPrintShp.setEnabled(true);
-                    btPrintInv.setEnabled(true);
+                    btprintshipper.setEnabled(true);
+                    btprintinvoice.setEnabled(true);
                    
                 } else {
                     btadd.setEnabled(false);
-                    btedit.setEnabled(true);
+                    btupdate.setEnabled(true);
                     btupdateitem.setEnabled(true);
                     btadditem.setEnabled(true);
                     btdelitem.setEnabled(true);
-                     if (OVData.isConfirmInShipMaint()) {
+                     if (canconfirm) {
                         btcommit.setEnabled(true);
                     }
                     lblstatus.setText(getMessageTag(1149));
                     lblstatus.setForeground(Color.red);
-                    btPrintShp.setEnabled(true);
-                    btPrintInv.setEnabled(false);
-                    
-                    
-                }
-                i = 0;
-                getAttachments(myshipper);
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }
-  
-
-    public void custChangeEvent(String billto) {
-         ddshipto.removeAllItems();
-            ArrayList<String> mycusts = cusData.getcustshipmstrlist(billto);
-            for (int i = 0; i < mycusts.size(); i++) {
-                ddshipto.addItem(mycusts.get(i));
-            }
-        
-            
-            
-            if (ddbillto.getSelectedItem().toString() != null && ! ddbillto.getSelectedItem().toString().isEmpty() && ddshipto.getItemCount() <= 0) {
-           bsmf.MainFrame.show(getMessageTag(1108));
-           ddbillto.requestFocus();
-       }
-            
-    }
-    
-     
-    
-    public void getOrderInfoByPO(String cust, String po, String item) {
-        try {
-             Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-                
-                res = st.executeQuery("select so_nbr, sod_line, sod_wh, sod_loc, sod_netprice, sod_shipped_qty, (sod_ord_qty - sod_shipped_qty) as qty from sod_det inner join so_mstr on so_nbr = sod_nbr where so_cust = " + "'" + cust + "'" +
-                        " and sod_item = " + "'" + item + "'" + 
-                        " and sod_po = " + "'" + po + "'" +         
-                        " order by sod_item ;");
-                while (res.next()) {
-                    tbprice.setText(res.getString("sod_netprice"));
-                    tbqty.setText(res.getString("qty"));
-                    lbqtyshipped.setText(res.getString("sod_shipped_qty"));
-                    ddwh.setSelectedItem(res.getString("sod_wh"));
-                    ddloc.setSelectedItem(res.getString("sod_loc"));
-                }
-            
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }
-    
-    public String getUniquePO() {
-        int d = 0;
-        String uniqpo = "";
-        for (int j = 0; j < tabledetail.getRowCount(); j++) {
-         if (d > 0) {
-           if ( uniqpo.compareTo(tabledetail.getValueAt(j, 4).toString()) != 0) {
-           uniqpo = "multi-PO";
-           break;
-           }
-         }
-         d++;
-         uniqpo = tabledetail.getValueAt(j, 4).toString();
-       }
-        return uniqpo;
-    }  
-    
-    public String getUniqueWH() {
-           // lets collect single or multiple Warehouse status
-        int d = 0;
-        String uniqwh = "";
-       for (int j = 0; j < tabledetail.getRowCount(); j++) {
-         if (d > 0) {
-           if ( uniqwh.compareTo(tabledetail.getValueAt(j, 8).toString()) != 0) {
-           uniqwh = "multi-WH";
-           break;
-           }
-         }
-         d++;
-         uniqwh = tabledetail.getValueAt(j, 8).toString();
-       }
-       return uniqwh;
-    }
-    
-    public void setLabelByShipTo(String shipto) {
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;int i = 0;
-            try {
-
-
-                res = st.executeQuery("select * from cms_det where cms_shipto = " + "'" + shipto + "'" + ";");
-                while (res.next()) {
-                    i++;
-                }
-              
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }  
-      
-    public void setCustShipCodes(String nbr) {
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            int i = 0;
-            try {
-
-                res = st.executeQuery("select * from so_mstr inner join cms_det on cms_shipto = so_ship where so_nbr = " + "'" + nbr + "'" + ";");
-                while (res.next()) {
-                    i++;
-                    ddbillto.setSelectedItem(res.getString("so_cust"));
-                    ddshipto.setSelectedItem(res.getString("so_ship"));
-                }
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }  
-      
-    public void setShipperByShipTo(String shipto) {
-        
-        // created shipchoice to see override rborder state change problem
-        disableradiobuttons();
-        
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            int i = 0;
-            try {
-
-
-                res = st.executeQuery("select * from cms_det inner join cm_mstr on cm_code = cms_code where cms_shipto = " + "'" + shipto + "'" + ";");
-                while (res.next()) {
-                    i++;
-                    curr = res.getString("cm_curr");
-                    ddbillto.setSelectedItem(res.getString("cms_code"));
-                    ddshipto.setSelectedItem(res.getString("cms_shipto"));
-                    lbladdr.setText(res.getString("cms_name") + "  " + res.getString("cms_line1") + "..." + res.getString("cms_city") +
-                                    ", " + res.getString("cms_state") + " " + res.getString("cms_zip"));
-                    ddshipvia.setSelectedItem(res.getString("cm_carrier"));
-                    ddsite.setSelectedItem(OVData.getDefaultSite());
-                    ddshipfrom.setSelectedItem(OVData.getDefaultSite());
-                    terms = res.getString("cm_terms");
-                    taxcode = res.getString("cm_tax_code");
-                    aracct = res.getString("cm_ar_acct");
-                    arcc = res.getString("cm_ar_cc");
+                    btprintshipper.setEnabled(true);
+                    btprintinvoice.setEnabled(false);
+                }  
                    
-                }
-                
-                
-                if (i == 0) {
-                    bsmf.MainFrame.show(getMessageTag(1034,shipto));
-                } 
-                if (ddbillto.getSelectedItem().toString().isEmpty() || terms.isEmpty() || aracct.isEmpty() || arcc.isEmpty()) {
-                    bsmf.MainFrame.show(getMessageTag(1090));
-                }
-                
-                disablechoices();
-                
-                enableLowerInputs();
-                btadd.setEnabled(true);
-                btedit.setEnabled(false);
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+        } else {
+                   tbkey.setForeground(Color.red); 
         }
-    }
-        
-    public void setDetail(String nbr, String line) {
-         try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-                tbitem.setText("");
-                tbpo.setText("");
-                tbserial.setText("");
-                tbdesc.setText("");
-                tbqty.setText("");
-                tbprice.setText("");
-                dduom.setSelectedIndex(0);
-                ddcont.setSelectedIndex(0);
-                
-                ddbom.removeAllItems();
-                
-                String bom = "";
-                res = st.executeQuery("select * from sod_det " + 
-                        " inner join item_mstr on it_item = sod_item "  +
-                        " where sod_nbr = " + "'" + nbr + "'" +
-                        " AND sod_line = " + "'" + line + "'" +  
-                        " AND sod_status <> " + "'" + getGlobalProgTag("closed") + "'" + 
-                        " order by sod_line ;");
-                while (res.next()) {
-                tbitem.setText(res.getString("sod_item"));
-                tbpo.setText(res.getString("sod_po"));
-                tbdesc.setText(res.getString("sod_desc"));
-                int qty = res.getInt("sod_ord_qty") - res.getInt("sod_shipped_qty");
-                tbqty.setText(String.valueOf(qty));
-                tbprice.setText(BlueSeerUtils.priceformat(res.getString("sod_netprice")));
-                dduom.setSelectedItem(res.getString("sod_uom"));
-                ddcont.setSelectedItem(res.getString("it_cont"));
-                tbcontqty.setText(res.getString("it_contqty"));
-                bom = res.getString("sod_bom");
-                }
-                
-                ddbom.insertItemAt("", 0);
-                ddbom.setSelectedIndex(0);
-                ArrayList<String[]> boms = invData.getBOMsByItemSite(tbitem.getText());
-                for (String[] wh : boms) {
-                ddbom.addItem(wh[0]);
-                }
-                if (! bom.isEmpty())
-                ddbom.setSelectedItem(bom);
-            
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }
-    
-    public void setShipperByOrder(String myorder) {
-         disableradiobuttons();
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;int i = 0;
-            try {
-                boolean proceed = true;
-                int qtyavailable = 0;
-                status = "";
-                
-
-                res = st.executeQuery("select * from so_mstr left outer join cms_det on cms_shipto = so_ship where so_nbr = " + "'" + myorder + "'" + ";");
-                while (res.next()) {
-                    i++;
-                    status = res.getString("so_status");
-                    curr = res.getString("so_curr");
-                    
-                    if (ordercount == 0 && ! status.equals(getGlobalProgTag("closed"))) {
-                    ddbillto.setSelectedItem(res.getString("so_cust"));
-                    ddshipto.setSelectedItem(res.getString("so_ship"));
-                    ddshipvia.setSelectedItem(res.getString("so_shipvia"));
-                    lbladdr.setText(res.getString("cms_name") + "  " + res.getString("cms_line1") + "..." + res.getString("cms_city") +
-                                    ", " + res.getString("cms_state") + " " + res.getString("cms_zip"));
-                    ddsite.setSelectedItem(res.getString("so_site"));
-                    ddshipfrom.setSelectedItem(res.getString("so_site"));
-                    terms = res.getString("so_terms");
-                    taxcode = res.getString("so_taxcode");
-                    aracct = res.getString("so_ar_acct");
-                    arcc = res.getString("so_ar_cc");
-                    podate = res.getString("so_ord_date");
-                    // tbDateShippedSM.setText(res.getString("ship_ship_date"));
-                    ordercount++;
-                    }
-                    
-                    
-                    if (! ddshipto.getSelectedItem().toString().toLowerCase().equals(res.getString("so_ship").toLowerCase()) && ordercount > 0) {
-                        bsmf.MainFrame.show(getMessageTag(1109));
-                        proceed = false;
-                        ddshipto.setSelectedIndex(0);
-                        ddorder.requestFocus();
-                        return;
-                    }
-                    
-                    
-                }
-                
-                   if (i == 0) {
-                    bsmf.MainFrame.show(getMessageTag(1034,myorder));
-                    proceed = false;
-                    ddshipto.setSelectedIndex(0);
-                     ddorder.requestFocus(); 
-                    return;
-                    } 
-                    
-                    if (i > 0 && status.equals(getGlobalProgTag("closed"))) {
-                    bsmf.MainFrame.show(getMessageTag(1097));
-                    proceed = false;
-                    ddshipto.setSelectedIndex(0);
-                    ddorder.requestFocus(); 
-                    return;
-                    }
-                
-                
-                
-                if (proceed) {
-                    res = st.executeQuery("select * from sod_det where sod_nbr = " + "'" + myorder + "'" + ";");
-                    while (res.next()) {
-                        qtyavailable = res.getInt("sod_ord_qty") - res.getInt("sod_shipped_qty");
-                     myshipdetmodel.addRow(new Object[]{res.getString("sod_line"), 
-                         res.getString("sod_item"), 
-                         res.getString("sod_nbr"),
-                         res.getString("sod_line"),
-                         res.getString("sod_po"), 
-                         String.valueOf(qtyavailable), 
-                         res.getString("sod_netprice"),
-                         res.getString("sod_desc"),
-                         res.getString("sod_wh"),
-                         res.getString("sod_loc"),
-                         res.getString("sod_disc"),
-                         res.getString("sod_listprice"),
-                         res.getString("sod_taxamt"),
-                         "", // cont
-                         "",  // serialno
-                         res.getString("sod_bom"),
-                         String.valueOf(qtyavailable), // cont qty
-                         res.getString("sod_uom")
-                         
-                     });
-                    }
-                    tabledetail.setModel(myshipdetmodel);
-                    i = 0;
-                    
-                    // now get sac table
-                    ArrayList<String[]> sac = OVData.getOrderSAC(myorder);
-                 //write to shs_det
-                     for (String[] s : sac) {
-                         sacmodel.addRow(new Object[]{
-                         s[0], s[1], s[2], s[3], s[4]
-                         });
-                     }
-                   sactable.setModel(sacmodel);
-                    
-                    
-                }
-                
-            refreshDisplayTotals();
-            
-            disableshipto();
-            
-            enableLowerInputs();
-            btadd.setEnabled(true);
-            btedit.setEnabled(false);
-            
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }
-
-    public boolean validateDetail() {
-       // if user clicks on 'additem' before focuslost on each field
-       // has time to fire, focuslost will have effectively set these fields to empty upon
-       // seeing an error before this function is called
-       // ...so we check for empty to prevent lines from being added
-        
-        if (tbqty.getText().isEmpty()) {
-            return false;
-        }
-        if (tbprice.getText().isEmpty()) {
-            return false;
-        }
-      
-        
-        boolean isvalid = OVData.isValidItem(tbitem.getText());
         
        
+    }
+    
+    
+    public void newAction(String x) {
+        isLoad = true;
+        setPanelComponentState(this, true);
+        setComponentDefaultValues();
+        BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
+        btcommit.setEnabled(false);
+        btprintinvoice.setEnabled(false);
+        btprintshipper.setEnabled(false);
+        btupdate.setEnabled(false);
+        btnew.setEnabled(false);
+        tbkey.setEditable(true);
+        rborder.setEnabled(true);
+        rbnonorder.setEnabled(true);
+        rbnonorder.setSelected(true);
+        btshipto.setEnabled(true);
+        tbkey.setForeground(Color.blue);
         
-        if (isvalid && ! OVData.isValidUOMConversion(tbitem.getText(), ddsite.getSelectedItem().toString(), dduom.getSelectedItem().toString())) {
-                bsmf.MainFrame.show(getMessageTag(1093));
-                dduom.requestFocus();
-                return false;
-                
+        if (autonumber) {  
+              tbkey.setText(bsNumber(OVData.getNextNbr(x)));
+              tbkey.setEditable(false);
+              tbkey.setEnabled(false);
+        } else {
+              tbkey.setText("");
+              tbkey.setEditable(true);
+              tbkey.setEnabled(true);
         }
-        if (isvalid && ! OVData.isBaseUOMOfItem(tbitem.getText(), ddsite.getSelectedItem().toString(), dduom.getSelectedItem().toString())) {
-                bsmf.MainFrame.show(getMessageTag(1094));
-                dduom.requestFocus();
-                return false;
-        }
-      return true;   
+          
+       
+        tbkey.requestFocus();
+        isLoad = false;
     }
     
-    public void refreshDisplayTotals() {
-        sumqty();
-        sumdollars();
-        sumlinecount();
-    }
-    
-    
-    public void setSOstatus(javax.swing.JTable mytable) {
-    try {  
+     public String[] addRecord(String[] x) {
+     String[] m;
+     m = addShipperTransaction(createDetRecord(), createRecord(), createTreeRecord());
+     shpData.updateShipperSAC(x[0]);
+     return m;
+     }
+     
+    public String[] updateRecord(String[] x) {
+        String[] m;
+        // first delete any ship_det line records that have been
+        // disposed from the current shipdet table
+        ArrayList<String> badlines = getBadLines(tbkey.getText());
+        
+        // now update
+        m = updateShipTransaction(badlines, createDetRecord(), createRecord());
+        shpData.updateShipperSAC(x[0]);
+        
+     return m;
+     }
+     
+    public String[] deleteRecord(String[] x) {
+     String[] m = new String[2];
+        boolean proceed = bsmf.MainFrame.warn("Are you sure?");
+        if (proceed) {
+        try {
+
             Connection con = null;
             if (ds != null) {
               con = ds.getConnection();
@@ -1337,71 +721,128 @@ public class ShipperMaint extends javax.swing.JPanel {
               con = DriverManager.getConnection(url + db, user, pass);  
             }
             Statement st = con.createStatement();
-            ResultSet res = null;
-            int i = 0;
-             String sonbr = null;
-             int qty = 0;
-             boolean iscomplete = true;
-             String sodstatus = "";
-             
-         
-        try {
-                 
-                  // find the sod record for each line / So pair
-          for (int j = 0; j < mytable.getRowCount(); j++) {
-               //    mytable.getModel().getValueAt(j, 0);  
-             i = 0;
-             String thispart = mytable.getModel().getValueAt(j, 0).toString();
-             String thisorder = mytable.getModel().getValueAt(j, 1).toString();
-             String thispo = mytable.getModel().getValueAt(j, 2).toString();
-             int thisshipqty = Integer.valueOf(mytable.getModel().getValueAt(j, 3).toString());
-             String thislinestatus = "";
-             int thisshippedtotal = 0;
-            
-            
-                 /* ok....let's get the current state of this line item on the sales order */
-                 res = st.executeQuery("select * from sod_det where sod_nbr = " + "'" + thisorder + "'" + 
-                                     " AND sod_item = " + "'" + thispart + "'" + ";");
-               while (res.next()) {     
-                 i++;
-                   if (Integer.valueOf(res.getString("sod_shipped_qty") + thisshipqty) < Integer.valueOf(res.getString("sod_ord_qty")) ) {
-                   thislinestatus = "Partial"; 
-                   }
-                   if (Integer.valueOf(res.getString("sod_shipped_qty") + thisshipqty) >= Integer.valueOf(res.getString("sod_ord_qty")) ) {
-                   thislinestatus = "Shipped"; 
-                   }
-                   thisshippedtotal = thisshipqty + Integer.valueOf(res.getString("sod_shipped_qty"));
-                   
-                }
-                 
-                 /* ok...now lets update the status of this sod_det line item */
-                 st.executeUpdate("update sod_det set sod_shipped_qty = " + "'" + thisshippedtotal + "'" + 
-                                  "," + " sod_status = " + "'" + thislinestatus + "'" +
-                                  " where sod_nbr = " + "'" + thisorder + "'" + 
-                                  " and sod_item = " + "'" + thispart + "'" + 
-                                  " and sod_po = " + "'" + thispo + "'" +
-                     ";");
-                 
-              } // foreach    
-                 
-             } catch (SQLException s) {
-                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-             } finally {
-                if (res != null) {
-                    res.close();
-                }
+            try {
+                        st.executeUpdate("delete from ship_det where shd_id = " + "'" + tbkey.getText() + "'" + ";"); 
+                        st.executeUpdate("delete from ship_tree where ship_sh = " + "'" + tbkey.getText() + "'" + ";");
+                        st.executeUpdate("delete from shs_det where shs_nbr = " + "'" + tbkey.getText() + "'" + ";");
+                        st.executeUpdate("delete from sh_meta where shm_id = " + "'" + tbkey.getText() + "'" + ";");
+                int i = st.executeUpdate("delete from ship_mstr where sh_id = " + "'" + tbkey.getText() + "'" + ";");
+                    if (i > 0) {
+                    m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+                    }
+                } catch (SQLException s) {
+                 MainFrame.bslog(s); 
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordSQLError};  
+            } finally {
                 if (st != null) {
                     st.close();
                 }
                 con.close();
             }
-        
         } catch (Exception e) {
             MainFrame.bslog(e);
+            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordConnError};
         }
+        } else {
+           m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordCanceled}; 
+        }
+     return m;
+     }
+      
+    public String[] getRecord(String[] key) {
+       
+      Shipper z = getShipperMstrSet(key);
+      sh = z.sh();
+      shdlist = z.shd();
+      shslist = z.shs();
+      shtlist = z.sht();
+      shmlist = z.shmeta();
+      cms = z.cms();
+      getAttachments(key[0]);
+      
+      return z.m();
+    }
+        
+    public void initvars(String[] arg) {
+        
+        isLoad = true;
+        setPanelComponentState(this, false); 
+        setComponentDefaultValues();
+        
+      
+     
+        btnew.setEnabled(true);
+        btlookup.setEnabled(true);
+        
+        isLoad = false;
+        
+         if (arg != null && arg.length > 0) {
+           // getshipperinfo(arg[0]);
+           executeTask(dbaction.get, arg);
+        } else {
+            tbkey.setEnabled(true);
+            tbkey.setEditable(true);
+            tbkey.requestFocus();
+        }
+     
     }
     
+    public void updateForm() {
+        isLoad = true;
+        tbkey.setText(sh.sh_id());
+        ddbillto.setSelectedItem(sh.sh_cust());
+        if (ddshipto.getItemCount() <= 1) {
+            ddshipto.addItem(sh.sh_ship());
+            ddshipto.setSelectedItem(sh.sh_ship());
+        }
+        tbref.setText(sh.sh_ref());
+        tbboxes.setText(bsNumber(sh.sh_boxes()));
+        tbpallets.setText(bsNumber(sh.sh_pallets()));
+        tbremarks.setText(sh.sh_rmks());
+        tbtrailer.setText(sh.sh_trailer());
+        dcshipdate.setDate(parseDate(sh.sh_shipdate()));
+        ddshipvia.setSelectedItem(sh.sh_shipvia());
+        ddsite.setSelectedItem(sh.sh_site());
+        ddshipfrom.setSelectedItem(sh.sh_shipfrom());
+        status = sh.sh_status();
+        lbladdr.setText(cms.cms_name() + "  " + cms.cms_line1() + "..." + cms.cms_city() +
+                        ", " + cms.cms_state() + " " + cms.cms_zip());
+        
+        for (ship_det shd : shdlist) {
+                    myshipdetmodel.addRow(new Object[]{shd.shd_soline(), shd.shd_item(), 
+                      shd.shd_so(),
+                      shd.shd_soline(),
+                      shd.shd_po(), 
+                      bsNumber(shd.shd_qty()), 
+                      bsNumber(shd.shd_netprice()),
+                      shd.shd_desc(),
+                      shd.shd_wh(),
+                      shd.shd_loc(),
+                      bsNumber(shd.shd_disc()),
+                      bsNumber(shd.shd_listprice()),
+                      bsNumber(shd.shd_taxamt()),
+                      shd.shd_serial(),
+                      shd.shd_cont(),
+                      shd.shd_bom(),
+                      bsNumber(shd.shd_qty()), // cont qty
+                      shd.shd_uom()
+                      
+                  });
+                }
+        
+        refreshDisplayTotals();
+        
+        setAction(sh.m());
+        
+        sh = null;
+        shdlist = null;
+        shslist = null;
+        shmlist = null;
+        cms = null;
+        
+        isLoad = false;
+    }
+        
     public void lookUpFrame() {
         
         luinput.removeActionListener(lual);
@@ -1522,7 +963,9 @@ public class ShipperMaint extends javax.swing.JPanel {
                 "S", // type
                 "", // sh_so 
                 ddshipfrom.getSelectedItem().toString(),
-                tbtrailer.getText());
+                tbtrailer.getText(),
+                "" // status
+        );
                 
         return x;        
     }
@@ -1614,6 +1057,27 @@ public class ShipperMaint extends javax.swing.JPanel {
     }
     
     
+    // misc methods
+    public ArrayList<String> getBadLines(String key) {
+        ArrayList<String> lines = new ArrayList<String>();
+        ArrayList<String> badlines = new ArrayList<String>();
+        boolean goodLine = false;
+        
+        lines = getShipperLineNumbers(key);
+       for (String line : lines) {
+          goodLine = false;
+          for (int j = 0; j < tabledetail.getRowCount(); j++) {
+             if (tabledetail.getValueAt(j, 0).toString().equals(line)) {
+                 goodLine = true;
+             }
+          }
+          if (! goodLine) {
+              badlines.add(line);
+          }
+        }
+       return badlines;
+    }
+        
     public void getAttachments(String id) {
         attachmentmodel.setNumRows(0);
         ArrayList<String> list = OVData.getSysMetaData(id, this.getClass().getSimpleName(), "attachments");
@@ -1623,6 +1087,371 @@ public class ShipperMaint extends javax.swing.JPanel {
             });
         }
     }
+    
+    public Integer getmaxline() {
+        int max = 0;
+        int current = 0;
+        for (int j = 0; j < tabledetail.getRowCount(); j++) {
+            current = Integer.valueOf(tabledetail.getValueAt(j, 0).toString()); 
+            if (current > max) {
+                max = current;
+            }
+         }
+        return max;
+    }
+    
+    public void sumlinecount() {
+         totlines.setText(String.valueOf(tabledetail.getRowCount()));
+    }
+     
+    public void sumqty() {
+        double qty = 0.00;
+         for (int j = 0; j < tabledetail.getRowCount(); j++) {
+             qty = qty + Double.valueOf(tabledetail.getValueAt(j, 5).toString()); 
+         }
+         tbtotqty.setText(String.valueOf(qty));
+    }
+    
+    public void sumdollars() {
+        
+        double dol = 0;
+         for (int j = 0; j < tabledetail.getRowCount(); j++) {
+             dol = dol + ( bsParseDouble(tabledetail.getValueAt(j, 5).toString()) * bsParseDouble(tabledetail.getValueAt(j, 6).toString()) ); 
+         }
+         // now add trailer/summary charges if any
+         for (int j = 0; j < sactable.getRowCount(); j++) {
+            if (sactable.getValueAt(j,2).toString().equals("charge"))
+            dol += bsParseDouble(sactable.getValueAt(j,4).toString());
+        }
+         tbtotdollars.setText(bsFormatDouble(dol));
+    }
+     
+    public void retotal() {
+         
+    }
+        
+    public void disableshipto() {
+        if (! isLoad) {
+        btshipto.setEnabled(false);
+        ddshipto.setEnabled(false);
+        ddbillto.setEnabled(false);
+         btorder.setEnabled(true);
+         ddorder.setEnabled(true);
+        }
+    }
+     
+    public void enableshipto() {
+        if (! isLoad) {
+         ddshipto.setEnabled(true);
+         ddbillto.setEnabled(true);
+         btshipto.setEnabled(true);
+         btorder.setEnabled(false);
+         ddorder.setEnabled(false);
+         
+         
+         if (ddbillto.getItemCount() > 0) {
+             ddbillto.setSelectedIndex(0);
+         }
+        }
+    }
+    
+    public void disablechoices() {
+        btorder.setEnabled(false);
+        btshipto.setEnabled(false);
+        ddorder.setEnabled(false);
+        ddshipto.setEnabled(false);
+        ddbillto.setEnabled(false);
+        
+    }
+    
+    public void disableradiobuttons() {
+        rborder.setEnabled(false);
+        rbnonorder.setEnabled(false);
+    }
+    
+    public void reinitshippervariables(String myshipper) {
+       
+        tbkey.setText(bsNumber(myshipper));
+        if (myshipper.compareTo("") == 0) {
+            btadd.setEnabled(true);
+
+        } else {
+            btadd.setEnabled(false);
+        }
+
+
+       
+        tbkey.setText(bsNumber(myshipper));
+        
+        tbqty.setText("");
+        tbdesc.setText("");
+        tbref.setText("");
+        tbboxes.setText("");
+        tbpallets.setText("");
+        
+        
+        
+        tabledetail.setModel(myshipdetmodel);
+        myshipdetmodel.setRowCount(0);
+        btlookup.setEnabled(true);
+        btnew.setEnabled(true);
+        btprintshipper.setEnabled(true);
+
+     
+    }
+     
+    public void custChangeEvent(String billto) {
+         ddshipto.removeAllItems();
+            ArrayList<String> mycusts = cusData.getcustshipmstrlist(billto);
+            for (int i = 0; i < mycusts.size(); i++) {
+                ddshipto.addItem(mycusts.get(i));
+            }
+        
+            
+            
+            if (ddbillto.getSelectedItem().toString() != null && ! ddbillto.getSelectedItem().toString().isEmpty() && ddshipto.getItemCount() <= 0) {
+           bsmf.MainFrame.show(getMessageTag(1108));
+           ddbillto.requestFocus();
+       }
+            
+    }
+        
+    public String getUniquePO() {
+        int d = 0;
+        String uniqpo = "";
+        for (int j = 0; j < tabledetail.getRowCount(); j++) {
+         if (d > 0) {
+           if ( uniqpo.compareTo(tabledetail.getValueAt(j, 4).toString()) != 0) {
+           uniqpo = "multi-PO";
+           break;
+           }
+         }
+         d++;
+         uniqpo = tabledetail.getValueAt(j, 4).toString();
+       }
+        return uniqpo;
+    }  
+    
+    public String getUniqueWH() {
+           // lets collect single or multiple Warehouse status
+        int d = 0;
+        String uniqwh = "";
+       for (int j = 0; j < tabledetail.getRowCount(); j++) {
+         if (d > 0) {
+           if ( uniqwh.compareTo(tabledetail.getValueAt(j, 8).toString()) != 0) {
+           uniqwh = "multi-WH";
+           break;
+           }
+         }
+         d++;
+         uniqwh = tabledetail.getValueAt(j, 8).toString();
+       }
+       return uniqwh;
+    }
+         
+      
+    public void setShipperByShipTo(String billto, String shipto) {
+        
+        // created shipchoice to see override rborder state change problem
+        disableradiobuttons();
+        
+        CustShipSet css = getCustShipSet(new String[]{billto, shipto});
+        
+        if (css == null) {
+            bsmf.MainFrame.show(getMessageTag(1034,billto + "/" + shipto));
+            return;
+        } 
+        
+        curr = css.cm().cm_curr();
+        lbladdr.setText(css.cms().cms_name() + "  " + css.cms().cms_line1() + "..." + css.cms().cms_city() +
+                        ", " + css.cms().cms_state() + " " + css.cms().cms_zip());
+        ddshipvia.setSelectedItem(css.cm().cm_carrier());
+        ddsite.setSelectedItem(css.cm().cm_site());
+        ddshipfrom.setSelectedItem(css.cm().cm_site());
+        terms = css.cm().cm_terms();
+        taxcode = css.cm().cm_tax_code();
+        aracct = css.cm().cm_ar_acct();
+        arcc = css.cm().cm_ar_cc();
+        
+        
+        if (terms.isEmpty() || aracct.isEmpty() || arcc.isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1090));
+        }
+
+        disablechoices();
+
+
+        btadd.setEnabled(true);
+        btupdate.setEnabled(false);
+        
+       
+    }
+    
+    public void setShipperByOrder(String order) {
+        
+        // created shipchoice to see override rborder state change problem
+        disableradiobuttons();
+        double qtyavailable = 0.0;
+        String orderstatus = "";
+        
+        salesOrder so = getOrderMstrSet(new String[]{order});
+        
+        if (so == null) {
+            bsmf.MainFrame.show(getMessageTag(1034,order));   
+            ddshipto.setSelectedIndex(0);
+            ddorder.requestFocus(); 
+            return;
+        } 
+        
+        if (so.so().so_status().equals(getGlobalProgTag("closed"))) {
+            bsmf.MainFrame.show(getMessageTag(1097));
+            ddshipto.setSelectedIndex(0);
+            ddorder.requestFocus(); 
+            return;
+        }
+        
+        curr = so.so().so_curr();
+        lbladdr.setText(so.cms().cms_name() + "  " + so.cms().cms_line1() + "..." + so.cms().cms_city() +
+                        ", " + so.cms().cms_state() + " " + so.cms().cms_zip());
+        ddshipvia.setSelectedItem(so.so().so_shipvia());
+        ddsite.setSelectedItem(so.so().so_site());
+        ddshipfrom.setSelectedItem(so.so().so_site());
+        terms = so.cm().cm_terms();
+        taxcode = so.cm().cm_tax_code();
+        aracct = so.cm().cm_ar_acct();
+        arcc = so.cm().cm_ar_cc();
+        
+        
+        if (terms.isEmpty() || aracct.isEmpty() || arcc.isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1090));
+        }
+
+        // add line item info to lines table
+        for (sod_det sod : so.sod()) {
+               qtyavailable = sod.sod_ord_qty() - sod.sod_shipped_qty();
+                 myshipdetmodel.addRow(new Object[]{sod.sod_line(), 
+                     sod.sod_item(), 
+                     sod.sod_nbr(),
+                     sod.sod_line(),
+                     sod.sod_po(), 
+                     String.valueOf(qtyavailable), 
+                     sod.sod_netprice(),
+                     sod.sod_desc(),
+                     sod.sod_wh(),
+                     sod.sod_loc(),
+                     sod.sod_disc(),
+                     sod.sod_listprice(),
+                     sod.sod_taxamt(),
+                     "", // cont
+                     "",  // serialno
+                     sod.sod_bom(),
+                     String.valueOf(qtyavailable), // cont qty
+                     sod.sod_uom()
+                     }); 
+        }
+        tabledetail.setModel(myshipdetmodel);
+       
+        for (sos_det sos : so.sos() ) {
+             sacmodel.addRow(new Object[]{
+             sos.sos_nbr(), sos.sos_desc(), sos.sos_type(), sos.sos_amttype(), sos.sos_amt()
+             });
+        }
+       sactable.setModel(sacmodel);
+        
+        
+        refreshDisplayTotals();
+            
+           
+        disablechoices();
+
+
+        btadd.setEnabled(true);
+        btupdate.setEnabled(false);
+        
+       
+    }
+    
+    
+    public void setDetail(String nbr, String line) {
+        
+        
+        // reset fields
+        tbitem.setText("");
+        tbpo.setText("");
+        tbserial.setText("");
+        tbdesc.setText("");
+        tbqty.setText("");
+        tbprice.setText("");
+        dduom.setSelectedIndex(0);
+        ddcont.setSelectedIndex(0);
+        ddbom.removeAllItems();
+        
+        // get order detail data
+        sod_det sod = getOrderDet(nbr, line);
+        item_mstr it = getItemMstr(sod.sod_item()); 
+        
+        // set fields
+        tbitem.setText(sod.sod_item());
+        tbpo.setText(sod.sod_po());
+        tbdesc.setText(sod.sod_desc());
+        tbqty.setText(String.valueOf(sod.sod_ord_qty() - sod.sod_shipped_qty()));
+        tbprice.setText(bsNumber(sod.sod_netprice()));
+        dduom.setSelectedItem(sod.sod_uom());
+        ddcont.setSelectedItem(it.it_cont());
+        tbcontqty.setText(bsNumber(it.it_contqty()));
+        
+        
+        ddbom.insertItemAt("", 0);
+        ddbom.setSelectedIndex(0);
+        ArrayList<String[]> boms = invData.getBOMsByItemSite(sod.sod_item());
+        for (String[] wh : boms) {
+        ddbom.addItem(wh[0]);
+        }
+        if (! sod.sod_bom().isEmpty()) {
+        ddbom.setSelectedItem(sod.sod_bom());
+        }
+       
+    }
+    
+   
+    public boolean validateDetail() {
+       // if user clicks on 'additem' before focuslost on each field
+       // has time to fire, focuslost will have effectively set these fields to empty upon
+       // seeing an error before this function is called
+       // ...so we check for empty to prevent lines from being added
+        
+        if (tbqty.getText().isEmpty()) {
+            return false;
+        }
+        if (tbprice.getText().isEmpty()) {
+            return false;
+        }
+      
+        
+        boolean isvalid = OVData.isValidItem(tbitem.getText());
+        
+       
+        
+        if (isvalid && ! OVData.isValidUOMConversion(tbitem.getText(), ddsite.getSelectedItem().toString(), dduom.getSelectedItem().toString())) {
+                bsmf.MainFrame.show(getMessageTag(1093));
+                dduom.requestFocus();
+                return false;
+                
+        }
+        if (isvalid && ! OVData.isBaseUOMOfItem(tbitem.getText(), ddsite.getSelectedItem().toString(), dduom.getSelectedItem().toString())) {
+                bsmf.MainFrame.show(getMessageTag(1094));
+                dduom.requestFocus();
+                return false;
+        }
+      return true;   
+    }
+    
+    public void refreshDisplayTotals() {
+        sumqty();
+        sumdollars();
+        sumlinecount();
+    }
+    
     
     
     /**
@@ -1640,11 +1469,11 @@ public class ShipperMaint extends javax.swing.JPanel {
         panelMain = new javax.swing.JPanel();
         tbkey = new javax.swing.JTextField();
         jLabel24 = new javax.swing.JLabel();
-        btnewshipper = new javax.swing.JButton();
+        btnew = new javax.swing.JButton();
         btadd = new javax.swing.JButton();
-        btPrintShp = new javax.swing.JButton();
-        btPrintInv = new javax.swing.JButton();
-        btedit = new javax.swing.JButton();
+        btprintshipper = new javax.swing.JButton();
+        btprintinvoice = new javax.swing.JButton();
+        btupdate = new javax.swing.JButton();
         HeaderPanel = new javax.swing.JPanel();
         jLabel25 = new javax.swing.JLabel();
         jLabel35 = new javax.swing.JLabel();
@@ -1752,11 +1581,11 @@ public class ShipperMaint extends javax.swing.JPanel {
         jLabel24.setText("Shipper#");
         jLabel24.setName("lblid"); // NOI18N
 
-        btnewshipper.setText("New");
-        btnewshipper.setName("btnew"); // NOI18N
-        btnewshipper.addActionListener(new java.awt.event.ActionListener() {
+        btnew.setText("New");
+        btnew.setName("btnew"); // NOI18N
+        btnew.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnewshipperActionPerformed(evt);
+                btnewActionPerformed(evt);
             }
         });
 
@@ -1768,27 +1597,27 @@ public class ShipperMaint extends javax.swing.JPanel {
             }
         });
 
-        btPrintShp.setText("Print Shipper");
-        btPrintShp.setName("btprintshipper"); // NOI18N
-        btPrintShp.addActionListener(new java.awt.event.ActionListener() {
+        btprintshipper.setText("Print Shipper");
+        btprintshipper.setName("btprintshipper"); // NOI18N
+        btprintshipper.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btPrintShpActionPerformed(evt);
+                btprintshipperActionPerformed(evt);
             }
         });
 
-        btPrintInv.setText("Print Invoice");
-        btPrintInv.setName("btprintinvoice"); // NOI18N
-        btPrintInv.addActionListener(new java.awt.event.ActionListener() {
+        btprintinvoice.setText("Print Invoice");
+        btprintinvoice.setName("btprintinvoice"); // NOI18N
+        btprintinvoice.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btPrintInvActionPerformed(evt);
+                btprintinvoiceActionPerformed(evt);
             }
         });
 
-        btedit.setText("Update");
-        btedit.setName("btupdate"); // NOI18N
-        btedit.addActionListener(new java.awt.event.ActionListener() {
+        btupdate.setText("Update");
+        btupdate.setName("btupdate"); // NOI18N
+        btupdate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bteditActionPerformed(evt);
+                btupdateActionPerformed(evt);
             }
         });
 
@@ -2029,6 +1858,11 @@ public class ShipperMaint extends javax.swing.JPanel {
 
         rbnonorder.setText("Multi Order");
         rbnonorder.setName("cbmulti"); // NOI18N
+        rbnonorder.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                rbnonorderStateChanged(evt);
+            }
+        });
         rbnonorder.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rbnonorderActionPerformed(evt);
@@ -2068,7 +1902,7 @@ public class ShipperMaint extends javax.swing.JPanel {
                 .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(rborder)
                     .addGroup(panelMainLayout.createSequentialGroup()
-                        .addComponent(btnewshipper)
+                        .addComponent(btnew)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btclear)))
                 .addGap(143, 143, 143)
@@ -2078,13 +1912,13 @@ public class ShipperMaint extends javax.swing.JPanel {
                     .addGap(21, 21, 21)
                     .addComponent(btcommit)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                    .addComponent(btPrintInv)
+                    .addComponent(btprintinvoice)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(btPrintShp)
+                    .addComponent(btprintshipper)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btadd)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(btedit)
+                    .addComponent(btupdate)
                     .addContainerGap())
                 .addComponent(HeaderPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(panelMainLayout.createSequentialGroup()
@@ -2100,7 +1934,7 @@ public class ShipperMaint extends javax.swing.JPanel {
                         .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelMainLayout.createSequentialGroup()
                                 .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(btnewshipper)
+                                    .addComponent(btnew)
                                     .addComponent(btclear))
                                 .addGap(9, 9, 9))
                             .addGroup(panelMainLayout.createSequentialGroup()
@@ -2121,9 +1955,9 @@ public class ShipperMaint extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btadd)
-                    .addComponent(btedit)
-                    .addComponent(btPrintShp)
-                    .addComponent(btPrintInv)
+                    .addComponent(btupdate)
+                    .addComponent(btprintshipper)
+                    .addComponent(btprintinvoice)
                     .addComponent(btcommit)))
         );
 
@@ -2359,7 +2193,7 @@ public class ShipperMaint extends javax.swing.JPanel {
                     .addComponent(ddwh, 0, 76, Short.MAX_VALUE)
                     .addComponent(ddloc, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(ddbom, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(11, Short.MAX_VALUE))
+                .addContainerGap(7, Short.MAX_VALUE))
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2611,27 +2445,9 @@ public class ShipperMaint extends javax.swing.JPanel {
         add(panelAttachment);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnewshipperActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnewshipperActionPerformed
-                initnew();
-                
-                java.util.Date now = new java.util.Date();
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                DateFormat dftime = new SimpleDateFormat("HH:mm:ss");
-                String clockdate = dfdate.format(now);
-                String clocktime = dftime.format(now);
-               
-                dcshipdate.setDate(now);
-                podate = dfdate.format(now);
-                
-              
-                btlookup.setEnabled(false);
-                btnewshipper.setEnabled(false);
-                btedit.setEnabled(false);
-                btadd.setEnabled(false);
-                btPrintShp.setEnabled(false);
-
-        
-    }//GEN-LAST:event_btnewshipperActionPerformed
+    private void btnewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnewActionPerformed
+        newAction("shipper");  
+    }//GEN-LAST:event_btnewActionPerformed
 
     private void btadditemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btadditemActionPerformed
         boolean canproceed = true;
@@ -2721,18 +2537,11 @@ public class ShipperMaint extends javax.swing.JPanel {
     }//GEN-LAST:event_btadditemActionPerformed
 
     private void btaddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddActionPerformed
-        if (! validateInput(BlueSeerUtils.dbaction.add)) {
-            return;
+        if (! validateInput(dbaction.add)) {
+           return;
         }
-        
-        if ( OVData.isGLPeriodClosed(BlueSeerUtils.setDateFormat(dcshipdate.getDate()))) { 
-                bsmf.MainFrame.show(getMessageTag(1035));
-                return;
-        } 
-        String[] m = new String[2];
-        m = addShipperTransaction(createDetRecord(), createRecord(), createTreeRecord());
-        shpData.updateShipperSAC(tbkey.getText());
-        initvars(new String[]{tbkey.getText()});
+        setPanelComponentState(this, false);
+        executeTask(dbaction.add, new String[]{tbkey.getText()});  
         
     }//GEN-LAST:event_btaddActionPerformed
 
@@ -2745,15 +2554,15 @@ public class ShipperMaint extends javax.swing.JPanel {
        refreshDisplayTotals();
     }//GEN-LAST:event_btdelitemActionPerformed
 
-    private void btPrintShpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btPrintShpActionPerformed
+    private void btprintshipperActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintshipperActionPerformed
          OVData.printShipper(tbkey.getText());
        // OVData.printJTableToJasper("Shipper Report", tabledetail ); 
 
-    }//GEN-LAST:event_btPrintShpActionPerformed
+    }//GEN-LAST:event_btprintshipperActionPerformed
 
-    private void btPrintInvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btPrintInvActionPerformed
+    private void btprintinvoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintinvoiceActionPerformed
        OVData.printInvoice(tbkey.getText(), true);
-    }//GEN-LAST:event_btPrintInvActionPerformed
+    }//GEN-LAST:event_btprintinvoiceActionPerformed
 
     private void btorderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btorderActionPerformed
         if (ddorder.getSelectedItem() != null && ! ddorder.getSelectedItem().toString().isBlank()) {
@@ -2761,141 +2570,35 @@ public class ShipperMaint extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btorderActionPerformed
 
-    private void bteditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bteditActionPerformed
-        if (! validateInput(BlueSeerUtils.dbaction.update)) {
-            return;
+    private void btupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateActionPerformed
+         if (! validateInput(dbaction.update)) {
+           return;
         }
-        
-        try {
-             DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                boolean proceed = true;
-                int i = 0;
-                int d = 0;
-                String uniqpo = "";
-                
-                if ( OVData.isGLPeriodClosed(dfdate.format(dcshipdate.getDate()))) {
-                    proceed = false;
-                    bsmf.MainFrame.show(getMessageTag(1035));
-                    return;
-                }
-                
-                if (proceed) {
-                    
-                     // lets collect single or multiple PO status
-                       for (int j = 0; j < tabledetail.getRowCount(); j++) {
-                         if (d > 0) {
-                           if ( uniqpo.compareTo(tabledetail.getValueAt(j, 4).toString()) != 0) {
-                           uniqpo = "multi-PO";
-                           break;
-                           }
-                         }
-                         d++;
-                         uniqpo = tabledetail.getValueAt(j, 4).toString();
-                       }
-                       
-                String uniqwh = getUniqueWH();       
-                   
-                int pallets = 0;
-                if (! tbpallets.getText().isEmpty()) {
-                    pallets = Integer.valueOf(tbpallets.getText());
-                }  
-                
-                int boxes = 0;
-                if (! tbboxes.getText().isEmpty()) {
-                    boxes = Integer.valueOf(tbboxes.getText());
-                }
-                       
-                    st.executeUpdate("update ship_mstr set " 
-                        + " sh_shipdate = " + "'" + dfdate.format(dcshipdate.getDate()) + "'" + ","
-                        + " sh_ref = " + "'" + tbref.getText() + "'" + ","
-                        + " sh_rmks = " + "'" + tbremarks.getText() + "'" + ","
-                        + " sh_wh = " + "'" + uniqwh + "'" + ","         
-                        + " sh_shipvia = " + "'" + ddshipvia.getSelectedItem() + "'" + ","         
-                        + " sh_pallets = " + "'" + pallets + "'" + ","
-                        + " sh_boxes = " + "'" + boxes + "'" + ","        
-                        + " sh_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + ","
-                        + " sh_shipfrom = " + "'" + ddshipfrom.getSelectedItem().toString() + "'"        
-                        + " where sh_id = " + "'" + tbkey.getText().toString() + "'"
-                        + ";");
-                    // delete the sod_det records and add back.
-                    //  "Line", "Part", "SO", "PO", "Qty", "Price", "Desc"
-                    st.executeUpdate("delete from ship_det where shd_id = " + "'" + tbkey.getText() + "'"  );
-                    for (int j = 0; j < tabledetail.getRowCount(); j++) {
-                       st.executeUpdate("insert into ship_det "
-                            + "(shd_id, shd_line, shd_item, shd_so, shd_soline, shd_date, shd_po, shd_qty,"
-                            + "shd_netprice, shd_disc, shd_listprice, shd_desc, shd_wh, shd_loc, shd_taxamt, shd_serial, shd_cont, shd_site ) "
-                            + " values ( " + "'" + tbkey.getText() + "'" + ","
-                            + "'" + tabledetail.getValueAt(j, 0).toString() + "'" + ","
-                            + "'" + tabledetail.getValueAt(j, 1).toString() + "'" + ","
-                            + "'" + tabledetail.getValueAt(j, 2).toString() + "'" + ","
-                            + "'" + tabledetail.getValueAt(j, 3).toString() + "'" + ","
-                            + "'" + dfdate.format(dcshipdate.getDate()) + "'" + ","        
-                            + "'" + tabledetail.getValueAt(j, 4).toString() + "'" + ","
-                            + "'" + tabledetail.getValueAt(j, 5).toString() + "'" + ","
-                            + "'" + tabledetail.getValueAt(j, 6).toString() + "'" + ","
-                            + "'" + tabledetail.getValueAt(j, 10).toString() + "'" + ","
-                            + "'" + tabledetail.getValueAt(j, 11).toString() + "'" + ","        
-                            + "'" + tabledetail.getValueAt(j, 7).toString() + "'" + ","
-                            + "'" + tabledetail.getValueAt(j, 8).toString() + "'" + ","
-                            + "'" + tabledetail.getValueAt(j, 9).toString() + "'" + ","
-                            + "'" + tabledetail.getValueAt(j, 12).toString() + "'" + ","   
-                            + "'" + tabledetail.getValueAt(j, 13).toString() + "'" + ","
-                            + "'" + tabledetail.getValueAt(j, 14).toString() + "'" + ","         
-                            + "'" + ddsite.getSelectedItem().toString() + "'" 
-                            + ")"
-                            + ";");
-                    }
-                    
-                    
-                     // now update shs_det
-                    shpData.updateShipperSAC(tbkey.getText());
-                    
-                    
-                   
-                    reinitshippervariables("");
-                    // btQualProbAdd.setEnabled(false);
-                } // if proceed
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }//GEN-LAST:event_bteditActionPerformed
+        setPanelComponentState(this, false);
+        executeTask(dbaction.update, new String[]{tbkey.getText()});
+    }//GEN-LAST:event_btupdateActionPerformed
 
     private void btshiptoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btshiptoActionPerformed
-        if (ddshipto.getSelectedItem() != null && ! ddshipto.getSelectedItem().toString().isBlank()) {
-          setShipperByShipTo(ddshipto.getSelectedItem().toString());
+        if (ddbillto.getSelectedItem() != null && ddshipto.getSelectedItem() != null && ! ddbillto.getSelectedItem().toString().isBlank() && ! ddshipto.getSelectedItem().toString().isBlank()) {
+          setShipperByShipTo(ddbillto.getSelectedItem().toString(), ddshipto.getSelectedItem().toString());
         }
     }//GEN-LAST:event_btshiptoActionPerformed
 
     private void btcommitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcommitActionPerformed
+        if (dcshipdate.getDate() != null) {
         String[] message = confirmShipperTransaction("order", tbkey.getText(), dcshipdate.getDate());
         bsmf.MainFrame.show(message[1]);
         initvars(new String[]{tbkey.getText()});
+        } else {
+           bsmf.MainFrame.show("No Ship Date assigned"); 
+        }
     }//GEN-LAST:event_btcommitActionPerformed
 
     private void ddorderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddorderActionPerformed
-              if (ddorder.getItemCount() > 0 && ! isLoad) {
-                  setCustShipCodes(ddorder.getSelectedItem().toString());
+              if (! isLoad && ddorder.getItemCount() > 0 && ddorder.getSelectedItem() != null && ! ddorder.getSelectedItem().toString().isBlank()) {
+                  so_mstr so = getOrderMstr(ddorder.getSelectedItem().toString());
+                  ddbillto.setSelectedItem(so.so_cust());
+                  ddshipto.setSelectedItem(so.so_ship());
               }
     }//GEN-LAST:event_ddorderActionPerformed
 
@@ -2924,12 +2627,14 @@ public class ShipperMaint extends javax.swing.JPanel {
     }//GEN-LAST:event_rbnonorderActionPerformed
 
     private void rborderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rborderStateChanged
-          if (rborder.isSelected()) {
+        /*
+        if (rborder.isSelected()) {
             disableshipto();
         }
         if (rbnonorder.isSelected()) {
             enableshipto();
         }
+      */
     }//GEN-LAST:event_rborderStateChanged
 
     private void ddwhActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddwhActionPerformed
@@ -3131,11 +2836,20 @@ public class ShipperMaint extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_tableattachmentMouseClicked
 
+    private void rbnonorderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rbnonorderStateChanged
+        /*
+        if (rborder.isSelected()) {
+            disableshipto();
+        }
+        if (rbnonorder.isSelected()) {
+            enableshipto();
+        }
+        */
+    }//GEN-LAST:event_rbnonorderStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ChoicePanel;
     private javax.swing.JPanel HeaderPanel;
-    private javax.swing.JButton btPrintInv;
-    private javax.swing.JButton btPrintShp;
     private javax.swing.JButton btadd;
     private javax.swing.JButton btaddattachment;
     private javax.swing.JButton btadditem;
@@ -3143,12 +2857,14 @@ public class ShipperMaint extends javax.swing.JPanel {
     private javax.swing.JButton btcommit;
     private javax.swing.JButton btdeleteattachment;
     private javax.swing.JButton btdelitem;
-    private javax.swing.JButton btedit;
     private javax.swing.JButton btlookup;
     private javax.swing.JButton btlookupOrderLine;
-    private javax.swing.JButton btnewshipper;
+    private javax.swing.JButton btnew;
     private javax.swing.JButton btorder;
+    private javax.swing.JButton btprintinvoice;
+    private javax.swing.JButton btprintshipper;
     private javax.swing.JButton btshipto;
+    private javax.swing.JButton btupdate;
     private javax.swing.JButton btupdateitem;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JCheckBox cbexplode;

@@ -325,7 +325,9 @@ public class ShipScanMaint extends javax.swing.JPanel {
                 "S", // type
                 "", // sh_so 
                 serialdet.getValueAt(0,14).toString(),
-                "");
+                "", // tracking number
+                "" // status
+                );
                 
         return x;        
     }

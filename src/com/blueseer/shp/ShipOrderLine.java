@@ -83,6 +83,7 @@ import static com.blueseer.utl.BlueSeerUtils.ludialog;
 import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
+import static com.blueseer.utl.BlueSeerUtils.lurb2;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import static com.blueseer.utl.BlueSeerUtils.setDateFormat;
@@ -537,7 +538,8 @@ public class ShipOrderLine extends javax.swing.JPanel {
                 "S", // type
                 so.so_nbr(), // sh_so 
                 so.so_site(),
-                "" // tracking number
+                "", // tracking number
+                "" // status
                 );
                 
         return x;        
@@ -717,12 +719,15 @@ public class ShipOrderLine extends javax.swing.JPanel {
         luinput.removeActionListener(lual);
         lual = new ActionListener() {
         public void actionPerformed(ActionEvent event) {
-         
+                
+        
         if (lurb1.isSelected()) {  
-         luModel = DTData.getOrderBrowseUtil(luinput.getText(), 0, "so_nbr" );
+         luModel = DTData.getOrderBrowseUtil(luinput.getText(),0, "so_nbr");
+        } else if (lurb2.isSelected()) {
+         luModel = DTData.getOrderBrowseUtil(luinput.getText(),0, "so_po");   
         } else {
-         luModel = DTData.getOrderBrowseUtil(luinput.getText(), 0, "so_cust" );
-        }    
+         luModel = DTData.getOrderBrowseUtil(luinput.getText(),0, "so_cust");   
+        }
         
          
         luTable.setModel(luModel);
@@ -755,6 +760,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
       
         
         callDialog(getGlobalColumnTag("order"), 
+                getGlobalColumnTag("po"),        
                 getGlobalColumnTag("customer"));
         
         

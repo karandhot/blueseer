@@ -555,6 +555,43 @@ public class invData {
         return r;
     }
     
+    public static item_mstr getItemMstr(String x) {
+        item_mstr r = null;
+        String[] m = new String[2];
+        String sql = "select * from item_mstr where it_item = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());   
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, x);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new item_mstr(m);  // minimum return
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new item_mstr(m, res.getString("it_item"), res.getString("it_desc"), res.getInt("it_lotsize"),
+                    res.getDouble("it_sell_price"), res.getDouble("it_pur_price"), res.getDouble("it_ovh_cost"), res.getDouble("it_out_cost"),
+                    res.getDouble("it_mtl_cost"), res.getString("it_code"), res.getString("it_type"), res.getString("it_group"),
+                    res.getString("it_prodline"), res.getString("it_drawing"), res.getString("it_rev"), res.getString("it_custrev"), res.getString("it_wh"),
+                    res.getString("it_loc"), res.getString("it_site"), res.getString("it_comments"), res.getString("it_status"), res.getString("it_uom"),
+                    res.getDouble("it_net_wt"), res.getDouble("it_ship_wt"), res.getString("it_cont"), res.getInt("it_contqty"), 
+                    res.getInt("it_leadtime"), res.getDouble("it_safestock"), res.getDouble("it_minordqty"), res.getString("it_mrp"), 
+                    res.getString("it_sched"), res.getString("it_plan"), res.getString("it_wf"), res.getString("it_taxcode"), 
+                    res.getString("it_createdate"), res.getString("it_expire"), res.getInt("it_expiredays"), 
+                    res.getString("it_phantom"), res.getString("it_label")
+        );
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getClassName() + "." + Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new item_mstr(m);
+        }
+        return r;
+    }
+    
+    
     public static String[] addPBM(pbm_mstr x, bom_mstr y, boolean addBomID) {
         String[] m = new String[2];
         if (x == null) {

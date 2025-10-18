@@ -37,6 +37,8 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
 import static com.blueseer.ctr.cusData._getCMSDet;
+import static com.blueseer.ctr.cusData._getCustMstr;
+import com.blueseer.ctr.cusData.cm_mstr;
 import com.blueseer.ctr.cusData.cms_det;
 import static com.blueseer.ctr.cusData.getCustInfo;
 import com.blueseer.edi.EDI.edi855;
@@ -765,9 +767,10 @@ public class ordData {
             ArrayList<so_tax> sot = _getOrderTax(x, bscon, ps, res);
             cms_det cms = _getCMSDet(so.so_cust, so.so_ship, bscon, ps, res );
             ArrayList<String[]> someta = _getSOMeta(x[0], bscon, ps, res);
+            cm_mstr cm = _getCustMstr(so.so_cust, bscon, ps, res );
             
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
-            r = new salesOrder(m, so, sod, sos, sotd, sot, cms, someta);
+            r = new salesOrder(m, so, sod, sos, sotd, sot, cms, someta, cm);
             
         } catch (SQLException s) {
              MainFrame.bslog(s);
@@ -861,6 +864,38 @@ public class ordData {
         return r;
     }
     
+    public static so_mstr getOrderMstr(String x) {
+        so_mstr r = null;
+        String[] m;
+        String sql = "select * from so_mstr where so_nbr = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setInt(1, bsParseInt(x));
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new so_mstr(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new so_mstr(m, res.getString("so_nbr"), res.getString("so_cust"), res.getString("so_ship"),
+                    res.getString("so_site"), res.getString("so_curr"), res.getString("so_shipvia"), res.getString("so_wh"), res.getString("so_po"),
+                    res.getString("so_due_date"), res.getString("so_ord_date"), res.getString("so_create_date"), res.getString("so_userid"), res.getString("so_status"),
+                    res.getString("so_isallocated"), res.getString("so_terms"), res.getString("so_ar_acct"), res.getString("so_ar_cc"), 
+                    res.getString("so_rmks"), res.getString("so_type"), res.getString("so_taxcode"), res.getString("so_issourced"),
+                    res.getString("so_confirm"), res.getString("so_plan"), res.getString("so_entrytype"), res.getString("so_export_855"), res.getString("so_mod_date") );
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new so_mstr(m);
+        }
+        return r;
+    }
+    
+    
     
     private static so_mstr _getOrderMstr(String[] x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
         so_mstr r = null;
@@ -913,7 +948,38 @@ public class ordData {
         return list;
     }
     
-    
+    public static sod_det getOrderDet(String x, String y) {
+        sod_det r = null;
+        String[] m;
+        String sql = "select * from sod_det where sod_nbr = ? and sod_line = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setInt(1, bsParseInt(x));
+        ps.setInt(2, bsParseInt(y));
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new sod_det(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new sod_det(m, res.getString("sod_nbr"), res.getInt("sod_line"), res.getString("sod_item"),
+                    res.getString("sod_custitem"), res.getString("sod_po"), res.getDouble("sod_ord_qty"), res.getString("sod_uom"), res.getDouble("sod_all_qty"),
+                    res.getDouble("sod_listprice"), res.getDouble("sod_disc"), res.getDouble("sod_netprice"), res.getString("sod_ord_date"), res.getString("sod_due_date"),
+                    res.getDouble("sod_shipped_qty"), res.getString("sod_status"), res.getString("sod_wh"), res.getString("sod_loc"), 
+                    res.getString("sod_desc"), res.getDouble("sod_taxamt"), res.getString("sod_site"), res.getString("sod_bom"), res.getString("sod_ship"),
+                    res.getString("sod_char1"), res.getString("sod_char2"), res.getString("sod_char3"));
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new sod_det(m);
+        }
+        return r;
+    }
+        
     public static ArrayList<sod_det> getOrderDet(String[] x) {
         ArrayList<sod_det> list = new ArrayList<sod_det>();
         sod_det r = null;
@@ -5297,9 +5363,9 @@ public class ordData {
     
     
     public record salesOrder(String[] m, so_mstr so, ArrayList<sod_det> sod,
-        ArrayList<sos_det> sos, ArrayList<sod_tax> sodtax, ArrayList<so_tax> sotax, cms_det cms, ArrayList<String[]> someta) {
+        ArrayList<sos_det> sos, ArrayList<sod_tax> sodtax, ArrayList<so_tax> sotax, cms_det cms, ArrayList<String[]> someta, cm_mstr cm) {
         public salesOrder(String[] m) {
-            this (m, null, null, null, null, null, null, null);
+            this (m, null, null, null, null, null, null, null, null);
         }
     }
     

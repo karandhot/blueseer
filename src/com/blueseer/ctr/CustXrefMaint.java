@@ -27,11 +27,7 @@ SOFTWARE.
 package com.blueseer.ctr;
 
 import bsmf.MainFrame;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
 import static com.blueseer.adm.admData.addChangeLog;
 import com.blueseer.adm.admData.change_log;
 import static com.blueseer.ctr.cusData.addCupMstr;
@@ -68,11 +64,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Map;
 import javax.swing.BorderFactory;

@@ -558,6 +558,84 @@ public class cusData {
         return r;
     }
     
+    public static cm_mstr _getCustMstr(String code, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        
+        cm_mstr r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from cm_mstr where cm_code = ? ;";
+          ps = con.prepareStatement(sqlSelect); 
+           ps.setString(1, code);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new cm_mstr(m);
+            } else {
+                while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new cm_mstr(m, res.getString("cm_code"), res.getString("cm_name"), res.getString("cm_line1"), res.getString("cm_line2"),
+                    res.getString("cm_line3"), res.getString("cm_city"), res.getString("cm_state"), res.getString("cm_zip"),
+                    res.getString("cm_country"), res.getString("cm_dateadd"), res.getString("cm_datemod"), res.getString("cm_usermod"), 
+                    res.getString("cm_group"), res.getString("cm_market"), res.getString("cm_creditlimit"), res.getString("cm_onhold"), 
+                    res.getString("cm_carrier"), res.getString("cm_terms"), res.getString("cm_freight_type"), res.getString("cm_price_code"), 
+                    res.getString("cm_disc_code"), res.getString("cm_tax_code"), res.getString("cm_salesperson"), 
+                    res.getString("cm_ar_acct"), res.getString("cm_ar_cc"), res.getString("cm_bank"), res.getString("cm_curr"), res.getString("cm_remarks"), 
+                    res.getString("cm_label"), res.getString("cm_ps_jasper"), res.getString("cm_iv_jasper"), res.getString("cm_phone"), res.getString("cm_email"), 
+                    res.getString("cm_is855export"),res.getString("cm_is856export"),res.getString("cm_is810export"),res.getString("cm_site"), res.getString("cm_misc1"));
+                    }
+            }
+            return r;
+    }
+    
+    
+    public static CustShipSet getCustShipSet(String[] x ) {
+        CustShipSet r = null;
+        String[] m;
+        Connection bscon = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            
+            if (ds != null) {
+              bscon = ds.getConnection();
+            } else {
+              bscon = DriverManager.getConnection(url + db, user, pass);  
+            }
+            
+            cm_mstr cm = _getCustMstr(x[0], bscon, ps, res);
+            cusData.cms_det cms = _getCMSDet(x[0], x[1], bscon, ps, res );
+            
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+            r = new CustShipSet(m, cm, cms);
+            
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+             r = new CustShipSet(m);
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return r;
+    }
      
     public static String[] addTermsMstr(cust_term x) {
         String[] m = new String[2];
@@ -2209,6 +2287,43 @@ public class cusData {
         
     }
     
+    public static ArrayList<String[]> getDiscountRecsByCust(String cust) {
+       ArrayList<String[]> myarray = new ArrayList<String[]>();
+        try{
+            
+            Connection con = null;
+        if (ds != null) {
+        con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try{
+                res = st.executeQuery("select cpr_disc, cpr_item from cpr_mstr where cpr_cust = " + "'" + cust + "'" + 
+                                      " AND cpr_type = " + "'" + "DISCOUNT" + "'" + ";");                
+               while (res.next()) {
+                    myarray.add(new String[]{res.getString("cpr_item"), res.getString("cpr_disc")});
+                }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return myarray;
+        
+    }
     
     
      
@@ -2787,7 +2902,11 @@ public class cusData {
         
     } 
              
-      
+    public record CustShipSet(String[] m, cm_mstr cm, cms_det cms) {
+        public CustShipSet(String[] m) {
+            this (m, null, null);
+        }
+    }  
     
     public record cm_mstr(String[] m, String cm_code, String cm_name, String cm_line1, String cm_line2,
     String cm_line3, String cm_city, String cm_state, String cm_zip,

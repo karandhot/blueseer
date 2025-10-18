@@ -66,7 +66,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="rborder" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="btnewshipper" min="-2" max="-2" attributes="0"/>
+                          <Component id="btnew" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="btclear" min="-2" max="-2" attributes="0"/>
                       </Group>
@@ -79,13 +79,13 @@
                       <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
                       <Component id="btcommit" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="btPrintInv" min="-2" max="-2" attributes="0"/>
+                      <Component id="btprintinvoice" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="btPrintShp" min="-2" max="-2" attributes="0"/>
+                      <Component id="btprintshipper" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
                       <Component id="btadd" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="btedit" min="-2" max="-2" attributes="0"/>
+                      <Component id="btupdate" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Component id="HeaderPanel" alignment="0" max="32767" attributes="0"/>
@@ -105,7 +105,7 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="1" attributes="0">
                                   <Group type="103" groupAlignment="3" attributes="0">
-                                      <Component id="btnewshipper" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="btnew" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="btclear" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
@@ -135,9 +135,9 @@
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="btadd" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="btedit" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="btPrintShp" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="btPrintInv" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="btupdate" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="btprintshipper" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="btprintinvoice" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="btcommit" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -153,13 +153,13 @@
             <Property name="name" type="java.lang.String" value="lblid" noResource="true"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JButton" name="btnewshipper">
+        <Component class="javax.swing.JButton" name="btnew">
           <Properties>
             <Property name="text" type="java.lang.String" value="New"/>
             <Property name="name" type="java.lang.String" value="btnew" noResource="true"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnewshipperActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnewActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JButton" name="btadd">
@@ -171,31 +171,31 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btaddActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JButton" name="btPrintShp">
+        <Component class="javax.swing.JButton" name="btprintshipper">
           <Properties>
             <Property name="text" type="java.lang.String" value="Print Shipper"/>
             <Property name="name" type="java.lang.String" value="btprintshipper" noResource="true"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btPrintShpActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btprintshipperActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JButton" name="btPrintInv">
+        <Component class="javax.swing.JButton" name="btprintinvoice">
           <Properties>
             <Property name="text" type="java.lang.String" value="Print Invoice"/>
             <Property name="name" type="java.lang.String" value="btprintinvoice" noResource="true"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btPrintInvActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btprintinvoiceActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JButton" name="btedit">
+        <Component class="javax.swing.JButton" name="btupdate">
           <Properties>
             <Property name="text" type="java.lang.String" value="Update"/>
             <Property name="name" type="java.lang.String" value="btupdate" noResource="true"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="bteditActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btupdateActionPerformed"/>
           </Events>
         </Component>
         <Container class="javax.swing.JPanel" name="HeaderPanel">
@@ -600,6 +600,7 @@
             <Property name="name" type="java.lang.String" value="cbmulti" noResource="true"/>
           </Properties>
           <Events>
+            <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="rbnonorderStateChanged"/>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rbnonorderActionPerformed"/>
           </Events>
         </Component>

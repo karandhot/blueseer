@@ -37,6 +37,8 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
 import com.blueseer.ctr.cusData.cms_det;
+import static com.blueseer.ctr.cusData.getCustShipSet;
+import static com.blueseer.ctr.cusData.getDiscountRecsByCust;
 import static com.blueseer.edi.ediData.getEDIMetaValueAll;
 import static com.blueseer.edi.ediData.getEDIMetaValueDetail;
 import com.blueseer.fgl.fglData;
@@ -853,12 +855,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         }
 
-        terms = cusData.getCustTerms(ddcust.getSelectedItem().toString());
-        arcc = cusData.getCustSalesCC(ddcust.getSelectedItem().toString());
-        aracct = cusData.getCustSalesAcct(ddcust.getSelectedItem().toString());
-        curr = ddcurr.getSelectedItem().toString();
-        if (terms == null   || aracct == null   || arcc == null || curr == null ||
-                terms.isEmpty() || aracct.isEmpty() || arcc.isEmpty() || curr.isEmpty()
+        
+        if (terms == null   || aracct == null   || arcc == null || ddcurr.getSelectedItem() == null ||
+                terms.isEmpty() || aracct.isEmpty() || arcc.isEmpty() || ddcurr.getSelectedItem().toString().isEmpty()
                  ) {
                 bsmf.MainFrame.show(getMessageTag(1090));
                 return false;
@@ -868,9 +867,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 
                 
              // lets check for foreign currency with no exchange rate
-        if (! curr.toUpperCase().equals(basecurr.toUpperCase())) {
-            if (OVData.getExchangeRate(basecurr, curr).isEmpty()) {
-                bsmf.MainFrame.show(getMessageTag(1091, curr + "/" + basecurr));
+        if (! ddcurr.getSelectedItem().toString().toUpperCase().equals(basecurr.toUpperCase())) {
+            if (OVData.getExchangeRate(basecurr, ddcurr.getSelectedItem().toString()).isEmpty()) {
+                bsmf.MainFrame.show(getMessageTag(1091, ddcurr.getSelectedItem().toString() + "/" + basecurr));
                 return false;
             }
         }
@@ -1765,74 +1764,45 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
            }
             
            String disckey = "";
-            
-            
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-                res = st.executeQuery("select * from cms_det where cms_code = " + "'" + mykey + "'" + " AND " +
-                        " cms_shipto = " + "'" + mykey + "'" + ";");
-                while (res.next()) {
-                    tbshipto.setText(res.getString("cms_shipto"));
-                    tbitemshipto.setText(res.getString("cms_shipto"));
-                    tbname.setText(res.getString("cms_name"));
-                    tbaddr1.setText(res.getString("cms_line1"));
-                    tbaddr2.setText(res.getString("cms_line2"));
-                    tbcity.setText(res.getString("cms_city"));
-                    tbzip.setText(res.getString("cms_zip"));
-                    tbcontact.setText(res.getString("cms_contact"));
-                    tbphone.setText(res.getString("cms_phone"));
-                    tbemail.setText(res.getString("cms_email"));
-                    tbmisc1.setText(res.getString("cms_misc"));
-                    ddstate.setSelectedItem(res.getString("cms_state"));
-                    ddcountry.setSelectedItem(res.getString("cms_country"));
-                }
-                
-                res = st.executeQuery("select cm_name, cm_carrier, cm_tax_code, cm_curr, cm_remarks, cm_disc_code from cm_mstr where cm_code = " + "'" + mykey + "'" + ";");
-                while (res.next()) {
-                    lblcustname.setText(res.getString("cm_name"));
-                    ddshipvia.setSelectedItem((res.getString("cm_carrier")));
-                    ddtax.setSelectedItem((res.getString("cm_tax_code")));
-                    ddcurr.setSelectedItem((res.getString("cm_curr")));
-                    remarks.setText(res.getString("cm_remarks"));
-                    disckey = res.getString("cm_disc_code");
-                }
-                
-                // discounts...first check if generic disc code applied to cust master...else use cust code
-                if (! disckey.isBlank()) {
-                  mykey = disckey;  
-                }
-                res = st.executeQuery("select cpr_disc, cpr_item from cpr_mstr where cpr_cust = " + "'" + mykey + "'" + 
-                                      " AND cpr_type = " + "'" + "DISCOUNT" + "'" + ";");
-                while (res.next()) {
-                    sacmodel.addRow(new Object[]{ "discount", res.getString("cpr_item"), "percent", res.getString("cpr_disc")
-                    });
-                }
-                
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+        
+        // the intial shipto is assumed to be the same address as the billto...they can search for other shiptos with the lookup option   
+        cusData.CustShipSet css = getCustShipSet(new String[]{ddcust.getSelectedItem().toString(), ddcust.getSelectedItem().toString()});
+        if (css == null || css.cm() == null) {
+            return;
+        }
+        
+        lblcustname.setText(css.cm().cm_name());
+        ddshipvia.setSelectedItem((css.cm().cm_carrier()));
+        ddtax.setSelectedItem((css.cm().cm_tax_code()));
+        ddcurr.setSelectedItem(css.cm().cm_curr());
+        remarks.setText(css.cm().cm_remarks());
+        disckey = css.cm().cm_disc_code();
+        terms = css.cm().cm_terms();
+        aracct = css.cm().cm_ar_acct();
+        arcc = css.cm().cm_ar_cc();
+        
+        if (css.cms() != null) {
+            tbshipto.setText(css.cms().cms_shipto());
+            tbitemshipto.setText(css.cms().cms_shipto());
+            tbname.setText(css.cms().cms_name());
+            tbaddr1.setText(css.cms().cms_line1());
+            tbaddr2.setText(css.cms().cms_line2());
+            tbcity.setText(css.cms().cms_city());
+            tbzip.setText(css.cms().cms_zip());
+            tbcontact.setText(css.cms().cms_contact());
+            tbphone.setText(css.cms().cms_phone());
+            tbemail.setText(css.cms().cms_email());
+            tbmisc1.setText(css.cms().cms_misc());
+            ddstate.setSelectedItem(css.cms().cms_state());
+            ddcountry.setSelectedItem(css.cms().cms_country());
+        } 
+        
+        if (! disckey.isBlank()) {
+             mykey = disckey;  
+        }
+        ArrayList<String[]> discs = getDiscountRecsByCust(mykey);
+        for (String[] s : discs) {
+           sacmodel.addRow(new Object[]{ "discount", s[0], "percent", s[1] });
         }
         
         } // if ! isLoad

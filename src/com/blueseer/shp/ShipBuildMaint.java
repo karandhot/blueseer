@@ -642,7 +642,9 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
                 "S", // type
                 "", // sh_so 
                 ddsite.getSelectedItem().toString(),
-                tbtracking.getText());
+                tbtracking.getText(),
+                "" // status 
+        );
                 
         return x;        
     }

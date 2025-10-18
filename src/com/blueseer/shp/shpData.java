@@ -34,6 +34,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
+import static com.blueseer.ctr.cusData._getCMSDet;
 import com.blueseer.ctr.cusData.cm_mstr;
 import com.blueseer.edi.EDI.edi810;
 import com.blueseer.edi.EDI.edi855;
@@ -732,7 +733,8 @@ public class shpData {
                                 res.getString("sh_type"),
                                 res.getString("sh_so"),
                                 res.getString("sh_shipfrom"),
-                                res.getString("sh_trailer")
+                                res.getString("sh_trailer"),
+                                res.getString("sh_status")
                             );
                     }
                 }
@@ -760,11 +762,14 @@ public class shpData {
             }
             
             ship_mstr sh = _getShipMstr(x, bscon, ps, res);
+            ArrayList<shs_det> shs = _getShipshs(x, bscon, ps, res);
             ArrayList<ship_det> shd = _getShipDet(x, bscon, ps, res);
-            
+            ArrayList<ship_tree> sht = _getShipTree(x, bscon, ps, res);
+            ArrayList<sh_meta> shm = _getShipMeta(x, bscon, ps, res);
+            cusData.cms_det cms = _getCMSDet(sh.sh_cust(), sh.sh_ship(), bscon, ps, res );
             
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
-            r = new Shipper(m, sh, shd);
+            r = new Shipper(m, sh, shd, shs, sht, shm, cms);
             
         } catch (SQLException s) {
              MainFrame.bslog(s);
@@ -832,7 +837,8 @@ public class shpData {
                                 res.getString("sh_type"),
                                 res.getString("sh_so"),
                                 res.getString("sh_shipfrom"),
-                                res.getString("sh_trailer")
+                                res.getString("sh_trailer"),
+                                res.getString("sh_status")
                             );
                 }
             }
@@ -862,6 +868,75 @@ public class shpData {
                     res.getString("shd_cont"), res.getString("shd_ref"), res.getString("shd_serial"), res.getString("shd_site"), 
                     res.getString("shd_bom"), res.getDouble("shd_packqty"), res.getString("shd_kvpair") );
                     list.add(r);
+                    }
+            }
+            return list;
+    }
+    
+    private static ArrayList<ship_tree> _getShipTree(String[] x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        ArrayList<ship_tree> list = new ArrayList<ship_tree>();
+        ship_tree r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from ship_tree where ship_sh = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x[0]);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new ship_tree(m);
+            } else {
+                while(res.next()) {
+                    m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+            
+                    r = new ship_tree(m, res.getString("ship_parent"), res.getString("ship_child"), res.getString("ship_site"), 
+                    res.getString("ship_type"), res.getString("ship_sh"), res.getString("ship_shline"), res.getString("ship_so"), res.getString("ship_soline"),
+                    res.getString("ship_po"), res.getString("ship_item"), res.getDouble("ship_qty"),
+                    res.getString("ship_serial") );
+                    list.add(r); 
+                    }
+            }
+            return list;
+    }
+    
+    private static ArrayList<shs_det> _getShipshs(String[] x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        ArrayList<shs_det> list = new ArrayList<shs_det>();
+        shs_det r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from shs_det where shs_nbr = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x[0]);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new shs_det(m);
+            } else {
+                while(res.next()) {
+                    m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                    r = new shs_det(m, res.getString("shs_nbr"), res.getString("shs_so"), res.getString("shs_desc"), 
+                    res.getString("shs_type"), res.getString("shs_amttype"), res.getString("shs_amt") );
+                    list.add(r); 
+                    }
+            }
+            return list;
+    }
+    
+    private static ArrayList<sh_meta> _getShipMeta(String[] x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        ArrayList<sh_meta> list = new ArrayList<sh_meta>();
+        sh_meta r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from sh_meta where shm_id = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x[0]);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new sh_meta(m);
+            } else {
+                while(res.next()) {
+                    m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                    r = new sh_meta(m, res.getString("shm_id"), res.getString("shm_type"), res.getString("shm_key"), 
+                    res.getString("shm_value") );
+                    list.add(r); 
                     }
             }
             return list;
@@ -912,7 +987,8 @@ public class shpData {
                 shiptype,
                 so,
                 shipfrom,
-                tracking // trailer/tracking
+                tracking, // trailer/tracking
+                "" // status
             );
                 
         return x;        
@@ -1094,6 +1170,186 @@ public class shpData {
     
     
     // misc functions
+    public static ArrayList<String[]> getShipperMaintInit(String panelClassName) {
+        String defaultsite = "";
+        ArrayList<String[]> lines = new ArrayList<String[]>();
+        try{
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+        // allocate, custitemonly, site, currency, sites, currencies, uoms, 
+        // states, warehouses, locations, customers, taxcodes, carriers, statuses   
+         String[] sites = null;
+            boolean allsites = false;
+            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + bsmf.MainFrame.userid + "'" + ";");
+            while (res.next()) {
+              if (res.getString("user_allowedsites").equals("*")) {
+                  allsites = true;
+              } else {
+                  sites = res.getString("user_allowedsites").split(",");
+              }
+            }
+            res = st.executeQuery("select site_site from site_mstr;");
+            while (res.next()) {
+               if (allsites || Arrays.stream(sites).anyMatch(res.getString("site_site")::equals)) {
+                 String[] s = new String[2];
+                 s[0] = "sites";
+                 s[1] = res.getString("site_site");
+                 lines.add(s);
+               }
+            }
+            
+            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + bsmf.MainFrame.userid + "'" + 
+                    " AND menu_panel = " + "'" + panelClassName + "'" +
+                    ";");
+            while (res.next()) {
+               if (res.getString("perm_readonly").equals("0")) {
+                String[] s = new String[2];
+                s[0] = "canupdate";
+                s[1] = "true";
+                lines.add(s);
+               } else {
+                String[] s = new String[2];
+                s[0] = "canupdate";
+                s[1] = "false";
+                lines.add(s);   
+               }
+           }
+           
+            res = st.executeQuery("select ov_site, ov_currency from ov_mstr;" );
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "currency";
+               s[1] = res.getString("ov_currency");
+               lines.add(s);
+               s = new String[2];
+               s[0] = "site";
+               s[1] = res.getString("ov_site");
+               lines.add(s);
+               defaultsite = s[1];
+            }
+            
+            
+            res = st.executeQuery("select wh_id from wh_mstr order by wh_id;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "warehouses";
+               s[1] = res.getString("wh_id");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select loc_loc from loc_mstr order by loc_loc;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "locations";
+               s[1] = res.getString("loc_loc");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select cur_id from cur_mstr ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "currencies";
+               s[1] = res.getString("cur_id");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select uom_id from uom_mstr order by uom_id;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "uoms";
+               s[1] = res.getString("uom_id");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select cm_code from cm_mstr order by cm_code ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "customers";
+               s[1] = res.getString("cm_code");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select car_id from car_mstr order by car_id;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "carriers";
+               s[1] = res.getString("car_id");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select code_key from code_mstr where code_code = 'orderstatus' order by code_key ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "statuses";
+               s[1] = res.getString("code_key");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select it_item from item_mstr where it_type = " + "'" + "CONT" + "'" +
+                        " order by it_item ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "items";
+               s[1] = res.getString("it_item");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select so_nbr from so_mstr where so_status = " + "'" + getGlobalProgTag("open") + "'" + 
+                    " or so_status = " + "'" + getGlobalProgTag("commit") + "'" + 
+                    " or so_status = " + "'" + getGlobalProgTag("backorder") + "'" + " ;");
+            
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "orders";
+               s[1] = res.getString("so_nbr");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select sysm_value from sys_meta where " +
+                        " sysm_id = 'system' " + " AND " +
+                        " sysm_type = 'shippercontrol' AND " +
+                        " sysm_key = 'auto_generate_shipper_number' " + 
+                        " order by sysm_value;" );
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "autonumber";
+               s[1] = res.getString("sysm_value");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("SELECT * FROM  ship_ctrl ;");
+            while (res.next()) {
+                String[] s = new String[2];
+                s[0] = "canconfirm";
+                s[1] = res.getString("shc_confirm");
+                lines.add(s);
+            }
+            
+          
+            
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+        return lines;
+    }
+    
+   
     
     public static void _updateShipperStatus(String shipper, Date effdate, Connection bscon) throws SQLException {
         Statement st = bscon.createStatement();
@@ -2683,6 +2939,40 @@ public class shpData {
 
      }
 
+    public static ArrayList<String> getShipperLineNumbers(String shipper) {
+        ArrayList<String> lines = new ArrayList<String>();
+        try{
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+
+           res = st.executeQuery("SELECT shd_line from ship_det " +
+                   " where shd_id = " + "'" + shipper + "'" + ";");
+                        while (res.next()) {
+                          lines.add(res.getString("shd_line"));
+                        }
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+        return lines;
+    }
+    
+    
     public static ArrayList<String[]> getShipperLines(String shipper) {
           ArrayList<String[]> mylist = new ArrayList();  
 
@@ -3888,16 +4178,22 @@ public class shpData {
         
     }   
     
+    public record Shipper(String[] m, ship_mstr sh, ArrayList<ship_det> shd,
+        ArrayList<shs_det> shs, ArrayList<ship_tree> sht, ArrayList<sh_meta> shmeta, cusData.cms_det cms) {
+        public Shipper(String[] m) {
+            this (m, null, null, null, null, null, null);
+        }
+    }
     
     public record ship_mstr(String[] m, String sh_id, String sh_cust, String sh_ship, int sh_pallets, 
         int sh_boxes, String sh_shipvia, String sh_shipdate, String sh_po_date,
         String sh_ref, String sh_po, String sh_rmks, String sh_userid, String sh_site,
         String sh_curr, String sh_wh, String sh_cust_terms, String sh_taxcode,
-        String sh_ar_acct, String sh_ar_cc, String sh_type, String sh_so, String sh_shipfrom, String sh_trailer ) {
+        String sh_ar_acct, String sh_ar_cc, String sh_type, String sh_so, String sh_shipfrom, String sh_trailer, String sh_status ) {
          public ship_mstr(String[] m) {
             this(m, "", "", "", 0, 0, "", "", "", "", "",
                     "", "", "", "", "", "", "", "", "", "",
-                    "", "", "" );
+                    "", "", "", "" );
         }
     }
    
@@ -3936,12 +4232,13 @@ public class shpData {
                     0.0, "" );
         }
     }
-
-   public record Shipper(String[] m, ship_mstr sh, ArrayList<ship_det> shd) {
-        public Shipper(String[] m) {
-            this (m, null, null);
+    
+    public record sh_meta(String[] m, String shm_id, String shm_type, String shm_key, String shm_value) {
+        public sh_meta(String[] m) {
+            this(m, "", "", "", "");
         }
     }
+
     
     
 }
