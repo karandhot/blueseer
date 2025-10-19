@@ -11,6 +11,7 @@
 	<parameter name="reference" class="java.lang.String"/>
 	<parameter name="quantity" class="java.lang.String"/>
 	<parameter name="zip" class="java.lang.String"/>
+	<parameter name="dbtype" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[select sh_id, shd_so, lbl_id, lbl_id_str, lbl_item, shd_desc, lbl_qty,
 sh_cust,  sh_shipvia,  
@@ -18,15 +19,20 @@ lbl_po, shd_uom,
 cm_code, cm_name, cm_line1, 
 cm_line2, 
 cms_name, cms_line1, cms_line2, cms_zip, cms_plantcode,
-site_desc, site_line1 
+site_desc, site_line1,
+case $P{dbtype} when 'sqlite' then
+(select edim_value from edi_meta where edim_id = lbl_po and edim_type = "detail:" || lbl_line AND edim_key = 'CL' )
+else
+(select edim_value from edi_meta where edim_id = lbl_po and edim_type = concat("detail:",lbl_line) AND edim_key = 'CL' )
+end as color,
+(select edim_value from edi_meta where edim_id = lbl_po and edim_type = "detail:1" AND edim_key = 'IZ' ) as size 
 from label_mstr
 inner join ship_det on shd_id = $P{shipper} and shd_so = lbl_order and shd_soline = lbl_line 
 inner join ship_mstr on sh_id = $P{shipper}
 inner join cm_mstr on cm_code = sh_cust 
 left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship 
 inner join site_mstr on site_site = sh_site 
-where lbl_ref = $P{shipper}
-]]>
+where lbl_ref = $P{shipper}]]>
 	</queryString>
 	<field name="site_desc" class="java.lang.String"/>
 	<field name="site_line1" class="java.lang.String"/>
@@ -41,6 +47,8 @@ where lbl_ref = $P{shipper}
 	<field name="cms_zip" class="java.lang.String"/>
 	<field name="cms_plantcode" class="java.lang.String"/>
 	<field name="lbl_id_str" class="java.lang.String"/>
+	<field name="color" class="java.lang.String"/>
+	<field name="size" class="java.lang.String"/>
 	<background>
 		<band splitType="Prevent"/>
 	</background>
@@ -191,21 +199,21 @@ where lbl_ref = $P{shipper}
 				<textFieldExpression><![CDATA[$F{lbl_qty}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="126" y="184" width="70" height="16" uuid="908702bc-a687-43d8-9319-2f964c8ca09f"/>
+				<reportElement x="126" y="184" width="56" height="16" uuid="908702bc-a687-43d8-9319-2f964c8ca09f"/>
 				<textElement>
 					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[STYLE:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="126" y="200" width="70" height="16" uuid="008be89e-e555-4b55-901e-bb6fbae7a0fc"/>
+				<reportElement x="126" y="200" width="56" height="16" uuid="008be89e-e555-4b55-901e-bb6fbae7a0fc"/>
 				<textElement>
 					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[COLOR:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="126" y="216" width="70" height="14" uuid="d4b82a60-b34e-45fa-a708-d31c4d3d4a33"/>
+				<reportElement x="126" y="216" width="56" height="14" uuid="d4b82a60-b34e-45fa-a708-d31c4d3d4a33"/>
 				<textElement>
 					<font size="8" isBold="true"/>
 				</textElement>
@@ -320,6 +328,27 @@ where lbl_ref = $P{shipper}
 			<line>
 				<reportElement x="120" y="230" width="1" height="97" uuid="79cb6a7a-a0f6-42b8-824a-7883f4b48086"/>
 			</line>
+			<textField>
+				<reportElement x="186" y="184" width="67" height="16" uuid="d46ba5e0-aa5e-41a5-b9a0-786f04f09837"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lbl_item}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="186" y="198" width="67" height="16" uuid="0f1c5285-ce59-45a3-a2f8-161c37242377"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{color}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="186" y="215" width="67" height="16" uuid="b9dac24a-c16a-4a89-84b8-b68987cccfe2"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{size}]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 </jasperReport>
