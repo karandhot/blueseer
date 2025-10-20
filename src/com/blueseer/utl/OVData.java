@@ -21784,6 +21784,45 @@ return mylist;
         
     }   
 
+    public static ArrayList<String[]> getSysMetaData(String id) {
+           ArrayList<String[]> myarray = new ArrayList<String[]>();
+         try{
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+                res = st.executeQuery("select sysm_id, sysm_type, sysm_key, sysm_value from sys_meta where " +
+                        " sysm_id = " + "'" + id + "'" + 
+                        " order by sysm_type;" );
+               while (res.next()) {
+                myarray.add(new String[]{res.getString("sysm_id"),res.getString("sysm_type"),res.getString("sysm_key"),res.getString("sysm_value")});                    
+                }
+               
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return myarray;
+        
+    }   
+
+    
     public static String getSysMetaValue(String id, String type, String key) {
          String x = "";
          try{
@@ -21923,6 +21962,48 @@ return mylist;
                 if (res != null) {
                     res.close();
                 }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return x;
+    }
+
+    public static boolean deleteSysMeta(String id, String type, String key, String value) {
+        boolean x = false;
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            
+            try {
+                if (value.isBlank()) {
+                 st.executeUpdate("delete from sys_meta "
+                            + " where sysm_id = " + "'" + id + "'" + " and "
+                            + " sysm_type = " +  "'" + type + "'" + " and "
+                            + " sysm_key = " +  "'" + key +  ";");   
+                } else {
+                st.executeUpdate("delete from sys_meta "
+                            + " where sysm_id = " + "'" + id + "'" + " and "
+                            + " sysm_type = " +  "'" + type + "'" + " and "
+                            + " sysm_key = " +  "'" + key + "'" + " and "        
+                            + " sysm_value = " +  "'" + value + "'"  
+                            + ";");
+                }
+               
+            } // if proceed
+            catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
                 if (st != null) {
                     st.close();
                 }

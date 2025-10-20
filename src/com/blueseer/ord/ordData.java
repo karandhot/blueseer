@@ -3371,6 +3371,50 @@ public class ordData {
         return x;
     }
 
+    public static boolean deleteSOMeta(String id, String type, String key, String value) {
+        boolean x = false;
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            
+            try {
+                if (value.isBlank()) {
+                st.executeUpdate("delete from so_meta "
+                            + " where som_id = " + "'" + id + "'" + " and "
+                            + " som_type = " +  "'" + type + "'" + " and "
+                            + " som_key = " +  "'" + key + "'" + 
+                            ";");    
+                } else {
+                st.executeUpdate("delete from so_meta "
+                            + " where som_id = " + "'" + id + "'" + " and "
+                            + " som_type = " +  "'" + type + "'" + " and "
+                            + " som_key = " +  "'" + key + "'" + " and "        
+                            + " som_value = " +  "'" + value + "'"  
+                            + ";");
+                }
+               
+            } // if proceed
+            catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return x;
+    }
+
+    
     public static void addUpdateSOMetaNotes(String id, String[] values) {  //used primarily for order notes where key is counter
         
         
@@ -3506,6 +3550,45 @@ public class ordData {
         return x;
         
     }   
+    
+    public static ArrayList<String[]> getSOMetaData(String id) {
+         ArrayList<String[]> x = new ArrayList<String[]>();
+         try{
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+                res = st.executeQuery("select * from so_meta where " +
+                        " som_id = " + "'" + id + "'" + 
+                        " order by som_key;" );
+               while (res.next()) {
+                x.add(new String[]{res.getString("som_id"),res.getString("som_type"),res.getString("som_key"),res.getString("som_value")});                    
+                }
+               
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return x;
+        
+    }   
+    
     
     private static ArrayList<String[]> _getSOMeta(String sonbr, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
         ArrayList<String[]> list = new ArrayList<String[]>();

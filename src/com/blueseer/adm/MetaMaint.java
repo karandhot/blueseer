@@ -26,44 +26,23 @@ SOFTWARE.
 
 package com.blueseer.adm;
 
-import bsmf.MainFrame;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.pass;
+
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
-import static com.blueseer.adm.admData.addJaspMstr;
-import static com.blueseer.adm.admData.deleteJaspMstr;
-import static com.blueseer.adm.admData.getJaspMstr;
-import com.blueseer.adm.admData.jasp_mstr;
-import static com.blueseer.adm.admData.updateJaspMstr;
+import static com.blueseer.edi.ediData.addUpdateEDIMeta;
+import static com.blueseer.edi.ediData.deleteEDIMeta;
+import static com.blueseer.edi.ediData.getEDIMetaValueAll;
+import static com.blueseer.ord.ordData.addUpdateSOMeta;
+import static com.blueseer.ord.ordData.deleteSOMeta;
+import static com.blueseer.ord.ordData.getSOMetaData;
 import com.blueseer.utl.BlueSeerUtils;
-import static com.blueseer.utl.BlueSeerUtils.callDialog;
-import com.blueseer.utl.BlueSeerUtils.dbaction;
-import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
-import static com.blueseer.utl.BlueSeerUtils.luTable;
-import static com.blueseer.utl.BlueSeerUtils.lual;
-import static com.blueseer.utl.BlueSeerUtils.ludialog;
-import static com.blueseer.utl.BlueSeerUtils.luinput;
-import static com.blueseer.utl.BlueSeerUtils.luml;
-import static com.blueseer.utl.BlueSeerUtils.lurb1;
+
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
-import static com.blueseer.utl.BlueSeerUtils.luModel;
-import com.blueseer.utl.DTData;
-import com.blueseer.utl.IBlueSeerT;
-import com.blueseer.utl.OVData;
+
+import static com.blueseer.utl.OVData.addUpdateSysMeta;
+import static com.blueseer.utl.OVData.deleteSysMeta;
+import static com.blueseer.utl.OVData.getSysMetaData;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
+import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -74,7 +53,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JViewport;
-import javax.swing.SwingWorker;
 
 /**
  *
@@ -85,7 +63,7 @@ public class MetaMaint extends javax.swing.JPanel {
    
     // global variable declarations
                 boolean isLoad = false;
-                public static jasp_mstr x = null;
+                
     // global datatablemodel declarations       
     javax.swing.table.DefaultTableModel tablemodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
             new String[]{
@@ -284,58 +262,30 @@ public class MetaMaint extends javax.swing.JPanel {
         tbvalue.setText("");
         tablemodel.setRowCount(0);
         
-        String fieldname = "edim_id";
+        ArrayList<String[]> arr = new ArrayList<>();
+        
         if (tablename.equals("sys_meta")) {
-            fieldname = "sysm_id";
+            arr = getSysMetaData(idvalue);
+        }
+        if (tablename.equals("edi_meta")) {
+            arr = getEDIMetaValueAll(idvalue);
         }
         if (tablename.equals("so_meta")) {
-            fieldname = "som_id";
+            arr = getSOMetaData(idvalue);
         }
-        
-        try {
+        int i = 0;
+        for (String[] s : arr) {
+            i++;
+            tablemodel.addRow(new Object[]{
+                s[0], 
+                s[1],
+                s[2],
+                s[3]
+            });
+        }
 
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                if (idvalue.isBlank()) {
-                   res = st.executeQuery("SELECT * from " +  tablename  + ";"); 
-                } else {
-                   res = st.executeQuery("SELECT * from " +  tablename  + " where " + fieldname  + " = " + "'" + idvalue + "'" + ";"); 
-                }
-                
-                    while (res.next()) {
-                        i++;
-                        tablemodel.addRow(new Object[]{
-                            res.getString(1), 
-                            res.getString(2),
-                            res.getString(3),
-                            res.getString(4)
-                        });
-                    }
-                    
-                    lbcount.setText(String.valueOf(i));
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        lbcount.setText(String.valueOf(i));
+         
     }
     
     /**
@@ -573,81 +523,14 @@ public class MetaMaint extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btaddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddActionPerformed
-        try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-               int i = 0;
-               String tablename = "";
-               
-                if (ddtable.getSelectedItem().toString().equals("sys_meta")) {
-                   tablename = "sys_meta";
-                res = st.executeQuery("SELECT * from sys_meta where " + 
-                        " sysm_id = " + "'" + tbid.getText() + "'" + " AND " + 
-                        " sysm_type = " + "'" + tbtype.getText() + "'" + " AND " + 
-                        " sysm_key = " + "'" + tbkey.getText() + "'" + " AND " + 
-                        " sysm_value = " + "'" + tbvalue.getText() + "'" +         
-                        ";");
-                    while (res.next()) {
-                        i++;
-                    }
-                }
-               
-                if (ddtable.getSelectedItem().toString().equals("edi_meta")) {
-                   tablename = "edi_meta";
-                res = st.executeQuery("SELECT * from edi_meta where " + 
-                        " edim_id = " + "'" + tbid.getText() + "'" + " AND " + 
-                        " edim_type = " + "'" + tbtype.getText() + "'" + " AND " + 
-                        " edim_key = " + "'" + tbkey.getText() + "'" + " AND " + 
-                        " edim_value = " + "'" + tbvalue.getText() + "'" +         
-                        ";");
-                    while (res.next()) {
-                        i++;
-                    }
-                }
-                
-                if (ddtable.getSelectedItem().toString().equals("so_meta")) {
-                   tablename = "so_meta";
-                res = st.executeQuery("SELECT * from so_meta where " + 
-                        " som_id = " + "'" + tbid.getText() + "'" + " AND " + 
-                        " som_type = " + "'" + tbtype.getText() + "'" + " AND " + 
-                        " som_key = " + "'" + tbkey.getText() + "'" + " AND " + 
-                        " som_value = " + "'" + tbvalue.getText() + "'" +         
-                        ";");
-                    while (res.next()) {
-                        i++;
-                    }
-                }
-               
-               
-               if (i == 0) { 
-               st.executeUpdate("insert into " + tablename + " values ( " +
-                                "'" + tbid.getText() + "'" + "," +
-                                "'" + tbtype.getText() + "'" + "," +
-                                "'" + tbkey.getText() + "'" + "," +
-                                "'" + tbvalue.getText() + "'" + " ); ");
-               }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
+        if (ddtable.getSelectedItem().toString().equals("sys_meta")) {
+        addUpdateSysMeta(tbid.getText(), tbtype.getText(), tbkey.getText(), tbvalue.getText());
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
+        if (ddtable.getSelectedItem().toString().equals("edi_meta")) {
+        addUpdateEDIMeta(tbid.getText(), tbtype.getText(), tbkey.getText(), tbvalue.getText());
+        }
+        if (ddtable.getSelectedItem().toString().equals("so_meta")) {
+        addUpdateSOMeta(tbid.getText(), tbtype.getText(), tbkey.getText(), tbvalue.getText());
         }
         
         searchTable(ddtable.getSelectedItem().toString(), tbkeysearch.getText());
@@ -655,116 +538,28 @@ public class MetaMaint extends javax.swing.JPanel {
     }//GEN-LAST:event_btaddActionPerformed
 
     private void btupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateActionPerformed
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-               int i = 0;
-               String tablename = "";
-               
-                if (ddtable.getSelectedItem().toString().equals("sys_meta")) {
-                st.executeUpdate("update sys_meta set sysm_value = " + "'" + tbvalue.getText() + "'" +   
-                        " where sysm_id = " + "'" + tbid.getText() + "'" + " AND " + 
-                        " sysm_type = " + "'" + tbtype.getText() + "'" + " AND " + 
-                        " sysm_key = " + "'" + tbkey.getText() + "'" +    
-                        ";");
-                }
-               
-                if (ddtable.getSelectedItem().toString().equals("edi_meta")) {
-                st.executeUpdate("update edi_meta set edim_value = " + "'" + tbvalue.getText() + "'" +   
-                        " where edim_id = " + "'" + tbid.getText() + "'" + " AND " + 
-                        " edim_type = " + "'" + tbtype.getText() + "'" + " AND " + 
-                        " edim_key = " + "'" + tbkey.getText() + "'" +    
-                        ";");
-                }
-                
-                if (ddtable.getSelectedItem().toString().equals("so_meta")) {
-                st.executeUpdate("update so_meta set som_value = " + "'" + tbvalue.getText() + "'" +   
-                        " where som_id = " + "'" + tbid.getText() + "'" + " AND " + 
-                        " som_type = " + "'" + tbtype.getText() + "'" + " AND " + 
-                        " som_key = " + "'" + tbkey.getText() + "'" +    
-                        ";");
-                }
-             
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
+      if (ddtable.getSelectedItem().toString().equals("sys_meta")) {
+        addUpdateSysMeta(tbid.getText(), tbtype.getText(), tbkey.getText(), tbvalue.getText());
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
+        if (ddtable.getSelectedItem().toString().equals("edi_meta")) {
+        addUpdateEDIMeta(tbid.getText(), tbtype.getText(), tbkey.getText(), tbvalue.getText());
         }
-      
-      searchTable(ddtable.getSelectedItem().toString(), tbkeysearch.getText());
+        if (ddtable.getSelectedItem().toString().equals("so_meta")) {
+        addUpdateSOMeta(tbid.getText(), tbtype.getText(), tbkey.getText(), tbvalue.getText());
+        }
+        
+        searchTable(ddtable.getSelectedItem().toString(), tbkeysearch.getText());
     }//GEN-LAST:event_btupdateActionPerformed
 
     private void btdeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteActionPerformed
-         try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-               int i = 0;
-               String tablename = "";
-               
-                if (ddtable.getSelectedItem().toString().equals("sys_meta")) {
-                st.executeUpdate("delete from sys_meta " +  
-                        " where sysm_id = " + "'" + tbid.getText() + "'" + " AND " + 
-                        " sysm_type = " + "'" + tbtype.getText() + "'" + " AND " + 
-                        " sysm_key = " + "'" + tbkey.getText() + "'" +    
-                        ";");
-                }
-               
-                if (ddtable.getSelectedItem().toString().equals("edi_meta")) {
-                st.executeUpdate("delete from edi_meta " +  
-                        " where edim_id = " + "'" + tbid.getText() + "'" + " AND " + 
-                        " edim_type = " + "'" + tbtype.getText() + "'" + " AND " + 
-                        " edim_key = " + "'" + tbkey.getText() + "'" +    
-                        ";");
-                }
-                
-                if (ddtable.getSelectedItem().toString().equals("so_meta")) {
-                st.executeUpdate("delete from so_meta " +  
-                        " where som_id = " + "'" + tbid.getText() + "'" + " AND " + 
-                        " som_type = " + "'" + tbtype.getText() + "'" + " AND " + 
-                        " som_key = " + "'" + tbkey.getText() + "'" +    
-                        ";");
-                }
-             
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
+         if (ddtable.getSelectedItem().toString().equals("sys_meta")) {
+        deleteSysMeta(tbid.getText(), tbtype.getText(), tbkey.getText(), tbvalue.getText());
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
+        if (ddtable.getSelectedItem().toString().equals("edi_meta")) {
+        deleteEDIMeta(tbid.getText(), tbtype.getText(), tbkey.getText(), tbvalue.getText());
+        }
+        if (ddtable.getSelectedItem().toString().equals("so_meta")) {
+        deleteSOMeta(tbid.getText(), tbtype.getText(), tbkey.getText(), tbvalue.getText());
         }
          
          searchTable(ddtable.getSelectedItem().toString(), tbkeysearch.getText());

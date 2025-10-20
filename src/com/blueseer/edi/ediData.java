@@ -2764,6 +2764,48 @@ public class ediData {
         return x;
     }
 
+    public static boolean deleteEDIMeta(String id, String type, String key, String value) {
+        boolean x = false;
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            
+            try {
+                if (value.isBlank()) {
+                 st.executeUpdate("delete from edi_meta "
+                            + " where edim_id = " + "'" + id + "'" + " and "
+                            + " edim_type = " +  "'" + type + "'" + " and "
+                            + " edim_key = " +  "'" + key +  ";");   
+                } else {
+                st.executeUpdate("delete from edi_meta "
+                            + " where edim_id = " + "'" + id + "'" + " and "
+                            + " edim_type = " +  "'" + type + "'" + " and "
+                            + " edim_key = " +  "'" + key + "'" + " and "        
+                            + " edim_value = " +  "'" + value + "'"  
+                            + ";");
+                }
+               
+            } // if proceed
+            catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return x;
+    }
+
     public static boolean addUpdateEDIMetaMulti(ArrayList<String[]> list) {
         boolean x = false;
         try {
