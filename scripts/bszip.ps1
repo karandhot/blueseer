@@ -20,7 +20,6 @@ $wip = "c:\bs\wip"
 #}
 
 
-<#
 # create jar only patch zip file
 $jaronly = "blueseer.jaronly." + $version + "." + $patch  + ".zip"
 rm $wip\$jaronly
@@ -66,7 +65,6 @@ compress-archive -update -path sclnk.vbs -destinationpath $wip\$myzip
 compress-archive -update -path bslogging.properties -destinationpath $wip\$myzip
 compress-archive -update -path ..\.patch -destinationpath $wip\$myzip
 compress-archive -update -path ..\jre17 -destinationpath $wip\$myzip
-#>
 
 $myzip = "blueseer.sqlite.win.v" + $version + ".zip"
 rm $wip\$myzip
