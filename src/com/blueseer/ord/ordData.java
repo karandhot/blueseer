@@ -3168,6 +3168,7 @@ public class ordData {
         if (bm.bill_nextbilldate().isBlank()) {
             return;
         }
+        
         if (getBillTranByDate(bm.bill_nbr(), parseDateLD(bm.bill_nextbilldate())) != null) {
            return;   // tran record already created...bale
         } 
@@ -3182,7 +3183,7 @@ public class ordData {
         
         // if here...we need to bill it
         // get last tran record...if any
-       String[] lasttran = getBillTranLast(bm.bill_nbr()); 
+       String[] lasttran = getBillTranLast(bm.bill_nbr());  // id, invoice nbr, start, end
        
        if (lasttran == null) {
            xstart = parseDateLD(bm.bill_servicedate());
@@ -3192,8 +3193,8 @@ public class ordData {
          //  xstart = parseDateLD(lasttran[3]).plusDays(1);
          //  xend = xstart.plusDays(xstart.lengthOfMonth()); // total for year should sum to 365 or 366
            int day = parseDateLD(bm.bill_servicedate()).getDayOfMonth();
-           xstart = now.withDayOfMonth(day);
-           xend = xstart.plusDays(xstart.lengthOfMonth()); // total for year should sum to 365 or 366
+           xstart = now.withDayOfMonth(day).minusMonths(1); 
+           xend = xstart.plusMonths(1); // total for year should sum to 365 or 366
        }
         
        int shipperid = OVData.getNextNbr("shipper", bscon);

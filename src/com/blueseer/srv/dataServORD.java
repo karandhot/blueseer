@@ -27,6 +27,7 @@ package com.blueseer.srv;
 
 import bsmf.MainFrame;
 import static bsmf.MainFrame.ConvertStringToBool;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.driver;
 import static bsmf.MainFrame.ds;
@@ -65,6 +66,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -224,6 +227,55 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                 }
                
               
+                // new option for api data calls
+                // receive class, method, rtype, arrayOfArguments as headers
+                // use reflection to call class.method
+                // stringify the return based on filtering the rtype of the method
+                /*
+                String rtype = "";
+                String rclass = request.getHeader("rclass");
+                String rmethod = "";
+                String[] rargs = new String[]{"a", "b", "c"};
+                Class cls;  
+                try {
+                cls = Class.forName(rclass);            
+                Object obj = cls.getDeclaredConstructor().newInstance();
+                Method method = cls.getDeclaredMethod(rmethod, String[].class);
+                Object oc = method.invoke(obj, (Object[]) rargs);
+                    if (oc != null) {
+                        if (oc instanceof String[] oString) {
+                           StringBuilder sb = new StringBuilder();
+                           for (String s : oString) {
+                               sb.append(s).append(",");
+                           }
+                           response.getWriter().println(sb.toString());
+                        }
+                        if (oc instanceof ArrayList oString && rtype.equals("ArrayList<String>")) {
+                           StringBuilder sb = new StringBuilder();
+                           for (Object s : oString) {
+                               sb.append((String) s).append("\n");
+                           }
+                           response.getWriter().println(sb.toString());
+                        }
+                        if (oc instanceof ArrayList oString && rtype.equals("ArrayList<String[]>")) {
+                           StringBuilder sb = new StringBuilder();
+                           for (Object s : oString) {
+                               for (Object z : (String[]) s) {
+                                   sb.append((String) z).append(",");
+                               }
+                               sb.append((String) s).append("\n");
+                           }
+                           response.getWriter().println(sb.toString());
+                        }
+                        if (oc instanceof String oString) {
+                          response.getWriter().println(oc);
+                        }
+                    }
+                } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                    response.getWriter().println("reflection error");
+                    bslog(ex.getMessage() + ": " + ex.getCause());
+                }
+                */
                 
                 // process specific app (id)
                 if (id.equals("exportOrderDetail")) { 

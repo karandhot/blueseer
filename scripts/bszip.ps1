@@ -20,6 +20,7 @@ $wip = "c:\bs\wip"
 #}
 
 
+<#
 # create jar only patch zip file
 $jaronly = "blueseer.jaronly." + $version + "." + $patch  + ".zip"
 rm $wip\$jaronly
@@ -65,5 +66,19 @@ compress-archive -update -path sclnk.vbs -destinationpath $wip\$myzip
 compress-archive -update -path bslogging.properties -destinationpath $wip\$myzip
 compress-archive -update -path ..\.patch -destinationpath $wip\$myzip
 compress-archive -update -path ..\jre17 -destinationpath $wip\$myzip
+#>
 
-
+$myzip = "blueseer.sqlite.win.v" + $version + ".zip"
+rm $wip\$myzip
+compress-archive -path ..\sf\zebra -destinationpath $wip\$myzip
+compress-archive -update -path ..\sf\conf,..\sf\attachments,..\sf\logs,..\sf\patches,..\sf\temp,..\sf\custom,..\sf\jasper,..\sf\data,..\sf\edi,..\sf\images -destinationpath $wip\$myzip
+compress-archive -update -path ..\dist -destinationpath $wip\$myzip
+compress-archive -update -path bs.cfg -destinationpath $wip\$myzip
+compress-archive -update -path login.bat -destinationpath $wip\$myzip
+compress-archive -update -path sclnk.vbs -destinationpath $wip\$myzip
+compress-archive -update -path bslogging.properties -destinationpath $wip\$myzip
+compress-archive -update -path ..\.patch -destinationpath $wip\$myzip
+compress-archive -update -path ..\jre17 -destinationpath $wip\$myzip
+#$zip = [System.IO.Compression.ZipFile]::Open("$wip\$myzip", [System.IO.Compression.ZipArchiveMode]::Update)
+#$zip.CreateEntry("edi/in")
+#$zip.Dispose()
