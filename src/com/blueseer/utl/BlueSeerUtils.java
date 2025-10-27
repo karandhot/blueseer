@@ -92,6 +92,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.swing.BoxLayout;
@@ -2443,12 +2446,10 @@ public class BlueSeerUtils {
         StringBuilder sb = new StringBuilder();
         String urlString = "";
         if (! bsmf.MainFrame.rhost.isBlank()) {
-            urlString = "http://" + bsmf.MainFrame.rhost + ":" + bsmf.MainFrame.serverport + "/bsapi/" + dataClass; 
+            urlString = bsmf.MainFrame.protocol + "://" + bsmf.MainFrame.rhost + ":" + bsmf.MainFrame.serverport + "/bsapi/" + dataClass; 
         } else {
-            urlString = "http://" + bsmf.MainFrame.ip + ":" + bsmf.MainFrame.serverport + "/bsapi/" + dataClass;
+            urlString = bsmf.MainFrame.protocol + "://" + bsmf.MainFrame.ip + ":" + bsmf.MainFrame.serverport + "/bsapi/" + dataClass;
         }
-        
-        HttpURLConnection conn = null;
         
         String user = bsmf.MainFrame.user;
         String pass = bsmf.MainFrame.pass;
@@ -2466,41 +2467,79 @@ public class BlueSeerUtils {
         
         URL url = new URL(urlString);
         
-        
-        conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestProperty("Content-Type", "text/plain");
-        conn.setConnectTimeout(10000);
-        conn.setReadTimeout(300000);
-       // conn.setRequestMethod("GET");    
-           
-        if (! user.isBlank() && ! pass.isBlank()) {
-        String userCredentials = new String(user + ":" + pass);
-        String basicAuth = "Basic " + Base64.toBase64String(userCredentials.getBytes());
-        conn.setRequestProperty("Authorization", basicAuth);
-        } else {
-            return sb.toString();
-        } 
-        
-       // System.out.println(urlString);
-        
-        
-        if (conn.getResponseCode() != 200) {
-                    sb.append(conn.getResponseCode() + ": " + conn.getResponseMessage());
-                    //throw new RuntimeException("Failed : HTTP error code : "
-                    //		+ conn.getResponseCode());
-                    
-        } else {
-            BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
-            String output = "";
-            
-            while ((output = br.readLine()) != null) {
-                sb.append(output).append("\n");
+        if (bsmf.MainFrame.protocol.equals("http")) {
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestProperty("Content-Type", "text/plain");
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(300000);
+           // conn.setRequestMethod("GET");    
+
+            if (! user.isBlank() && ! pass.isBlank()) {
+            String userCredentials = new String(user + ":" + pass);
+            String basicAuth = "Basic " + Base64.toBase64String(userCredentials.getBytes());
+            conn.setRequestProperty("Authorization", basicAuth);
+            } else {
+                return sb.toString();
+            } 
+
+           // System.out.println(urlString);
+
+
+            if (conn.getResponseCode() != 200) {
+                        sb.append(conn.getResponseCode() + ": " + conn.getResponseMessage());
+                        //throw new RuntimeException("Failed : HTTP error code : "
+                        //		+ conn.getResponseCode());
+
+            } else {
+                BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+                String output = "";
+
+                while ((output = br.readLine()) != null) {
+                    sb.append(output).append("\n");
+                }
+                br.close(); 
             }
-            br.close(); 
-        }
-        
-        if (conn != null) {
-          conn.disconnect();
+
+            if (conn != null) {
+              conn.disconnect();
+            }
+        } else {
+            HttpsURLConnection connssl = (HttpsURLConnection) url.openConnection();
+            connssl.setHostnameVerifier(allHostsValid);
+            connssl.setRequestProperty("Content-Type", "text/plain");
+            connssl.setConnectTimeout(10000);
+            connssl.setReadTimeout(300000);
+           // conn.setRequestMethod("GET");    
+
+            if (! user.isBlank() && ! pass.isBlank()) {
+            String userCredentials = new String(user + ":" + pass);
+            String basicAuth = "Basic " + Base64.toBase64String(userCredentials.getBytes());
+            connssl.setRequestProperty("Authorization", basicAuth);
+            } else {
+                return sb.toString();
+            } 
+
+           // System.out.println(urlString);
+
+
+            if (connssl.getResponseCode() != 200) {
+                        sb.append(connssl.getResponseCode() + ": " + connssl.getResponseMessage());
+                        //throw new RuntimeException("Failed : HTTP error code : "
+                        //		+ conn.getResponseCode());
+
+            } else {
+                BufferedReader br = new BufferedReader(new InputStreamReader((connssl.getInputStream())));
+                String output = "";
+
+                while ((output = br.readLine()) != null) {
+                    sb.append(output).append("\n");
+                }
+                br.close(); 
+            }
+
+            if (connssl != null) {
+              connssl.disconnect();
+            }
         }
         
        return sb.toString();
@@ -2511,12 +2550,12 @@ public class BlueSeerUtils {
         StringBuilder sb = new StringBuilder();
         String urlString = "";
         if (! bsmf.MainFrame.rhost.isBlank()) {
-            urlString = "http://" + bsmf.MainFrame.rhost + ":" + bsmf.MainFrame.serverport + "/bsapi/dataServ";
+            urlString = bsmf.MainFrame.protocol + "://" + bsmf.MainFrame.rhost + ":" + bsmf.MainFrame.serverport + "/bsapi/dataServ";
         } else {
-            urlString = "http://" + bsmf.MainFrame.ip + ":" + bsmf.MainFrame.serverport + "/bsapi/dataServ";
+            urlString = bsmf.MainFrame.protocol + "://" + bsmf.MainFrame.ip + ":" + bsmf.MainFrame.serverport + "/bsapi/dataServ";
         }
         
-        HttpURLConnection conn = null;
+       
         
         String user = bsmf.MainFrame.user;
         String pass = bsmf.MainFrame.pass;
@@ -2533,64 +2572,121 @@ public class BlueSeerUtils {
             postDataBytes = postData.getBytes("UTF-8");
         }
         
-        conn = (HttpURLConnection) url.openConnection();
+        
+        if (bsmf.MainFrame.protocol.equals("http")) {
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setDoOutput(true);
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(300000);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "text/plain");
+            conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
 
-        
-        conn.setDoOutput(true);
-        conn.setConnectTimeout(10000);
-        conn.setReadTimeout(300000);
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "text/plain");
-        conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
-        
-        // Custom Headers
-        for (String[] h : hlist) {
-         conn.setRequestProperty(h[0],h[1]);
-        }
-        
-        
-             
-        // auth   
-        if (! user.isBlank() && ! pass.isBlank()) {
-        String userCredentials = new String(user + ":" + pass);
-        String basicAuth = "Basic " + Base64.toBase64String(userCredentials.getBytes());
-        conn.setRequestProperty("Authorization", basicAuth);
-        } else {
-            return sb.toString();
-        } 
-        
-                
-        
-        
-        conn.getOutputStream().write(postDataBytes);
-               
-        
-        if (conn.getResponseCode() != 200) {
-                    sb.append(conn.getResponseCode() + ": " + conn.getResponseMessage());
-                    String output = "";
-                    BufferedReader br = new BufferedReader(new InputStreamReader((conn.getErrorStream())));
-                    while ((output = br.readLine()) != null) {
-                        sb.append(output).append("\n");
-                    }
-                    br.close(); 
-                    //throw new RuntimeException("Failed : HTTP error code : "
-                    //		+ conn.getResponseCode());
-                    
-        } else {
-            BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
-            String output = "";
-            
-            
-            while ((output = br.readLine()) != null) {
-                sb.append(output).append("\n");
+            // Custom Headers
+            for (String[] h : hlist) {
+             conn.setRequestProperty(h[0],h[1]);
             }
-            br.close(); 
-        }
-        
-        if (conn != null) {
-          conn.disconnect();
-        }
-        
+
+
+
+            // auth   
+            if (! user.isBlank() && ! pass.isBlank()) {
+            String userCredentials = new String(user + ":" + pass);
+            String basicAuth = "Basic " + Base64.toBase64String(userCredentials.getBytes());
+            conn.setRequestProperty("Authorization", basicAuth);
+            } else {
+                return sb.toString();
+            } 
+
+
+
+
+            conn.getOutputStream().write(postDataBytes);
+
+
+            if (conn.getResponseCode() != 200) {
+                        sb.append(conn.getResponseCode() + ": " + conn.getResponseMessage());
+                        String output = "";
+                        BufferedReader br = new BufferedReader(new InputStreamReader((conn.getErrorStream())));
+                        while ((output = br.readLine()) != null) {
+                            sb.append(output).append("\n");
+                        }
+                        br.close(); 
+                        //throw new RuntimeException("Failed : HTTP error code : "
+                        //		+ conn.getResponseCode());
+
+            } else {
+                BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+                String output = "";
+
+
+                while ((output = br.readLine()) != null) {
+                    sb.append(output).append("\n");
+                }
+                br.close(); 
+            }
+
+            if (conn != null) {
+              conn.disconnect();
+            }
+        } else {
+            HttpsURLConnection connssl = (HttpsURLConnection) url.openConnection();
+            connssl.setHostnameVerifier(allHostsValid);
+            connssl.setDoOutput(true);
+            connssl.setConnectTimeout(10000);
+            connssl.setReadTimeout(300000);
+            connssl.setRequestMethod("POST");
+            connssl.setRequestProperty("Content-Type", "text/plain");
+            connssl.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
+
+            // Custom Headers
+            for (String[] h : hlist) {
+             connssl.setRequestProperty(h[0],h[1]);
+            }
+
+
+
+            // auth   
+            if (! user.isBlank() && ! pass.isBlank()) {
+            String userCredentials = new String(user + ":" + pass);
+            String basicAuth = "Basic " + Base64.toBase64String(userCredentials.getBytes());
+            connssl.setRequestProperty("Authorization", basicAuth);
+            } else {
+                return sb.toString();
+            } 
+
+
+
+
+            connssl.getOutputStream().write(postDataBytes);
+
+
+            if (connssl.getResponseCode() != 200) {
+                        sb.append(connssl.getResponseCode() + ": " + connssl.getResponseMessage());
+                        String output = "";
+                        BufferedReader br = new BufferedReader(new InputStreamReader((connssl.getErrorStream())));
+                        while ((output = br.readLine()) != null) {
+                            sb.append(output).append("\n");
+                        }
+                        br.close(); 
+                        //throw new RuntimeException("Failed : HTTP error code : "
+                        //		+ conn.getResponseCode());
+
+            } else {
+                BufferedReader br = new BufferedReader(new InputStreamReader((connssl.getInputStream())));
+                String output = "";
+
+
+                while ((output = br.readLine()) != null) {
+                    sb.append(output).append("\n");
+                }
+                br.close(); 
+            }
+
+            if (connssl != null) {
+              connssl.disconnect();
+            } 
+        } 
        return sb.toString();
     }
 
@@ -2599,12 +2695,12 @@ public class BlueSeerUtils {
         StringBuilder sb = new StringBuilder();
         String urlString = "";
         if (! bsmf.MainFrame.rhost.isBlank()) {
-            urlString = "http://" + bsmf.MainFrame.rhost + ":" + bsmf.MainFrame.serverport + "/bsapi/" + dataClass; 
+            urlString = bsmf.MainFrame.protocol + "://" + bsmf.MainFrame.rhost + ":" + bsmf.MainFrame.serverport + "/bsapi/" + dataClass; 
         } else {
-            urlString = "http://" + bsmf.MainFrame.ip + ":" + bsmf.MainFrame.serverport + "/bsapi/" + dataClass; 
+            urlString = bsmf.MainFrame.protocol + "://"  + bsmf.MainFrame.ip + ":" + bsmf.MainFrame.serverport + "/bsapi/" + dataClass; 
         }
         
-        HttpURLConnection conn = null;
+       
         
         String user = bsmf.MainFrame.user;
         String pass = bsmf.MainFrame.pass;
@@ -2621,85 +2717,138 @@ public class BlueSeerUtils {
             postDataBytes = postData.getBytes("UTF-8");
         }
         
-        conn = (HttpURLConnection) url.openConnection();
+        if (bsmf.MainFrame.protocol.equals("http")) {
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setDoOutput(true);
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(300000);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "text/plain");
+            conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
 
-        
-        conn.setDoOutput(true);
-        conn.setConnectTimeout(10000);
-        conn.setReadTimeout(300000);
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "text/plain");
-        conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
-        
-        // Custom Headers
-        for (String[] h : hlist) {
-         conn.setRequestProperty(h[0],h[1]);
-        }
-        
-        
-             
-        // auth   
-        if (! user.isBlank() && ! pass.isBlank()) {
-        String userCredentials = new String(user + ":" + pass);
-        String basicAuth = "Basic " + Base64.toBase64String(userCredentials.getBytes());
-        conn.setRequestProperty("Authorization", basicAuth);
-        } else {
-            return sb.toString();
-        } 
-        
-                
-        
-        
-        conn.getOutputStream().write(postDataBytes);
-               
-        
-        if (conn.getResponseCode() != 200) {
-                    sb.append(conn.getResponseCode() + ": " + conn.getResponseMessage());
-                    String output = "";
-                    BufferedReader br = new BufferedReader(new InputStreamReader((conn.getErrorStream())));
-                    while ((output = br.readLine()) != null) {
-                        sb.append(output).append("\n");
-                    }
-                    br.close(); 
-                    //throw new RuntimeException("Failed : HTTP error code : "
-                    //		+ conn.getResponseCode());
-                    
-        } else {
-            BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
-            String output = "";
-            
-            
-            while ((output = br.readLine()) != null) {
-                sb.append(output).append("\n");
+            // Custom Headers
+            for (String[] h : hlist) {
+             conn.setRequestProperty(h[0],h[1]);
             }
-            br.close(); 
-        }
+
+            // auth   
+            if (! user.isBlank() && ! pass.isBlank()) {
+            String userCredentials = new String(user + ":" + pass);
+            String basicAuth = "Basic " + Base64.toBase64String(userCredentials.getBytes());
+            conn.setRequestProperty("Authorization", basicAuth);
+            } else {
+                return sb.toString();
+            } 
+
+            conn.getOutputStream().write(postDataBytes);
+
+
+            if (conn.getResponseCode() != 200) {
+                        sb.append(conn.getResponseCode() + ": " + conn.getResponseMessage());
+                        String output = "";
+                        BufferedReader br = new BufferedReader(new InputStreamReader((conn.getErrorStream())));
+                        while ((output = br.readLine()) != null) {
+                            sb.append(output).append("\n");
+                        }
+                        br.close(); 
+                        //throw new RuntimeException("Failed : HTTP error code : "
+                        //		+ conn.getResponseCode());
+
+            } else {
+                BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+                String output = "";
+
+
+                while ((output = br.readLine()) != null) {
+                    sb.append(output).append("\n");
+                }
+                br.close(); 
+            }
+
+            if (conn != null) {
+              conn.disconnect();
+            }
         
-        if (conn != null) {
-          conn.disconnect();
+        } else {  // else https
+            HttpsURLConnection connssl = (HttpsURLConnection) url.openConnection();
+            connssl.setHostnameVerifier(allHostsValid);
+            connssl.setDoOutput(true);
+            connssl.setConnectTimeout(10000);
+            connssl.setReadTimeout(300000);
+            connssl.setRequestMethod("POST");
+            connssl.setRequestProperty("Content-Type", "text/plain");
+            connssl.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
+
+            // Custom Headers
+            for (String[] h : hlist) {
+             connssl.setRequestProperty(h[0],h[1]);
+            }
+
+            // auth   
+            if (! user.isBlank() && ! pass.isBlank()) {
+            String userCredentials = new String(user + ":" + pass);
+            String basicAuth = "Basic " + Base64.toBase64String(userCredentials.getBytes());
+            connssl.setRequestProperty("Authorization", basicAuth);
+            } else {
+                return sb.toString();
+            } 
+
+            connssl.getOutputStream().write(postDataBytes);
+
+
+            if (connssl.getResponseCode() != 200) {
+                        sb.append(connssl.getResponseCode() + ": " + connssl.getResponseMessage());
+                        String output = "";
+                        BufferedReader br = new BufferedReader(new InputStreamReader((connssl.getErrorStream())));
+                        while ((output = br.readLine()) != null) {
+                            sb.append(output).append("\n");
+                        }
+                        br.close(); 
+                        //throw new RuntimeException("Failed : HTTP error code : "
+                        //		+ conn.getResponseCode());
+
+            } else {
+                BufferedReader br = new BufferedReader(new InputStreamReader((connssl.getInputStream())));
+                String output = "";
+
+
+                while ((output = br.readLine()) != null) {
+                    sb.append(output).append("\n");
+                }
+                br.close(); 
+            }
+
+            if (connssl != null) {
+              connssl.disconnect();
+            }
+            
+            
         }
+            
+        
         
        return sb.toString();
     }
 
+    static HostnameVerifier allHostsValid = new HostnameVerifier() {
+      public boolean verify(String hostname, SSLSession session) {
+          return true;
+      }  
+    };
     
     public static byte[] sendServerPostByteR(ArrayList<String[]> hlist, String postData, byte[] b) throws MalformedURLException, IOException {
        
         StringBuilder sb = new StringBuilder();
         String urlString = "";
         if (! bsmf.MainFrame.rhost.isBlank()) {
-            urlString = "http://" + bsmf.MainFrame.rhost + ":" + bsmf.MainFrame.serverport + "/bsapi/dataServ";
+            urlString = bsmf.MainFrame.protocol + "://" + bsmf.MainFrame.rhost + ":" + bsmf.MainFrame.serverport + "/bsapi/dataServ";
         } else {
-            urlString = "http://" + bsmf.MainFrame.ip + ":" + bsmf.MainFrame.serverport + "/bsapi/dataServ";
+            urlString = bsmf.MainFrame.protocol + "://" + bsmf.MainFrame.ip + ":" + bsmf.MainFrame.serverport + "/bsapi/dataServ";
         }
         
-        HttpURLConnection conn = null;
-        
+               
         String user = bsmf.MainFrame.user;
         String pass = bsmf.MainFrame.pass;
-        
-        
-       
         
         URL url = new URL(urlString);
         
@@ -2711,58 +2860,106 @@ public class BlueSeerUtils {
         } else {
             postDataBytes = postData.getBytes("UTF-8");
         }
-        
-        conn = (HttpURLConnection) url.openConnection();
+        if (bsmf.MainFrame.protocol.equals("http")) {
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setDoOutput(true);
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(300000);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "text/plain");
+            conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
 
-        
-        conn.setDoOutput(true);
-        conn.setConnectTimeout(10000);
-        conn.setReadTimeout(300000);
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "text/plain");
-        conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
-        
-        // Custom Headers
-        for (String[] h : hlist) {
-         conn.setRequestProperty(h[0],h[1]);
-        }
-        
-        
-             
-        // auth   
-        if (! user.isBlank() && ! pass.isBlank()) {
-        String userCredentials = new String(user + ":" + pass);
-        String basicAuth = "Basic " + Base64.toBase64String(userCredentials.getBytes());
-        conn.setRequestProperty("Authorization", basicAuth);
+            // Custom Headers
+            for (String[] h : hlist) {
+             conn.setRequestProperty(h[0],h[1]);
+            }
+
+
+
+            // auth   
+            if (! user.isBlank() && ! pass.isBlank()) {
+            String userCredentials = new String(user + ":" + pass);
+            String basicAuth = "Basic " + Base64.toBase64String(userCredentials.getBytes());
+            conn.setRequestProperty("Authorization", basicAuth);
+            } else {
+                return readDataBytes;
+            } 
+
+
+
+
+            conn.getOutputStream().write(postDataBytes);
+
+
+            if (conn.getResponseCode() != 200) {
+                        sb.append(conn.getResponseCode() + ": " + conn.getResponseMessage());
+                        String output = "";
+                        BufferedReader br = new BufferedReader(new InputStreamReader((conn.getErrorStream())));
+                        while ((output = br.readLine()) != null) {
+                            sb.append(output).append("\n");
+                        }
+                        br.close(); 
+                        //throw new RuntimeException("Failed : HTTP error code : "
+                        //		+ conn.getResponseCode());
+
+            } else {
+                 readDataBytes = IOUtils.toByteArray(conn.getInputStream());
+            }
+
+            if (conn != null) {
+              conn.disconnect();
+            }
         } else {
-            return readDataBytes;
-        } 
-        
-                
-        
-        
-        conn.getOutputStream().write(postDataBytes);
-               
-        
-        if (conn.getResponseCode() != 200) {
-                    sb.append(conn.getResponseCode() + ": " + conn.getResponseMessage());
-                    String output = "";
-                    BufferedReader br = new BufferedReader(new InputStreamReader((conn.getErrorStream())));
-                    while ((output = br.readLine()) != null) {
-                        sb.append(output).append("\n");
-                    }
-                    br.close(); 
-                    //throw new RuntimeException("Failed : HTTP error code : "
-                    //		+ conn.getResponseCode());
-                    
-        } else {
-             readDataBytes = IOUtils.toByteArray(conn.getInputStream());
+            HttpsURLConnection connssl = (HttpsURLConnection) url.openConnection();
+            connssl.setHostnameVerifier(allHostsValid);
+            connssl.setDoOutput(true);
+            connssl.setConnectTimeout(10000);
+            connssl.setReadTimeout(300000);
+            connssl.setRequestMethod("POST");
+            connssl.setRequestProperty("Content-Type", "text/plain");
+            connssl.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
+
+            // Custom Headers
+            for (String[] h : hlist) {
+             connssl.setRequestProperty(h[0],h[1]);
+            }
+
+
+
+            // auth   
+            if (! user.isBlank() && ! pass.isBlank()) {
+            String userCredentials = new String(user + ":" + pass);
+            String basicAuth = "Basic " + Base64.toBase64String(userCredentials.getBytes());
+            connssl.setRequestProperty("Authorization", basicAuth);
+            } else {
+                return readDataBytes;
+            } 
+
+
+
+
+            connssl.getOutputStream().write(postDataBytes);
+
+
+            if (connssl.getResponseCode() != 200) {
+                        sb.append(connssl.getResponseCode() + ": " + connssl.getResponseMessage());
+                        String output = "";
+                        BufferedReader br = new BufferedReader(new InputStreamReader((connssl.getErrorStream())));
+                        while ((output = br.readLine()) != null) {
+                            sb.append(output).append("\n");
+                        }
+                        br.close(); 
+                        //throw new RuntimeException("Failed : HTTP error code : "
+                        //		+ conn.getResponseCode());
+
+            } else {
+                 readDataBytes = IOUtils.toByteArray(connssl.getInputStream());
+            }
+
+            if (connssl != null) {
+              connssl.disconnect();
+            } 
         }
-        
-        if (conn != null) {
-          conn.disconnect();
-        }
-        
        return readDataBytes;
     }
 
