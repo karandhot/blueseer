@@ -59,6 +59,7 @@ import com.blueseer.shp.shpData;
 import com.blueseer.shp.shpData.ship_mstr;
 import com.blueseer.utl.EDData;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
@@ -3623,7 +3624,7 @@ public class EDI {
                 uom,
                 0, // allocation value
                 bsParseDouble(e.getDetListPrice(j).replace(defaultDecimalSeparator, '.')),
-                bsParseDouble(e.getDetDisc(j).replace(defaultDecimalSeparator, '.')),
+                bsParseDouble(bsNumber(disc).replace(defaultDecimalSeparator, '.')),  // calculated value instead of pass through from map
                 bsParseDouble(e.getDetNetPrice(j).replace(defaultDecimalSeparator, '.')),
                 e.podate,
                 e.duedate,   
