@@ -12,27 +12,9 @@
 	<parameter name="quantity" class="java.lang.String"/>
 	<parameter name="zip" class="java.lang.String"/>
 	<parameter name="dbtype" class="java.lang.String"/>
-	<queryString>
-		<![CDATA[select sh_id, shd_so, lbl_id, lbl_id_str, lbl_item, shd_desc, lbl_qty,
-sh_cust,  sh_shipvia,  
-lbl_po, shd_uom, 
-cm_code, cm_name, cm_line1, 
-cm_line2, 
-cms_name, cms_line1, cms_line2, cms_zip, cms_plantcode,
-site_desc, site_line1,
-case $P{dbtype} when 'sqlite' then
-(select edim_value from edi_meta where edim_id = lbl_po and edim_type = "detail:" || lbl_line AND edim_key = 'CL' )
-else
-(select edim_value from edi_meta where edim_id = lbl_po and edim_type = concat("detail:",lbl_line) AND edim_key = 'CL' )
-end as color,
-(select edim_value from edi_meta where edim_id = lbl_po and edim_type = "detail:1" AND edim_key = 'IZ' ) as size 
-from label_mstr
-inner join ship_det on shd_id = $P{shipper} and shd_so = lbl_order and shd_soline = lbl_line 
-inner join ship_mstr on sh_id = $P{shipper}
-inner join cm_mstr on cm_code = sh_cust 
-left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship 
-inner join site_mstr on site_site = sh_site 
-where lbl_ref = $P{shipper}]]>
+	<parameter name="SQL_QUERY_PARAMETER" class="java.lang.String"/>
+	<queryString language="SQL">
+		<![CDATA[$P!{SQL_QUERY_PARAMETER}]]>
 	</queryString>
 	<field name="site_desc" class="java.lang.String"/>
 	<field name="site_line1" class="java.lang.String"/>
