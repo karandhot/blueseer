@@ -3566,6 +3566,43 @@ public class EDI {
                 "0",
                 bsmf.MainFrame.dfdate.format(new Date())
                 );
+        
+         // sacs discount/charges 5 elements 
+         // discount/charges must be done before detail assignment...as cumalative discount/charge 'percent' is applied at item level
+        double disc = 0;
+        ArrayList<ordData.sos_det> sacs = new ArrayList<ordData.sos_det>();
+        for (String[] s : e.getSAC()) {
+            if (s[2].equals("discount") && s[3].equals("percent")) {
+                disc += bsParseDouble(s[4]);
+            }
+            if (s[2].equals("charge") && s[3].equals("percent")) {
+                disc -= bsParseDouble(s[4]);
+            }
+            ordData.sos_det sos = new ordData.sos_det(null, 
+                String.valueOf(sonbr), // key
+                s[1], // desc
+                s[2], // type
+                s[3], // amttype
+                bsParseDouble(s[4]) // amt
+            );
+            sacs.add(sos);
+        }
+        // customers default discounts are added to this....these must be mutually exclusive with above EDI discounts otherwise double entries could occur
+        // !!! only default discounts are added....not charges
+        ArrayList<String[]> discs = getDiscountRecsByCust(e.bs_billto);
+        for (String[] s : discs) {
+           disc += bsParseDouble(s[1]); // !!! only default discounts are added....not charges
+           ordData.sos_det sos = new ordData.sos_det(null, 
+                String.valueOf(sonbr), // key 
+                s[0], // desc
+                "discount", // type
+                "percent", // amttype
+                bsParseDouble(s[1]) // amt
+            );
+            sacs.add(sos); 
+        }
+        
+        
         // detail
         ArrayList<ordData.sod_det> detail = new ArrayList<ordData.sod_det>();
         String uom;
@@ -3610,29 +3647,7 @@ public class EDI {
         addUpdateSOMetaNotes(String.valueOf(sonbr), e.getNotes().toArray(new String[0]));
         
         
-        // sacs discount/charges 5 elements 
-        ArrayList<ordData.sos_det> sacs = new ArrayList<ordData.sos_det>();
-        for (String[] s : e.getSAC()) {
-            ordData.sos_det sos = new ordData.sos_det(null, 
-                String.valueOf(sonbr), // key
-                s[1], // desc
-                s[2], // type
-                s[3], // amttype
-                bsParseDouble(s[4]) // amt
-            );
-            sacs.add(sos);
-        }
-        ArrayList<String[]> discs = getDiscountRecsByCust(e.bs_billto);
-        for (String[] s : discs) {
-           ordData.sos_det sos = new ordData.sos_det(null, 
-                String.valueOf(sonbr), // key
-                s[0], // desc
-                "discount", // type
-                "percent", // amttype
-                bsParseDouble(s[1]) // amt
-            );
-            sacs.add(sos); 
-        }
+       
         
         
         m = addOrderTransaction(detail, so, null, null, sacs);

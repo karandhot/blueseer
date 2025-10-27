@@ -36,6 +36,7 @@ import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
+import com.blueseer.ctr.cusData.cm_mstr;
 import com.blueseer.ctr.cusData.cms_det;
 import static com.blueseer.ctr.cusData.getCustShipSet;
 import static com.blueseer.ctr.cusData.getDiscountRecsByCust;
@@ -169,6 +170,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 public static ArrayList<sod_tax> sodtaxlist = null;
                 public static ArrayList<so_tax> sotaxlist = null;
                 public static cms_det cms = null;
+                public static cm_mstr cm = null;
                 public static ArrayList<String[]> someta = null;
                 public static LocalDateTime start;
                 Map<Integer, ArrayList<String[]>> linetax = new HashMap<Integer, ArrayList<String[]>>();
@@ -1008,6 +1010,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
       soslist = z.sos();
       sodtaxlist = z.sodtax();
       cms = z.cms();
+      cm = z.cm();
       someta = z.someta();
       
       if (so != null) {
@@ -1496,6 +1499,10 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         orddate.setDate(parseDate(so.so_ord_date()));
         dccreate.setDate(parseDate(so.so_create_date()));
         setShipAddress();
+        terms = cm.cm_terms();
+        aracct = cm.cm_ar_acct();
+        arcc = cm.cm_ar_cc();
+        
         
         if (so.so_isallocated().equals("c")) {
             cbisallocated.setSelected(true);
@@ -2156,25 +2163,31 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         double newprice = 0;
         double newtax = 0;
         double listprice = 0;
-         //"Line", "Part", "CustPart", "SO", "PO", "Qty", "ListPrice", "Discount", "NetPrice", "QtyShip", "Status", "WH", "LOC", "Desc"
+         //"Line", "Part", "CustPart", "SO", "PO", "Qty", "uom", "ListPrice", "Discount", "NetPrice", "QtyShip", "Status", "WH", "LOC", "Desc"
         
          for (int j = 0; j < sactable.getRowCount(); j++) {
             if (sactable.getValueAt(j,0).toString().equals("discount") &&
                 sactable.getValueAt(j,2).toString().equals("percent")) {
             newdisc += bsParseDouble(sactable.getValueAt(j,3).toString());
             }
+            if (sactable.getValueAt(j,0).toString().equals("charge") &&
+                sactable.getValueAt(j,2).toString().equals("percent")) {
+            newdisc -= bsParseDouble(sactable.getValueAt(j,3).toString());
+            }
          }
          
          // check for customer specific discounts
-         newdisc += invData.getItemDiscFromCust(ddcust.getSelectedItem().toString());
+        // newdisc += invData.getItemDiscFromCust(ddcust.getSelectedItem().toString());
         
          for (int j = 0; j < orddet.getRowCount(); j++) {
              listprice = bsParseDouble(orddet.getValueAt(j, 7).toString());
              orddet.setValueAt(currformatDouble(newdisc), j, 8);
              if (newdisc > 0) {
              newprice = listprice - (listprice * (newdisc / 100));
-             } else {
+             } else if (newdisc == 0) {
              newprice = listprice;    
+             } else {
+             newprice = listprice - (listprice * (newdisc / 100));  // minus a negative disc increases newprice...aka charge
              }
              orddet.setValueAt(currformatDouble(newprice), j, 9);
          }
