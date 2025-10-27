@@ -325,7 +325,7 @@ public class ordData {
                     _addOrderTaxDet(z, bscon, ps, res);
                 }
             }
-            if (sos != null) {
+            if (sos != null && ! sos.isEmpty()) {
                 for (sos_det z : sos) {
                     _addOrderSummaryDet(z, bscon, ps, res);
                 }

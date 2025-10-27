@@ -30,6 +30,7 @@ import bsmf.MainFrame;
 import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.defaultDecimalSeparator;
 import com.blueseer.ctr.cusData;
+import static com.blueseer.ctr.cusData.getDiscountRecsByCust;
 import static com.blueseer.edi.EDIMap.HASH;
 import static com.blueseer.edi.EDIMap.ISF;
 import static com.blueseer.edi.EDIMap.OMD;
@@ -3610,6 +3611,7 @@ public class EDI {
         
         
         // sacs discount/charges 5 elements 
+        ArrayList<ordData.sos_det> sacs = new ArrayList<ordData.sos_det>();
         for (String[] s : e.getSAC()) {
             ordData.sos_det sos = new ordData.sos_det(null, 
                 String.valueOf(sonbr), // key
@@ -3618,9 +3620,22 @@ public class EDI {
                 s[3], // amttype
                 bsParseDouble(s[4]) // amt
             );
+            sacs.add(sos);
+        }
+        ArrayList<String[]> discs = getDiscountRecsByCust(e.bs_billto);
+        for (String[] s : discs) {
+           ordData.sos_det sos = new ordData.sos_det(null, 
+                String.valueOf(sonbr), // key
+                s[0], // desc
+                "discount", // type
+                "percent", // amttype
+                bsParseDouble(s[1]) // amt
+            );
+            sacs.add(sos); 
         }
         
-        m = addOrderTransaction(detail, so, null, null, null);
+        
+        m = addOrderTransaction(detail, so, null, null, sacs);
         if (m[0].equals("0")) {
             m[0] = "success";
             m[1] = m[1] + ": " + sonbr;
