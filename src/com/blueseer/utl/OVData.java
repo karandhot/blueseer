@@ -17640,7 +17640,7 @@ return mystring;
                 }
                 
                 //String jasperfile = "sscc18.jasper";                
-               
+              
               
                Path imagepath = FileSystems.getDefault().getPath(cleanDirString(getSystemImageDirectory()) + logo);
                 HashMap hm = new HashMap();

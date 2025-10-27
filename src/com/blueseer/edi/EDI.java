@@ -3609,6 +3609,17 @@ public class EDI {
         addUpdateSOMetaNotes(String.valueOf(sonbr), e.getNotes().toArray(new String[0]));
         
         
+        // sacs discount/charges 5 elements 
+        for (String[] s : e.getSAC()) {
+            ordData.sos_det sos = new ordData.sos_det(null, 
+                String.valueOf(sonbr), // key
+                s[1], // desc
+                s[2], // type
+                s[3], // amttype
+                bsParseDouble(s[4]) // amt
+            );
+        }
+        
         m = addOrderTransaction(detail, so, null, null, null);
         if (m[0].equals("0")) {
             m[0] = "success";
@@ -6819,6 +6830,9 @@ public class EDI {
     // Notes field
     public ArrayList<String> notes = new ArrayList<String>();
     
+    // SAC discount/charges field  arrayelements: key, desc, type, amttype, amt
+    public ArrayList<String[]> sacs = new ArrayList<String[]>();
+    
     // Detail fields      
     public ArrayList<String> detsku = new ArrayList<String>();
     public ArrayList<String> detcustitem = new ArrayList<String>();
@@ -6862,6 +6876,16 @@ public class EDI {
         // method to get Notes
         public ArrayList<String> getNotes() {
            return this.notes;
+        }
+        
+        // method to init SAC
+        public void addSAC(String[] j) {
+            this.sacs.add(j);
+        }
+        
+        // method to get SAC
+        public ArrayList<String[]> getSAC() {
+           return this.sacs;
         }
         
         // method to init Detail

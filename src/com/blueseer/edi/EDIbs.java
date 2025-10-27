@@ -45,13 +45,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.stream.Stream;
 
 public class EDIbs {
     
@@ -83,13 +81,13 @@ public static void main(String args[]) throws IOException {
     bsmf.MainFrame.setConfig(configfile);
     tags = ResourceBundle.getBundle("resources.bs", Locale.getDefault());
     // lets process the arguments
-    String[] vs = checkargs(args);
+    String[] vs = checkargs(args);  // all command line arguments are passed through here...and parsed into vs array for subsequent processing
     String infile = vs[0];
     String outfile = vs[1];
     String indir = vs[2];
     String outdir = vs[3];
-    String map = vs[4];
-    String isOverride = vs[5];
+    String x = vs[4];
+    String y = vs[5];
     String[] doctypes = vs[6].split(",");
     String prog = vs[7];
     String archdir = vs[8];
@@ -100,31 +98,31 @@ public static void main(String args[]) throws IOException {
     switch (prog) {
         
         case "single" :
-            processSingle(infile, outfile, map, isOverride, site);
+            processSingle(infile, outfile, x, y, site);
             break;
         case "multiple" :
-            processMultiple(indir, outdir, map, isOverride);
+            processMultiple(indir, outdir, x, y);
             break;
         case "filterFile" :
             filterFile(infile, outfile, doctypes);
             break; 
         case "extractFile" :
-            extractFile(map, indir, outdir);
+            extractFile(x, indir, outdir);
             break;       
         case "filterDir" :
-            filterDir(indir, outdir, archdir, doctypes, map);
+            filterDir(indir, outdir, archdir, doctypes, x);
             break;   
         case "trafficDir" :
-            trafficDir(indir, map);
+            trafficDir(indir, x);
             break;   
         case "purgeDir" :
-            purgeDir(indir, map, isOverride);
+            purgeDir(indir, x, y);
             break; 
         case "purgeDirRecurse" :
-            purgeDirRecurse(indir, map, isOverride);
+            purgeDirRecurse(indir, x, y);
             break;    
         case "ftpClient" :
-            ftpClient(map);
+            ftpClient(x);
             break;       
         default:
             System.out.println("Unable to process arguments " + myargs);
@@ -632,7 +630,7 @@ public static void main(String args[]) throws IOException {
     
  }
  
- public static void purgeDir(String dir, String days, String flag) throws IOException {
+ public static void purgeDir(String dir, String days, String flag) {
      
         int daysBack = 0;
         boolean isDelete = false;
@@ -640,15 +638,15 @@ public static void main(String args[]) throws IOException {
             isDelete = true;
         }
         if (isParsableToInt(days)) {
-            daysBack = Integer.valueOf(days);
+            daysBack = Integer.parseInt(days);
         } else {
          System.out.println("parameter 2 is not an integer");
-         System.exit(1);
+         return;
         }
         File folder = new File(dir);
         if (! folder.isDirectory()) {
          System.out.println("parameter 1 is not a valid directory");
-         System.exit(1);   
+         return;   
         }
         
         File[] listOfFiles = folder.listFiles();
@@ -662,8 +660,12 @@ public static void main(String args[]) throws IOException {
                 if (listOfFiles[i].lastModified() < z) {
                     count++;
                     if (isDelete) {
-                    Path filepath = Paths.get(dir + "\\" + listOfFiles[i].getName());
-                    Files.delete(filepath);
+                    Path filepath = FileSystems.getDefault().getPath(dir + "/" + listOfFiles[i].getName());
+                        try {
+                            Files.delete(filepath);
+                        } catch (IOException ex) {
+                            System.out.println("cant delete: " + filepath + "  CAUSE:  " + ex.getMessage());
+                        }
                     }
                 }
             }
@@ -676,7 +678,7 @@ public static void main(String args[]) throws IOException {
         System.out.println("delete count is: " + count);
  }
 
- public static void purgeDirRecurse(String dir, String days, String flag) throws IOException {
+ public static void purgeDirRecurse(String dir, String days, String flag) {
      
         int daysBack = 0;
         boolean isDelete = false;
@@ -684,15 +686,15 @@ public static void main(String args[]) throws IOException {
             isDelete = true;
         }
         if (isParsableToInt(days)) {
-            daysBack = Integer.valueOf(days);
+            daysBack = Integer.parseInt(days);
         } else {
          System.out.println("parameter 2 is not an integer");
-         System.exit(1);
+         return;
         }
         File folder = new File(dir);
         if (! folder.isDirectory()) {
          System.out.println("parameter 1 is not a valid directory");
-         System.exit(1);   
+         return;   
         }
         long count = 0;
         long starttime = System.currentTimeMillis();
@@ -706,7 +708,11 @@ public static void main(String args[]) throws IOException {
                 if (isDelete) {
                 Path filepath = FileSystems.getDefault().getPath(dir + "/" + listOfFiles[i].getName());
                     if (listOfFiles[i].isFile()) {
-                    Files.delete(filepath);
+                    try {
+                            Files.delete(filepath);
+                        } catch (IOException ex) {
+                            System.out.println("cant delete: " + filepath + "  CAUSE:  " + ex.getMessage());
+                        }
                     } else {
                       deleteDirectory(listOfFiles[i]);  
                     }
@@ -720,7 +726,7 @@ public static void main(String args[]) throws IOException {
         System.out.println("delete count is: " + count);
  }
 
-    public static void deleteDirectory(File file)
+ public static void deleteDirectory(File file)
     {
         for (File subfile : file.listFiles()) {
             if (subfile.isDirectory()) {

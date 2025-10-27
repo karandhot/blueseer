@@ -880,9 +880,17 @@ public class ShipOrderLine extends javax.swing.JPanel {
        
         
        
-        if (! itemlevel && shiptable.getRowCount() == 0) {
+        if (! itemlevel) {
+            if (tbkey.getText().isBlank()) {
+            bsmf.MainFrame.show(getMessageTag(1026));
+            tbkey.requestFocus();
+            return false;
+            }
+            
+            if (shiptable.getRowCount() == 0) {
             bsmf.MainFrame.show(getMessageTag(1164));
             return false;
+            }
         }
         
         return true;
