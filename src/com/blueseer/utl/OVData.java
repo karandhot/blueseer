@@ -17640,7 +17640,42 @@ return mystring;
                 }
                 
                 //String jasperfile = "sscc18.jasper";                
-              
+               String sqlquery = ""; 
+               if (bsmf.MainFrame.dbtype.equals("sqlite")) {
+               sqlquery = "select sh_id, shd_so, lbl_id, lbl_id_str, lbl_item, shd_desc, lbl_qty," +
+                "sh_cust,  sh_shipvia," +
+                "lbl_po, shd_uom," +
+                "cm_code, cm_name, cm_line1," +
+                "cm_line2," +
+                "cms_name, cms_line1, cms_line2, cms_zip, cms_plantcode," +
+                "site_desc, site_line1," +
+                "(select edim_value from edi_meta where edim_id = lbl_po and edim_type = 'detail:' || lbl_line AND edim_key = 'CL' ) as color," +
+                "(select edim_value from edi_meta where edim_id = lbl_po and edim_type = 'detail:' || lbl_line AND edim_key = 'IZ' ) as size " +
+                "from label_mstr " +
+                "inner join ship_det on shd_id = $P{shipper} and shd_so = lbl_order and shd_soline = lbl_line  " +
+                "inner join ship_mstr on sh_id = $P{shipper} " +
+                "inner join cm_mstr on cm_code = sh_cust " +
+                "left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship " +
+                "inner join site_mstr on site_site = sh_site " +
+                "where lbl_ref = $P{shipper}";
+               } else {
+                sqlquery = "select sh_id, shd_so, lbl_id, lbl_id_str, lbl_item, shd_desc, lbl_qty," +
+                "sh_cust,  sh_shipvia," +
+                "lbl_po, shd_uom," +
+                "cm_code, cm_name, cm_line1," +
+                "cm_line2," +
+                "cms_name, cms_line1, cms_line2, cms_zip, cms_plantcode," +
+                "site_desc, site_line1," +
+                "(select edim_value from edi_meta where edim_id = lbl_po and edim_type = concat('detail:',lbl_line) AND edim_key = 'CL' ) as color," +
+                "(select edim_value from edi_meta where edim_id = lbl_po and edim_type = concat('detail:',lbl_line) AND edim_key = 'IZ' ) as size " +
+                "from label_mstr " +
+                "inner join ship_det on shd_id = $P{shipper} and shd_so = lbl_order and shd_soline = lbl_line  " +
+                "inner join ship_mstr on sh_id = $P{shipper} " +
+                "inner join cm_mstr on cm_code = sh_cust " +
+                "left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship " +
+                "inner join site_mstr on site_site = sh_site " +
+                "where lbl_ref = $P{shipper}"; 
+               }
               
                Path imagepath = FileSystems.getDefault().getPath(cleanDirString(getSystemImageDirectory()) + logo);
                 HashMap hm = new HashMap();
@@ -17648,6 +17683,7 @@ return mystring;
                 hm.put("mydate",  now);
                 hm.put("shipper", shipper);
                 hm.put("dbtype", bsmf.MainFrame.dbtype);
+                hm.put("SQL_QUERY_PARAMETER", sqlquery);
                 hm.put("site_csz", site_csz);
                 hm.put("ship_csz", ship_csz);
                 hm.put("imagepath", imagepath.toString());
