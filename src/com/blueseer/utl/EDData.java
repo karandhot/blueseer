@@ -1895,7 +1895,7 @@ public class EDData {
                  res = st.executeQuery("select sh_id from ship_mstr  " +
                         " inner join cm_mstr on cm_code = sh_cust " +  
                         " where sh_export_856 = '0'  "  + 
-                        " and sh_status = '1' and cm_is856export = '1'  " +
+                        " and cm_is856export = '1'  " +
                         ";");   
                 
                 
