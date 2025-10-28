@@ -71,6 +71,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.checkDigitUCC18;
+import static com.blueseer.utl.BlueSeerUtils.checkLength;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
@@ -120,6 +121,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -881,12 +883,17 @@ public class ShipOrderLine extends javax.swing.JPanel {
         
        
         if (! itemlevel) {
-            if (tbkey.getText().isBlank()) {
-            bsmf.MainFrame.show(getMessageTag(1026));
-            tbkey.requestFocus();
-            return false;
-            }
             
+            Map<String,Integer> f = OVData.getTableInfo(new String[]{"ship_mstr"});
+            int fc;
+
+            fc = checkLength(f,"sh_id");
+            if (tbkey.getText().length() > fc || tbkey.getText().isEmpty()) {
+                bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
+                tbkey.requestFocus();
+                return false;
+            } 
+        
             if (shiptable.getRowCount() == 0) {
             bsmf.MainFrame.show(getMessageTag(1164));
             return false;

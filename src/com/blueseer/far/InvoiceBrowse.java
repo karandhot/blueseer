@@ -105,8 +105,9 @@ public class InvoiceBrowse extends javax.swing.JPanel {
                         new String[]{getGlobalColumnTag("select"), 
                             getGlobalColumnTag("detail"), 
                             getGlobalColumnTag("invoice"), 
+                            getGlobalColumnTag("po"),
                             getGlobalColumnTag("site"),
-                            getGlobalColumnTag("customer"), 
+                            getGlobalColumnTag("customer"),
                             getGlobalColumnTag("shipdate"), 
                             getGlobalColumnTag("invdate"), 
                             getGlobalColumnTag("status"), 
@@ -117,7 +118,7 @@ public class InvoiceBrowse extends javax.swing.JPanel {
             {
                       @Override  
                       public Class getColumnClass(int col) {  
-                        if (col == 0 || col == 1 || col == 10 || col == 11)       
+                        if (col == 0 || col == 1 || col == 11 || col == 12)       
                             return ImageIcon.class;  
                         else return String.class;  //other columns accept String values  
                       }  
@@ -355,16 +356,16 @@ public class InvoiceBrowse extends javax.swing.JPanel {
                
         tablereport.setModel(mymodel);
         tablereport.getTableHeader().setReorderingAllowed(false);
-        tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
       
-        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+        tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+        tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
       
         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
         tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
-        tablereport.getColumnModel().getColumn(10).setMaxWidth(100);
         tablereport.getColumnModel().getColumn(11).setMaxWidth(100);
+        tablereport.getColumnModel().getColumn(12).setMaxWidth(100);
                 //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
                     //       new ButtonEditor(new JCheckBox()));
                 
@@ -759,7 +760,7 @@ public class InvoiceBrowse extends javax.swing.JPanel {
                     todate = dfdate.format(dcto.getDate()); 
                  }
                 
-                  res = st.executeQuery("select sh_id, ar_status, sh_cust, sh_site, sh_shipdate, sh_confdate, ar_amt, ar_open_amt from ship_mstr " +
+                  res = st.executeQuery("select sh_id, ar_status, sh_cust, sh_site, sh_shipdate, sh_confdate, ar_amt, ar_open_amt, sh_po from ship_mstr " +
                         " inner join ar_mstr on ar_nbr = sh_id AND ar_type = 'I' where " +
                         " sh_id >= " + "'" + shipperfrom + "'" + " AND " +
                         " sh_id <= " + "'" + shipperto + "'" + " AND " +
@@ -781,6 +782,7 @@ public class InvoiceBrowse extends javax.swing.JPanel {
                          
                          mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, BlueSeerUtils.clickbasket, 
                                 res.getString("sh_id"),
+                                res.getString("sh_po"),
                                 res.getString("sh_site"),
                                 res.getString("sh_cust"),
                                 getDateDB(res.getString("sh_shipdate")),
@@ -837,10 +839,10 @@ public class InvoiceBrowse extends javax.swing.JPanel {
                String[] args = new String[]{tablereport.getValueAt(row, 2).toString()};
                reinitpanels(mypanel, true, args);
         }
-        if (col == 10) {
+        if (col == 11) {
             OVData.printInvoice(tablereport.getValueAt(row, 2).toString(), true); 
         }
-        if (col == 11) {
+        if (col == 12) {
             if (sending) {
                 return;
             }
@@ -862,7 +864,7 @@ public class InvoiceBrowse extends javax.swing.JPanel {
     }//GEN-LAST:event_tbcsvActionPerformed
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
-        OVData.printJTableToJasper("Invoice Report", tablereport, "genericJTableL8.jasper" );
+        OVData.printJTableToJasper("Invoice Report", tablereport, "genericJTableL9.jasper" );
     }//GEN-LAST:event_btprintActionPerformed
 
 
