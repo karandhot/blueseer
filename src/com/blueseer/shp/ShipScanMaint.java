@@ -125,6 +125,8 @@ public class ShipScanMaint extends javax.swing.JPanel {
                 getGlobalColumnTag("location"),
                 getGlobalColumnTag("qty"),
                 getGlobalColumnTag("uom"),
+                getGlobalColumnTag("listprice"),
+                getGlobalColumnTag("discount"),
                 getGlobalColumnTag("price"),
                 getGlobalColumnTag("po"),
                 getGlobalColumnTag("site")});
@@ -315,7 +317,7 @@ public class ShipScanMaint extends javax.swing.JPanel {
                 "", // po number
                 "", // remarks
                 bsmf.MainFrame.userid,
-                serialdet.getValueAt(0,14).toString(),
+                serialdet.getValueAt(0,16).toString(),
                 custinfo[2], // currency
                 "", // wh
                 custinfo[4],  // terms
@@ -324,7 +326,7 @@ public class ShipScanMaint extends javax.swing.JPanel {
                 custinfo[1],  // arcc
                 "S", // type
                 "", // sh_so 
-                serialdet.getValueAt(0,14).toString(),
+                serialdet.getValueAt(0,16).toString(),
                 "", // tracking number
                 "" // status
                 );
@@ -346,12 +348,12 @@ public class ShipScanMaint extends javax.swing.JPanel {
                 serialdet.getValueAt(j, 3).toString(),  // order
                 bsParseInt(serialdet.getValueAt(j, 4).toString()), //soline    
                 setDateDB(new java.util.Date()),
-                serialdet.getValueAt(j, 13).toString(), // po
+                serialdet.getValueAt(j, 15).toString(), // po
                 bsParseDouble(serialdet.getValueAt(j, 10).toString().replace(defaultDecimalSeparator, '.')), // qty
                 serialdet.getValueAt(j, 11).toString(), //uom
                 "USD", //currency
-                bsParseDouble(serialdet.getValueAt(j, 12).toString().replace(defaultDecimalSeparator, '.')), // net price
-                0, // disc
+                bsParseDouble(serialdet.getValueAt(j, 14).toString().replace(defaultDecimalSeparator, '.')), // net price
+                bsParseDouble(serialdet.getValueAt(j, 13).toString().replace(defaultDecimalSeparator, '.')), // disc
                 bsParseDouble(serialdet.getValueAt(j, 12).toString().replace(defaultDecimalSeparator, '.')), // list price
                 serialdet.getValueAt(j, 6).toString(), // desc
                 serialdet.getValueAt(j, 8).toString(), // wh
@@ -360,7 +362,7 @@ public class ShipScanMaint extends javax.swing.JPanel {
                 "0", // cont
                 "", // ref
                 serialdet.getValueAt(j, 0).toString(), // serial   
-                serialdet.getValueAt(j, 14).toString(),
+                serialdet.getValueAt(j, 16).toString(),
                 "", // bom
                 0,  // packqty
                 "" // kvpair    
@@ -379,7 +381,7 @@ public class ShipScanMaint extends javax.swing.JPanel {
             shpData.ship_tree x = new shpData.ship_tree(null,
             shipper,
             s,
-            serialdet.getValueAt(0,14).toString(),
+            serialdet.getValueAt(0,16).toString(),
             "c",
             shipper,
             "",
@@ -398,13 +400,13 @@ public class ShipScanMaint extends javax.swing.JPanel {
                     shpData.ship_tree y = new shpData.ship_tree(null,
                     s,
                     serialdet.getValueAt(j, 3).toString() + "," + serialdet.getValueAt(j, 4).toString() + "," + serialdet.getValueAt(j, 5).toString(),
-                    serialdet.getValueAt(0,14).toString(),
+                    serialdet.getValueAt(0,16).toString(),
                     "i",
                     shipper,
                     String.valueOf(j + 1),
                     serialdet.getValueAt(j, 3).toString(),
                     serialdet.getValueAt(j, 4).toString(),
-                    serialdet.getValueAt(j, 13).toString(),
+                    serialdet.getValueAt(j, 15).toString(),
                     serialdet.getValueAt(j, 5).toString(),
                     bsParseDouble(serialdet.getValueAt(j, 10).toString().replace(defaultDecimalSeparator, '.')),
                     "" // get display serial
@@ -501,7 +503,9 @@ public class ShipScanMaint extends javax.swing.JPanel {
                     label.lbl_loc(), // loc
                     label.lbl_qty(), // qty
                     orderlineinfo[3], // uom
-                    orderlineinfo[4], // price
+                    orderlineinfo[4], // listprice
+                    orderlineinfo[5], // disc
+                    orderlineinfo[6], // netprice
                     label.lbl_po(), // po
                     label.lbl_site()});
 

@@ -135,6 +135,8 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
                 getGlobalColumnTag("location"),
                 getGlobalColumnTag("qty"),
                 getGlobalColumnTag("uom"),
+                getGlobalColumnTag("listprice"),
+                getGlobalColumnTag("discount"),
                 getGlobalColumnTag("price"),
                 getGlobalColumnTag("po")});
     ShipTableModel shipmodel = new ShipTableModel(new Object[][]{},
@@ -149,6 +151,8 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
                 getGlobalColumnTag("location"), 
                 getGlobalColumnTag("qty"),
                 getGlobalColumnTag("uom"),
+                getGlobalColumnTag("listprice"),
+                getGlobalColumnTag("discount"),
                 getGlobalColumnTag("price"),
                 getGlobalColumnTag("po")
             });
@@ -663,12 +667,12 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
                 shipdet.getValueAt(j, 1).toString(),  // order
                 bsParseInt(shipdet.getValueAt(j, 2).toString()), //soline    
                 setDateDB(dcdate.getDate()),
-                shipdet.getValueAt(j, 11).toString(), // po
+                shipdet.getValueAt(j, 13).toString(), // po
                 bsParseDouble(shipdet.getValueAt(j, 8).toString().replace(defaultDecimalSeparator, '.')), // qty
                 shipdet.getValueAt(j, 9).toString(), //uom
                 curr, //currency
-                bsParseDouble(shipdet.getValueAt(j, 10).toString().replace(defaultDecimalSeparator, '.')), // net price
-                0, // disc
+                bsParseDouble(shipdet.getValueAt(j, 12).toString().replace(defaultDecimalSeparator, '.')), // net price
+                bsParseDouble(shipdet.getValueAt(j, 11).toString().replace(defaultDecimalSeparator, '.')), // disc
                 bsParseDouble(shipdet.getValueAt(j, 10).toString().replace(defaultDecimalSeparator, '.')), // list price
                 shipdet.getValueAt(j, 4).toString(), // desc
                 shipdet.getValueAt(j, 6).toString(), // wh
@@ -916,8 +920,10 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
                 s[7], // location
                 s[8], // qty
                 s[9], // uom
-                s[10], // price
-                s[11] // po
+                s[10], // listprice
+                s[11], // disc
+                s[12], // netprice
+                s[13] // po
                 });
             }
         }
@@ -1332,8 +1338,10 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
                 serialdet.getModel().getValueAt(i, 7), // loc
                 serialdet.getModel().getValueAt(i, 8), // qty
                 serialdet.getModel().getValueAt(i, 9), // uom
-                serialdet.getModel().getValueAt(i, 10), // price
-                serialdet.getModel().getValueAt(i, 11) // po
+                serialdet.getModel().getValueAt(i, 10), // listprice
+                serialdet.getModel().getValueAt(i, 11), // disc
+                serialdet.getModel().getValueAt(i, 12), // price
+                serialdet.getModel().getValueAt(i, 13) // po
                 });
                             
            }

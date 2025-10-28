@@ -89,6 +89,7 @@ import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import static com.blueseer.utl.BlueSeerUtils.setDateFormat;
 import com.blueseer.utl.DTData;
+import static com.blueseer.utl.EDData.updateEDIASNStatus;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.checkForCustomPath;
 import static com.blueseer.utl.OVData.getSystemLabelDirectory;
@@ -182,6 +183,8 @@ public class ShipOrderLine extends javax.swing.JPanel {
                 getGlobalColumnTag("contqty"),
                 getGlobalColumnTag("remainder"),
                 getGlobalColumnTag("uom"),
+                getGlobalColumnTag("listprice"),
+                getGlobalColumnTag("discount"),
                 getGlobalColumnTag("price"),
                 getGlobalColumnTag("warehouse"), 
                 getGlobalColumnTag("location")
@@ -493,6 +496,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
      if (m[0].equals("0")) {
          deleteLabelByShipper(x[0]);
          addMultiLabelTransaction(null, createLabelRecord(cm, cms));
+         updateEDIASNStatus(x[0], "0");
      }
      
      return m;
@@ -567,12 +571,12 @@ public class ShipOrderLine extends javax.swing.JPanel {
                 bsParseDouble(shiptable.getModel().getValueAt(j, 6).toString().replace(defaultDecimalSeparator, '.')), // qty
                 shiptable.getModel().getValueAt(j, 10).toString(), //uom
                 so.so_curr(), //currency 
-                bsParseDouble(shiptable.getModel().getValueAt(j, 11).toString().replace(defaultDecimalSeparator, '.')), // net price
-                0, // disc
+                bsParseDouble(shiptable.getModel().getValueAt(j, 13).toString().replace(defaultDecimalSeparator, '.')), // net price
+                bsParseDouble(shiptable.getModel().getValueAt(j, 12).toString().replace(defaultDecimalSeparator, '.')), // disc
                 bsParseDouble(shiptable.getModel().getValueAt(j, 11).toString().replace(defaultDecimalSeparator, '.')), // list price
                 shiptable.getModel().getValueAt(j, 4).toString(), // desc
-                shiptable.getModel().getValueAt(j, 12).toString(), // wh
-                shiptable.getModel().getValueAt(j, 13).toString(), // loc
+                shiptable.getModel().getValueAt(j, 14).toString(), // wh
+                shiptable.getModel().getValueAt(j, 15).toString(), // loc
                 0, // taxamt
                 "0", // cont
                 tbref.getText(), // ref
@@ -1378,7 +1382,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
             }
         }
         
-        String[] x = getOrderLineInfo(tbordnbr.getText(), tbline.getText());  // returns item, desc, ordqty, uom, netprice, custitem, wh, loc, po
+        String[] x = getOrderLineInfo(tbordnbr.getText(), tbline.getText());  // returns item, desc, ordqty, uom, listprice, disc, netprice, custitem, wh, loc, po
         
         if (x == null) {
             return;
@@ -1406,20 +1410,22 @@ public class ShipOrderLine extends javax.swing.JPanel {
             nbrOfContainers, 
             remainder }); 
         */
-        shipmodel.addRow(new Object[]{ x[8], // po 
+        shipmodel.addRow(new Object[]{ x[10], // po 
             tbordnbr.getText(), 
             tbline.getText(), 
             x[0], 
             x[1], 
-            x[5], 
+            x[7], 
             tbqty.getText(),   
             tbpackqty.getText(), 
             nbrOfContainers, 
             remainder,
             x[3], 
             x[4],
-            x[6], 
-            x[7]}); 
+            x[5],
+            x[6],
+            x[8], 
+            x[9]}); 
         
         tbqty.setText("");
         tbpackqty.setText("");

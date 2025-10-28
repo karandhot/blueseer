@@ -2164,6 +2164,38 @@ public class EDData {
 
    }
     
+    public static void updateEDIASNStatus(String shipper, String status) {
+       DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd"); 
+       try{
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        try{
+           st.executeUpdate(
+                 " update ship_mstr set sh_export_856 = " + "'" + status + "'" +
+                 " where sh_id = " + "'" + shipper + "'" + ";" );
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+            
+            if (st != null) {
+                st.close();
+            }
+            con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+
+   }
+    
+    
     public static void updateEDIASNStatus(ArrayList<String> shippers) {
        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd"); 
        try{

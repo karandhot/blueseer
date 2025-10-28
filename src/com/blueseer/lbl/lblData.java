@@ -659,7 +659,7 @@ public class lblData {
             Statement st = con.createStatement();
             ResultSet res = null;
             try {
-                 res = st.executeQuery("select lbld_id, lbld_order, lbld_line, lbld_item, lbld_qty, lbl_type, sod_desc, sod_custitem, sod_wh, sod_loc, sod_uom, sod_netprice, sod_po " +
+                 res = st.executeQuery("select lbld_id, lbld_order, lbld_line, lbld_item, lbld_qty, lbl_type, sod_desc, sod_custitem, sod_wh, sod_loc, sod_uom, sod_listprice, sod_disc, sod_netprice, sod_po " +
                          " from label_det inner join label_mstr on lbl_id = lbld_id " +
                          " inner join sod_det on sod_nbr = lbld_order and sod_line = lbld_line " +
                          " where lbl_scan = '0' and lbl_type = 'mixed' and lbl_billto = " + "'" + billto + "'" 
@@ -675,14 +675,24 @@ public class lblData {
                            res.getString("sod_loc"),
                            res.getString("lbld_qty"),
                            res.getString("sod_uom"),
+                           res.getString("sod_listprice"),
+                           res.getString("sod_disc"),
                            res.getString("sod_netprice"),
                            res.getString("sod_po")}); 
                }
               
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-            }
-            con.close();
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            } 
+            
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
@@ -770,8 +780,15 @@ public class lblData {
               
             } catch (SQLException s) {
                 MainFrame.bslog(s);
+            }finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
             }
-            con.close();
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
@@ -806,8 +823,15 @@ public class lblData {
               
             } catch (SQLException s) {
                 MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
             }
-            con.close();
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
@@ -842,8 +866,15 @@ public class lblData {
            }
             catch (SQLException s){
                  bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
             }
-            con.close();
         }
         catch (Exception e){
             MainFrame.bslog(e);

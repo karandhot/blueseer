@@ -4615,7 +4615,7 @@ public class ordData {
     
     
     public static String[] getOrderLineInfo(String order, String line) {
-        String[] x = null;  // returns item, desc, ordqty, uom, netprice, custitem, wh, loc, po
+        String[] x = null;  // returns item, desc, ordqty, uom, listprice, disc, netprice, custitem, wh, loc, po
         try{
         Connection con = null;
         if (ds != null) {
@@ -4626,13 +4626,15 @@ public class ordData {
         Statement st = con.createStatement();
         ResultSet res = null;
             try{
-                res = st.executeQuery("select sod_item, sod_desc, sod_ord_qty, sod_uom, sod_netprice, sod_custitem, sod_wh, sod_loc, sod_po from sod_det where sod_nbr = " + "'" + order + "'" + 
+                res = st.executeQuery("select sod_item, sod_desc, sod_ord_qty, sod_uom, sod_listprice, sod_disc, sod_netprice, sod_custitem, sod_wh, sod_loc, sod_po from sod_det where sod_nbr = " + "'" + order + "'" + 
                         " and sod_line = " + "'" + line + "'" + ";");
                 while (res.next()) {
                     x = new String[]{res.getString("sod_item"), 
                         res.getString("sod_desc"), 
                         res.getString("sod_ord_qty"),
                         res.getString("sod_uom"),
+                        res.getString("sod_listprice"),
+                        res.getString("sod_disc"),
                         res.getString("sod_netprice"),
                         res.getString("sod_custitem"),
                         res.getString("sod_wh"),
