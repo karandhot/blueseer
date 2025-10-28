@@ -2060,7 +2060,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
              netprice.setText("0");
            } else {  
            net = list - ((disc / 100) * list);
-           netprice.setText(bsFormatDouble(net));
+           netprice.setText(bsNumber(net));
            }
         }
 

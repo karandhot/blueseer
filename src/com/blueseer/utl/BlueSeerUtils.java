@@ -841,7 +841,7 @@ public class BlueSeerUtils {
     
     public static String bsFormatDouble(double invalue) {
         String outvalue = "";
-        String pattern = "#0.00###"; 
+        String pattern = "#0.00######"; 
         DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.getDefault());    
         df.applyPattern(pattern);
         
@@ -938,17 +938,17 @@ public class BlueSeerUtils {
            invalue = "0"; // for use down below
         }
         if (precision.equals("2")) {
-         pattern = "#0.00"; 
+         pattern = "#0.00######"; 
         } else if (precision.equals("3")) {
-         pattern = "#0.000";  
+         pattern = "#0.000#####";  
         } else if (precision.equals("4")) {
-         pattern = "#0.0000";   
+         pattern = "#0.0000####";   
         } else if (precision.equals("5")) {
-         pattern = "#0.00000";    
+         pattern = "#0.00000###";    
          } else if (precision.equals("0")) {
          pattern = "#0";    
         } else {
-         pattern = "#0.00";    
+         pattern = "#0.00######";    
         }
        
         if (Locale.getDefault().getLanguage().equals("ar") && invalue.contains(".")) { // if AR locale and US keyboard "." then change decimal separator
@@ -986,19 +986,19 @@ public class BlueSeerUtils {
            return "0";
         }
         if (precision.equals("2")) {
-         pattern = "#0.00"; 
+         pattern = "#0.00######"; 
         } else if (precision.equals("3")) {
-         pattern = "#0.000";  
+         pattern = "#0.000#####";  
         } else if (precision.equals("4")) {
-         pattern = "#0.0000";   
+         pattern = "#0.0000####";   
         } else if (precision.equals("5")) {
-         pattern = "#0.00000";    
+         pattern = "#0.00000###";    
         } else if (precision.equals("0")) {
          pattern = "#0";   
         } else if (precision.equals("1")) {
-         pattern = "#0.0";   
+         pattern = "#0.0#######";   
         } else {
-         pattern = "#0.00";    
+         pattern = "#0.00######";    
         }
        
         DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.getDefault());    
@@ -1014,7 +1014,7 @@ public class BlueSeerUtils {
     
     public static String bsNumber(double invalue) {
         String x = "0";
-        String pattern = "#0.#####"; 
+        String pattern = "#0.########"; 
          if (invalue != 0) {
          if (Locale.getDefault().getLanguage().equals("zh") && ! Locale.getDefault().getCountry().equals("US")) {
             Locale cn = new Locale("C@numbers=hans");
@@ -1038,7 +1038,7 @@ public class BlueSeerUtils {
         // currformat("3,56") 
          
         String x = "0";
-        String pattern = "#0.#####";
+        String pattern = "#0.########";
         if (invalue != null && ! invalue.isBlank()) {
          if (Locale.getDefault().getLanguage().equals("zh") && ! Locale.getDefault().getCountry().equals("US")) {
             Locale cn = new Locale("C@numbers=hans");
@@ -1091,7 +1091,7 @@ public class BlueSeerUtils {
         // currformat("3,56") 
          
         String x = "0";
-        String pattern = "¤#0.00###"; 
+        String pattern = "¤#0.00"; 
         if (! invalue.isBlank()) {
         String adjvalue = invalue.replace('.', defaultDecimalSeparator);
        // DecimalFormat df = new DecimalFormat("#0.00###", new DecimalFormatSymbols(Locale.getDefault())); 
@@ -1115,7 +1115,7 @@ public class BlueSeerUtils {
         // currformat("3,56") 
          
         String x = "0";
-        String pattern = "#0.00###";
+        String pattern = "#0.00";
         String adjvalue = invalue;
         if (! invalue.isBlank()) {
            adjvalue = invalue.replace('.', defaultDecimalSeparator);
@@ -1152,7 +1152,7 @@ public class BlueSeerUtils {
         }
         
         String x = "0";
-        String pattern = "#0.00###";
+        String pattern = "#0.00";
         String adjvalue = String.valueOf(invalue);
       
            adjvalue = adjvalue.replace('.', defaultDecimalSeparator);
@@ -1176,24 +1176,7 @@ public class BlueSeerUtils {
        // System.out.println("after: " + invalue + "/" + adjvalue + "/" + x);
         return x;
     }
-    
-    /*
-    public static String currformatDouble(double invalue) {
-        String x = "";
-        String pattern = "#0.00###";
-       // DecimalFormat df = new DecimalFormat("#0.00###", new DecimalFormatSymbols(Locale.getDefault())); 
-        DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.getDefault());
-        df.applyPattern(pattern);
-        if (Locale.getDefault().getLanguage().equals("zh") && ! Locale.getDefault().getCountry().equals("US")) {
-            Locale cn = new Locale("C@numbers=hans");
-            com.ibm.icu.text.NumberFormat formatter = com.ibm.icu.text.NumberFormat.getInstance(cn);
-            x = formatter.format(invalue);
-        } else {
-        x = df.format(invalue);
-        }
-        return x;
-    }
-    */
+      
     public static String currformatDoubleWithSymbol(double invalue, String currency) {
         String x = "";
         String pattern = "#0.00";

@@ -3613,6 +3613,8 @@ public class EDI {
            } else { 
                uom = e.getDetUOM(j);
            }
+           
+           disc = (e.getDetDisc(j).isEmpty()) ? disc : bsParseDouble(e.getDetDisc(j));  // override disc with map assigned e.getDetDisc if not blank...otherwise use calculated disc
           // System.out.println("HERE: " + uom + "/" + e.getDetItem(j) + "/" + e.getDetUOM(j));
         ordData.sod_det sod = new ordData.sod_det(null, 
                 String.valueOf(sonbr),
@@ -3624,7 +3626,7 @@ public class EDI {
                 uom,
                 0, // allocation value
                 bsParseDouble(e.getDetListPrice(j).replace(defaultDecimalSeparator, '.')),
-                bsParseDouble(bsNumber(disc).replace(defaultDecimalSeparator, '.')),  // calculated value instead of pass through from map
+                bsParseDouble(bsNumber(disc).replace(defaultDecimalSeparator, '.')),  
                 bsParseDouble(e.getDetNetPrice(j).replace(defaultDecimalSeparator, '.')),
                 e.podate,
                 e.duedate,   

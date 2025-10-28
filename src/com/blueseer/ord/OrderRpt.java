@@ -855,7 +855,7 @@ public class OrderRpt extends javax.swing.JPanel {
                                 getDateDB(res.getString("so_create_date")),
                                 getDateDB(res.getString("so_due_date")),
                                 bsNumber(res.getDouble("totqty")),
-                                total,
+                                bsParseDouble(currformatDouble(total)),
                                 res.getString("so_curr"),
                                 res.getString("so_status"),
                                 res.getString("so_mod_date")
