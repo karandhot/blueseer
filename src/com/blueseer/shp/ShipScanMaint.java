@@ -328,7 +328,10 @@ public class ShipScanMaint extends javax.swing.JPanel {
                 "", // sh_so 
                 serialdet.getValueAt(0,16).toString(),
                 "", // tracking number
-                "" // status
+                "", // status 
+                "", // sh_char1
+                "1", // sh_char2 shipper is confirmed ASN ready upon creation
+                "" // sh_char3
                 );
                 
         return x;        

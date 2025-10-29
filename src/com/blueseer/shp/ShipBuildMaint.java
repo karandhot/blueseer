@@ -378,7 +378,7 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
         
         autoconfirm = BlueSeerUtils.ConvertStringToBool(getSysMetaValue("system", "shippercontrol", "auto_confirm_shipper_build"));
         autonumber = BlueSeerUtils.ConvertStringToBool(getSysMetaValue("system", "shippercontrol", "auto_generate_shipper_number"));
-       
+        cbcomplete.setSelected(false);
          tbkey.setText("");
          terms = "";
          aracct = "";
@@ -647,7 +647,10 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
                 "", // sh_so 
                 ddsite.getSelectedItem().toString(),
                 tbtracking.getText(),
-                "" // status 
+                "", // status 
+                "", // sh_char1
+                String.valueOf(BlueSeerUtils.boolToInt(cbcomplete.isSelected())), // sh_char2 
+                "" // sh_char3
         );
                 
         return x;        
@@ -977,6 +980,7 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
         tbtracking = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
         btlist = new javax.swing.JButton();
+        cbcomplete = new javax.swing.JCheckBox();
 
         jLabel1.setText("jLabel1");
 
@@ -1149,6 +1153,8 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
             }
         });
 
+        cbcomplete.setText("complete");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -1228,7 +1234,9 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
                             .addComponent(btPrintInv)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(btPrintShp)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 70, Short.MAX_VALUE)
+                            .addComponent(cbcomplete)
+                            .addGap(49, 49, 49)
                             .addComponent(btdelete)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(btupdate)
@@ -1305,7 +1313,8 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
                     .addComponent(btupdate)
                     .addComponent(btdelete)
                     .addComponent(btPrintInv)
-                    .addComponent(btPrintShp))
+                    .addComponent(btPrintShp)
+                    .addComponent(cbcomplete))
                 .addGap(35, 35, 35))
         );
 
@@ -1464,6 +1473,7 @@ public class ShipBuildMaint extends javax.swing.JPanel implements IBlueSeer {
     private javax.swing.JButton btlookup;
     private javax.swing.JButton btnew;
     private javax.swing.JButton btupdate;
+    private javax.swing.JCheckBox cbcomplete;
     private com.toedter.calendar.JDateChooser dcdate;
     private javax.swing.JComboBox ddcust;
     private javax.swing.JComboBox<String> ddship;

@@ -99,8 +99,8 @@ public class shpData {
         String sqlInsert = "insert into ship_mstr (sh_id, sh_cust, sh_ship, sh_pallets, sh_boxes,  "
                     + "  sh_shipvia, sh_shipdate, sh_po_date, sh_ref, sh_po, " 
                     + " sh_rmks, sh_userid, sh_site, sh_curr, sh_wh, "
-                    + " sh_cust_terms, sh_taxcode, sh_ar_acct, sh_ar_cc, sh_type, sh_so, sh_shipfrom, sh_trailer) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                    + " sh_cust_terms, sh_taxcode, sh_ar_acct, sh_ar_cc, sh_type, sh_so, sh_shipfrom, sh_trailer, sh_char2) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
        
           ps = con.prepareStatement(sqlSelect); 
           ps.setString(1, x.sh_id);
@@ -130,6 +130,7 @@ public class shpData {
             ps.setString(21, x.sh_so);
             ps.setString(22, x.sh_shipfrom);
             ps.setString(23, x.sh_trailer);
+            ps.setString(24, x.sh_char2);
             rows = ps.executeUpdate();
             } 
             return rows;
@@ -482,10 +483,10 @@ public class shpData {
         int rows = 0;
         String sql = "update ship_mstr set " 
                 + " sh_shipdate = ?, sh_ref = ?, sh_rmks = ?, "
-                + "sh_shipvia = ?, sh_pallets = ?, sh_boxes = ?, sh_trailer = ? "
+                + "sh_shipvia = ?, sh_pallets = ?, sh_boxes = ?, sh_trailer = ?, sh_char2 = ? "
                 + " where sh_id = ? ; ";
         ps = con.prepareStatement(sql);
-        ps.setString(8, x.sh_id);
+        ps.setString(9, x.sh_id);
             ps.setString(1, x.sh_shipdate);
             ps.setString(2, x.sh_ref);
             ps.setString(3, x.sh_rmks);
@@ -493,6 +494,7 @@ public class shpData {
             ps.setInt(5, x.sh_pallets);
             ps.setInt(6, x.sh_boxes);
             ps.setString(7, x.sh_trailer);
+            ps.setString(8, x.sh_char2);  // ship ready
             rows = ps.executeUpdate();
         return rows;
     }
@@ -734,7 +736,10 @@ public class shpData {
                                 res.getString("sh_so"),
                                 res.getString("sh_shipfrom"),
                                 res.getString("sh_trailer"),
-                                res.getString("sh_status")
+                                res.getString("sh_status"),
+                                res.getString("sh_char1"),
+                                res.getString("sh_char2"),
+                                res.getString("sh_char3")
                             );
                     }
                 }
@@ -838,7 +843,10 @@ public class shpData {
                                 res.getString("sh_so"),
                                 res.getString("sh_shipfrom"),
                                 res.getString("sh_trailer"),
-                                res.getString("sh_status")
+                                res.getString("sh_status"),
+                                res.getString("sh_char1"),
+                                res.getString("sh_char2"),
+                                res.getString("sh_char3")
                             );
                 }
             }
@@ -988,7 +996,10 @@ public class shpData {
                 so,
                 shipfrom,
                 tracking, // trailer/tracking
-                "" // status
+                "", // status
+                "", // char1
+                "", // char2
+                "" // char3
             );
                 
         return x;        
@@ -2528,6 +2539,46 @@ public class shpData {
          return r;
      }
 
+    public static String getShipperChar2(String shipper) {
+         String r = "";
+          try{
+
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+                  // sh_char1 is used by shipper creation methods to indicate that shipper is complete and ready to be ASN exported.
+                  res = st.executeQuery("select sh_char2 from ship_mstr where sh_id = " + "'" + shipper + "'" +";");
+                while (res.next()) {
+                    r = res.getString("sh_char2");
+                }
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+
+        } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+
+    }
+         return r;
+     }
+
+    
     public static String getShipperStatus(String shipper) {
          String r = "";
           try{
@@ -4189,11 +4240,12 @@ public class shpData {
         int sh_boxes, String sh_shipvia, String sh_shipdate, String sh_po_date,
         String sh_ref, String sh_po, String sh_rmks, String sh_userid, String sh_site,
         String sh_curr, String sh_wh, String sh_cust_terms, String sh_taxcode,
-        String sh_ar_acct, String sh_ar_cc, String sh_type, String sh_so, String sh_shipfrom, String sh_trailer, String sh_status ) {
+        String sh_ar_acct, String sh_ar_cc, String sh_type, String sh_so, String sh_shipfrom, String sh_trailer, String sh_status,
+        String sh_char1, String sh_char2, String sh_char3) {
          public ship_mstr(String[] m) {
             this(m, "", "", "", 0, 0, "", "", "", "", "",
                     "", "", "", "", "", "", "", "", "", "",
-                    "", "", "", "" );
+                    "", "", "", "", "", "", "" );
         }
     }
    

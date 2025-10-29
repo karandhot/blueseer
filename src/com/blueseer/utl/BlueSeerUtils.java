@@ -1538,6 +1538,19 @@ public class BlueSeerUtils {
         }
     }
    
+    public static boolean isNumbersEqual(String x, String y) {
+        try {
+                if (x == null || x.isEmpty() || y == null || y.isEmpty()) {
+                return false;
+                }
+                double xd = Double.parseDouble(x);
+                double yd = Double.parseDouble(y);
+                return (xd == yd);
+            } catch (NumberFormatException nfe) {
+                return false;
+            }
+    }
+    
     public static boolean isNumeric(String i) {
         
         if (Locale.getDefault().getLanguage().equals("en")) {

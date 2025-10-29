@@ -1844,16 +1844,14 @@ public class EDData {
                         " inner join cm_mstr on cm_code = sh_cust " +  
                         " where sh_id >= " + "'" + fromnbr + "'" + 
                         " and sh_id <= " + "'" + tonbr + "'" +
-                        " and sh_confdate >= " + "'" + fromdate + "'" +
-                        " and sh_confdate <= " + "'" + todate + "'" +
+                        " and sh_char2 = '1' " + 
                         " and sh_status = '1' and cm_is856export = '1' ;");   
                 } else {
                  res = st.executeQuery("select sh_id from ship_mstr  " +
                         " inner join cm_mstr on cm_code = sh_cust " +  
                         " where sh_id >= " + "'" + fromnbr + "'" + 
                         " and sh_id <= " + "'" + tonbr + "'" +
-                        " and sh_confdate >= " + "'" + fromdate + "'" +
-                        " and sh_confdate <= " + "'" + todate + "'" +
+                        " and sh_char2 = '1' " +
                         " and sh_status = '1' and cm_is856export = '1'  " +
                         " and sh_export_856 = '0' ;");   
                 }
@@ -1895,6 +1893,7 @@ public class EDData {
                  res = st.executeQuery("select sh_id from ship_mstr  " +
                         " inner join cm_mstr on cm_code = sh_cust " +  
                         " where sh_export_856 = '0'  "  + 
+                        " and sh_char2 = '1' " +
                         " and cm_is856export = '1'  " +
                         ";");   
                 

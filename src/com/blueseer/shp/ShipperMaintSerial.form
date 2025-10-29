@@ -144,7 +144,9 @@
                           <Component id="btPrintInv" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="btPrintShp" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace pref="65" max="32767" attributes="0"/>
+                          <Component id="cbcomplete" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
                           <Component id="btdelete" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="btupdate" min="-2" max="-2" attributes="0"/>
@@ -242,6 +244,7 @@
                       <Component id="btdelete" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="btPrintInv" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="btPrintShp" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="cbcomplete" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
               </Group>
@@ -511,6 +514,11 @@
         <Component class="javax.swing.JLabel" name="jLabel6">
           <Properties>
             <Property name="text" type="java.lang.String" value="Tracking"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JCheckBox" name="cbcomplete">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="complete"/>
           </Properties>
         </Component>
       </SubComponents>

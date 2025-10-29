@@ -473,6 +473,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         ordercount = 0;
         
         tbkey.setText("");
+        cbcomplete.setSelected(false);
         
         java.util.Date now = new java.util.Date();
         dcshipdate.setDate(now);
@@ -790,6 +791,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void updateForm() {
         isLoad = true;
         tbkey.setText(sh.sh_id());
+        cbcomplete.setSelected(BlueSeerUtils.ConvertStringToBool(sh.sh_char2())); 
         ddbillto.setSelectedItem(sh.sh_cust());
         if (ddshipto.getItemCount() <= 1) {
             ddshipto.addItem(sh.sh_ship());
@@ -964,7 +966,10 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                 "", // sh_so 
                 ddshipfrom.getSelectedItem().toString(),
                 tbtrailer.getText(),
-                "" // status
+                "", // status 
+                "", // sh_char1
+                String.valueOf(BlueSeerUtils.boolToInt(cbcomplete.isSelected())), // sh_char2 
+                "" // sh_char3
         );
                 
         return x;        
@@ -1510,6 +1515,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         rbnonorder = new javax.swing.JRadioButton();
         btclear = new javax.swing.JButton();
         btlookup = new javax.swing.JButton();
+        cbcomplete = new javax.swing.JCheckBox();
         panelDetail = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         btadditem = new javax.swing.JButton();
@@ -1739,7 +1745,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addGroup(HeaderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbremarks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel41))
-                .addContainerGap(172, Short.MAX_VALUE))
+                .addContainerGap(178, Short.MAX_VALUE))
         );
 
         jLabel36.setText("ShipTo:");
@@ -1884,6 +1890,8 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
+        cbcomplete.setText("Complete");
+
         javax.swing.GroupLayout panelMainLayout = new javax.swing.GroupLayout(panelMain);
         panelMain.setLayout(panelMainLayout);
         panelMainLayout.setHorizontalGroup(
@@ -1904,8 +1912,10 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addGroup(panelMainLayout.createSequentialGroup()
                         .addComponent(btnew)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btclear)))
-                .addGap(143, 143, 143)
+                        .addComponent(btclear)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(cbcomplete)))
+                .addGap(66, 66, 66)
                 .addComponent(lblstatus, javax.swing.GroupLayout.PREFERRED_SIZE, 352, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                 .addGroup(panelMainLayout.createSequentialGroup()
@@ -1935,7 +1945,8 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelMainLayout.createSequentialGroup()
                                 .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(btnew)
-                                    .addComponent(btclear))
+                                    .addComponent(btclear)
+                                    .addComponent(cbcomplete))
                                 .addGap(9, 9, 9))
                             .addGroup(panelMainLayout.createSequentialGroup()
                                 .addGroup(panelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2867,6 +2878,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btupdate;
     private javax.swing.JButton btupdateitem;
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JCheckBox cbcomplete;
     private javax.swing.JCheckBox cbexplode;
     private com.toedter.calendar.JDateChooser dcshipdate;
     private javax.swing.JComboBox<String> ddbillto;

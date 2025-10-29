@@ -3110,6 +3110,7 @@ public class invData {
                 }
 
                res = st.executeQuery("select cpr_disc from cpr_mstr where cpr_cust = " + "'" + entity + "'" + 
+                                     " AND ( cpr_expire is null OR cpr_expire >= " + "'" + BlueSeerUtils.setDateFormat(now) + "'" + " ) " +
                                      " AND cpr_type = " + "'" + "DISCOUNT" + "'" + ";");
                int i = 0;
                while (res.next()) {
