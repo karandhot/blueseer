@@ -998,7 +998,7 @@ public class shpData {
                 tracking, // trailer/tracking
                 "", // status
                 "", // char1
-                "", // char2
+                "1", // char2  ...auto generated shippers should be 'complete' for ASN production
                 "" // char3
             );
                 
@@ -2907,6 +2907,10 @@ public class shpData {
     public static String[] getShipperHeader(String shipper) {
 
           String[] H = new String[35];
+          for (int i = 0; i < H.length; i++) {
+              H[i] = "";
+          }
+          
     try{
 
         Connection con = null;
@@ -2929,7 +2933,7 @@ public class shpData {
                         " inner join cm_mstr on cm_code = sh_cust " +
                         " inner join cms_det on cms_det.cms_shipto = sh_ship and cms_det.cms_code = sh_cust " +
                         " inner join cust_term on cm_terms = cut_code " +
-                        " inner join ar_mstr on ar_nbr = sh_id and ar_type = 'I' " +
+                        " left outer join ar_mstr on ar_nbr = sh_id and ar_type = 'I' " +
                         " where sh_id = " + "'" + shipper + "'" +";");
                 while (res.next()) {
                     H[0] = res.getString("sh_cust");
@@ -3760,7 +3764,7 @@ public class shpData {
             if (proceed) {
                 st.executeUpdate("insert into ship_mstr " 
                     + " (sh_id, sh_cust, sh_ship,"
-                    + " sh_shipdate, sh_po_date, sh_bol, sh_po, sh_ref, sh_rmks, sh_userid, sh_site, sh_curr, sh_shipvia, sh_cust_terms, sh_taxcode, sh_ar_acct, sh_ar_cc, sh_type ) "
+                    + " sh_shipdate, sh_po_date, sh_bol, sh_po, sh_ref, sh_rmks, sh_userid, sh_site, sh_curr, sh_shipvia, sh_cust_terms, sh_taxcode, sh_ar_acct, sh_ar_cc, sh_type, sh_char2 ) "
                     + " values ( " + "'" + nbr + "'" + "," 
                     + "'" + billto + "'" + "," 
                     + "'" + shipto + "'" + ","
@@ -3778,7 +3782,8 @@ public class shpData {
                     + "'" + taxcode + "'" + ","
                     + "'" + acct + "'" + ","
                     + "'" + cc + "'" + ","
-                    + "'" + shiptype + "'"
+                    + "'" + shiptype + "'" + ","
+                    + "'0'" // shipper complete
                     + ");" );
             } // if proceed
             else {
