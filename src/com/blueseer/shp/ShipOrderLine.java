@@ -720,11 +720,11 @@ public class ShipOrderLine extends javax.swing.JPanel {
                 
         
         if (lurb1.isSelected()) {  
-         luModel = DTData.getOrderBrowseUtil(luinput.getText(),0, "so_nbr");
+         luModel = DTData.getOpenOrderBrowseUtil(luinput.getText(),0, "so_nbr");
         } else if (lurb2.isSelected()) {
-         luModel = DTData.getOrderBrowseUtil(luinput.getText(),0, "so_po");   
+         luModel = DTData.getOpenOrderBrowseUtil(luinput.getText(),0, "so_po");   
         } else {
-         luModel = DTData.getOrderBrowseUtil(luinput.getText(),0, "so_cust");   
+         luModel = DTData.getOpenOrderBrowseUtil(luinput.getText(),0, "so_cust");   
         }
         
          

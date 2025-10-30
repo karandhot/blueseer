@@ -106,7 +106,8 @@ public class ShipperBrowse extends javax.swing.JPanel {
                         new String[]{getGlobalColumnTag("select"), 
                             getGlobalColumnTag("detail"), 
                             getGlobalColumnTag("shipper"), 
-                            getGlobalColumnTag("customer"), 
+                            getGlobalColumnTag("code"), 
+                            getGlobalColumnTag("name"),
                             getGlobalColumnTag("shipdate"), 
                             getGlobalColumnTag("invdate"), 
                             getGlobalColumnTag("status"), 
@@ -339,6 +340,8 @@ public class ShipperBrowse extends javax.swing.JPanel {
         tbtotsales.setText("0");
         tbdetsales.setText("0");
         
+        cbconfirmed.setSelected(true);
+        cbunconfirmed.setSelected(true);
         
         java.util.Date now = new java.util.Date();
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
@@ -363,8 +366,8 @@ public class ShipperBrowse extends javax.swing.JPanel {
                
         tablereport.setModel(mymodel);
         tablereport.getTableHeader().setReorderingAllowed(false);
-        tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
       
         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
         tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
@@ -375,6 +378,8 @@ public class ShipperBrowse extends javax.swing.JPanel {
         detailpanel.setVisible(false);
           
     }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -409,8 +414,9 @@ public class ShipperBrowse extends javax.swing.JPanel {
         dcfrom = new com.toedter.calendar.JDateChooser();
         dcto = new com.toedter.calendar.JDateChooser();
         tbcsv = new javax.swing.JButton();
-        cbinvoiced = new javax.swing.JCheckBox();
+        cbconfirmed = new javax.swing.JCheckBox();
         btprint = new javax.swing.JButton();
+        cbunconfirmed = new javax.swing.JCheckBox();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         tbtotsales = new javax.swing.JLabel();
@@ -518,8 +524,8 @@ public class ShipperBrowse extends javax.swing.JPanel {
             }
         });
 
-        cbinvoiced.setText("Invoiced Only");
-        cbinvoiced.setName("cbinvoiceonly"); // NOI18N
+        cbconfirmed.setText("Confirmed");
+        cbconfirmed.setName("cbconfirmed"); // NOI18N
 
         btprint.setText("Print/PDF");
         btprint.setName("btprintpdf"); // NOI18N
@@ -528,6 +534,9 @@ public class ShipperBrowse extends javax.swing.JPanel {
                 btprintActionPerformed(evt);
             }
         });
+
+        cbunconfirmed.setText("Unconfirmed");
+        cbunconfirmed.setName("btunconfirmed"); // NOI18N
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -572,8 +581,10 @@ public class ShipperBrowse extends javax.swing.JPanel {
                         .addGap(18, 18, 18)))
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(cbinvoiced)
-                        .addGap(52, 52, 52))
+                        .addComponent(cbconfirmed)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(cbunconfirmed)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(btRun)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -581,8 +592,8 @@ public class ShipperBrowse extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(tbcsv)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btprint)
-                        .addContainerGap())))
+                        .addComponent(btprint)))
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -608,7 +619,8 @@ public class ShipperBrowse extends javax.swing.JPanel {
                             .addComponent(tbtoshipper, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(tbtocust, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel4)
-                            .addComponent(cbinvoiced))
+                            .addComponent(cbconfirmed)
+                            .addComponent(cbunconfirmed))
                         .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel6))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -775,9 +787,11 @@ public class ShipperBrowse extends javax.swing.JPanel {
                  }
                 
                       //must be type balance sheet
-                 if (cbinvoiced.isSelected()) {
-                  res = st.executeQuery("select sh_id, sh_status, sh_cust, sh_shipdate, sh_confdate, sum(shd_qty) as 'qty', sum(shd_qty * shd_netprice) as 'price' from ship_mstr " +
-                        " inner join ship_det on shd_id = sh_id where " +
+                
+                  res = st.executeQuery("select sh_id, sh_status, sh_cust, cm_name, sh_shipdate, sh_confdate, sum(shd_qty) as 'qty', sum(shd_qty * shd_netprice) as 'price' from ship_mstr " +
+                        " inner join ship_det on shd_id = sh_id " +
+                        " inner join cm_mstr on cm_code = sh_cust " +
+                        " where " +
                         " sh_id >= " + "'" + shipperfrom + "'" + " AND " +
                         " sh_id <= " + "'" + shipperto + "'" + " AND " +
                         " sh_shipdate >= " + "'" + fromdate + "'" + " AND " +
@@ -786,34 +800,31 @@ public class ShipperBrowse extends javax.swing.JPanel {
                         " sh_cust <= " + "'" + custto + "'" + " AND " +
                         " sh_status = '1' " +
                         " group by sh_id, sh_status, sh_cust, sh_shipdate, sh_confdate;");
-                 } else {
-                   res = st.executeQuery("select sh_id, sh_status, sh_cust, sh_shipdate, sh_confdate, sum(shd_qty) as 'qty', sum(shd_qty * shd_netprice) as 'price' from ship_mstr " +
-                        " inner join ship_det on shd_id = sh_id where " +
-                        " sh_id >= " + "'" + shipperfrom + "'" + " AND " +
-                        " sh_id <= " + "'" + shipperto + "'" + " AND " +
-                        " sh_shipdate >= " + "'" + fromdate + "'" + " AND " +
-                        " sh_shipdate <= " + "'" + todate + "'" + " AND " +
-                        " sh_cust >= " + "'" + custfrom + "'" + " AND " +
-                        " sh_cust <= " + "'" + custto + "'"  +
-                        " group by sh_id, sh_status, sh_cust, sh_shipdate, sh_confdate;");  
-                 }
+               
                 
                        while (res.next()) {
-                           if (res.getString("sh_status").equals("1"))
-                               status = "Confirmed";
-                           else
-                               status = "Not Confirmed";
+                           
+                        status = (res.getString("sh_status").equals("1")) ? "Confirmed" : "Not Confirmed";
+                        
+                        if (! cbconfirmed.isSelected() && res.getString("sh_status").equals("1")) {
+                            continue;
+                        }
+                        if (! cbunconfirmed.isSelected() && res.getString("sh_status").equals("0")) {
+                            continue;
+                        }
+                           
                          totsales = totsales + res.getDouble("price");
                          totqty = totqty + res.getDouble("qty");
                          
                          mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, BlueSeerUtils.clickbasket, 
                                 res.getString("sh_id"),
                                 res.getString("sh_cust"),
+                                res.getString("cm_name"),
                                 getDateDB(res.getString("sh_shipdate")),
                                 getDateDB(res.getString("sh_confdate")),
                                 status,
                                 bsNumber(res.getString("qty")),
-                                bsParseDouble(currformatDouble(res.getDouble("price")))
+                                bsParseDouble(currformatDouble(res.getDouble("price"))) 
                             });
                                 
                        }
@@ -861,23 +872,7 @@ public class ShipperBrowse extends javax.swing.JPanel {
                String[] args = new String[]{tablereport.getValueAt(row, 2).toString()};
                reinitpanels(mypanel, true, args);
         }
-        if (col == 10) {
-            OVData.printInvoice(tablereport.getValueAt(row, 2).toString(), true); 
-        }
-        if (col == 11) {
-            if (sending) {
-                return;
-            }
-            String[] x = OVData.isSMTPServer();
-            if (x[0].equals("0")) {
-               // tablereport.setEnabled(false);
-                tablereport.getModel().setValueAt(BlueSeerUtils.clicklock,row,11);
-                sending = true; 
-                executeTask(tablereport.getValueAt(row, 2).toString(), row, tablereport.getValueAt(row, 3).toString());
-            } else {
-                bsmf.MainFrame.show(x[1]);
-            }
-        }
+       
     }//GEN-LAST:event_tablereportMouseClicked
 
     private void tbcsvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbcsvActionPerformed
@@ -886,7 +881,7 @@ public class ShipperBrowse extends javax.swing.JPanel {
     }//GEN-LAST:event_tbcsvActionPerformed
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
-        OVData.printJTableToJasper("Shipper Report", tablereport, "genericJTableL7.jasper" );
+        OVData.printJTableToJasper("Shipper Report", tablereport, "genericJTableL8.jasper" );
     }//GEN-LAST:event_btprintActionPerformed
 
 
@@ -896,7 +891,8 @@ public class ShipperBrowse extends javax.swing.JPanel {
     private javax.swing.JButton btRun;
     private javax.swing.JButton btdetail;
     private javax.swing.JButton btprint;
-    private javax.swing.JCheckBox cbinvoiced;
+    private javax.swing.JCheckBox cbconfirmed;
+    private javax.swing.JCheckBox cbunconfirmed;
     private javax.swing.JLabel datelabel;
     private com.toedter.calendar.JDateChooser dcfrom;
     private com.toedter.calendar.JDateChooser dcto;

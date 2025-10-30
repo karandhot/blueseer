@@ -38,6 +38,7 @@ import com.blueseer.ctr.cusData;
 import com.blueseer.ctr.cusData.CustShipSet;
 import com.blueseer.ctr.cusData.cms_det;
 import static com.blueseer.ctr.cusData.getCustShipSet;
+import com.blueseer.fgl.fglData;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.getItemMstr;
 import com.blueseer.inv.invData.item_mstr;
@@ -314,6 +315,9 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                 case "get":
                     message = getRecord(key);    
                     break; 
+                case "run":
+                    message = Run_autoInvoice();
+                    break;    
                 default:
                     message = new String[]{"1", "unknown action"};
             }
@@ -1457,6 +1461,15 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         sumlinecount();
     }
     
+    public String[] Run_autoInvoice() {
+        
+        String[] m = confirmShipperTransaction("order", tbkey.getText(), dcshipdate.getDate());
+        // autopost
+        if (OVData.isAutoPost()) {
+            fglData.PostGL();
+        }
+        return m;
+    }
     
     
     /**
@@ -2597,11 +2610,8 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btcommitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcommitActionPerformed
         if (dcshipdate.getDate() != null) {
-        String[] message = confirmShipperTransaction("order", tbkey.getText(), dcshipdate.getDate());
-        bsmf.MainFrame.show(message[1]);
-        initvars(new String[]{tbkey.getText()});
-        } else {
-           bsmf.MainFrame.show("No Ship Date assigned"); 
+        setPanelComponentState(this, false);
+        executeTask(dbaction.run, new String[]{tbkey.getText()}); 
         }
     }//GEN-LAST:event_btcommitActionPerformed
 

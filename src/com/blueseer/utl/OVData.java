@@ -15412,9 +15412,9 @@ return mystring;
                     
                     taxamt = matltax;
                     // lets retrieve any summary charges from orders associated with this shipment.
-                    res = st.executeQuery("select * from shs_det where shs_nbr = " + "'" + shipper + "'" + 
-                            " and (shs_type = 'charge' or shs_type = 'shipping ADD') " +               
-                            ";");
+                    res = st.executeQuery("select * from shs_det where shs_nbr = " + "'" + shipper + "'" + ";");
+                           /* " and (shs_type = 'charge' or shs_type = 'shipping ADD') " +       */         
+                            
                     while (res.next()) {
                     amt += res.getDouble("shs_amt");
                     }

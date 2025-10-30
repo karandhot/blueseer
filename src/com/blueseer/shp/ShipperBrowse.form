@@ -203,8 +203,10 @@
                       </Group>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="cbinvoiced" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="52" max="-2" attributes="0"/>
+                              <Component id="cbconfirmed" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="cbunconfirmed" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="btRun" min="-2" max="-2" attributes="0"/>
@@ -214,9 +216,9 @@
                               <Component id="tbcsv" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                               <Component id="btprint" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -246,7 +248,8 @@
                                   <Component id="tbtoshipper" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="tbtocust" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="cbinvoiced" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbconfirmed" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbunconfirmed" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <Component id="dcto" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -343,10 +346,10 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tbcsvActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JCheckBox" name="cbinvoiced">
+            <Component class="javax.swing.JCheckBox" name="cbconfirmed">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Invoiced Only"/>
-                <Property name="name" type="java.lang.String" value="cbinvoiceonly" noResource="true"/>
+                <Property name="text" type="java.lang.String" value="Confirmed"/>
+                <Property name="name" type="java.lang.String" value="cbconfirmed" noResource="true"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JButton" name="btprint">
@@ -357,6 +360,12 @@
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btprintActionPerformed"/>
               </Events>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="cbunconfirmed">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Unconfirmed"/>
+                <Property name="name" type="java.lang.String" value="btunconfirmed" noResource="true"/>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>
