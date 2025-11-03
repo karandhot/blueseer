@@ -47,6 +47,8 @@ admin,MapMaint,0
 admin,StructMaint,0
 admin,APIMaint,0
 admin,AS2Maint,0
+admin,AS2Menu,0
+admin,APIMenu,0
 admin,AS2Log,0
 admin,PKSMaint,0
 admin,APIBrowse,0
