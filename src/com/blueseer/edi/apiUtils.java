@@ -2887,7 +2887,7 @@ public class apiUtils {
         X509Certificate encryptcertificate = getPublicKeyAsCert(as2m.as2_enccert());
         if (encryptcertificate == null) {
           logdet.add(new String[]{parentkey, "error", "Unable to retrieve encryption cert for " + as2m.as2_enccert()}); 
-          writeAS2LogDetail(logdet);
+          writeAS2LogDetail(logdet, as2m.as2_id());
           return "Unable to retrieve encryption cert for " + as2m.as2_enccert();
         }
         
@@ -2898,7 +2898,7 @@ public class apiUtils {
         pks_mstr pkid = admData.getPksMstr(new String[]{signkeyid});
         if (pkid == null || pkid.m()[0].equals("1")) {
           logdet.add(new String[]{parentkey, "error", "Unable to retrieve pks_mstr signing key for " + signkeyid}); 
-          writeAS2LogDetail(logdet);
+          writeAS2LogDetail(logdet, as2m.as2_id());
           return "Unable to retrieve pks_mstr signing key for  " + signkeyid;
         }
         
@@ -2909,7 +2909,7 @@ public class apiUtils {
         
         if ( pkid.pks_type().equals("store") || pkid.pks_type().equals("publickey") ) {
           logdet.add(new String[]{parentkey, "error", "Using non-user signing key " + signkeyid}); 
-          writeAS2LogDetail(logdet);
+          writeAS2LogDetail(logdet, as2m.as2_id());
           return "Using non-user signing key  " + signkeyid; 
         } else if (pkid.pks_type().equals("privatekey")) {
            key = readPrivateKeyFromFile(pkid.pks_file());
@@ -2931,7 +2931,7 @@ public class apiUtils {
            }
         } catch (FileNotFoundException ex) {
           logdet.add(new String[]{parentkey, "error", "Unable to locate keystore file for " + pkid.pks_id()}); 
-          writeAS2LogDetail(logdet);
+          writeAS2LogDetail(logdet, as2m.as2_id());
           return "Unable to locate keystore file for " + pkid.pks_id(); 
         } finally {
             if (fis != null ) {
@@ -2951,13 +2951,13 @@ public class apiUtils {
         
         if (key == null) {
           logdet.add(new String[]{parentkey, "error", "Unable to retrieve private key for signing " + signkeyid}); 
-          writeAS2LogDetail(logdet);
+          writeAS2LogDetail(logdet, as2m.as2_id());
           return "Unable to retrieve private key for signing " + signkeyid;
         }
         
         if (signcertificate == null) {
           logdet.add(new String[]{parentkey, "error", "Unable to retrieve signing cert " + pkid.pks_user()}); 
-          writeAS2LogDetail(logdet);
+          writeAS2LogDetail(logdet, as2m.as2_id());
           return "Unable to retrieve signing cert " + pkid.pks_user();
         }
         
@@ -2974,7 +2974,7 @@ public class apiUtils {
         
         if (listOfFiles == null || listOfFiles.length == 0) {
             logdet.add(new String[]{parentkey, "passive", "No Files in output directory " + sourceDir}); 
-            writeAS2LogDetail(logdet);
+            writeAS2LogDetail(logdet, as2m.as2_id());
             return "No Files in output directory " + sourceDir;
         }
         for (int i = 0; i < listOfFiles.length; i++) {
@@ -3280,7 +3280,7 @@ public class apiUtils {
 
             } catch (MessagingException ex) {
               logdet.add(new String[]{parentkey, "error", " Messaging error; Bad MDN Boundary " + ex.getMessage()}); 
-              writeAS2LogDetail(logdet);
+              writeAS2LogDetail(logdet, as2m.as2_id());
               r.append("Messaging error; Bad MDN Boundary ").append(ex.getMessage()); 
               ex.printStackTrace();
               return r.toString(); 
@@ -3291,17 +3291,17 @@ public class apiUtils {
         
         } catch (HttpHostConnectException | ConnectTimeoutException  ex) {
           logdet.add(new String[]{parentkey, "error", " Connection refused or timeout from server "}); 
-          writeAS2LogDetail(logdet);
+          writeAS2LogDetail(logdet, as2m.as2_id());
           r.append("Connection refused or timeout from server ");
           return r.toString();
         } catch ( UnknownHostException ex) {
           logdet.add(new String[]{parentkey, "error", " Unknown host server " + request.getURI()}); 
-          writeAS2LogDetail(logdet);
+          writeAS2LogDetail(logdet, as2m.as2_id());
           r.append("Unknown host server ").append(request.getURI());
           return r.toString();
         } catch ( SocketException ex) {
           logdet.add(new String[]{parentkey, "error", " Socket exception connection reset " + request.getURI()}); 
-          writeAS2LogDetail(logdet);
+          writeAS2LogDetail(logdet, as2m.as2_id());
           r.append("Socket exception connection reset ").append(request.getURI());
           return r.toString();
         }
@@ -3318,7 +3318,7 @@ public class apiUtils {
       } 
         
     } // for each file
-        writeAS2LogDetail(logdet);
+        writeAS2LogDetail(logdet, as2m.as2_id());
         return r.toString();
     }
     

@@ -4330,8 +4330,11 @@ public class EDData {
       }
     
     
-    public static int writeAS2LogDetail(ArrayList<String[]> x) {
+    public static int writeAS2LogDetail(ArrayList<String[]> x, String as2id) {
             int returnkey = 0;
+            boolean isError = false;
+            String errorMessage = "";
+            
           try {
             Connection con = null;
             if (ds != null) {
@@ -4361,6 +4364,8 @@ public class EDData {
                // if last entry = 'error'...then parent status = error...otherwise 'success'
                // if last entry = 'passive'...then set parent to 'passive' mod date: 20220906 TEV
                if (x.get(x.size() - 1)[1].equals("error")) {
+                   isError = true;
+                   errorMessage = x.get(0)[2];                   
                st.executeUpdate("update as2_log set " +
                             " as2l_status = " + "'" + "error" + "'" +
                             " where as2l_logid = " + "'" + x.get(0)[0] + "'" +        
@@ -4386,6 +4391,16 @@ public class EDData {
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
+          
+          if (isError) {
+            String to = OVData.getSysMetaValue("system", "as2errormail", as2id);  // if no sys_meta record...then do not send email error alert
+            if (! to.isBlank()) {
+              String[] creds = getSMTPCredentials();
+              if (! creds[1].isBlank()) {
+                 sendEmail(to, "BlueSeer AS2 Send Error: " + as2id, errorMessage, "");
+              }
+            }       
+          }
           return returnkey;
       }
     

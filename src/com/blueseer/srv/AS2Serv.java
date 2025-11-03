@@ -498,7 +498,7 @@ public class AS2Serv extends HttpServlet {
                // writeAS2LogStop(new String[]{"0","unknown","in","error","Null content in FileBytes or FileWHeader Bytes " + sender + "/" + receiver,now,"", info[22]});
                 logdet.add(new String[]{parentkey, "error", "Null content in FileBytes or FileWHeader Bytes " + sender + "/" + receiver,now,"" });
               if (! logdet.isEmpty()) {
-                    writeAS2LogDetail(logdet);
+                    writeAS2LogDetail(logdet, as2m.as2_id());
               }
                 return createMDN("2010", elementals, returnheaders, isDebug, as2m);
               }
@@ -511,7 +511,7 @@ public class AS2Serv extends HttpServlet {
               //  writeAS2LogStop(new String[]{"0","unknown","in","error","Signature mp content is null " + sender + "/" + receiver,now,"", info[22]});
               logdet.add(new String[]{parentkey, "error", "Signature mp content is null " + sender + "/" + receiver,now,"" });
               if (! logdet.isEmpty()) {
-                    writeAS2LogDetail(logdet);
+                    writeAS2LogDetail(logdet, as2m.as2_id());
               }
                 return createMDN("2015", elementals, returnheaders, isDebug, as2m);
             } 
@@ -527,7 +527,7 @@ public class AS2Serv extends HttpServlet {
             if (! validSignature && info[13].equals("1")) {
               logdet.add(new String[]{parentkey, "error", "invalid signature " + sender + "/" + receiver,now,"" });
               if (! logdet.isEmpty()) {
-                    writeAS2LogDetail(logdet);
+                    writeAS2LogDetail(logdet, as2m.as2_id());
               }
               return createMDN("2020", elementals, returnheaders, isDebug, as2m);
             } 
@@ -598,7 +598,7 @@ public class AS2Serv extends HttpServlet {
                 bslog(ex);
             }
            if (! logdet.isEmpty()) {
-           writeAS2LogDetail(logdet);
+           writeAS2LogDetail(logdet, as2m.as2_id());
            }
            
         }
