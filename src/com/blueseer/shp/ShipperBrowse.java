@@ -798,7 +798,6 @@ public class ShipperBrowse extends javax.swing.JPanel {
                         " sh_shipdate <= " + "'" + todate + "'" + " AND " +
                         " sh_cust >= " + "'" + custfrom + "'" + " AND " +
                         " sh_cust <= " + "'" + custto + "'" + " AND " +
-                        " sh_status = '1' " +
                         " group by sh_id, sh_status, sh_cust, cm_name, sh_shipdate, sh_confdate;");
                
                 
