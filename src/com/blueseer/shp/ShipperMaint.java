@@ -1134,11 +1134,10 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         double dol = 0;
          for (int j = 0; j < tabledetail.getRowCount(); j++) {
-             dol = dol + ( bsParseDouble(tabledetail.getValueAt(j, 5).toString()) * bsParseDouble(tabledetail.getValueAt(j, 6).toString()) ); 
+             dol = dol + ( bsParseDouble(tabledetail.getValueAt(j, 5).toString()) * bsParseDouble(tabledetail.getValueAt(j, 11).toString()) ); 
          }
-         // now add trailer/summary charges if any
+         // now add trailer/summary discounts/charges if any
          for (int j = 0; j < sactable.getRowCount(); j++) {
-            if (sactable.getValueAt(j,2).toString().equals("charge"))
             dol += bsParseDouble(sactable.getValueAt(j,4).toString());
         }
          tbtotdollars.setText(bsFormatDouble(dol));
