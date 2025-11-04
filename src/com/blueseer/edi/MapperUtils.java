@@ -132,7 +132,7 @@ public class MapperUtils {
         } else if (precision.equals("1")) {
          pattern = "#0.0";   
         } else {
-         pattern = "#0.00";    
+         pattern = "#0.########";    
         }
        
         DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.getDefault());    
@@ -169,7 +169,7 @@ public class MapperUtils {
         } else if (precision.equals("1")) {
          pattern = "#0.0";   
         } else {
-         pattern = "#0.00";    
+         pattern = "#0.########";    
         }
        
         DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.getDefault());    
