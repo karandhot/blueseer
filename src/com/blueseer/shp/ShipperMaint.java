@@ -836,6 +836,15 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                   });
                 }
         
+           
+        for (shs_det s : shslist) {
+             sacmodel.addRow(new Object[]{
+             s.shs_so(), s.shs_desc(), s.shs_type(), s.shs_amttype(), s.shs_amt()
+             });
+        }
+        sactable.setModel(sacmodel);
+        
+        
         refreshDisplayTotals();
         
         setAction(sh.m());

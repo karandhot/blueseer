@@ -936,11 +936,10 @@ public class InvoiceMaint extends javax.swing.JPanel {
         
         double dol = 0;
          for (int j = 0; j < tabledetail.getRowCount(); j++) {
-             dol = dol + ( bsParseDouble(tabledetail.getValueAt(j, 4).toString()) * bsParseDouble(tabledetail.getValueAt(j, 5).toString()) ); 
+             dol = dol + ( bsParseDouble(tabledetail.getValueAt(j, 4).toString()) * bsParseDouble(tabledetail.getValueAt(j, 8).toString()) ); 
          }
-         // now add trailer/summary charges if any
+         // now add trailer/summary discount/charges if any
          for (int j = 0; j < sactable.getRowCount(); j++) {
-            if (sactable.getValueAt(j,2).toString().equals("charge") || sactable.getValueAt(j,2).toString().equals("shipping ADD"))
             dol += bsParseDouble(sactable.getValueAt(j,4).toString());
         }
         // tbtotdollars.setText(bsFormatDouble(dol));
