@@ -109,7 +109,7 @@ public class ShipperBrowse extends javax.swing.JPanel {
                             getGlobalColumnTag("code"), 
                             getGlobalColumnTag("name"),
                             getGlobalColumnTag("shipdate"), 
-                            getGlobalColumnTag("invdate"), 
+                            getGlobalColumnTag("po"), 
                             getGlobalColumnTag("status"), 
                             getGlobalColumnTag("qty"), 
                             getGlobalColumnTag("amount")})
@@ -339,7 +339,7 @@ public class ShipperBrowse extends javax.swing.JPanel {
         tbtotqty.setText("0");
         tbtotsales.setText("0");
         tbdetsales.setText("0");
-        
+        tbpo.setText("");
         cbconfirmed.setSelected(true);
         cbunconfirmed.setSelected(true);
         
@@ -404,7 +404,6 @@ public class ShipperBrowse extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        datelabel = new javax.swing.JLabel();
         tbfromshipper = new javax.swing.JTextField();
         tbtoshipper = new javax.swing.JTextField();
         tbfromcust = new javax.swing.JTextField();
@@ -417,6 +416,8 @@ public class ShipperBrowse extends javax.swing.JPanel {
         cbconfirmed = new javax.swing.JCheckBox();
         btprint = new javax.swing.JButton();
         cbunconfirmed = new javax.swing.JCheckBox();
+        tbpo = new javax.swing.JTextField();
+        jLabel9 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         tbtotsales = new javax.swing.JLabel();
@@ -538,18 +539,16 @@ public class ShipperBrowse extends javax.swing.JPanel {
         cbunconfirmed.setText("Unconfirmed");
         cbunconfirmed.setName("btunconfirmed"); // NOI18N
 
+        jLabel9.setText("PO:");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(114, 114, 114)
-                        .addComponent(datelabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(267, 267, 267))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                        .addContainerGap()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel5)
                             .addComponent(jLabel6))
@@ -573,12 +572,16 @@ public class ShipperBrowse extends javax.swing.JPanel {
                                 .addComponent(jLabel1))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addGap(27, 27, 27)
-                                .addComponent(jLabel4)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(tbfromcust, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tbtocust, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)))
+                                .addComponent(jLabel4))))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jLabel9)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(tbpo)
+                    .addComponent(tbfromcust, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
+                    .addComponent(tbtocust, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(cbconfirmed)
@@ -624,8 +627,10 @@ public class ShipperBrowse extends javax.swing.JPanel {
                         .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel6))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(datelabel, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(13, 13, 13))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbpo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel9))
+                .addContainerGap())
         );
 
         jLabel8.setText("Total Sales:");
@@ -788,7 +793,8 @@ public class ShipperBrowse extends javax.swing.JPanel {
                 
                       //must be type balance sheet
                 
-                  res = st.executeQuery("select sh_id, sh_status, sh_cust, cm_name, sh_shipdate, sh_confdate, sum(shd_qty) as 'qty', sum(shd_qty * shd_netprice) as 'price' from ship_mstr " +
+                  if (tbpo.getText().isBlank()) {
+                    res = st.executeQuery("select sh_id, sh_status, sh_cust, cm_name, sh_shipdate, sh_po, sum(shd_qty) as 'qty', sum(shd_qty * shd_netprice) as 'price' from ship_mstr " +
                         " inner join ship_det on shd_id = sh_id " +
                         " inner join cm_mstr on cm_code = sh_cust " +
                         " where " +
@@ -798,7 +804,22 @@ public class ShipperBrowse extends javax.swing.JPanel {
                         " sh_shipdate <= " + "'" + todate + "'" + " AND " +
                         " sh_cust >= " + "'" + custfrom + "'" + " AND " +
                         " sh_cust <= " + "'" + custto + "'"  +
-                        " group by sh_id, sh_status, sh_cust, cm_name, sh_shipdate, sh_confdate;");
+                        " group by sh_id, sh_status, sh_cust, cm_name, sh_shipdate, sh_po;");
+                  } else {
+                    res = st.executeQuery("select sh_id, sh_status, sh_cust, cm_name, sh_shipdate, sh_po, sum(shd_qty) as 'qty', sum(shd_qty * shd_netprice) as 'price' from ship_mstr " +
+                        " inner join ship_det on shd_id = sh_id " +
+                        " inner join cm_mstr on cm_code = sh_cust " +
+                        " where " +
+                        " sh_id >= " + "'" + shipperfrom + "'" + " AND " +
+                        " sh_id <= " + "'" + shipperto + "'" + " AND " +
+                        " sh_shipdate >= " + "'" + fromdate + "'" + " AND " +
+                        " sh_shipdate <= " + "'" + todate + "'" + " AND " +
+                        " sh_cust >= " + "'" + custfrom + "'" + " AND " +
+                        " sh_cust <= " + "'" + custto + "'"  + " AND " +
+                        " sh_po like '%" + tbpo.getText() + "%'" +
+                        " group by sh_id, sh_status, sh_cust, cm_name, sh_shipdate, sh_po;");
+                  }
+                  
                
                 
                        while (res.next()) {
@@ -820,7 +841,7 @@ public class ShipperBrowse extends javax.swing.JPanel {
                                 res.getString("sh_cust"),
                                 res.getString("cm_name"),
                                 getDateDB(res.getString("sh_shipdate")),
-                                getDateDB(res.getString("sh_confdate")),
+                                res.getString("sh_po"),
                                 status,
                                 bsNumber(res.getString("qty")),
                                 bsParseDouble(currformatDouble(res.getDouble("price"))) 
@@ -892,7 +913,6 @@ public class ShipperBrowse extends javax.swing.JPanel {
     private javax.swing.JButton btprint;
     private javax.swing.JCheckBox cbconfirmed;
     private javax.swing.JCheckBox cbunconfirmed;
-    private javax.swing.JLabel datelabel;
     private com.toedter.calendar.JDateChooser dcfrom;
     private com.toedter.calendar.JDateChooser dcto;
     private javax.swing.JPanel detailpanel;
@@ -904,6 +924,7 @@ public class ShipperBrowse extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -918,6 +939,7 @@ public class ShipperBrowse extends javax.swing.JPanel {
     private javax.swing.JLabel tbdetsales;
     private javax.swing.JTextField tbfromcust;
     private javax.swing.JTextField tbfromshipper;
+    private javax.swing.JTextField tbpo;
     private javax.swing.JTextField tbtocust;
     private javax.swing.JTextField tbtoshipper;
     private javax.swing.JLabel tbtotqty;

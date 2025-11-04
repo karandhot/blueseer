@@ -15405,8 +15405,8 @@ return mystring;
                    
                     res = st.executeQuery("select * from ship_det where shd_id = " + "'" + shipper + "'" +";");
                     while (res.next()) {
-                    amt += (res.getDouble("shd_qty") * res.getDouble("shd_netprice"));
-                    matltax += OVData.getTaxAmtApplicableByItem(res.getString("shd_item"),res.getDouble("shd_qty") * res.getDouble("shd_netprice")); // line level matl tax
+                    amt += (res.getDouble("shd_qty") * res.getDouble("shd_listprice"));
+                    matltax += OVData.getTaxAmtApplicableByItem(res.getString("shd_item"),res.getDouble("shd_qty") * res.getDouble("shd_listprice")); // line level matl tax
                     }
                     res.close();
                     
