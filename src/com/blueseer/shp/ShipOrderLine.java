@@ -818,8 +818,10 @@ public class ShipOrderLine extends javax.swing.JPanel {
         public void actionPerformed(ActionEvent event) {
         if (lurb1.isSelected()) {  
          luModel = DTData.getShipperBrowseUtil(luinput.getText(),0, "sh_id");
-        } else {
+        } else if (lurb2.isSelected()) {
          luModel = DTData.getShipperBrowseUtil(luinput.getText(),0, "sh_cust");   
+        } else {
+         luModel = DTData.getShipperBrowseUtil(luinput.getText(),0, "sh_po");   
         }
         luTable.setModel(luModel);
         luTable.getColumnModel().getColumn(0).setMaxWidth(50);
@@ -847,7 +849,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
         luTable.addMouseListener(luml);
       
         
-        callDialog(getGlobalColumnTag("id"), getGlobalColumnTag("customer")); 
+        callDialog(getGlobalColumnTag("key"), getGlobalColumnTag("customer"), getGlobalColumnTag("po")); 
         
     }
     
