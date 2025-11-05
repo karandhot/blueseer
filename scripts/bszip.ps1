@@ -44,6 +44,7 @@ cp ..\.patch $patchdir\
 cp .patchsqlv70 $patchdir\
 cp patch_install.bat $patchdir\
 cp patch_install.sh $patchdir\
+cp ..\jre17\lib\security\jssecacerts $patchdir\
 cp ..\sf\patches\patch_instructions.pdf $patchdir\
 cp ..\sf\jasper $patchdir\ -recurse
 cp ..\sf\zebra $patchdir\ -recurse
