@@ -176,11 +176,11 @@ public class fglData {
         
         if (bsmf.MainFrame.remoteDB) {
             ArrayList<String[]> list = new ArrayList<String[]>();
-            list.add(new String[]{"id","AcctMstrAdd"});
+            list.add(new String[]{"id","addAcctMstr"});
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 String jsonString = objectMapper.writeValueAsString(x);
-                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServ"));
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFIN"));
             } catch (IOException ex) {
                 bslog(ex);
                 return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};

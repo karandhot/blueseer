@@ -229,7 +229,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         }
     }
     */    
-    if (id.equals("AcctMstrAdd")) { 
+    if (id.equals("addAcctMstr")) { 
       String line;
       StringBuilder sb = new StringBuilder();  
       BufferedReader reader = request.getReader();  // as string
