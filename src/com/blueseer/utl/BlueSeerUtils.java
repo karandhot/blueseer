@@ -31,10 +31,14 @@ import static bsmf.MainFrame.tags;
 import com.blueseer.adm.admData;
 import com.blueseer.adm.admData.change_log;
 import static com.blueseer.edi.EDI.edilog;
+import com.blueseer.fgl.fglData;
+import com.blueseer.fgl.fglData.AcctMstr;
 import static com.blueseer.utl.OVData.getCodeValueByCodeKey;
 import static com.blueseer.utl.OVData.isValidUserLogin;
 import static com.blueseer.utl.OVData.isValidUserSession;
 import static com.blueseer.utl.OVData.killUserSession;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -3108,6 +3112,41 @@ public class BlueSeerUtils {
 		
     }
 
+    public static String arrayToJson(String[] arr) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String x = "";
+        try {   
+            x = objectMapper.writeValueAsString(arr);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+
+    public static String[] jsonToStringArray(String jsonstring) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String[] x = null;
+        try {
+            x = objectMapper.readValue(jsonstring, String[].class);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+
+    
+    public static String jrtToJson(Object o) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String x = "";
+        try {   
+            x = objectMapper.writeValueAsString(o);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+    
+    
 }
 
 

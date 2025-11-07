@@ -16817,8 +16817,10 @@ return mystring;
             output = new BufferedWriter(new FileWriter(f));
             // lets put out the headers
             for (int j = 0; j < tablereport.getColumnCount(); j++) {
-                if (tablereport.getColumnName(j).equals(getGlobalColumnTag("select")) ||  
-                    tablereport.getColumnName(j).equals(getGlobalColumnTag("detail"))) {
+                if (tablereport.getColumnName(j).equals(getGlobalColumnTag("select")) || 
+                    tablereport.getColumnName(j).equals(getGlobalColumnTag("detail")) ||
+                    tablereport.getColumnName(j).equals(getGlobalColumnTag("print")) ||    
+                    tablereport.getColumnName(j).equals(getGlobalColumnTag("email"))) {
                     continue;
                 }
                 output.write(tablereport.getColumnName(j).toString().replace(",", "") + ",");
@@ -16827,10 +16829,12 @@ return mystring;
             // now the data
             for (int i = 0; i < tablereport.getRowCount(); i++) {
                 for (int j = 0; j < tablereport.getColumnCount(); j++) {
-                  if (tablereport.getColumnName(j).equals(getGlobalColumnTag("select")) ||  
-                    tablereport.getColumnName(j).equals(getGlobalColumnTag("detail"))) {
+                  if (tablereport.getColumnName(j).equals(getGlobalColumnTag("select")) || 
+                    tablereport.getColumnName(j).equals(getGlobalColumnTag("detail")) ||
+                    tablereport.getColumnName(j).equals(getGlobalColumnTag("print")) ||    
+                    tablereport.getColumnName(j).equals(getGlobalColumnTag("email"))) {
                     continue;
-                }
+                  }
                 if (tablereport.getValueAt(i, j) != null ) {
                 output.write(tablereport.getValueAt(i, j).toString().replace(",", "") + ",");
                 } else {

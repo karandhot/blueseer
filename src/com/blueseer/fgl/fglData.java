@@ -26,6 +26,7 @@ SOFTWARE.
 package com.blueseer.fgl;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.dbtype;
 import static bsmf.MainFrame.defaultDecimalSeparator;
@@ -57,10 +58,14 @@ import static com.blueseer.utl.BlueSeerUtils.currformatDoubleUS;
 import static com.blueseer.utl.BlueSeerUtils.formatUSC;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.getSysMetaValue;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import static java.lang.Math.abs;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -168,6 +173,20 @@ public class fglData {
     
     
     public static String[] addAcctMstr(AcctMstr x) {
+        
+        if (bsmf.MainFrame.remoteDB) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","AcctMstrAdd"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServ"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         String sqlSelect = "select * from ac_mstr where ac_id = ?";
         String sqlInsert = "insert into ac_mstr (ac_id, ac_desc, ac_type, ac_cur, ac_display)  " +

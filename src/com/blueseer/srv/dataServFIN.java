@@ -49,12 +49,16 @@ import static com.blueseer.edi.apiUtils.getPublicKeyAsOPENSSH;
 import static com.blueseer.edi.apiUtils.getPublicKeyAsPEM;
 import static com.blueseer.edi.apiUtils.postAS2;
 import static com.blueseer.edi.apiUtils.runAPIPost;
+import com.blueseer.fgl.fglData.AcctMstr;
+import static com.blueseer.fgl.fglData.addAcctMstr;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.createMessageJSON;
 import com.blueseer.utl.OVData;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -140,7 +144,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
            }
         } 
         
-         if (id.equals("getAccountActivityYear")) {
+        if (id.equals("getAccountActivityYear")) {
            String[] keys = new String[]{
                request.getParameter("year"), 
                request.getParameter("site"), 
@@ -194,8 +198,51 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
  @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-       
+        
+        response.setContentType("text/plain");
+      
+    /*    
+    if (! confirmServerAuth(request)) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter().println("br549 authorization failed");
+        return;
     }
+    */
+        
+    if (request.getHeader("id") == null || request.getHeader("id").isEmpty()) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing id " + "\n" + getHeaders(request) );  
+      return;
+    }
+
+    String id = request.getHeader("id");
+    /*
+    String line;
+    StringBuilder sb = new StringBuilder();
+    InputStream body = null;
+    if (id.equals("uploadFile")) {
+       body = request.getInputStream(); // as byte array
+    } else {
+        BufferedReader reader = request.getReader();  // as string
+        while ((line = reader.readLine()) != null) {  
+        sb.append(line);
+        }
+    }
+    */    
+    if (id.equals("AcctMstrAdd")) { 
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      AcctMstr am = objectMapper.readValue(sb.toString(), AcctMstr.class);            
+      response.getWriter().println(arrayToJson(addAcctMstr(am)));
+    }
+        
+       
+    } // doPost
      
     
     private String getHeaders(HttpServletRequest request) {
