@@ -64,6 +64,7 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Currency;
 import java.util.HashMap;
 import java.util.Locale;
@@ -1757,6 +1758,127 @@ public class admData {
     
     
     // misc
+    public static ArrayList<String[]> getLoginInit(String userid) {
+        String defaultsite = "";
+        ArrayList<String[]> lines = new ArrayList<String[]>();
+        try{
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+        // allocate, custitemonly, site, currency, sites, currencies, uoms, 
+        // states, warehouses, locations, customers, taxcodes, carriers, statuses   
+                    
+           
+             res = st.executeQuery("select ov_rcolor, ov_gcolor, ov_bcolor from ov_ctrl;" );
+               while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "bgcolor";
+               s[1] = res.getString("ov_rcolor") + ":" + res.getString("ov_gcolor") + ":" + res.getString("ov_bcolor");
+               lines.add(s);
+            }
+            
+            
+            res = st.executeQuery("select case when p.perm_menu is not null then '1' else '0' end as 'hasaccess', perm_user, mt_par, mt_child, mt_type, mt_label, mt_icon, mt_initvar, mt_func, mt_visible, mt_enable, menu_navcode from menu_tree " +
+                        " inner join menu_mstr on menu_id = mt_child " +
+                        " left outer join perm_mstr p on perm_menu = mt_child and perm_user = " + "'" + userid + "'" +
+                        " where mt_visible = '1' " + 
+                        " order by mt_par, mt_index ;");
+               while (res.next()) {
+                    String[] s = new String[2];
+                    s[0] = "menusforuser";
+                    s[1] = res.getString("perm_user") + "," + 
+                            res.getString("mt_par") + "," +
+                            res.getString("mt_child") + "," +
+                            res.getString("mt_type") + "," +
+                            res.getString("mt_label") + "," +
+                            res.getString("mt_icon") + "," +
+                            res.getString("mt_initvar") + "," +
+                            res.getString("mt_func") + "," +
+                            res.getString("mt_visible") + "," +
+                            res.getString("mt_enable") + "," +
+                            res.getString("menu_navcode") + "," +
+                            res.getString("hasaccess")
+                            ;
+                    lines.add(s);
+                }
+            
+            res = st.executeQuery("SELECT perm_user, perm_menu FROM  perm_mstr where perm_user = " + "'" + userid + "'"  + ";");
+               while (res.next()) {
+                    String[] s = new String[2];
+                    s[0] = "perms";
+                    s[1] = res.getString("perm_menu");
+                    lines.add(s);
+                }
+               
+            res = st.executeQuery("select ov_version from ov_ctrl;" );
+               while (res.next()) {
+                    String[] s = new String[2];
+                    s[0] = "version";
+                    s[1] = res.getString("ov_version");
+                    lines.add(s);
+                } 
+            
+            res = st.executeQuery("select menu_id, menu_panel from menu_mstr order by menu_id ;");
+                while (res.next()) {
+                String[] s = new String[2];
+                    s[0] = "menus";
+                    s[1] = res.getString("menu_id") + "," + res.getString("menu_panel");
+                    lines.add(s);
+                }   
+            
+               
+            res = st.executeQuery("SELECT ov_currency FROM ov_mstr" + ";");
+                while (res.next()) {
+                String[] s = new String[2];
+                s[0] = "iscurrencyset";     
+                     if (res.getString("ov_currency").isBlank()) {
+                         s[1] = "0";
+                     } else {
+                         s[1] = "1";
+                     }
+                lines.add(s);     
+                }
+            
+            res = st.executeQuery("SELECT ov_login FROM ov_ctrl" + ";");
+                while (res.next()) {
+                String[] s = new String[2];
+                s[0] = "logincontrol";
+                s[1] = res.getString("ov_login");
+                lines.add(s);     
+                }    
+            
+            res = st.executeQuery("SELECT user_id FROM  user_mstr where user_id = " + "'" + userid + "'" + ";");    
+            String[] s = new String[2];
+            s[0] = "isuserdefined";
+            s[1] = "0";
+            while (res.next()) {
+                s[1] = "1";
+            }
+            lines.add(s);
+            
+            
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+        return lines;
+    }
+    
+    
     public static String getSiteEmail(String site) {
        String myitem = "";
      try{
