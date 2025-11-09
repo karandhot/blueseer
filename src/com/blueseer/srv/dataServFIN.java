@@ -201,13 +201,13 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         response.setContentType("text/plain");
       
-    /*    
+        
     if (! confirmServerAuth(request)) {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.getWriter().println("br549 authorization failed");
         return;
     }
-    */
+    
         
     if (request.getHeader("id") == null || request.getHeader("id").isEmpty()) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
