@@ -33,6 +33,7 @@ import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.adm.admData.getLoginInit;
 import static com.blueseer.edi.EDI.deleteFile;
 import static com.blueseer.edi.EDI.fileExists;
 import static com.blueseer.edi.EDI.getFileContent;
@@ -55,6 +56,8 @@ import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.boolToJson;
+import static com.blueseer.utl.BlueSeerUtils.boolToString;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.createMessageJSON;
 import com.blueseer.utl.OVData;
@@ -239,6 +242,17 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       ObjectMapper objectMapper = new ObjectMapper();
       AcctMstr am = objectMapper.readValue(sb.toString(), AcctMstr.class);            
       response.getWriter().println(arrayToJson(addAcctMstr(am)));
+    }
+    
+    if (id.equals("login")) { 
+        String user = request.getHeader("user");
+        String pass = request.getHeader("pass");
+        response.getWriter().println(boolToString(bsmf.MainFrame.isPasswdCorrect(user, pass)));
+    }
+    
+    if (id.equals("getLoginInit")) { 
+      String user = request.getHeader("user");          
+      response.getWriter().println(arrayToJson(getLoginInit(user)));
     }
         
        

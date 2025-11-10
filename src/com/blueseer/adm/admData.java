@@ -35,8 +35,13 @@ import static bsmf.MainFrame.user;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.log;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.EDData;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
@@ -1759,7 +1764,21 @@ public class admData {
     
     // misc
     public static ArrayList<String[]> getLoginInit(String userid) {
-        String defaultsite = "";
+        
+        if (bsmf.MainFrame.remoteDB) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getLoginInit"});
+            list.add(new String[]{"user",userid});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        
+        
         ArrayList<String[]> lines = new ArrayList<String[]>();
         try{
         Connection con = null;
@@ -1851,17 +1870,7 @@ public class admData {
                 s[0] = "logincontrol";
                 s[1] = res.getString("ov_login");
                 lines.add(s);     
-                }    
-            
-            res = st.executeQuery("SELECT user_id FROM  user_mstr where user_id = " + "'" + userid + "'" + ";");    
-            String[] s = new String[2];
-            s[0] = "isuserdefined";
-            s[1] = "0";
-            while (res.next()) {
-                s[1] = "1";
-            }
-            lines.add(s);
-            
+                } 
             
         }
         catch (SQLException s){

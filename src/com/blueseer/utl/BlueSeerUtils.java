@@ -3123,11 +3123,57 @@ public class BlueSeerUtils {
         return x;
     }
 
+    public static String arrayToJson(ArrayList<String[]> list) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String x = "";
+        try {   
+            x = objectMapper.writeValueAsString(list);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+
+    
+    public static String boolToJson(boolean b) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String x = "";
+        try {   
+            x = objectMapper.writeValueAsString(b);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+
+    
     public static String[] jsonToStringArray(String jsonstring) {
         ObjectMapper objectMapper = new ObjectMapper();
         String[] x = null;
         try {
             x = objectMapper.readValue(jsonstring, String[].class);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+    
+    public static ArrayList<String> jsonToArrayListString(String jsonstring) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ArrayList<String> x = null;
+        try {
+            x = objectMapper.readValue(jsonstring, ArrayList.class);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+
+    public static ArrayList<String[]> jsonToArrayListStringArray(String jsonstring) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ArrayList<String[]> x = null;
+        try {
+            x = objectMapper.readValue(jsonstring, ArrayList.class);
         } catch (JsonProcessingException ex) {
             bslog(ex);
         }
