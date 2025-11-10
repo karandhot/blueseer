@@ -29,6 +29,7 @@ import bsmf.MainFrame;
 import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.ds;
+import static bsmf.MainFrame.isSSHConnected;
 import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
@@ -1765,7 +1766,7 @@ public class admData {
     // misc
     public static ArrayList<String[]> getLoginInit(String userid) {
         
-        if (bsmf.MainFrame.remoteDB) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id","getLoginInit"});
             list.add(new String[]{"user",userid});
