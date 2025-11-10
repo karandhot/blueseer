@@ -241,18 +241,18 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       } 
       ObjectMapper objectMapper = new ObjectMapper();
       AcctMstr am = objectMapper.readValue(sb.toString(), AcctMstr.class);            
-      response.getWriter().println(arrayToJson(addAcctMstr(am)));
+      response.getWriter().print(arrayToJson(addAcctMstr(am)));
     }
     
     if (id.equals("login")) { 
         String user = request.getHeader("user");
         String pass = request.getHeader("pass");
-        response.getWriter().println(boolToString(bsmf.MainFrame.isPasswdCorrect(user, pass)));
+        response.getWriter().print(boolToString(bsmf.MainFrame.isPasswdCorrect(user, pass)));
     }
     
     if (id.equals("getLoginInit")) { 
       String user = request.getHeader("user");          
-      response.getWriter().println(arrayToJson(getLoginInit(user)));
+      response.getWriter().print(arrayToJson(getLoginInit(user)));
     }
         
        
