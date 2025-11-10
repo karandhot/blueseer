@@ -207,7 +207,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
     if (! confirmServerAuth(request)) {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().println("br549 authorization failed");
+        response.getWriter().println(" br549finpost authorization failed");
         return;
     }
     

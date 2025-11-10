@@ -38,6 +38,7 @@ import static com.blueseer.utl.OVData.isValidUserLogin;
 import static com.blueseer.utl.OVData.isValidUserSession;
 import static com.blueseer.utl.OVData.killUserSession;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.awt.Color;
@@ -3173,7 +3174,7 @@ public class BlueSeerUtils {
         ObjectMapper objectMapper = new ObjectMapper();
         ArrayList<String[]> x = null;
         try {
-            x = objectMapper.readValue(jsonstring, ArrayList.class);
+            x = objectMapper.readValue(jsonstring, new TypeReference<ArrayList<String[]>>() {});
         } catch (JsonProcessingException ex) {
             bslog(ex);
         }
