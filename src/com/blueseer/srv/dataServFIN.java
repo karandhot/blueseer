@@ -48,6 +48,7 @@ import static com.blueseer.edi.apiUtils.genereatePGPKeyPair;
 import static com.blueseer.edi.apiUtils.getAsciiDumpPGPKey;
 import static com.blueseer.edi.apiUtils.getPublicKeyAsOPENSSH;
 import static com.blueseer.edi.apiUtils.getPublicKeyAsPEM;
+import static com.blueseer.edi.apiUtils.hashdigest;
 import static com.blueseer.edi.apiUtils.postAS2;
 import static com.blueseer.edi.apiUtils.runAPIPost;
 import com.blueseer.fgl.fglData.AcctMstr;
@@ -59,6 +60,8 @@ import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.boolToJson;
 import static com.blueseer.utl.BlueSeerUtils.boolToString;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
+import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import static com.blueseer.utl.BlueSeerUtils.confirmServerLogin;
 import static com.blueseer.utl.BlueSeerUtils.createMessageJSON;
 import com.blueseer.utl.OVData;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -74,6 +77,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +89,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerException;
 import org.apache.commons.io.IOUtils;
+import org.bouncycastle.util.encoders.Base64;
 
 
 /**
@@ -92,7 +97,8 @@ import org.apache.commons.io.IOUtils;
  * @author terryva
  */
 public class dataServFIN extends HttpServlet {
-    
+ 
+    public static HashMap<String, String> hmuser = new HashMap<String, String>();
         
 @Override
 protected void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -205,11 +211,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         response.setContentType("text/plain");
       
         
-    if (! confirmServerAuth(request)) {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().println(" br549finpost authorization failed");
-        return;
-    }
+    
     
         
     if (request.getHeader("id") == null || request.getHeader("id").isEmpty()) {
@@ -219,6 +221,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     }
 
     String id = request.getHeader("id");
+    
+    
+    if (! confirmServerAuthAPI(request, hmuser) && ! id.equals("loginAPI")) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter().println(" br549finpost authorization failed");
+        return;
+    }
+    
     /*
     String line;
     StringBuilder sb = new StringBuilder();
@@ -242,6 +252,26 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       ObjectMapper objectMapper = new ObjectMapper();
       AcctMstr am = objectMapper.readValue(sb.toString(), AcctMstr.class);            
       response.getWriter().print(arrayToJson(addAcctMstr(am)));
+    }
+    
+    if (id.equals("loginAPI")) {
+        String user = request.getHeader("user");
+        String sessionid = request.getHeader("sessionid");
+        String ip = request.getRemoteAddr();
+        
+        if (sessionid.isBlank()) {  // must be login
+            sessionid = Long.toHexString(System.currentTimeMillis());
+            
+            if (! confirmServerLogin(request, sessionid)) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().println("0");
+            } else { 
+                hmuser.remove(user);                
+                String b64string = Base64.toBase64String(sessionid.getBytes());
+                hmuser.put(user, sessionid + "," + ip); 
+                response.getWriter().print(b64string);
+            }
+        } 
     }
     
     if (id.equals("login")) { 

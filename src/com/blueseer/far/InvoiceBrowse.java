@@ -67,6 +67,7 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.fgl.fglData.exportInvoiceCSV;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
@@ -863,8 +864,15 @@ public class InvoiceBrowse extends javax.swing.JPanel {
     }//GEN-LAST:event_tablereportMouseClicked
 
     private void tbcsvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbcsvActionPerformed
-      if (tablereport != null)
-        OVData.exportCSV(tablereport);
+      if (tablereport != null) {
+          // OVData.exportCSV(tablereport);
+          
+        ArrayList<String> list = new ArrayList<String>();
+        for (int j = 0; j < tablereport.getRowCount(); j++) {
+           list.add(tablereport.getValueAt(j, 2).toString());  
+        }          
+        exportInvoiceCSV(list);
+      }
     }//GEN-LAST:event_tbcsvActionPerformed
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed

@@ -89,6 +89,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Currency;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -2986,6 +2987,21 @@ public class BlueSeerUtils {
         }
         return false;
     }
+    
+    public static boolean confirmServerAuthAPI(HttpServletRequest httpRequest, HashMap<String,String> hm) {
+        String user = httpRequest.getHeader("user");
+        String ip = httpRequest.getRemoteAddr();
+        String sessionid = httpRequest.getHeader("sessionid");
+        
+        if (hm.get(user).equals(sessionid + "," + ip)) {
+            return true;
+        } else {
+           bslog("confirmServerAuthAPI creds failed: " +  user + "," + sessionid + "," + ip );
+           System.out.println("confirmServerAuthAPI creds failed: " + user + "," + sessionid + "," + ip ); 
+           return false;
+        }
+    }
+    
     
     public static boolean confirmServerSession(HttpServletRequest httpRequest) {
         String cookievalue = "";

@@ -56,6 +56,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDoubleUS;
 import static com.blueseer.utl.BlueSeerUtils.formatUSC;
+import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
@@ -65,6 +66,11 @@ import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.getSysMetaValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.awt.FileDialog;
+import java.awt.Frame;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import static java.lang.Math.abs;
 import java.sql.DriverManager;
@@ -80,6 +86,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.JTable;
 
 /**
  *
@@ -1172,6 +1179,70 @@ public class fglData {
     
     
     // misc functions
+     
+    public static void exportInvoiceCSV(ArrayList<String> list) {
+     FileDialog fDialog;
+        fDialog = new FileDialog(new Frame(), "Save", FileDialog.SAVE);
+        fDialog.setVisible(true);
+       // fDialog.setFile("data.csv");
+        String path = fDialog.getDirectory() + fDialog.getFile();
+        File f = new File(path);
+        
+        
+    try{
+            
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+            BufferedWriter output = new BufferedWriter(new FileWriter(f));
+            output.write("invoicenumber, ponumber, custcode, customername, shipdate, item, custitem, quantity, listprice, netprice, total \n");
+            
+            for (String key : list) {    
+            res = st.executeQuery("select sh_id, sh_po, sh_cust, cm_name, sh_shipdate, shd_item, shd_custitem, shd_qty, shd_listprice, shd_netprice, " +
+                    " sum(shd_qty * shd_netprice) as 'total' " +
+                    " from ship_mstr " +
+                    " inner join ship_det on shd_id = sh_id " +
+                    " inner join cm_mstr on cm_code = sh_cust " +
+                    " where " +
+                     " sh_id = " + "'" + key + "'" + ";");
+                while (res.next()) {
+                    output.write(res.getString("sh_id") + "," +
+                            res.getString("sh_po") + "," +
+                            res.getString("sh_cust") + "," +
+                            res.getString("cm_name") + "," +
+                            res.getString("sh_shipdate") + "," +
+                            res.getString("shd_item") + "," +
+                            res.getString("shd_custitem") + "," +
+                            res.getString("shd_qty") + "," +
+                            res.getString("shd_listprice") + "," +
+                            res.getString("shd_netprice") + "," +
+                            res.getString("total"));
+                    output.write("\n");
+                }
+            }
+            
+            output.close();
+
+       } catch (SQLException s){
+             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+    } catch (IOException | SQLException e){
+        MainFrame.bslog(e);
+        
+    } 
+
+}
+
     
     public static boolean isAcctNumberValid(String acct) {
        boolean r = false;

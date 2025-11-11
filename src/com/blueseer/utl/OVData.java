@@ -11869,7 +11869,7 @@ return autosource;
     }
     
   //  return (isvalidIP && isvalidUserPass) ? true : false;
-   return (isvalidUserPass) ? true : false;
+   return (isvalidUserPass && isvalidIP) ? true : false;
 }
 
     
@@ -16849,8 +16849,7 @@ return mystring;
         }
                 
       }
-           
-    
+         
     public static void exportCertToFile(String data, String filename) {
         FileDialog fDialog;
                 fDialog = new FileDialog(new Frame(), "Save", FileDialog.SAVE);
