@@ -38,6 +38,7 @@ import com.blueseer.srv.ItemServ;
 import com.blueseer.srv.SalesOrdServ;
 import com.blueseer.srv.ShipperServ;
 import com.blueseer.srv.WorkOrdServ;
+import com.blueseer.srv.authServ;
 import com.blueseer.srv.dataServ;
 import com.blueseer.srv.dataServFIN;
 import com.blueseer.srv.webServ;
@@ -177,6 +178,7 @@ public class bsServer {
         context.addServlet(TestServlet.class, "/test/*");
         context.addServlet(dataServ.class, "/dataServ/*");
         context.addServlet(dataServFIN.class, "/dataServFIN/*"); 
+        context.addServlet(authServ.class, "/authServ/*");
         //server.setHandler(context);
         
         
