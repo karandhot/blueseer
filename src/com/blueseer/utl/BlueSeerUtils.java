@@ -2993,7 +2993,7 @@ public class BlueSeerUtils {
         String ip = httpRequest.getRemoteAddr();
         String sessionid = httpRequest.getHeader("sessionid");
         
-        if (hm.get(user).equals(sessionid + "," + ip)) {
+        if (hm.containsKey(user) && hm.get(user).equals(sessionid + "," + ip)) {
             return true;
         } else {
            bslog("confirmServerAuthAPI creds failed: " +  user + "," + sessionid + "," + ip );

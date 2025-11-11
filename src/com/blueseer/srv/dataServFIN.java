@@ -263,9 +263,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             sessionid = Long.toHexString(System.currentTimeMillis());
             
             if (! confirmServerLogin(request, sessionid)) {
+                System.out.println("unauthorized...sending '0'");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().println("0");
+                response.getWriter().print("0");
             } else { 
+                System.out.println("authorized...adding " + user + " with sessionid: " + sessionid);
                 hmuser.remove(user);                
                 String b64string = Base64.toBase64String(sessionid.getBytes());
                 hmuser.put(user, sessionid + "," + ip); 
