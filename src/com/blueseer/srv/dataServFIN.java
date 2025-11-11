@@ -223,7 +223,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     String id = request.getHeader("id");
     
     
-    if (! confirmServerAuthAPI(request, hmuser) && ! id.equals("loginAPI")) {
+    if (! id.equals("loginAPI") && ! confirmServerAuthAPI(request, hmuser)) {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.getWriter().println(" br549finpost authorization failed");
         return;
