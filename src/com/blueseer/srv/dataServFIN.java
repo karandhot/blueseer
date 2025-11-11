@@ -256,6 +256,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     
     if (id.equals("loginAPI")) {
         String user = request.getHeader("user");
+        String pass = request.getHeader("pass");
         String sessionid = request.getHeader("sessionid");
         String ip = request.getRemoteAddr();
         
@@ -263,11 +264,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             sessionid = Long.toHexString(System.currentTimeMillis());
             
             if (! confirmServerLogin(request, sessionid)) {
-                System.out.println("unauthorized...sending '0'");
+                System.out.println("unauthorized...sending '0' " + " for user: " + user + "/" + pass + "/"  + sessionid + "/" + ip);
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().print("0");
             } else { 
-                System.out.println("authorized...adding " + user + " with sessionid: " + sessionid);
+                System.out.println("authorized...adding " + user + " with sessionid: " + sessionid + " for ip: " + ip);
                 hmuser.remove(user);                
                 String b64string = Base64.toBase64String(sessionid.getBytes());
                 hmuser.put(user, sessionid + "," + ip); 
