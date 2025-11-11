@@ -61,6 +61,7 @@ import static com.blueseer.utl.BlueSeerUtils.boolToJson;
 import static com.blueseer.utl.BlueSeerUtils.boolToString;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+
 import static com.blueseer.utl.BlueSeerUtils.createMessageJSON;
 import com.blueseer.utl.OVData;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -95,111 +96,17 @@ import org.bouncycastle.util.encoders.Base64;
  *
  * @author terryva
  */
-public class dataServFIN extends HttpServlet {
+public class authServ extends HttpServlet {
  
-    
+    public static HashMap<String, String> hmuser = new HashMap<String, String>();
         
 @Override
 protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
     response.setContentType("text/plain");
-        
-    if (! confirmServerAuth(request)) {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().println("br549 authorization failed");
-        return;
-    }
-    
-        
-    if (request.getParameter("id") == null || request.getParameter("id").isEmpty()) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing id");  
-      return;
-    }
-        
-        String id = request.getParameter("id");
-        
-        response.setStatus(HttpServletResponse.SC_OK);
-        
-        
-        
-        if (id.equals("getAccountBalanceReport")) {
-           String[] keys = new String[]{
-               request.getParameter("year"), 
-               request.getParameter("period"), 
-               request.getParameter("site"), 
-               request.getParameter("iscc"), 
-               request.getParameter("intype"), 
-               request.getParameter("fromacct"), 
-               request.getParameter("toacct")  
-           }; 
-           
-           for (String k : keys) {
-               if (k == null) {
-                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                   response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing param");  
-                   return;
-               }
-           }
-           
-           String r = getAccountBalanceReport(keys);
-           
-           if (r == null || r.isBlank()) {
-             response.getWriter().println("no return for: " + String.join(",",keys));   
-           } else {
-             response.getWriter().println(r);   
-           }
-        } 
-        
-        if (id.equals("getAccountActivityYear")) {
-           String[] keys = new String[]{
-               request.getParameter("year"), 
-               request.getParameter("site"), 
-               request.getParameter("fromacct"), 
-               request.getParameter("toacct")  
-           }; 
-           
-           for (String k : keys) {
-               if (k == null) {
-                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                   response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing param");  
-                   return;
-               }
-           }
-           
-           String r = getAccountActivityYear(keys);
-           
-           if (r == null || r.isBlank()) {
-             response.getWriter().println("no return for: " + String.join(",",keys));   
-           } else {
-             response.getWriter().println(r);   
-           }
-        } 
-        
-        if (id.equals("setStandardCosts")) {
-           String[] keys = new String[]{
-               request.getParameter("site"), 
-               request.getParameter("item") 
-           }; 
-           
-           for (String k : keys) {
-               if (k == null) {
-                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                   response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing param");  
-                   return;
-               }
-           }
-           
-           String r = getAccountActivityYear(keys);
-           
-           if (r == null || r.isBlank()) {
-             response.getWriter().println("no return for: " + String.join(",",keys));   
-           } else {
-             response.getWriter().println(r);   
-           }
-        } 
-        
+    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    response.getWriter().println(" get method not supported");
         
     }
 
@@ -208,9 +115,6 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
         response.setContentType("text/plain");
-      
-        
-    
     
         
     if (request.getHeader("id") == null || request.getHeader("id").isEmpty()) {
@@ -218,34 +122,29 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing id " + "\n" + getHeaders(request) );  
       return;
     }
-
-    String id = request.getHeader("id");
     
-    
-    if (! confirmServerAuthAPI(request, authServ.hmuser)) {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().println(" br549finpost authorization failed");
-        return;
-    }
-    
-    
-    if (id.equals("addAcctMstr")) { 
-      String line;
-      StringBuilder sb = new StringBuilder();  
-      BufferedReader reader = request.getReader();  // as string
-      while ((line = reader.readLine()) != null) {  
-      sb.append(line);
-      } 
-      ObjectMapper objectMapper = new ObjectMapper();
-      AcctMstr am = objectMapper.readValue(sb.toString(), AcctMstr.class);            
-      response.getWriter().print(arrayToJson(addAcctMstr(am)));
-    }
+    if (request.getHeader("id").equals("loginAPI")) {
+        String user = request.getHeader("user");
+        String pass = request.getHeader("pass");
+        String sessionid = request.getHeader("sessionid");
+        String ip = request.getRemoteAddr();
         
-    if (id.equals("getLoginInit")) { 
-      String user = request.getHeader("user");          
-      response.getWriter().print(arrayToJson(getLoginInit(user)));
+        if (sessionid.isBlank()) {  // must be login
+            sessionid = Long.toHexString(System.currentTimeMillis());
+            
+            if (! bsmf.MainFrame.confirmServerLogin(request, sessionid)) {
+                System.out.println("unauthorized...sending '0' " + " for user: " + user + "/" + pass + "/"  + sessionid + "/" + ip);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().print("0");
+            } else { 
+                System.out.println("authorized...adding " + user + " with sessionid: " + sessionid + " for ip: " + ip);
+                hmuser.remove(user);                
+                String b64string = Base64.toBase64String(sessionid.getBytes());
+                hmuser.put(user, sessionid + "," + ip); 
+                response.getWriter().print(b64string);
+            }
+        } 
     }
-        
        
     } // doPost
      
@@ -257,7 +156,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             Enumeration<String> headerNames = request.getHeaderNames();
             while (headerNames.hasMoreElements()) {
                 String hd = headerNames.nextElement();
-                requestHeaders.append("Header  " + hd).append("  Value  " + request.getHeader(hd)).append("\n");
+                requestHeaders.append("Header  ").append(hd).append("  Value  ").append(request.getHeader(hd)).append("\n");
             }
     return requestHeaders.toString();
 }

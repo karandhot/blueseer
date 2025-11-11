@@ -34,9 +34,6 @@ import static com.blueseer.edi.EDI.edilog;
 import com.blueseer.fgl.fglData;
 import com.blueseer.fgl.fglData.AcctMstr;
 import static com.blueseer.utl.OVData.getCodeValueByCodeKey;
-import static com.blueseer.utl.OVData.isValidUserLogin;
-import static com.blueseer.utl.OVData.isValidUserSession;
-import static com.blueseer.utl.OVData.killUserSession;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -3023,7 +3020,7 @@ public class BlueSeerUtils {
                 if (! ip.equals(v[2])) {  // if cookie IP does not match current Request Session ID...bail
                     return false;
                 } else {
-                    return isValidUserSession(ip, v[0], v[1]);
+                    return bsmf.MainFrame.isValidUserSession(ip, v[0], v[1]);
                 }
             }            
         
@@ -3072,27 +3069,13 @@ public class BlueSeerUtils {
                 if (! ip.equals(v[2])) {  // if cookie IP does not match current Request Session ID...bail
                     return false;
                 } else {
-                    return killUserSession(ip, v[0], v[1]);
+                    return bsmf.MainFrame.killUserSession(ip, v[0], v[1]);
                 }
             }            
         
         return false;
     }
         
-    public static boolean confirmServerLogin(HttpServletRequest httpRequest, String sessionid) {
-        final String authorization = httpRequest.getHeader("Authorization");
-        if (authorization != null && authorization.toLowerCase().startsWith("basic")) {
-            String base64Credentials = authorization.substring("Basic".length()).trim();
-            Base64 b = new Base64(); 
-            String ip = httpRequest.getRemoteAddr();
-            String credentials = new String(b.decode(base64Credentials), Charset.forName("UTF-8"));
-            final String[] v = credentials.split(":", 2);
-            if (v != null && v.length == 2) {    
-                return isValidUserLogin(v[0], v[1], ip, sessionid);
-            }            
-        }
-        return false;
-    }
     
     public static String checkDigitUCC18(int serialno) throws NumberFormatException {
         int evenSum = 0;

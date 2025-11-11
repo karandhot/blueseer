@@ -53,7 +53,6 @@ import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
-import static com.blueseer.utl.BlueSeerUtils.confirmServerLogin;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerSession;
 import static com.blueseer.utl.BlueSeerUtils.createMessageJSON;
 import static com.blueseer.utl.BlueSeerUtils.getSiteFromSessionCookie;
@@ -141,7 +140,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     
     // if login
     if (request.getHeader("Pass") != null && ! request.getHeader("Pass").isBlank()) {
-        if (! confirmServerLogin(request, sessionid)) {
+        if (! bsmf.MainFrame.confirmServerLogin(request, sessionid)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().println("br549 authorization failed");
             response.getWriter().println("session=" + sessionid + "<br>");
