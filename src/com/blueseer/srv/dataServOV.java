@@ -25,78 +25,31 @@ SOFTWARE.
  */
 package com.blueseer.srv;
 
-import bsmf.MainFrame;
-import static bsmf.MainFrame.ConvertStringToBool;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.driver;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.pass;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
 import static com.blueseer.adm.admData.getLoginInit;
-import static com.blueseer.edi.EDI.deleteFile;
-import static com.blueseer.edi.EDI.fileExists;
-import static com.blueseer.edi.EDI.getFileContent;
-import static com.blueseer.edi.EDI.getFileContentBytes;
-import static com.blueseer.edi.EDI.getFilesOfDir;
-import static com.blueseer.edi.EDI.runEDI;
-import static com.blueseer.edi.EDI.runEDIsingle;
-import static com.blueseer.edi.EDI.writeFile;
-import static com.blueseer.edi.apiUtils.createKeyStore;
-import static com.blueseer.edi.apiUtils.createNewKeyPair;
-import static com.blueseer.edi.apiUtils.genereatePGPKeyPair;
-import static com.blueseer.edi.apiUtils.getAsciiDumpPGPKey;
-import static com.blueseer.edi.apiUtils.getPublicKeyAsOPENSSH;
-import static com.blueseer.edi.apiUtils.getPublicKeyAsPEM;
-import static com.blueseer.edi.apiUtils.hashdigest;
-import static com.blueseer.edi.apiUtils.postAS2;
-import static com.blueseer.edi.apiUtils.runAPIPost;
 import com.blueseer.fgl.fglData.AcctMstr;
 import static com.blueseer.fgl.fglData.addAcctMstr;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
-import com.blueseer.utl.BlueSeerUtils;
-import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
-import static com.blueseer.utl.BlueSeerUtils.boolToJson;
-import static com.blueseer.utl.BlueSeerUtils.boolToString;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
-import static com.blueseer.utl.BlueSeerUtils.createMessageJSON;
-import com.blueseer.utl.OVData;
+import static com.blueseer.utl.OVData.getCodeMstrValueList;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.transform.TransformerException;
-import org.apache.commons.io.IOUtils;
-import org.bouncycastle.util.encoders.Base64;
 
 
 /**
  *
  * @author terryva
  */
-public class dataServFIN extends HttpServlet {
+public class dataServOV extends HttpServlet {
  
     
         
@@ -228,23 +181,12 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         response.getWriter().println(" br549finpost authorization failed");
         return;
     }
+       
     
-    
-    if (id.equals("addAcctMstr")) { 
-      String line;
-      StringBuilder sb = new StringBuilder();  
-      BufferedReader reader = request.getReader();  // as string
-      while ((line = reader.readLine()) != null) {  
-      sb.append(line);
-      } 
-      ObjectMapper objectMapper = new ObjectMapper();
-      AcctMstr am = objectMapper.readValue(sb.toString(), AcctMstr.class);            
-      response.getWriter().print(arrayToJson(addAcctMstr(am)));
-    }
         
-    if (id.equals("getLoginInit")) { 
-      String user = request.getHeader("user");          
-      response.getWriter().print(ArrayListStringArrayToJson(getLoginInit(user)));
+    if (id.equals("getCodeMstrValueList")) { 
+      String code = request.getHeader("code");          
+      response.getWriter().print(ArrayListStringToJson(getCodeMstrValueList(code)));
     }
         
        

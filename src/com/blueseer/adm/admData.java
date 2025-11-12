@@ -1769,8 +1769,6 @@ public class admData {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id", "getLoginInit"});
-            list.add(new String[]{"user", userid});
-            list.add(new String[]{"sessionid",  bsmf.MainFrame.sessionid});
             try {
                 return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServFIN"));
             } catch (IOException ex) {

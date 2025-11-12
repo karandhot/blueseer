@@ -2699,7 +2699,7 @@ public class BlueSeerUtils {
             urlString = bsmf.MainFrame.protocol + "://"  + bsmf.MainFrame.ip + ":" + bsmf.MainFrame.serverport + "/bsapi/" + dataClass; 
         }
         
-        String user = "";
+        String user = bsmf.MainFrame.userid;
         String pass = "";
         
         URL url = new URL(urlString);
@@ -2721,11 +2721,9 @@ public class BlueSeerUtils {
             conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
 
             // Custom Headers
+            conn.setRequestProperty("user",bsmf.MainFrame.userid);
+            conn.setRequestProperty("sessionid",bsmf.MainFrame.sessionid);
             for (String[] h : hlist) {
-                if (h[0].equals("user")) {
-                    user = h[1];  
-                   // continue; // do not add user to headers...will be added to Auth below
-                }
                 if (h[0].equals("pass")) {
                     pass = h[1];
                     continue; // do not add pass to headers...will be added to Auth below                    
@@ -2780,17 +2778,22 @@ public class BlueSeerUtils {
             connssl.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
 
             // Custom Headers
+                       
+            connssl.setRequestProperty("user",bsmf.MainFrame.userid);
+            connssl.setRequestProperty("sessionid",bsmf.MainFrame.sessionid);
             for (String[] h : hlist) {
+                if (h[0].equals("pass")) {
+                    pass = h[1];
+                    continue; // do not add pass to headers...will be added to Auth below                    
+                }
              connssl.setRequestProperty(h[0],h[1]);
             }
-
+            
             // auth   
-            if (! user.isBlank() && ! pass.isBlank()) {
+            if (! user.isBlank()) {
             String userCredentials = new String(user + ":" + pass);
             String basicAuth = "Basic " + Base64.toBase64String(userCredentials.getBytes());
             connssl.setRequestProperty("Authorization", basicAuth);
-            } else {
-                return sb.toString();
             } 
 
             connssl.getOutputStream().write(postDataBytes);
@@ -3124,7 +3127,18 @@ public class BlueSeerUtils {
         return x;
     }
 
-    public static String arrayToJson(ArrayList<String[]> list) {
+    public static String ArrayListStringArrayToJson(ArrayList<String[]> list) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String x = "";
+        try {   
+            x = objectMapper.writeValueAsString(list);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+
+    public static String ArrayListStringToJson(ArrayList<String> list) {
         ObjectMapper objectMapper = new ObjectMapper();
         String x = "";
         try {   

@@ -67,6 +67,8 @@ import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPostByteR;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
@@ -7002,7 +7004,20 @@ public class OVData {
     }
     
     public static ArrayList getCodeMstrValueList(String code) {
-       ArrayList myarray = new ArrayList();
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getCodeMstrValueList"});
+            list.add(new String[]{"code",  code});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        ArrayList myarray = new ArrayList();
         try{
             
             Connection con = null;
