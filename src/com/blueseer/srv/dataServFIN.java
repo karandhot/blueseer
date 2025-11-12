@@ -53,8 +53,11 @@ import static com.blueseer.edi.apiUtils.postAS2;
 import static com.blueseer.edi.apiUtils.runAPIPost;
 import com.blueseer.fgl.fglData.AcctMstr;
 import static com.blueseer.fgl.fglData.addAcctMstr;
+import static com.blueseer.fgl.fglData.deleteAcctMstr;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
+import static com.blueseer.fgl.fglData.getAcctMstr;
+import static com.blueseer.fgl.fglData.updateAcctMstr;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
@@ -229,6 +232,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         return;
     }
     
+    if (id.equals("getLoginInit")) { 
+      String user = request.getHeader("user");          
+      response.getWriter().print(ArrayListStringArrayToJson(getLoginInit(user)));
+    }
     
     if (id.equals("addAcctMstr")) { 
       String line;
@@ -241,11 +248,39 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       AcctMstr am = objectMapper.readValue(sb.toString(), AcctMstr.class);            
       response.getWriter().print(arrayToJson(addAcctMstr(am)));
     }
-        
-    if (id.equals("getLoginInit")) { 
-      String user = request.getHeader("user");          
-      response.getWriter().print(ArrayListStringArrayToJson(getLoginInit(user)));
+    
+    if (id.equals("updateAcctMstr")) { 
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      AcctMstr am = objectMapper.readValue(sb.toString(), AcctMstr.class);            
+      response.getWriter().print(arrayToJson(updateAcctMstr(am)));
     }
+    
+    if (id.equals("deleteAcctMstr")) { 
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      AcctMstr am = objectMapper.readValue(sb.toString(), AcctMstr.class);            
+      response.getWriter().print(arrayToJson(deleteAcctMstr(am)));
+    }
+    
+    if (id.equals("getAcctMstr")) { 
+      String[] key = new String[]{request.getHeader("key")}; 
+      AcctMstr am = getAcctMstr(key);
+      ObjectMapper objectMapper = new ObjectMapper();
+      String r = objectMapper.writeValueAsString(am);
+      response.getWriter().print(r);
+    }
+        
         
        
     } // doPost
