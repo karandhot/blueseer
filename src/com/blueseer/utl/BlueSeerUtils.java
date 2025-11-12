@@ -2724,7 +2724,10 @@ public class BlueSeerUtils {
             
             conn.setRequestProperty("sessionid",bsmf.MainFrame.sessionid);
             for (String[] h : hlist) {
-                if (h[0].equals("pass")) {
+                if (h[0].equals("user")) { // must be original login call...only call that passes userid...it's auto set below otherwise
+                    user = h[1];              
+                }
+                if (h[0].equals("pass")) { // must be original login call...only call that passes passwd
                     pass = h[1];
                     continue; // do not add pass to headers...will be added to Auth below                    
                 }
@@ -2732,6 +2735,8 @@ public class BlueSeerUtils {
             }
             if (conn.getRequestProperty("user") == null || conn.getRequestProperty("user").isBlank()) {
                conn.setRequestProperty("user",bsmf.MainFrame.userid); 
+               user = bsmf.MainFrame.userid;
+               
             }
 
             // auth   
@@ -2785,7 +2790,10 @@ public class BlueSeerUtils {
             
             connssl.setRequestProperty("sessionid",bsmf.MainFrame.sessionid);
             for (String[] h : hlist) {
-                if (h[0].equals("pass")) {
+                if (h[0].equals("user")) { // must be original login call...only call that passes userid...it's auto set below otherwise
+                    user = h[1];              
+                }
+                if (h[0].equals("pass")) { // must be original login call...only call that passes passwd
                     pass = h[1];
                     continue; // do not add pass to headers...will be added to Auth below                    
                 }
@@ -2793,6 +2801,8 @@ public class BlueSeerUtils {
             }
             if (connssl.getRequestProperty("user") == null || connssl.getRequestProperty("user").isBlank()) {
                connssl.setRequestProperty("user",bsmf.MainFrame.userid); 
+               user = bsmf.MainFrame.userid;
+               
             }
             
             // auth   
