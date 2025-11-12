@@ -179,6 +179,7 @@ public class bsServer {
         context.addServlet(dataServ.class, "/dataServ/*");
         context.addServlet(dataServFIN.class, "/dataServFIN/*"); 
         context.addServlet(authServ.class, "/authServ/*");
+        context.addServlet(authServ.class, "/dataServOV/*");
         //server.setHandler(context);
         
         

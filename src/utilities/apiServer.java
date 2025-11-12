@@ -184,6 +184,7 @@ public class apiServer {
         context.addServlet(dataServFIN.class, "/dataServFIN/*"); 
         context.addServlet(dataServORD.class, "/dataServORD/*"); 
         context.addServlet(authServ.class, "/authServ/*");
+        context.addServlet(authServ.class, "/dataServOV/*");
         //server.setHandler(context);
         
         /*

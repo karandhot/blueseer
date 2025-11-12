@@ -2721,7 +2721,7 @@ public class BlueSeerUtils {
             conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
 
             // Custom Headers
-            conn.setRequestProperty("user",bsmf.MainFrame.userid);
+            
             conn.setRequestProperty("sessionid",bsmf.MainFrame.sessionid);
             for (String[] h : hlist) {
                 if (h[0].equals("pass")) {
@@ -2729,6 +2729,9 @@ public class BlueSeerUtils {
                     continue; // do not add pass to headers...will be added to Auth below                    
                 }
              conn.setRequestProperty(h[0],h[1]);
+            }
+            if (conn.getRequestProperty("user") == null || conn.getRequestProperty("user").isBlank()) {
+               conn.setRequestProperty("user",bsmf.MainFrame.userid); 
             }
 
             // auth   
@@ -2779,7 +2782,7 @@ public class BlueSeerUtils {
 
             // Custom Headers
                        
-            connssl.setRequestProperty("user",bsmf.MainFrame.userid);
+            
             connssl.setRequestProperty("sessionid",bsmf.MainFrame.sessionid);
             for (String[] h : hlist) {
                 if (h[0].equals("pass")) {
@@ -2787,6 +2790,9 @@ public class BlueSeerUtils {
                     continue; // do not add pass to headers...will be added to Auth below                    
                 }
              connssl.setRequestProperty(h[0],h[1]);
+            }
+            if (connssl.getRequestProperty("user") == null || connssl.getRequestProperty("user").isBlank()) {
+               connssl.setRequestProperty("user",bsmf.MainFrame.userid); 
             }
             
             // auth   
