@@ -2724,7 +2724,7 @@ public class BlueSeerUtils {
             for (String[] h : hlist) {
                 if (h[0].equals("user")) {
                     user = h[1];  
-                    continue; // do not add user to headers...will be added to Auth below
+                   // continue; // do not add user to headers...will be added to Auth below
                 }
                 if (h[0].equals("pass")) {
                     pass = h[1];
