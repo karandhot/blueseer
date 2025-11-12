@@ -2699,13 +2699,8 @@ public class BlueSeerUtils {
             urlString = bsmf.MainFrame.protocol + "://"  + bsmf.MainFrame.ip + ":" + bsmf.MainFrame.serverport + "/bsapi/" + dataClass; 
         }
         
-       
-        
-        String user = bsmf.MainFrame.user;
-        String pass = bsmf.MainFrame.pass;
-        
-        
-       
+        String user = "";
+        String pass = "";
         
         URL url = new URL(urlString);
         
@@ -2727,16 +2722,22 @@ public class BlueSeerUtils {
 
             // Custom Headers
             for (String[] h : hlist) {
+                if (h[0].equals("user")) {
+                    user = h[1];  
+                    continue; // do not add user to headers...will be added to Auth below
+                }
+                if (h[0].equals("pass")) {
+                    pass = h[1];
+                    continue; // do not add pass to headers...will be added to Auth below                    
+                }
              conn.setRequestProperty(h[0],h[1]);
             }
 
             // auth   
-            if (! user.isBlank() && ! pass.isBlank()) {
+            if (! user.isBlank()) {
             String userCredentials = new String(user + ":" + pass);
             String basicAuth = "Basic " + Base64.toBase64String(userCredentials.getBytes());
             conn.setRequestProperty("Authorization", basicAuth);
-            } else {
-                return sb.toString();
             } 
 
             conn.getOutputStream().write(postDataBytes);
