@@ -69,6 +69,8 @@ import static com.blueseer.utl.BlueSeerUtils.getGlobalTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToHashMapStringInteger;
+import static com.blueseer.utl.BlueSeerUtils.jsonToInt;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPostByteR;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
@@ -331,7 +333,18 @@ public class OVData {
     }
         
     public static int getNextNbr(String countername) {
-       int nbr = 0;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getNextNbr"});
+            list.add(new String[]{"param1", countername});
+            try {
+                return jsonToInt(sendServerPost(list, "", null, "dataServOV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0;
+            }
+        }
+        int nbr = 0;
         try{
            
             Connection con = null;
@@ -16767,7 +16780,20 @@ return mystring;
     }
     
     public static Map<String,Integer> getTableInfo(String[] tablenames) {
-         Map<String,Integer> hm = new HashMap<String,Integer>();
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getTableInfo"});
+            list.add(new String[]{"param1", tablenames[0]});
+            try {
+                return jsonToHashMapStringInteger(sendServerPost(list, "", null, "dataServOV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+                
+        Map<String,Integer> hm = new HashMap<String,Integer>();
          try{
             Connection con = null;
             if (ds != null) {

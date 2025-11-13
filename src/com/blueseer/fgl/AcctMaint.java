@@ -84,7 +84,7 @@ public class AcctMaint extends javax.swing.JPanel implements IBlueSeerT  {
     // global variable declarations
                 boolean isLoad = false;
                 public static AcctMstr x = null;
-    
+                String basecurr = "";
    // global datatablemodel declarations   
    
     public AcctMaint() {
@@ -274,9 +274,21 @@ public class AcctMaint extends javax.swing.JPanel implements IBlueSeerT  {
         lbaccountname.setText("");
         cbdisplay.setSelected(false);
         
+        ArrayList<String[]> initDataSets = fglData.getFINInit();
         ddcur.removeAllItems();
-        fglData.getCurrlist().stream().forEach((s) -> ddcur.addItem(s));
-        ddcur.setSelectedItem(OVData.getDefaultCurrency());
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              basecurr = s[1];  
+            }
+          
+            if (s[0].equals("currencies")) {
+              ddcur.addItem(s[1]); 
+            }
+        }
+        
+        if (ddcur.getItemCount() > 0) {
+          ddcur.setSelectedItem(basecurr);
+        }
         
        isLoad = false;
     }

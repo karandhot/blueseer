@@ -57,6 +57,7 @@ import static com.blueseer.fgl.fglData.deleteAcctMstr;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import static com.blueseer.fgl.fglData.getAcctMstr;
+import static com.blueseer.fgl.fglData.getFINInit;
 import static com.blueseer.fgl.fglData.updateAcctMstr;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
@@ -236,6 +237,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       String user = request.getHeader("user");          
       response.getWriter().print(ArrayListStringArrayToJson(getLoginInit(user)));
     }
+        
     
     if (id.equals("addAcctMstr")) { 
       String line;
@@ -281,7 +283,9 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       response.getWriter().print(r);
     }
         
-        
+    if (id.equals("getFINInit")) {          
+      response.getWriter().print(ArrayListStringArrayToJson(getFINInit()));
+    }    
        
     } // doPost
      

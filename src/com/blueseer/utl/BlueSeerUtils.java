@@ -114,6 +114,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -3164,6 +3165,28 @@ public class BlueSeerUtils {
         }
         return x;
     }
+    
+    public static String DefaultTableModelToJson(DefaultTableModel model) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String x = "";
+        try {   
+            x = objectMapper.writeValueAsString(model);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+    
+    public static String HashMapStringIntegerToJson(Map<String,Integer> list) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String x = "";
+        try {   
+            x = objectMapper.writeValueAsString(list);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
 
     
     public static String boolToJson(boolean b) {
@@ -3171,6 +3194,17 @@ public class BlueSeerUtils {
         String x = "";
         try {   
             x = objectMapper.writeValueAsString(b);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+
+    public static String intToJson(int i) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String x = "";
+        try {   
+            x = objectMapper.writeValueAsString(i);
         } catch (JsonProcessingException ex) {
             bslog(ex);
         }
@@ -3200,6 +3234,29 @@ public class BlueSeerUtils {
         return x;
     }
 
+    public static Map<String,Integer> jsonToHashMapStringInteger(String jsonstring) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String,Integer> x = null;
+        try {
+            x = objectMapper.readValue(jsonstring, Map.class);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+
+    public static DefaultTableModel jsonToDefaultTableModel(String jsonstring) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        DefaultTableModel x = null;
+        try {
+            x = objectMapper.readValue(jsonstring, DefaultTableModel.class);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+
+    
     public static ArrayList<String[]> jsonToArrayListStringArray(String jsonstring) {
         ObjectMapper objectMapper = new ObjectMapper();
         ArrayList<String[]> x = null;
@@ -3211,6 +3268,17 @@ public class BlueSeerUtils {
         return x;
     }
 
+    public static int jsonToInt(String jsonstring) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        int x = 0;
+        try {
+            x = objectMapper.readValue(jsonstring, Integer.class);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+    
     
     public static String jrtToJson(Object o) {
         ObjectMapper objectMapper = new ObjectMapper();

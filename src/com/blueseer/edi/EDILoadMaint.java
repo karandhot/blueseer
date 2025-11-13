@@ -50,6 +50,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -712,10 +713,21 @@ public class EDILoadMaint extends javax.swing.JPanel {
        String[] x = new String[2];
        tafile.setText("");
        try {
-                    
+            Path path = Paths.get(filepath);
+            
+            if (path == null || path.toString().isBlank() || ! Files.exists(path)) {
+              x[0] = "0";
+              x[1] = "no file chosen";  
+              return x;
+            }
             tafile.append("FilePath: " + filepath  + "\n");
             String[] m = EDI.processFile(filepath,"","","", cbdebug.isSelected(), false, 0, 0, ddsite.getSelectedItem().toString());
 
+            if (! cbno.isSelected()) {
+                Path target = FileSystems.getDefault().getPath(inArch + path.getFileName());
+                Files.copy(path, target, StandardCopyOption.REPLACE_EXISTING);
+            }
+            
             // show error if exists...usually malformed envelopes
             if (m[0].equals("1")) {
                tafile.append(m[1]  + "\n");

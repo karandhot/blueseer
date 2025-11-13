@@ -31,11 +31,13 @@ import static com.blueseer.fgl.fglData.addAcctMstr;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
+import static com.blueseer.utl.BlueSeerUtils.DefaultTableModelToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringIntegerToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.intToJson;
+import static com.blueseer.utl.DTData.getAcctBrowseUtil;
 import static com.blueseer.utl.OVData.getCodeMstrValueList;
 import static com.blueseer.utl.OVData.getNextNbr;
 import static com.blueseer.utl.OVData.getTableInfo;
@@ -53,7 +55,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author terryva
  */
-public class dataServOV extends HttpServlet {
+public class dataServDT extends HttpServlet {
  
     
         
@@ -188,9 +190,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
        
     
         
-    if (id.equals("getCodeMstrValueList")) { 
-      String code = request.getHeader("code");          
-      response.getWriter().print(ArrayListStringToJson(getCodeMstrValueList(code)));
+    if (id.equals("getAcctBrowseUtil")) { 
+      String param1 = request.getHeader("param1"); 
+      int param2 = Integer.parseInt(request.getHeader("param2"));
+      String param3 = request.getHeader("param3");
+      response.getWriter().print(DefaultTableModelToJson(getAcctBrowseUtil(param1, param2, param3)));
     }
     
     if (id.equals("getNextNbr")) { 
