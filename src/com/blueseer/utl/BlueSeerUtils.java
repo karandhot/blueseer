@@ -2742,7 +2742,7 @@ public class BlueSeerUtils {
 
             // auth   
             if (! user.isBlank()) {
-            String userCredentials = new String(user + ":" + pass);
+            String userCredentials = user + ":" + pass;
             String basicAuth = "Basic " + Base64.toBase64String(userCredentials.getBytes());
             conn.setRequestProperty("Authorization", basicAuth);
             } 
@@ -2751,13 +2751,17 @@ public class BlueSeerUtils {
 
 
             if (conn.getResponseCode() != 200) {
-                        sb.append(conn.getResponseCode() + ": " + conn.getResponseMessage());
-                        String output = "";
+                        sb.append(conn.getResponseCode()).append(":").append(conn.getResponseMessage());  // return error resp code,messg
+                        String output;
+                        StringBuilder sberror = new StringBuilder();
+                        sberror.append(conn.getResponseCode()).append(": ").append(conn.getResponseMessage());
                         BufferedReader br = new BufferedReader(new InputStreamReader((conn.getErrorStream())));
                         while ((output = br.readLine()) != null) {
-                            sb.append(output).append("\n");
+                            sberror.append(output).append("\n");
                         }
                         br.close(); 
+                        bslog(sberror.toString());
+                        
                         //throw new RuntimeException("Failed : HTTP error code : "
                         //		+ conn.getResponseCode());
 
@@ -2817,15 +2821,16 @@ public class BlueSeerUtils {
 
 
             if (connssl.getResponseCode() != 200) {
-                        sb.append(connssl.getResponseCode() + ": " + connssl.getResponseMessage());
-                        String output = "";
+                        sb.append(connssl.getResponseCode()).append(":").append(connssl.getResponseMessage());  // return error resp code,messg
+                        String output;
+                        StringBuilder sberror = new StringBuilder();
+                        sberror.append(connssl.getResponseCode()).append(": ").append(connssl.getResponseMessage());
                         BufferedReader br = new BufferedReader(new InputStreamReader((connssl.getErrorStream())));
                         while ((output = br.readLine()) != null) {
-                            sb.append(output).append("\n");
+                            sberror.append(output).append("\n");
                         }
                         br.close(); 
-                        //throw new RuntimeException("Failed : HTTP error code : "
-                        //		+ conn.getResponseCode());
+                        bslog(sberror.toString());
 
             } else {
                 BufferedReader br = new BufferedReader(new InputStreamReader((connssl.getInputStream())));

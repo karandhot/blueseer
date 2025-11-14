@@ -54,9 +54,11 @@ import static com.blueseer.edi.apiUtils.runAPIPost;
 import com.blueseer.fgl.fglData.AcctMstr;
 import static com.blueseer.fgl.fglData.addAcctMstr;
 import static com.blueseer.fgl.fglData.deleteAcctMstr;
+import com.blueseer.fgl.fglData.exc_mstr;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import static com.blueseer.fgl.fglData.getAcctMstr;
+import static com.blueseer.fgl.fglData.getExcMstr;
 import static com.blueseer.fgl.fglData.getFINInit;
 import static com.blueseer.fgl.fglData.updateAcctMstr;
 import com.blueseer.utl.BlueSeerUtils;
@@ -204,28 +206,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
              response.getWriter().println(r);   
            }
         } 
-        
-        
+       
     }
 
  @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        response.setContentType("text/plain");
-      
-        
-    
-    
-        
-    if (request.getHeader("id") == null || request.getHeader("id").isEmpty()) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing id " + "\n" + getHeaders(request) );  
-      return;
-    }
-
-    String id = request.getHeader("id");
-    
+    response.setContentType("text/plain");
     
     if (! confirmServerAuthAPI(request, authServ.hmuser)) {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -233,12 +221,19 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         return;
     }
     
+    if (request.getHeader("id") == null || request.getHeader("id").isEmpty()) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing id " + "\n" + getHeaders(request) );  
+      return;
+    }
+    
+    String id = request.getHeader("id");
+    
     if (id.equals("getLoginInit")) { 
       String user = request.getHeader("user");          
       response.getWriter().print(ArrayListStringArrayToJson(getLoginInit(user)));
     }
-        
-    
+          
     if (id.equals("addAcctMstr")) { 
       String line;
       StringBuilder sb = new StringBuilder();  
@@ -282,7 +277,16 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       String r = objectMapper.writeValueAsString(am);
       response.getWriter().print(r);
     }
-        
+    
+    if (id.equals("getExcMstr")) { 
+      String base = request.getHeader("base"); 
+      ArrayList<exc_mstr> emlist = getExcMstr(base);
+      ObjectMapper objectMapper = new ObjectMapper();
+      String r = objectMapper.writeValueAsString(emlist);
+      response.getWriter().print(r);
+    }
+       
+    
     if (id.equals("getFINInit")) { 
       String param1 = request.getHeader("param1"); 
       response.getWriter().print(ArrayListStringArrayToJson(getFINInit(param1)));

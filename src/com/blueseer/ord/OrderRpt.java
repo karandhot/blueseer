@@ -319,7 +319,7 @@ public class OrderRpt extends javax.swing.JPanel {
                
                 labeldettotal.setText(currformatDouble(qty));
                 tabledetail.setModel(modeldetail);
-                tabledetail.getColumnModel().getColumn(2).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+                tabledetail.getColumnModel().getColumn(2).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defcurr)));
                 this.repaint();
 
             } catch (SQLException s) {
@@ -467,7 +467,7 @@ public class OrderRpt extends javax.swing.JPanel {
         
         tableorder.getColumnModel().getColumn(0).setMaxWidth(100);
         tableorder.getColumnModel().getColumn(1).setMaxWidth(100);  
-        tableorder.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency()))); 
+        tableorder.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defcurr))); 
 
         Enumeration<TableColumn> en = tableorder.getColumnModel().getColumns();
          while (en.hasMoreElements()) {

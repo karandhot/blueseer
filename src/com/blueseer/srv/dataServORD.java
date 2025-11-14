@@ -286,14 +286,18 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                   String site = request.getHeader("site");
                 //  List<String> zz = Arrays.asList(sbabove.toString().split("\\|"));                  
                   response.getWriter().println(getOrderDetailExport(fromdate, todate, fromcust, tocust, site));
-                } else if (id.equals("exportOrderChange")) {
+                } 
+                
+                if (id.equals("exportOrderChange")) {
                   String fromdate = request.getHeader("fromdate");
                   String todate = request.getHeader("todate");
                   String fromcust = request.getHeader("fromcust");
                   String tocust = request.getHeader("tocust");
                   String site = request.getHeader("site");               
                   response.getWriter().println(getOrderChangeExport(fromdate, todate, fromcust, tocust, site));  
-                } else if (id.equals("orderReport")) {
+                } 
+                
+                if (id.equals("orderReport")) {
                    String[] keys = new String[]{
                    request.getHeader("fromdate"), 
                    request.getHeader("todate"), 
@@ -318,7 +322,9 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                    } else {
                      response.getWriter().println(r);   
                    }
-                } else if (id.equals("orderChangeReport")) {
+                } 
+                
+                if (id.equals("orderChangeReport")) {
                    String[] keys = new String[]{
                    request.getHeader("fromdate"), 
                    request.getHeader("todate"), 
@@ -344,10 +350,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                    } else {
                      response.getWriter().println(r);   
                    }   
-                } else {
-                  response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                  response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": unknown ID " + "\n" + getHeaders(request)); 
-                }
+                } 
                 
         }
     }
