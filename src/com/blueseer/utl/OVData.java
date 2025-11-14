@@ -16781,6 +16781,9 @@ return mystring;
     
     public static Map<String,Integer> getTableInfo(String[] tablenames) {
         
+        System.out.println("HERE: tablenames length: " + tablenames.length + " / " + tablenames[0]);
+        
+        
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id", "getTableInfo"});
