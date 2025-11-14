@@ -1144,10 +1144,11 @@ public class DTData {
                       new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("code"), getGlobalColumnTag("description"), getGlobalColumnTag("type"), getGlobalColumnTag("currency")})
                 {
                       @Override  
-                      public Class getColumnClass(int col) {  
-                        if (col == 0)       
-                            return ImageIcon.class;  
-                        else return String.class;  //other columns accept String values  
+                      public Class getColumnClass(int col) {
+                          return String.class;
+                      //  if (col == 0)       
+                      //      return ImageIcon.class;  
+                      //  else return String.class;  //other columns accept String values  
                       }  
                         }; 
               
