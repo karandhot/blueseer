@@ -199,7 +199,8 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     }
     
     if (id.equals("getTableInfo")) { 
-      String param1 = request.getHeader("param1");           
+      String param1 = request.getHeader("param1"); 
+      System.out.println("getTableInfo param1: " + param1);
       response.getWriter().print(HashMapStringIntegerToJson(getTableInfo(new String[]{param1})));  
     }
         

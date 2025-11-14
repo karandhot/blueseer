@@ -16814,7 +16814,6 @@ return mystring;
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -16824,6 +16823,7 @@ return mystring;
         catch (SQLException e){
             MainFrame.bslog(e);
         }
+         System.out.println("HERE: hashmap size: " + hm.size());
          return hm;
     }
     
