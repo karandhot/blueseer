@@ -42,6 +42,7 @@ import com.blueseer.srv.authServ;
 import com.blueseer.srv.dataServ;
 import com.blueseer.srv.dataServFIN;
 import com.blueseer.srv.dataServORD;
+import com.blueseer.srv.dataServOV;
 import com.blueseer.srv.webServ;
 import static com.blueseer.utl.BlueSeerUtils.isParsableToInt;
 import java.io.FileInputStream;
@@ -184,7 +185,7 @@ public class apiServer {
         context.addServlet(dataServFIN.class, "/dataServFIN/*"); 
         context.addServlet(dataServORD.class, "/dataServORD/*"); 
         context.addServlet(authServ.class, "/authServ/*");
-        context.addServlet(authServ.class, "/dataServOV/*");
+        context.addServlet(dataServOV.class, "/dataServOV/*");
         //server.setHandler(context);
         
         /*
