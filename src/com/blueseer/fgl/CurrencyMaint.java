@@ -224,7 +224,7 @@ public class CurrencyMaint extends javax.swing.JPanel implements IBlueSeerT {
        isLoad = true;
         tbkey.setText("");
         tbdesc.setText("");  
-        ArrayList<String[]> initDataSets = fglData.getFINInit(this.getClass().getName());
+        ArrayList<String[]> initDataSets = fglData.getFINInit(this.getClass().getName(), bsmf.MainFrame.userid);
         for (String[] s : initDataSets) {
             if (s[0].equals("canupdate")) {
               canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  

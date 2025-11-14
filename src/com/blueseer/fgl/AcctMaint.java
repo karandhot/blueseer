@@ -275,7 +275,7 @@ public class AcctMaint extends javax.swing.JPanel implements IBlueSeerT  {
         lbaccountname.setText("");
         cbdisplay.setSelected(false);
         
-        ArrayList<String[]> initDataSets = fglData.getFINInit(this.getClass().getName());
+        ArrayList<String[]> initDataSets = fglData.getFINInit(this.getClass().getName(), bsmf.MainFrame.userid);
         ddcur.removeAllItems();
         for (String[] s : initDataSets) {
             if (s[0].equals("currency")) {

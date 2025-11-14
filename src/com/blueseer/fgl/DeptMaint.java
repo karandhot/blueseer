@@ -236,7 +236,7 @@ public class DeptMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         accounts.clear();
         
-        ArrayList<String[]> initDataSets = fglData.getFINInit(this.getClass().getName());
+        ArrayList<String[]> initDataSets = fglData.getFINInit(this.getClass().getName(), bsmf.MainFrame.userid);
         for (String[] s : initDataSets) {
             if (s[0].equals("canupdate")) {
               canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  

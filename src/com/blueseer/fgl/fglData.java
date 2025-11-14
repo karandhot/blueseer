@@ -1430,7 +1430,7 @@ public class fglData {
     
     
     // misc functions
-    public static ArrayList<String[]> getFINInit(String panelClassName) {
+    public static ArrayList<String[]> getFINInit(String panelClassName, String userid) {
         
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
@@ -1460,7 +1460,7 @@ public class fglData {
         // allocate, custitemonly, site, currency, sites, currencies, uoms, 
         // states, warehouses, locations, customers, taxcodes, carriers, statuses   
                     
-            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + bsmf.MainFrame.userid + "'" + ";");
+            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + userid + "'" + ";");
             while (res.next()) {
               if (res.getString("user_allowedsites").equals("*")) {
                   allsites = true;
@@ -1469,7 +1469,7 @@ public class fglData {
               }
             }
             
-            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + bsmf.MainFrame.userid + "'" + 
+            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + userid + "'" + 
                     " AND menu_panel = " + "'" + panelClassName + "'" +
                     ";");
            while (res.next()) {

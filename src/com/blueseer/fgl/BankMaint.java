@@ -284,7 +284,7 @@ public class BankMaint extends javax.swing.JPanel implements IBlueSeerT {
         accounts.clear();
         
         
-       ArrayList<String[]> initDataSets = fglData.getFINInit(this.getClass().getName());
+       ArrayList<String[]> initDataSets = fglData.getFINInit(this.getClass().getName(), bsmf.MainFrame.userid);
         ddcurr.removeAllItems();
         ddsite.removeAllItems();
         String basecurr = "";
