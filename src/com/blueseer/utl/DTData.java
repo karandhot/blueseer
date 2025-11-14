@@ -1179,7 +1179,7 @@ public class DTData {
                         " order by ac_id ;");
                  }
                     while (res.next()) {
-                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("ac_id"),
+                        mymodel.addRow(new Object[] {"select", res.getString("ac_id"),
                                    res.getString("ac_desc"),
                                    res.getString("ac_type"),
                                    res.getString("ac_cur")
