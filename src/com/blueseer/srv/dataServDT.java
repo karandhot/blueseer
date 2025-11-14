@@ -25,6 +25,7 @@ SOFTWARE.
  */
 package com.blueseer.srv;
 
+import static bsmf.MainFrame.bslog;
 import static com.blueseer.adm.admData.getLoginInit;
 import com.blueseer.fgl.fglData.AcctMstr;
 import static com.blueseer.fgl.fglData.addAcctMstr;
@@ -37,13 +38,19 @@ import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.intToJson;
+import static com.blueseer.utl.BlueSeerUtils.jsonToDefaultTableModel;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.DTData.getAcctBrowseUtil;
+import static com.blueseer.utl.DTData.getBankBrowseUtil;
+import static com.blueseer.utl.DTData.getCurrencyBrowseUtil;
+import static com.blueseer.utl.DTData.getDeptCCBrowseUtil;
 import static com.blueseer.utl.OVData.getCodeMstrValueList;
 import static com.blueseer.utl.OVData.getNextNbr;
 import static com.blueseer.utl.OVData.getTableInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -197,16 +204,29 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       response.getWriter().print(DefaultTableModelToJson(getAcctBrowseUtil(param1, param2, param3)));
     }
     
-    if (id.equals("getNextNbr")) { 
-      String param1 = request.getHeader("param1");          
-      response.getWriter().print(intToJson(getNextNbr(param1))); 
+    if (id.equals("getBankBrowseUtil")) { 
+      String param1 = request.getHeader("param1"); 
+      int param2 = Integer.parseInt(request.getHeader("param2"));
+      String param3 = request.getHeader("param3");
+      response.getWriter().print(DefaultTableModelToJson(getBankBrowseUtil(param1, param2, param3)));
     }
     
-    if (id.equals("getTableInfo")) { 
-      String param1 = request.getHeader("param1");           
-      response.getWriter().print(HashMapStringIntegerToJson(getTableInfo(new String[]{param1})));  
+    if (id.equals("getCurrencyBrowseUtil")) { 
+      String param1 = request.getHeader("param1"); 
+      int param2 = Integer.parseInt(request.getHeader("param2"));
+      String param3 = request.getHeader("param3");
+      response.getWriter().print(DefaultTableModelToJson(getCurrencyBrowseUtil(param1, param2, param3)));
     }
-        
+    
+    if (id.equals("getDeptCCBrowseUtil")) { 
+      String param1 = request.getHeader("param1"); 
+      int param2 = Integer.parseInt(request.getHeader("param2"));
+      String param3 = request.getHeader("param3");
+      response.getWriter().print(DefaultTableModelToJson(getDeptCCBrowseUtil(param1, param2, param3)));
+    }
+    
+   
+      
        
     } // doPost
      

@@ -55,6 +55,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -77,6 +78,9 @@ public class DeptMaint extends javax.swing.JPanel implements IBlueSeerT {
     // global variable declarations
                 boolean isLoad = false;
                 public static dept_mstr x = null;
+                boolean canUpdate = false;
+                ArrayList<String> accounts = new ArrayList<>();
+                
    // global datatablemodel declarations    
                 
     
@@ -229,6 +233,19 @@ public class DeptMaint extends javax.swing.JPanel implements IBlueSeerT {
         tblbrrateacct.setText("");
         tbbdnusageacct.setText("");
         tbbdnrateacct.setText("");
+        
+        accounts.clear();
+        
+        ArrayList<String[]> initDataSets = fglData.getFINInit(this.getClass().getName());
+        for (String[] s : initDataSets) {
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("accounts")) {
+                accounts.add(s[1]);
+            }
+        }
+        
        isLoad = false;
     }
     
@@ -309,7 +326,7 @@ public class DeptMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public boolean validateInput(dbaction x) {
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -333,43 +350,43 @@ public class DeptMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         
                 
-        if (! tbcopacct.getText().isEmpty() && ! OVData.isValidGLAcct(tbcopacct.getText())) {
+        if (! tbcopacct.getText().isEmpty() && ! accounts.contains(tbcopacct.getText())) {
             bsmf.MainFrame.show(getMessageTag(1026));
             tbcopacct.requestFocus();
             return false;
         }
 
-        if (! tblbracct.getText().isEmpty() && ! OVData.isValidGLAcct(tblbracct.getText())) {
+        if (! tblbracct.getText().isEmpty() && ! accounts.contains(tblbracct.getText())) {
             bsmf.MainFrame.show(getMessageTag(1026));
             tblbracct.requestFocus();
             return false;
         }
 
-        if (! tbbdnacct.getText().isEmpty() && ! OVData.isValidGLAcct(tbbdnacct.getText())) {
+        if (! tbbdnacct.getText().isEmpty() && ! accounts.contains(tbbdnacct.getText())) {
             bsmf.MainFrame.show(getMessageTag(1026));
             tbbdnacct.requestFocus();
             return false;
         }
 
-        if (! tblbrusageacct.getText().isEmpty() && ! OVData.isValidGLAcct(tblbrusageacct.getText())) {
+        if (! tblbrusageacct.getText().isEmpty() && ! accounts.contains(tblbrusageacct.getText())) {
             bsmf.MainFrame.show(getMessageTag(1026));
             tblbrusageacct.requestFocus();
             return false;
         }
 
-        if (! tblbrrateacct.getText().isEmpty() && ! OVData.isValidGLAcct(tblbrrateacct.getText())) {
+        if (! tblbrrateacct.getText().isEmpty() && ! accounts.contains(tblbrrateacct.getText())) {
             bsmf.MainFrame.show(getMessageTag(1026));
             tblbrrateacct.requestFocus();
             return false;
         }
 
-        if (! tbbdnusageacct.getText().isEmpty() && ! OVData.isValidGLAcct(tbbdnusageacct.getText())) {
+        if (! tbbdnusageacct.getText().isEmpty() && ! accounts.contains(tbbdnusageacct.getText())) {
             bsmf.MainFrame.show(getMessageTag(1026));
             tbbdnusageacct.requestFocus();
             return false;
         }
 
-        if (! tbbdnrateacct.getText().isEmpty() && ! OVData.isValidGLAcct(tbbdnrateacct.getText())) {
+        if (! tbbdnrateacct.getText().isEmpty() && ! accounts.contains(tbbdnrateacct.getText())) {
             bsmf.MainFrame.show(getMessageTag(1026));
             tbbdnrateacct.requestFocus();
             return false;

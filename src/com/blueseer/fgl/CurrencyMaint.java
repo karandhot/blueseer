@@ -56,6 +56,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -77,6 +78,7 @@ public class CurrencyMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     // global variable declarations
                 boolean isLoad = false;
+                boolean canUpdate = false;
     
     // global datatablemodel declarations       
                 
@@ -221,7 +223,14 @@ public class CurrencyMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void setComponentDefaultValues() {
        isLoad = true;
         tbkey.setText("");
-        tbdesc.setText(""); 
+        tbdesc.setText("");  
+        ArrayList<String[]> initDataSets = fglData.getFINInit(this.getClass().getName());
+        for (String[] s : initDataSets) {
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+        }
+        
        isLoad = false;
     }
     
@@ -301,7 +310,7 @@ public class CurrencyMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public boolean validateInput(dbaction x) {
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }        

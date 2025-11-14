@@ -36,16 +36,41 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.fgl.fglData.addExcMstr;
+import static com.blueseer.fgl.fglData.deleteExcMstr;
+import com.blueseer.fgl.fglData.exc_mstr;
+import static com.blueseer.fgl.fglData.getExcMstr;
+import static com.blueseer.fgl.fglData.updateExcMstr;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsformat;
+import static com.blueseer.utl.BlueSeerUtils.callDialog;
+import static com.blueseer.utl.BlueSeerUtils.checkLength;
+import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.luModel;
+import static com.blueseer.utl.BlueSeerUtils.luTable;
+import static com.blueseer.utl.BlueSeerUtils.lual;
+import static com.blueseer.utl.BlueSeerUtils.ludialog;
+import static com.blueseer.utl.BlueSeerUtils.luinput;
+import static com.blueseer.utl.BlueSeerUtils.luml;
+import static com.blueseer.utl.BlueSeerUtils.lurb1;
+import com.blueseer.utl.DTData;
+import com.blueseer.utl.IBlueSeerT;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
@@ -56,14 +81,19 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JViewport;
+import javax.swing.SwingWorker;
 
 /**
  *
  * @author vaughnte
  */
-public class ExchangeMaint extends javax.swing.JPanel {
+public class ExchangeMaint extends javax.swing.JPanel implements IBlueSeerT{
 
     boolean isLoad = false;
+    public static exc_mstr x = null;
+    boolean canUpdate = false;
     
     
     javax.swing.table.DefaultTableModel exchangemodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -79,86 +109,168 @@ public class ExchangeMaint extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
-    public void getRates() {
-        
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                res = st.executeQuery("select * from exc_mstr ;");
-                while (res.next()) {
-                exchangemodel.addRow(new Object[]{res.getString("exc_base"), res.getString("exc_foreign"), res.getString("exc_rate").replace('.',defaultDecimalSeparator)}); 
-                }
-               
-                 if (i > 0) {
-                    enableAll();
-                    tbbasecode.setEnabled(false);
-                    btadd.setEnabled(false);
-                }
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
-    }
-    
-    public void enableAll() {
-        // tbbasecode.setEnabled(true);  //leave disabled
-        ddforeign.setEnabled(true);
-        tbrate.setEnabled(true);
-        btadd.setEnabled(true);
-        btupdate.setEnabled(true);
-        btdelete.setEnabled(true);
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
       
+        class Task extends SwingWorker<String[], Void> {
+       
+          String type = "";
+          String[] key = null;
+          
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
+              this.key = key;
+          } 
+           
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+             switch(this.type) {
+                case "add":
+                    message = addRecord(key);
+                    break;
+                case "update":
+                    message = updateRecord(key);
+                    break;
+                case "delete":
+                    message = deleteRecord(key);    
+                    break;
+                case "get":
+                    message = getRecord(key);    
+                    break;    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            return message;
+        }
+ 
         
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+           if (this.type.equals("delete")) {
+             initvars(null);  
+           } else if (this.type.equals("get")) {
+             updateForm();
+             ddforeign.requestFocus();
+           } else {
+             initvars(null);  
+           }
+           
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
     }
-    
-    public void disableAll() {
-        tbbasecode.setEnabled(false);
-       ddforeign.setEnabled(false);
-        tbrate.setEnabled(false);
-        btadd.setEnabled(false);
-        btupdate.setEnabled(false);
-        btdelete.setEnabled(false);
+   
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        JScrollPane scrollpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else if (myobj instanceof JScrollPane) {
+           scrollpane = (JScrollPane) myobj;    
+        } else {
+            return;
+        }
         
-    }
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                if (component instanceof JScrollPane) {
+                    setPanelComponentState((JScrollPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    
+                    component.setEnabled(b);
+                    
+                }
+            }
+            if (scrollpane != null) {
+                scrollpane.setEnabled(b);
+                JViewport viewport = scrollpane.getViewport();
+                Component[] componentspane = viewport.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
     
-    public void clearAll() {
+    public void setComponentDefaultValues() {
        isLoad = true;
        tbbasecode.setText("");
        tbrate.setText("");
        ddforeign.removeAllItems();
-       ArrayList<String> foreign_curr = fglData.getCurrlist();
-       for (String fc : foreign_curr) {
-           if (! tbbasecode.getText().toUpperCase().equals(fc.toUpperCase())) {  // do not add base currency
-           ddforeign.addItem(fc);
-           }
-       }
+       
        
         exchangemodel.setRowCount(0);
         ratetable.setModel(exchangemodel);
-        tbbasecode.setText(OVData.getDefaultCurrency());
-        isLoad = false;
+        
+        
+        String currency = "";
+        ArrayList<String[]> initDataSets = fglData.getFINInit(this.getClass().getName());
+        for (String[] s : initDataSets) {
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("currencies")) {
+                ddforeign.addItem(s[1]);
+            }
+            if (s[0].equals("currency")) {
+                currency = s[1];
+            }
+            if (s[0].equals("exchanges")) {
+                String[] arr = s[1].split(",",-1);
+                exchangemodel.addRow(new Object[]{arr[0], arr[1], arr[2]});
+            }
+        }
+        tbbasecode.setText(currency);
+        
+       isLoad = false;
     }
     
     public void setLanguageTags(Object myobj) {
@@ -208,16 +320,148 @@ public class ExchangeMaint extends javax.swing.JPanel {
        }
     }
     
+    public void newAction(String x) {
+       setPanelComponentState(this, true);
+        setComponentDefaultValues();
+        BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
+        btupdate.setEnabled(false);
+        btdelete.setEnabled(false);
+        btnew.setEnabled(false);
+    }
     
+    public void setAction(String[] x) {
+        String[] m = new String[2];
+        if (x[0].equals("0")) {
+                   setPanelComponentState(this, true);
+                   btadd.setEnabled(false);
+        } 
+    }
+    
+    public boolean validateInput(BlueSeerUtils.dbaction x) {
+        if (! canUpdate) {
+            bsmf.MainFrame.show(getMessageTag(1185));
+            return false;
+        }
+        
+        Map<String,Integer> f = OVData.getTableInfo(new String[]{"exc_mstr"});
+        int fc;
+
+        fc = checkLength(f,"exc_base");
+        if (tbbasecode.getText().length() > fc || tbbasecode.getText().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
+            tbbasecode.requestFocus();
+            return false;
+        }    
+       
+        if (! BlueSeerUtils.isParsableToDouble(tbrate.getText())) {
+            bsmf.MainFrame.show(getMessageTag(1033, "Rate"));
+            tbbasecode.requestFocus();
+            return false;
+        }
+               
+        return true;
+    }
+    
+    public String[] addRecord(String[] x) {
+     String[] m = addExcMstr(createRecord());
+         return m;
+     }
+     
+    public String[] updateRecord(String[] x) {
+     String[] m = updateExcMstr(createRecord()); 
+         return m;
+    }
+     
+    public String[] deleteRecord(String[] x) {
+     String[] m = new String[2];
+        boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
+        if (proceed) {
+         m = deleteExcMstr(createRecord()); 
+         initvars(null);
+        } else {
+           m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordCanceled}; 
+        }
+         return m;
+     }
+      
+    public String[] getRecord(String[] key) {
+       x = getExcMstr(key); 
+        return x.m();
+    }
+    
+    public exc_mstr createRecord() { 
+        exc_mstr x = new exc_mstr(null, 
+                tbbasecode.getText(),
+                ddforeign.getSelectedItem().toString(),
+                bsParseDouble(tbrate.getText())
+                );
+        /* potential validation mechanism...would need association between record field and input field
+        for(Field f : x.getClass().getDeclaredFields()){
+        System.out.println(f.getName());
+        }
+        */
+        return x;
+    }
+        
+    public void lookUpFrame() {
+        
+        luinput.removeActionListener(lual);
+        lual = new ActionListener() {
+        public void actionPerformed(ActionEvent event) {
+        if (lurb1.isSelected()) {  
+         luModel = DTData.getExchangeBrowseUtil(luinput.getText(),0, "exc_base");
+        } else {
+         luModel = DTData.getExchangeBrowseUtil(luinput.getText(),0, "exc_foreign");   
+        }
+        luTable.setModel(luModel);
+        luTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        if (luModel.getRowCount() < 1) {
+            ludialog.setTitle(getMessageTag(1001));
+        } else {
+            ludialog.setTitle(getMessageTag(1002, String.valueOf(luModel.getRowCount())));
+        }
+        }
+        };
+        luinput.addActionListener(lual);
+        
+        luTable.removeMouseListener(luml);
+        luml = new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                JTable target = (JTable)e.getSource();
+                int row = target.getSelectedRow();
+                int column = target.getSelectedColumn();
+                if ( column == 0) {
+                ludialog.dispose();
+                initvars(new String[]{target.getValueAt(row,1).toString(), target.getValueAt(row,2).toString()});
+                }
+            }
+        };
+        luTable.addMouseListener(luml);
+      
+        callDialog(getClassLabelTag("lblbasecode", this.getClass().getSimpleName()), getClassLabelTag("lblforeigncode", this.getClass().getSimpleName())); 
+         
+        
+        
+    }
+
+    public void updateForm() {
+        tbbasecode.setText(x.exc_base());
+        ddforeign.setSelectedItem(x.exc_foreign());
+        tbrate.setText(bsNumber(x.exc_rate()));        
+        setAction(x.m()); 
+    }
+        
     public void initvars(String[] arg) {
-          clearAll();
-          
-          disableAll();
-          
-          
-          enableAll();
-          getRates();
-          
+        setPanelComponentState(this, false); 
+        setComponentDefaultValues();
+        btnew.setEnabled(true);
+        btlookup.setEnabled(true);
+        
+        if (arg != null && arg.length > 0) {
+            executeTask(BlueSeerUtils.dbaction.get,arg);
+        } else {
+            ddforeign.requestFocus();
+        }
     }
     
     /**
@@ -242,6 +486,8 @@ public class ExchangeMaint extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         ratetable = new javax.swing.JTable();
         btclear = new javax.swing.JButton();
+        btnew = new javax.swing.JButton();
+        btlookup = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -293,7 +539,6 @@ public class ExchangeMaint extends javax.swing.JPanel {
             }
         ));
         ratetable.setEnabled(false);
-        ratetable.setRowSelectionAllowed(true);
         ratetable.setShowGrid(true);
         ratetable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -310,6 +555,22 @@ public class ExchangeMaint extends javax.swing.JPanel {
             }
         });
 
+        btnew.setText("New");
+        btnew.setName("btnew"); // NOI18N
+        btnew.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnewActionPerformed(evt);
+            }
+        });
+
+        btlookup.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/lookup.png"))); // NOI18N
+        btlookup.setName(""); // NOI18N
+        btlookup.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btlookupActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -318,8 +579,12 @@ public class ExchangeMaint extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 341, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btdelete)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btupdate)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btadd, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel1)
@@ -330,206 +595,82 @@ public class ExchangeMaint extends javax.swing.JPanel {
                             .addComponent(tbrate)
                             .addComponent(tbbasecode, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
                             .addComponent(ddforeign, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btadd, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(btupdate, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(btdelete, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(btclear, javax.swing.GroupLayout.Alignment.TRAILING))
-                        .addGap(34, 34, 34))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btlookup, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnew)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btclear)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 367, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(15, 15, 15)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tbbasecode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1)
-                    .addComponent(btadd))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(tbbasecode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel1)
+                        .addComponent(btclear)
+                        .addComponent(btnew))
+                    .addComponent(btlookup))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(ddforeign, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btupdate))
+                    .addComponent(ddforeign, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbrate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3)
+                    .addComponent(jLabel3))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btadd)
+                    .addComponent(btupdate)
                     .addComponent(btdelete))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btclear)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 252, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(8, Short.MAX_VALUE))
         );
 
         add(jPanel1);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btaddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddActionPerformed
-       try {
-
-           Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                boolean proceed = true;
-                int i = 0;
-               
-                
-                Pattern p = Pattern.compile("^[0-9]\\d*(\\.\\d+)?$");
-                Matcher m = p.matcher(tbrate.getText());
-                if (!m.find() || tbrate.getText() == null) {
-                  bsmf.MainFrame.show(getMessageTag(1033, "Rate"));
-                  proceed = false;
-                  return;
-                }
-                
-                
-                if (proceed) {
-
-                    res = st.executeQuery("SELECT * FROM  exc_mstr where exc_base = " + "'" + tbbasecode.getText() + "'" + 
-                                          " AND exc_foreign = " + "'" + ddforeign.getSelectedItem().toString() + "'"  +  ";");
-                    while (res.next()) {
-                        i++;
-                    }
-                    if (i == 0) {
-                        st.executeUpdate("insert into exc_mstr "
-                            + "(exc_base, exc_foreign, exc_rate) "
-                            + " values ( " + "'" + tbbasecode.getText().toString().toUpperCase() + "'" + ","
-                            + "'" + ddforeign.getSelectedItem().toString() + "'" + ","
-                            + "'" + tbrate.getText().replace(defaultDecimalSeparator, '.') + "'" 
-                            + ")"
-                            + ";");
-                        bsmf.MainFrame.show(getMessageTag(1007));
-                    } else {
-                        bsmf.MainFrame.show(getMessageTag(1014));
-                    }
-
-                   initvars(null);
-                   
-                } // if proceed
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+       if (! validateInput(BlueSeerUtils.dbaction.add)) {
+           return;
+       }
+        setPanelComponentState(this, false);
+        executeTask(BlueSeerUtils.dbaction.add, new String[]{""});
     }//GEN-LAST:event_btaddActionPerformed
 
     private void btupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateActionPerformed
-       try {
-            boolean proceed = true;
-            int i = 0;
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                   
-                Pattern p = Pattern.compile("^[0-9]\\d*(\\.\\d+)?$");
-                Matcher m = p.matcher(tbrate.getText());
-                if (!m.find() || tbrate.getText() == null) {
-                  bsmf.MainFrame.show(getMessageTag(1033, "rate"));
-                  proceed = false;
-                  return;
-                }
-                
-                if (proceed) {
-                    
-                    res = st.executeQuery("SELECT * FROM  exc_mstr where exc_base = " + "'" + tbbasecode.getText() + "'" + 
-                                          " AND exc_foreign = " + "'" + ddforeign.getSelectedItem().toString() + "'"  +  ";");
-                    while (res.next()) {
-                        i++;
-                    }
-                    
-                    if (i == 0) {
-                        bsmf.MainFrame.show(getMessageTag(1033, "Exchange"));
-                        return;
-                    } else {
-                    
-                    st.executeUpdate("update exc_mstr set exc_rate = " + "'" + tbrate.getText() + "'" 
-                            + " where exc_base = " + "'" + tbbasecode.getText() + "'"  
-                            + " and exc_foreign = " + "'" + ddforeign.getSelectedItem().toString() + "'"
-                            + ";");
-                    bsmf.MainFrame.show(getMessageTag(1008));
-                    initvars(null);
-                    }
-                } 
-         
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+       if (! validateInput(BlueSeerUtils.dbaction.update)) {
+           return;
+       }
+        setPanelComponentState(this, false);
+        executeTask(BlueSeerUtils.dbaction.update, new String[]{""});
     }//GEN-LAST:event_btupdateActionPerformed
 
     private void btdeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteActionPerformed
-          try {
-
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            try {
-                
-                   int i = st.executeUpdate("delete from exc_mstr " 
-                            + " where exc_base = " + "'" + tbbasecode.getText() + "'"  
-                            + " and exc_foreign = " + "'" + ddforeign.getSelectedItem().toString() + "'"
-                            + ";"); 
-                    if (i > 0) {
-                    bsmf.MainFrame.show("deleted exchange rate");
-                    initvars(null);
-                    }
-                } catch (SQLException s) {
-                    MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+          if (! validateInput(BlueSeerUtils.dbaction.delete)) {
+           return;
+       }
+        setPanelComponentState(this, false);
+        executeTask(BlueSeerUtils.dbaction.delete, new String[]{""});
     }//GEN-LAST:event_btdeleteActionPerformed
 
     private void ratetableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ratetableMouseClicked
         int row = ratetable.rowAtPoint(evt.getPoint());
         ddforeign.setSelectedItem(ratetable.getValueAt(row, 1).toString());
         tbrate.setText(ratetable.getValueAt(row,2).toString());
+        btupdate.setEnabled(true);
+        btdelete.setEnabled(true);
+        btadd.setEnabled(false);
     }//GEN-LAST:event_ratetableMouseClicked
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
@@ -537,11 +678,21 @@ public class ExchangeMaint extends javax.swing.JPanel {
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 
+    private void btnewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnewActionPerformed
+        newAction("");
+    }//GEN-LAST:event_btnewActionPerformed
+
+    private void btlookupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupActionPerformed
+        lookUpFrame();
+    }//GEN-LAST:event_btlookupActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btadd;
     private javax.swing.JButton btclear;
     private javax.swing.JButton btdelete;
+    private javax.swing.JButton btlookup;
+    private javax.swing.JButton btnew;
     private javax.swing.JButton btupdate;
     private javax.swing.JComboBox<String> ddforeign;
     private javax.swing.JLabel jLabel1;

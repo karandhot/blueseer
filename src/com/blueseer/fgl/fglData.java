@@ -51,6 +51,7 @@ import static com.blueseer.shp.shpData.getShipperRef;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatIntUS;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
@@ -532,6 +533,129 @@ public class fglData {
         return r;
     }
     
+    public static String[] addExcMstr(exc_mstr x) {
+        String[] m = new String[2];
+        String sqlSelect = "select * from exc_mstr where exc_base = ? and exc_foreign = ?";
+        String sqlInsert = "insert into exc_mstr (exc_base, exc_foreign, exc_rate)  " +
+                " values (?,?,?); "; 
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+             PreparedStatement ps = con.prepareStatement(sqlSelect);) {
+             ps.setString(1, x.exc_base());
+             ps.setString(2, x.exc_foreign());
+          try (ResultSet res = ps.executeQuery();
+               PreparedStatement psi = con.prepareStatement(sqlInsert);) {  
+            if (! res.isBeforeFirst()) {
+            psi.setString(1, x.exc_base());
+            psi.setString(2, x.exc_foreign());
+            psi.setDouble(3, x.exc_rate());
+            int rows = psi.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+            } else {
+            m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordAlreadyExists};    
+            }
+          } 
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+        
+    public static String[] updateExcMstr(exc_mstr x) {
+        String[] m = new String[2];
+        String sql = "update exc_mstr set exc_rate = ? " +
+                " where exc_base = ? and exc_foreign = ? ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(2, x.exc_base());
+        ps.setString(3, x.exc_foreign());
+        ps.setDouble(1, x.exc_rate());
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
+    public static String[] deleteExcMstr(exc_mstr x) { 
+       String[] m = new String[2];
+        String sql = "delete from exc_mstr where exc_base = ? and exc_foreign = ?; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, x.exc_base());
+        ps.setString(2, x.exc_foreign());
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+        
+    public static exc_mstr getExcMstr(String[] x) {
+        exc_mstr r = null;
+        String[] m = new String[2];
+        String sql = "select * from exc_mstr where exc_base = ? and exc_foreign = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, x[0]);
+        ps.setString(2, x[1]);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new exc_mstr(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new exc_mstr(m, res.getString("exc_base"), 
+                            res.getString("exc_foreign"),
+                            res.getDouble("exc_rate")
+                        );
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new exc_mstr(m);
+        }
+        return r;
+    }
+      
+    public static ArrayList<exc_mstr> getExcMstr(String base) {
+        exc_mstr r = null;
+        String[] m = new String[2];
+        ArrayList<exc_mstr> list = new ArrayList<exc_mstr>();
+        String sql = "select * from exc_mstr where exc_base = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, base);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new exc_mstr(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new exc_mstr(m, res.getString("exc_base"), 
+                                res.getString("exc_foreign"), 
+                                res.getDouble("exc_rate"));  
+                        list.add(r); 
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new exc_mstr(m);
+               list.add(r);
+        }
+        return list;
+    }
+   
     
     public static String[] addDeptMstr(dept_mstr x) {
         String[] m = new String[2];
@@ -1231,11 +1355,12 @@ public class fglData {
     
     
     // misc functions
-    public static ArrayList<String[]> getFINInit() {
+    public static ArrayList<String[]> getFINInit(String panelClassName) {
         
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id", "getFINInit"});
+            list.add(new String[]{"param1", panelClassName});
             try {
                 return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServFIN"));
             } catch (IOException ex) {
@@ -1269,6 +1394,19 @@ public class fglData {
               }
             }
             
+            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + bsmf.MainFrame.userid + "'" + 
+                    " AND menu_panel = " + "'" + panelClassName + "'" +
+                    ";");
+           while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "canupdate";
+               s[1] = "0";
+               if (res.getString("perm_readonly").equals("0")) {
+                 s[1] = "1";
+               }
+               
+               lines.add(s);
+           }
              
             res = st.executeQuery("select site_site from site_mstr;");
             while (res.next()) {
@@ -1301,12 +1439,27 @@ public class fglData {
                lines.add(s);
             }
             
-             res = st.executeQuery("select bk_id from bk_mstr order by bk_id ;");
+            res = st.executeQuery("select exc_base, exc_foreign, exc_rate from exc_mstr ;");
             while (res.next()) {
                 String[] s = new String[2];
+               s[0] = "exchanges";
+               s[1] = res.getString("exc_base") + "," + res.getString("exc_foreign") + "," + res.getString("exc_rate");
+               lines.add(s);
+            }
+            
+             res = st.executeQuery("select bk_id from bk_mstr order by bk_id ;");
+            while (res.next()) {
+               String[] s = new String[2];
                s[0] = "banks";
                s[1] = res.getString("bk_id");
                lines.add(s);
+            }
+            
+             res = st.executeQuery("select ac_id from ac_mstr ;");
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "accounts";
+               s[1] = res.getString("ac_id");
             }
             
         }
@@ -6465,6 +6618,12 @@ return myarray;
     public record CurrMstr(String[] m, String id, String desc) {
         public CurrMstr(String[] m) {
             this(m, "", "");
+        }
+    }
+    
+    public record exc_mstr(String[] m, String exc_base, String exc_foreign, double exc_rate) {
+        public exc_mstr(String[] m) {
+            this(m, "", "", 0);
         }
     }
     

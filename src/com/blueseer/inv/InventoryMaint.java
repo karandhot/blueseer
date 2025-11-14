@@ -221,7 +221,6 @@ public class InventoryMaint extends javax.swing.JPanel {
         ddacct.removeAllItems();
         ddcc.removeAllItems();
         
-        ArrayList<String> wh = OVData.getWareHouseList(); 
         for (String[] s : initDataSets) {
             if (s[0].equals("accounts")) {
               ddacct.addItem(s[1]); 

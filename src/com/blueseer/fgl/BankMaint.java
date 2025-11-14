@@ -61,6 +61,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -78,6 +79,9 @@ public class BankMaint extends javax.swing.JPanel implements IBlueSeerT {
     // global variable declarations
         boolean isLoad = false;
         public static BankMstr x = null;
+        boolean canUpdate = false;
+        ArrayList<String> accounts = new ArrayList<>();
+        
     // global datatablemodel declarations       
                 
       
@@ -277,13 +281,45 @@ public class BankMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbassignedID.setText("");
         cbactive.setSelected(false);
         
-        ddsite.removeAllItems();
-        OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));
-        ddsite.setSelectedItem(OVData.getDefaultSite());
+        accounts.clear();
         
+        
+       ArrayList<String[]> initDataSets = fglData.getFINInit(this.getClass().getName());
         ddcurr.removeAllItems();
-        fglData.getCurrlist().stream().forEach((s) -> ddcurr.addItem(s));
-        ddcurr.setSelectedItem(OVData.getDefaultCurrency());
+        ddsite.removeAllItems();
+        String basecurr = "";
+        String defaultsite = "";
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              basecurr = s[1];  
+            }
+            
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+          
+            if (s[0].equals("currencies")) {
+              ddcurr.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("accounts")) {
+                accounts.add(s[1]);
+            }
+        }
+        
+        if (ddcurr.getItemCount() > 0) {
+          ddcurr.setSelectedItem(basecurr);
+        }
+        if (ddsite.getItemCount() > 0) {
+          ddsite.setSelectedItem(defaultsite);
+        }
+        
         
        isLoad = false;
     }
@@ -316,7 +352,7 @@ public class BankMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public boolean validateInput(dbaction x) {
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -349,7 +385,7 @@ public class BankMaint extends javax.swing.JPanel implements IBlueSeerT {
             return false;
         }
         
-        if (tbacct.getText().isEmpty() || ! OVData.isValidGLAcct(tbacct.getText())) {
+        if (tbacct.getText().isEmpty() || ! accounts.contains(tbacct.getText())) {
             bsmf.MainFrame.show(getMessageTag(1026));
             tbacct.requestFocus();
             tbacct.setBackground(Color.yellow);

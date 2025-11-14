@@ -2369,6 +2369,19 @@ public class DTData {
          }     
       
     public static DefaultTableModel getCurrencyBrowseUtil( String str, int state, String myfield) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getCurrencyBrowseUtil"});
+            list.add(new String[]{"param1", str});
+            list.add(new String[]{"param2", String.valueOf(state)});
+            list.add(new String[]{"param3", myfield});
+            try {
+                return jsonToDefaultTableModel(sendServerPost(list, "", null, "dataServDT")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                       new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("id"), getGlobalColumnTag("description")})
                 {
@@ -2427,7 +2440,82 @@ public class DTData {
         return mymodel;
         
          }     
-           
+    
+    public static DefaultTableModel getExchangeBrowseUtil( String str, int state, String myfield) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getExchangeBrowseUtil"});
+            list.add(new String[]{"param1", str});
+            list.add(new String[]{"param2", String.valueOf(state)});
+            list.add(new String[]{"param3", myfield});
+            try {
+                return jsonToDefaultTableModel(sendServerPost(list, "", null, "dataServDT")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+                      new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("code"), getGlobalColumnTag("foreign"), getGlobalColumnTag("rate")})
+                {
+                      @Override  
+                      public Class getColumnClass(int col) {  
+                        if (col == 0)       
+                            return ImageIcon.class;  
+                        else return String.class;  //other columns accept String values  
+                      }  
+                        }; 
+              
+        try{
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try{
+                if (state == 1) { // begins
+                    res = st.executeQuery(" SELECT exc_base, exc_foreign, exc_rate " +
+                        " FROM  exc_mstr where " + myfield + " like " + "'" + str + "%'" +
+                        " order by exc_base ;");
+                }
+                if (state == 2) { // ends
+                    res = st.executeQuery("  SELECT exc_base, exc_foreign, exc_rate  " +
+                        " FROM  exc_mstr  where " + myfield + " like " + "'%" + str + "'" +
+                        " order by exc_base ;");
+                }
+                 if (state == 0) { // match
+                 res = st.executeQuery("  SELECT exc_base, exc_foreign, exc_rate   " +
+                        " FROM  exc_mstr  where " + myfield + " like " + "'%" + str + "%'" +
+                        " order by exc_base ;");
+                 }
+                    while (res.next()) {
+                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("exc_base"),
+                                   res.getString("exc_foreign"),
+                                   res.getString("exc_rate")
+                        });
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+           } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               if (con != null) con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+        return mymodel;
+        
+         }     
+    
+    
     public static DefaultTableModel getUOMConvBrowseUtil( String str, int state, String myfield) {
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                       new String[]{getGlobalColumnTag("select"), 
@@ -5493,6 +5581,19 @@ public class DTData {
          } 
           
     public static DefaultTableModel getBankBrowseUtil( String str, int state, String myfield) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getBankBrowseUtil"});
+            list.add(new String[]{"param1", str});
+            list.add(new String[]{"param2", String.valueOf(state)});
+            list.add(new String[]{"param3", myfield});
+            try {
+                return jsonToDefaultTableModel(sendServerPost(list, "", null, "dataServDT")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                       new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("code"), getGlobalColumnTag("description"), getGlobalColumnTag("account"), getGlobalColumnTag("currency"), getGlobalColumnTag("active")})
                 {
@@ -5994,6 +6095,19 @@ public class DTData {
          } 
             
     public static DefaultTableModel getDeptCCBrowseUtil( String str, int state, String myfield) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getDeptCCBrowseUtil"});
+            list.add(new String[]{"param1", str});
+            list.add(new String[]{"param2", String.valueOf(state)});
+            list.add(new String[]{"param3", myfield});
+            try {
+                return jsonToDefaultTableModel(sendServerPost(list, "", null, "dataServDT")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                       new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("dept"), getGlobalColumnTag("description"), "LaborAcct", "BurdenAccount", "COPAccount"})
                 {

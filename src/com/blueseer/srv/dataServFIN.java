@@ -283,9 +283,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       response.getWriter().print(r);
     }
         
-    if (id.equals("getFINInit")) {          
-      response.getWriter().print(ArrayListStringArrayToJson(getFINInit()));
-    }    
+    if (id.equals("getFINInit")) { 
+      String param1 = request.getHeader("param1"); 
+      response.getWriter().print(ArrayListStringArrayToJson(getFINInit(param1)));
+    }     
        
     } // doPost
      

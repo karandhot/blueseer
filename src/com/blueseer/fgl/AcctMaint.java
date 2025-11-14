@@ -85,6 +85,7 @@ public class AcctMaint extends javax.swing.JPanel implements IBlueSeerT  {
                 boolean isLoad = false;
                 public static AcctMstr x = null;
                 String basecurr = "";
+                boolean canUpdate = false;
    // global datatablemodel declarations   
    
     public AcctMaint() {
@@ -274,11 +275,14 @@ public class AcctMaint extends javax.swing.JPanel implements IBlueSeerT  {
         lbaccountname.setText("");
         cbdisplay.setSelected(false);
         
-        ArrayList<String[]> initDataSets = fglData.getFINInit();
+        ArrayList<String[]> initDataSets = fglData.getFINInit(this.getClass().getName());
         ddcur.removeAllItems();
         for (String[] s : initDataSets) {
             if (s[0].equals("currency")) {
               basecurr = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
             }
           
             if (s[0].equals("currencies")) {
@@ -322,7 +326,7 @@ public class AcctMaint extends javax.swing.JPanel implements IBlueSeerT  {
      
     public boolean validateInput(dbaction x) {
         
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
