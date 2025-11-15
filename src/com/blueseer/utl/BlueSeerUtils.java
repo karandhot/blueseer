@@ -3273,8 +3273,31 @@ public class BlueSeerUtils {
     public static DefaultTableModel jsonToDefaultTableModel(String jsonstring) throws JsonProcessingException {
         
         System.out.println(jsonstring);
-        
         ObjectMapper objectMapper = new ObjectMapper();
+         List<Map<String, Object>> jsonData = objectMapper.readValue(jsonstring, List.class);
+
+        if (jsonData.isEmpty()) {
+            return new DefaultTableModel(); // Empty model if no data
+        }
+
+        // Extract column names from the first object
+        Vector<String> columnNames = new Vector<>(jsonData.get(0).keySet());
+
+        // Extract data for rows
+        Vector<Vector<Object>> data = new Vector<>();
+        for (Map<String, Object> rowMap : jsonData) {
+            Vector<Object> row = new Vector<>();
+            for (String columnName : columnNames) {
+                row.add(rowMap.get(columnName));
+            }
+            data.add(row);
+        }
+
+        return new DefaultTableModel(data, columnNames);
+        
+        
+        
+        /*
         DefaultTableModel x = new DefaultTableModel();
         JsonNode rootNode = objectMapper.readTree(jsonstring);
         
@@ -3303,6 +3326,8 @@ public class BlueSeerUtils {
             }
         
         return x;
+        
+        */
     }
 
      private static Object extractValue(JsonNode node) {
