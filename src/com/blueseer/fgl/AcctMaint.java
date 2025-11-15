@@ -450,7 +450,7 @@ public class AcctMaint extends javax.swing.JPanel implements IBlueSeerT  {
          luModel = DTData.getAcctBrowseUtil(luinput.getText(),0, "ac_desc");   
         }
         luTable.setModel(luModel);
-        luTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        // luTable.getColumnModel().getColumn(0).setMaxWidth(50);
         if (luModel.getRowCount() < 1) {
             ludialog.setTitle(getMessageTag(1001));
         } else {
