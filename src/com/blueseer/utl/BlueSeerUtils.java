@@ -3255,46 +3255,49 @@ public class BlueSeerUtils {
     public static DefaultTableModel jsonToDefaultTableModel(String jsonstring) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         DefaultTableModel x = new DefaultTableModel();
-        Vector<Vector<Object>> vectorData = new Vector<>();
-        Vector<String> columnNames = new Vector<>();
-        JsonNode jsonNode = objectMapper.readTree(jsonstring);
-         // Check if the JSON is an array
-            if (jsonNode.isArray()) {
-                // Get column names from the first object
-                if (jsonNode.size() > 0) {
-                    JsonNode firstObject = jsonNode.get(0);
-                    firstObject.fieldNames().forEachRemaining(columnNames::add);
-                }
-
-                // Get row data
-                for (JsonNode rowNode : jsonNode) {
-                    Vector<Object> row = new Vector<>();
-                    for (String columnName : columnNames) {
-                        JsonNode cell = rowNode.get(columnName);
-                        // Handle nulls and different data types
-                        if (cell != null) {
-                            if (cell.isTextual()) {
-                                row.add(cell.asText());
-                            } else if (cell.isNumber()) {
-                                row.add(cell.asInt());
-                            } else if (cell.isBoolean()) {
-                                row.add(cell.asBoolean());
-                            } else {
-                                row.add(cell.toString());
-                            }
-                        } else {
-                            row.add(null);
-                        }
+        JsonNode rootNode = objectMapper.readTree(jsonstring);
+        
+        JsonNode columnsNode = rootNode.get("columns");
+        List<String> columnIdentifiers = new ArrayList<>();
+        if (columnsNode != null && columnsNode.isArray()) {
+            for (JsonNode column : columnsNode) {
+                columnIdentifiers.add(column.asText());
+            }
+        } else {
+            throw new IllegalArgumentException("JSON must contain a 'columns' array.");
+        }
+        
+        
+        JsonNode rowsNode = rootNode.get("dataVector");
+        for (JsonNode rowNode : rowsNode) {
+                // Create an object array for each row
+                Object[] rowData = new Object[columnIdentifiers.size()];
+                for (int i = 0; i < columnIdentifiers.size(); i++) {
+                    String columnName = columnIdentifiers.get(i);
+                    JsonNode cellNode = rowNode.get(columnName);
+                    if (cellNode != null) {
+                        rowData[i] = extractValue(cellNode);
+                    } else {
+                        rowData[i] = null; // Handle missing cell data gracefully
                     }
-                    vectorData.add(row);
                 }
-            } else {
-                throw new IllegalArgumentException("JSON must be a JSON array of objects.");
+                x.addRow(rowData);
             }
         
-        return new DefaultTableModel(vectorData, columnNames);
+        return x;
     }
 
+     private static Object extractValue(JsonNode node) {
+        if (node.isTextual()) {
+            return node.asText();
+        } else if (node.isNumber()) {
+            return node.numberValue();
+        } else if (node.isBoolean()) {
+            return node.asBoolean();
+        }
+        // Return a string representation for other types or null
+        return node.toString();
+    }
     
     public static ArrayList<String[]> jsonToArrayListStringArray(String jsonstring) {
         ObjectMapper objectMapper = new ObjectMapper();
