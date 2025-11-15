@@ -3257,14 +3257,14 @@ public class BlueSeerUtils {
         DefaultTableModel x = new DefaultTableModel();
         JsonNode rootNode = objectMapper.readTree(jsonstring);
         
-        JsonNode columnsNode = rootNode.get("columns");
+        JsonNode columnsNode = rootNode.get("columnNames");
         List<String> columnIdentifiers = new ArrayList<>();
         if (columnsNode != null && columnsNode.isArray()) {
             for (JsonNode column : columnsNode) {
                 columnIdentifiers.add(column.asText());
             }
         } else {
-            throw new IllegalArgumentException("JSON must contain a 'columns' array.");
+          //  throw new IllegalArgumentException("JSON must contain a 'columns' array.");
         }
         
         

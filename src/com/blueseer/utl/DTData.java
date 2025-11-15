@@ -1176,7 +1176,7 @@ public class DTData {
                  if (state == 0) { // match
                  res = st.executeQuery("SELECT ac_id, ac_desc, ac_type, ac_cur   " +
                         " FROM  ac_mstr where " + myfield + " like " + "'%" + str + "%'" +
-                        " order by ac_id ;");
+                        " order by ac_id limit 2 ;");
                  }
                     while (res.next()) {
                         mymodel.addRow(new Object[] {"select", res.getString("ac_id"),
