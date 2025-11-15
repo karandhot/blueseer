@@ -3255,42 +3255,21 @@ public class BlueSeerUtils {
     public static DefaultTableModel jsonToDefaultTableModel(String jsonstring) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         DefaultTableModel x = new DefaultTableModel();
-        JsonNode rootNode = objectMapper.readTree(jsonstring); 
-         if (rootNode.isArray()) {
-                // Assuming an array of JSON objects
-                if (rootNode.size() > 0) {
-                    // Get column names from the first object's fields
-                    JsonNode firstObject = rootNode.get(0);
-                    Vector<String> columnNames = new Vector<>();
-                    firstObject.fieldNames().forEachRemaining(columnNames::add);
-                    x.setColumnIdentifiers(columnNames);
+        JsonNode jsonNode = objectMapper.readTree(jsonstring); 
+         JsonNode firstObject = jsonNode.get(0);
+        Vector<String> columnNames = new Vector<>();
+        firstObject.fieldNames().forEachRemaining(columnNames::add);
 
-                    // Add data rows
-                    for (JsonNode node : rootNode) {
-                        Vector<Object> rowData = new Vector<>();
-                        for (String colName : columnNames) {
-                            rowData.add(node.get(colName).asText()); // Convert to String for display
-                        }
-                        x.addRow(rowData);
-                    }
-                }
-            } else if (rootNode.isObject()) {
-                // Assuming a single JSON object (key-value pairs)
-                Vector<String> columnNames = new Vector<>();
-                columnNames.add("Key");
-                columnNames.add("Value");
-                x.setColumnIdentifiers(columnNames);
-
-                rootNode.fields().forEachRemaining(entry -> {
-                    Vector<Object> rowData = new Vector<>();
-                    rowData.add(entry.getKey());
-                    rowData.add(entry.getValue().asText());
-                    x.addRow(rowData);
-                });
-            } else {
-                throw new IllegalArgumentException("Unsupported JSON structure.");
+        Vector<Vector<Object>> data = new Vector<>();
+        for (JsonNode rowNode : jsonNode) {
+            Vector<Object> row = new Vector<>();
+            for (String column : columnNames) {
+                JsonNode cellNode = rowNode.get(column);
+                row.add(cellNode.asText());
             }
-        
+            data.add(row);
+        }
+        x = new DefaultTableModel(data, columnNames);
         return x;
     }
 
