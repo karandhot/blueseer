@@ -3255,22 +3255,44 @@ public class BlueSeerUtils {
     public static DefaultTableModel jsonToDefaultTableModel(String jsonstring) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         DefaultTableModel x = new DefaultTableModel();
-        JsonNode jsonNode = objectMapper.readTree(jsonstring); 
-         JsonNode firstObject = jsonNode.get(0);
+        Vector<Vector<Object>> vectorData = new Vector<>();
         Vector<String> columnNames = new Vector<>();
-        firstObject.fieldNames().forEachRemaining(columnNames::add);
+        JsonNode jsonNode = objectMapper.readTree(jsonstring);
+         // Check if the JSON is an array
+            if (jsonNode.isArray()) {
+                // Get column names from the first object
+                if (jsonNode.size() > 0) {
+                    JsonNode firstObject = jsonNode.get(0);
+                    firstObject.fieldNames().forEachRemaining(columnNames::add);
+                }
 
-        Vector<Vector<Object>> data = new Vector<>();
-        for (JsonNode rowNode : jsonNode) {
-            Vector<Object> row = new Vector<>();
-            for (String column : columnNames) {
-                JsonNode cellNode = rowNode.get(column);
-                row.add(cellNode.asText());
+                // Get row data
+                for (JsonNode rowNode : jsonNode) {
+                    Vector<Object> row = new Vector<>();
+                    for (String columnName : columnNames) {
+                        JsonNode cell = rowNode.get(columnName);
+                        // Handle nulls and different data types
+                        if (cell != null) {
+                            if (cell.isTextual()) {
+                                row.add(cell.asText());
+                            } else if (cell.isNumber()) {
+                                row.add(cell.asInt());
+                            } else if (cell.isBoolean()) {
+                                row.add(cell.asBoolean());
+                            } else {
+                                row.add(cell.toString());
+                            }
+                        } else {
+                            row.add(null);
+                        }
+                    }
+                    vectorData.add(row);
+                }
+            } else {
+                throw new IllegalArgumentException("JSON must be a JSON array of objects.");
             }
-            data.add(row);
-        }
-        x = new DefaultTableModel(data, columnNames);
-        return x;
+        
+        return new DefaultTableModel(vectorData, columnNames);
     }
 
     
