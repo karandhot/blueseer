@@ -36,6 +36,7 @@ import com.blueseer.fgl.fglData.AcctMstr;
 import static com.blueseer.utl.OVData.getCodeValueByCodeKey;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.awt.Color;
@@ -91,6 +92,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -3250,14 +3252,45 @@ public class BlueSeerUtils {
         return x;
     }
 
-    public static DefaultTableModel jsonToDefaultTableModel(String jsonstring) {
+    public static DefaultTableModel jsonToDefaultTableModel(String jsonstring) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        DefaultTableModel x = null;
-        try {
-            x = objectMapper.readValue(jsonstring, DefaultTableModel.class);
-        } catch (JsonProcessingException ex) {
-            bslog(ex);
-        }
+        DefaultTableModel x = new DefaultTableModel();;
+        JsonNode rootNode = objectMapper.readTree(jsonstring); 
+         if (rootNode.isArray()) {
+                // Assuming an array of JSON objects
+                if (rootNode.size() > 0) {
+                    // Get column names from the first object's fields
+                    JsonNode firstObject = rootNode.get(0);
+                    Vector<String> columnNames = new Vector<>();
+                    firstObject.fieldNames().forEachRemaining(columnNames::add);
+                    x.setColumnIdentifiers(columnNames);
+
+                    // Add data rows
+                    for (JsonNode node : rootNode) {
+                        Vector<Object> rowData = new Vector<>();
+                        for (String colName : columnNames) {
+                            rowData.add(node.get(colName).asText()); // Convert to String for display
+                        }
+                        x.addRow(rowData);
+                    }
+                }
+            } else if (rootNode.isObject()) {
+                // Assuming a single JSON object (key-value pairs)
+                Vector<String> columnNames = new Vector<>();
+                columnNames.add("Key");
+                columnNames.add("Value");
+                x.setColumnIdentifiers(columnNames);
+
+                rootNode.fields().forEachRemaining(entry -> {
+                    Vector<Object> rowData = new Vector<>();
+                    rowData.add(entry.getKey());
+                    rowData.add(entry.getValue().asText());
+                    x.addRow(rowData);
+                });
+            } else {
+                throw new IllegalArgumentException("Unsupported JSON structure.");
+            }
+        
         return x;
     }
 

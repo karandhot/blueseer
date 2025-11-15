@@ -1146,13 +1146,13 @@ public class DTData {
                       @Override  
                       public Class getColumnClass(int col) {
                           return String.class;
-                      //  if (col == 0)       
-                      //      return ImageIcon.class;  
-                      //  else return String.class;  //other columns accept String values  
-                      }  
+                   //     if (col == 0)        
+                   //         return ImageIcon.class;  
+                   //     else return String.class;  //other columns accept String values  
+                      }   
                         }; 
               
-        try{
+        try {
             
             Connection con = null;
             if (ds != null) {
