@@ -201,7 +201,9 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       String param1 = request.getHeader("param1"); 
       int param2 = Integer.parseInt(request.getHeader("param2"));
       String param3 = request.getHeader("param3");
-      response.getWriter().print(DefaultTableModelToJson(getAcctBrowseUtil(param1, param2, param3)));
+      String output = DefaultTableModelToJson(getAcctBrowseUtil(param1, param2, param3));  
+      System.out.println(output);
+      response.getWriter().print(output);
     }
     
     if (id.equals("getBankBrowseUtil")) { 
