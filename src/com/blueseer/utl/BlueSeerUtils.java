@@ -3253,6 +3253,9 @@ public class BlueSeerUtils {
     }
 
     public static DefaultTableModel jsonToDefaultTableModel(String jsonstring) throws JsonProcessingException {
+        
+        System.out.println(jsonstring);
+        
         ObjectMapper objectMapper = new ObjectMapper();
         DefaultTableModel x = new DefaultTableModel();
         JsonNode rootNode = objectMapper.readTree(jsonstring);
@@ -3265,6 +3268,10 @@ public class BlueSeerUtils {
             }
         } else {
           //  throw new IllegalArgumentException("JSON must contain a 'columns' array.");
+        }
+        
+        for (int i = 1; i < 6; i++) {
+           columnIdentifiers.add(String.valueOf(i)); 
         }
         
         
