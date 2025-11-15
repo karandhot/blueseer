@@ -3254,7 +3254,7 @@ public class BlueSeerUtils {
 
     public static DefaultTableModel jsonToDefaultTableModel(String jsonstring) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        DefaultTableModel x = new DefaultTableModel();;
+        DefaultTableModel x = new DefaultTableModel();
         JsonNode rootNode = objectMapper.readTree(jsonstring); 
          if (rootNode.isArray()) {
                 // Assuming an array of JSON objects
