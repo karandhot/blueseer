@@ -3176,6 +3176,7 @@ public class BlueSeerUtils {
     }
     
     public static String DefaultTableModelToJson(DefaultTableModel model) {
+      /*
         // Create the main JSON object
         JSONObject json = new JSONObject();
 
@@ -3200,6 +3201,23 @@ public class BlueSeerUtils {
         json.put("data", data);
 
         return json.toString(4); // Use an indentation of 4 spaces for pretty-printing
+    */
+      
+      JSONArray jsonArrayOfArrays = new JSONArray();
+
+        int rowCount = model.getRowCount();
+        int columnCount = model.getColumnCount();
+
+        for (int i = 0; i < rowCount; i++) {
+            JSONArray rowArray = new JSONArray();
+            for (int j = 0; j < columnCount; j++) {
+                rowArray.put(model.getValueAt(i, j));
+            }
+            jsonArrayOfArrays.put(rowArray);
+        }
+
+        return jsonArrayOfArrays.toString(2);
+    
     }
     
     public static String HashMapStringIntegerToJson(Map<String,Integer> list) {
@@ -3274,11 +3292,14 @@ public class BlueSeerUtils {
         
         System.out.println(jsonstring);
         ObjectMapper objectMapper = new ObjectMapper();
-         List<Map<String, Object>> jsonData = objectMapper.readValue(jsonstring, List.class);
+       // JsonNode rootNode = objectMapper.readTree(jsonstring);
+       // JsonNode rowsNode = rootNode.get("data"); 
+        
+        List<Map<String, Object>> jsonData = objectMapper.readValue(jsonstring, List.class);
 
-        if (jsonData.isEmpty()) {
-            return new DefaultTableModel(); // Empty model if no data
-        }
+       // if (jsonData.isEmpty()) {
+       //     return new DefaultTableModel(); // Empty model if no data
+       // }
 
         // Extract column names from the first object
         Vector<String> columnNames = new Vector<>(jsonData.get(0).keySet());
