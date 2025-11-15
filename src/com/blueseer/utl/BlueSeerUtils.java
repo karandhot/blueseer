@@ -129,6 +129,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.util.encoders.Base64;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 /**
@@ -3174,14 +3176,30 @@ public class BlueSeerUtils {
     }
     
     public static String DefaultTableModelToJson(DefaultTableModel model) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String x = "";
-        try {   
-            x = objectMapper.writeValueAsString(model);
-        } catch (JsonProcessingException ex) {
-            bslog(ex);
+        // Create the main JSON object
+        JSONObject json = new JSONObject();
+
+        // Get column names and add them to a JSON array
+        JSONArray columns = new JSONArray();
+        for (int i = 0; i < model.getColumnCount(); i++) {
+            columns.put(model.getColumnName(i));
         }
-        return x;
+        json.put("columns", columns);
+
+        // Get the data and add it to a JSON array
+        JSONArray data = new JSONArray();
+        for (int i = 0; i < model.getRowCount(); i++) {
+            JSONObject row = new JSONObject();
+            for (int j = 0; j < model.getColumnCount(); j++) {
+                String columnName = model.getColumnName(j);
+                Object cellValue = model.getValueAt(i, j);
+                row.put(columnName, cellValue);
+            }
+            data.put(row);
+        }
+        json.put("data", data);
+
+        return json.toString(4); // Use an indentation of 4 spaces for pretty-printing
     }
     
     public static String HashMapStringIntegerToJson(Map<String,Integer> list) {
@@ -3260,22 +3278,15 @@ public class BlueSeerUtils {
         DefaultTableModel x = new DefaultTableModel();
         JsonNode rootNode = objectMapper.readTree(jsonstring);
         
-        JsonNode columnsNode = rootNode.get("columnNames");
+        JsonNode columnsNode = rootNode.get("columns");
         List<String> columnIdentifiers = new ArrayList<>();
         if (columnsNode != null && columnsNode.isArray()) {
             for (JsonNode column : columnsNode) {
                 columnIdentifiers.add(column.asText());
             }
-        } else {
-          //  throw new IllegalArgumentException("JSON must contain a 'columns' array.");
-        }
+        } 
         
-        for (int i = 1; i < 6; i++) {
-           columnIdentifiers.add(String.valueOf(i)); 
-        }
-        
-        
-        JsonNode rowsNode = rootNode.get("dataVector");
+        JsonNode rowsNode = rootNode.get("data");
         for (JsonNode rowNode : rowsNode) {
                 // Create an object array for each row
                 Object[] rowData = new Object[columnIdentifiers.size()];
