@@ -39,9 +39,12 @@ import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.jsonToDefaultTableModel;
 import static com.blueseer.utl.BlueSeerUtils.jsonToHashMapStringInteger;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -56,9 +59,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.Vector;
 import javax.swing.ImageIcon;
 import javax.swing.table.DefaultTableModel;
+import org.json.JSONArray;
 
 /**
  *
@@ -222,7 +228,20 @@ public class DTData {
          }
       
     public static DefaultTableModel getShiftAll() {
-        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getShiftAllData"});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServDT"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = getShiftAllData();
+        }        
+       
+        Object[][] data = jsonToData(jsonString);
         
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                       new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("shift"), getGlobalColumnTag("description")})
@@ -234,9 +253,16 @@ public class DTData {
                         else return String.class;  //other columns accept String values  
                       }  
                         }; 
-             
-              
-       try{
+        for (Object[] rowData : data) {
+        mymodel.addRow(rowData);
+        }  
+        return mymodel;
+        
+         }
+       
+    public static String getShiftAllData() {
+        JSONArray jsonarray = new JSONArray();
+        try {
             
             Connection con = null;
             if (ds != null) {
@@ -246,34 +272,49 @@ public class DTData {
             }
             Statement st = con.createStatement();
             ResultSet res = null;
+            
             try{
-               
-                  res = st.executeQuery("select * from shift_mstr;" );
+                res = st.executeQuery("select * from shift_mstr;" );
+                 
                     while (res.next()) {
-                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("shf_id"),
-                                   res.getString("shf_desc")                                  
-                        });
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select"); // BlueSeerUtils.clickflag
+                        rowArray.put(res.getString("shf_id"));
+                        rowArray.put(res.getString("shf_desc"));
+                        jsonarray.put(rowArray);
                     }
            }
             catch (SQLException s){
                  MainFrame.bslog(s);
-            } finally {
+             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
-               if (con != null) con.close();
+               con.close();
             }
         }
         catch (Exception e){
             MainFrame.bslog(e);
             
         }
-        return mymodel;
-        
-         }
-        
+       return jsonarray.toString(); 
+    }
+    
     public static DefaultTableModel getClockCodesAll() {
         
-        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getClockCodesAllData"});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServDT"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = getClockCodesAllData();
+        }        
+       
+        Object[][] data = jsonToData(jsonString);
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                       new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("code"), getGlobalColumnTag("description"), getGlobalColumnTag("payable"), getGlobalColumnTag("code")})
                 {
@@ -286,7 +327,16 @@ public class DTData {
                         }; 
              
               
-       try{
+        for (Object[] rowData : data) {
+        mymodel.addRow(rowData);
+        } 
+        return mymodel;
+        
+         }
+    
+    public static String getClockCodesAllData() {
+        JSONArray jsonarray = new JSONArray();
+        try {
             
             Connection con = null;
             if (ds != null) {
@@ -296,15 +346,20 @@ public class DTData {
             }
             Statement st = con.createStatement();
             ResultSet res = null;
+            
             try{
-               
-                  res = st.executeQuery("select clc_code, clc_desc, case when clc_payable = '1' then 'yes' else 'no' end as 'payable', " +
+                res = st.executeQuery("select clc_code, clc_desc, case when clc_payable = '1' then 'yes' else 'no' end as 'payable', " +
                           " case when clc_syscode = '1' then 'yes' else 'no' end as 'syscode' " +
                           " from clock_code order by clc_code;" );
+                 
                     while (res.next()) {
-                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("clc_code"),
-                                   res.getString("clc_desc") , res.getString("payable"), res.getString("syscode")                                 
-                        });
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select"); // BlueSeerUtils.clickflag
+                        rowArray.put(res.getString("clc_code"));
+                        rowArray.put(res.getString("clc_desc"));
+                        rowArray.put(res.getString("payable"));
+                        rowArray.put(res.getString("syscode"));
+                        jsonarray.put(rowArray);
                     }
            }
             catch (SQLException s){
@@ -312,20 +367,32 @@ public class DTData {
              } finally {
                if (res != null) res.close();
                if (st != null) st.close();
-               if (con != null) con.close();
+               con.close();
             }
         }
         catch (Exception e){
             MainFrame.bslog(e);
             
         }
-        return mymodel;
-        
-         }
+       return jsonarray.toString(); 
+    }
     
     public static DefaultTableModel getClockRecords66All() {
         
-        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getClockRecords66AllData"});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServDT"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = getClockRecords66AllData();
+        }        
+       
+        Object[][] data = jsonToData(jsonString);
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                       new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("id"), getGlobalColumnTag("empid"), getGlobalColumnTag("lastname"), getGlobalColumnTag("firstname"), getGlobalColumnTag("dept"), getGlobalColumnTag("code"), getGlobalColumnTag("indate"), getGlobalColumnTag("intime"), "InTmAdj", getGlobalColumnTag("outdate"), getGlobalColumnTag("outtime"), "OutTmAdj", getGlobalColumnTag("totalhours")})
                 {
@@ -338,7 +405,16 @@ public class DTData {
                         }; 
              
               
-       try{
+        for (Object[] rowData : data) {
+        mymodel.addRow(rowData);
+        } 
+        return mymodel;
+        
+         }
+    
+    public static String getClockRecords66AllData() {
+        JSONArray jsonarray = new JSONArray();
+        try {
             
             Connection con = null;
             if (ds != null) {
@@ -348,23 +424,28 @@ public class DTData {
             }
             Statement st = con.createStatement();
             ResultSet res = null;
+            
             try{
-                 res = st.executeQuery("SELECT * FROM  time_clock t inner join emp_mstr e on e.emp_nbr = t.emp_nbr where t.code_id = '66';"  );
+                res = st.executeQuery("SELECT * FROM  time_clock t inner join emp_mstr e on e.emp_nbr = t.emp_nbr where t.code_id = '66';"  );
+                 
+                 
                     while (res.next()) {
-                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("t.recid"),
-                                            res.getString("t.emp_nbr"),
-                                            res.getString("e.emp_lname"),
-                                            res.getString("e.emp_fname"),
-                                            res.getString("e.emp_dept"),
-                                            res.getString("t.code_id"),
-                                             res.getString("t.indate"),
-                                            res.getString("t.intime"),
-                                            res.getString("t.intime_adj"),
-                                            res.getString("t.outdate"),
-                                            res.getString("t.outtime"),
-                                            res.getString("t.outtime_adj"),
-                                            res.getString("t.tothrs")                                 
-                        });
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select"); // BlueSeerUtils.clickflag
+                        rowArray.put(res.getString("t.recid"));
+                        rowArray.put(res.getString("t.emp_nbr"));
+                        rowArray.put(res.getString("e.emp_lname"));
+                        rowArray.put(res.getString("e.emp_fname"));
+                        rowArray.put(res.getString("e.emp_dept"));
+                        rowArray.put(res.getString("t.code_id"));
+                        rowArray.put(res.getString("t.indate"));
+                        rowArray.put(res.getString("t.intime"));
+                        rowArray.put(res.getString("t.intime_adj"));
+                        rowArray.put(res.getString("t.outdate"));
+                        rowArray.put(res.getString("t.outtime"));
+                        rowArray.put(res.getString("t.outtime_adj"));
+                        rowArray.put(res.getString("t.tothrs"));
+                        jsonarray.put(rowArray);
                     }
            }
             catch (SQLException s){
@@ -372,20 +453,32 @@ public class DTData {
              } finally {
                if (res != null) res.close();
                if (st != null) st.close();
-               if (con != null) con.close();
+               con.close();
             }
         }
         catch (Exception e){
             MainFrame.bslog(e);
             
         }
-        return mymodel;
-        
-         }
+       return jsonarray.toString(); 
+    }
     
     public static DefaultTableModel getQOHvsSSAll() {
         
-        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getQOHvsSSAllData"});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServDT"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = getQOHvsSSAllData();
+        }        
+       
+        Object[][] data = jsonToData(jsonString);
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                       new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("item"), getGlobalColumnTag("description"), getGlobalColumnTag("uom"), getGlobalColumnTag("type"), getGlobalColumnTag("status"), getGlobalColumnTag("qoh"), getGlobalColumnTag("safetystock")})
                 {
@@ -396,9 +489,16 @@ public class DTData {
                         else return String.class;  //other columns accept String values  
                       }  
                         }; 
-             
-              
-       try{
+        for (Object[] rowData : data) {
+        mymodel.addRow(rowData);
+        }
+       return mymodel;
+        
+         } 
+     
+    public static String getQOHvsSSAllData() {
+        JSONArray jsonarray = new JSONArray();
+        try {
             
             Connection con = null;
             if (ds != null) {
@@ -408,22 +508,23 @@ public class DTData {
             }
             Statement st = con.createStatement();
             ResultSet res = null;
+            
             try{
-                
-                
-                 res = st.executeQuery("SELECT it_item, it_desc, it_uom, it_type, it_status, sum(in_qoh) as 'sum', it_safestock  " +
+                res = st.executeQuery("SELECT it_item, it_desc, it_uom, it_type, it_status, sum(in_qoh) as 'sum', it_safestock  " +
                         " FROM  item_mstr inner join in_mstr on in_item = it_item  " +
                         " group by it_item, it_desc, it_uom, it_type, it_status order by it_item ;");
+                 
                     while (res.next()) {
-                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("it_item"),
-                                   res.getString("it_desc"),
-                                   res.getString("it_uom"),
-                                   res.getString("it_type"),
-                                   res.getString("it_status"),
-                                   res.getInt("sum"),
-                                   res.getInt("it_safestock")
-                                  
-                        });
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select"); // BlueSeerUtils.clickflag
+                        rowArray.put(res.getString("it_item"));
+                        rowArray.put(res.getString("it_desc"));
+                        rowArray.put(res.getString("it_uom"));
+                        rowArray.put(res.getString("it_type"));
+                        rowArray.put(res.getString("it_status"));
+                        rowArray.put(res.getString("sum"));
+                        rowArray.put(res.getString("it_safestock"));
+                        jsonarray.put(rowArray);
                     }
            }
             catch (SQLException s){
@@ -431,19 +532,32 @@ public class DTData {
              } finally {
                if (res != null) res.close();
                if (st != null) st.close();
-               if (con != null) con.close();
+               con.close();
             }
         }
         catch (Exception e){
             MainFrame.bslog(e);
             
         }
-        return mymodel;
-        
-         } 
-         
+       return jsonarray.toString(); 
+    }
+    
+    
     public static DefaultTableModel getItemInfoAll() {
-        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getItemInfoAllData"});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServDT"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = getItemInfoAllData();
+        }        
+       
+        Object[][] data = jsonToData(jsonString);
         
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                       new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("item"), getGlobalColumnTag("description"), getGlobalColumnTag("uom"), getGlobalColumnTag("type"), getGlobalColumnTag("status"), getGlobalColumnTag("site"), getGlobalColumnTag("prodline"), getGlobalColumnTag("rev"), getGlobalColumnTag("class"), getGlobalColumnTag("routing")})
@@ -454,10 +568,17 @@ public class DTData {
                             return ImageIcon.class;  
                         else return String.class;  //other columns accept String values  
                       }  
-                        }; 
-             
-              
-        try{
+                        };
+        for (Object[] rowData : data) {
+        mymodel.addRow(rowData);
+        }
+        return mymodel;
+        
+         } 
+    
+    public static String getItemInfoAllData() {
+        JSONArray jsonarray = new JSONArray();
+        try {
             
             Connection con = null;
             if (ds != null) {
@@ -467,43 +588,61 @@ public class DTData {
             }
             Statement st = con.createStatement();
             ResultSet res = null;
+            
             try{
-                
-                 res = st.executeQuery("SELECT it_item, it_desc, it_uom, it_type, it_status, it_site, it_prodline, it_rev, it_code, it_wf  " +
+                res = st.executeQuery("SELECT it_item, it_desc, it_uom, it_type, it_status, it_site, it_prodline, it_rev, it_code, it_wf  " +
                         " FROM  item_mstr  " +
                         " order by it_item ;");
+                 
                     while (res.next()) {
-                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("it_item"),
-                                   res.getString("it_desc"),
-                                   res.getString("it_uom"),
-                                   res.getString("it_type"),
-                                   res.getString("it_status"),
-                                   res.getString("it_site"),
-                                   res.getString("it_prodline"),
-                                   res.getString("it_rev"),
-                                   res.getString("it_code"),
-                                   res.getString("it_wf")
-                                  
-                        });
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select"); // BlueSeerUtils.clickflag
+                        rowArray.put(res.getString("it_item"));
+                        rowArray.put(res.getString("it_desc"));
+                        rowArray.put(res.getString("it_uom"));
+                        rowArray.put(res.getString("it_type"));
+                        rowArray.put(res.getString("it_status"));
+                        rowArray.put(res.getString("it_site"));
+                        rowArray.put(res.getString("it_prodline"));
+                        rowArray.put(res.getString("it_rev"));
+                        rowArray.put(res.getString("it_code"));
+                        rowArray.put(res.getString("it_wf"));
+                        jsonarray.put(rowArray);
                     }
            }
             catch (SQLException s){
                  MainFrame.bslog(s);
-           } finally {
+             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
-               if (con != null) con.close();
+               con.close();
             }
         }
         catch (Exception e){
             MainFrame.bslog(e);
             
         }
-        return mymodel;
-        
-         } 
-     
+       return jsonarray.toString(); 
+    }
+      
     public static DefaultTableModel getGLTranBrowseUtil( String str, int state, String myfield) {
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getGLTranBrowseUtilData"});
+            list.add(new String[]{"param1", str});
+            list.add(new String[]{"param2", String.valueOf(state)});
+            list.add(new String[]{"param3", myfield});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServDT"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = getGLTranBrowseUtilData(str, state, myfield);
+        }        
+       
+        Object[][] data = jsonToData(jsonString);
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                       new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("id"), getGlobalColumnTag("reference"), getGlobalColumnTag("account"), getGlobalColumnTag("cc"), getGlobalColumnTag("site"), getGlobalColumnTag("effectivedate"), getGlobalColumnTag("enterdate"), getGlobalColumnTag("description"), getGlobalColumnTag("amount"), getGlobalColumnTag("userid")})
                 {
@@ -514,8 +653,16 @@ public class DTData {
                         else return String.class;  //other columns accept String values  
                       }  
                         }; 
-              
-        try{
+        for (Object[] rowData : data) {
+        mymodel.addRow(rowData);
+        } 
+        return mymodel;
+        
+         } 
+    
+    public static String getGLTranBrowseUtilData(String str, int state, String myfield) {
+        JSONArray jsonarray = new JSONArray();
+        try {
             
             Connection con = null;
             if (ds != null) {
@@ -525,6 +672,7 @@ public class DTData {
             }
             Statement st = con.createStatement();
             ResultSet res = null;
+            
             try{
                 if (state == 1) { // begins
                     res = st.executeQuery("SELECT glt_id, glt_ref, glt_acct, glt_cc, glt_site, glt_effdate, glt_entdate, glt_desc, glt_base_amt, glt_userid " +
@@ -541,35 +689,38 @@ public class DTData {
                         " FROM  gl_tran where " + myfield + " like " + "'%" + str + "%'" +
                         " order by glt_id desc ;");
                  }
+                 
                     while (res.next()) {
-                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("glt_id"),
-                                   res.getString("glt_ref"),
-                                   res.getString("glt_acct"),
-                                   res.getString("glt_cc"),
-                                   res.getString("glt_site"),
-                                   res.getString("glt_effdate"),
-                                   res.getString("glt_entdate"),
-                                   res.getString("glt_desc"),
-                                   res.getString("glt_base_amt"),
-                                   res.getString("glt_userid")
-                        });
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select"); // BlueSeerUtils.clickflag
+                        rowArray.put(res.getString("glt_id"));
+                        rowArray.put(res.getString("glt_ref"));
+                        rowArray.put(res.getString("glt_acct"));
+                        rowArray.put(res.getString("glt_cc"));
+                        rowArray.put(res.getString("glt_site"));
+                        rowArray.put(res.getString("glt_effdate"));
+                        rowArray.put(res.getString("glt_entdate"));
+                        rowArray.put(res.getString("glt_desc"));
+                        rowArray.put(res.getString("glt_base_amt"));
+                        rowArray.put(res.getString("glt_userid"));
+                        jsonarray.put(rowArray);
                     }
            }
             catch (SQLException s){
                  MainFrame.bslog(s);
-           } finally {
+             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
-               if (con != null) con.close();
+               con.close();
             }
         }
         catch (Exception e){
             MainFrame.bslog(e);
             
         }
-        return mymodel;
-        
-         } 
+       return jsonarray.toString(); 
+    }
+    
     
     public static DefaultTableModel getGLTranBrowseUtil2( String str, int state, String myfield) {
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -1064,6 +1215,23 @@ public class DTData {
          } 
     
     public static DefaultTableModel getMapStructBrowseUtil( String str, int state, String myfield) {
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getMapStructBrowseData"});
+            list.add(new String[]{"param1", str});
+            list.add(new String[]{"param2", String.valueOf(state)});
+            list.add(new String[]{"param3", myfield});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServDT"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = getMapStructBrowseData(str, state, myfield);
+        }        
+       
+        Object[][] data = jsonToData(jsonString);
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                       new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("id"), getGlobalColumnTag("description"), getGlobalColumnTag("doctype")})
                 {
@@ -1075,7 +1243,17 @@ public class DTData {
                       }  
                         }; 
               
-        try{
+        for (Object[] rowData : data) {
+        mymodel.addRow(rowData);
+        }
+        
+        return mymodel;
+        
+         } 
+    
+    public static String getMapStructBrowseData(String str, int state, String myfield) {
+        JSONArray jsonarray = new JSONArray();
+        try {
             
             Connection con = null;
             if (ds != null) {
@@ -1085,6 +1263,7 @@ public class DTData {
             }
             Statement st = con.createStatement();
             ResultSet res = null;
+            
             try{
                 if (state == 1) { // begins
                     res = st.executeQuery("SELECT dfs_id, dfs_desc, dfs_doctype  " +
@@ -1101,11 +1280,14 @@ public class DTData {
                         " FROM  dfs_mstr where " + myfield + " like " + "'%" + str + "%'" +
                         " order by dfs_id ;");
                  }
+                 
                     while (res.next()) {
-                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("dfs_id"),
-                                   res.getString("dfs_desc"),
-                                   res.getString("dfs_doctype")
-                        });
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select"); // BlueSeerUtils.clickflag
+                        rowArray.put(res.getString("dfs_id"));
+                        rowArray.put(res.getString("dfs_desc"));
+                        rowArray.put(res.getString("dfs_doctype"));
+                        jsonarray.put(rowArray);
                     }
            }
             catch (SQLException s){
@@ -1113,45 +1295,59 @@ public class DTData {
              } finally {
                if (res != null) res.close();
                if (st != null) st.close();
-               if (con != null) con.close();
+               con.close();
             }
         }
         catch (Exception e){
             MainFrame.bslog(e);
             
         }
-        return mymodel;
-        
-         } 
+       return jsonarray.toString(); 
+    }
+    
     
     public static DefaultTableModel getAcctBrowseUtil( String str, int state, String myfield) {
         
+        String jsonString = null;
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
-            list.add(new String[]{"id", "getAcctBrowseUtil"});
+            list.add(new String[]{"id", "getAcctBrowseUtilData"});
             list.add(new String[]{"param1", str});
             list.add(new String[]{"param2", String.valueOf(state)});
             list.add(new String[]{"param3", myfield});
             try {
-                return jsonToDefaultTableModel(sendServerPost(list, "", null, "dataServDT")); 
+                jsonString = sendServerPost(list, "", null, "dataServDT"); 
             } catch (IOException ex) {
                 bslog(ex);
-                return null;
             }
-        }
+        } else {
+            jsonString = getAcctBrowseUtilData(str, state, myfield);
+        }        
+       
+        Object[][] data = jsonToData(jsonString);
         
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                       new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("code"), getGlobalColumnTag("description"), getGlobalColumnTag("type"), getGlobalColumnTag("currency")})
                 {
                       @Override  
                       public Class getColumnClass(int col) {
-                          return String.class;
-                   //     if (col == 0)        
-                   //         return ImageIcon.class;  
-                   //     else return String.class;  //other columns accept String values  
+                    //      return String.class;
+                        if (col == 0)        
+                            return ImageIcon.class;  
+                        else return String.class;  //other columns accept String values  
                       }   
                         }; 
-              
+        
+        for (Object[] rowData : data) {
+        mymodel.addRow(rowData);
+        }
+        
+        return mymodel;
+        
+        } 
+    
+    public static String getAcctBrowseUtilData(String str, int state, String myfield) {
+        JSONArray jsonarray = new JSONArray();
         try {
             
             Connection con = null;
@@ -1162,6 +1358,7 @@ public class DTData {
             }
             Statement st = con.createStatement();
             ResultSet res = null;
+            
             try{
                 if (state == 1) { // begins
                     res = st.executeQuery("SELECT ac_id, ac_desc, ac_type, ac_cur  " +
@@ -1176,14 +1373,17 @@ public class DTData {
                  if (state == 0) { // match
                  res = st.executeQuery("SELECT ac_id, ac_desc, ac_type, ac_cur   " +
                         " FROM  ac_mstr where " + myfield + " like " + "'%" + str + "%'" +
-                        " order by ac_id limit 2 ;");
+                        " order by ac_id;");
                  }
+                 
                     while (res.next()) {
-                        mymodel.addRow(new Object[] {"select", res.getString("ac_id"),
-                                   res.getString("ac_desc"),
-                                   res.getString("ac_type"),
-                                   res.getString("ac_cur")
-                        });
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select"); // BlueSeerUtils.clickflag
+                        rowArray.put(res.getString("ac_id"));
+                        rowArray.put(res.getString("ac_desc"));
+                        rowArray.put(res.getString("ac_type"));
+                        rowArray.put(res.getString("ac_cur"));
+                        jsonarray.put(rowArray);
                     }
            }
             catch (SQLException s){
@@ -1191,16 +1391,289 @@ public class DTData {
              } finally {
                if (res != null) res.close();
                if (st != null) st.close();
-               if (con != null) con.close();
+               con.close();
             }
         }
         catch (Exception e){
             MainFrame.bslog(e);
             
         }
+       return jsonarray.toString(); 
+    }
+    
+    public static DefaultTableModel getBankBrowseUtil( String str, int state, String myfield) {
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getBankBrowseUtilData"});
+            list.add(new String[]{"param1", str});
+            list.add(new String[]{"param2", String.valueOf(state)});
+            list.add(new String[]{"param3", myfield});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServDT"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = getBankBrowseUtilData(str, state, myfield);
+        }        
+       
+        Object[][] data = jsonToData(jsonString);
+        javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+                      new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("code"), getGlobalColumnTag("description"), getGlobalColumnTag("account"), getGlobalColumnTag("currency"), getGlobalColumnTag("active")})
+                {
+                      @Override  
+                      public Class getColumnClass(int col) {  
+                        if (col == 0)       
+                            return ImageIcon.class;  
+                        else return String.class;  //other columns accept String values  
+                      }  
+                        }; 
+        for (Object[] rowData : data) {
+        mymodel.addRow(rowData);
+        }
         return mymodel;
         
          } 
+    
+    public static String getBankBrowseUtilData(String str, int state, String myfield) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                if (state == 1) { // begins
+                    res = st.executeQuery(" SELECT bk_id, bk_desc, bk_acct, bk_cur, bk_active " +
+                        " FROM  bk_mstr where " + myfield + " like " + "'" + str + "%'" +
+                        " order by bk_id ;");
+                }
+                if (state == 2) { // ends
+                    res = st.executeQuery(" SELECT bk_id, bk_desc, bk_acct, bk_cur, bk_active " +
+                        " FROM  bk_mstr where " + myfield + " like " + "'%" + str + "'" +
+                        " order by bk_id ;");
+                }
+                 if (state == 0) { // match
+                 res = st.executeQuery(" SELECT bk_id, bk_desc, bk_acct, bk_cur, bk_active  " +
+                        " FROM  bk_mstr where " + myfield + " like " + "'%" + str + "%'" +
+                        " order by bk_id ;");
+                 }
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(BlueSeerUtils.clickflag);
+                        rowArray.put(res.getString("bk_id"));
+                        rowArray.put(res.getString("bk_desc"));
+                        rowArray.put(res.getString("bk_acct"));
+                        rowArray.put(res.getString("bk_cur"));
+                        rowArray.put(res.getString("bk_active"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    public static DefaultTableModel getDeptCCBrowseUtil( String str, int state, String myfield) {
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getDeptCCBrowseUtilData"});
+            list.add(new String[]{"param1", str});
+            list.add(new String[]{"param2", String.valueOf(state)});
+            list.add(new String[]{"param3", myfield});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServDT"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = getDeptCCBrowseUtilData(str, state, myfield);
+        }        
+       
+        Object[][] data = jsonToData(jsonString);
+        javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+                      new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("dept"), getGlobalColumnTag("description"), "LaborAcct", "BurdenAccount", "COPAccount"})
+                {
+                      @Override  
+                      public Class getColumnClass(int col) {  
+                        if (col == 0)       
+                            return ImageIcon.class;  
+                        else return String.class;  //other columns accept String values  
+                      }  
+                        }; 
+              
+        for (Object[] rowData : data) {
+        mymodel.addRow(rowData);
+        }
+        return mymodel;
+        
+         } 
+    
+    public static String getDeptCCBrowseUtilData(String str, int state, String myfield) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                if (state == 1) { // begins
+                    res = st.executeQuery(" SELECT dept_id, dept_desc, dept_lbr_acct, dept_bdn_acct, dept_cop_acct " +
+                        " FROM  dept_mstr where " + myfield + " like " + "'" + str + "%'" +
+                        " order by dept_id ;");
+                }
+                if (state == 2) { // ends
+                    res = st.executeQuery(" SELECT dept_id, dept_desc, dept_lbr_acct, dept_bdn_acct, dept_cop_acct " +
+                        " FROM  dept_mstr where " + myfield + " like " + "'%" + str + "'" +
+                        " order by dept_id ;");
+                }
+                 if (state == 0) { // match
+                 res = st.executeQuery(" SELECT dept_id, dept_desc, dept_lbr_acct, dept_bdn_acct, dept_cop_acct  " +
+                        " FROM  dept_mstr where " + myfield + " like " + "'%" + str + "%'" +
+                        " order by dept_id ;");
+                 }
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(BlueSeerUtils.clickflag);
+                        rowArray.put(res.getString("dept_id"));
+                        rowArray.put(res.getString("dept_desc"));
+                        rowArray.put(res.getString("dept_lbr_acct"));
+                        rowArray.put(res.getString("dept_bdn_acct"));
+                        rowArray.put(res.getString("dept_cop_acct"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    public static DefaultTableModel getCurrencyBrowseUtil( String str, int state, String myfield) {
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getCurrencyBrowseUtilData"});
+            list.add(new String[]{"param1", str});
+            list.add(new String[]{"param2", String.valueOf(state)});
+            list.add(new String[]{"param3", myfield});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServDT"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = getCurrencyBrowseUtilData(str, state, myfield);
+        }
+        Object[][] data = jsonToData(jsonString);
+        javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+                      new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("id"), getGlobalColumnTag("description")})
+                {
+                      @Override  
+                      public Class getColumnClass(int col) {  
+                        if (col == 0)       
+                            return ImageIcon.class;  
+                        else return String.class;  //other columns accept String values  
+                      }  
+                        }; 
+              
+       
+        for (Object[] rowData : data) {
+        mymodel.addRow(rowData);
+        }
+        
+        return mymodel;
+        
+        } 
+    
+    public static String getCurrencyBrowseUtilData(String str, int state, String myfield) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                if (state == 1) { // begins
+                    res = st.executeQuery(" SELECT cur_id, cur_desc " +
+                        " FROM  cur_mstr where " + myfield + " like " + "'" + str + "%'" +
+                        " order by cur_id ;");
+                }
+                if (state == 2) { // ends
+                    res = st.executeQuery("  SELECT cur_id, cur_desc  " +
+                        " FROM  cur_mstr  where " + myfield + " like " + "'%" + str + "'" +
+                        " order by cur_id ;");
+                }
+                 if (state == 0) { // match
+                 res = st.executeQuery("  SELECT cur_id, cur_desc    " +
+                        " FROM  cur_mstr  where " + myfield + " like " + "'%" + str + "%'" +
+                        " order by cur_id ;");
+                 }
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(BlueSeerUtils.clickflag);
+                        rowArray.put(res.getString("cur_id"));
+                        rowArray.put(res.getString("cur_desc"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+     
     
     public static DefaultTableModel getCronBrowseUtil( String str, int state, String myfield) {
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -2369,78 +2842,7 @@ public class DTData {
         
          }     
       
-    public static DefaultTableModel getCurrencyBrowseUtil( String str, int state, String myfield) {
-        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
-            ArrayList<String[]> list = new ArrayList<String[]>();
-            list.add(new String[]{"id", "getCurrencyBrowseUtil"});
-            list.add(new String[]{"param1", str});
-            list.add(new String[]{"param2", String.valueOf(state)});
-            list.add(new String[]{"param3", myfield});
-            try {
-                return jsonToDefaultTableModel(sendServerPost(list, "", null, "dataServDT")); 
-            } catch (IOException ex) {
-                bslog(ex);
-                return null;
-            }
-        }
-        javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
-                      new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("id"), getGlobalColumnTag("description")})
-                {
-                      @Override  
-                      public Class getColumnClass(int col) {  
-                        if (col == 0)       
-                            return ImageIcon.class;  
-                        else return String.class;  //other columns accept String values  
-                      }  
-                        }; 
-              
-        try{
-            
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-                if (state == 1) { // begins
-                    res = st.executeQuery(" SELECT cur_id, cur_desc " +
-                        " FROM  cur_mstr where " + myfield + " like " + "'" + str + "%'" +
-                        " order by cur_id ;");
-                }
-                if (state == 2) { // ends
-                    res = st.executeQuery("  SELECT cur_id, cur_desc  " +
-                        " FROM  cur_mstr  where " + myfield + " like " + "'%" + str + "'" +
-                        " order by cur_id ;");
-                }
-                 if (state == 0) { // match
-                 res = st.executeQuery("  SELECT cur_id, cur_desc    " +
-                        " FROM  cur_mstr  where " + myfield + " like " + "'%" + str + "%'" +
-                        " order by cur_id ;");
-                 }
-                    while (res.next()) {
-                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("cur_id"),
-                                   res.getString("cur_desc")
-                        });
-                    }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-           } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
-            }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
-        return mymodel;
-        
-         }     
+       
     
     public static DefaultTableModel getExchangeBrowseUtil( String str, int state, String myfield) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
@@ -5581,81 +5983,6 @@ public class DTData {
         
          } 
           
-    public static DefaultTableModel getBankBrowseUtil( String str, int state, String myfield) {
-        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
-            ArrayList<String[]> list = new ArrayList<String[]>();
-            list.add(new String[]{"id", "getBankBrowseUtil"});
-            list.add(new String[]{"param1", str});
-            list.add(new String[]{"param2", String.valueOf(state)});
-            list.add(new String[]{"param3", myfield});
-            try {
-                return jsonToDefaultTableModel(sendServerPost(list, "", null, "dataServDT")); 
-            } catch (IOException ex) {
-                bslog(ex);
-                return null;
-            }
-        }
-        javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
-                      new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("code"), getGlobalColumnTag("description"), getGlobalColumnTag("account"), getGlobalColumnTag("currency"), getGlobalColumnTag("active")})
-                {
-                      @Override  
-                      public Class getColumnClass(int col) {  
-                        if (col == 0)       
-                            return ImageIcon.class;  
-                        else return String.class;  //other columns accept String values  
-                      }  
-                        }; 
-              
-      try{
-            
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-                if (state == 1) { // begins
-                    res = st.executeQuery(" SELECT bk_id, bk_desc, bk_acct, bk_cur, bk_active " +
-                        " FROM  bk_mstr where " + myfield + " like " + "'" + str + "%'" +
-                        " order by bk_id ;");
-                }
-                if (state == 2) { // ends
-                    res = st.executeQuery(" SELECT bk_id, bk_desc, bk_acct, bk_cur, bk_active " +
-                        " FROM  bk_mstr where " + myfield + " like " + "'%" + str + "'" +
-                        " order by bk_id ;");
-                }
-                 if (state == 0) { // match
-                 res = st.executeQuery(" SELECT bk_id, bk_desc, bk_acct, bk_cur, bk_active  " +
-                        " FROM  bk_mstr where " + myfield + " like " + "'%" + str + "%'" +
-                        " order by bk_id ;");
-                 }
-                    while (res.next()) {
-                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("bk_id"),
-                                   res.getString("bk_desc"),
-                                   res.getString("bk_acct"),
-                                   res.getString("bk_cur"),
-                                   res.getString("bk_active")
-                        });
-                    }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-             } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
-            }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
-        return mymodel;
-        
-         } 
      
     public static DefaultTableModel getQuoteBrowseUtil( String str, int state, String myfield) {
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -6095,81 +6422,6 @@ public class DTData {
         
          } 
             
-    public static DefaultTableModel getDeptCCBrowseUtil( String str, int state, String myfield) {
-        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
-            ArrayList<String[]> list = new ArrayList<String[]>();
-            list.add(new String[]{"id", "getDeptCCBrowseUtil"});
-            list.add(new String[]{"param1", str});
-            list.add(new String[]{"param2", String.valueOf(state)});
-            list.add(new String[]{"param3", myfield});
-            try {
-                return jsonToDefaultTableModel(sendServerPost(list, "", null, "dataServDT")); 
-            } catch (IOException ex) {
-                bslog(ex);
-                return null;
-            }
-        }
-        javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
-                      new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("dept"), getGlobalColumnTag("description"), "LaborAcct", "BurdenAccount", "COPAccount"})
-                {
-                      @Override  
-                      public Class getColumnClass(int col) {  
-                        if (col == 0)       
-                            return ImageIcon.class;  
-                        else return String.class;  //other columns accept String values  
-                      }  
-                        }; 
-              
-      try{
-            
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-                if (state == 1) { // begins
-                    res = st.executeQuery(" SELECT dept_id, dept_desc, dept_lbr_acct, dept_bdn_acct, dept_cop_acct " +
-                        " FROM  dept_mstr where " + myfield + " like " + "'" + str + "%'" +
-                        " order by dept_id ;");
-                }
-                if (state == 2) { // ends
-                    res = st.executeQuery(" SELECT dept_id, dept_desc, dept_lbr_acct, dept_bdn_acct, dept_cop_acct " +
-                        " FROM  dept_mstr where " + myfield + " like " + "'%" + str + "'" +
-                        " order by dept_id ;");
-                }
-                 if (state == 0) { // match
-                 res = st.executeQuery(" SELECT dept_id, dept_desc, dept_lbr_acct, dept_bdn_acct, dept_cop_acct  " +
-                        " FROM  dept_mstr where " + myfield + " like " + "'%" + str + "%'" +
-                        " order by dept_id ;");
-                 }
-                    while (res.next()) {
-                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, res.getString("dept_id"),
-                                   res.getString("dept_desc"),
-                                   res.getString("dept_lbr_acct"),
-                                   res.getString("dept_bdn_acct"),
-                                   res.getString("dept_cop_acct")
-                        });
-                    }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
-            }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
-        return mymodel;
-        
-         } 
             
     public static DefaultTableModel getCalendarBrowseUtil( String str, int state, String myfield) {
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},

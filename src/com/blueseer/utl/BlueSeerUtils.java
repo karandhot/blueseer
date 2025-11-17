@@ -3220,6 +3220,7 @@ public class BlueSeerUtils {
     
     }
     
+    
     public static String HashMapStringIntegerToJson(Map<String,Integer> list) {
         ObjectMapper objectMapper = new ObjectMapper();
         String x = "";
@@ -3254,6 +3255,33 @@ public class BlueSeerUtils {
         return x;
     }
 
+    public static Object[][] jsonToData(String jsonString) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Object[][] rawData = null;
+        try {
+            rawData = objectMapper.readValue(jsonString, Object[][].class);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        Object[][] data = new Object[rawData.length][rawData[0].length];
+        for (int i = 0; i < rawData.length; i++) {
+            for (int j = 0; j < rawData[i].length; j++) {
+                if (rawData[i][j].equals("select")) { // Assuming the first column is for ImageIcons.
+                    data[i][j] = BlueSeerUtils.clickflag;
+                } else if (rawData[i][j].equals("detail")) {
+                    data[i][j] = BlueSeerUtils.clickbasket;
+                } else if (rawData[i][j].equals("print")) {
+                    data[i][j] = BlueSeerUtils.clickprint; 
+                } else if (rawData[i][j].equals("mail")) {
+                    data[i][j] = BlueSeerUtils.clickmail;     
+                } else {
+                    data[i][j] = rawData[i][j];
+                }
+            }
+        }
+        
+        return data;
+    }
     
     public static String[] jsonToStringArray(String jsonstring) {
         ObjectMapper objectMapper = new ObjectMapper();
