@@ -1468,7 +1468,7 @@ public class DTData {
                  
                     while (res.next()) {
                         JSONArray rowArray = new JSONArray(); 
-                        rowArray.put(BlueSeerUtils.clickflag);
+                        rowArray.put("select");
                         rowArray.put(res.getString("bk_id"));
                         rowArray.put(res.getString("bk_desc"));
                         rowArray.put(res.getString("bk_acct"));
@@ -1560,7 +1560,7 @@ public class DTData {
                  
                     while (res.next()) {
                         JSONArray rowArray = new JSONArray(); 
-                        rowArray.put(BlueSeerUtils.clickflag);
+                        rowArray.put("select");
                         rowArray.put(res.getString("dept_id"));
                         rowArray.put(res.getString("dept_desc"));
                         rowArray.put(res.getString("dept_lbr_acct"));
@@ -1653,7 +1653,7 @@ public class DTData {
                  
                     while (res.next()) {
                         JSONArray rowArray = new JSONArray(); 
-                        rowArray.put(BlueSeerUtils.clickflag);
+                        rowArray.put("select");
                         rowArray.put(res.getString("cur_id"));
                         rowArray.put(res.getString("cur_desc"));
                         jsonarray.put(rowArray);
