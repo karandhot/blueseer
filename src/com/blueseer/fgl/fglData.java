@@ -416,6 +416,22 @@ public class fglData {
     public static BankMstr getBankMstr(String[] x) {
         BankMstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getBankMstr"});
+            list.add(new String[]{"key",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServFIN");
+                r = objectMapper.readValue(returnstring, BankMstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new BankMstr(m);
+                return r;
+            }
+        }
         String sql = "select * from bk_mstr where bk_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -508,6 +524,22 @@ public class fglData {
     public static CurrMstr getCurrMstr(String[] x) {
         CurrMstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getCurrMstr"});
+            list.add(new String[]{"key",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServFIN");
+                r = objectMapper.readValue(returnstring, CurrMstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new CurrMstr(m);
+                return r;
+            }
+        }
         String sql = "select * from cur_mstr where cur_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -810,6 +842,22 @@ public class fglData {
     public static dept_mstr getDeptMstr(String[] x) {
         dept_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getDeptMstr"});
+            list.add(new String[]{"key",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServFIN");
+                r = objectMapper.readValue(returnstring, dept_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new dept_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from dept_mstr where dept_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {

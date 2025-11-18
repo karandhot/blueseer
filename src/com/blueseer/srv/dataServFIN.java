@@ -51,6 +51,7 @@ import static com.blueseer.edi.apiUtils.getPublicKeyAsPEM;
 import static com.blueseer.edi.apiUtils.hashdigest;
 import static com.blueseer.edi.apiUtils.postAS2;
 import static com.blueseer.edi.apiUtils.runAPIPost;
+import com.blueseer.fgl.fglData;
 import com.blueseer.fgl.fglData.AcctMstr;
 import static com.blueseer.fgl.fglData.addAcctMstr;
 import static com.blueseer.fgl.fglData.deleteAcctMstr;
@@ -58,6 +59,9 @@ import com.blueseer.fgl.fglData.exc_mstr;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import static com.blueseer.fgl.fglData.getAcctMstr;
+import static com.blueseer.fgl.fglData.getBankMstr;
+import static com.blueseer.fgl.fglData.getCurrMstr;
+import static com.blueseer.fgl.fglData.getDeptMstr;
 import static com.blueseer.fgl.fglData.getExcMstr;
 import static com.blueseer.fgl.fglData.getFINInit;
 import static com.blueseer.fgl.fglData.updateAcctMstr;
@@ -273,6 +277,30 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     if (id.equals("getAcctMstr")) { 
       String[] key = new String[]{request.getHeader("key")}; 
       AcctMstr am = getAcctMstr(key);
+      ObjectMapper objectMapper = new ObjectMapper();
+      String r = objectMapper.writeValueAsString(am);
+      response.getWriter().print(r);
+    }
+    
+    if (id.equals("getDeptMstr")) { 
+      String[] key = new String[]{request.getHeader("key")}; 
+      fglData.dept_mstr am = getDeptMstr(key);
+      ObjectMapper objectMapper = new ObjectMapper();
+      String r = objectMapper.writeValueAsString(am);
+      response.getWriter().print(r);
+    }
+    
+    if (id.equals("getBankMstr")) { 
+      String[] key = new String[]{request.getHeader("key")}; 
+      fglData.BankMstr am = getBankMstr(key);
+      ObjectMapper objectMapper = new ObjectMapper();
+      String r = objectMapper.writeValueAsString(am);
+      response.getWriter().print(r);
+    }
+    
+    if (id.equals("getCurrMstr")) { 
+      String[] key = new String[]{request.getHeader("key")}; 
+      fglData.CurrMstr am = getCurrMstr(key);
       ObjectMapper objectMapper = new ObjectMapper();
       String r = objectMapper.writeValueAsString(am);
       response.getWriter().print(r);
