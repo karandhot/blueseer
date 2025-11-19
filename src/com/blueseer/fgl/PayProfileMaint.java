@@ -278,7 +278,7 @@ public class PayProfileMaint extends javax.swing.JPanel {
         lual = new ActionListener() {
         public void actionPerformed(ActionEvent event) {
         if (lurb1.isSelected()) {  
-         luModel = DTData.getPayProfileBrowseUtil(luinput.getText(),0, "payp_code");
+         luModel = DTData.getPayProfileBrowseUtil(luinput.getText(),0, "payp_code"); 
         } else {
          luModel = DTData.getPayProfileBrowseUtil(luinput.getText(),0, "payp_desc");   
         }
