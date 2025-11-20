@@ -3258,6 +3258,9 @@ public class BlueSeerUtils {
     public static Object[][] jsonToData(String jsonString) {
         ObjectMapper objectMapper = new ObjectMapper();
         Object[][] rawData = null;
+        if (jsonString == null || jsonString.isBlank() || jsonString.equals("[]")) {
+            return new Object[0][0];
+        }
         try {
             rawData = objectMapper.readValue(jsonString, Object[][].class);
         } catch (JsonProcessingException ex) {

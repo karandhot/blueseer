@@ -1022,7 +1022,7 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
         } else if (lurb2.isSelected()) {
          luModel = DTData.getItemDescBrowseBySite(luinput.getText(), "it_desc", ddsite.getSelectedItem().toString(), classtype);
         } else {
-         luModel = DTData.getVendXrefBrowseUtil(luinput.getText(), 0, "vdp_vitem", ddvend.getSelectedItem().toString());   
+         luModel = DTData.getVendXrefBrowseUtil2(luinput.getText(), 0, "vdp_vitem", ddvend.getSelectedItem().toString());   
         }
         luTable.setModel(luModel);
         luTable.getColumnModel().getColumn(0).setMaxWidth(50);
