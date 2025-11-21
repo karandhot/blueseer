@@ -2716,7 +2716,7 @@ public class ediData {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id", "getEDIInit"});
             list.add(new String[]{"param1", panelClassName});
-            list.add(new String[]{"param1", userid});
+            list.add(new String[]{"param2", userid});
             try {
                 return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServEDI"));
             } catch (IOException ex) {
