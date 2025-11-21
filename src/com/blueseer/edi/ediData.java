@@ -2842,6 +2842,7 @@ public class ediData {
     
     public static String getDocViewData(String tradeid, String indoc, String outdoc, String ref, String site, String fromdate, String todate) {
         JSONArray jsonarray = new JSONArray();
+        System.out.println("HERE:  entering getDocViewData: " + tradeid + "/" + indoc + "/" + outdoc + "/" + ref + "/" + site + "/" + fromdate + "/" + todate );
         try {
             
             Connection con = null;
@@ -2955,6 +2956,7 @@ public class ediData {
             MainFrame.bslog(e);
             
         }
+        System.out.println("HERE:  " + jsonarray.toString());
        return jsonarray.toString(); 
     }
     
