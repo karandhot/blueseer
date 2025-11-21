@@ -49,7 +49,9 @@ import static com.blueseer.utl.BlueSeerUtils.ConvertStringToBool;
 import static com.blueseer.utl.BlueSeerUtils.bsret;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.parseFileName;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.EDData;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.getSMTPCredentials;
@@ -86,12 +88,14 @@ import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.mail.Session;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.mail.smime.SMIMEException;
 import org.bouncycastle.openpgp.PGPException;
+import org.json.JSONArray;
 
 /**
  *
@@ -2706,6 +2710,255 @@ public class ediData {
     
     
     //misc
+    public static ArrayList<String[]> getEDIInit(String panelClassName, String userid) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getEDIInit"});
+            list.add(new String[]{"param1", panelClassName});
+            list.add(new String[]{"param1", userid});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        
+        String[] sites = null;
+        boolean allsites = false;
+        ArrayList<String[]> lines = new ArrayList<String[]>();
+        try{
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+        // allocate, custitemonly, site, currency, sites, currencies, uoms, 
+        // states, warehouses, locations, customers, taxcodes, carriers, statuses   
+                    
+            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + userid + "'" + ";");
+            while (res.next()) {
+              if (res.getString("user_allowedsites").equals("*")) {
+                  allsites = true;
+              } else {
+                  sites = res.getString("user_allowedsites").split(",");
+              }
+            }
+            
+            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + userid + "'" + 
+                    " AND menu_panel = " + "'" + panelClassName + "'" +
+                    ";");
+           while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "canupdate";
+               s[1] = "0";
+               if (res.getString("perm_readonly").equals("0")) {
+                 s[1] = "1";
+               }
+               
+               lines.add(s);
+           }
+             
+            res = st.executeQuery("select site_site from site_mstr;");
+            while (res.next()) {
+               if (allsites || Arrays.stream(sites).anyMatch(res.getString("site_site")::equals)) {
+                 String[] s = new String[2];
+                 s[0] = "sites";
+                 s[1] = res.getString("site_site");
+                 lines.add(s);
+               }
+            }
+            
+            res = st.executeQuery("select ov_site, ov_currency from ov_mstr;" );
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "currency";
+               s[1] = res.getString("ov_currency");
+               lines.add(s);
+               s = new String[2];
+               s[0] = "site";
+               s[1] = res.getString("ov_site");
+               lines.add(s);
+            }
+            
+             res = st.executeQuery("select edpd_alias from edpd_partner order by edpd_alias; ");
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "aliases";
+               s[1] = res.getString("edpd_alias");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select code_key from code_mstr where code_code = 'edidoctype' order by code_key ;");
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "doctypes";
+               s[1] = res.getString("code_key");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select edic_indir, edic_outdir, edic_inarch, edic_outarch, edic_batch, edic_errordir, edic_mapdir from edi_ctrl ;");
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "directories";
+               s[1] = res.getString("edic_indir") + "," + 
+                       res.getString("edic_outdir") + ","  + 
+                       res.getString("edic_inarch") + "," +
+                       res.getString("edic_outarch") + "," +
+                       res.getString("edic_batch") + "," +
+                       res.getString("edic_errordir") + "," +
+                       res.getString("edic_mapdir");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select eds_bsdoc, eds_doc from edi_stds " +
+                        " order by eds_bsdoc; ");
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "stds";
+               s[1] = res.getString("eds_bsdoc") + "," + res.getString("eds_doc");
+               lines.add(s);
+            }
+            
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+        return lines;
+    }
+    
+    public static String getDocViewData(String tradeid, String indoc, String outdoc, String ref, String site, String fromdate, String todate) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                if (! tradeid.isEmpty() && indoc.isEmpty() ) {
+                    res = st.executeQuery("SELECT edx_id, edx_comkey, edx_indoctype, edx_outdoctype, " +
+                    " edx_sender, edx_receiver, edx_infiletype, edx_inbatch, edx_outbatch, edx_ref, edx_ts, edx_ack, edx_status, edx_outfiletype,  " +
+                    " coalesce(elg_severity,'success') as detstatus " +
+                    " FROM edi_idx  " +
+                    " left outer join edi_log on elg_comkey = edx_comkey and elg_severity = 'error' " +
+                    " where edx_sender >= " + "'" + tradeid + "'" +
+                    " AND edx_sender <= " + "'" + tradeid + "'" +
+                    " AND edx_site = " + "'" + site + "'" +        
+                    " AND edx_ts >= " + "'" + fromdate + " 00:00:00" + "'" +
+                    " AND edx_ts <= " + "'" + todate  + " 23:59:59" + "'" + " order by edx_id desc ;" ) ;
+                    }
+                if (! indoc.isEmpty() && tradeid.isEmpty()) {
+                    res = st.executeQuery("SELECT edx_id, edx_comkey, edx_indoctype, edx_outdoctype, " +
+                    " edx_sender, edx_receiver, edx_infiletype, edx_inbatch, edx_outbatch, edx_ref, edx_ts, edx_ack, edx_status, edx_outfiletype,  " +
+                    " coalesce(elg_severity,'success') as detstatus " +
+                    " FROM edi_idx  " +
+                    " left outer join edi_log on elg_comkey = edx_comkey and elg_severity = 'error' " +
+                    " where " +
+                    " edx_indoctype >= " + "'" + indoc + "'" +
+                    " AND edx_indoctype <= " + "'" + indoc + "'" +    
+                    " AND edx_site = " + "'" + site + "'" +         
+                    " AND edx_ts >= " + "'" + fromdate + " 00:00:00" + "'" +
+                    " AND edx_ts <= " + "'" + todate  + " 23:59:59" + "'" + " order by edx_id desc ;" ) ;
+                    }
+                 if (! indoc.isEmpty() && ! tradeid.isEmpty()) {
+                    res = st.executeQuery("SELECT edx_id, edx_comkey, edx_indoctype, edx_outdoctype, " +
+                    " edx_sender, edx_receiver, edx_infiletype, edx_inbatch, edx_outbatch, edx_ref, edx_ts, edx_ack, edx_status, edx_outfiletype,  " +
+                    " coalesce(elg_severity,'success') as detstatus " +
+                    " FROM edi_idx  " +
+                    " left outer join edi_log on elg_comkey = edx_comkey and elg_severity = 'error' " +
+                    " where edx_sender >= " + "'" + tradeid + "'" +
+                    " AND edx_sender <= " + "'" + tradeid + "'" +
+                    " AND edx_indoctype >= " + "'" + indoc + "'" +
+                    " AND edx_indoctype <= " + "'" + indoc + "'" +    
+                    " AND edx_site = " + "'" + site + "'" +         
+                    " AND edx_ts >= " + "'" + fromdate + " 00:00:00" + "'" +
+                    " AND edx_ts <= " + "'" + todate  + " 23:59:59" + "'" + " order by edx_id desc ;" ) ;
+                    }
+                 if (tradeid.isEmpty() && indoc.isEmpty()) {
+                    res = st.executeQuery("SELECT edx_id, edx_comkey, edx_indoctype, edx_outdoctype, " +
+                    " edx_sender, edx_receiver, edx_infiletype, edx_inbatch, edx_outbatch, edx_ref, edx_ts, edx_ack, edx_status, edx_outfiletype,  " +
+                    " (select elg_severity from edi_log where elg_idxnbr = edx_id and elg_comkey = edx_comkey order by elg_id desc limit 1) as detstatus " +
+                    " FROM edi_idx  " +
+                   // " left outer join edi_log on elg_comkey = edx_comkey and elg_severity = 'error' " +
+                    " where edx_ts >= " + "'" + fromdate + " 00:00:00" + "'" +
+                    " AND edx_ts <= " + "'" + todate  + " 23:59:59" + "'" + 
+                    " AND edx_site = " + "'" + site + "'" + 
+                    " order by edx_id desc ;" ) ;
+                    }
+                 if (! ref.isEmpty()) {
+                    res = st.executeQuery("SELECT edx_id, edx_comkey, edx_indoctype, edx_outdoctype, " +
+                    " edx_sender, edx_receiver, edx_infiletype, edx_inbatch, edx_outbatch, edx_ref, edx_ts, edx_ack, edx_status, edx_outfiletype,  " +
+                    " coalesce(elg_severity,'success') as detstatus " +
+                    " FROM edi_idx  " +
+                    " left outer join edi_log on elg_comkey = edx_comkey and elg_severity = 'error' " +
+                    " where edx_ref like " + "'%" + ref + "%'" +
+                    " AND edx_site = " + "'" + site + "'" +         
+                    " order by edx_id desc ;" ) ;
+                    }
+                    
+                 
+                    while (res.next()) {
+                        
+                        if (! outdoc.isBlank() && ! res.getString("edx_outdoctype").equals(outdoc)) {
+                        continue;
+                    }
+                        
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("edx_id"));
+                        rowArray.put(res.getString("edx_comkey"));
+                        rowArray.put(res.getString("edx_sender"));
+                        rowArray.put(res.getString("edx_receiver"));
+                        rowArray.put(res.getString("edx_ts"));
+                        rowArray.put(res.getString("edx_infiletype"));
+                        rowArray.put(res.getString("edx_indoctype"));
+                        rowArray.put(res.getString("edx_inbatch"));
+                        rowArray.put(res.getString("edx_ref"));
+                        rowArray.put(res.getString("edx_outfiletype"));
+                        rowArray.put(res.getString("edx_outdoctype"));
+                        rowArray.put(res.getString("edx_outbatch"));
+                        rowArray.put("inview");
+                        rowArray.put("outview");
+                        rowArray.put(res.getString("detstatus"));
+                        rowArray.put(res.getString("edx_ack"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    
     public static boolean addUpdateEDIMeta(String id, String type, String key, String value) {
         boolean x = false;
         try {

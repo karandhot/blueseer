@@ -39,6 +39,8 @@ import com.blueseer.edi.EDI;
 import static com.blueseer.edi.EDI.escapeDelimiter;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.OVData.getSMTPCredentials;
 import static com.blueseer.utl.OVData.sendEmail;
@@ -2942,49 +2944,8 @@ public class EDData {
     }
     
     
-    public static List<String> readEDIRawFileIntoArrayList(Path filepath)  {
-       ArrayList<String> segments = new ArrayList<String>();
-       try {
-           if (OVData.getSystemFileServerType().toString().equals("S")) {  // if Samba type
-               NtlmPasswordAuthentication auth = NtlmPasswordAuthentication.ANONYMOUS;
-               SmbFile smbfile;
-
-                   smbfile = new SmbFile(filepath.toString(), auth);
-
-                   if (! smbfile.exists()) {
-                     return segments;
-                   }
-               BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(new SmbFileInputStream(smbfile))));
-               char[] cbuf = new char[(int) smbfile.length()];
-               reader.read(cbuf,0,cbuf.length); 
-               reader.close();
-               segments = EDData.parseFile(cbuf, smbfile.getName());
-           } else {
-
-               File file = filepath.toFile();
-                   if (! file.exists()) {
-                     return segments;
-                   }
-
-               BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(new FileInputStream(file))));
-               char[] cbuf = new char[(int) file.length()];
-               reader.read(cbuf,0,cbuf.length); 
-               reader.close();
-               segments = EDData.parseFile(cbuf, file.getName());
-           }
-       } catch (MalformedURLException ex) {
-            bslog(ex);
-           } catch (SmbException ex) {
-            bslog(ex);
-        } catch (UnknownHostException ex) {
-            bslog(ex);
-        } catch (IOException ex) {
-            bslog(ex);
-        }
-       return segments;
-    }
         
-    public static ArrayList readEDIRawFileIntoArrayList(String filename, String dir) throws MalformedURLException, SmbException, UnknownHostException, IOException {
+    public static ArrayList<String> readEDIRawFileIntoArrayList(String filename, String dir) throws MalformedURLException, SmbException, UnknownHostException, IOException {
        ArrayList<String> segments = new ArrayList<String>();
        String path = "";
        
@@ -3021,15 +2982,31 @@ public class EDData {
        return segments;
     }
        
-    public static ArrayList readEDIRawFileByDoc(String filename, String dir, boolean wholefile, String beg, String end, String seg) throws MalformedURLException, SmbException, UnknownHostException, IOException {
+    public static ArrayList<String> readEDIRawFile(String filename, String dir, boolean wholefile, String beg, String end, String seg) throws MalformedURLException, SmbException, UnknownHostException, IOException {
        ArrayList<String> segments = new ArrayList<String>();
-       String path = "";
-        
-        
-         path =  dir + "/" + filename; 
+       
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "readEDIRawFile"});
+            list.add(new String[]{"param1", filename});
+            list.add(new String[]{"param2", dir});
+            list.add(new String[]{"param3", BlueSeerUtils.boolToString(wholefile)});
+            list.add(new String[]{"param4", beg});
+            list.add(new String[]{"param5", end});
+            list.add(new String[]{"param6", seg});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+       
+       
+       String path = dir + "/" + filename; 
       
        
-       if (OVData.getSystemFileServerType().toString().equals("S")) {  // if Samba type
+       if (OVData.getSystemFileServerType().equals("S")) {  // if Samba type
            NtlmPasswordAuthentication auth = NtlmPasswordAuthentication.ANONYMOUS;
            SmbFile smbfile = new SmbFile(path, auth);
                if (! smbfile.exists()) {
@@ -3091,42 +3068,6 @@ public class EDData {
        //    reader.read(cbuf,0,cbuf.length); 
        //    reader.close();
        //    segments = OVData.parseFile(cbuf, file.getName());
-       }
-       return segments;
-    }
-             
-    public static ArrayList readEDIRawFileLiveDirIntoArrayList(String filename, String dir) throws MalformedURLException, SmbException, UnknownHostException, IOException {
-       ArrayList<String> segments = new ArrayList<String>();
-       String path = "";
-       if (dir.equals("In")) {
-         path =  cleanDirString(EDData.getEDIInDir()) + filename; 
-       } else {
-         path =  cleanDirString(EDData.getEDIOutDir()) + filename;   
-       }
-       
-       if (OVData.getSystemFileServerType().toString().equals("S")) {  // if Samba type
-           NtlmPasswordAuthentication auth = NtlmPasswordAuthentication.ANONYMOUS;
-           SmbFile smbfile = new SmbFile(path, auth);
-               if (! smbfile.exists()) {
-                 bsmf.MainFrame.show("File is unavailable");
-                 return segments;
-               }
-           BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(new SmbFileInputStream(smbfile))));
-           char[] cbuf = new char[(int) smbfile.length()];
-           reader.read(cbuf,0,cbuf.length); 
-           reader.close();
-           segments = EDData.parseFile(cbuf, smbfile.getName());
-       } else {
-           File file = new File(path);
-               if (! file.exists()) {
-                 bsmf.MainFrame.show("File is unavailable");
-                 return segments;
-               }
-           BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(new FileInputStream(file))));
-           char[] cbuf = new char[(int) file.length()];
-           reader.read(cbuf,0,cbuf.length); 
-           reader.close();
-           segments = EDData.parseFile(cbuf, file.getName());
        }
        return segments;
     }
@@ -3946,6 +3887,19 @@ public class EDData {
    
     
     public static String getEDIBatchFromedi_file(String comkey) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getEDIBatchFromedi_file"});
+            list.add(new String[]{"param1", comkey});            
+            try {
+                return (sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
         String x = "";
         try {
             Class.forName(driver);
@@ -3980,8 +3934,9 @@ public class EDData {
         return x;
     }
     
-    public static String getEDIAckFileFromEDIIDX(String key) {
-        String x = "";
+    
+    public static String[] getEDI_IDXinfo(String key, String tablefield) {
+        String[] x = new String[]{"","","","","",""};
         try {
             Class.forName(driver);
             Connection con = null;
@@ -3996,11 +3951,20 @@ public class EDData {
                 
               
                  // controlarray in this order : senderid, doctype, map, filename, isacontrolnum, gsctrlnum, stctrlnum, ref ; 
-                res = st.executeQuery("select edx_ackfile from edi_idx where " +
-                        " edx_id = " + "'" + key + "'" + 
-                        ";" );
+                 if (tablefield.equals("edx_comkey")) {
+                     res = st.executeQuery("select edx_isastart, edx_isaend, edx_docstart, edx_docend, edx_segdelim, edx_ackfile from edi_idx where " +
+                        " edx_comkey = " + "'" + key + "'" + ";" );
+                 } else {
+                     res = st.executeQuery("select edx_isastart, edx_isaend, edx_docstart, edx_docend, edx_segdelim, edx_ackfile from edi_idx where " +
+                        " edx_id = " + "'" + key + "'" + ";" );
+                 }
                while (res.next()) {
-                   x = res.getString("edx_ackfile");
+                   x[0] = res.getString("edx_isastart");
+                   x[1] = res.getString("edx_isaend");
+                   x[2] = res.getString("edx_docstart");
+                   x[3] = res.getString("edx_docend");
+                   x[4] = res.getString("edx_segdelim");
+                   x[5] = res.getString("edx_ackfile");
                 }    
             } catch (SQLException s) {
                 MainFrame.bslog(s);
@@ -4015,83 +3979,6 @@ public class EDData {
         return x;
     }
     
-    public static String[] getEDIDocPositionEDIIDX(String key) {
-        String[] x = new String[]{"","","","",""};
-        try {
-            Class.forName(driver);
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-              
-                 // controlarray in this order : senderid, doctype, map, filename, isacontrolnum, gsctrlnum, stctrlnum, ref ; 
-                 res = st.executeQuery("select edx_isastart, edx_isaend, edx_docstart, edx_docend, edx_segdelim from edi_idx where " +
-                        " edx_id = " + "'" + key + "'" + 
-                        ";" );
-               while (res.next()) {
-                   x[0] = res.getString("edx_isastart");
-                   x[1] = res.getString("edx_isaend");
-                   x[2] = res.getString("edx_docstart");
-                   x[3] = res.getString("edx_docend");
-                   x[4] = res.getString("edx_segdelim");
-                }    
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-        return x;
-    }
-    
-    public static String[] getEDIDocPositionEDIIDXcomkey(String comkey) {
-        String[] x = new String[]{"","","","",""};
-        try {
-            Class.forName(driver);
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-              
-                 // controlarray in this order : senderid, doctype, map, filename, isacontrolnum, gsctrlnum, stctrlnum, ref ; 
-                 res = st.executeQuery("select edx_isastart, edx_isaend, edx_docstart, edx_docend, edx_segdelim from edi_idx where " +
-                        " edx_comkey = " + "'" + comkey + "'" + 
-                        ";" );
-               while (res.next()) {
-                   x[0] = res.getString("edx_isastart");
-                   x[1] = res.getString("edx_isaend");
-                   x[2] = res.getString("edx_docstart");
-                   x[3] = res.getString("edx_docend");
-                   x[4] = res.getString("edx_segdelim");
-                }    
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-        return x;
-    }
     
     public static void getEDIIDXmail() {
         
@@ -4194,6 +4081,62 @@ public class EDData {
         
          
         } 
+    }
+    
+    public static ArrayList<String> getEDIAckFile(String key, String batchdir, String segdelim) throws MalformedURLException, SmbException, UnknownHostException, IOException {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getEDIAckFile"});
+            list.add(new String[]{"param1", key});
+            list.add(new String[]{"param2", batchdir});
+            list.add(new String[]{"param3", segdelim});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        String[] p = getEDI_IDXinfo(key, "edx_id");
+        ArrayList<String> segments = EDData.readEDIRawFile(p[5],  
+                                 cleanDirString(batchdir),
+                                 true,
+                                 "0",
+                                 "0", 
+                                 segdelim
+                                 ); 
+        return segments; 
+    }
+    
+    public static ArrayList<String> getEDIRawFileByFile(String file, String key, String tablefield, String dir) throws MalformedURLException, SmbException, UnknownHostException, IOException {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getEDIRawFileByFile"});
+            list.add(new String[]{"param1", file});
+            list.add(new String[]{"param2", key});
+            list.add(new String[]{"param3", tablefield});
+            list.add(new String[]{"param4", dir});
+            
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        String[] p = getEDI_IDXinfo(key, tablefield);
+        ArrayList<String> segments = EDData.readEDIRawFile(file,  
+                                 cleanDirString(dir),
+                                 true,
+                                 "0",
+                                 "0", 
+                                 p[4]
+                                 ); 
+        return segments; 
     }
     
     

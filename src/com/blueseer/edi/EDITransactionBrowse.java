@@ -34,12 +34,16 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.edi.ediData.getDocViewData;
 import com.blueseer.utl.EDData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
+import static com.blueseer.utl.BlueSeerUtils.dropColumn;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import static com.blueseer.utl.EDData.getEDIAckFile;
 import static com.blueseer.utl.EDData.getEDIStds;
 import static com.blueseer.utl.EDData.updateEDIFileLogStatusManual;
 import com.blueseer.utl.OVData;
@@ -103,6 +107,16 @@ import jcifs.smb.SmbException;
  */
 public class EDITransactionBrowse extends javax.swing.JPanel {
  
+    
+    String indir = "";
+    String outdir = "";
+    String inarch = "";
+    String outarch = "";
+    String batchdir = "";
+    String errordir = "";
+    String mapdir = "";
+    HashMap<String, String> hm = new HashMap<>();
+    
     Highlighter.HighlightPainter myHighlightPainter = new MyHighlightPainter(Color.YELLOW);
     
     javax.swing.table.DefaultTableModel docmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -160,7 +174,6 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
                         new String[]{"LogID", "ComKey", "Severity", "Desc", "TimeStamp"});
     
    
-    
     
     class ButtonRenderer extends JButton implements TableCellRenderer {
 
@@ -348,178 +361,79 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
     
     public void getDocLogView() {
      
-       DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-       HashMap<String, String> hm = getEDIStds();
-       
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getDocViewData"});
+            list.add(new String[]{"param1", ddtradeid.getSelectedItem().toString()});
+            list.add(new String[]{"param2", dddoc.getSelectedItem().toString()});
+            list.add(new String[]{"param3", ddoutdoctype.getSelectedItem().toString()});
+            list.add(new String[]{"param4", tbref.getText()});
+            list.add(new String[]{"param5", ddsite.getSelectedItem().toString()});
+            list.add(new String[]{"param6", dfdate.format(dcfrom.getDate())});
+            list.add(new String[]{"param7", dfdate.format(dcto.getDate())});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServEDI"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = getDocViewData(ddtradeid.getSelectedItem().toString(), dddoc.getSelectedItem().toString(), ddoutdoctype.getSelectedItem().toString(), tbref.getText(), ddsite.getSelectedItem().toString(), dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()));
+        }
+        
+        Object[][] data = jsonToData(jsonString);
+        
+        
         docmodel.setNumRows(0);
         tafile.setText("");
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        
+
+        tablereport.setModel(docmodel);
+        tablereport.getColumnModel().getColumn(13).setMaxWidth(50);
+        tablereport.getColumnModel().getColumn(14).setMaxWidth(50);
+        tablereport.getColumnModel().getColumn(15).setMaxWidth(50);
+        
+
+            for (int j = 0; j < data.length; j++) { // adjust column 15 status only
+                if (data[j][15].equals("success")) { 
+                    data[j][15] = BlueSeerUtils.clickcheck;
+                } else {
+                    data[j][15] = BlueSeerUtils.clicknocheck;
+                }
+                if (data[j][16].equals("1")) { 
+                    data[j][15] = BlueSeerUtils.clickcheckblue;
+                }
+           
+                if (hm.containsKey(data[j][7].toString())) {
+                    data[j][7] = hm.get(data[j][7].toString());
+                } 
+           
+                if (hm.containsKey(data[j][11].toString())) {
+                    data[j][11] = hm.get(data[j][11].toString());
+                }
+                
+                
+                data[j][13] = BlueSeerUtils.clickleftdoc;
+                data[j][14] = BlueSeerUtils.clickrightdoc;
+                
             }
-            Statement st = con.createStatement();
-            Statement st2 = con.createStatement();
-            ResultSet res = null;
-            ResultSet resdetail = null;
-            try {
-
-                int i = 0;
-
-                String dir = "0";
-                String indoctype = "";
-                String outdoctype = "";
-                
-                tablereport.setModel(docmodel);
-                tablereport.getColumnModel().getColumn(13).setMaxWidth(50);
-                tablereport.getColumnModel().getColumn(14).setMaxWidth(50);
-                tablereport.getColumnModel().getColumn(15).setMaxWidth(50);
-             
-              
-                    if (! ddtradeid.getSelectedItem().toString().isEmpty() && dddoc.getSelectedItem().toString().isEmpty() ) {
-                    res = st.executeQuery("SELECT edx_id, edx_comkey, edx_indoctype, edx_outdoctype, " +
-                    " edx_sender, edx_receiver, edx_infiletype, edx_inbatch, edx_outbatch, edx_ref, edx_ts, edx_ack, edx_status, edx_outfiletype,  " +
-                    " coalesce(elg_severity,'success') as detstatus " +
-                    " FROM edi_idx  " +
-                    " left outer join edi_log on elg_comkey = edx_comkey and elg_severity = 'error' " +
-                    " where edx_sender >= " + "'" + ddtradeid.getSelectedItem().toString() + "'" +
-                    " AND edx_sender <= " + "'" + ddtradeid.getSelectedItem().toString() + "'" +
-                    " AND edx_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +        
-                    " AND edx_ts >= " + "'" + dfdate.format(dcfrom.getDate()) + " 00:00:00" + "'" +
-                    " AND edx_ts <= " + "'" + dfdate.format(dcto.getDate())  + " 23:59:59" + "'" + " order by edx_id desc ;" ) ;
-                    }
-                    
-                    if (! dddoc.getSelectedItem().toString().isEmpty() && ddtradeid.getSelectedItem().toString().isEmpty()) {
-                    res = st.executeQuery("SELECT edx_id, edx_comkey, edx_indoctype, edx_outdoctype, " +
-                    " edx_sender, edx_receiver, edx_infiletype, edx_inbatch, edx_outbatch, edx_ref, edx_ts, edx_ack, edx_status, edx_outfiletype,  " +
-                    " coalesce(elg_severity,'success') as detstatus " +
-                    " FROM edi_idx  " +
-                    " left outer join edi_log on elg_comkey = edx_comkey and elg_severity = 'error' " +
-                    " where " +
-                    " edx_indoctype >= " + "'" + dddoc.getSelectedItem().toString() + "'" +
-                    " AND edx_indoctype <= " + "'" + dddoc.getSelectedItem().toString() + "'" +    
-                    " AND edx_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +         
-                    " AND edx_ts >= " + "'" + dfdate.format(dcfrom.getDate()) + " 00:00:00" + "'" +
-                    " AND edx_ts <= " + "'" + dfdate.format(dcto.getDate())  + " 23:59:59" + "'" + " order by edx_id desc ;" ) ;
-                    }
-                    
-                    if (! dddoc.getSelectedItem().toString().isEmpty() && ! ddtradeid.getSelectedItem().toString().isEmpty()) {
-                    res = st.executeQuery("SELECT edx_id, edx_comkey, edx_indoctype, edx_outdoctype, " +
-                    " edx_sender, edx_receiver, edx_infiletype, edx_inbatch, edx_outbatch, edx_ref, edx_ts, edx_ack, edx_status, edx_outfiletype,  " +
-                    " coalesce(elg_severity,'success') as detstatus " +
-                    " FROM edi_idx  " +
-                    " left outer join edi_log on elg_comkey = edx_comkey and elg_severity = 'error' " +
-                    " where edx_sender >= " + "'" + ddtradeid.getSelectedItem().toString() + "'" +
-                    " AND edx_sender <= " + "'" + ddtradeid.getSelectedItem().toString() + "'" +
-                    " AND edx_indoctype >= " + "'" + dddoc.getSelectedItem().toString() + "'" +
-                    " AND edx_indoctype <= " + "'" + dddoc.getSelectedItem().toString() + "'" +    
-                    " AND edx_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +         
-                    " AND edx_ts >= " + "'" + dfdate.format(dcfrom.getDate()) + " 00:00:00" + "'" +
-                    " AND edx_ts <= " + "'" + dfdate.format(dcto.getDate())  + " 23:59:59" + "'" + " order by edx_id desc ;" ) ;
-                    }
-                    
-                    
-                    if (ddtradeid.getSelectedItem().toString().isEmpty() && dddoc.getSelectedItem().toString().isEmpty()) {
-                    res = st.executeQuery("SELECT edx_id, edx_comkey, edx_indoctype, edx_outdoctype, " +
-                    " edx_sender, edx_receiver, edx_infiletype, edx_inbatch, edx_outbatch, edx_ref, edx_ts, edx_ack, edx_status, edx_outfiletype,  " +
-                    " (select elg_severity from edi_log where elg_idxnbr = edx_id and elg_comkey = edx_comkey order by elg_id desc limit 1) as detstatus " +
-                    " FROM edi_idx  " +
-                   // " left outer join edi_log on elg_comkey = edx_comkey and elg_severity = 'error' " +
-                    " where edx_ts >= " + "'" + dfdate.format(dcfrom.getDate()) + " 00:00:00" + "'" +
-                    " AND edx_ts <= " + "'" + dfdate.format(dcto.getDate())  + " 23:59:59" + "'" + 
-                    " AND edx_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + 
-                    " order by edx_id desc ;" ) ;
-                    }
-                    
-                    if (! tbref.getText().isEmpty()) {
-                    res = st.executeQuery("SELECT edx_id, edx_comkey, edx_indoctype, edx_outdoctype, " +
-                    " edx_sender, edx_receiver, edx_infiletype, edx_inbatch, edx_outbatch, edx_ref, edx_ts, edx_ack, edx_status, edx_outfiletype,  " +
-                    " coalesce(elg_severity,'success') as detstatus " +
-                    " FROM edi_idx  " +
-                    " left outer join edi_log on elg_comkey = edx_comkey and elg_severity = 'error' " +
-                    " where edx_ref like " + "'%" + tbref.getText() + "%'" +
-                    " AND edx_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +         
-                    " order by edx_id desc ;" ) ;
-                    }
-                    
-                
-                
-                ImageIcon statusImage = null;
-                while (res.next()) {
-                    
-                    if (! ddoutdoctype.getSelectedItem().toString().isBlank() && ! res.getString("edx_outdoctype").equals(ddoutdoctype.getSelectedItem().toString())) {
-                        continue;
-                    }
-                    
-                    if (res.getString("detstatus").equals("success")) {
-                      statusImage = BlueSeerUtils.clickcheck;
-                    }  else {
-                      statusImage = BlueSeerUtils.clicknocheck;
-                    }
-                    if (res.getString("edx_ack").equals("1")) {
-                      statusImage = BlueSeerUtils.clickcheckblue; 
-                    }
-                
-                    i++;
-                    
-                  if (hm.containsKey(res.getString("edx_indoctype"))) {
-                    indoctype = hm.get(res.getString("edx_indoctype"));
-                  } else {
-                    indoctype = res.getString("edx_indoctype");
-                  }
-                  
-                  if (hm.containsKey(res.getString("edx_outdoctype"))) {
-                    outdoctype = hm.get(res.getString("edx_outdoctype"));
-                  } else {
-                    outdoctype = res.getString("edx_outdoctype");
-                  }
-                    
-                    
-                 //   "Select", "IdxNbr", "ComKey", "SenderID", "ReceiverID", "TimeStamp", "InFileType", "InDocType", "InBatch", "OutFileType", "OutDocType", "OutBatch",  "Status"                     
-                    docmodel.addRow(new Object[]{BlueSeerUtils.clickbasket,
-                        res.getInt("edx_id"),
-                        res.getInt("edx_comkey"),
-                        res.getString("edx_sender"),
-                        res.getString("edx_receiver"),
-                        res.getString("edx_ts"),
-                        res.getString("edx_infiletype"),
-                        indoctype,
-                        res.getString("edx_inbatch"),
-                        res.getString("edx_ref"), 
-                        res.getString("edx_outfiletype"),
-                        outdoctype,
-                        res.getString("edx_outbatch"),
-                        BlueSeerUtils.clickleftdoc,
-                        BlueSeerUtils.clickrightdoc,
-                        statusImage
-                    });
-                }
-                
-                tbtot.setText(String.valueOf(i));
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (resdetail != null) {
-                    resdetail.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                if (st2 != null) {
-                    st2.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+            
+            
+      //  }
+       
+      // drop column 16
+      Object[][] newdata = dropColumn(data, 16);
+        
+      int i = 0;
+      for (Object[] rowData : newdata) {
+       docmodel.addRow(rowData);
+       i++;
+      } 
+      tbtot.setText(String.valueOf(i));
+      
+       
    }
     
     public void getFileLogView() {
@@ -951,23 +865,60 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
         buttonGroup1.add(rbFileLog);
         rbDocLog.setSelected(true);
         
+        
         dddoc.removeAllItems();
         ddoutdoctype.removeAllItems();
-        ArrayList<String> mylist = OVData.getCodeMstrKeyList("edidoctype");
-        for (int i = 0; i < mylist.size(); i++) {
-            dddoc.addItem(mylist.get(i));
-            ddoutdoctype.addItem(mylist.get(i));
+        ddtradeid.removeAllItems();
+        ddsite.removeAllItems();
+        
+        String defaultsite = "";
+        
+        ArrayList<String[]> initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+                      
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("aliases")) {
+              ddtradeid.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("doctypes")) {
+              dddoc.addItem(s[1]); 
+              ddoutdoctype.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("directories")) {
+              String[] dirs = s[1].split(",", -1);
+              indir = dirs[0];
+              outdir = dirs[1];
+              inarch = dirs[2];
+              outarch = dirs[3];
+              batchdir = dirs[4];
+              errordir = dirs[5];
+              mapdir = dirs[6];
+            }
+            
+            if (s[0].equals("stds")) {
+              String[] k = s[1].split(",", -1);
+              hm.put(k[0], k[1]);
+            }
+            
         }
+        
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+        
         dddoc.insertItemAt("", 0);
         dddoc.setSelectedIndex(0);
         ddoutdoctype.insertItemAt("", 0);
         ddoutdoctype.setSelectedIndex(0);
-        
-        ddtradeid.removeAllItems();
-        ArrayList<String> tradeids = EDData.getEDITradeIDs();
-        for (int i = 0; i < tradeids.size(); i++) {
-            ddtradeid.addItem(tradeids.get(i));
-        }
         ddtradeid.insertItemAt("", 0);
         ddtradeid.setSelectedIndex(0);
         
@@ -1011,11 +962,9 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
         tafile.setText("");
         tafile.setFont(new Font("monospaced", Font.PLAIN, 12));
         
-        ddsite.removeAllItems();
-        OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));  
-        ddsite.setSelectedItem(OVData.getDefaultSite());
-        
     }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -1434,23 +1383,14 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
                 detailpanel.setVisible(true);
         }
         if ( col == 15) {
-                String ackfile = EDData.getEDIAckFileFromEDIIDX(tablereport.getValueAt(row, 1).toString());
-                if (! ackfile.isEmpty()) {
                 int k = 10;
                       if (BlueSeerUtils.isParsableToInt(tbsegdelim.getText())) {
-                      k = Integer.valueOf(tbsegdelim.getText());
+                      k = Integer.parseInt(tbsegdelim.getText());
                       }
                      try {
                          tafile.setText("");
                          if (! tablereport.getValueAt(row, 7).toString().isEmpty()) {
-                         ArrayList<String> segments = EDData.readEDIRawFileByDoc(ackfile, 
-                                 cleanDirString(EDData.getEDIBatchDir()),
-                                 true,
-                                 "0",
-                                 "0",
-                                 String.valueOf(k)
-                                 );  
-                            tafile.append(ackfile + ":" + "\n");
+                             ArrayList<String> segments = getEDIAckFile(tablereport.getValueAt(row, 1).toString(), cleanDirString(batchdir), String.valueOf(k));
                             for (String segment : segments ) {
                                 tafile.append(segment);
                                 tafile.append("\n");
@@ -1466,31 +1406,17 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
                      tafile.setCaretPosition(0);
                      textpanel.setVisible(true);
                      bthidetext.setEnabled(true);
-                }
+                
         }
         
-          if ( col == 9 && rbFileLog.isSelected()) {
-              int k = 10;
-              // try to get delimiter from edi_idx (edx_comkey)
-              String[] p = EDData.getEDIDocPositionEDIIDXcomkey(tablereport.getValueAt(row, 2).toString());
-              if (! p[4].isEmpty()) {
-               k = Integer.valueOf(p[4]);
-              }
-              
-              // if textbox segment is occupied...override lookup
-              if (! tbsegdelim.getText().isEmpty() && BlueSeerUtils.isParsableToInt(tbsegdelim.getText())) {
-              k = Integer.valueOf(tbsegdelim.getText());
-              }
+        if ( col == 9 && rbFileLog.isSelected()) {
              try {
                  tafile.setText("");
                  if (! tablereport.getValueAt(row, 7).toString().isEmpty()) {
-                 ArrayList<String> segments = EDData.readEDIRawFileByDoc(tablereport.getValueAt(row, 7).toString(), 
-                         cleanDirString(EDData.getEDIInArch()),
-                         true,
-                         "0",
-                         "0",
-                         String.valueOf(k)
-                         );  
+                 ArrayList<String> segments = EDData.getEDIRawFileByFile(tablereport.getValueAt(row, 7).toString(), 
+                         tablereport.getValueAt(row, 2).toString(),
+                         "edx_comkey",
+                         cleanDirString(inarch));  
                     for (String segment : segments ) {
                         tafile.append(segment);
                         tafile.append("\n");
@@ -1508,23 +1434,19 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
              bthidetext.setEnabled(true);
              
         }
-          if ( (col == 13) && rbDocLog.isSelected()) {
+        
+        if ( (col == 13) && rbDocLog.isSelected()) {
               if (tablereport.getValueAt(row, 7).toString().equals("DB")) {
                   return;
               }
-              int k = 10;
-              String[] p = EDData.getEDIDocPositionEDIIDX(tablereport.getValueAt(row, 1).toString());
-              String end = "0";  // doc end ...revisit...just show everything for now
+              
              try {
                  tafile.setText("");
                  if (! tablereport.getValueAt(row, 8).toString().isEmpty()) {
-                 ArrayList<String> segments = EDData.readEDIRawFileByDoc(tablereport.getValueAt(row, 8).toString(), 
-                         cleanDirString(EDData.getEDIBatchDir()),
-                         true,
-                         p[2],
-                         end,
-                         p[4]
-                         );  
+                 ArrayList<String> segments = EDData.getEDIRawFileByFile(tablereport.getValueAt(row, 8).toString(), 
+                         tablereport.getValueAt(row, 2).toString(),
+                         "edx_comkey",
+                         cleanDirString(batchdir));
                     for (String segment : segments ) {
                         tafile.append(segment);
                         tafile.append("\n");
@@ -1543,26 +1465,17 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
              
         }
           
-         if ( (col == 14) && rbDocLog.isSelected()) {
+        if ( (col == 14) && rbDocLog.isSelected()) {
              if (tablereport.getValueAt(row, 11).toString().equals("DB")) {
                   return;
               }
-              int k = 10;
-              String[] p = EDData.getEDIDocPositionEDIIDX(tablereport.getValueAt(row, 1).toString());
-             
-            //  if (BlueSeerUtils.isParsableToInt(tbsegdelim.getText())) {
-            //  k = Integer.valueOf(tbsegdelim.getText());
-            //  }
              try {
                  tafile.setText("");
                  if (! tablereport.getValueAt(row, 12).toString().isEmpty()) {
-                 ArrayList<String> segments = EDData.readEDIRawFileByDoc(tablereport.getValueAt(row, 12).toString(), 
-                         cleanDirString(EDData.getEDIBatchDir()),
-                         true,
-                         p[0],
-                         p[1],
-                         p[4]
-                         );  
+                 ArrayList<String> segments = EDData.getEDIRawFileByFile(tablereport.getValueAt(row, 12).toString(), 
+                         tablereport.getValueAt(row, 2).toString(),
+                         "edx_comkey",
+                         cleanDirString(batchdir));
                     for (String segment : segments ) {
                         tafile.append(segment);
                         tafile.append("\n");
@@ -1653,14 +1566,12 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
                         arrx.add(new String[]{"batchfilename", batch});
                         r = sendServerPost(arrx, "", null);
                         } else {
-                          Path sourcepath = FileSystems.getDefault().getPath(cleanDirString(EDData.getEDIBatchDir()) + batch);
-                          Path destinationpath = FileSystems.getDefault().getPath(cleanDirString(EDData.getEDIInDir()) + "reproc." + batch + "." + Long.toHexString(System.currentTimeMillis()));
+                          Path sourcepath = FileSystems.getDefault().getPath(cleanDirString(batchdir) + batch);
+                          Path destinationpath = FileSystems.getDefault().getPath(cleanDirString(indir) + "reproc." + batch + "." + Long.toHexString(System.currentTimeMillis()));
                           Files.copy(sourcepath, destinationpath, StandardCopyOption.REPLACE_EXISTING); 
                           r = "file requeued for processing";
                         }
-                     //   batch = cleanDirString(EDData.getEDIBatchDir()) + batch; 
-                     //  String[] m = EDI.processFile(batch, "", "", "", false, true, Integer.valueOf(tablereport.getValueAt(i, 2).toString()), Integer.valueOf(tablereport.getValueAt(i, 1).toString()), "");
-                    //   String result = m[0] + " of " + m[1];
+                 
                        bsmf.MainFrame.show(r);
                     } catch (IOException ex) {
                         MainFrame.bslog(ex);

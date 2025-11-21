@@ -3282,7 +3282,7 @@ public class BlueSeerUtils {
                 } else if (rawData[i][j].equals("print")) {
                     data[i][j] = BlueSeerUtils.clickprint; 
                 } else if (rawData[i][j].equals("mail")) {
-                    data[i][j] = BlueSeerUtils.clickmail;     
+                    data[i][j] = BlueSeerUtils.clickmail;
                 } else {
                     data[i][j] = rawData[i][j];
                 }
@@ -3434,6 +3434,29 @@ public class BlueSeerUtils {
         return x;
     }
     
+    public static Object[][] dropColumn(Object[][] originalArray, int columnIndexToDrop) {
+        if (originalArray == null || originalArray.length == 0 || originalArray[0].length <= columnIndexToDrop || columnIndexToDrop < 0) {
+            // Handle invalid input or empty array
+            return null;
+        }
+
+        int numRows = originalArray.length;
+        int numColsOriginal = originalArray[0].length;
+        int numColsNew = numColsOriginal - 1;
+
+        Object[][] newArray = new Object[numRows][numColsNew];
+
+        for (int i = 0; i < numRows; i++) {
+            int newColIndex = 0; // Index for the new array's columns
+            for (int j = 0; j < numColsOriginal; j++) {
+                if (j != columnIndexToDrop) {
+                    newArray[i][newColIndex] = originalArray[i][j];
+                    newColIndex++;
+                }
+            }
+        }
+        return newArray;
+    }
     
 }
 
