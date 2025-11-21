@@ -425,7 +425,7 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
       Object[][] newdata = dropColumn(data, 16);
         
       int i = 0;
-      if (newdata.length > 0) {
+      if (newdata != null && newdata.length > 0) {
         for (Object[] rowData : newdata) {
          docmodel.addRow(rowData);
          i++;
