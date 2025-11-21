@@ -28,6 +28,7 @@ package com.blueseer.srv;
 
 import static com.blueseer.adm.admData.getLoginInit;
 import com.blueseer.edi.ediData;
+import static com.blueseer.edi.ediData.getEDITransBrowseDetail;
 
 import com.blueseer.fgl.fglData;
 import com.blueseer.fgl.fglData.AcctMstr;
@@ -133,7 +134,22 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     request.getHeader("param5"),
                     request.getHeader("param6"),
                     request.getHeader("param7") )); 
-            break;      
+            break; 
+            
+        case "getFileViewData" :
+            response.getWriter().print(ediData.getFileViewData(request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5"),
+                    request.getHeader("param6"),
+                    request.getHeader("param7") )); 
+            break;  
+            
+        case "getEDITransBrowseDetail" :
+            response.getWriter().print(ediData.getEDITransBrowseDetail(request.getHeader("param1"), 
+                    request.getHeader("param2") )); 
+            break;     
             
         default:
         response.getWriter().print("no switch case exists in dataServEDI for id: " + id);

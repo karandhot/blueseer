@@ -35,6 +35,8 @@ import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import static com.blueseer.edi.ediData.getDocViewData;
+import static com.blueseer.edi.ediData.getEDITransBrowseDetail;
+import static com.blueseer.edi.ediData.getFileViewData;
 import com.blueseer.utl.EDData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
@@ -357,12 +359,10 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
         return c;
     }
     }
-    
-    
+        
     public void getDocLogView() {
      
-        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-        
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");        
         String jsonString = null;
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
@@ -388,8 +388,6 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
         
         docmodel.setNumRows(0);
         tafile.setText("");
-        
-
         tablereport.setModel(docmodel);
         tablereport.getColumnModel().getColumn(13).setMaxWidth(50);
         tablereport.getColumnModel().getColumn(14).setMaxWidth(50);
@@ -427,10 +425,12 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
       Object[][] newdata = dropColumn(data, 16);
         
       int i = 0;
-      for (Object[] rowData : newdata) {
-       docmodel.addRow(rowData);
-       i++;
-      } 
+      if (newdata.length > 0) {
+        for (Object[] rowData : newdata) {
+         docmodel.addRow(rowData);
+         i++;
+        } 
+      }
       tbtot.setText(String.valueOf(i));
       
        
@@ -438,130 +438,56 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
     
     public void getFileLogView() {
      
-       DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-             
+       DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getFileViewData"});
+            list.add(new String[]{"param1", ddtradeid.getSelectedItem().toString()});
+            list.add(new String[]{"param2", dddoc.getSelectedItem().toString()});
+            list.add(new String[]{"param3", ddoutdoctype.getSelectedItem().toString()});
+            list.add(new String[]{"param4", tbref.getText()});
+            list.add(new String[]{"param5", ddsite.getSelectedItem().toString()});
+            list.add(new String[]{"param6", dfdate.format(dcfrom.getDate())});
+            list.add(new String[]{"param7", dfdate.format(dcto.getDate())});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServEDI"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = getFileViewData(ddtradeid.getSelectedItem().toString(), dddoc.getSelectedItem().toString(), ddoutdoctype.getSelectedItem().toString(), tbref.getText(), ddsite.getSelectedItem().toString(), dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()));
+        }
+        
+        Object[][] data = jsonToData(jsonString);
+        
+        
         filemodel.setNumRows(0);
         tafile.setText("");
+        tablereport.setModel(filemodel);
         
-        HashMap<String, String> hm = getEDIStds();
+        for (int j = 0; j < data.length; j++) { // 
+                if (data[j][10].equals("success")) { 
+                    data[j][10] = BlueSeerUtils.clickcheck;
+                } else {
+                    data[j][10] = BlueSeerUtils.clicknocheck;
+                }
+           
+                if (hm.containsKey(data[j][5].toString())) {
+                    data[j][5] = hm.get(data[j][5].toString());
+                } 
+                data[j][9] = BlueSeerUtils.clickfind;
+            }
         
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                int i = 0;
-                String doctype = "";
-               
-                tablereport.setModel(filemodel);
-               //  tablereport.getColumnModel().getColumn(8).setCellRenderer(new EDITransactionBrowse.SomeRenderer()); 
-              //   tablereport.getColumnModel().getColumn(7).setCellRenderer(new EDITransactionBrowse.FileViewRenderer()); 
-                 tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-                 tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
-                 tablereport.getColumnModel().getColumn(2).setMaxWidth(100);
-                 tablereport.getColumnModel().getColumn(9).setMaxWidth(50);
-                 tablereport.getColumnModel().getColumn(10).setMaxWidth(50);
-                 
-              
-                    if (! ddtradeid.getSelectedItem().toString().isEmpty() && dddoc.getSelectedItem().toString().isEmpty() ) {
-                    res = st.executeQuery("SELECT * FROM edi_file  " +
-                    " where edf_partner >= " + "'" + ddtradeid.getSelectedItem().toString() + "'" +
-                    " AND edf_partner <= " + "'" + ddtradeid.getSelectedItem().toString() + "'" +        
-                    " AND edf_ts >= " + "'" + dfdate.format(dcfrom.getDate()) + " 00:00:00" + "'" +
-                    " AND edf_ts <= " + "'" + dfdate.format(dcto.getDate())  + " 23:59:59" + "'" + 
-                    " AND edf_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +         
-                    " order by edf_id desc ;" ) ;
-                    }
-                    
-                    if (! dddoc.getSelectedItem().toString().isEmpty() && ddtradeid.getSelectedItem().toString().isEmpty()) {
-                    res = st.executeQuery("SELECT * FROM edi_file  " +
-                    " where " +
-                    " edf_doctype >= " + "'" + dddoc.getSelectedItem().toString() + "'" +
-                    " AND edf_doctype <= " + "'" + dddoc.getSelectedItem().toString() + "'" +        
-                    " AND edf_ts >= " + "'" + dfdate.format(dcfrom.getDate()) + " 00:00:00" + "'" +
-                    " AND edf_ts <= " + "'" + dfdate.format(dcto.getDate())  + " 23:59:59" + "'" +
-                    " AND edf_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +         
-                    " order by edf_id desc ;" ) ;
-                    }
-                    
-                    if (! dddoc.getSelectedItem().toString().isEmpty() && ! ddtradeid.getSelectedItem().toString().isEmpty()) {
-                    res = st.executeQuery("SELECT * FROM edi_file  " +
-                     " where edf_partner >= " + "'" + ddtradeid.getSelectedItem().toString() + "'" +
-                    " AND edf_partner <= " + "'" + ddtradeid.getSelectedItem().toString() + "'" +
-                    " AND edf_doctype >= " + "'" + dddoc.getSelectedItem().toString() + "'" +
-                    " AND edf_doctype <= " + "'" + dddoc.getSelectedItem().toString() + "'" +        
-                    " AND edf_ts >= " + "'" + dfdate.format(dcfrom.getDate()) + " 00:00:00" + "'" +
-                    " AND edf_ts <= " + "'" + dfdate.format(dcto.getDate())  + " 23:59:59" + "'" + 
-                    " AND edf_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +         
-                    " order by edf_id desc ;" ) ;
-                    }
-                    
-                    if (ddtradeid.getSelectedItem().toString().isEmpty() && dddoc.getSelectedItem().toString().isEmpty()) {
-                    res = st.executeQuery("SELECT * FROM edi_file  " +
-                    " where edf_ts >= " + "'" + dfdate.format(dcfrom.getDate()) + " 00:00:00" + "'" +
-                    " AND edf_ts <= " + "'" + dfdate.format(dcto.getDate())  + " 23:59:59" + "'" + 
-                    " AND edf_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +         
-                    " order by edf_id desc ;" ) ;
-                    }
-                    
-                
-                
-                ImageIcon statusImage = null;
-                while (res.next()) {
-                    i++;
-                  if (res.getString("edf_status").equals("success")) {
-                      statusImage = BlueSeerUtils.clickcheck;
-                  }  else {
-                      statusImage = BlueSeerUtils.clicknocheck;
-                  }
-                  
-                  if (hm.containsKey(res.getString("edf_doctype"))) {
-                    doctype = hm.get(res.getString("edf_doctype"));
-                  } else {
-                    doctype = res.getString("edf_doctype");
-                  }
-                  
-                  
-                 //   "Select", "IdxNbr", "ComKey", "SenderID", "ReceiverID", "TimeStamp", "InFileType", "InDocType", "InBatch", "OutFileType", "OutDocType", "OutBatch",  "Status"                     
-                    filemodel.addRow(new Object[]{BlueSeerUtils.clickbasket,
-                        res.getInt("edf_id"),
-                        res.getInt("edf_comkey"),
-                        res.getString("edf_partner"),
-                        res.getString("edf_filetype"),
-                        doctype,
-                        res.getString("edf_ts"),
-                        res.getString("edf_file"),
-                        res.getString("edf_dir"),
-                        BlueSeerUtils.clickfind, 
-                        statusImage
-                    });
-                }
-                
-                hm.clear();
-                
-                tbtot.setText(String.valueOf(i));
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        int i = 0;
+      if (data.length > 0) {
+        for (Object[] rowData : data) {
+         filemodel.addRow(rowData);
+         i++;
+        } 
+      }
+      tbtot.setText(String.valueOf(i));
+        
    }
     
     
@@ -625,64 +551,32 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
     }
     
     public void getdetail(String comkey, String idxkey) {
-      
-         modeldetail.setNumRows(0);
-        
-         DecimalFormat df = new DecimalFormat("#0.00", new DecimalFormatSymbols(Locale.US));
-        
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getEDITransBrowseDetail"});
+            list.add(new String[]{"param1", comkey});
+            list.add(new String[]{"param2", idxkey});
             try {
-                int i = 0;
-                String blanket = "";
-                if (idxkey.equals("0")) {
-                 res = st.executeQuery("select elg_id, elg_comkey, elg_idxnbr, elg_severity, elg_desc, elg_ts from edi_log " +
-                        " where elg_comkey = " + "'" + comkey + "'" +
-                        ";");   
-                } else {
-                 res = st.executeQuery("select elg_id, elg_comkey, elg_idxnbr, elg_severity, elg_desc, elg_ts from edi_log " +
-                        " where elg_comkey = " + "'" + comkey + "'" +
-                        " and elg_idxnbr = " + "'" + idxkey + "'" +
-                        ";");   
-                }
-                
-                while (res.next()) {
-                   modeldetail.addRow(new Object[]{ 
-                      res.getString("elg_id"), 
-                      res.getString("elg_comkey"),
-                      res.getString("elg_severity"),
-                      res.getString("elg_desc"),
-                      res.getString("elg_ts")
-                      });
-                }
-               
-               
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
+                jsonString = sendServerPost(list, "", null, "dataServEDI"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+        } else {
+            jsonString = getEDITransBrowseDetail(comkey, idxkey);
         }
-
+        
+        modeldetail.setNumRows(0);
+        Object[][] data = jsonToData(jsonString);
+        if (data.length > 0) {
+            for (Object[] rowData : data) {
+             modeldetail.addRow(rowData);
+            } 
+        }
+        
+        this.repaint();
+        
     }
     
     public void hexReplace(String taname) {

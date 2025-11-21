@@ -2842,7 +2842,6 @@ public class ediData {
     
     public static String getDocViewData(String tradeid, String indoc, String outdoc, String ref, String site, String fromdate, String todate) {
         JSONArray jsonarray = new JSONArray();
-        System.out.println("HERE:  entering getDocViewData: " + tradeid + "/" + indoc + "/" + outdoc + "/" + ref + "/" + site + "/" + fromdate + "/" + todate );
         try {
             
             Connection con = null;
@@ -2956,7 +2955,146 @@ public class ediData {
             MainFrame.bslog(e);
             
         }
-        System.out.println("HERE:  " + jsonarray.toString());
+       return jsonarray.toString(); 
+    }
+    
+    public static String getFileViewData(String tradeid, String indoc, String outdoc, String ref, String site, String fromdate, String todate) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                if (! tradeid.isEmpty() && indoc.isEmpty() ) {
+                    res = st.executeQuery("SELECT * FROM edi_file  " +
+                    " where edf_partner >= " + "'" + tradeid + "'" +
+                    " AND edf_partner <= " + "'" + tradeid + "'" +        
+                    " AND edf_ts >= " + "'" + fromdate + " 00:00:00" + "'" +
+                    " AND edf_ts <= " + "'" + todate  + " 23:59:59" + "'" + 
+                    " AND edf_site = " + "'" + site + "'" +         
+                    " order by edf_id desc ;" ) ;
+                    }
+                if (! indoc.isEmpty() && tradeid.isEmpty()) {
+                    res = st.executeQuery("SELECT * FROM edi_file  " +
+                    " where " +
+                    " edf_doctype >= " + "'" + indoc + "'" +
+                    " AND edf_doctype <= " + "'" + indoc + "'" +        
+                    " AND edf_ts >= " + "'" + fromdate + " 00:00:00" + "'" +
+                    " AND edf_ts <= " + "'" + todate  + " 23:59:59" + "'" +
+                    " AND edf_site = " + "'" + site + "'" +         
+                    " order by edf_id desc ;" ) ;
+                    }
+                 if (! indoc.isEmpty() && ! tradeid.isEmpty()) {
+                    res = st.executeQuery("SELECT * FROM edi_file  " +
+                     " where edf_partner >= " + "'" + tradeid + "'" +
+                    " AND edf_partner <= " + "'" + tradeid + "'" +
+                    " AND edf_doctype >= " + "'" + indoc + "'" +
+                    " AND edf_doctype <= " + "'" + indoc + "'" +        
+                    " AND edf_ts >= " + "'" + fromdate + " 00:00:00" + "'" +
+                    " AND edf_ts <= " + "'" + todate  + " 23:59:59" + "'" + 
+                    " AND edf_site = " + "'" + site + "'" +         
+                    " order by edf_id desc ;" ) ;
+                    }
+                 if (tradeid.isEmpty() && indoc.isEmpty()) {
+                    res = st.executeQuery("SELECT * FROM edi_file  " +
+                    " where edf_ts >= " + "'" + fromdate + " 00:00:00" + "'" +
+                    " AND edf_ts <= " + "'" + todate  + " 23:59:59" + "'" + 
+                    " AND edf_site = " + "'" + site + "'" +         
+                    " order by edf_id desc ;" ) ;
+                    }
+                
+                 
+                    while (res.next()) {
+                        
+                        if (! outdoc.isBlank() && ! res.getString("edx_outdoctype").equals(outdoc)) {
+                        continue;
+                    }
+                        
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("edf_id"));
+                        rowArray.put(res.getString("edf_comkey"));
+                        rowArray.put(res.getString("edf_partner"));
+                        rowArray.put(res.getString("edf_filetype"));
+                        rowArray.put(res.getString("edf_doctype"));
+                        rowArray.put(res.getString("edf_ts"));
+                        rowArray.put(res.getString("edf_file"));
+                        rowArray.put(res.getString("edf_dir"));
+                        rowArray.put("find");
+                        rowArray.put(res.getString("edf_status"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    public static String getEDITransBrowseDetail(String comkey, String idxkey) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                if (idxkey.equals("0")) {
+                 res = st.executeQuery("select elg_id, elg_comkey, elg_idxnbr, elg_severity, elg_desc, elg_ts from edi_log " +
+                        " where elg_comkey = " + "'" + comkey + "'" +
+                        ";");   
+                } else {
+                 res = st.executeQuery("select elg_id, elg_comkey, elg_idxnbr, elg_severity, elg_desc, elg_ts from edi_log " +
+                        " where elg_comkey = " + "'" + comkey + "'" +
+                        " and elg_idxnbr = " + "'" + idxkey + "'" +
+                        ";");   
+                }
+                    
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("elg_id"));
+                        rowArray.put(res.getString("elg_comkey"));
+                        rowArray.put(res.getString("elg_severity"));
+                        rowArray.put(res.getString("elg_desc"));
+                        rowArray.put(res.getString("elg_ts"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
        return jsonarray.toString(); 
     }
     
