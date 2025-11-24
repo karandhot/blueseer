@@ -46,6 +46,7 @@ import static com.blueseer.utl.BlueSeerUtils.callChangeDialog;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.checkLength;
 import static com.blueseer.utl.BlueSeerUtils.clog;
+import com.blueseer.utl.BlueSeerUtils.dbaction;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.logChange;
@@ -345,7 +346,7 @@ public class TermsMaint extends javax.swing.JPanel implements IBlueSeerT {
         Map<String,Integer> f = OVData.getTableInfo(new String[]{"cust_term"});
         int fc;
         
-        if ((x.equals(x.delete) || x.equals(x.update)) && cbsystemcode.isSelected()) {
+        if ((x == dbaction.delete || x == dbaction.update) && cbsystemcode.isSelected()) {
             bsmf.MainFrame.show(getMessageTag(1175));
             return false;
         }

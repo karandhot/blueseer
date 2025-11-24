@@ -798,7 +798,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             return false;
         }
         
-        if (x.equals("delete")) {  // maintain order after canupdate check
+        if (x == dbaction.delete) {  // maintain order after canupdate check
            return true;
         }
         
@@ -850,7 +850,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
 
         String SuppressDuplicate = getSysMetaValue("system", "ordercontrol", "suppressduplicate");
-        if (! SuppressDuplicate.isBlank() && SuppressDuplicate.equals("1") && x.equals("add")) {
+        if (! SuppressDuplicate.isBlank() && SuppressDuplicate.equals("1") && x == dbaction.add) {
             if (isDuplicatePO(ddcust.getSelectedItem().toString(), ponbr.getText())) {
                 bsmf.MainFrame.show(getMessageTag(1197));
                 return false;
