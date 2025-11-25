@@ -2821,7 +2821,7 @@ public class ediData {
                lines.add(s);
             }
             
-            res = st.executeQuery("select edic_indir, edic_outdir, edic_inarch, edic_outarch, edic_batch, edic_errordir, edic_mapdir from edi_ctrl ;");
+            res = st.executeQuery("select edic_indir, edic_outdir, edic_inarch, edic_outarch, edic_batch, edic_errordir, edic_mapdir, edic_delete, edic_archyesno from edi_ctrl ;");
             while (res.next()) {
                String[] s = new String[2];
                s[0] = "directories";
