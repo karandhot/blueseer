@@ -27,28 +27,16 @@ SOFTWARE.
 package com.blueseer.edi;
 
 import bsmf.MainFrame;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.pass;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
-import com.blueseer.utl.EDData;
+import static com.blueseer.edi.ediData.getAS2LogDetailDetail;
 import com.blueseer.utl.BlueSeerUtils;
-import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
-import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
-import static com.blueseer.utl.EDData.updateEDIFileLogStatusManual;
-import com.blueseer.utl.OVData;
 import java.awt.Color;
 import java.awt.Component;
 import java.io.IOException;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import javax.swing.JButton;
@@ -59,11 +47,6 @@ import java.net.MalformedURLException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.text.DecimalFormatSymbols;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
@@ -72,6 +55,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
 import jcifs.smb.SmbException;
 
@@ -81,6 +65,7 @@ import jcifs.smb.SmbException;
  */
 public class AS2Log extends javax.swing.JPanel {
  
+    ArrayList<String[]> initDataSets = new ArrayList<>();
                 
     javax.swing.table.DefaultTableModel modeltable = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{"Select", "LogID", "PartnerID", "Description", "TimeStamp", "Dir", "MDN", "Status"})
@@ -172,88 +157,51 @@ public class AS2Log extends javax.swing.JPanel {
     
     
    
-    public void getFileLogView() {
+    
+    public void getAS2LogView() {
      
-       DateFormat dfdate = new SimpleDateFormat("yyyyMMdd");
-             
+       DateFormat dfdate = new SimpleDateFormat("yyyyMMdd");        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getAS2LogView"});
+            list.add(new String[]{"param1", tbas2id.getText()});
+            list.add(new String[]{"param2", ddsite.getSelectedItem().toString()});
+            list.add(new String[]{"param3", dfdate.format(dcfrom.getDate())});
+            list.add(new String[]{"param4", dfdate.format(dcto.getDate())});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServEDI"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = ediData.getAS2LogView(tbas2id.getText(), ddsite.getSelectedItem().toString(), dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()));
+        }
+        
+        Object[][] data = jsonToData(jsonString);
+        
+        
         modeltable.setNumRows(0);
         tafile.setText("");
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        tablereport.setModel(modeltable);
+        
+        for (int j = 0; j < data.length; j++) { // 
+                if (data[j][7].equals("success")) { 
+                    data[j][7] = BlueSeerUtils.clickcheck;
+                } else {
+                    data[j][7] = BlueSeerUtils.clicknocheck;
+                }
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                int i = 0;
-
-               
-                tablereport.setModel(modeltable);
-                tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-                tablereport.getColumnModel().getColumn(7).setMaxWidth(50);
-                tablereport.getColumnModel().getColumn(6).setCellRenderer(new AS2Log.SomeRenderer()); 
-                 
-                    if (tbas2id.getText().isEmpty()) {
-                    res = st.executeQuery("SELECT * FROM as2_log  " +
-                    " left outer join as2_mstr on as2_id = as2l_id " +        
-                    " where as2l_datetime >= " + "'" + dfdate.format(dcfrom.getDate()) + "000000" + "'" +
-                    " AND as2l_datetime <= " + "'" + dfdate.format(dcto.getDate())  + "235959" + "'" + 
-                    " AND as2l_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +         
-                    " order by as2l_datetime desc ;" ) ;
-                    } else {
-                    res = st.executeQuery("SELECT * FROM as2_log  " +
-                    " left outer join as2_mstr on as2_id = as2l_id " +        
-                    " where as2l_id >= " + "'" + tbas2id.getText() + "'" +
-                    " AND as2l_id <= " + "'" + tbas2id.getText() + "'" +        
-                    " AND as2l_datetime >= " + "'" + dfdate.format(dcfrom.getDate()) + "000000" + "'" +
-                    " AND as2l_datetime <= " + "'" + dfdate.format(dcto.getDate())  + "235959" + "'" + 
-                    " AND as2l_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +         
-                    " order by as2l_datetime desc ;" ) ;    
-                    }
-                    
-              
-                ImageIcon statusImage = null;
-                while (res.next()) {
-                    i++;
-                  if (res.getString("as2l_status").equals("success")) {
-                      statusImage = BlueSeerUtils.clickcheck;
-                  }  else if (res.getString("as2l_status").equals("passive")) {
-                      statusImage = BlueSeerUtils.clickcheckyellow;
-                  } else {
-                      statusImage = BlueSeerUtils.clicknocheck;
-                  }
-                    modeltable.addRow(new Object[]{BlueSeerUtils.clickbasket,
-                        res.getInt("as2l_logid"),
-                        res.getString("as2l_id"),
-                        res.getString("as2_desc"),
-                        res.getString("as2l_datetime"),
-                        res.getString("as2l_dir"),
-                        res.getString("as2l_mdn"),
-                        statusImage
-                    });
-                }
-                
-                tbtot.setText(String.valueOf(i));
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        
+        int i = 0;
+      if (data.length > 0) {
+        for (Object[] rowData : data) {
+         modeltable.addRow(rowData);
+         i++;
+        } 
+      }
+      tbtot.setText(String.valueOf(i));
+        
    }
     
     
@@ -313,54 +261,123 @@ public class AS2Log extends javax.swing.JPanel {
        }
     }
     
-    public void getdetail(String parentkey) {
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
       
-         modeldetail.setNumRows(0);
-        
-        
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        class Task extends SwingWorker<String[], Void> {
+       
+          String type = "";
+          String[] key = null;
+          
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
+              this.key = key;
+          } 
+           
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+             switch(this.type) {
+                case "init":
+                    message = getInitialization();
+                    break;
+                default:
+                    message = new String[]{"1", "unknown action"};
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                     res = st.executeQuery("SELECT * FROM as2_log  " +     
-                    " where as2l_parent = " + "'" + parentkey + "'" +
-                    " order by as2l_logid;" ) ;
-                while (res.next()) {
-                   modeldetail.addRow(new Object[]{ 
-                      res.getString("as2l_logid"), 
-                      res.getString("as2l_parent"),
-                      res.getString("as2l_messg"),
-                      res.getString("as2l_status")
-                      });
-                }
-               
-                tabledetail.setModel(modeldetail);
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+            
+            return message;
         }
-
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+           if (this.type.equals("init")) {
+             updateForm();  
+           } else {
+             initvars(null);  
+           }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
     }
+   
+    public void getdetail(String parentkey) {
+        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getAS2LogDetailDetail"});
+            list.add(new String[]{"param1", parentkey});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServEDI"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = getAS2LogDetailDetail(parentkey);
+        }
+        
+        modeldetail.setNumRows(0);
+        Object[][] data = jsonToData(jsonString);
+        if (data.length > 0) {
+            for (Object[] rowData : data) {
+             modeldetail.addRow(rowData);
+            } 
+        }
+        
+        this.repaint();
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+        
+    }    
+    
+    public void updateForm() {
+        
+        ddsite.removeAllItems();
+        
+        String defaultsite = "";
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+                      
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+        }
+        
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+        
+        
+        
+        tbtoterrors.setText("0");
+        tbtot.setText("0");
+    }
+    
     
     public void initvars(String[] arg) {
        
@@ -370,14 +387,7 @@ public class AS2Log extends javax.swing.JPanel {
        
         
         java.util.Date now = new java.util.Date();
-       
-        
-        Calendar cal = new GregorianCalendar();
-        cal.set(Calendar.DAY_OF_YEAR, 1);
-        java.util.Date firstday = cal.getTime();
-        
-       // dcfrom.setDate(firstday);
-       dcfrom.setDate(now);
+        dcfrom.setDate(now);
         dcto.setDate(now);
                
         modeltable.setNumRows(0);
@@ -385,24 +395,23 @@ public class AS2Log extends javax.swing.JPanel {
         tablereport.setModel(modeltable);
         tabledetail.setModel(modeldetail);
         
-        tablereport.getTableHeader().setReorderingAllowed(false);
-        tabledetail.getTableHeader().setReorderingAllowed(false);
         
-        // tablereport.getColumnModel().getColumn(0).setCellRenderer(new ButtonRenderer());
-         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-         tabledetail.getColumnModel().getColumn(0).setMaxWidth(100);
-         tabledetail.getColumnModel().getColumn(1).setMaxWidth(100);
-         tabledetail.getColumnModel().getColumn(3).setMaxWidth(100);
+        tabledetail.getTableHeader().setReorderingAllowed(false);
+        tabledetail.getColumnModel().getColumn(0).setMaxWidth(100);
+        tabledetail.getColumnModel().getColumn(1).setMaxWidth(100);
+        tabledetail.getColumnModel().getColumn(3).setMaxWidth(100);
        
+        tablereport.getTableHeader().setReorderingAllowed(false);
+        tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+        tablereport.getColumnModel().getColumn(7).setMaxWidth(50);
+        tablereport.getColumnModel().getColumn(6).setCellRenderer(new AS2Log.SomeRenderer()); 
         
         btdetail.setEnabled(false);
         bthidetext.setEnabled(false);
         detailpanel.setVisible(false);
         textpanel.setVisible(false);
         
-        ddsite.removeAllItems();
-        OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));  
-        ddsite.setSelectedItem(OVData.getDefaultSite());
+        executeTask(BlueSeerUtils.dbaction.init, null);
           
     }
     
@@ -686,7 +695,7 @@ public class AS2Log extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-              getFileLogView();
+              getAS2LogView();
     }//GEN-LAST:event_btRunActionPerformed
 
     private void tablereportMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablereportMouseClicked

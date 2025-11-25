@@ -3203,6 +3203,111 @@ public class ediData {
        return jsonarray.toString(); 
     }
     
+    public static String getAS2LogView(String as2id, String site, String fromdate, String todate) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                if (as2id.isEmpty()) {
+                    res = st.executeQuery("SELECT * FROM as2_log  " +
+                    " left outer join as2_mstr on as2_id = as2l_id " +        
+                    " where as2l_datetime >= " + "'" + fromdate + "000000" + "'" +
+                    " AND as2l_datetime <= " + "'" + todate  + "235959" + "'" + 
+                    " AND as2l_site = " + "'" + site + "'" +         
+                    " order by as2l_datetime desc ;" ) ;
+                    } else {
+                    res = st.executeQuery("SELECT * FROM as2_log  " +
+                    " left outer join as2_mstr on as2_id = as2l_id " +        
+                    " where as2l_id >= " + "'" + as2id + "'" +
+                    " AND as2l_id <= " + "'" + as2id + "'" +        
+                    " AND as2l_datetime >= " + "'" + fromdate + "000000" + "'" +
+                    " AND as2l_datetime <= " + "'" + todate  + "235959" + "'" + 
+                    " AND as2l_site = " + "'" + site + "'" +         
+                    " order by as2l_datetime desc ;" ) ;    
+                    }
+                
+                 
+                    while (res.next()) {
+                        
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("as2l_logid"));
+                        rowArray.put(res.getString("as2l_id"));
+                        rowArray.put(res.getString("as2_desc"));
+                        rowArray.put(res.getString("as2l_datetime"));
+                        rowArray.put(res.getString("as2l_dir"));
+                        rowArray.put(res.getString("as2l_mdn"));
+                        rowArray.put(res.getString("as2l_status"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    public static String getAS2LogDetailDetail(String key) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                res = st.executeQuery("SELECT * FROM as2_log  " +     
+                    " where as2l_parent = " + "'" + key + "'" +
+                    " order by as2l_logid;" ) ;
+                    
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("as2l_logid"));
+                        rowArray.put(res.getString("as2l_parent"));
+                        rowArray.put(res.getString("as2l_messg"));
+                        rowArray.put(res.getString("as2l_status"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
     
     public static boolean addUpdateEDIMeta(String id, String type, String key, String value) {
         boolean x = false;

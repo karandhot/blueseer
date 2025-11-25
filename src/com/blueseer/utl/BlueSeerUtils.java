@@ -196,6 +196,8 @@ public class BlueSeerUtils {
     public static String updateRecordConnError = getMessageTag(1022);
     public static String deleteRecordConnError = getMessageTag(1023);
     
+    public static String dataInitError = getMessageTag(1207);
+    
     public static String SuccessBit = "0";
     public static String ErrorBit = "1";
     

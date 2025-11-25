@@ -513,7 +513,7 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
             
              switch(this.type) {
                 case "init":
-                    message = getInit();
+                    message = getInitialization();
                     break;
                 default:
                     message = new String[]{"1", "unknown action"};
@@ -595,7 +595,7 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");        
         String jsonString = null;
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
-            ArrayList<String[]> list = new ArrayList<String[]>();
+            ArrayList<String[]> list = new ArrayList<>();
             list.add(new String[]{"id", "getEDITransBrowseDetail"});
             list.add(new String[]{"param1", comkey});
             list.add(new String[]{"param2", idxkey});
@@ -793,9 +793,14 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
       
     }
 
-    public String[] getInit() {
+    public String[] getInitialization() {
         initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
-        return new String[]{"0","ready..."};
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+        
     }    
     
     public void initvars(String[] arg) {

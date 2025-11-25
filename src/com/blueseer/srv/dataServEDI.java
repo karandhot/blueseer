@@ -135,6 +135,17 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     request.getHeader("param2") )); 
             break;
             
+        case "getAS2LogView" :
+            response.getWriter().print(ediData.getAS2LogView(request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4") )); 
+            break; 
+            
+        case "getAS2LogDetailDetail" :
+            response.getWriter().print(ediData.getAS2LogDetailDetail(request.getHeader("param1"))); 
+            break;    
+            
         case "getEDICtrl" : 
             edi_ctrl ec = getEDICtrl();
             ObjectMapper objectMapper = new ObjectMapper();
