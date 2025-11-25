@@ -3905,7 +3905,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
                         arrx.add(new String[]{"id","uploadFile"});
                         arrx.add(new String[]{"filepath", "edi/maps/" + jarname});  // assumes linux OS
                         try {
-                            String s = sendServerPost(arrx, "", b);
+                            String s = sendServerPost(arrx, "", b, "dataServ");
                             bsmf.MainFrame.show(getMessageTag(1194));
                         } catch (IOException ex) {
                             bsmf.MainFrame.show(getMessageTag(1195));

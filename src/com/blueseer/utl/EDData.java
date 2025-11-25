@@ -2942,46 +2942,7 @@ public class EDData {
         }
        return cbuf;
     }
-    
-    
-        
-    public static ArrayList<String> readEDIRawFileIntoArrayList(String filename, String dir) throws MalformedURLException, SmbException, UnknownHostException, IOException {
-       ArrayList<String> segments = new ArrayList<String>();
-       String path = "";
-       
-        
-         path =  cleanDirString(EDData.getEDIBatchDir()) + filename; 
       
-       
-       if (OVData.getSystemFileServerType().toString().equals("S")) {  // if Samba type
-           NtlmPasswordAuthentication auth = NtlmPasswordAuthentication.ANONYMOUS;
-           SmbFile smbfile = new SmbFile(path, auth);
-               if (! smbfile.exists()) {
-                 bsmf.MainFrame.show("File is unavailable (samba)");
-                 return segments;
-               }
-           BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(new SmbFileInputStream(smbfile))));
-           char[] cbuf = new char[(int) smbfile.length()];
-           reader.read(cbuf,0,cbuf.length); 
-           reader.close();
-           segments = EDData.parseFile(cbuf, smbfile.getName());
-       } else {
-           
-           File file = new File(path);
-               if (! file.exists()) {
-                 bsmf.MainFrame.show("File is unavailable");
-                 return segments;
-               }
-               
-           BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(new FileInputStream(file))));
-           char[] cbuf = new char[(int) file.length()];
-           reader.read(cbuf,0,cbuf.length); 
-           reader.close();
-           segments = EDData.parseFile(cbuf, file.getName());
-       }
-       return segments;
-    }
-       
     public static ArrayList<String> readEDIRawFile(String filename, String dir, boolean wholefile, String beg, String end, String seg) throws MalformedURLException, SmbException, UnknownHostException, IOException {
        ArrayList<String> segments = new ArrayList<String>();
        
@@ -3022,7 +2983,7 @@ public class EDData {
            
            String DOC = "";
           
-           if (! bsmf.MainFrame.remoteDB) {
+       
            File file = new File(path);
            long max = file.length();
                if (! file.exists()) {
@@ -3037,20 +2998,17 @@ public class EDData {
            }
            byte[] bytesRead = new byte[diff]; 
            RandomAccessFile rf = new RandomAccessFile(path, "r");
-           rf.seek(Integer.valueOf(beg));
+           rf.seek(Integer.parseInt(beg));
            rf.read(bytesRead);
 	   DOC = new String(bytesRead); 
            rf.close();
-           } else {
-            ArrayList<String[]> arrx = new ArrayList<String[]>();
-            arrx.add(new String[]{"id","getFileContent"});
-            arrx.add(new String[]{"filepath", path});
-            DOC = sendServerPost(arrx, "", null);
-           }
-           
+        
            
            String delim = "";
-           int x = Integer.valueOf(seg);
+           int x = 10;
+           if (! seg.isBlank()) {
+               x = Integer.parseInt(seg);
+           }
            delim = String.valueOf((char) x);
            delim = EDI.escapeDelimiter(delim);
           
@@ -3060,14 +3018,6 @@ public class EDData {
            for (int i = 0; i < sarr.length; i++) {
            segments.add(sarr[i]);
            }
-      
-               
-               
-        //   BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(new FileInputStream(file))));
-      //     char[] cbuf = new char[(int) file.length()];
-       //    reader.read(cbuf,0,cbuf.length); 
-       //    reader.close();
-       //    segments = OVData.parseFile(cbuf, file.getName());
        }
        return segments;
     }

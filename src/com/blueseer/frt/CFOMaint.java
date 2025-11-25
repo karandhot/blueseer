@@ -949,7 +949,7 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
                     arrx.add(new String[]{"id","send990"});
                     arrx.add(new String[]{"key", tbkey.getText()});
                    try {   
-                       sendServerPost(arrx, "", null);
+                       sendServerPost(arrx, "", null, "dataServ");
                    } catch (IOException ex) {
                        bslog(ex);
                    }

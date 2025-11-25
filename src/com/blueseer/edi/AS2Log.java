@@ -712,7 +712,7 @@ public class AS2Log extends javax.swing.JPanel {
                     ArrayList<String[]> arrx = new ArrayList<String[]>();
                     arrx.add(new String[]{"id","getFileContent"});
                     arrx.add(new String[]{"filepath", "edi/mdn/" + tablereport.getValueAt(row, 6).toString()});
-                    tafile.setText(sendServerPost(arrx, "", null));
+                    tafile.setText(sendServerPost(arrx, "", null, "dataServ"));
                  }
              } catch (MalformedURLException ex) {
                  MainFrame.bslog(ex);

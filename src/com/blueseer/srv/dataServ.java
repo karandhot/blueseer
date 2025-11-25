@@ -56,6 +56,7 @@ import static com.blueseer.edi.apiUtils.runAPIPost;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
+import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.createMessageJSON;
 import com.blueseer.utl.OVData;
 import java.io.BufferedReader;
@@ -153,28 +154,21 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
  @Override
 protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-       // BufferedReader reader = request.getReader();
-        response.setContentType("text/plain");
-        response.setStatus(HttpServletResponse.SC_OK);
-        if (request == null) {
-            response.getWriter().println("no valid payload provided");
-        } else {
-                /*
-                if (! confirmServerAuth(request)) {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().println("br549 authorization failed");
-                    return;
-                }
-                */
-            
-            
-                if (request.getHeader("id") == null || request.getHeader("id").isEmpty()) {
-                  response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                  response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing id " + "\n" + getHeaders(request) );  
-                  return;
-                }
-
-                String id = request.getHeader("id");
+      response.setContentType("text/plain");
+    
+    if (! confirmServerAuthAPI(request, authServ.hmuser)) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter().println(" dataServ post authorization failed");
+        return;
+    }
+    
+    if (request.getHeader("id") == null || request.getHeader("id").isEmpty()) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing id " + "\n" + getHeaders(request) );  
+      return;
+    }
+    
+    String id = request.getHeader("id");
                 
                 String line = "";
                 StringBuilder sb = new StringBuilder();
@@ -309,7 +303,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                   return;  
                 }
                 
-        }
+        
     }
      
     

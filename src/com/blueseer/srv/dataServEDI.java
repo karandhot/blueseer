@@ -127,7 +127,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;  
             
         case "getDocViewData" :
-            response.getWriter().print(ediData.getDocViewData(request.getHeader("param1"), 
+            response.getWriter().print(ediData.getEDITransBrowseDocView(request.getHeader("param1"), 
                     request.getHeader("param2"),
                     request.getHeader("param3"),
                     request.getHeader("param4"),
@@ -137,7 +137,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break; 
             
         case "getFileViewData" :
-            response.getWriter().print(ediData.getFileViewData(request.getHeader("param1"), 
+            response.getWriter().print(ediData.getEDITransBrowseFileView(request.getHeader("param1"), 
                     request.getHeader("param2"),
                     request.getHeader("param3"),
                     request.getHeader("param4"),

@@ -28,27 +28,19 @@ package com.blueseer.edi;
 
 import bsmf.MainFrame;
 import static bsmf.MainFrame.bslog;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
-import static com.blueseer.edi.ediData.getDocViewData;
 import static com.blueseer.edi.ediData.getEDITransBrowseDetail;
-import static com.blueseer.edi.ediData.getFileViewData;
+import static com.blueseer.edi.ediData.getEDITransBrowseDocView;
+import static com.blueseer.edi.ediData.getEDITransBrowseFileView;
 import com.blueseer.utl.EDData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.dropColumn;
-import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.EDData.getEDIAckFile;
-import static com.blueseer.utl.EDData.getEDIStds;
 import static com.blueseer.utl.EDData.updateEDIFileLogStatusManual;
-import com.blueseer.utl.OVData;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -58,12 +50,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import javax.swing.JButton;
@@ -75,12 +62,9 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.sql.Connection;
-import java.text.DecimalFormatSymbols;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
@@ -366,7 +350,7 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
         String jsonString = null;
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
-            list.add(new String[]{"id", "getDocViewData"});
+            list.add(new String[]{"id", "getEDITransBrowseDocView"});
             list.add(new String[]{"param1", ddtradeid.getSelectedItem().toString()});
             list.add(new String[]{"param2", dddoc.getSelectedItem().toString()});
             list.add(new String[]{"param3", ddoutdoctype.getSelectedItem().toString()});
@@ -380,9 +364,9 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
                 bslog(ex);
             }
         } else {
-            jsonString = getDocViewData(ddtradeid.getSelectedItem().toString(), dddoc.getSelectedItem().toString(), ddoutdoctype.getSelectedItem().toString(), tbref.getText(), ddsite.getSelectedItem().toString(), dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()));
+            jsonString = getEDITransBrowseDocView(ddtradeid.getSelectedItem().toString(), dddoc.getSelectedItem().toString(), ddoutdoctype.getSelectedItem().toString(), tbref.getText(), ddsite.getSelectedItem().toString(), dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()));
         }
-        
+         
         Object[][] data = jsonToData(jsonString);
         
         
@@ -442,7 +426,7 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
         String jsonString = null;
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
-            list.add(new String[]{"id", "getFileViewData"});
+            list.add(new String[]{"id", "getEDITransBrowseFileView"});
             list.add(new String[]{"param1", ddtradeid.getSelectedItem().toString()});
             list.add(new String[]{"param2", dddoc.getSelectedItem().toString()});
             list.add(new String[]{"param3", ddoutdoctype.getSelectedItem().toString()});
@@ -456,7 +440,7 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
                 bslog(ex);
             }
         } else {
-            jsonString = getFileViewData(ddtradeid.getSelectedItem().toString(), dddoc.getSelectedItem().toString(), ddoutdoctype.getSelectedItem().toString(), tbref.getText(), ddsite.getSelectedItem().toString(), dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()));
+            jsonString = getEDITransBrowseFileView(ddtradeid.getSelectedItem().toString(), dddoc.getSelectedItem().toString(), ddoutdoctype.getSelectedItem().toString(), tbref.getText(), ddsite.getSelectedItem().toString(), dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()));
         }
         
         Object[][] data = jsonToData(jsonString);
@@ -1458,7 +1442,7 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
                         ArrayList<String[]> arrx = new ArrayList<String[]>();
                         arrx.add(new String[]{"id","ediReprocessFile"});
                         arrx.add(new String[]{"batchfilename", batch});
-                        r = sendServerPost(arrx, "", null);
+                        r = sendServerPost(arrx, "", null, "dataServ");
                         } else {
                           Path sourcepath = FileSystems.getDefault().getPath(cleanDirString(batchdir) + batch);
                           Path destinationpath = FileSystems.getDefault().getPath(cleanDirString(indir) + "reproc." + batch + "." + Long.toHexString(System.currentTimeMillis()));

@@ -464,7 +464,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                     arr.add(new String[]{"storepass", String.valueOf(tbstorepass.getPassword())});
                     arr.add(new String[]{"storefile", tbfile.getText()});
                     try {  
-                        String s = sendServerPost(arr, "", null);
+                        String s = sendServerPost(arr, "", null, "dataServ");
                     } catch (IOException ex) {
                         return new String[]{BlueSeerUtils.ErrorBit, "Unable to generate new Store"};
                     }
@@ -493,7 +493,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                     arr.add(new String[]{"strength", ddstrength.getSelectedItem().toString()});
                     arr.add(new String[]{"years", ddyears.getSelectedItem().toString()});
                     try {  
-                        String s = sendServerPost(arr, "", null);
+                        String s = sendServerPost(arr, "", null, "dataServ");
                     } catch (IOException ex) {
                         return new String[]{BlueSeerUtils.ErrorBit, "Unable to generate new User / keypair"};
                     }
@@ -520,7 +520,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                     arr.add(new String[]{"pass", String.valueOf(tbpass.getPassword())});
                     arr.add(new String[]{"parent", ddparent.getSelectedItem().toString()});
                     try {  
-                        String r = sendServerPost(arr, "", null);
+                        String r = sendServerPost(arr, "", null, "dataServ");
                         if (r.isBlank()) {
                         return new String[]{BlueSeerUtils.ErrorBit, "Unable to generate PGP User / keypair"};
                         } else if (r.equals("0")) {
@@ -763,7 +763,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                 ArrayList<String[]> arrx = new ArrayList<String[]>();
                 arrx.add(new String[]{"id","uploadFile"});
                 arrx.add(new String[]{"filepath", filepath});
-                r = sendServerPost(arrx, "", b);
+                r = sendServerPost(arrx, "", b, "dataServ");
                 bsmf.MainFrame.show(getMessageTag(1194));
                 } else {
                 Files.copy(file.toPath(), new File(filepath).toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -792,7 +792,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
             arr.add(new String[]{"id","getCertInfo_Str"});
             arr.add(new String[]{"pksid", tbkey.getText()});
             try {  
-                s = sendServerPost(arr, "", null);
+                s = sendServerPost(arr, "", null, "dataServ");
             } catch (IOException ex) {
                 bslog(ex);
             }
@@ -1288,7 +1288,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                     arr.add(new String[]{"id","getAsciiDumpPGPKey"});
                     arr.add(new String[]{"pksid", tbkey.getText()});
                     arr.add(new String[]{"pkstype", ddformat.getSelectedItem().toString()});
-                      s = sendServerPost(arr, "", null);  
+                      s = sendServerPost(arr, "", null, "dataServ");  
                     } else {
                       s = getAsciiDumpPGPKey(tbkey.getText(),ddformat.getSelectedItem().toString());  
                     }
@@ -1304,7 +1304,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                     arr.add(new String[]{"id","getPublicKeyAsPEM"});
                     arr.add(new String[]{"key", tbkey.getText()});
                     try {  
-                        taoutput.append(sendServerPost(arr, "", null));
+                        taoutput.append(sendServerPost(arr, "", null, "dataServ"));
                     } catch (IOException ex) {
                         bslog(ex);
                     }
@@ -1319,7 +1319,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
                     arr.add(new String[]{"id","getPublicKeyAsOPENSSH"});
                     arr.add(new String[]{"key", tbkey.getText()});
                     try {  
-                        taoutput.append(sendServerPost(arr, "", null));
+                        taoutput.append(sendServerPost(arr, "", null, "dataServ"));
                     } catch (IOException ex) {
                         bslog(ex);
                     }

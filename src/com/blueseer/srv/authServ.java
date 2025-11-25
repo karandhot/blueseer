@@ -129,6 +129,8 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         String sessionid = request.getHeader("sessionid");
         String ip = request.getRemoteAddr();
         
+        System.out.println("HERE:  " + user + "/" + pass + "/" + sessionid + "/" + ip);
+        
         if (sessionid.isBlank()) {  // must be login
             sessionid = Long.toHexString(System.currentTimeMillis());
             
@@ -141,6 +143,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                 hmuser.remove(user);                
                 String b64string = Base64.toBase64String(sessionid.getBytes());
                 hmuser.put(user, sessionid + "," + ip); 
+                response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().print(b64string);
             }
         } 

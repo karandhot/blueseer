@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.edi;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.tags;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
@@ -97,9 +98,15 @@ public class EDILoadMaint extends javax.swing.JPanel {
       MyTableModel mymodel = new MyTableModel(new Object[][]{},
                     new String[]{"File", "Load?"});
     
-    private static String inDir = cleanDirString(EDData.getEDIInDir());
-    private static String inArch = cleanDirString(EDData.getEDIInArch()); 
-    private static String ErrorDir = cleanDirString(EDData.getEDIErrorDir()); 
+    public static String indir = "";
+    public static String outdir = "";
+    public static String inarch = "";
+    public static String outarch = "";
+    public static String batchdir = "";
+    public static String errordir = "";
+    public static String mapdir = "";
+    public static String isDelete = "0";
+    public static String isArchive = "0";
     public static String rData = "";
     public static String rFileList = "";
     public static String rFileContent = "";
@@ -316,14 +323,14 @@ public class EDILoadMaint extends javax.swing.JPanel {
                     mymodel.setNumRows(0);
                     ArrayList<String[]> arr = new ArrayList<String[]>();
                     arr.add(new String[]{"id","getFilesOfDir"});
-                    arr.add(new String[]{"dir", inDir});
-                    rFileList = sendServerPost(arr, "", null);
+                    arr.add(new String[]{"dir", indir});
+                    rFileList = sendServerPost(arr, "", null, "dataServ");
                     break;
                 case "getFileContent":
                     ArrayList<String[]> arrx = new ArrayList<String[]>();
                     arrx.add(new String[]{"id","getFileContent"});
                     arrx.add(new String[]{"filepath", key[0]});
-                    rFileContent = sendServerPost(arrx, "", null);
+                    rFileContent = sendServerPost(arrx, "", null, "dataServ");
                     break;    
                 default:
                     message = new String[]{"1", "unknown action"};
@@ -439,24 +446,12 @@ public class EDILoadMaint extends javax.swing.JPanel {
     
     public void readFile(String file, String dir) throws MalformedURLException, SmbException {
     tafile.setText("");
-//    File folder = new File("smb://10.17.2.55/edi");
-  // File[] listOfFiles = folder.listFiles();
-
-  String inDir = cleanDirString(EDData.getEDIInDir());
-  
     
-  SmbFile smbfile = null;
-  File edifile = null;
-  
- //   NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, null, null);
-    NtlmPasswordAuthentication auth = NtlmPasswordAuthentication.ANONYMOUS;
-   // SmbFile folder = new SmbFile("smb://10.17.2.55/edi/", auth);
-  
-  //  file = "smb://10.17.2.5/edi/rawin/" + file;
-    file = inDir + file;
+    SmbFile smbfile = null;
+    File edifile = null;
  
-    
-    
+    NtlmPasswordAuthentication auth = NtlmPasswordAuthentication.ANONYMOUS;
+    file = indir + file;
     if (file.startsWith("smb")) {
      smbfile = new SmbFile(file, auth);
     
@@ -655,7 +650,7 @@ public class EDILoadMaint extends javax.swing.JPanel {
             
             for (int i = 0 ; i < mymodel.getRowCount(); i++) {    
                  if ( (boolean) mymodel.getValueAt(i, 1) ) {
-                    String infile = inDir + mymodel.getValueAt(i,0).toString();
+                    String infile = indir + mymodel.getValueAt(i,0).toString();
                     tafile.append("FilePath: " + infile  + "\n");
                     String[] m = EDI.processFile(infile,"","","", cbdebug.isSelected(), false, 0, 0, ddsite.getSelectedItem().toString());
                     
@@ -663,8 +658,8 @@ public class EDILoadMaint extends javax.swing.JPanel {
                     if (m[0].equals("1")) {
                        tafile.append(m[1]  + "\n");
                         if (! cbno.isSelected()) {
-                        Path movefrom = FileSystems.getDefault().getPath(inDir + mymodel.getValueAt(i,0).toString());
-                        Path target = FileSystems.getDefault().getPath(inArch + mymodel.getValueAt(i,0).toString());
+                        Path movefrom = FileSystems.getDefault().getPath(indir + mymodel.getValueAt(i,0).toString());
+                        Path target = FileSystems.getDefault().getPath(inarch + mymodel.getValueAt(i,0).toString());
                         Files.move(movefrom, target, StandardCopyOption.REPLACE_EXISTING);
                         }
                         continue;  // bale from here
@@ -672,15 +667,15 @@ public class EDILoadMaint extends javax.swing.JPanel {
                     
                      if (! cbno.isSelected()) {
                          // if delete set in control panel...remove file and continue;
-                         if (EDData.isEDIDeleteFlag()) {
-                          Path filetodelete = FileSystems.getDefault().getPath(inDir + mymodel.getValueAt(i,0).toString());
+                         if (BlueSeerUtils.ConvertStringToBool(isDelete)) {
+                          Path filetodelete = FileSystems.getDefault().getPath(indir + mymodel.getValueAt(i,0).toString());
                           Files.delete(filetodelete);
                          }
                      
                          // now archive file
-                         if (! inArch.isEmpty() && ! EDData.isEDIDeleteFlag() && EDData.isEDIArchFlag() ) {
-                         Path movefrom = FileSystems.getDefault().getPath(inDir + mymodel.getValueAt(i,0).toString());
-                         Path target = FileSystems.getDefault().getPath(inArch + mymodel.getValueAt(i,0).toString());
+                         if (! inarch.isEmpty() && ! BlueSeerUtils.ConvertStringToBool(isDelete) && BlueSeerUtils.ConvertStringToBool(isArchive) ) {
+                         Path movefrom = FileSystems.getDefault().getPath(indir + mymodel.getValueAt(i,0).toString());
+                         Path target = FileSystems.getDefault().getPath(inarch + mymodel.getValueAt(i,0).toString());
                         Files.move(movefrom, target, StandardCopyOption.REPLACE_EXISTING);
                           // now remove from list
                          }
@@ -724,7 +719,7 @@ public class EDILoadMaint extends javax.swing.JPanel {
             String[] m = EDI.processFile(filepath,"","","", cbdebug.isSelected(), false, 0, 0, ddsite.getSelectedItem().toString());
 
             if (! cbno.isSelected()) {
-                Path target = FileSystems.getDefault().getPath(inArch + path.getFileName());
+                Path target = FileSystems.getDefault().getPath(inarch + path.getFileName());
                 Files.copy(path, target, StandardCopyOption.REPLACE_EXISTING);
             }
             
@@ -765,7 +760,7 @@ public class EDILoadMaint extends javax.swing.JPanel {
         ArrayList<String[]> list = new ArrayList<String[]>();
         list.add(new String[]{"id","runEDI"});
         
-        rData = sendServerPost(list, postData, null);
+        rData = sendServerPost(list, postData, null, "dataServ");
         
         x[0] = "0";
         x[1] = "Processing complete";
@@ -782,7 +777,7 @@ public class EDILoadMaint extends javax.swing.JPanel {
         ArrayList<String[]> list = new ArrayList<String[]>();
         list.add(new String[]{"id","runEDIsingle"});
         
-        rData = sendServerPost(list, postData, null);
+        rData = sendServerPost(list, postData, null, "dataServ");
         
         x[0] = "0";
         x[1] = "Processing complete";
@@ -849,7 +844,7 @@ public class EDILoadMaint extends javax.swing.JPanel {
     public void getFiles() {
          
    
-   File folder = new File(inDir);
+   File folder = new File(indir);
    File[] listOfFiles = folder.listFiles();
    mymodel.setNumRows(0);
    
@@ -883,9 +878,35 @@ public class EDILoadMaint extends javax.swing.JPanel {
     tafile.setFont(new Font("monospaced", Font.PLAIN, 12));
     
     ddsite.removeAllItems();
-    OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));  
-    ddsite.insertItemAt("", 0);
-    ddsite.setSelectedIndex(0);
+    String defaultsite = "";
+    ArrayList<String[]> initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+                      
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("directories")) {
+              String[] dirs = s[1].split(",", -1);
+              indir = dirs[0];
+              outdir = dirs[1];
+              inarch = dirs[2];
+              outarch = dirs[3];
+              batchdir = dirs[4];
+              errordir = dirs[5];
+              mapdir = dirs[6];
+              isDelete = dirs[7];
+              isArchive = dirs[8];
+            }
+        }
+        
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
     
     //getFiles();        
     }
@@ -1103,13 +1124,12 @@ public class EDILoadMaint extends javax.swing.JPanel {
         int col = tablereport.columnAtPoint(evt.getPoint());
         if ( col == 0) {
              if (bsmf.MainFrame.remoteDB) {
-            executeTask("getFileContent", new String[]{cleanDirString(EDData.getEDIInDir()) + tablereport.getValueAt(row, col).toString()});
+            executeTask("getFileContent", new String[]{cleanDirString(indir) + tablereport.getValueAt(row, col).toString()});
         } else {
              try {
                  tafile.setText("");
                  if (! tablereport.getValueAt(row, col).toString().isEmpty()) {
-               //  ArrayList<String> segments = EDData.readEDIRawFileLiveDirIntoArrayList(tablereport.getValueAt(row, col).toString(), "In");  
-                  File infile = new File(cleanDirString(EDData.getEDIInDir()) + tablereport.getValueAt(row, col).toString());
+                  File infile = new File(cleanDirString(indir) + tablereport.getValueAt(row, col).toString());
                   Path path = FileSystems.getDefault().getPath(infile.getAbsolutePath());
                   List<String> segments = Files.readAllLines(infile.toPath());
                   
@@ -1122,11 +1142,11 @@ public class EDILoadMaint extends javax.swing.JPanel {
                     
                  }
              } catch (MalformedURLException ex) {
-                 Logger.getLogger(EDILogBrowse.class.getName()).log(Level.SEVERE, null, ex);
+                 bslog(ex);
              } catch (SmbException ex) {
-                 Logger.getLogger(EDILogBrowse.class.getName()).log(Level.SEVERE, null, ex);
+                 bslog(ex);
              } catch (IOException ex) {
-                 Logger.getLogger(EDILogBrowse.class.getName()).log(Level.SEVERE, null, ex);
+                 bslog(ex);
              }
         }
         }

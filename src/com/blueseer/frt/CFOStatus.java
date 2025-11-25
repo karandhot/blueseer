@@ -486,7 +486,7 @@ public class CFOStatus extends javax.swing.JPanel {
                     arrx.add(new String[]{"id","send214"});
                     arrx.add(new String[]{"key", tbkey.getText()});
                    try {   
-                       sendServerPost(arrx, "", null);
+                       sendServerPost(arrx, "", null, "dataServ");
                    } catch (IOException ex) {
                        bslog(ex);
                    }

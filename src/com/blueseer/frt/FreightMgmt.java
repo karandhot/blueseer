@@ -27,8 +27,8 @@ package com.blueseer.frt;
 
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
-import com.blueseer.edi.EDILogBrowse;
 import static bsmf.MainFrame.checkperms;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.ds;
@@ -2340,7 +2340,9 @@ public class FreightMgmt extends javax.swing.JPanel {
         if ( col == 0) {
              try {
                  tafilequotes.setText("");
-                  ArrayList<String> segments = EDData.readEDIRawFileIntoArrayList(tablequotes.getValueAt(row, 5).toString(), tablequotes.getValueAt(row, 6).toString());  
+                  ArrayList<String> segments = EDData.readEDIRawFile(tablequotes.getValueAt(row, 5).toString(), 
+                          tablequotes.getValueAt(row, 6).toString(),
+                          true, "0", "0", "");  
                     for (String segment : segments ) {
                         tafilequotes.append(segment);
                         tafilequotes.append("\n");
@@ -2348,11 +2350,11 @@ public class FreightMgmt extends javax.swing.JPanel {
                  
                   RawFileQuotesPanel.setVisible(true);
              } catch (MalformedURLException ex) {
-                 Logger.getLogger(EDILogBrowse.class.getName()).log(Level.SEVERE, null, ex);
+                 bslog(ex);
              } catch (SmbException ex) {
-                 Logger.getLogger(EDILogBrowse.class.getName()).log(Level.SEVERE, null, ex);
+                 bslog(ex);
              } catch (IOException ex) {
-                 Logger.getLogger(FreightMgmt.class.getName()).log(Level.SEVERE, null, ex);
+                 bslog(ex);
              }
            
         }
@@ -2368,7 +2370,9 @@ public class FreightMgmt extends javax.swing.JPanel {
         if ( col == 0) {
              try {
                   tafiletenders.setText("");
-                  ArrayList<String> segments = EDData.readEDIRawFileIntoArrayList(tabletenders.getValueAt(row, 5).toString(), tabletenders.getValueAt(row, 6).toString());  
+                  ArrayList<String> segments = EDData.readEDIRawFile(tabletenders.getValueAt(row, 5).toString(), 
+                          tabletenders.getValueAt(row, 6).toString(),
+                          true, "0", "0", "");    
                     for (String segment : segments ) {
                         tafiletenders.append(segment);
                         tafiletenders.append("\n");
@@ -2376,11 +2380,11 @@ public class FreightMgmt extends javax.swing.JPanel {
                  
                   RawFileTenderPanel.setVisible(true);
              } catch (MalformedURLException ex) {
-                 Logger.getLogger(EDILogBrowse.class.getName()).log(Level.SEVERE, null, ex);
+                 bslog(ex);
              } catch (SmbException ex) {
-                 Logger.getLogger(EDILogBrowse.class.getName()).log(Level.SEVERE, null, ex);
+                 bslog(ex);
              } catch (IOException ex) {
-                 Logger.getLogger(FreightMgmt.class.getName()).log(Level.SEVERE, null, ex);
+                 bslog(ex);
              }
            
         }
@@ -2396,18 +2400,20 @@ public class FreightMgmt extends javax.swing.JPanel {
         if ( col == 0) {
              try {
                  tafilestatus.setText("");
-                  ArrayList<String> segments = EDData.readEDIRawFileIntoArrayList(tablestatus.getValueAt(row, 5).toString(), tablestatus.getValueAt(row, 10).toString());  
+                  ArrayList<String> segments = EDData.readEDIRawFile(tablestatus.getValueAt(row, 5).toString(), 
+                          tablestatus.getValueAt(row, 10).toString(),
+                          true, "0", "0", "");    
                     for (String segment : segments ) {
                         tafilestatus.append(segment);
                         tafilestatus.append("\n");
                     } 
                   RawFileStatusPanel.setVisible(true);
              } catch (MalformedURLException ex) {
-                 Logger.getLogger(EDILogBrowse.class.getName()).log(Level.SEVERE, null, ex);
+                 bslog(ex);
              } catch (SmbException ex) {
-                 Logger.getLogger(EDILogBrowse.class.getName()).log(Level.SEVERE, null, ex);
+                 bslog(ex);
              } catch (IOException ex) {
-                 Logger.getLogger(FreightMgmt.class.getName()).log(Level.SEVERE, null, ex);
+                 bslog(ex);
              }
            
         }

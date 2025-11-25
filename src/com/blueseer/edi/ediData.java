@@ -2812,7 +2812,9 @@ public class ediData {
                        res.getString("edic_outarch") + "," +
                        res.getString("edic_batch") + "," +
                        res.getString("edic_errordir") + "," +
-                       res.getString("edic_mapdir");
+                       res.getString("edic_mapdir") + "," +
+                       res.getString("edic_delete") + "," +
+                       res.getString("edic_archyesno");
                lines.add(s);
             }
             
@@ -2840,7 +2842,7 @@ public class ediData {
         return lines;
     }
     
-    public static String getDocViewData(String tradeid, String indoc, String outdoc, String ref, String site, String fromdate, String todate) {
+    public static String getEDITransBrowseDocView(String tradeid, String indoc, String outdoc, String ref, String site, String fromdate, String todate) {
         JSONArray jsonarray = new JSONArray();
         try {
             
@@ -2958,7 +2960,7 @@ public class ediData {
        return jsonarray.toString(); 
     }
     
-    public static String getFileViewData(String tradeid, String indoc, String outdoc, String ref, String site, String fromdate, String todate) {
+    public static String getEDITransBrowseFileView(String tradeid, String indoc, String outdoc, String ref, String site, String fromdate, String todate) {
         JSONArray jsonarray = new JSONArray();
         try {
             

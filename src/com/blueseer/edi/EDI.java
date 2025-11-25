@@ -5366,7 +5366,7 @@ public class EDI {
                     ArrayList<String[]> arrx = new ArrayList<String[]>();
                     arrx.add(new String[]{"id","uploadFile"});
                     arrx.add(new String[]{"filepath", newpath.toString()});
-                    String s = sendServerPost(arrx, "", b);
+                    String s = sendServerPost(arrx, "", b, "dataServ");
                     }
             }
             catch (Exception ex) {

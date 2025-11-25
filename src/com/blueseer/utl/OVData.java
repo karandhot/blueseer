@@ -22031,7 +22031,7 @@ return mylist;
                     ArrayList<String[]> arrx = new ArrayList<String[]>();
                     arrx.add(new String[]{"id","uploadFile"});
                     arrx.add(new String[]{"filepath", cleanDirString(getSystemAttachmentDirectory()) + systype + "_" + key + "_" + Sourcefile});
-                    String s = sendServerPost(arrx, "", b);
+                    String s = sendServerPost(arrx, "", b, "dataServ");
                     bsmf.MainFrame.show(getMessageTag(1007));
                 } else {
                     Files.copy(file.toPath(), new File(cleanDirString(getSystemAttachmentDirectory()) + systype + "_" + key + "_" + Sourcefile).toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -22066,7 +22066,7 @@ return mylist;
                         ArrayList<String[]> arrx = new ArrayList<String[]>();
                         arrx.add(new String[]{"id","deleteFile"});
                         arrx.add(new String[]{"filepath", cleanDirString(getSystemAttachmentDirectory()) + systype + "_" + key + "_" + filename});
-                        String s = sendServerPost(arrx, "", null);    
+                        String s = sendServerPost(arrx, "", null, "dataServ");    
                         } else {
                         Path filepath = FileSystems.getDefault().getPath(cleanDirString(OVData.getSystemAttachmentDirectory()) + systype + "_" + key + "_" + filename);
                         java.nio.file.Files.deleteIfExists(filepath); 
