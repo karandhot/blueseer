@@ -50,6 +50,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsret;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.parseFileName;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.EDData;
@@ -2423,7 +2424,90 @@ public class ediData {
         }
         return r;
     }
-    
+        
+    public static String[] addupdateEDICtrl(edi_ctrl x) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addupdateEDICtrl"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
+        String[] m = new String[2];
+        String sqlSelect = "SELECT * FROM  edi_ctrl ";
+        String sqlInsert = "insert into edi_ctrl (edic_indir, edic_outdir, edic_scriptdir, edic_inarch, " +
+                " edic_outarch, edic_batch, edic_structure, edic_errordir, edic_mapdir, edic_archyesno, edic_delete,  " +
+                " edic_tpid, edic_gsid, edic_as2id, edic_as2url, edic_signkey, edic_enckey, edic_varchar) " 
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+        String sqlUpdate = "update edi_ctrl set edic_indir = ?, edic_outdir = ?, edic_scriptdir = ?, edic_inarch = ?, " +
+                " edic_outarch = ?, edic_batch = ?, edic_structure = ?, edic_errordir = ?, edic_mapdir = ?, edic_archyesno = ?, edic_delete = ?,  " +
+                " edic_tpid = ?, edic_gsid = ?, edic_as2id = ?, edic_as2url = ?, edic_signkey = ?, edic_enckey = ?, edic_varchar = ?" ;
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+             PreparedStatement ps = con.prepareStatement(sqlSelect);) {
+          try (ResultSet res = ps.executeQuery();
+               PreparedStatement psi = con.prepareStatement(sqlInsert);
+               PreparedStatement psu = con.prepareStatement(sqlUpdate);) {  
+            if (! res.isBeforeFirst()) {
+            psi.setString(1, x.edic_indir);
+            psi.setString(2, x.edic_outdir);
+            psi.setString(3, x.edic_scriptdir);
+            psi.setString(4, x.edic_inarch);
+            psi.setString(5, x.edic_outarch);
+            psi.setString(6, x.edic_batch);
+            psi.setString(7, x.edic_structure);
+            psi.setString(8, x.edic_errordir);
+            psi.setString(9, x.edic_mapdir);
+            psi.setString(10, x.edic_archyesno);
+            psi.setString(11, x.edic_delete);
+            psi.setString(12, x.edic_tpid);
+            psi.setString(13, x.edic_gsid);
+            psi.setString(14, x.edic_as2id);
+            psi.setString(15, x.edic_as2url);
+            psi.setString(16, x.edic_signkey);
+            psi.setString(17, x.edic_enckey);
+            psi.setString(18, x.edic_varchar);
+            int rows = psi.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+            } else {
+            psu.setString(1, x.edic_indir);
+            psu.setString(2, x.edic_outdir);
+            psu.setString(3, x.edic_scriptdir);
+            psu.setString(4, x.edic_inarch);
+            psu.setString(5, x.edic_outarch);
+            psu.setString(6, x.edic_batch);
+            psu.setString(7, x.edic_structure);
+            psu.setString(8, x.edic_errordir);
+            psu.setString(9, x.edic_mapdir);
+            psu.setString(10, x.edic_archyesno);
+            psu.setString(11, x.edic_delete);
+            psu.setString(12, x.edic_tpid);
+            psu.setString(13, x.edic_gsid);
+            psu.setString(14, x.edic_as2id);
+            psu.setString(15, x.edic_as2url);
+            psu.setString(16, x.edic_signkey);
+            psu.setString(17, x.edic_enckey);
+            psu.setString(18, x.edic_varchar);
+            int rows = psu.executeUpdate();    
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};    
+            }
+          } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+          }
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+
     
     public static as2_mstr getAS2Mstr(String[] x) {
         as2_mstr r = null;

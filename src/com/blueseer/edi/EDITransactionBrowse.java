@@ -77,6 +77,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -102,6 +103,7 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
     String errordir = "";
     String mapdir = "";
     HashMap<String, String> hm = new HashMap<>();
+    ArrayList<String[]> initDataSets = new ArrayList<>();
     
     Highlighter.HighlightPainter myHighlightPainter = new MyHighlightPainter(Color.YELLOW);
     
@@ -490,6 +492,61 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
         tafile.add(handler3.getPopup());
     }
 
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+       
+          String type = "";
+          String[] key = null;
+          
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
+              this.key = key;
+          } 
+           
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+             switch(this.type) {
+                case "init":
+                    message = getInit();
+                    break;
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+           if (this.type.equals("init")) {
+             updateForm();  
+           } else {
+             initvars(null);  
+           }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+   
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -735,24 +792,56 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
         }
       
     }
-    
+
+    public String[] getInit() {
+        initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        return new String[]{"0","ready..."};
+    }    
     
     public void initvars(String[] arg) {
        
         buttonGroup1.add(rbDocLog);
         buttonGroup1.add(rbFileLog);
+        
+        java.util.Date now = new java.util.Date();
+        dcfrom.setDate(now);
+        dcto.setDate(now);
+               
+        docmodel.setNumRows(0);
+        modeldetail.setNumRows(0);
+        tablereport.setModel(filemodel);
+        tabledetail.setModel(modeldetail);
+        
+        tablereport.getTableHeader().setReorderingAllowed(false);
+        tabledetail.getTableHeader().setReorderingAllowed(false);
+        tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+        tabledetail.getColumnModel().getColumn(0).setMaxWidth(100);
+        tabledetail.getColumnModel().getColumn(1).setMaxWidth(100);
+        tabledetail.getColumnModel().getColumn(2).setMaxWidth(100);
+        tabledetail.getColumnModel().getColumn(4).setMaxWidth(200);
+       
+        
+        btdetail.setEnabled(false);
+        bthidetext.setEnabled(false);
+        detailpanel.setVisible(false);
+        textpanel.setVisible(false);
+        btreprocess.setEnabled(false);
+        btclearstatus.setEnabled(false);
+        tafile.setText("");
+        tafile.setFont(new Font("monospaced", Font.PLAIN, 12));
+        
+        executeTask(BlueSeerUtils.dbaction.init, null);
+        
+    }
+    
+    public void updateForm() {
         rbDocLog.setSelected(true);
-        
-        
         dddoc.removeAllItems();
         ddoutdoctype.removeAllItems();
         ddtradeid.removeAllItems();
         ddsite.removeAllItems();
         
         String defaultsite = "";
-        
-        ArrayList<String[]> initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
-        
         for (String[] s : initDataSets) {
             if (s[0].equals("site")) {
               defaultsite = s[1];  
@@ -802,46 +891,7 @@ public class EDITransactionBrowse extends javax.swing.JPanel {
         
         tbtoterrors.setText("0");
         tbtot.setText("0");
-       
-        
-        java.util.Date now = new java.util.Date();
-       
-        
-        Calendar cal = new GregorianCalendar();
-        cal.set(Calendar.DAY_OF_YEAR, 1);
-        java.util.Date firstday = cal.getTime();
-        
-       // dcfrom.setDate(firstday);
-       dcfrom.setDate(now);
-        dcto.setDate(now);
-               
-        docmodel.setNumRows(0);
-        modeldetail.setNumRows(0);
-        tablereport.setModel(filemodel);
-        tabledetail.setModel(modeldetail);
-        
-        tablereport.getTableHeader().setReorderingAllowed(false);
-        tabledetail.getTableHeader().setReorderingAllowed(false);
-        
-        // tablereport.getColumnModel().getColumn(0).setCellRenderer(new ButtonRenderer());
-         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-         tabledetail.getColumnModel().getColumn(0).setMaxWidth(100);
-         tabledetail.getColumnModel().getColumn(1).setMaxWidth(100);
-         tabledetail.getColumnModel().getColumn(2).setMaxWidth(100);
-         tabledetail.getColumnModel().getColumn(4).setMaxWidth(200);
-       
-        
-        btdetail.setEnabled(false);
-        bthidetext.setEnabled(false);
-        detailpanel.setVisible(false);
-        textpanel.setVisible(false);
-        btreprocess.setEnabled(false);
-        btclearstatus.setEnabled(false);
-        tafile.setText("");
-        tafile.setFont(new Font("monospaced", Font.PLAIN, 12));
-        
     }
-    
     
     /**
      * This method is called from within the constructor to initialize the form.

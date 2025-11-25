@@ -26,37 +26,19 @@ SOFTWARE.
 package com.blueseer.srv;
 
 
-import static com.blueseer.adm.admData.getLoginInit;
 import com.blueseer.edi.ediData;
 import com.blueseer.edi.ediData.edi_ctrl;
 import static com.blueseer.edi.ediData.getEDICtrl;
-import static com.blueseer.edi.ediData.getEDITransBrowseDetail;
-
-import com.blueseer.fgl.fglData;
-import com.blueseer.fgl.fglData.AcctMstr;
-import static com.blueseer.fgl.fglData.addAcctMstr;
-import static com.blueseer.fgl.fglData.deleteAcctMstr;
-import com.blueseer.fgl.fglData.exc_mstr;
-import static com.blueseer.fgl.fglData.getAccountActivityYear;
-import static com.blueseer.fgl.fglData.getAccountBalanceReport;
-import static com.blueseer.fgl.fglData.getAcctMstr;
-import static com.blueseer.fgl.fglData.getBankMstr;
-import static com.blueseer.fgl.fglData.getCurrMstr;
-import static com.blueseer.fgl.fglData.getDeptMstr;
-import static com.blueseer.fgl.fglData.getExcMstr;
-import static com.blueseer.fgl.fglData.getFINInit;
-import static com.blueseer.fgl.fglData.updateAcctMstr;
+import static com.blueseer.edi.ediData.addupdateEDICtrl;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
-import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import com.blueseer.utl.EDData;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -158,6 +140,18 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             ObjectMapper objectMapper = new ObjectMapper();
             String r = objectMapper.writeValueAsString(ec);
             response.getWriter().print(r);
+            break;
+            
+        case "addupdateEDICtrl" : 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper omEDICtrl = new ObjectMapper();
+            edi_ctrl ecvar = omEDICtrl.readValue(sb.toString(), edi_ctrl.class);            
+            response.getWriter().print(arrayToJson(addupdateEDICtrl(ecvar)));
             break;
             
         default:

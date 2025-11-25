@@ -26,31 +26,19 @@ SOFTWARE.
 package com.blueseer.edi;
 
 import bsmf.MainFrame;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
 import static com.blueseer.adm.admData.getAllPKSKeysExceptStore;
 import com.blueseer.edi.ediData.edi_ctrl;
-import static com.blueseer.edi.ediData.getAllPKSKeys;
 import static com.blueseer.edi.ediData.getEDICtrl;
-import static com.blueseer.edi.ediData.getKeyAllByType;
+import static com.blueseer.edi.ediData.addupdateEDICtrl;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.checkLength;
 import com.blueseer.utl.BlueSeerUtils.dbaction;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
-import static com.blueseer.utl.EDData.getEDIPartnerDocIDs;
-import static com.blueseer.utl.EDData.getEDIPartnerDocSet;
-import static com.blueseer.utl.EDData.getEDIPartners;
 import com.blueseer.utl.OVData;
 import java.awt.Component;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -59,6 +47,8 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JViewport;
 import javax.swing.SwingWorker;
 
 /**
@@ -72,6 +62,7 @@ public class EDIControl extends javax.swing.JPanel {
      */
     boolean isLoad = false;
     public static edi_ctrl x = null;
+    boolean canUpdate = false;
     ArrayList<String> pksids = new ArrayList();
     
     
@@ -103,6 +94,9 @@ public class EDIControl extends javax.swing.JPanel {
                 case "get":
                     message = getRecord();
                     break;
+                case "update":
+                    message = updateRecord();
+                    break;    
                 default:
                     message = new String[]{"1", "unknown action"};
             }
@@ -179,20 +173,155 @@ public class EDIControl extends javax.swing.JPanel {
        }
     }
      
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        JScrollPane scrollpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else if (myobj instanceof JScrollPane) {
+           scrollpane = (JScrollPane) myobj;    
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                if (component instanceof JScrollPane) {
+                    setPanelComponentState((JScrollPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    
+                    component.setEnabled(b);
+                    
+                }
+            }
+            if (scrollpane != null) {
+                scrollpane.setEnabled(b);
+                JViewport viewport = scrollpane.getViewport();
+                Component[] componentspane = viewport.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
+    
+    public boolean validateInput(dbaction x) {
+        
+        if (! canUpdate) {
+            bsmf.MainFrame.show(getMessageTag(1185));
+            return false;
+        }
+
+        Map<String,Integer> f = OVData.getTableInfo(new String[]{"edi_ctrl"});
+        int fc;
+        
+        fc = checkLength(f,"edic_indir");
+        if (tbindir.getText().length() > fc || tbindir.getText().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
+            tbindir.requestFocus();
+            return false;
+        }
+        
+        fc = checkLength(f,"edic_outdir");
+        if (tboutdir.getText().length() > fc || tboutdir.getText().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
+            tboutdir.requestFocus();
+            return false;
+        }
+        
+        fc = checkLength(f,"edic_mapdir");
+        if (tbmapdir.getText().length() > fc || tbmapdir.getText().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
+            tbmapdir.requestFocus();
+            return false;
+        }
+        
+        fc = checkLength(f,"edic_batchdir");
+        if (tbbatchdir.getText().length() > fc || tbbatchdir.getText().isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
+            tbbatchdir.requestFocus();
+            return false;
+        }
+        
+      return true;
+    }
+    
+    public String[] updateRecord() {
+         String[] m = addupdateEDICtrl(createRecord());
+         return m;
+    }
+    
     public String[] getRecord() {
         pksids = getAllPKSKeysExceptStore();
         x = getEDICtrl(); 
         return x.m();
     }
     
+    public edi_ctrl createRecord() { 
+        
+        edi_ctrl x = new edi_ctrl(null, 
+                tbindir.getText(),
+                tboutdir.getText(),
+                tboutscript.getText(),
+                tbinarch.getText(),
+                tboutarch.getText(),
+                tbbatchdir.getText(),
+                tbstructure.getText(),
+                tberrordir.getText(),
+                tbmapdir.getText(),
+                String.valueOf(BlueSeerUtils.boolToInt(cbarchive.isSelected())),
+                String.valueOf(BlueSeerUtils.boolToInt(cbdelete.isSelected())), 
+                tbtpid.getText(),
+                tbgsid.getText(),
+                tbas2id.getText(),
+                tbas2url.getText(),
+                ddsigncert.getSelectedItem().toString(),
+                ddenccert.getSelectedItem().toString(),
+                ""
+                );
+       
+        return x;
+    }
+    
     public void updateForm() {
         tboutdir.setText(x.edic_outdir());
         tbindir.setText(x.edic_indir());
         tboutscript.setText(x.edic_scriptdir());
-        tbmaps.setText(x.edic_mapdir());
+        tbmapdir.setText(x.edic_mapdir());
         tbinarch.setText(x.edic_inarch());
         tboutarch.setText(x.edic_outarch());
-        tbbatch.setText(x.edic_batch());
+        tbbatchdir.setText(x.edic_batch());
         tbstructure.setText(x.edic_structure());
         tberrordir.setText(x.edic_errordir());
         cbarchive.setSelected(BlueSeerUtils.ConvertStringToBool(x.edic_archyesno()));
@@ -246,7 +375,7 @@ public class EDIControl extends javax.swing.JPanel {
         tboutarch = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         cbarchive = new javax.swing.JCheckBox();
-        tbbatch = new javax.swing.JTextField();
+        tbbatchdir = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
         cbdelete = new javax.swing.JCheckBox();
         tberrordir = new javax.swing.JTextField();
@@ -266,7 +395,7 @@ public class EDIControl extends javax.swing.JPanel {
         jLabel20 = new javax.swing.JLabel();
         ddenccert = new javax.swing.JComboBox<>();
         jLabel21 = new javax.swing.JLabel();
-        tbmaps = new javax.swing.JTextField();
+        tbmapdir = new javax.swing.JTextField();
         jLabel22 = new javax.swing.JLabel();
 
         jLabel6.setText("jLabel6");
@@ -363,7 +492,7 @@ public class EDIControl extends javax.swing.JPanel {
                         .addGap(3, 3, 3)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(tbmaps)
+                                .addComponent(tbmapdir)
                                 .addGap(83, 83, 83))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -374,7 +503,7 @@ public class EDIControl extends javax.swing.JPanel {
                                     .addComponent(tboutdir, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(tbindir, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(tbinarch, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tbbatch, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(tbbatchdir, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(tberrordir, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(btexport)
                                     .addGroup(jPanel1Layout.createSequentialGroup()
@@ -440,7 +569,7 @@ public class EDIControl extends javax.swing.JPanel {
                             .addComponent(tbinarch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(tbmaps, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbmapdir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel22)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -460,7 +589,7 @@ public class EDIControl extends javax.swing.JPanel {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(3, 3, 3)
                         .addComponent(jLabel7))
-                    .addComponent(tbbatch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(tbbatchdir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(6, 6, 6)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
@@ -499,89 +628,16 @@ public class EDIControl extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateActionPerformed
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                boolean proceed = true;
-                int i = 0;
-                
-                res = st.executeQuery("SELECT *  FROM  edi_ctrl ;");
-                    while (res.next()) {
-                        i++;
-                    }
-                if (i == 0) {
-                    
-                    st.executeUpdate("insert into edi_ctrl (edic_outdir, edic_indir, edic_scriptdir, edic_inarch, edic_outarch, " 
-                            + " edic_batch, edic_structure, edic_errordir, edic_mapdir, edic_archyesno, edic_delete, "
-                            + " edic_tpid, edic_gsid, edic_as2id, edic_as2url, edic_signkey, edic_enckey ) values (" + "'" + tboutdir.getText().replace("\\","\\\\") + "'" + ","
-                            + "'" + tbindir.getText().replace("\\","\\\\") + "'" + "," 
-                            + "'" + tboutscript.getText().replace("\\","\\\\") + "'" + ","   
-                            + "'" + tbinarch.getText().replace("\\","\\\\") + "'" + "," 
-                            + "'" + tboutarch.getText().replace("\\","\\\\") + "'" + ","
-                            + "'" + tbbatch.getText().replace("\\","\\\\") + "'" + "," 
-                            + "'" + tbstructure.getText().replace("\\","\\\\") + "'" + ","          
-                            + "'" + tberrordir.getText().replace("\\","\\\\") + "'" + ","    
-                            + "'" + tbmaps.getText().replace("\\","\\\\") + "'" + ","              
-                            + "'" + BlueSeerUtils.boolToInt(cbarchive.isSelected()) + "'" + ","      
-                            + "'" + BlueSeerUtils.boolToInt(cbdelete.isSelected()) + "'"  + ","  
-                            + "'" + tbtpid.getText() + "'" + ","
-                            + "'" + tbgsid.getText() + "'" + ","  
-                            + "'" + tbas2id.getText() + "'" + ","
-                            + "'" + tbas2url.getText() + "'"  + ","
-                            + "'" + ddsigncert.getSelectedItem().toString() + "'" + ","
-                            + "'" + ddenccert.getSelectedItem().toString() + "'"        
-                            + ") ;");              
-                          bsmf.MainFrame.show(getMessageTag(1007));
-                } else {
-                    st.executeUpdate("update edi_ctrl set " 
-                            + "edic_outdir = " + "'" + tboutdir.getText().replace("\\","\\\\") + "'" + ","
-                            + "edic_indir = " + "'" + tbindir.getText().replace("\\","\\\\") + "'" + "," 
-                            + "edic_inarch = " + "'" + tbinarch.getText().replace("\\","\\\\") + "'" + "," 
-                            + "edic_outarch = " + "'" + tboutarch.getText().replace("\\","\\\\") + "'" + "," 
-                            + "edic_batch = " + "'" + tbbatch.getText().replace("\\","\\\\") + "'" + ","   
-                            + "edic_structure = " + "'" + tbstructure.getText().replace("\\","\\\\") + "'" + ","           
-                            + "edic_errordir = " + "'" + tberrordir.getText().replace("\\","\\\\") + "'" + ","            
-                            + "edic_delete = " + "'" + BlueSeerUtils.boolToInt(cbdelete.isSelected()) + "'" + ","         
-                            + "edic_archyesno = " + "'" + BlueSeerUtils.boolToInt(cbarchive.isSelected()) + "'" + "," 
-                            + "edic_scriptdir = " + "'" + tboutscript.getText() + "'" + "," 
-                            + "edic_mapdir = " + "'" + tbmaps.getText() + "'" + ","         
-                            + "edic_tpid = " + "'" + tbtpid.getText() + "'" + ","
-                            + "edic_gsid = " + "'" + tbgsid.getText() + "'" + ","
-                            + "edic_as2id = " + "'" + tbas2id.getText() + "'" + ","
-                            + "edic_as2url = " + "'" + tbas2url.getText() + "'" + ","
-                            + "edic_signkey = " + "'" + ddsigncert.getSelectedItem().toString() + "'" + ","
-                            + "edic_enckey = " + "'" + ddenccert.getSelectedItem().toString() + "'"        
-                            + ";");   
-                    bsmf.MainFrame.show(getMessageTag(1008));
-                }
-              
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        if (! validateInput(dbaction.update)) {
+           return;
+       }
+        setPanelComponentState(this, false);
+        executeTask(dbaction.update, null);
     }//GEN-LAST:event_btupdateActionPerformed
 
     private void btexportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btexportActionPerformed
-        
+        bsmf.MainFrame.show("need refactoring for dbremote project");
+        /*
         OVData.exportTable("edi_mstr", "edimstr.txt");
         OVData.exportTable("edi_doc", "edidoc.txt");
         OVData.exportTable("edi_docdet", "edidocdet.txt");
@@ -589,7 +645,7 @@ public class EDIControl extends javax.swing.JPanel {
         OVData.exportTable("edp_partner", "edppartner.txt");
         OVData.exportTable("edpd_partner", "edpdpartner.txt");
         bsmf.MainFrame.show("Files exported to temp dir");
-        
+        */
     }//GEN-LAST:event_btexportActionPerformed
 
 
@@ -619,12 +675,12 @@ public class EDIControl extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField tbas2id;
     private javax.swing.JTextField tbas2url;
-    private javax.swing.JTextField tbbatch;
+    private javax.swing.JTextField tbbatchdir;
     private javax.swing.JTextField tberrordir;
     private javax.swing.JTextField tbgsid;
     private javax.swing.JTextField tbinarch;
     private javax.swing.JTextField tbindir;
-    private javax.swing.JTextField tbmaps;
+    private javax.swing.JTextField tbmapdir;
     private javax.swing.JTextField tboutarch;
     private javax.swing.JTextField tboutdir;
     private javax.swing.JTextField tboutscript;
