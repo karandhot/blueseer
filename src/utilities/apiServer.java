@@ -190,6 +190,7 @@ public class apiServer {
         context.addServlet(dataServOV.class, "/dataServOV/*");
         context.addServlet(dataServDT.class, "/dataServDT/*");
         context.addServlet(dataServEDI.class, "/dataServEDI/*");
+        context.addServlet(dataServEDI.class, "/dataServADM/*");
         //server.setHandler(context);
         
         /*

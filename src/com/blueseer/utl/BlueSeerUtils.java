@@ -140,7 +140,7 @@ import org.w3c.dom.Element;
 public class BlueSeerUtils {
     
     public enum dbaction {
-        add, update, get, delete, run, addItem, updateItem, deleteItem
+        init, add, update, get, delete, run, addItem, updateItem, deleteItem
     }
     
    

@@ -2201,6 +2201,18 @@ public class admData {
     }
     
     public static ArrayList<String> getAllPKSKeysExceptStore() {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getAllPKSKeysExceptStore"});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
         ArrayList x = new ArrayList();
         String sql = "select pks_id from pks_mstr where pks_type <> 'store' ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());

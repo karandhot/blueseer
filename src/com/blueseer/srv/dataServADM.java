@@ -26,7 +26,9 @@ SOFTWARE.
 package com.blueseer.srv;
 
 
+import com.blueseer.adm.admData;
 import static com.blueseer.adm.admData.getLoginInit;
+import com.blueseer.adm.admData.pks_mstr;
 import com.blueseer.edi.ediData;
 import com.blueseer.edi.ediData.edi_ctrl;
 import static com.blueseer.edi.ediData.getEDICtrl;
@@ -68,7 +70,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author terryva
  */
-public class dataServEDI extends HttpServlet {
+public class dataServADM extends HttpServlet {
  
     
         
@@ -98,71 +100,13 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     String id = request.getHeader("id");
     
     switch (id) {
-        case "getEDIInit" :
-            response.getWriter().print(ArrayListStringArrayToJson(ediData.getEDIInit(request.getHeader("param1"), request.getHeader("param2"))));
-            break;
-            
-        case "readEDIRawFile" :
-            response.getWriter().print(ArrayListStringToJson(EDData.readEDIRawFile(request.getHeader("param1"), 
-                    request.getHeader("param2"),
-                    BlueSeerUtils.ConvertStringToBool(request.getHeader("param3")),
-                    request.getHeader("param4"),
-                    request.getHeader("param5"),
-                    request.getHeader("param6") )));
-            break;
-            
-        case "getEDIRawFileByFile" :
-            response.getWriter().print(ArrayListStringToJson(EDData.getEDIRawFileByFile(request.getHeader("param1"), 
-                    request.getHeader("param2"),
-                    request.getHeader("param3"),
-                    request.getHeader("param4")))); 
-            break;     
-            
-        case "getEDIAckFile" :
-            response.getWriter().print(ArrayListStringToJson(EDData.getEDIAckFile(request.getHeader("param1"), 
-                    request.getHeader("param2"),
-                    request.getHeader("param3") )));
-            break;    
-            
-        case "getEDIBatchFromedi_file" :
-            response.getWriter().print(EDData.getEDIBatchFromedi_file(request.getHeader("param1")));
-            break;  
-            
-        case "getEDITransBrowseDocView" :
-            response.getWriter().print(ediData.getEDITransBrowseDocView(request.getHeader("param1"), 
-                    request.getHeader("param2"),
-                    request.getHeader("param3"),
-                    request.getHeader("param4"),
-                    request.getHeader("param5"),
-                    request.getHeader("param6"),
-                    request.getHeader("param7") )); 
-            break; 
-            
-        case "getEDITransBrowseFileView" :
-            response.getWriter().print(ediData.getEDITransBrowseFileView(request.getHeader("param1"), 
-                    request.getHeader("param2"),
-                    request.getHeader("param3"),
-                    request.getHeader("param4"),
-                    request.getHeader("param5"),
-                    request.getHeader("param6"),
-                    request.getHeader("param7") )); 
-            break;  
-            
-        case "getEDITransBrowseDetail" :
-            response.getWriter().print(ediData.getEDITransBrowseDetail(request.getHeader("param1"), 
-                    request.getHeader("param2") )); 
-            break;
-            
-        case "getEDICtrl" : 
-            edi_ctrl ec = getEDICtrl();
-            ObjectMapper objectMapper = new ObjectMapper();
-            String r = objectMapper.writeValueAsString(ec);
-            response.getWriter().print(r);
+        case "getAllPKSKeysExceptStore" : 
+            response.getWriter().print(ArrayListStringToJson(admData.getAllPKSKeysExceptStore()));
             break;
             
         default:
-        response.getWriter().print("no switch case exists in dataServEDI for id: " + id);
-        System.out.println("no switch case exists in dataServEDI for id: " + id);    
+        response.getWriter().print("no switch case exists in dataServADM for id: " + id);
+        System.out.println("no switch case exists in dataServADM for id: " + id);    
             
     }
     

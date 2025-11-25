@@ -33,9 +33,12 @@ import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import static com.blueseer.adm.admData.getAllPKSKeysExceptStore;
+import com.blueseer.edi.ediData.edi_ctrl;
 import static com.blueseer.edi.ediData.getAllPKSKeys;
+import static com.blueseer.edi.ediData.getEDICtrl;
 import static com.blueseer.edi.ediData.getKeyAllByType;
 import com.blueseer.utl.BlueSeerUtils;
+import com.blueseer.utl.BlueSeerUtils.dbaction;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.EDData.getEDIPartnerDocIDs;
 import static com.blueseer.utl.EDData.getEDIPartnerDocSet;
@@ -56,6 +59,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 
 /**
  *
@@ -67,12 +71,70 @@ public class EDIControl extends javax.swing.JPanel {
      * Creates new form EDIControlPanel
      */
     boolean isLoad = false;
+    public static edi_ctrl x = null;
+    ArrayList<String> pksids = new ArrayList();
+    
     
     public EDIControl() {
         initComponents();
         setLanguageTags(this);
     }
 
+    public void executeTask(dbaction x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+       
+          String type = "";
+          String[] key = null;
+          
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
+              this.key = key;
+          } 
+           
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+             switch(this.type) {
+                case "get":
+                    message = getRecord();
+                    break;
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+           if (this.type.equals("get")) {
+             updateForm();  
+           } else {
+             initvars(null);  
+           }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+   
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -116,82 +178,47 @@ public class EDIControl extends javax.swing.JPanel {
                 }
        }
     }
+     
+    public String[] getRecord() {
+        pksids = getAllPKSKeysExceptStore();
+        x = getEDICtrl(); 
+        return x.m();
+    }
+    
+    public void updateForm() {
+        tboutdir.setText(x.edic_outdir());
+        tbindir.setText(x.edic_indir());
+        tboutscript.setText(x.edic_scriptdir());
+        tbmaps.setText(x.edic_mapdir());
+        tbinarch.setText(x.edic_inarch());
+        tboutarch.setText(x.edic_outarch());
+        tbbatch.setText(x.edic_batch());
+        tbstructure.setText(x.edic_structure());
+        tberrordir.setText(x.edic_errordir());
+        cbarchive.setSelected(BlueSeerUtils.ConvertStringToBool(x.edic_archyesno()));
+        cbdelete.setSelected(BlueSeerUtils.ConvertStringToBool(x.edic_delete()));
+        tbtpid.setText(x.edic_tpid());
+        tbgsid.setText(x.edic_gsid());
+        tbas2id.setText(x.edic_as2id());
+        tbas2url.setText(x.edic_as2url());
+        ddsigncert.setSelectedItem(x.edic_signkey());
+        ddenccert.setSelectedItem(x.edic_enckey());
         
-    public void getdefault() {
-        
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                res = st.executeQuery("select * from edi_ctrl;");
-                while (res.next()) {
-                    i++;
-                    tboutdir.setText(res.getString("edic_outdir"));
-                    tbindir.setText(res.getString("edic_indir"));
-                    tboutscript.setText(res.getString("edic_scriptdir"));
-                    tbmaps.setText(res.getString("edic_mapdir"));
-                    tbinarch.setText(res.getString("edic_inarch"));
-                    tboutarch.setText(res.getString("edic_outarch"));
-                    tbbatch.setText(res.getString("edic_batch"));
-                    tbstructure.setText(res.getString("edic_structure"));
-                    tberrordir.setText(res.getString("edic_errordir")); 
-                    cbarchive.setSelected(BlueSeerUtils.ConvertStringToBool(res.getString("edic_archyesno")));
-                    cbdelete.setSelected(BlueSeerUtils.ConvertStringToBool(res.getString("edic_delete")));
-                    tbtpid.setText(res.getString("edic_tpid"));
-                    tbgsid.setText(res.getString("edic_gsid"));
-                    tbas2id.setText(res.getString("edic_as2id"));
-                    tbas2url.setText(res.getString("edic_as2url"));
-                    ddsigncert.setSelectedItem(res.getString("edic_signkey"));
-                    ddenccert.setSelectedItem(res.getString("edic_enckey"));
-                   
-                }
-               
-                if (i == 0)
-                    bsmf.MainFrame.show(getMessageTag(1001));
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+        ddsigncert.removeAllItems();
+        ddenccert.removeAllItems();
+        for (int i = 0; i < pksids.size(); i++) {
+            ddsigncert.addItem(pksids.get(i));
+            ddenccert.addItem(pksids.get(i));
         }
-
+        ddsigncert.insertItemAt("", 0);
+        ddenccert.insertItemAt("", 0);
     }
     
     public void initvars(String[] key) {
         
         
         isLoad = true;
-               
-        ddsigncert.removeAllItems();
-        ddenccert.removeAllItems();
-        ArrayList<String> certs = getAllPKSKeysExceptStore(); 
-        for (int i = 0; i < certs.size(); i++) {
-            ddsigncert.addItem(certs.get(i));
-            ddenccert.addItem(certs.get(i));
-        }
-        ddsigncert.insertItemAt("", 0);
-        ddenccert.insertItemAt("", 0);
-        
-        getdefault();
-        
+        executeTask(dbaction.get, null);
         isLoad = false;
         
     }

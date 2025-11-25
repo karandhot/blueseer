@@ -60,6 +60,7 @@ import static com.blueseer.utl.OVData.isSMTPServerBool;
 import static com.blueseer.utl.OVData.sendEmail;
 import static com.blueseer.utl.OVData.sendEmailwSession;
 import static com.blueseer.utl.OVData.setEmailSession;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -2365,6 +2366,24 @@ public class ediData {
     public static edi_ctrl getEDICtrl() {
         edi_ctrl r = null;
         String[] m = new String[2];
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getEDICtrl"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServEDI");
+                r = objectMapper.readValue(returnstring, edi_ctrl.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new edi_ctrl(m);
+                return r;
+            }
+        }
+        
+        
         String sql = "select * from edi_ctrl ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
