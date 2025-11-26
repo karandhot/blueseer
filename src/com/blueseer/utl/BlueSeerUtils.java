@@ -3132,6 +3132,9 @@ public class BlueSeerUtils {
         Object[][] data = new Object[rawData.length][rawData[0].length];
         for (int i = 0; i < rawData.length; i++) {
             for (int j = 0; j < rawData[i].length; j++) {
+                if (rawData[i][j] == null) {
+                    continue;
+                }
                 if (rawData[i][j].equals("select")) { // Assuming the first column is for ImageIcons.
                     data[i][j] = BlueSeerUtils.clickflag;
                 } else if (rawData[i][j].equals("detail")) {

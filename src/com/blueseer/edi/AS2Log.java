@@ -188,6 +188,8 @@ public class AS2Log extends javax.swing.JPanel {
         for (int j = 0; j < data.length; j++) { // 
                 if (data[j][7].equals("success")) { 
                     data[j][7] = BlueSeerUtils.clickcheck;
+                } else if (data[j][7].equals("passive")) {
+                    data[j][7] = BlueSeerUtils.clickcheckyellow;
                 } else {
                     data[j][7] = BlueSeerUtils.clicknocheck;
                 }
