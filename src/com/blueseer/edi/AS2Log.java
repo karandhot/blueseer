@@ -66,6 +66,7 @@ import jcifs.smb.SmbException;
 public class AS2Log extends javax.swing.JPanel {
  
     ArrayList<String[]> initDataSets = new ArrayList<>();
+    Object[][] rdata;
                 
     javax.swing.table.DefaultTableModel modeltable = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{"Select", "LogID", "PartnerID", "Description", "TimeStamp", "Dir", "MDN", "Status"})
@@ -158,8 +159,8 @@ public class AS2Log extends javax.swing.JPanel {
     
    
     
-    public void getAS2LogView() {
-     
+    public String[] getAS2LogView() {
+       
        DateFormat dfdate = new SimpleDateFormat("yyyyMMdd");        
         String jsonString = null;
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
@@ -173,37 +174,18 @@ public class AS2Log extends javax.swing.JPanel {
                 jsonString = sendServerPost(list, "", null, "dataServEDI"); 
             } catch (IOException ex) {
                 bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getAS2LogView")};
             }
         } else {
             jsonString = ediData.getAS2LogView(tbas2id.getText(), ddsite.getSelectedItem().toString(), dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()));
         }
         
-        Object[][] data = jsonToData(jsonString);
+         rdata = jsonToData(jsonString);
         
         
-        modeltable.setNumRows(0);
-        tafile.setText("");
-        tablereport.setModel(modeltable);
         
-        for (int j = 0; j < data.length; j++) { // 
-                if (data[j][7].equals("success")) { 
-                    data[j][7] = BlueSeerUtils.clickcheck;
-                } else if (data[j][7].equals("passive")) {
-                    data[j][7] = BlueSeerUtils.clickcheckyellow;
-                } else {
-                    data[j][7] = BlueSeerUtils.clicknocheck;
-                }
-            }
-        
-        int i = 0;
-      if (data.length > 0) {
-        for (Object[] rowData : data) {
-         modeltable.addRow(rowData);
-         i++;
-        } 
-      }
-      tbtot.setText(String.valueOf(i));
-        
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
    }
     
     
@@ -263,7 +245,7 @@ public class AS2Log extends javax.swing.JPanel {
        }
     }
     
-    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
+    public void initTask(BlueSeerUtils.dbaction x, String[] y) { 
       
         class Task extends SwingWorker<String[], Void> {
        
@@ -304,6 +286,78 @@ public class AS2Log extends javax.swing.JPanel {
            } else {
              initvars(null);  
            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+   
+    public void runTask(BlueSeerUtils.dbaction x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+       
+          String type = "";
+          String[] key = null;
+          
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
+              this.key = key;
+          } 
+           
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+             switch(this.type) {
+                case "run":
+                    message = getAS2LogView();
+                    break;
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            modeltable.setNumRows(0);
+            tafile.setText("");
+            tablereport.setModel(modeltable);
+        
+            for (int j = 0; j < rdata.length; j++) { // 
+                if (rdata[j][7].equals("success")) { 
+                    rdata[j][7] = BlueSeerUtils.clickcheck;
+                } else if (rdata[j][7].equals("passive")) {
+                    rdata[j][7] = BlueSeerUtils.clickcheckyellow;
+                } else {
+                    rdata[j][7] = BlueSeerUtils.clicknocheck;
+                }
+            }
+        
+            int i = 0;
+            if (rdata.length > 0) {
+                for (Object[] rowData : rdata) {
+                modeltable.addRow(rowData);
+                i++;
+                } 
+            }
+            tbtot.setText(String.valueOf(i));
             
             } catch (Exception e) {
                 MainFrame.bslog(e);
@@ -379,8 +433,7 @@ public class AS2Log extends javax.swing.JPanel {
         tbtoterrors.setText("0");
         tbtot.setText("0");
     }
-    
-    
+        
     public void initvars(String[] arg) {
        
         
@@ -413,7 +466,7 @@ public class AS2Log extends javax.swing.JPanel {
         detailpanel.setVisible(false);
         textpanel.setVisible(false);
         
-        executeTask(BlueSeerUtils.dbaction.init, null);
+        initTask(BlueSeerUtils.dbaction.init, null);
           
     }
     
@@ -697,7 +750,7 @@ public class AS2Log extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-              getAS2LogView();
+        runTask(BlueSeerUtils.dbaction.run, null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void tablereportMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablereportMouseClicked
