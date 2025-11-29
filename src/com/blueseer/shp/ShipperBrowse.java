@@ -25,61 +25,32 @@ SOFTWARE.
  */
 package com.blueseer.shp;
 
-import com.blueseer.far.*;
-import com.blueseer.shp.*;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static bsmf.MainFrame.checkperms;
-import static bsmf.MainFrame.db;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.FileDialog;
-import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
-import static bsmf.MainFrame.driver;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.mydialog;
-import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
-import static com.blueseer.utl.BlueSeerUtils.bsNumber;
-import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
+import static com.blueseer.shp.shpData.getShipperBrowseDetail;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
-import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
-import java.sql.Connection;
-import java.text.DecimalFormatSymbols;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -89,10 +60,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
-import net.sf.jasperreports.engine.JasperExportManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.view.JasperViewer;
 
 /**
  *
@@ -100,9 +67,10 @@ import net.sf.jasperreports.view.JasperViewer;
  */
 public class ShipperBrowse extends javax.swing.JPanel {
  
-    boolean sending = false;
+    Object[][] rData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
     
-    javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+    javax.swing.table.DefaultTableModel modeltable = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("select"), 
                             getGlobalColumnTag("detail"), 
                             getGlobalColumnTag("shipper"), 
@@ -193,25 +161,41 @@ public class ShipperBrowse extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
-    
-    public void executeTask(String x, int y, String w) { 
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
       
         class Task extends SwingWorker<String[], Void> {
        
-          String key = "";
-          int row = 0;
-          String site = "";
+          String type = "";
+          String[] key = null;
           
-          public Task(String key, int row, String site) { 
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
               this.key = key;
-              this.row = row;
-              this.site = site;
           } 
            
         @Override
         public String[] doInBackground() throws Exception {
             String[] message = new String[2];
-            message = OVData.sendInvoice(key, site); 
+            message[0] = "";
+            message[1] = "";
+            
+            
+             switch(this.type) {
+                case "init":
+                    message = getInitialization();
+                    break;
+                    
+                case "run":
+                    if (this.key[0].equals("getShipperBrowseView")) {
+                      message = getShipperBrowseView();
+                    } else {
+                       message = getDetail(this.key[1]);  
+                    }
+                    break;
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
             return message;
         }
  
@@ -220,8 +204,19 @@ public class ShipperBrowse extends javax.swing.JPanel {
             try {
             String[] message = get();
             BlueSeerUtils.endTask(message);
-            sending = false;
-            tablereport.getModel().setValueAt(BlueSeerUtils.clickmail,row,11);
+            
+                if (this.type.equals("init")) {
+                    done_Initialization();
+                }
+                
+                if (this.type.equals("run")) {
+                    if (this.key[0].equals("getShipperBrowseView")) {
+                      done_getShipperBrowseView();
+                    } else {
+                      done_getDetail(); 
+                    }
+                } 
+            
             } catch (Exception e) {
                 MainFrame.bslog(e);
             } 
@@ -229,11 +224,12 @@ public class ShipperBrowse extends javax.swing.JPanel {
         }
     }  
       
-       BlueSeerUtils.startTask(new String[]{"","Running..."});
-       Task z = new Task(x, y, w); 
+       BlueSeerUtils.startTask(new String[]{"", getMessageTag(1189)});
+       Task z = new Task(x, y); 
        z.execute(); 
        
     }
+   
     
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
@@ -279,60 +275,135 @@ public class ShipperBrowse extends javax.swing.JPanel {
        }
     }
     
-    public void getdetail(String shipper) {
+    public String[] getInitialization() {
+        initDataSets = shpData.getShipperMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+        
+    }    
+    
+    public String[] getShipperBrowseView() {
+       
+       DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getShipperBrowseView"});
+            list.add(new String[]{"param1", tbfromshipper.getText()});
+            list.add(new String[]{"param2", tbtoshipper.getText()});
+            list.add(new String[]{"param3", tbfromcust.getText()});
+            list.add(new String[]{"param4", tbtocust.getText()});
+            list.add(new String[]{"param5", tbpo.getText()});
+            list.add(new String[]{"param6", dfdate.format(dcfrom.getDate())});
+            list.add(new String[]{"param7", dfdate.format(dcto.getDate())});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServSHP"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getShipperBrowseView")};
+            }
+        } else {
+            jsonString = shpData.getShipperBrowseView(tbfromshipper.getText(), tbtoshipper.getText(), tbfromcust.getText(), tbtocust.getText(), tbpo.getText(), dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()));
+        }
+        
+         rData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+   }
+    
+    public String[] getDetail(String shipper) {
       
+          String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getShipperBrowseDetail"});
+            list.add(new String[]{"param1", shipper});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServSHP"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getShipperBrowseDetail(shipper); 
+        }        
+        rData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
       
-         modeldetail.setNumRows(0);
+    }
+   
+    public void done_Initialization() {
+        
+        ddsite.removeAllItems();
+        
+        String defaultsite = "";
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+                      
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+        }
+        
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+       
+    }
+
+    public void done_getShipperBrowseView() {
+        double totsales = 0;
+        double totqty = 0;
+        modeltable.setNumRows(0);
+        tablereport.setModel(modeltable);
+        if (rData != null) {
+            for (int j = 0; j < rData.length; j++) { // 
+                if (rData[j][7].equals("1")) { 
+                    rData[j][7] = "Confirmed";
+                } else {
+                    rData[j][7] = "Not Confirmed";
+                }
+            }
+        
+            int i = 0;
+            if (rData.length > 0) {
+                for (Object[] rowData : rData) {
+                 if (! cbconfirmed.isSelected() && rowData[7].equals("1")) { continue; }   
+                 if (! cbunconfirmed.isSelected() && rowData[7].equals("0")) { continue; }
+                 totsales = totsales + bsParseDouble(rowData[9].toString()); 
+                 totqty = totqty + bsParseDouble(rowData[8].toString());
+                 modeltable.addRow(rowData); 
+                 i++;
+                } 
+            }
+            tbtotqty.setText(currformatDouble(totqty));
+            tbtotsales.setText(currformatDouble(totsales));
+        }
+        rData = null;
+    }   
+     
+    public void done_getDetail() {
+      modeldetail.setNumRows(0);
          double totalsales = 0;
          double totalqty = 0;
          
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null; try {
-                
-                int i = 0;
-                String blanket = "";
-                res = st.executeQuery("select shd_id, shd_soline, shd_item, shd_custitem, shd_so, shd_po, shd_qty, shd_netprice from ship_det " +
-                        " where shd_id = " + "'" + shipper + "'" +  ";");
-                while (res.next()) {
-                    totalsales = totalsales + (res.getDouble("shd_qty") * res.getDouble("shd_netprice"));
-                    totalqty = totalqty + res.getDouble("shd_qty");
-                   modeldetail.addRow(new Object[]{ 
-                      res.getString("shd_id"), 
-                      res.getString("shd_item"),
-                      res.getString("shd_custitem"),
-                      res.getString("shd_so"),
-                      res.getString("shd_soline"), 
-                      res.getString("shd_po"),
-                      bsNumber(res.getString("shd_qty")),
-                      bsParseDouble(currformatDouble(res.getDouble("shd_netprice")))
-                   });
-                }
-               
-               tbdetsales.setText(currformatDouble(totalsales));
-               tbdetqty.setText(currformatDouble(totalqty));
-               
-                tabledetail.setModel(modeldetail);
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            }
-            bsmf.MainFrame.con.close();
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+       if (rData != null) {
+        if (rData.length > 0) {
+            for (Object[] rowData : rData) {
+                totalsales = totalsales + (bsParseDouble(rowData[6].toString()) * bsParseDouble(rowData[7].toString()));
+                totalqty = totalqty + bsParseDouble(rowData[6].toString());
+                modeldetail.addRow(rowData);
+            } 
         }
-
+       }
+       rData = null;
     }
-   
     
     public void initvars(String[] arg) {
         tbdetqty.setText("0");
@@ -357,14 +428,14 @@ public class ShipperBrowse extends javax.swing.JPanel {
          calto.add(Calendar.DATE, 30);
          dcto.setDate(calto.getTime());
                
-        mymodel.setNumRows(0);
+        modeltable.setNumRows(0);
         modeldetail.setNumRows(0);
         
         tabledetail.setModel(modeldetail);
         tabledetail.getTableHeader().setReorderingAllowed(false);
         tabledetail.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
                
-        tablereport.setModel(mymodel);
+        tablereport.setModel(modeltable);
         tablereport.getTableHeader().setReorderingAllowed(false);
         tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
         tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
@@ -418,6 +489,8 @@ public class ShipperBrowse extends javax.swing.JPanel {
         cbunconfirmed = new javax.swing.JCheckBox();
         tbpo = new javax.swing.JTextField();
         jLabel9 = new javax.swing.JLabel();
+        ddsite = new javax.swing.JComboBox<>();
+        jLabel10 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         tbtotsales = new javax.swing.JLabel();
@@ -541,6 +614,9 @@ public class ShipperBrowse extends javax.swing.JPanel {
 
         jLabel9.setText("PO:");
 
+        jLabel10.setText("Site:");
+        jLabel10.setName("lblsite"); // NOI18N
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -561,20 +637,25 @@ public class ShipperBrowse extends javax.swing.JPanel {
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jLabel3)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(tbtoshipper, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tbfromshipper, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel1))
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addGap(27, 27, 27)
-                                .addComponent(jLabel4))))
+                                .addComponent(jLabel3))))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jLabel10)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(ddsite, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(tbtoshipper, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+                    .addComponent(tbfromshipper, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(jLabel1))
+                        .addGroup(jPanel2Layout.createSequentialGroup()
+                            .addGap(27, 27, 27)
+                            .addComponent(jLabel4)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addGap(55, 55, 55)
                         .addComponent(jLabel9)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -629,7 +710,9 @@ public class ShipperBrowse extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbpo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel9))
+                    .addComponent(jLabel9)
+                    .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel10))
                 .addContainerGap())
         );
 
@@ -735,139 +818,7 @@ public class ShipperBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                String fromdate = "";
-                String todate = "";
-                mymodel.setNumRows(0);
-                 
-              //  tablereport.getColumnModel().getColumn(10).setCellRenderer(new InvoiceBrowsePanel.SomeRenderer());
-                
-                 double totsales = 0;
-                 double totqty = 0;
-                 
-            
-                // String site = ddsite.getSelectedItem().toString(); 
-                                  
-                 String shipperfrom = tbfromshipper.getText();
-                 String shipperto = tbtoshipper.getText();
-                 String custto = tbtocust.getText();
-                 String custfrom = tbfromcust.getText();
-                 String status = "";
-                
-                 
-                 if (shipperfrom.isEmpty()) {
-                     shipperfrom = "0";
-                 }
-                 if (shipperto.isEmpty()) {
-                     shipperto = "ZZZZZZZZ";
-                 }
-                 if (custfrom.isEmpty()) {
-                     custfrom = "0";
-                 }
-                 if (custto.isEmpty()) {
-                     custto = "ZZZZZZZZ";
-                 }
-                 if (dcfrom.getDate() == null) {
-                     fromdate = bsmf.MainFrame.lowdate;
-                 } else {
-                     fromdate = dfdate.format(dcfrom.getDate());
-                 }
-                 if (dcto.getDate() == null) {
-                     todate = bsmf.MainFrame.hidate;
-                 } else {
-                    todate = dfdate.format(dcto.getDate()); 
-                 }
-                
-                      //must be type balance sheet
-                
-                  if (tbpo.getText().isBlank()) {
-                    res = st.executeQuery("select sh_id, sh_status, sh_cust, cm_name, sh_shipdate, sh_po, sum(shd_qty) as 'qty', sum(shd_qty * shd_netprice) as 'price' from ship_mstr " +
-                        " inner join ship_det on shd_id = sh_id " +
-                        " inner join cm_mstr on cm_code = sh_cust " +
-                        " where " +
-                        " sh_id >= " + "'" + shipperfrom + "'" + " AND " +
-                        " sh_id <= " + "'" + shipperto + "'" + " AND " +
-                        " sh_shipdate >= " + "'" + fromdate + "'" + " AND " +
-                        " sh_shipdate <= " + "'" + todate + "'" + " AND " +
-                        " sh_cust >= " + "'" + custfrom + "'" + " AND " +
-                        " sh_cust <= " + "'" + custto + "'"  +
-                        " group by sh_id, sh_status, sh_cust, cm_name, sh_shipdate, sh_po;");
-                  } else {
-                    res = st.executeQuery("select sh_id, sh_status, sh_cust, cm_name, sh_shipdate, sh_po, sum(shd_qty) as 'qty', sum(shd_qty * shd_netprice) as 'price' from ship_mstr " +
-                        " inner join ship_det on shd_id = sh_id " +
-                        " inner join cm_mstr on cm_code = sh_cust " +
-                        " where " +
-                        " sh_id >= " + "'" + shipperfrom + "'" + " AND " +
-                        " sh_id <= " + "'" + shipperto + "'" + " AND " +
-                        " sh_shipdate >= " + "'" + fromdate + "'" + " AND " +
-                        " sh_shipdate <= " + "'" + todate + "'" + " AND " +
-                        " sh_cust >= " + "'" + custfrom + "'" + " AND " +
-                        " sh_cust <= " + "'" + custto + "'"  + " AND " +
-                        " sh_po like '%" + tbpo.getText() + "%'" +
-                        " group by sh_id, sh_status, sh_cust, cm_name, sh_shipdate, sh_po;");
-                  }
-                  
-               
-                
-                       while (res.next()) {
-                           
-                        status = (res.getString("sh_status").equals("1")) ? "Confirmed" : "Not Confirmed";
-                        
-                        if (! cbconfirmed.isSelected() && res.getString("sh_status").equals("1")) {
-                            continue;
-                        }
-                        if (! cbunconfirmed.isSelected() && res.getString("sh_status").equals("0")) {
-                            continue;
-                        }
-                           
-                         totsales = totsales + res.getDouble("price");
-                         totqty = totqty + res.getDouble("qty");
-                         
-                         mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, BlueSeerUtils.clickbasket, 
-                                res.getString("sh_id"),
-                                res.getString("sh_cust"),
-                                res.getString("cm_name"),
-                                getDateDB(res.getString("sh_shipdate")),
-                                res.getString("sh_po"),
-                                status,
-                                bsNumber(res.getString("qty")),
-                                bsParseDouble(currformatDouble(res.getDouble("price"))) 
-                            });
-                                
-                       }
-              
-                tbtotqty.setText(currformatDouble(totqty));
-                tbtotsales.setText(currformatDouble(totsales));
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
+        executeTask(BlueSeerUtils.dbaction.run, new String[]{"getAS2LogView",""});
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btdetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdetailActionPerformed
@@ -882,7 +833,7 @@ public class ShipperBrowse extends javax.swing.JPanel {
         int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
         if ( col == 1) {
-                getdetail(tablereport.getValueAt(row, 2).toString());
+                getDetail(tablereport.getValueAt(row, 2).toString());
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
         }
@@ -915,8 +866,10 @@ public class ShipperBrowse extends javax.swing.JPanel {
     private javax.swing.JCheckBox cbunconfirmed;
     private com.toedter.calendar.JDateChooser dcfrom;
     private com.toedter.calendar.JDateChooser dcto;
+    private javax.swing.JComboBox<String> ddsite;
     private javax.swing.JPanel detailpanel;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;

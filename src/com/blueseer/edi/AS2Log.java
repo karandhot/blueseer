@@ -31,6 +31,7 @@ import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.tags;
 import static com.blueseer.edi.ediData.getAS2LogDetailDetail;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import java.awt.Color;
@@ -41,8 +42,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JTable;
-import javax.swing.UIManager;
-import javax.swing.table.TableCellRenderer;
 import java.net.MalformedURLException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -66,7 +65,7 @@ import jcifs.smb.SmbException;
 public class AS2Log extends javax.swing.JPanel {
  
     ArrayList<String[]> initDataSets = new ArrayList<>();
-    Object[][] rdata;
+    Object[][] rData;
                 
     javax.swing.table.DefaultTableModel modeltable = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{"Select", "LogID", "PartnerID", "Description", "TimeStamp", "Dir", "MDN", "Status"})
@@ -96,28 +95,6 @@ public class AS2Log extends javax.swing.JPanel {
     javax.swing.table.DefaultTableModel modeldetail = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{"LogID", "ParentLogID", "Message", "Status"});
     
-   
-    
-    
-     class ButtonRenderer extends JButton implements TableCellRenderer {
-
-        public ButtonRenderer() {
-            setOpaque(true);
-        }
-
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                boolean isSelected, boolean hasFocus, int row, int column) {
-            if (isSelected) {
-                setForeground(table.getSelectionForeground());
-                setBackground(table.getSelectionBackground());
-            } else {
-                setForeground(Color.blue);
-                setBackground(UIManager.getColor("Button.background"));
-            }
-            setText((value == null) ? "" : value.toString());
-            return this;
-        }
-    }
     
     class SomeRenderer extends DefaultTableCellRenderer {
          
@@ -135,67 +112,7 @@ public class AS2Log extends javax.swing.JPanel {
             return c;
     }
     }
-   
-       
-    class FileViewRenderer extends DefaultTableCellRenderer {
-        
-    public Component getTableCellRendererComponent(JTable table,
-            Object value, boolean isSelected, boolean hasFocus, int row,
-            int column) {
-
-        Component c = super.getTableCellRendererComponent(table,
-                value, isSelected, hasFocus, row, column);
-
-       /*
-            if (column == 7)
-            c.setForeground(Color.BLUE);
-            else
-                c.setBackground(table.getBackground());
-       */
-        return c;
-    }
-    }
-    
-    
-   
-    
-    public String[] getAS2LogView() {
-       
-       DateFormat dfdate = new SimpleDateFormat("yyyyMMdd");        
-        String jsonString = null;
-        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
-            ArrayList<String[]> list = new ArrayList<String[]>();
-            list.add(new String[]{"id", "getAS2LogView"});
-            list.add(new String[]{"param1", tbas2id.getText()});
-            list.add(new String[]{"param2", ddsite.getSelectedItem().toString()});
-            list.add(new String[]{"param3", dfdate.format(dcfrom.getDate())});
-            list.add(new String[]{"param4", dfdate.format(dcto.getDate())});
-            try {
-                jsonString = sendServerPost(list, "", null, "dataServEDI"); 
-            } catch (IOException ex) {
-                bslog(ex);
-                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getAS2LogView")};
-            }
-        } else {
-            jsonString = ediData.getAS2LogView(tbas2id.getText(), ddsite.getSelectedItem().toString(), dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()));
-        }
-        
-         rdata = jsonToData(jsonString);
-        
-        
-        
-       
-      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
-   }
-    
-    
      
-   
-    /**
-     * Creates new form ScrapReportPanel
-     */
-    
-
     public AS2Log() {
         initComponents();
         setLanguageTags(this);
@@ -244,8 +161,8 @@ public class AS2Log extends javax.swing.JPanel {
                 }
        }
     }
-    
-    public void initTask(BlueSeerUtils.dbaction x, String[] y) { 
+        
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
       
         class Task extends SwingWorker<String[], Void> {
        
@@ -268,60 +185,13 @@ public class AS2Log extends javax.swing.JPanel {
                 case "init":
                     message = getInitialization();
                     break;
-                default:
-                    message = new String[]{"1", "unknown action"};
-            }
-            
-            return message;
-        }
- 
-        
-       public void done() {
-            try {
-            String[] message = get();
-           
-            BlueSeerUtils.endTask(message);
-           if (this.type.equals("init")) {
-             updateForm();  
-           } else {
-             initvars(null);  
-           }
-            
-            } catch (Exception e) {
-                MainFrame.bslog(e);
-            } 
-           
-        }
-    }  
-      
-       BlueSeerUtils.startTask(new String[]{"","Running..."});
-       Task z = new Task(x, y); 
-       z.execute(); 
-       
-    }
-   
-    public void runTask(BlueSeerUtils.dbaction x, String[] y) { 
-      
-        class Task extends SwingWorker<String[], Void> {
-       
-          String type = "";
-          String[] key = null;
-          
-          public Task(BlueSeerUtils.dbaction type, String[] key) { 
-              this.type = type.name();
-              this.key = key;
-          } 
-           
-        @Override
-        public String[] doInBackground() throws Exception {
-            String[] message = new String[2];
-            message[0] = "";
-            message[1] = "";
-            
-            
-             switch(this.type) {
+                    
                 case "run":
-                    message = getAS2LogView();
+                    if (this.key[0].equals("getAS2LogView")) {
+                      message = getAS2LogView();
+                    } else {
+                       message = getDetail(this.key[1]);  
+                    }
                     break;
                 default:
                     message = new String[]{"1", "unknown action"};
@@ -334,30 +204,19 @@ public class AS2Log extends javax.swing.JPanel {
        public void done() {
             try {
             String[] message = get();
-           
             BlueSeerUtils.endTask(message);
-            modeltable.setNumRows(0);
-            tafile.setText("");
-            tablereport.setModel(modeltable);
-        
-            for (int j = 0; j < rdata.length; j++) { // 
-                if (rdata[j][7].equals("success")) { 
-                    rdata[j][7] = BlueSeerUtils.clickcheck;
-                } else if (rdata[j][7].equals("passive")) {
-                    rdata[j][7] = BlueSeerUtils.clickcheckyellow;
-                } else {
-                    rdata[j][7] = BlueSeerUtils.clicknocheck;
+            
+                if (this.type.equals("init")) {
+                    done_Initialization();
                 }
-            }
-        
-            int i = 0;
-            if (rdata.length > 0) {
-                for (Object[] rowData : rdata) {
-                modeltable.addRow(rowData);
-                i++;
+                
+                if (this.type.equals("run")) {
+                    if (this.key[0].equals("getAS2LogView")) {
+                      done_getAS2LogView();
+                    } else {
+                      done_getDetail(); 
+                    }
                 } 
-            }
-            tbtot.setText(String.valueOf(i));
             
             } catch (Exception e) {
                 MainFrame.bslog(e);
@@ -366,39 +225,12 @@ public class AS2Log extends javax.swing.JPanel {
         }
     }  
       
-       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       BlueSeerUtils.startTask(new String[]{"", getMessageTag(1189)});
        Task z = new Task(x, y); 
        z.execute(); 
        
     }
    
-    public void getdetail(String parentkey) {
-        
-        String jsonString = null;
-        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
-            ArrayList<String[]> list = new ArrayList<>();
-            list.add(new String[]{"id", "getAS2LogDetailDetail"});
-            list.add(new String[]{"param1", parentkey});
-            try {
-                jsonString = sendServerPost(list, "", null, "dataServEDI"); 
-            } catch (IOException ex) {
-                bslog(ex);
-            }
-        } else {
-            jsonString = getAS2LogDetailDetail(parentkey);
-        }
-        
-        modeldetail.setNumRows(0);
-        Object[][] data = jsonToData(jsonString);
-        if (data.length > 0) {
-            for (Object[] rowData : data) {
-             modeldetail.addRow(rowData);
-            } 
-        }
-        
-        this.repaint();
-    }
-    
     public String[] getInitialization() {
         initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
         if (initDataSets.isEmpty()) {
@@ -409,7 +241,54 @@ public class AS2Log extends javax.swing.JPanel {
         
     }    
     
-    public void updateForm() {
+    public String[] getAS2LogView() {
+       
+       DateFormat dfdate = new SimpleDateFormat("yyyyMMdd");        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getAS2LogView"});
+            list.add(new String[]{"param1", tbas2id.getText()});
+            list.add(new String[]{"param2", ddsite.getSelectedItem().toString()});
+            list.add(new String[]{"param3", dfdate.format(dcfrom.getDate())});
+            list.add(new String[]{"param4", dfdate.format(dcto.getDate())});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServEDI"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getAS2LogView")};
+            }
+        } else {
+            jsonString = ediData.getAS2LogView(tbas2id.getText(), ddsite.getSelectedItem().toString(), dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()));
+        }
+        
+         rData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+   }
+    
+    public String[] getDetail(String parentkey) {
+        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getAS2LogDetailDetail"});
+            list.add(new String[]{"param1", parentkey});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServEDI"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getAS2LogDetailDetail(parentkey);
+        }        
+        rData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+           
+    public void done_Initialization() {
         
         ddsite.removeAllItems();
         
@@ -433,7 +312,46 @@ public class AS2Log extends javax.swing.JPanel {
         tbtoterrors.setText("0");
         tbtot.setText("0");
     }
+
+    public void done_getAS2LogView() {
+        modeltable.setNumRows(0);
+        tafile.setText("");
+        tablereport.setModel(modeltable);
+        if (rData != null) {
+            for (int j = 0; j < rData.length; j++) { // 
+                if (rData[j][7].equals("success")) { 
+                    rData[j][7] = BlueSeerUtils.clickcheck;
+                } else if (rData[j][7].equals("passive")) {
+                    rData[j][7] = BlueSeerUtils.clickcheckyellow;
+                } else {
+                    rData[j][7] = BlueSeerUtils.clicknocheck;
+                }
+            }
         
+            int i = 0;
+            if (rData.length > 0) {
+                for (Object[] rowData : rData) {
+                modeltable.addRow(rowData);
+                i++;
+                } 
+            }
+            tbtot.setText(String.valueOf(i));
+        }
+        rData = null;
+    }   
+    
+    public void done_getDetail() {
+       modeldetail.setNumRows(0);
+       if (rData != null) {
+        if (rData.length > 0) {
+            for (Object[] rowData : rData) {
+             modeldetail.addRow(rowData);
+            } 
+        }
+       }
+       rData = null;
+    }
+    
     public void initvars(String[] arg) {
        
         
@@ -466,7 +384,7 @@ public class AS2Log extends javax.swing.JPanel {
         detailpanel.setVisible(false);
         textpanel.setVisible(false);
         
-        initTask(BlueSeerUtils.dbaction.init, null);
+        executeTask(BlueSeerUtils.dbaction.init, null);
           
     }
     
@@ -750,7 +668,7 @@ public class AS2Log extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-        runTask(BlueSeerUtils.dbaction.run, null);
+        executeTask(BlueSeerUtils.dbaction.run, new String[]{"getAS2LogView",""});
     }//GEN-LAST:event_btRunActionPerformed
 
     private void tablereportMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablereportMouseClicked
@@ -759,7 +677,7 @@ public class AS2Log extends javax.swing.JPanel {
         int col = tablereport.columnAtPoint(evt.getPoint());
        
         if ( col == 0) {
-                getdetail(tablereport.getValueAt(row, 1).toString());
+                executeTask(BlueSeerUtils.dbaction.run, new String[]{"getDetail", tablereport.getValueAt(row, 1).toString()});
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
         }

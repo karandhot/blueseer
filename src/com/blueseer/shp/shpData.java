@@ -51,11 +51,12 @@ import static com.blueseer.fgl.fglData.glEntryXP;
 import static com.blueseer.inv.invData._updateInventoryBalance;
 import com.blueseer.ord.ordData;
 import com.blueseer.utl.BlueSeerUtils;
-import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDoubleUS;
+import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
@@ -1181,7 +1182,7 @@ public class shpData {
     
     
     // misc functions
-    public static ArrayList<String[]> getShipperMaintInit(String panelClassName) {
+    public static ArrayList<String[]> getShipperMaintInit(String panelClassName, String userid) {
         String defaultsite = "";
         ArrayList<String[]> lines = new ArrayList<String[]>();
         try{
@@ -1198,7 +1199,7 @@ public class shpData {
         // states, warehouses, locations, customers, taxcodes, carriers, statuses   
          String[] sites = null;
             boolean allsites = false;
-            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + bsmf.MainFrame.userid + "'" + ";");
+            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + userid + "'" + ";");
             while (res.next()) {
               if (res.getString("user_allowedsites").equals("*")) {
                   allsites = true;
@@ -1216,7 +1217,7 @@ public class shpData {
                }
             }
             
-            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + bsmf.MainFrame.userid + "'" + 
+            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + userid + "'" + 
                     " AND menu_panel = " + "'" + panelClassName + "'" +
                     ";");
             while (res.next()) {
@@ -1360,7 +1361,125 @@ public class shpData {
         return lines;
     }
     
-   
+    public static String getShipperBrowseView(String shipperfrom, String shipperto, String custfrom, String custto, String po, String fromdate, String todate) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                if (po.isBlank()) {
+                    res = st.executeQuery("select sh_id, sh_status, sh_cust, cm_name, sh_shipdate, sh_po, sum(shd_qty) as 'qty', sum(shd_qty * shd_netprice) as 'price' from ship_mstr " +
+                        " inner join ship_det on shd_id = sh_id " +
+                        " inner join cm_mstr on cm_code = sh_cust " +
+                        " where " +
+                        " sh_id >= " + "'" + shipperfrom + "'" + " AND " +
+                        " sh_id <= " + "'" + shipperto + "'" + " AND " +
+                        " sh_shipdate >= " + "'" + fromdate + "'" + " AND " +
+                        " sh_shipdate <= " + "'" + todate + "'" + " AND " +
+                        " sh_cust >= " + "'" + custfrom + "'" + " AND " +
+                        " sh_cust <= " + "'" + custto + "'"  +
+                        " group by sh_id, sh_status, sh_cust, cm_name, sh_shipdate, sh_po;");
+                  } else {
+                    res = st.executeQuery("select sh_id, sh_status, sh_cust, cm_name, sh_shipdate, sh_po, sum(shd_qty) as 'qty', sum(shd_qty * shd_netprice) as 'price' from ship_mstr " +
+                        " inner join ship_det on shd_id = sh_id " +
+                        " inner join cm_mstr on cm_code = sh_cust " +
+                        " where " +
+                        " sh_id >= " + "'" + shipperfrom + "'" + " AND " +
+                        " sh_id <= " + "'" + shipperto + "'" + " AND " +
+                        " sh_shipdate >= " + "'" + fromdate + "'" + " AND " +
+                        " sh_shipdate <= " + "'" + todate + "'" + " AND " +
+                        " sh_cust >= " + "'" + custfrom + "'" + " AND " +
+                        " sh_cust <= " + "'" + custto + "'"  + " AND " +
+                        " sh_po like '%" + po + "%'" +
+                        " group by sh_id, sh_status, sh_cust, cm_name, sh_shipdate, sh_po;");
+                  }
+                
+                    
+                    while (res.next()) {
+                        
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("sh_id"));
+                        rowArray.put(res.getString("sh_cust"));
+                        rowArray.put(res.getString("cm_name"));
+                        rowArray.put(res.getString("sh_shipdate"));
+                        rowArray.put(res.getString("sh_po"));
+                        rowArray.put(res.getString("sh_status"));
+                        rowArray.put(res.getString("qty"));
+                        rowArray.put(res.getString("price"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    public static String getShipperBrowseDetail(String shipper) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                res = st.executeQuery("select shd_id, shd_soline, shd_item, shd_custitem, shd_so, shd_po, shd_qty, shd_netprice from ship_det " +
+                        " where shd_id = " + "'" + shipper + "'" +  ";");
+                    
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("shd_id"));
+                        rowArray.put(res.getString("shd_item"));
+                        rowArray.put(res.getString("shd_custitem"));
+                        rowArray.put(res.getString("shd_so"));
+                        rowArray.put(res.getString("shd_soline"));
+                        rowArray.put(res.getString("shd_po"));
+                        rowArray.put(res.getString("shd_qty"));
+                        rowArray.put(res.getString("shd_netprice"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
     
     public static void _updateShipperStatus(String shipper, Date effdate, Connection bscon) throws SQLException {
         Statement st = bscon.createStatement();

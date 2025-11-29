@@ -454,7 +454,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
      
     public void setComponentDefaultValues() {
         
-        ArrayList<String[]> initDataSets = shpData.getShipperMaintInit(this.getClass().getName());
+        ArrayList<String[]> initDataSets = shpData.getShipperMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
         
         jTabbedPane1.removeAll();
         jTabbedPane1.add("Main", panelMain);
