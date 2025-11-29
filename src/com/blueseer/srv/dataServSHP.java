@@ -27,6 +27,8 @@ package com.blueseer.srv;
 
 
 import com.blueseer.adm.admData;
+import com.blueseer.shp.shpData;
+import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import java.io.IOException;
@@ -41,7 +43,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author terryva
  */
-public class dataServADM extends HttpServlet {
+public class dataServSHP extends HttpServlet {
  
     
         
@@ -58,7 +60,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     
     if (! confirmServerAuthAPI(request, authServ.hmuser)) {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().println(" br549edipost authorization failed");
+        response.getWriter().println(" br549 authorization failed");
         return;
     }
     
@@ -71,9 +73,23 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     String id = request.getHeader("id");
     
     switch (id) {
-        case "getAllPKSKeysExceptStore" : 
-            response.getWriter().print(ArrayListStringToJson(admData.getAllPKSKeysExceptStore()));
+        case "getShipperInit" :
+            response.getWriter().print(ArrayListStringArrayToJson(shpData.getShipperInit(request.getHeader("param1"), request.getHeader("param2"))));
             break;
+            
+        case "getShipperBrowseView" : 
+            response.getWriter().print(shpData.getShipperBrowseView(request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5"),
+                    request.getHeader("param6"),
+                    request.getHeader("param7") )); 
+            break;
+            
+        case "getShipperBrowseDetail" :
+            response.getWriter().print(shpData.getShipperBrowseDetail(request.getHeader("param1")));  
+            break;     
             
         default:
         response.getWriter().print("no switch case exists in dataServADM for id: " + id);

@@ -25,6 +25,7 @@ SOFTWARE.
  */
 package com.blueseer.shp;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.dbtype;
 import static bsmf.MainFrame.defaultDecimalSeparator;
@@ -59,7 +60,9 @@ import static com.blueseer.utl.BlueSeerUtils.currformatDoubleUS;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import static com.blueseer.utl.BlueSeerUtils.setDateFormat;
 import static com.blueseer.utl.BlueSeerUtils.setDateFormatNull;
@@ -68,6 +71,7 @@ import static com.blueseer.utl.OVData.AREntry;
 import static com.blueseer.utl.OVData.getCodeValueByCodeKey;
 import static com.blueseer.utl.OVData.getNextNbr;
 import static com.blueseer.vdr.venData.getVendInfo;
+import java.io.IOException;
 import static java.lang.Double.parseDouble;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -1182,7 +1186,21 @@ public class shpData {
     
     
     // misc functions
-    public static ArrayList<String[]> getShipperMaintInit(String panelClassName, String userid) {
+    public static ArrayList<String[]> getShipperInit(String panelClassName, String userid) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getShipperInit"});
+            list.add(new String[]{"param1", panelClassName});
+            list.add(new String[]{"param2", userid});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServSHP"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        
         String defaultsite = "";
         ArrayList<String[]> lines = new ArrayList<String[]>();
         try{

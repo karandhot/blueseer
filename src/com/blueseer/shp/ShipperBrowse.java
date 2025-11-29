@@ -277,7 +277,7 @@ public class ShipperBrowse extends javax.swing.JPanel {
     }
     
     public String[] getInitialization() {
-        initDataSets = shpData.getShipperMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        initDataSets = shpData.getShipperInit(this.getClass().getName(), bsmf.MainFrame.userid);
         if (initDataSets.isEmpty()) {
            return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
         } else {
@@ -452,6 +452,8 @@ public class ShipperBrowse extends javax.swing.JPanel {
                 
         btdetail.setEnabled(false);
         detailpanel.setVisible(false);
+        
+        executeTask(BlueSeerUtils.dbaction.init, null);
           
     }
     
@@ -823,7 +825,7 @@ public class ShipperBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-        executeTask(BlueSeerUtils.dbaction.run, new String[]{"getAS2LogView",""});
+        executeTask(BlueSeerUtils.dbaction.run, new String[]{"getShipperBrowseView",""});
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btdetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdetailActionPerformed
