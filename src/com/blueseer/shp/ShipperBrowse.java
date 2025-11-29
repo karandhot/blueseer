@@ -69,6 +69,7 @@ public class ShipperBrowse extends javax.swing.JPanel {
  
     Object[][] rData;
     ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultcurrency = "";
     
     javax.swing.table.DefaultTableModel modeltable = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("select"), 
@@ -349,6 +350,10 @@ public class ShipperBrowse extends javax.swing.JPanel {
             if (s[0].equals("sites")) {
               ddsite.addItem(s[1]); 
             }
+            
+            if (s[0].equals("currency")) {
+              defaultcurrency = s[1];  
+            }
         }
         
         if (ddsite.getItemCount() > 0) {
@@ -433,12 +438,12 @@ public class ShipperBrowse extends javax.swing.JPanel {
         
         tabledetail.setModel(modeldetail);
         tabledetail.getTableHeader().setReorderingAllowed(false);
-        tabledetail.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+        tabledetail.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
                
         tablereport.setModel(modeltable);
         tablereport.getTableHeader().setReorderingAllowed(false);
-        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
       
         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
         tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
