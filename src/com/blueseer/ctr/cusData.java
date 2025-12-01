@@ -36,6 +36,9 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -2460,6 +2463,17 @@ public class cusData {
     }
 
     public static ArrayList getcustshipmstrlist(String cust) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getcustshipmstrlist"});
+            list.add(new String[]{"param1",  cust});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServCUS"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         ArrayList myarray = new ArrayList();
         try {
             

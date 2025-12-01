@@ -141,6 +141,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                 public static cms_det cms = null;
                 public ArrayList<String[]> rtabledetail = new ArrayList<>();
                 public ArrayList<String> rwhaction = new ArrayList<>();
+                public ArrayList<String> rbilltoaction = new ArrayList<>();
                 
     
     /**
@@ -326,7 +327,11 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                     } 
                     if (this.key[0].equals("ddwhActionPerformed")) {
                       message = run_ddwhActionPerformed(this.key[1]);
-                    } 
+                    }
+                    if (this.key[0].equals("ddbilltoActionPerformed")) {
+                      message = run_ddbilltoActionPerformed(this.key[1]);
+                    }
+                    
                     break;    
                 default:
                     message = new String[]{"1", "unknown action"};
@@ -363,6 +368,9 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                 }
                 if (this.key[0].equals("ddwhActionPerformed")) {
                       done_ddwhActionPerformed();
+                }
+                if (this.key[0].equals("ddbilltoActionPerformed")) {
+                      done_ddbilltoActionPerformed();
                 }
                 
            } else {
@@ -840,6 +848,16 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
     }
     
+    public String[] run_ddbilltoActionPerformed(String billto) {
+        rbilltoaction = cusData.getcustshipmstrlist(billto);
+        if (rbilltoaction.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }
+    
+    
     public void done_updateForm() {
         isLoad = true;
         tbkey.setText(sh.sh_id());
@@ -928,6 +946,19 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddloc.insertItemAt("", 0);
         ddloc.setSelectedIndex(0);
     }
+        
+    public void done_ddbilltoActionPerformed() {
+        ddshipto.removeAllItems();
+        for (String s : rbilltoaction) {
+            ddshipto.addItem(s);
+        }
+
+        if (ddbillto.getSelectedItem().toString() != null && ! ddbillto.getSelectedItem().toString().isEmpty() && ddshipto.getItemCount() <= 0) {
+       bsmf.MainFrame.show(getMessageTag(1108));
+       ddbillto.requestFocus();
+        }
+    }
+    
     
     public void lookUpFrame() {
         
@@ -1286,22 +1317,6 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         btprintshipper.setEnabled(true);
 
      
-    }
-     
-    public void custChangeEvent(String billto) {
-         ddshipto.removeAllItems();
-            ArrayList<String> mycusts = cusData.getcustshipmstrlist(billto);
-            for (int i = 0; i < mycusts.size(); i++) {
-                ddshipto.addItem(mycusts.get(i));
-            }
-        
-            
-            
-            if (ddbillto.getSelectedItem().toString() != null && ! ddbillto.getSelectedItem().toString().isEmpty() && ddshipto.getItemCount() <= 0) {
-           bsmf.MainFrame.show(getMessageTag(1108));
-           ddbillto.requestFocus();
-       }
-            
     }
         
     public String getUniquePO() {
@@ -2694,8 +2709,8 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void ddbilltoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddbilltoActionPerformed
          if (ddbillto.getItemCount() > 0 && ! isLoad) {
-           custChangeEvent(ddbillto.getSelectedItem().toString());
-        } // if ddcust has a list
+           executeTask(dbaction.run, new String[]{"ddbilltoActionPerformed", ddbillto.getSelectedItem().toString()});
+        } 
     }//GEN-LAST:event_ddbilltoActionPerformed
 
     private void rborderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rborderActionPerformed
