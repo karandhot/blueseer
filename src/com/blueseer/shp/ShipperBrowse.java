@@ -45,12 +45,18 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static com.blueseer.shp.shpData.getShipperBrowseDetail;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import static com.blueseer.utl.OVData.getSystemJasperDirectory;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -60,6 +66,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
+import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.data.ListOfArrayDataSource;
+import net.sf.jasperreports.view.JasperViewer;
 
 /**
  *
@@ -309,7 +321,6 @@ public class ShipperBrowse extends javax.swing.JPanel {
         } else {
             jsonString = shpData.getShipperBrowseView(tbfromshipper.getText(), tbtoshipper.getText(), tbfromcust.getText(), tbtocust.getText(), tbpo.getText(), dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()));
         }
-        
          rData = jsonToData(jsonString);
        
       return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
@@ -859,7 +870,44 @@ public class ShipperBrowse extends javax.swing.JPanel {
     }//GEN-LAST:event_tbcsvActionPerformed
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
-        OVData.printJTableToJasper("Shipper Report", tablereport, "genericJTableL8.jasper" );
+        String[] rec;
+        String[] columnnames = new String[8];
+        List<Object[]> list = new ArrayList<>();
+        for (int j = 0; j < tablereport.getRowCount(); j++) {
+             rec = new String[]{tablereport.getValueAt(j, 2).toString(),
+               tablereport.getValueAt(j, 3).toString(),
+               tablereport.getValueAt(j, 4).toString(),
+               tablereport.getValueAt(j, 5).toString(),
+               tablereport.getValueAt(j, 6).toString(),
+               tablereport.getValueAt(j, 7).toString(),
+               tablereport.getValueAt(j, 8).toString(),
+               tablereport.getValueAt(j, 9).toString()}; 
+             list.add(rec);
+         }
+        HashMap hm = new HashMap();
+        hm.put("REPORT_TITLE", "Shipper Report");
+        hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+        for (int j = 2; j < tablereport.getColumnCount(); j++) {
+           hm.put("d" + (j - 2),  tablereport.getColumnName(j));
+           columnnames[j - 2] = "COLUMN_" + (j - 2);
+        }
+        JRDataSource datasource = new ListOfArrayDataSource(list, columnnames);
+        // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
+        // type = "L8C";  ...or type = genericJTableL8.jasper
+        // String jasperfile = (type.length() > 3) ? jasperfile = type  : OVData.getCodeValueByCodeKey("jasper", type)  ;
+        Path template = FileSystems.getDefault().getPath(cleanDirString(getSystemJasperDirectory()) + "genericJTableL8.jasper");
+        JasperPrint jasperPrint; 
+        try {
+         jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
+         JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+           jasperViewer.setVisible(true);
+                jasperViewer.setTitle("Viewer");
+                jasperViewer.setIconImage(null);
+                jasperViewer.setFitPageZoomRatio();
+           //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
+       } catch (JRException ex) {
+           MainFrame.bslog(ex);
+       }
     }//GEN-LAST:event_btprintActionPerformed
 
 

@@ -139,6 +139,8 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                 public static ArrayList<ship_tree> shtlist = null;
                 public static ArrayList<sh_meta> shmlist = null;
                 public static cms_det cms = null;
+                public ArrayList<String[]> rtabledetail = new ArrayList<>();
+                public ArrayList<String> rwhaction = new ArrayList<>();
                 
     
     /**
@@ -316,7 +318,15 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                     message = getRecord(key);    
                     break; 
                 case "run":
-                    message = Run_autoInvoice();
+                    if (this.key[0].equals("commit")) {
+                      message = run_autoInvoice();
+                    }
+                    if (this.key[0].equals("tabledetailMouseClicked")) {
+                      message = run_tabledetailMouseClicked(this.key[1]);
+                    } 
+                    if (this.key[0].equals("ddwhActionPerformed")) {
+                      message = run_ddwhActionPerformed(this.key[1]);
+                    } 
                     break;    
                 default:
                     message = new String[]{"1", "unknown action"};
@@ -331,20 +341,30 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
             String[] message = get();
            
             BlueSeerUtils.endTask(message);
+            
            if (this.type.equals("delete")) {
              initvars(null);  
            } else if (this.type.equals("get") && message[0].equals("1")) {
-             updateForm();
+             done_updateForm();
              tbkey.requestFocus();
            } else if (this.type.equals("get") && message[0].equals("0")) {
-             updateForm();
+             done_updateForm();
              tbkey.requestFocus();
            } else if (this.type.equals("add") && message[0].equals("0")) {
              initvars(key);
            } else if (this.type.equals("update") && message[0].equals("0")) {
              initvars(key);    
            } else if (this.type.equals("run")) {
-             initvars(null);  
+                if (this.key[0].equals("commit")) {
+                      initvars(null);
+                }
+                if (this.key[0].equals("tabledetailMouseClicked")) {
+                      done_tabledetailMouseClicked();
+                }
+                if (this.key[0].equals("ddwhActionPerformed")) {
+                      done_ddwhActionPerformed();
+                }
+                
            } else {
              initvars(null);  
            }
@@ -792,7 +812,35 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
      
     }
     
-    public void updateForm() {
+    public String[] run_autoInvoice() {
+        
+        String[] m = confirmShipperTransaction("order", tbkey.getText(), dcshipdate.getDate());
+        // autopost
+        if (OVData.isAutoPost()) {
+            fglData.PostGL();
+        }
+        return m;
+    }
+    
+    public String[] run_tabledetailMouseClicked(String item) {
+        rtabledetail = invData.getBOMsByItemSite_mg(item);
+        if (rtabledetail.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }
+    
+    public String[] run_ddwhActionPerformed(String wh) {
+        rwhaction = invData.getLocationListByWarehouse(wh);
+        if (rwhaction.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }
+    
+    public void done_updateForm() {
         isLoad = true;
         tbkey.setText(sh.sh_id());
         cbcomplete.setSelected(BlueSeerUtils.ConvertStringToBool(sh.sh_char2())); 
@@ -857,7 +905,30 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         isLoad = false;
     }
+    
+    public void done_tabledetailMouseClicked() {
+        ddbom.removeAllItems();
+        ddbom.insertItemAt("", 0);
         
+        for (String[] bom : rtabledetail) {
+            if (bom[0].equals("boms")) {
+                ddbom.addItem(bom[1]);
+            }
+            if (bom[0].equals("bomprimary")) {
+                ddbom.setSelectedItem(bom[1]);
+            }
+        }
+    }   
+    
+    public void done_ddwhActionPerformed() {
+        ddloc.removeAllItems();
+             for (String lc : rwhaction) {
+                ddloc.addItem(lc);
+             }
+        ddloc.insertItemAt("", 0);
+        ddloc.setSelectedIndex(0);
+    }
+    
     public void lookUpFrame() {
         
         luinput.removeActionListener(lual);
@@ -1467,16 +1538,6 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         sumqty();
         sumdollars();
         sumlinecount();
-    }
-    
-    public String[] Run_autoInvoice() {
-        
-        String[] m = confirmShipperTransaction("order", tbkey.getText(), dcshipdate.getDate());
-        // autopost
-        if (OVData.isAutoPost()) {
-            fglData.PostGL();
-        }
-        return m;
     }
     
     
@@ -2619,7 +2680,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
     private void btcommitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcommitActionPerformed
         if (dcshipdate.getDate() != null) {
         setPanelComponentState(this, false);
-        executeTask(dbaction.run, new String[]{tbkey.getText()}); 
+        executeTask(dbaction.run, new String[]{"commit", tbkey.getText()}); 
         }
     }//GEN-LAST:event_btcommitActionPerformed
 
@@ -2668,13 +2729,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void ddwhActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddwhActionPerformed
          if (ddwh.getSelectedItem() != null && ! isLoad) {
-             ddloc.removeAllItems();
-             ArrayList<String> loc = OVData.getLocationListByWarehouse(ddwh.getSelectedItem().toString());
-             for (String lc : loc) {
-                ddloc.addItem(lc);
-             }
-        ddloc.insertItemAt("", 0);
-        ddloc.setSelectedIndex(0);
+             executeTask(dbaction.run, new String[]{"ddwhActionPerformed", ddwh.getSelectedItem().toString()});
         }
     }//GEN-LAST:event_ddwhActionPerformed
 
@@ -2739,10 +2794,12 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_tbboxesFocusLost
 
     private void tabledetailMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabledetailMouseClicked
-         int row = tabledetail.rowAtPoint(evt.getPoint());
+        int row = tabledetail.rowAtPoint(evt.getPoint());
         int col = tabledetail.columnAtPoint(evt.getPoint());
         //   line, item, order, orderline, po, qty, price, desc, wh, loc, disc, listprice, tax, serial, cont, bom, contqty, uom
-         
+        
+        executeTask(dbaction.run, new String[]{"tabledetailMouseClicked", tabledetail.getValueAt(row, 1).toString()}); 
+        
         isLoad = true;  
         tbitem.setText(tabledetail.getValueAt(row, 1).toString());
         tbordernbr.setText(tabledetail.getValueAt(row, 2).toString());
@@ -2757,22 +2814,6 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbserial.setText(tabledetail.getValueAt(row, 13).toString());
         ddbom.setSelectedItem(tabledetail.getValueAt(row, 15).toString());
         dduom.setSelectedItem(tabledetail.getValueAt(row, 17).toString());
-        
-        
-        
-        
-        
-        
-        // ddbom.setSelectedIndex(0);
-        
-        ddbom.removeAllItems();
-        ddbom.insertItemAt("", 0);
-        ArrayList<String[]> boms = invData.getBOMsByItemSite(tbitem.getText());
-        for (String[] wh : boms) {
-            ddbom.addItem(wh[0]);
-        }
-        ddbom.setSelectedItem(OVData.getDefaultBomID(tbitem.getText()));
-        
        
         isLoad = false;
     }//GEN-LAST:event_tabledetailMouseClicked

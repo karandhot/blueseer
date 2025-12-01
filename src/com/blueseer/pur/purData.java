@@ -1358,6 +1358,15 @@ public class purData {
                defaultsite = s[1];
             }
             
+            res = st.executeQuery("select * from ov_ctrl;" );
+            while (res.next()) {
+               lines.add(new String[]{"jasperdir", res.getString("ov_jasper_directory")});
+               lines.add(new String[]{"imagedir", res.getString("ov_image_directory")});
+               lines.add(new String[]{"tempdir", res.getString("ov_temp_directory")});
+               lines.add(new String[]{"labeldir", res.getString("ov_label_directory")});
+               lines.add(new String[]{"edidir", res.getString("ov_edi_directory")});
+            }
+            
             res = st.executeQuery("select cur_id from cur_mstr ;");
             while (res.next()) {
                 String[] s = new String[2];

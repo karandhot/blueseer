@@ -25,22 +25,17 @@ SOFTWARE.
  */
 package com.blueseer.srv;
 
-import static com.blueseer.adm.admData.getLoginInit;
-import com.blueseer.fgl.fglData.AcctMstr;
-import static com.blueseer.fgl.fglData.addAcctMstr;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringIntegerToJson;
-import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.intToJson;
 import static com.blueseer.utl.OVData.getCodeMstrValueList;
 import static com.blueseer.utl.OVData.getNextNbr;
+import static com.blueseer.utl.OVData.getSysMetaData;
 import static com.blueseer.utl.OVData.getTableInfo;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
@@ -165,45 +160,44 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        response.setContentType("text/plain");
-      
-        
+    response.setContentType("text/plain");
     
+    if (! confirmServerAuthAPI(request, authServ.hmuser)) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter().println(" br549 authorization failed");
+        return;
+    }
     
-        
     if (request.getHeader("id") == null || request.getHeader("id").isEmpty()) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing id " + "\n" + getHeaders(request) );  
       return;
     }
-
-    String id = request.getHeader("id");
     
+    String id = request.getHeader("id"); 
     
-    if (! confirmServerAuthAPI(request, authServ.hmuser)) {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().println(" br549finpost authorization failed");
-        return;
-    }
-       
-    
-        
-    if (id.equals("getCodeMstrValueList")) { 
-      String code = request.getHeader("code");          
-      response.getWriter().print(ArrayListStringToJson(getCodeMstrValueList(code)));
-    }
-    
-    if (id.equals("getNextNbr")) { 
-      String param1 = request.getHeader("param1");          
-      response.getWriter().print(intToJson(getNextNbr(param1))); 
-    }
-    
-    if (id.equals("getTableInfo")) { 
-      String param1 = request.getHeader("param1"); 
-      System.out.println("getTableInfo param1: " + param1);
-      response.getWriter().print(HashMapStringIntegerToJson(getTableInfo(new String[]{param1})));  
-    }
-        
+    switch (id) {
+        case "getCodeMstrValueList" :        
+            response.getWriter().print(ArrayListStringToJson(getCodeMstrValueList(request.getHeader("code"))));
+            break;
+            
+        case "getSysMetaData" :        
+            response.getWriter().print(ArrayListStringToJson(getSysMetaData(request.getHeader("param1"),request.getHeader("param2"),request.getHeader("param3"))));
+            break;    
+            
+        case "getNextNbr" : 
+            response.getWriter().print(intToJson(getNextNbr(request.getHeader("param1")))); 
+            break;
+            
+        case "getTableInfo" : 
+            response.getWriter().print(HashMapStringIntegerToJson(getTableInfo(new String[]{request.getHeader("param1")})));
+            break;    
+                     
+        default:
+        response.getWriter().print("no switch case exists in dataServOV for id: " + id);
+        System.out.println("no switch case exists in dataServOV for id: " + id);    
+            
+    }    
        
     } // doPost
      

@@ -26,6 +26,7 @@ SOFTWARE.
 package com.blueseer.inv;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.defaultDecimalSeparator;
 import static bsmf.MainFrame.driver;
@@ -43,8 +44,12 @@ import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.formatUSC;
 import static com.blueseer.utl.BlueSeerUtils.formatUSZ;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.OVData;
+import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -2464,6 +2469,15 @@ public class invData {
                defaultsite = s[1];
             }
             
+            res = st.executeQuery("select * from ov_ctrl;" );
+            while (res.next()) {
+               lines.add(new String[]{"jasperdir", res.getString("ov_jasper_directory")});
+               lines.add(new String[]{"imagedir", res.getString("ov_image_directory")});
+               lines.add(new String[]{"tempdir", res.getString("ov_temp_directory")});
+               lines.add(new String[]{"labeldir", res.getString("ov_label_directory")});
+               lines.add(new String[]{"edidir", res.getString("ov_edi_directory")});
+            }
+            
             res = st.executeQuery("select ac_id from ac_mstr order by ac_id;");
             while (res.next()) {
                 String[] s = new String[2];
@@ -4604,8 +4618,20 @@ public class invData {
         }
 
     public static ArrayList<String[]> getBOMsByItemSite(String item) {
-               ArrayList<String[]> mylist = new ArrayList<String[]>();
-             try{
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getBOMsByItemSite"});
+            list.add(new String[]{"param1",  item});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        ArrayList<String[]> mylist = new ArrayList<String[]>();
+        try{
                 Connection con = null;
         if (ds != null) {
           con = ds.getConnection();
@@ -4643,6 +4669,131 @@ public class invData {
             return mylist;
 
         }
+
+    public static ArrayList<String[]> getBOMsByItemSite_mg(String item) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getBOMsByItemSite_Event"});
+            list.add(new String[]{"param1",  item});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        ArrayList<String[]> mylist = new ArrayList<String[]>();
+        try{
+                Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+                Statement st = con.createStatement();
+                    ResultSet res = null;
+                try{
+                   
+
+                    res = st.executeQuery("select bom_id, bom_primary from bom_mstr "
+                            + " where bom_item = " + "'" + item + "'" 
+                            + " and bom_enabled = '1' " + " order by bom_primary desc ;" ); 
+                   while (res.next()) {
+                    mylist.add(new String[]{"boms", res.getString("bom_id")});
+                    }
+                   
+                    int i = 0;
+                    ArrayList<String> boms = new ArrayList<String>();
+                    res = st.executeQuery("select distinct ps_bom from pbm_mstr "
+                        + " where ps_parent = " + "'" + item + "';");
+                    while (res.next()) {
+                        i++;
+                      boms.add(res.getString("ps_bom")); 
+                    }
+                    res.close();
+                    if (i == 0) {
+                        mylist.add(new String[]{"bomprimary", ""});
+                    } else {
+                        for (String s : boms) {
+                            res = st.executeQuery("select bom_id from bom_mstr "
+                            + " where bom_id = " + "'" + s + "'" +
+                              " and bom_primary = '1' " + ";");
+                            while (res.next()) {
+                               mylist.add(new String[]{"bomprimary", res.getString("bom_id")});
+                            } 
+                        }
+                    }
+                   
+
+               }
+                catch (SQLException s){
+                     MainFrame.bslog(s);
+                } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+          }
+            }
+            catch (Exception e){
+                MainFrame.bslog(e);
+            }
+            return mylist;
+
+        }
+
+    public static ArrayList<String> getLocationListByWarehouse(String wh) {
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getLocationListByWarehouse"});
+            list.add(new String[]{"param1",  wh});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        ArrayList<String> myarray = new ArrayList();
+        try{
+
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+            res = st.executeQuery("select loc_loc from loc_mstr  " + 
+                    "where loc_wh = " + "'" + wh + "'" +
+                    " order by loc_loc ;" );
+           while (res.next()) {
+            myarray.add(res.getString("loc_loc"));                    
+            }
+
+       }
+        catch (SQLException s){
+            MainFrame.bslog(s);
+             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    return myarray;
+
+}
 
 
     public static double getItemOperationalCost(String item, String set, String site) {

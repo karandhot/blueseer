@@ -61,6 +61,7 @@ import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
@@ -71,6 +72,7 @@ import static com.blueseer.utl.OVData.AREntry;
 import static com.blueseer.utl.OVData.getCodeValueByCodeKey;
 import static com.blueseer.utl.OVData.getNextNbr;
 import static com.blueseer.vdr.venData.getVendInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import static java.lang.Double.parseDouble;
 import java.sql.DriverManager;
@@ -239,6 +241,23 @@ public class shpData {
     }
    
     public static String[] addShipperTransaction(ArrayList<ship_det> shd, ship_mstr sh, ArrayList<ship_tree> sht) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addShipperTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(shd);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(sh);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(sht);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServSHP"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -1265,6 +1284,15 @@ public class shpData {
                defaultsite = s[1];
             }
             
+            res = st.executeQuery("select * from ov_ctrl;" );
+            while (res.next()) {
+               lines.add(new String[]{"jasperdir", res.getString("ov_jasper_directory")});
+               lines.add(new String[]{"imagedir", res.getString("ov_image_directory")});
+               lines.add(new String[]{"tempdir", res.getString("ov_temp_directory")});
+               lines.add(new String[]{"labeldir", res.getString("ov_label_directory")});
+               lines.add(new String[]{"edidir", res.getString("ov_edi_directory")});
+            }
+            
             
             res = st.executeQuery("select wh_id from wh_mstr order by wh_id;");
             while (res.next()) {
@@ -1422,7 +1450,6 @@ public class shpData {
                 
                     
                     while (res.next()) {
-                        
                         JSONArray rowArray = new JSONArray(); 
                         rowArray.put("select");
                         rowArray.put("detail");

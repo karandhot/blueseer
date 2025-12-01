@@ -230,7 +230,7 @@ public class LocationTransfer extends javax.swing.JPanel {
         ddlocfrom.removeAllItems();
         ddlocto.removeAllItems();
         if (ddwhfrom.getSelectedItem() != null) {
-            mylist = OVData.getLocationListByWarehouse(ddwhfrom.getSelectedItem().toString());
+            mylist = invData.getLocationListByWarehouse(ddwhfrom.getSelectedItem().toString());
             for (String code : mylist) {
                 ddlocfrom.addItem(code);
                 ddlocto.addItem(code);
@@ -718,7 +718,7 @@ public class LocationTransfer extends javax.swing.JPanel {
     private void ddwhfromActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddwhfromActionPerformed
         if (ddwhfrom.getSelectedItem() != null) {
              ddlocfrom.removeAllItems();
-             ArrayList<String> loc = OVData.getLocationListByWarehouse(ddwhfrom.getSelectedItem().toString());
+             ArrayList<String> loc = invData.getLocationListByWarehouse(ddwhfrom.getSelectedItem().toString());
              for (String lc : loc) {
                 ddlocfrom.addItem(lc);
              }
@@ -730,7 +730,7 @@ public class LocationTransfer extends javax.swing.JPanel {
     private void ddwhtoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddwhtoActionPerformed
         if (ddwhto.getSelectedItem() != null) {
              ddlocto.removeAllItems();
-             ArrayList<String> loc = OVData.getLocationListByWarehouse(ddwhto.getSelectedItem().toString());
+             ArrayList<String> loc = invData.getLocationListByWarehouse(ddwhto.getSelectedItem().toString());
              for (String lc : loc) {
                 ddlocto.addItem(lc);
              }

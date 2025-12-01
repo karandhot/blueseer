@@ -4027,7 +4027,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             System.out.println("ddwh fired: " + timediff(start));
            }
              ddloc.removeAllItems();
-             ArrayList<String> loc = OVData.getLocationListByWarehouse(ddwh.getSelectedItem().toString());
+             ArrayList<String> loc = invData.getLocationListByWarehouse(ddwh.getSelectedItem().toString());
              for (String lc : loc) {
                 ddloc.addItem(lc);
              }

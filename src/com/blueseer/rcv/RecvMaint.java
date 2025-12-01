@@ -40,6 +40,7 @@ import static com.blueseer.fap.fapData.VoucherTransaction;
 import com.blueseer.fap.fapData.ap_mstr;
 import com.blueseer.fap.fapData.vod_mstr;
 import com.blueseer.fgl.fglData;
+import com.blueseer.inv.invData;
 import com.blueseer.pur.purData;
 import static com.blueseer.pur.purData.updateReceivers;
 import com.blueseer.rcv.rcvData.Receiver;
@@ -1811,7 +1812,7 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerT {
     private void ddwhActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddwhActionPerformed
         if (ddwh.getSelectedItem() != null) {
              ddloc.removeAllItems();
-             ArrayList<String> loc = OVData.getLocationListByWarehouse(ddwh.getSelectedItem().toString());
+             ArrayList<String> loc = invData.getLocationListByWarehouse(ddwh.getSelectedItem().toString());
              for (String lc : loc) {
                 ddloc.addItem(lc);
              }

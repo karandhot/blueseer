@@ -25,20 +25,22 @@ SOFTWARE.
  */
 package com.blueseer.srv;
 
-
-import com.blueseer.adm.admData;
-import com.blueseer.shp.shpData;
+import static com.blueseer.fgl.fglData.getAccountActivityYear;
+import static com.blueseer.fgl.fglData.getAccountBalanceReport;
+import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
+import static com.blueseer.inv.invData.getLocationListByWarehouse;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
-import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.HashMapStringIntegerToJson;
+import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.BufferedReader;
+import static com.blueseer.utl.BlueSeerUtils.intToJson;
+import static com.blueseer.utl.OVData.getCodeMstrValueList;
+import static com.blueseer.utl.OVData.getNextNbr;
+import static com.blueseer.utl.OVData.getSysMetaData;
+import static com.blueseer.utl.OVData.getTableInfo;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -49,7 +51,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author terryva
  */
-public class dataServSHP extends HttpServlet {
+public class dataServINV extends HttpServlet {
  
     
         
@@ -76,55 +78,34 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       return;
     }
     
-    String id = request.getHeader("id");
+    String id = request.getHeader("id"); 
     
     switch (id) {
-        case "getShipperInit" :
-            response.getWriter().print(ArrayListStringArrayToJson(shpData.getShipperInit(request.getHeader("param1"), request.getHeader("param2"))));
+        case "getBOMsByItemSite_mg" :        
+            response.getWriter().print(ArrayListStringArrayToJson(getBOMsByItemSite_mg(request.getHeader("param1"))));
             break;
             
-        case "addShipperTransaction" : 
-            String line;
-            StringBuilder sb = new StringBuilder();  
-            BufferedReader reader = request.getReader();  // as string
-            while ((line = reader.readLine()) != null) {  
-            sb.append(line);
-            } 
-            ObjectMapper objectMapper = new ObjectMapper();
-            String[] ca = sb.toString().split("=_=", -1);
-           // ArrayList<shpData.ship_det> sd = objectMapper.readValue(ca[0], ArrayList.class);
-            shpData.ship_det[] sdarray = objectMapper.readValue(ca[0], shpData.ship_det[].class);
-            List<shpData.ship_det> sdlist = Arrays.asList(sdarray); 
-            shpData.ship_mstr sm = objectMapper.readValue(ca[1], shpData.ship_mstr.class); 
-           // ArrayList<shpData.ship_tree> st = objectMapper.readValue(ca[2], ArrayList.class); 
-            shpData.ship_tree[] starray = objectMapper.readValue(ca[0], shpData.ship_tree[].class);
-            List<shpData.ship_tree> stlist = Arrays.asList(starray);
-            response.getWriter().print(arrayToJson(shpData.addShipperTransaction((ArrayList<shpData.ship_det>) sdlist, sm, (ArrayList<shpData.ship_tree>) stlist)));  
-            break;
-
-        
+        case "getLocationListByWarehouse" :        
+            response.getWriter().print(ArrayListStringToJson(getLocationListByWarehouse(request.getHeader("param1"))));
+            break;    
             
-        case "getShipperBrowseView" : 
-            response.getWriter().print(shpData.getShipperBrowseView(request.getHeader("param1"), 
-                    request.getHeader("param2"),
-                    request.getHeader("param3"),
-                    request.getHeader("param4"),
-                    request.getHeader("param5"),
-                    request.getHeader("param6"),
-                    request.getHeader("param7") )); 
+        case "getSysMetaData" :        
+            response.getWriter().print(ArrayListStringToJson(getSysMetaData(request.getHeader("param1"),request.getHeader("param2"),request.getHeader("param3"))));
+            break;    
+            
+        case "getNextNbr" : 
+            response.getWriter().print(intToJson(getNextNbr(request.getHeader("param1")))); 
             break;
             
-        case "getShipperBrowseDetail" :
-            response.getWriter().print(shpData.getShipperBrowseDetail(request.getHeader("param1")));  
-            break;     
-            
+        case "getTableInfo" : 
+            response.getWriter().print(HashMapStringIntegerToJson(getTableInfo(new String[]{request.getHeader("param1")})));
+            break;    
+                     
         default:
-        response.getWriter().print("no switch case exists in dataServADM for id: " + id);
-        System.out.println("no switch case exists in dataServADM for id: " + id);    
+        response.getWriter().print("no switch case exists in dataServOV for id: " + id);
+        System.out.println("no switch case exists in dataServOV for id: " + id);    
             
-    }
-    
-       
+    }    
        
     } // doPost
      

@@ -5689,7 +5689,6 @@ public class DTData {
                         rowArray.put(res.getString("sh_id"));
                         rowArray.put(res.getString("sh_cust"));
                         rowArray.put(res.getString("sh_ship"));
-                        rowArray.put(res.getString("cfo_cust"));
                         rowArray.put(res.getString("sh_so"));
                         rowArray.put(res.getString("sh_po"));
                         rowArray.put(res.getString("sh_shipdate"));
@@ -8512,7 +8511,10 @@ public class DTData {
         }
         Object[][] data = jsonToData(jsonString);
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
-                      new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("order"), getGlobalColumnTag("line"), getGlobalColumnTag("po"), getGlobalColumnTag("item"), getGlobalColumnTag("description"), getGlobalColumnTag("orderqty"), getGlobalColumnTag("shipqty")})
+                      new String[]{getGlobalColumnTag("select"), 
+                          getGlobalColumnTag("order"), 
+                          getGlobalColumnTag("line"), 
+                          getGlobalColumnTag("po"), getGlobalColumnTag("item"), getGlobalColumnTag("description"), getGlobalColumnTag("orderqty"), getGlobalColumnTag("shipqty")})
                 {
                       @Override  
                       public Class getColumnClass(int col) {  
@@ -8557,8 +8559,8 @@ public class DTData {
                         JSONArray rowArray = new JSONArray(); 
                         rowArray.put("select");
                         rowArray.put(res.getString("so_nbr"));
-                        rowArray.put(res.getString("so_po"));
                         rowArray.put(res.getString("sod_line"));
+                        rowArray.put(res.getString("so_po"));
                         rowArray.put(res.getString("sod_item"));
                         rowArray.put(res.getString("sod_desc"));
                         rowArray.put(res.getString("sod_ord_qty"));

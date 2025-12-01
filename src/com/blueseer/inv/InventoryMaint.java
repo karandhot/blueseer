@@ -930,7 +930,7 @@ public class InventoryMaint extends javax.swing.JPanel {
     private void ddwhActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddwhActionPerformed
       if (ddwh.getSelectedItem() != null) {
              ddloc.removeAllItems();
-             ArrayList<String> loc = OVData.getLocationListByWarehouse(ddwh.getSelectedItem().toString());
+             ArrayList<String> loc = invData.getLocationListByWarehouse(ddwh.getSelectedItem().toString());
              for (String lc : loc) {
                 ddloc.addItem(lc);
              }

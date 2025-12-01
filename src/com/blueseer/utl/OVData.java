@@ -158,6 +158,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.data.JRTableModelDataSource;
@@ -10416,44 +10417,7 @@ return outvalue;
 
 }
 
-    public static ArrayList getLocationListByWarehouse(String wh) {
-       ArrayList myarray = new ArrayList();
-     try{
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-            res = st.executeQuery("select loc_loc from loc_mstr  " + 
-                    "where loc_wh = " + "'" + wh + "'" +
-                    " order by loc_loc ;" );
-           while (res.next()) {
-            myarray.add(res.getString("loc_loc"));                    
-            }
-
-       }
-        catch (SQLException s){
-            MainFrame.bslog(s);
-             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-        } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               con.close();
-        }
-    }
-    catch (Exception e){
-        MainFrame.bslog(e);
-    }
-    return myarray;
-
-}
-
+    
     public static ArrayList getWareHouseList() {
            ArrayList myarray = new ArrayList();
          try{
@@ -17721,7 +17685,39 @@ return mystring;
                 
            
     }   
+
+    public static void printJTableToJasperNew(String reportname, HashMap hm, JRDataSource datasource, String type) {
         
+        hm.put("REPORT_TITLE", reportname);
+        hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+        String jasperfile = "";      
+        // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
+        jasperfile = (type.length() > 3) ? jasperfile = type  : OVData.getCodeValueByCodeKey("jasper", type)  ;
+        if (jasperfile.isEmpty()) {
+                jasperfile = "genericJTableL11.jasper";
+        }
+        Path template = FileSystems.getDefault().getPath(cleanDirString(getSystemJasperDirectory()) + jasperfile);
+               
+        JasperPrint jasperPrint; 
+       try {
+         jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
+         JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+           jasperViewer.setVisible(true);
+                jasperViewer.setTitle("Viewer");
+                jasperViewer.setIconImage(null);
+                jasperViewer.setFitPageZoomRatio();
+           //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
+       } catch (JRException ex) {
+           MainFrame.bslog(ex);
+       }
+      
+
+        
+                
+           
+    }   
+        
+    
     public static void printReceipt(String shipper) {
         try{
              
@@ -21624,7 +21620,21 @@ return mylist;
     }
    
     public static ArrayList getSysMetaData(String id, String type, String key) {
-           ArrayList myarray = new ArrayList();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getSysMetaData"});
+            list.add(new String[]{"param1",  id});
+            list.add(new String[]{"param2",  type});
+            list.add(new String[]{"param3",  key});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        ArrayList myarray = new ArrayList();
          try{
             
             Connection con = null;

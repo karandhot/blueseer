@@ -2366,7 +2366,7 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
     private void ddwhActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddwhActionPerformed
          if (ddwh.getSelectedItem() != null && ! isLoad) {
              ddloc.removeAllItems();
-             ArrayList<String> loc = OVData.getLocationListByWarehouse(ddwh.getSelectedItem().toString());
+             ArrayList<String> loc = invData.getLocationListByWarehouse(ddwh.getSelectedItem().toString());
              loc.stream().forEach((s) -> ddloc.addItem(s));
             ddloc.insertItemAt("", 0);
             ddloc.setSelectedIndex(0);
