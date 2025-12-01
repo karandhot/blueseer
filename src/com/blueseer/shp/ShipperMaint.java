@@ -1523,7 +1523,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         ddbom.insertItemAt("", 0);
         ddbom.setSelectedIndex(0);
-        ArrayList<String[]> boms = invData.getBOMsByItemSite(sod.sod_item());
+        ArrayList<String[]> boms = invData.getBOMsByItemSite_mg(sod.sod_item());
         if (boms != null) {
             for (String[] wh : boms) {
             ddbom.addItem(wh[0]);
