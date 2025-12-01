@@ -1848,7 +1848,16 @@ public class admData {
                     s[0] = "menus";
                     s[1] = res.getString("menu_id") + "," + res.getString("menu_panel");
                     lines.add(s);
-                }   
+                }  
+                
+            res = st.executeQuery("select menu_navcode, menu_id, menu_panel, mt_initvar  from menu_mstr " +
+                        " inner join menu_tree on mt_child = menu_id " +  ";" );
+                while (res.next()) {
+                String[] s = new String[2];
+                    s[0] = "navcodes";
+                    s[1] = res.getString("menu_navcode") + "," + res.getString("menu_id") + "," + res.getString("menu_panel") + "," + res.getString("mt_initvar");
+                    lines.add(s);
+                }      
             
                
             res = st.executeQuery("SELECT ov_currency FROM ov_mstr" + ";");
