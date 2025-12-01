@@ -4673,7 +4673,7 @@ public class invData {
     public static ArrayList<String[]> getBOMsByItemSite_mg(String item) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
-            list.add(new String[]{"id", "getBOMsByItemSite_Event"});
+            list.add(new String[]{"id", "getBOMsByItemSite_mg"});
             list.add(new String[]{"param1",  item});
             try {
                 return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServINV"));
