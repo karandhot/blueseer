@@ -142,6 +142,8 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                 public ArrayList<String[]> rtabledetail = new ArrayList<>();
                 public ArrayList<String> rwhaction = new ArrayList<>();
                 public ArrayList<String> rbilltoaction = new ArrayList<>();
+                public static CustShipSet css = null;
+                public static salesOrder so = null;
                 
     
     /**
@@ -331,6 +333,12 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                     if (this.key[0].equals("ddbilltoActionPerformed")) {
                       message = run_ddbilltoActionPerformed(this.key[1]);
                     }
+                    if (this.key[0].equals("getCustShipSet")) {
+                      message = run_getCustShipSet(this.key[1], this.key[2]);
+                    }
+                    if (this.key[0].equals("getOrderMstrSet")) {
+                      message = run_getOrderMstrSet(this.key[1]);
+                    }
                     
                     break;    
                 default:
@@ -371,6 +379,12 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                 }
                 if (this.key[0].equals("ddbilltoActionPerformed")) {
                       done_ddbilltoActionPerformed();
+                }
+                if (this.key[0].equals("getCustShipSet")) {
+                      done_getCustShipSet();
+                }
+                if (this.key[0].equals("getOrderMstrSet")) {
+                      done_getOrderMstrSet();
                 }
                 
            } else {
@@ -857,6 +871,25 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
     }
     
+    public String[] run_getCustShipSet(String billto, String shipto) {
+        css = cusData.getCustShipSet(new String[]{billto, shipto}); 
+        if (css == null) {
+           bsmf.MainFrame.show(getMessageTag(1034,billto + "/" + shipto));
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }
+    
+    public String[] run_getOrderMstrSet(String order) {
+        so = getOrderMstrSet(new String[]{order});
+        if (so == null) {
+           bsmf.MainFrame.show(getMessageTag(1034,order));   
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }
     
     public void done_updateForm() {
         isLoad = true;
@@ -957,6 +990,113 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
        bsmf.MainFrame.show(getMessageTag(1108));
        ddbillto.requestFocus();
         }
+    }
+    
+    public void done_getCustShipSet() {
+        disableradiobuttons();
+        
+        if (css == null) {
+            return; 
+        } 
+        
+        curr = css.cm().cm_curr();
+        lbladdr.setText(css.cms().cms_name() + "  " + css.cms().cms_line1() + "..." + css.cms().cms_city() +
+                        ", " + css.cms().cms_state() + " " + css.cms().cms_zip());
+        ddshipvia.setSelectedItem(css.cm().cm_carrier());
+        ddsite.setSelectedItem(css.cm().cm_site());
+        ddshipfrom.setSelectedItem(css.cm().cm_site());
+        terms = css.cm().cm_terms();
+        taxcode = css.cm().cm_tax_code();
+        aracct = css.cm().cm_ar_acct();
+        arcc = css.cm().cm_ar_cc();
+        
+        
+        if (terms.isEmpty() || aracct.isEmpty() || arcc.isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1090));
+        }
+
+        disablechoices();
+
+
+        btadd.setEnabled(true);
+        btupdate.setEnabled(false);
+    }
+    
+    public void done_getOrderMstrSet() {
+        disableradiobuttons();
+        double qtyavailable = 0.0;
+       
+        
+        if (so == null) {
+            ddshipto.setSelectedIndex(0);
+            ddorder.requestFocus(); 
+            return;
+        } 
+        
+        if (so.so().so_status().equals(getGlobalProgTag("closed"))) {
+            bsmf.MainFrame.show(getMessageTag(1097));
+            ddshipto.setSelectedIndex(0);
+            ddorder.requestFocus(); 
+            return;
+        }
+        
+        curr = so.so().so_curr();
+        lbladdr.setText(so.cms().cms_name() + "  " + so.cms().cms_line1() + "..." + so.cms().cms_city() +
+                        ", " + so.cms().cms_state() + " " + so.cms().cms_zip());
+        ddshipvia.setSelectedItem(so.so().so_shipvia());
+        ddsite.setSelectedItem(so.so().so_site());
+        ddshipfrom.setSelectedItem(so.so().so_site());
+        terms = so.cm().cm_terms();
+        taxcode = so.cm().cm_tax_code();
+        aracct = so.cm().cm_ar_acct();
+        arcc = so.cm().cm_ar_cc();
+        
+        
+        if (terms.isEmpty() || aracct.isEmpty() || arcc.isEmpty()) {
+            bsmf.MainFrame.show(getMessageTag(1090));
+        }
+
+        // add line item info to lines table
+        for (sod_det sod : so.sod()) {
+               qtyavailable = sod.sod_ord_qty() - sod.sod_shipped_qty();
+                 myshipdetmodel.addRow(new Object[]{sod.sod_line(), 
+                     sod.sod_item(), 
+                     sod.sod_nbr(),
+                     sod.sod_line(),
+                     sod.sod_po(), 
+                     String.valueOf(qtyavailable), 
+                     sod.sod_netprice(),
+                     sod.sod_desc(),
+                     sod.sod_wh(),
+                     sod.sod_loc(),
+                     sod.sod_disc(),
+                     sod.sod_listprice(),
+                     sod.sod_taxamt(),
+                     "", // cont
+                     "",  // serialno
+                     sod.sod_bom(),
+                     String.valueOf(qtyavailable), // cont qty
+                     sod.sod_uom()
+                     }); 
+        }
+        tabledetail.setModel(myshipdetmodel);
+       
+        for (sos_det sos : so.sos() ) {
+             sacmodel.addRow(new Object[]{
+             sos.sos_nbr(), sos.sos_desc(), sos.sos_type(), sos.sos_amttype(), sos.sos_amt()
+             });
+        }
+       sactable.setModel(sacmodel);
+        
+        
+        refreshDisplayTotals();
+            
+           
+        disablechoices();
+
+
+        btadd.setEnabled(true);
+        btupdate.setEnabled(false);
     }
     
     
@@ -1352,129 +1492,6 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
        return uniqwh;
     }
          
-      
-    public void setShipperByShipTo(String billto, String shipto) {
-        
-        // created shipchoice to see override rborder state change problem
-        disableradiobuttons();
-        
-        CustShipSet css = getCustShipSet(new String[]{billto, shipto});
-        
-        if (css == null) {
-            bsmf.MainFrame.show(getMessageTag(1034,billto + "/" + shipto));
-            return;
-        } 
-        
-        curr = css.cm().cm_curr();
-        lbladdr.setText(css.cms().cms_name() + "  " + css.cms().cms_line1() + "..." + css.cms().cms_city() +
-                        ", " + css.cms().cms_state() + " " + css.cms().cms_zip());
-        ddshipvia.setSelectedItem(css.cm().cm_carrier());
-        ddsite.setSelectedItem(css.cm().cm_site());
-        ddshipfrom.setSelectedItem(css.cm().cm_site());
-        terms = css.cm().cm_terms();
-        taxcode = css.cm().cm_tax_code();
-        aracct = css.cm().cm_ar_acct();
-        arcc = css.cm().cm_ar_cc();
-        
-        
-        if (terms.isEmpty() || aracct.isEmpty() || arcc.isEmpty()) {
-            bsmf.MainFrame.show(getMessageTag(1090));
-        }
-
-        disablechoices();
-
-
-        btadd.setEnabled(true);
-        btupdate.setEnabled(false);
-        
-       
-    }
-    
-    public void setShipperByOrder(String order) {
-        
-        // created shipchoice to see override rborder state change problem
-        disableradiobuttons();
-        double qtyavailable = 0.0;
-        String orderstatus = "";
-        
-        salesOrder so = getOrderMstrSet(new String[]{order});
-        
-        if (so == null) {
-            bsmf.MainFrame.show(getMessageTag(1034,order));   
-            ddshipto.setSelectedIndex(0);
-            ddorder.requestFocus(); 
-            return;
-        } 
-        
-        if (so.so().so_status().equals(getGlobalProgTag("closed"))) {
-            bsmf.MainFrame.show(getMessageTag(1097));
-            ddshipto.setSelectedIndex(0);
-            ddorder.requestFocus(); 
-            return;
-        }
-        
-        curr = so.so().so_curr();
-        lbladdr.setText(so.cms().cms_name() + "  " + so.cms().cms_line1() + "..." + so.cms().cms_city() +
-                        ", " + so.cms().cms_state() + " " + so.cms().cms_zip());
-        ddshipvia.setSelectedItem(so.so().so_shipvia());
-        ddsite.setSelectedItem(so.so().so_site());
-        ddshipfrom.setSelectedItem(so.so().so_site());
-        terms = so.cm().cm_terms();
-        taxcode = so.cm().cm_tax_code();
-        aracct = so.cm().cm_ar_acct();
-        arcc = so.cm().cm_ar_cc();
-        
-        
-        if (terms.isEmpty() || aracct.isEmpty() || arcc.isEmpty()) {
-            bsmf.MainFrame.show(getMessageTag(1090));
-        }
-
-        // add line item info to lines table
-        for (sod_det sod : so.sod()) {
-               qtyavailable = sod.sod_ord_qty() - sod.sod_shipped_qty();
-                 myshipdetmodel.addRow(new Object[]{sod.sod_line(), 
-                     sod.sod_item(), 
-                     sod.sod_nbr(),
-                     sod.sod_line(),
-                     sod.sod_po(), 
-                     String.valueOf(qtyavailable), 
-                     sod.sod_netprice(),
-                     sod.sod_desc(),
-                     sod.sod_wh(),
-                     sod.sod_loc(),
-                     sod.sod_disc(),
-                     sod.sod_listprice(),
-                     sod.sod_taxamt(),
-                     "", // cont
-                     "",  // serialno
-                     sod.sod_bom(),
-                     String.valueOf(qtyavailable), // cont qty
-                     sod.sod_uom()
-                     }); 
-        }
-        tabledetail.setModel(myshipdetmodel);
-       
-        for (sos_det sos : so.sos() ) {
-             sacmodel.addRow(new Object[]{
-             sos.sos_nbr(), sos.sos_desc(), sos.sos_type(), sos.sos_amttype(), sos.sos_amt()
-             });
-        }
-       sactable.setModel(sacmodel);
-        
-        
-        refreshDisplayTotals();
-            
-           
-        disablechoices();
-
-
-        btadd.setEnabled(true);
-        btupdate.setEnabled(false);
-        
-       
-    }
-    
-    
     public void setDetail(String nbr, String line) {
         
         
@@ -2674,7 +2691,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btorderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btorderActionPerformed
         if (ddorder.getSelectedItem() != null && ! ddorder.getSelectedItem().toString().isBlank()) {
-        setShipperByOrder(ddorder.getSelectedItem().toString());
+        executeTask(dbaction.run, new String[]{"getOrderMstrSet", ddorder.getSelectedItem().toString()});   
         }
     }//GEN-LAST:event_btorderActionPerformed
 
@@ -2688,7 +2705,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btshiptoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btshiptoActionPerformed
         if (ddbillto.getSelectedItem() != null && ddshipto.getSelectedItem() != null && ! ddbillto.getSelectedItem().toString().isBlank() && ! ddshipto.getSelectedItem().toString().isBlank()) {
-          setShipperByShipTo(ddbillto.getSelectedItem().toString(), ddshipto.getSelectedItem().toString());
+          executeTask(dbaction.run, new String[]{"getCustShipSet", ddbillto.getSelectedItem().toString(), ddshipto.getSelectedItem().toString()});
         }
     }//GEN-LAST:event_btshiptoActionPerformed
 

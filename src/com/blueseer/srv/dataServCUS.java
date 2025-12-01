@@ -25,6 +25,8 @@ SOFTWARE.
  */
 package com.blueseer.srv;
 
+import com.blueseer.ctr.cusData;
+import static com.blueseer.ctr.cusData.getCustShipSet;
 import static com.blueseer.ctr.cusData.getcustshipmstrlist;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
 import static com.blueseer.inv.invData.getLocationListByWarehouse;
@@ -36,6 +38,7 @@ import static com.blueseer.utl.BlueSeerUtils.intToJson;
 import static com.blueseer.utl.OVData.getNextNbr;
 import static com.blueseer.utl.OVData.getSysMetaData;
 import static com.blueseer.utl.OVData.getTableInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
@@ -82,6 +85,13 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "getcustshipmstrlist" :        
             response.getWriter().print(ArrayListStringToJson(getcustshipmstrlist(request.getHeader("param1"))));
             break;
+            
+        case "getCustShipSet" :        
+            cusData.CustShipSet cs = getCustShipSet(new String[]{request.getHeader("param1")});
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(cs);
+            response.getWriter().print(r);
+            break;    
                      
         default:
         response.getWriter().print("no switch case exists in dataServOV for id: " + id);
