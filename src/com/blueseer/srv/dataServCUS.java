@@ -87,7 +87,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
             
         case "getCustShipSet" :        
-            cusData.CustShipSet cs = getCustShipSet(new String[]{request.getHeader("param1")});
+            cusData.CustShipSet cs = getCustShipSet(new String[]{request.getHeader("param1"), request.getHeader("param2")});
             ObjectMapper objectMapper = new ObjectMapper();
             String r = objectMapper.writeValueAsString(cs);
             response.getWriter().print(r);

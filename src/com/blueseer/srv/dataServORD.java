@@ -25,69 +25,24 @@ SOFTWARE.
  */
 package com.blueseer.srv;
 
-import bsmf.MainFrame;
-import static bsmf.MainFrame.ConvertStringToBool;
-import static bsmf.MainFrame.bslog;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.driver;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.pass;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
-import static com.blueseer.edi.EDI.deleteFile;
-import static com.blueseer.edi.EDI.fileExists;
-import static com.blueseer.edi.EDI.getFileContent;
-import static com.blueseer.edi.EDI.getFileContentBytes;
-import static com.blueseer.edi.EDI.getFilesOfDir;
-import static com.blueseer.edi.EDI.runEDI;
-import static com.blueseer.edi.EDI.runEDIsingle;
-import static com.blueseer.edi.EDI.writeFile;
-import static com.blueseer.edi.apiUtils.createKeyStore;
-import static com.blueseer.edi.apiUtils.createNewKeyPair;
-import static com.blueseer.edi.apiUtils.genereatePGPKeyPair;
-import static com.blueseer.edi.apiUtils.getAsciiDumpPGPKey;
-import static com.blueseer.edi.apiUtils.getPublicKeyAsOPENSSH;
-import static com.blueseer.edi.apiUtils.getPublicKeyAsPEM;
-import static com.blueseer.edi.apiUtils.postAS2;
-import static com.blueseer.edi.apiUtils.runAPIPost;
+
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
-import com.blueseer.ord.OrderChangeBrowse;
-import com.blueseer.ord.OrderRpt;
+import com.blueseer.ord.ordData;
 import static com.blueseer.ord.ordData.getOrderChangeExport;
 import static com.blueseer.ord.ordData.getOrderChangeReportData;
 import static com.blueseer.ord.ordData.getOrderDetailExport;
+import static com.blueseer.ord.ordData.getOrderMstrSet;
 import static com.blueseer.ord.ordData.getOrderReportData;
-import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
-import static com.blueseer.utl.BlueSeerUtils.createMessageJSON;
-import com.blueseer.utl.OVData;
-import java.io.BufferedReader;
+import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.transform.TransformerException;
-import org.apache.commons.io.IOUtils;
 
 
 /**
@@ -204,155 +159,80 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
  @Override
 protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-       // BufferedReader reader = request.getReader();
-        response.setContentType("text/plain");
-        response.setStatus(HttpServletResponse.SC_OK);
-        if (request == null) {
-            response.getWriter().println("no valid payload provided");
-        } else {
+       
+    
+    response.setContentType("text/plain");
+    
+    if (! confirmServerAuthAPI(request, authServ.hmuser)) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter().println(" br549 authorization failed");
+        return;
+    }
+    
+    if (request.getHeader("id") == null || request.getHeader("id").isEmpty()) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing id " + "\n" + getHeaders(request) );  
+      return;
+    }
+    
+    String id = request.getHeader("id"); 
+    
+    switch (id) {
+        
+        case "exportOrderDetail" : 
+        response.getWriter().println(getOrderDetailExport(request.getHeader("fromdate"), 
+                request.getHeader("todate"), 
+                request.getHeader("fromcust"), 
+                request.getHeader("tocust"), 
+                request.getHeader("site"))); 
+        break;
+
+        case "exportOrderChange" :
+        response.getWriter().println(getOrderChangeExport(request.getHeader("fromdate"), 
+                request.getHeader("todate"), 
+                request.getHeader("fromcust"), 
+                request.getHeader("tocust"), 
+                request.getHeader("site"))); 
+        break;
+
+        case "orderReport" :
+        String[] or = new String[]{
+               request.getHeader("fromdate"), 
+               request.getHeader("todate"), 
+               request.getHeader("fromcust"), 
+               request.getHeader("tocust"), 
+               request.getHeader("site"), 
+               request.getHeader("datetype")
+               };     
+        response.getWriter().println(getOrderReportData(or));  
+        break;
+
+        case "orderChangeReport" :
+        String[] ocr = new String[]{
+               request.getHeader("fromdate"), 
+               request.getHeader("todate"), 
+               request.getHeader("fromcust"), 
+               request.getHeader("tocust"), 
+               request.getHeader("site"), 
+               request.getHeader("datetype")
+               };     
+        response.getWriter().println(getOrderChangeReportData(ocr)); 
+        break;
+
+        case "getOrderMstrSet" :        
+        ordData.salesOrder cs = getOrderMstrSet(new String[]{request.getHeader("param1")});
+        ObjectMapper objectMapper = new ObjectMapper();
+        String r = objectMapper.writeValueAsString(cs);
+        response.getWriter().print(r);
+        break; 
+
+        default:
+        response.getWriter().print("no switch case exists in dataServORD for id: " + id);
+        System.out.println("no switch case exists in dataServORD for id: " + id);    
             
-                if (request.getHeader("id") == null || request.getHeader("id").isEmpty()) {
-                  response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                  response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing id " + "\n" + getHeaders(request) );  
-                  return;
-                }
-
-                String id = request.getHeader("id");
-                
-                String line = "";
-                StringBuilder sbabove = new StringBuilder();
-                BufferedReader reader = request.getReader();  // as string
-                while ((line = reader.readLine()) != null) {  
-                sbabove.append(line);
-                }
-               
-                // TODO
-                // new option for api data calls
-                // receive class, method, rtype, arrayOfArguments as headers
-                // use reflection to call class.method
-                // stringify the return based on filtering the rtype of the method
-                /*
-                String rtype = "";
-                String rclass = request.getHeader("rclass");
-                String rmethod = "";
-                String[] rargs = new String[]{"a", "b", "c"};
-                Class cls;  
-                try {
-                cls = Class.forName(rclass);            
-                Object obj = cls.getDeclaredConstructor().newInstance();
-                Method method = cls.getDeclaredMethod(rmethod, String[].class);
-                Object oc = method.invoke(obj, (Object[]) rargs);
-                    if (oc != null) {
-                        if (oc instanceof String[] oString) {
-                           StringBuilder sb = new StringBuilder();
-                           for (String s : oString) {
-                               sb.append(s).append(",");
-                           }
-                           response.getWriter().println(sb.toString());
-                        }
-                        if (oc instanceof ArrayList oString && rtype.equals("ArrayList<String>")) {
-                           StringBuilder sb = new StringBuilder();
-                           for (Object s : oString) {
-                               sb.append((String) s).append("\n");
-                           }
-                           response.getWriter().println(sb.toString());
-                        }
-                        if (oc instanceof ArrayList oString && rtype.equals("ArrayList<String[]>")) {
-                           StringBuilder sb = new StringBuilder();
-                           for (Object s : oString) {
-                               for (Object z : (String[]) s) {
-                                   sb.append((String) z).append(",");
-                               }
-                               sb.append((String) s).append("\n");
-                           }
-                           response.getWriter().println(sb.toString());
-                        }
-                        if (oc instanceof String oString) {
-                          response.getWriter().println(oc);
-                        }
-                    }
-                } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                    response.getWriter().println("reflection error");
-                    bslog(ex.getMessage() + ": " + ex.getCause());
-                }
-                */
-                
-                // process specific app (id)
-                if (id.equals("exportOrderDetail")) { 
-                  String fromdate = request.getHeader("fromdate");
-                  String todate = request.getHeader("todate");
-                  String fromcust = request.getHeader("fromcust");
-                  String tocust = request.getHeader("tocust");
-                  String site = request.getHeader("site");
-                //  List<String> zz = Arrays.asList(sbabove.toString().split("\\|"));                  
-                  response.getWriter().println(getOrderDetailExport(fromdate, todate, fromcust, tocust, site));
-                } 
-                
-                if (id.equals("exportOrderChange")) {
-                  String fromdate = request.getHeader("fromdate");
-                  String todate = request.getHeader("todate");
-                  String fromcust = request.getHeader("fromcust");
-                  String tocust = request.getHeader("tocust");
-                  String site = request.getHeader("site");               
-                  response.getWriter().println(getOrderChangeExport(fromdate, todate, fromcust, tocust, site));  
-                } 
-                
-                if (id.equals("orderReport")) {
-                   String[] keys = new String[]{
-                   request.getHeader("fromdate"), 
-                   request.getHeader("todate"), 
-                   request.getHeader("fromcust"), 
-                   request.getHeader("tocust"), 
-                   request.getHeader("site"), 
-                   request.getHeader("datetype")
-                   }; 
-
-                   for (String k : keys) {
-                       if (k == null) {
-                           response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                           response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing param");  
-                           return;
-                       }
-                   }
-
-                   String r = getOrderReportData(keys);
-
-                   if (r == null || r.isBlank()) {
-                     response.getWriter().println("no return for: " + String.join(",",keys));   
-                   } else {
-                     response.getWriter().println(r);   
-                   }
-                } 
-                
-                if (id.equals("orderChangeReport")) {
-                   String[] keys = new String[]{
-                   request.getHeader("fromdate"), 
-                   request.getHeader("todate"), 
-                   request.getHeader("fromcust"), 
-                   request.getHeader("tocust"), 
-                   request.getHeader("site"),
-                   request.getHeader("posearch"),
-                   request.getHeader("isdetached")
-                   }; 
-
-                   for (String k : keys) {
-                       if (k == null) {
-                           response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                           response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing param");  
-                           return;
-                       }
-                   }
-
-                   String r = getOrderChangeReportData(keys);
-
-                   if (r == null || r.isBlank()) {
-                     response.getWriter().println("no return for: " + String.join(",",keys));   
-                   } else {
-                     response.getWriter().println(r);   
-                   }   
-                } 
-                
-        }
+    }   
+    
+       
     }
    
     
