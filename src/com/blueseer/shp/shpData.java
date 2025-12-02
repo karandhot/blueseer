@@ -1546,7 +1546,8 @@ public class shpData {
             
             try{
                 res = st.executeQuery("select shd_id, shd_soline, shd_item, shd_custitem, shd_so, shd_po, shd_qty, shd_netprice from ship_det " +
-                        " where shd_id = " + "'" + shipper + "'" +  ";");
+                        " where shd_id = " + "'" + shipper + "'"  +
+                                ";");
                     
                  
                     while (res.next()) {

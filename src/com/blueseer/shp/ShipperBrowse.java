@@ -851,7 +851,8 @@ public class ShipperBrowse extends javax.swing.JPanel {
         int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
         if ( col == 1) {
-                getDetail(tablereport.getValueAt(row, 2).toString());
+               // getDetail(tablereport.getValueAt(row, 2).toString());
+                executeTask(BlueSeerUtils.dbaction.run, new String[]{"getShipperBrowseDetail",tablereport.getValueAt(row, 2).toString()});
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
         }
