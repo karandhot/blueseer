@@ -33,6 +33,7 @@ import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -104,7 +105,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(arrayToJson(shpData.addShipperTransaction(sdlist, sm, stlist)));  
             break;
             
-        case "updateShipperTransaction" : 
+        case "updateShipTransaction" : 
             String line_ast;
             StringBuilder sb_ast = new StringBuilder();  
             BufferedReader reader_ast = request.getReader();  // as string
@@ -125,6 +126,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(arrayToJson(shpData.deleteShipMstr(request.getHeader("param1"))));  
             break;    
 
+        case "confirmShipperTransaction" :
+            response.getWriter().print(arrayToJson(shpData.confirmShipperTransaction(request.getHeader("param1"),request.getHeader("param2"),parseDate(request.getHeader("param3")))));  
+            break;
+            
+            
         case "getShipperMstrSet" :        
             shpData.Shipper shset = getShipperMstrSet(new String[]{request.getHeader("param1")});
             ObjectMapper om_shset = new ObjectMapper(); 
@@ -152,6 +158,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "updateShipperSAC" :
             shpData.updateShipperSAC(request.getHeader("param1"));
+            break;   
+            
+        case "getShipperPrintData" :
+            response.getWriter().print(shpData.getShipperPrintData(request.getHeader("param1")));  
             break;    
             
         default:

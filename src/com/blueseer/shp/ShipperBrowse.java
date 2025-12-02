@@ -328,7 +328,7 @@ public class ShipperBrowse extends javax.swing.JPanel {
     
     public String[] getDetail(String shipper) {
       
-          String jsonString = null;
+        String jsonString = null;
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<>();
             list.add(new String[]{"id", "getShipperBrowseDetail"});

@@ -55,6 +55,7 @@ import static com.blueseer.ord.ordData.getSVOrderTotalTax;
 import static com.blueseer.pur.purData.getPOTotalTax;
 import com.blueseer.sch.schData;
 import com.blueseer.shp.shpData;
+import static com.blueseer.shp.shpData.getShipperPrintData;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble5;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDoubleUS;
@@ -69,6 +70,7 @@ import static com.blueseer.utl.BlueSeerUtils.getGlobalTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.jsonToHashMapStringInteger;
 import static com.blueseer.utl.BlueSeerUtils.jsonToInt;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
@@ -136,6 +138,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Stack;
@@ -162,6 +165,7 @@ import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.data.JRTableModelDataSource;
+import net.sf.jasperreports.engine.data.ListOfArrayDataSource;
 
 
 
@@ -17996,7 +18000,94 @@ return mystring;
             MainFrame.bslog(e);
         }
     }    
+     
+    public static void printShipperRemote(String shipper) {
         
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getShipperPrintData"});
+            list.add(new String[]{"param1", shipper});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServSHP"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        } else {
+            jsonString = getShipperPrintData(shipper); 
+        }        
+        Object[][] rData = jsonToData(jsonString);
+        
+        List<Object[]> list = new ArrayList<>();
+        String site_csz = "";
+        String bill_csz = "";
+        String ship_csz = "";
+        String cust = "";
+        String site = "";
+        String logo = "";
+        String imagedir = "";
+        String jasperfile = "";
+        String jasperdir = "";
+        int k = 0;
+        for (Object[] rowData : rData) {
+            if (k == 0) {
+                cust = rowData[2].toString();
+                site = rowData[2].toString();
+                logo = (rowData[39].toString().isBlank()) ? rowData[40].toString() : rowData[39].toString(); // if cm_logo = "" then site_logo
+                jasperfile = (rowData[42].toString().isBlank()) ? rowData[43].toString() : rowData[42].toString(); // if cm_ps_jasper = "" then site_sh_jasper
+                jasperdir = rowData[44].toString();
+                imagedir = rowData[41].toString();
+                bill_csz = rowData[26].toString() + " " + rowData[27].toString() + " " + rowData[28].toString() + " " + rowData[29].toString();
+                ship_csz = rowData[30].toString() + " " + rowData[31].toString() + " " + rowData[32].toString() + " " + rowData[33].toString();
+                site_csz = rowData[34].toString() + " " + rowData[35].toString() + " " + rowData[36].toString() + " " + rowData[37].toString();
+            }
+              //  totalsales = totalsales + (bsParseDouble(rowData[6].toString()) * bsParseDouble(rowData[7].toString()));
+             //   totalqty = totalqty + bsParseDouble(rowData[6].toString());
+                list.add(rowData);
+                k++;
+        }
+        
+        
+        String[] rec;
+        String columnnames = "shd_id,it_desc,sh_cust,sh_rmks,shd_po," +
+                        "shd_item,shd_custitem,shd_qty,shd_netprice,cm_code,cm_name,cm_line1,cm_line2," +
+                        "cms_name,cms_line1,site_desc,site_line1,sh_boxes,sh_pallets,sh_shipvia," +
+                        "cm_terms,sh_ref,sh_bol,shd_serial,shd_cont,sh_trailer," +
+                        "cm_city,cm_state,cm_zip,cm_country,cms_city,cms_state,cms_zip,cms_country," +
+                        "site_city,site_state,site_zip,site_country,site_site,cm_logo,site_logo,ov_image_directory,cm_ps_jasper,site_sh_jasper,ov_jasper_directory";
+        String[] columnnamesarray = columnnames.split(",", -1);
+               
+                
+               Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
+        HashMap hm = new HashMap();
+        hm.put("REPORT_TITLE", "SHIPPER XXX");
+                hm.put("myid",  shipper);
+                hm.put("site_csz", site_csz);
+                hm.put("bill_csz", bill_csz);
+                hm.put("ship_csz", ship_csz);
+                hm.put("imagepath", imagepath.toString());
+                hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+       
+        JRDataSource datasource = new ListOfArrayDataSource(list, columnnamesarray);
+        // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
+        // type = "L8C";  ...or type = genericJTableL8.jasper
+        // String jasperfile = (type.length() > 3) ? jasperfile = type  : OVData.getCodeValueByCodeKey("jasper", type)  ;
+        Path template = checkForCustomPath(jasperdir, jasperfile);
+        JasperPrint jasperPrint; 
+        try {
+         jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
+         JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+           jasperViewer.setVisible(true);
+                jasperViewer.setTitle("Viewer");
+                jasperViewer.setIconImage(null);
+                jasperViewer.setFitPageZoomRatio();
+           //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
+       } catch (JRException ex) {
+           MainFrame.bslog(ex);
+       }
+    }
+    
     public static void printShipperByOrder(String order) {
         try{
             

@@ -363,6 +363,21 @@ public class shpData {
     }
     
     public static String[] confirmShipperTransaction(String type, String shipper, Date effdate) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","confirmShipperTransaction"});
+            list.add(new String[]{"param1",type});
+            list.add(new String[]{"param2",shipper});
+            list.add(new String[]{"param3",setDateDB(effdate)});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServSHP"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -1561,6 +1576,103 @@ public class shpData {
                         rowArray.put(res.getString("shd_po"));
                         rowArray.put(res.getString("shd_qty"));
                         rowArray.put(res.getString("shd_netprice"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    public static String getShipperPrintData(String shipper) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                res = st.executeQuery("select shd_id, it_desc, sh_cust, sh_cust, sh_rmks, shd_po, " +
+                        " shd_item, shd_custitem, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, " +
+                        " cms_name, cms_line1, site_desc, site_line1, sh_boxes, sh_pallets, sh_shipvia, " +
+                        " cm_terms, sh_ref, sh_bol, shd_serial, shd_cont, sh_trailer, " +
+                        " cm_city, cm_state, cm_zip, cm_country, cms_city, cms_state, cms_zip, cms_country, " +
+                        " site_city, site_state, site_zip, site_country, site_site, " +
+                        " cm_logo, site_logo, ov_image_directory, cm_ps_jasper, site_sh_jasper, ov_jasper_directory " +
+                        " from ship_det " +
+                        " left outer join item_mstr on it_item = shd_item " + 
+                        " inner join ship_mstr on sh_id = shd_id " +
+                        " inner join cm_mstr on cm_code = sh_cust " +
+                        " left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship " +
+                        " inner join site_mstr on site_site = sh_site " +
+                        " inner join ov_ctrl " +
+                        " where shd_id = " + "'" + shipper + "'"  +
+                                ";");
+                    
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("shd_id"));
+                        rowArray.put(res.getString("it_desc"));
+                        rowArray.put(res.getString("sh_cust"));
+                        rowArray.put(res.getString("sh_rmks"));
+                        rowArray.put(res.getString("shd_po"));
+                        rowArray.put(res.getString("shd_item"));
+                        rowArray.put(res.getString("shd_custitem"));
+                        rowArray.put(res.getInt("shd_qty"));
+                        rowArray.put(res.getString("shd_netprice")); 
+                        rowArray.put(res.getString("cm_code"));
+                        rowArray.put(res.getString("cm_name")); // 10 zero base
+                        rowArray.put(res.getString("cm_line1"));
+                        rowArray.put(res.getString("cm_line2"));
+                        rowArray.put(res.getString("cms_name"));
+                        rowArray.put(res.getString("cms_line1"));
+                        rowArray.put(res.getString("site_desc"));
+                        rowArray.put(res.getString("site_line1"));
+                        rowArray.put(res.getString("sh_boxes"));
+                        rowArray.put(res.getString("sh_pallets"));
+                        rowArray.put(res.getString("sh_shipvia"));
+                        rowArray.put(res.getString("cm_terms")); // 20 zero base
+                        rowArray.put(res.getString("sh_ref"));
+                        rowArray.put(res.getString("sh_bol"));
+                        rowArray.put(res.getString("shd_serial"));
+                        rowArray.put(res.getString("shd_cont"));
+                        rowArray.put(res.getString("sh_trailer"));
+                        rowArray.put(res.getString("cm_city"));
+                        rowArray.put(res.getString("cm_state"));
+                        rowArray.put(res.getString("cm_zip"));
+                        rowArray.put(res.getString("cm_country"));
+                        rowArray.put(res.getString("cms_city"));  // 30 zero base
+                        rowArray.put(res.getString("cms_state"));
+                        rowArray.put(res.getString("cms_zip"));
+                        rowArray.put(res.getString("cms_country"));
+                        rowArray.put(res.getString("site_city"));
+                        rowArray.put(res.getString("site_state"));
+                        rowArray.put(res.getString("site_zip"));
+                        rowArray.put(res.getString("site_country"));
+                        rowArray.put(res.getString("site_site"));
+                        rowArray.put(res.getString("cm_logo"));
+                        rowArray.put(res.getString("site_logo")); // 40 zero base
+                        rowArray.put(res.getString("ov_image_directory"));
+                        rowArray.put(res.getString("cm_ps_jasper"));
+                        rowArray.put(res.getString("site_sh_jasper"));
+                        rowArray.put(res.getString("ov_jasper_directory"));
                         jsonarray.put(rowArray);
                     }
            }
