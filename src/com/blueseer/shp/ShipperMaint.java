@@ -131,7 +131,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                 String curr = "";
                 boolean isLoad = false;
                 boolean autonumber = true;
-                boolean canupdate = false;
+                boolean canUpdate = false;
                 boolean canconfirm = false;
                 public static ship_mstr sh = null;
                 public static ArrayList<ship_det> shdlist = null;
@@ -237,7 +237,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public boolean validateInput(BlueSeerUtils.dbaction x) {
         
-         if (! canUpdate(this.getClass().getName())) {
+         if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -539,7 +539,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         for (String[] s : initDataSets) {
            
             if (s[0].equals("canupdate")) {
-              canupdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
             }  
             if (s[0].equals("canconfirm")) {
               canconfirm = BlueSeerUtils.ConvertStringToBool(s[1]);  
