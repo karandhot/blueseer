@@ -1520,7 +1520,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         dduom.setSelectedItem(sod.sod_uom());
         ddcont.setSelectedItem(it.it_cont());
         tbcontqty.setText(bsNumber(it.it_contqty()));
-        
+        podate = sod.sod_ord_date();
         
         ddbom.insertItemAt("", 0);
         ddbom.setSelectedIndex(0);
