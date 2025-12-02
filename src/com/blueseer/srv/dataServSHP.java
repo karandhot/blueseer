@@ -94,12 +94,12 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             String[] ca = sb.toString().split("=_=", -1);
            // ArrayList<shpData.ship_det> sd = objectMapper.readValue(ca[0], ArrayList.class);
             shpData.ship_det[] sdarray = objectMapper.readValue(ca[0], shpData.ship_det[].class);
-            List<shpData.ship_det> sdlist = Arrays.asList(sdarray); 
+            ArrayList<shpData.ship_det> sdlist = new ArrayList<shpData.ship_det>(Arrays.asList(sdarray)); 
             shpData.ship_mstr sm = objectMapper.readValue(ca[1], shpData.ship_mstr.class); 
            // ArrayList<shpData.ship_tree> st = objectMapper.readValue(ca[2], ArrayList.class); 
             shpData.ship_tree[] starray = objectMapper.readValue(ca[2], shpData.ship_tree[].class);
-            List<shpData.ship_tree> stlist = Arrays.asList(starray);
-            response.getWriter().print(arrayToJson(shpData.addShipperTransaction((ArrayList<shpData.ship_det>) sdlist, sm, (ArrayList<shpData.ship_tree>) stlist)));  
+            ArrayList<shpData.ship_tree> stlist = new ArrayList<shpData.ship_tree>(Arrays.asList(starray));
+            response.getWriter().print(arrayToJson(shpData.addShipperTransaction(sdlist, sm, stlist)));  
             break;
 
         
