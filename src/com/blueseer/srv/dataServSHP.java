@@ -146,6 +146,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(shpData.getShipperBrowseDetail(request.getHeader("param1")));  
             break; 
             
+        case "getShipperLineNumbers" :
+            response.getWriter().print(ArrayListStringToJson(shpData.getShipperLineNumbers(request.getHeader("param1"))));  
+            break;    
+            
         case "updateShipperSAC" :
             shpData.updateShipperSAC(request.getHeader("param1"));
             break;    
