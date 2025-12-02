@@ -27,7 +27,9 @@ package com.blueseer.srv;
 
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
+import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
+import static com.blueseer.inv.invData.getItemMstr;
 import static com.blueseer.inv.invData.getLocationListByWarehouse;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
@@ -39,6 +41,7 @@ import static com.blueseer.utl.OVData.getCodeMstrValueList;
 import static com.blueseer.utl.OVData.getNextNbr;
 import static com.blueseer.utl.OVData.getSysMetaData;
 import static com.blueseer.utl.OVData.getTableInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
@@ -99,7 +102,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getTableInfo" : 
             response.getWriter().print(HashMapStringIntegerToJson(getTableInfo(new String[]{request.getHeader("param1")})));
-            break;    
+            break;   
+            
+        case "getItemMstr" :        
+        invData.item_mstr itm = getItemMstr(request.getHeader("param1"));
+        ObjectMapper omitm = new ObjectMapper(); 
+        String rsd = omitm.writeValueAsString(itm);
+        response.getWriter().print(rsd);
+        break;    
                      
         default:
         response.getWriter().print("no switch case exists in dataServINV for id: " + id);

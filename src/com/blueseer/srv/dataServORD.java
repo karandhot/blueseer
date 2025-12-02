@@ -31,6 +31,7 @@ import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.ord.ordData;
 import static com.blueseer.ord.ordData.getOrderChangeExport;
 import static com.blueseer.ord.ordData.getOrderChangeReportData;
+import static com.blueseer.ord.ordData.getOrderDet;
 import static com.blueseer.ord.ordData.getOrderDetailExport;
 import static com.blueseer.ord.ordData.getOrderMstrSet;
 import static com.blueseer.ord.ordData.getOrderReportData;
@@ -224,6 +225,13 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         ObjectMapper objectMapper = new ObjectMapper();
         String r = objectMapper.writeValueAsString(cs);
         response.getWriter().print(r);
+        break; 
+        
+        case "getOrderDet" :        
+        ordData.sod_det sd = getOrderDet(request.getHeader("param1"), request.getHeader("param2"));
+        ObjectMapper omsd = new ObjectMapper(); 
+        String rsd = omsd.writeValueAsString(sd);
+        response.getWriter().print(rsd);
         break; 
 
         default:
