@@ -3530,8 +3530,10 @@ public class shpData {
             list.add(new String[]{"param1",  shipper});
             try {
                 sendServerPost(list, "", null, "dataServSHP");
+                return;
             } catch (IOException ex) {
                 bslog(ex);
+                return;
             }
         }
         
