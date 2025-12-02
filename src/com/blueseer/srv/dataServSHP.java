@@ -97,7 +97,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             List<shpData.ship_det> sdlist = Arrays.asList(sdarray); 
             shpData.ship_mstr sm = objectMapper.readValue(ca[1], shpData.ship_mstr.class); 
            // ArrayList<shpData.ship_tree> st = objectMapper.readValue(ca[2], ArrayList.class); 
-            shpData.ship_tree[] starray = objectMapper.readValue(ca[0], shpData.ship_tree[].class);
+            shpData.ship_tree[] starray = objectMapper.readValue(ca[2], shpData.ship_tree[].class);
             List<shpData.ship_tree> stlist = Arrays.asList(starray);
             response.getWriter().print(arrayToJson(shpData.addShipperTransaction((ArrayList<shpData.ship_det>) sdlist, sm, (ArrayList<shpData.ship_tree>) stlist)));  
             break;
