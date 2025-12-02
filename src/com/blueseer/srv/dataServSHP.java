@@ -116,7 +116,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getShipperBrowseDetail" :
             response.getWriter().print(shpData.getShipperBrowseDetail(request.getHeader("param1")));  
-            break;     
+            break; 
+            
+        case "updateShipperSAC" :
+            shpData.updateShipperSAC(request.getHeader("param1"));
+            break;    
             
         default:
         response.getWriter().print("no switch case exists in dataServADM for id: " + id);

@@ -3523,6 +3523,18 @@ public class shpData {
      }
 
     public static void updateShipperSAC(String shipper) {
+       
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "updateShipperSAC"});
+            list.add(new String[]{"param1",  shipper});
+            try {
+                sendServerPost(list, "", null, "dataServSHP");
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        }
+        
        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd"); 
        ArrayList<String> orders = new ArrayList<String>();
        ArrayList<String[]> sac = new ArrayList<String[]>();
