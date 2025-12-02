@@ -594,6 +594,22 @@ public class shpData {
     }
     
     public static String[] updateShipTransaction(ArrayList<String> lines, ArrayList<ship_det> shd, ship_mstr sh) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateShipTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(lines);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(shd);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(sh);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServSHP"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -654,6 +670,21 @@ public class shpData {
     }
     
     public static String[] deleteShipMstr(String x) { 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteShipMstr"});
+            list.add(new String[]{"param1", x});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServSHP"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
+        
+        
+        
         String[] m = new String[2];
         if (x == null) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
@@ -779,6 +810,22 @@ public class shpData {
     public static Shipper getShipperMstrSet(String[] x ) {
         Shipper r = null;
         String[] m = new String[2];
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getShipperMstrSet"});
+            list.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServSHP");
+                r = objectMapper.readValue(returnstring, Shipper.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
         Connection bscon = null;
         PreparedStatement ps = null;
         ResultSet res = null;
@@ -1421,6 +1468,11 @@ public class shpData {
             ResultSet res = null;
             
             try{
+                custfrom = (custfrom.isBlank()) ? bsmf.MainFrame.lowchar : custfrom; 
+                custto = (custto.isBlank()) ? bsmf.MainFrame.hichar : custto;
+                shipperfrom = (shipperfrom.isBlank()) ? bsmf.MainFrame.lownbr : shipperfrom; 
+                shipperto = (shipperto.isBlank()) ? bsmf.MainFrame.hinbr : shipperto;
+                
                 if (po.isBlank()) {
                     res = st.executeQuery("select sh_id, sh_status, sh_cust, cm_name, sh_shipdate, sh_po, sum(shd_qty) as 'qty', sum(shd_qty * shd_netprice) as 'price' from ship_mstr " +
                         " inner join ship_det on shd_id = sh_id " +

@@ -28,6 +28,7 @@ package com.blueseer.srv;
 
 import com.blueseer.adm.admData;
 import com.blueseer.shp.shpData;
+import static com.blueseer.shp.shpData.getShipperMstrSet;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
@@ -90,6 +91,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             while ((line = reader.readLine()) != null) {  
             sb.append(line);
             } 
+            reader.close();
             ObjectMapper objectMapper = new ObjectMapper();
             String[] ca = sb.toString().split("=_=", -1);
            // ArrayList<shpData.ship_det> sd = objectMapper.readValue(ca[0], ArrayList.class);
@@ -101,8 +103,34 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             ArrayList<shpData.ship_tree> stlist = new ArrayList<shpData.ship_tree>(Arrays.asList(starray));
             response.getWriter().print(arrayToJson(shpData.addShipperTransaction(sdlist, sm, stlist)));  
             break;
+            
+        case "updateShipperTransaction" : 
+            String line_ast;
+            StringBuilder sb_ast = new StringBuilder();  
+            BufferedReader reader_ast = request.getReader();  // as string
+            while ((line_ast = reader_ast.readLine()) != null) {  
+            sb_ast.append(line_ast);
+            } 
+            reader_ast.close();
+            ObjectMapper om_ast = new ObjectMapper();
+            String[] caast = sb_ast.toString().split("=_=", -1);
+            ArrayList<String> starrayast = om_ast.readValue(caast[0], ArrayList.class); 
+            shpData.ship_det[] sdarrayast = om_ast.readValue(caast[1], shpData.ship_det[].class);
+            ArrayList<shpData.ship_det> sdlistast = new ArrayList<shpData.ship_det>(Arrays.asList(sdarrayast)); 
+            shpData.ship_mstr smast = om_ast.readValue(caast[2], shpData.ship_mstr.class); 
+            response.getWriter().print(arrayToJson(shpData.updateShipTransaction(starrayast, sdlistast, smast)));    
+            break; 
+            
+        case "deleteShipMstr" :
+            response.getWriter().print(arrayToJson(shpData.deleteShipMstr(request.getHeader("param1"))));  
+            break;    
 
-        
+        case "getShipperMstrSet" :        
+            shpData.Shipper shset = getShipperMstrSet(new String[]{request.getHeader("param1")});
+            ObjectMapper om_shset = new ObjectMapper(); 
+            String r = om_shset.writeValueAsString(shset);
+            response.getWriter().print(r);
+            break; 
             
         case "getShipperBrowseView" : 
             response.getWriter().print(shpData.getShipperBrowseView(request.getHeader("param1"), 

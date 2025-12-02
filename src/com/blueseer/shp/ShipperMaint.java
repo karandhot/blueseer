@@ -52,6 +52,7 @@ import com.blueseer.ord.ordData.sos_det;
 import com.blueseer.shp.shpData.Shipper;
 import static com.blueseer.shp.shpData.addShipperTransaction;
 import static com.blueseer.shp.shpData.confirmShipperTransaction;
+import static com.blueseer.shp.shpData.deleteShipMstr;
 import static com.blueseer.shp.shpData.getShipperLineNumbers;
 import static com.blueseer.shp.shpData.getShipperMstrSet;
 import com.blueseer.shp.shpData.sh_meta;
@@ -756,45 +757,16 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
      }
      
     public String[] deleteRecord(String[] x) {
-     String[] m = new String[2];
+        String[] m;
         boolean proceed = bsmf.MainFrame.warn("Are you sure?");
         if (proceed) {
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            try {
-                        st.executeUpdate("delete from ship_det where shd_id = " + "'" + tbkey.getText() + "'" + ";"); 
-                        st.executeUpdate("delete from ship_tree where ship_sh = " + "'" + tbkey.getText() + "'" + ";");
-                        st.executeUpdate("delete from shs_det where shs_nbr = " + "'" + tbkey.getText() + "'" + ";");
-                        st.executeUpdate("delete from sh_meta where shm_id = " + "'" + tbkey.getText() + "'" + ";");
-                int i = st.executeUpdate("delete from ship_mstr where sh_id = " + "'" + tbkey.getText() + "'" + ";");
-                    if (i > 0) {
-                    m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
-                    }
-                } catch (SQLException s) {
-                 MainFrame.bslog(s); 
-                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordSQLError};  
-            } finally {
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordConnError};
-        }
+            m = deleteShipMstr(x[0]);
         } else {
-           m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordCanceled}; 
+            m = new String[]{"0", getMessageTag(1192)};
         }
      return m;
-     }
+     
+    }
       
     public String[] getRecord(String[] key) {
        
