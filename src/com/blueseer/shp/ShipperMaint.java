@@ -1041,6 +1041,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
         
         curr = so.so().so_curr();
+        podate = so.so().so_ord_date();
         lbladdr.setText(so.cms().cms_name() + "  " + so.cms().cms_line1() + "..." + so.cms().cms_city() +
                         ", " + so.cms().cms_state() + " " + so.cms().cms_zip());
         ddshipvia.setSelectedItem(so.so().so_shipvia());
