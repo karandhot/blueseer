@@ -46,6 +46,7 @@ import com.blueseer.srv.dataServDT;
 import com.blueseer.srv.dataServEDI;
 import com.blueseer.srv.dataServFIN;
 import com.blueseer.srv.dataServINV;
+import com.blueseer.srv.dataServLBL;
 import com.blueseer.srv.dataServORD;
 import com.blueseer.srv.dataServOV;
 import com.blueseer.srv.dataServSHP;
@@ -198,6 +199,7 @@ public class apiServer {
         context.addServlet(dataServSHP.class, "/dataServSHP/*"); 
         context.addServlet(dataServINV.class, "/dataServINV/*");
         context.addServlet(dataServCUS.class, "/dataServCUS/*");
+        context.addServlet(dataServLBL.class, "/dataServLBL/*");
         //server.setHandler(context);
         
         /*

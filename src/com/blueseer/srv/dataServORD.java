@@ -29,12 +29,15 @@ package com.blueseer.srv;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.ord.ordData;
+import static com.blueseer.ord.ordData.getOrderBrowseView;
 import static com.blueseer.ord.ordData.getOrderChangeExport;
 import static com.blueseer.ord.ordData.getOrderChangeReportData;
 import static com.blueseer.ord.ordData.getOrderDet;
 import static com.blueseer.ord.ordData.getOrderDetailExport;
+import static com.blueseer.ord.ordData.getOrderDetailExportNew;
 import static com.blueseer.ord.ordData.getOrderMstrSet;
 import static com.blueseer.ord.ordData.getOrderReportData;
+import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -179,9 +182,16 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
     String id = request.getHeader("id"); 
     
     switch (id) {
-        
+        case "getOrderBrowseInit" :
+            response.getWriter().print(ArrayListStringArrayToJson(ordData.getOrderBrowseInit(request.getHeader("param1"), request.getHeader("param2"))));
+            break;
+            
+        case "getSalesOrderInit" :
+            response.getWriter().print(ArrayListStringArrayToJson(ordData.getSalesOrderInit(request.getHeader("param1"), request.getHeader("param2"))));
+            break;    
+            
         case "exportOrderDetail" : 
-        response.getWriter().println(getOrderDetailExport(request.getHeader("fromdate"), 
+        response.getWriter().println(getOrderDetailExportNew(request.getHeader("fromdate"), 
                 request.getHeader("todate"), 
                 request.getHeader("fromcust"), 
                 request.getHeader("tocust"), 
@@ -196,7 +206,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                 request.getHeader("site"))); 
         break;
 
-        case "orderReport" :
+        case "getOrderBrowseView" :
         String[] or = new String[]{
                request.getHeader("fromdate"), 
                request.getHeader("todate"), 
@@ -205,7 +215,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                request.getHeader("site"), 
                request.getHeader("datetype")
                };     
-        response.getWriter().println(getOrderReportData(or));  
+        response.getWriter().print(getOrderBrowseView(or));  
         break;
 
         case "orderChangeReport" :

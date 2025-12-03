@@ -122,6 +122,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                 boolean isLoad = false;
                 boolean autonumber = true;
                 boolean canUpdate = false;
+                boolean autopost = false;
                 boolean canconfirm = false;
                 public static ship_mstr sh = null;
                 public static ArrayList<ship_det> shdlist = null;
@@ -531,6 +532,9 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
             if (s[0].equals("canupdate")) {
               canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
             }  
+            if (s[0].equals("autopost")) {
+              autopost = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            } 
             if (s[0].equals("canconfirm")) {
               canconfirm = BlueSeerUtils.ConvertStringToBool(s[1]);  
             }
@@ -799,7 +803,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         String[] m = confirmShipperTransaction("order", tbkey.getText(), dcshipdate.getDate());
         // autopost
-        if (OVData.isAutoPost()) {
+        if (autopost) {
             fglData.PostGL();
         }
         return m;

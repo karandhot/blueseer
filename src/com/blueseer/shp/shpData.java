@@ -1347,15 +1347,10 @@ public class shpData {
                defaultsite = s[1];
             }
             
-            res = st.executeQuery("select * from ov_ctrl;" );
+            res = st.executeQuery("select * from gl_ctrl;" );
             while (res.next()) {
-               lines.add(new String[]{"jasperdir", res.getString("ov_jasper_directory")});
-               lines.add(new String[]{"imagedir", res.getString("ov_image_directory")});
-               lines.add(new String[]{"tempdir", res.getString("ov_temp_directory")});
-               lines.add(new String[]{"labeldir", res.getString("ov_label_directory")});
-               lines.add(new String[]{"edidir", res.getString("ov_edi_directory")});
+               lines.add(new String[]{"autopost", res.getString("gl_autopost")});
             }
-            
             
             res = st.executeQuery("select wh_id from wh_mstr order by wh_id;");
             while (res.next()) {
@@ -1486,8 +1481,8 @@ public class shpData {
             try{
                 custfrom = (custfrom.isBlank()) ? bsmf.MainFrame.lowchar : custfrom; 
                 custto = (custto.isBlank()) ? bsmf.MainFrame.hichar : custto;
-                shipperfrom = (shipperfrom.isBlank()) ? bsmf.MainFrame.lownbr : shipperfrom; 
-                shipperto = (shipperto.isBlank()) ? bsmf.MainFrame.hinbr : shipperto;
+                shipperfrom = (shipperfrom.isBlank()) ? bsmf.MainFrame.lowchar : shipperfrom; 
+                shipperto = (shipperto.isBlank()) ? bsmf.MainFrame.hichar : shipperto;
                 
                 if (po.isBlank()) {
                     res = st.executeQuery("select sh_id, sh_status, sh_cust, cm_name, sh_shipdate, sh_po, sum(shd_qty) as 'qty', sum(shd_qty * shd_netprice) as 'price' from ship_mstr " +

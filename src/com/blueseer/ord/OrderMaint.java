@@ -451,7 +451,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         
         
-        ArrayList<String[]> initDataSets = ordData.getSalesOrderInit(this.getClass().getName());
+        ArrayList<String[]> initDataSets = ordData.getSalesOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
         
        jTabbedPane1.removeAll();
        jTabbedPane1.add(getClassLabelTag("main", this.getClass().getSimpleName()), jPanelMain);

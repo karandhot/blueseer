@@ -26,6 +26,7 @@ SOFTWARE.
 package com.blueseer.lbl;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
@@ -33,6 +34,10 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -275,6 +280,20 @@ public class lblData {
     }
     
     public static String[] addMultiLabelTransaction(ArrayList<label_det> lbld, ArrayList<label_mstr> lbl) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id","addMultiLabelTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(lbld);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(lbl);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServLBL"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -622,7 +641,21 @@ public class lblData {
     
     
     public static void deleteLabelByShipper(String shipper) {
-          try {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteLabelByShipper"});
+            list.add(new String[]{"param1",shipper});
+            try {
+                sendServerPost(list, "", null, "dataServLBL");
+                return;
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        }
+        
+        try {
             Connection con = null;
         if (ds != null) {
           con = ds.getConnection();

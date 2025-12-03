@@ -6497,7 +6497,19 @@ return myarray;
        }
 
     public static void PostGL() {
-       try {
+       
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "PostGL"});
+            try {
+                sendServerPost(list, "", null, "dataServFIN");
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        }
+        
+        try {
         ArrayList<Integer> gltran = new ArrayList();
 
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
@@ -6619,7 +6631,6 @@ return myarray;
              
         } catch (SQLException s) {
             MainFrame.bslog(s);
-            bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
         } finally {
                if (res != null) res.close();
                if (st != null) st.close();

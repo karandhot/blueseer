@@ -73,6 +73,7 @@ import static com.blueseer.utl.BlueSeerUtils.boolToString;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.createMessageJSON;
+import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import com.blueseer.utl.OVData;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
@@ -320,6 +321,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       String user = request.getHeader("user");
       response.getWriter().print(ArrayListStringArrayToJson(getFINInit(param1, user)));
     }     
+    
+    if (id.equals("PostGL")) { 
+      fglData.PostGL();
+      response.getWriter().print(arrayToJson(new String[]{BlueSeerUtils.SuccessBit, getMessageTag(1125)}));
+    }
        
     } // doPost
      

@@ -56,25 +56,29 @@ import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
-import static com.blueseer.edi.EDILoadMaint.rData;
 import static com.blueseer.edi.ediData.getEDIMetaValueAsKVString;
 import static com.blueseer.edi.ediData.getEDIMetaValueAsKVStringPair;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import static com.blueseer.utl.OVData.getSysMetaData;
+import static com.blueseer.utl.OVData.getSystemJasperDirectory;
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.util.Calendar;
 import java.util.Enumeration;
@@ -92,10 +96,13 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
+import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.data.JRTableModelDataSource;
+import net.sf.jasperreports.engine.data.ListOfArrayDataSource;
 import net.sf.jasperreports.view.JasperViewer;
 
 /**
@@ -105,10 +112,13 @@ import net.sf.jasperreports.view.JasperViewer;
 public class OrderRpt extends javax.swing.JPanel {
  
      public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
-     public String defcurr;
-     public String rData;                     
      
-    javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+     public String rsData; 
+     Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultcurrency = "";
+     
+    javax.swing.table.DefaultTableModel modeltable = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{
                             getGlobalColumnTag("select"), 
                             getGlobalColumnTag("detail"),
@@ -183,10 +193,10 @@ public class OrderRpt extends javax.swing.JPanel {
                 value, isSelected, hasFocus, row, column);
         
         String currency = (String)table.getModel().getValueAt(table.convertRowIndexToModel(row), 10);  // 8 = status column
-        if (! currency.equals(defcurr)) {
+        if (! currency.equals(defaultcurrency)) {
             table.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(currency)));
         } else {
-            table.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defcurr)));
+            table.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
         }
        
         
@@ -221,16 +231,20 @@ public class OrderRpt extends javax.swing.JPanel {
             message[0] = "";
             message[1] = "";
             
-            rData = "";
+            rsData = "";
             
             
             switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                    
                 case "exportOrderDetail":
                     message = runRemoteExportDetail();
                     break;
                 
-                case "runRemoteOrderReport":
-                    message = runRemoteOrderReport();
+                case "getOrderBrowseView":
+                    message = getOrderBrowseView();
                     break;    
                     
                 default:
@@ -250,16 +264,19 @@ public class OrderRpt extends javax.swing.JPanel {
            
             BlueSeerUtils.endTask(message);
             enableAll();
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
             if (this.action.equals("exportOrderDetail")) {
-                if (rData != null && ! rData.isBlank()) {
-                  createExportFile(rData);
+                if (rsData != null && ! rsData.isBlank()) {
+                  createExportFile(rsData);
                   bsmf.MainFrame.show(getMessageTag(1126));
                 }
             }
-            if (this.action.equals("runRemoteOrderReport")) {
-                if (rData != null && ! rData.isBlank()) {
-                  fillReportTable(rData);
-                }
+            if (this.action.equals("getOrderBrowseView")) {
+                done_getOrderBrowseView();
             }
             
             
@@ -319,7 +336,7 @@ public class OrderRpt extends javax.swing.JPanel {
                
                 labeldettotal.setText(currformatDouble(qty));
                 tabledetail.setModel(modeldetail);
-                tabledetail.getColumnModel().getColumn(2).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defcurr)));
+                tabledetail.getColumnModel().getColumn(2).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
                 this.repaint();
 
             } catch (SQLException s) {
@@ -405,21 +422,46 @@ public class OrderRpt extends javax.swing.JPanel {
         labelcount.setText("0");
         labeldettotal.setText("");
         java.util.Date now = new java.util.Date();
-         dcFrom.setDate(now);
-         dcTo.setDate(now);
-         Calendar calfrom = Calendar.getInstance();
-         Calendar calto = Calendar.getInstance();
-        ArrayList<String[]> initDataSets = ordData.getOrderBrowseInit();
+        dcFrom.setDate(now);
+        dcTo.setDate(now);
+        dddatetype.setSelectedIndex(0);
+        cbopen.setSelected(true);
+        cbclose.setSelected(true);
+        cbbackorder.setSelected(true);
+        cberror.setSelected(true);
+        cbcancel.setSelected(true);
+        btdetail.setEnabled(false);
+        detailpanel.setVisible(false);
         
+        executeTask("dataInit", null);
+          
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = ordData.getOrderBrowseInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        Calendar calfrom = Calendar.getInstance();
+        Calendar calto = Calendar.getInstance();
         ddsite.removeAllItems();
         ddfromcust.removeAllItems();
         ddtocust.removeAllItems(); 
+        String defaultsite = "";
         for (String[] s : initDataSets) {
             if (s[0].equals("currency")) {
-              defcurr = s[1];  
+              defaultcurrency = s[1];  
             }
             if (s[0].equals("sites")) {
               ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultsite = s[1]; 
             }
             if (s[0].equals("customers")) {
               ddfromcust.addItem(s[1]); 
@@ -449,39 +491,31 @@ public class OrderRpt extends javax.swing.JPanel {
             }
             
         }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
         ddtocust.setSelectedIndex(ddtocust.getItemCount() - 1);
         
-        dddatetype.setSelectedIndex(0);
-        
-         cbopen.setSelected(true);
-         cbclose.setSelected(true);
-        cbbackorder.setSelected(true);
-         cberror.setSelected(true);
-         cbcancel.setSelected(true);
-        
-        mymodel.setNumRows(0);
+        modeltable.setNumRows(0);
         modeldetail.setNumRows(0);
-        tableorder.setModel(mymodel);
+        tableorder.setModel(modeltable);
         tabledetail.setModel(modeldetail);
         tableorder.getTableHeader().setReorderingAllowed(false);
         
         tableorder.getColumnModel().getColumn(0).setMaxWidth(100);
         tableorder.getColumnModel().getColumn(1).setMaxWidth(100);  
-        tableorder.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defcurr))); 
+        tableorder.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency))); 
 
         Enumeration<TableColumn> en = tableorder.getColumnModel().getColumns();
          while (en.hasMoreElements()) {
              TableColumn tc = en.nextElement();
-             if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+             if (modeltable.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
                  continue;
              }
              tc.setCellRenderer(new OrderRpt.SomeRenderer());
          }
         
-        
-        btdetail.setEnabled(false);
-        detailpanel.setVisible(false);
-          
+       
     }
     
     public static void exportOrderDetail(JTable tablereport) {
@@ -605,7 +639,7 @@ public class OrderRpt extends javax.swing.JPanel {
         double total = 0;
         int i = 0;
         
-        mymodel.setNumRows(0);
+        modeltable.setNumRows(0);
         
         String[] dar = data.split("\\n");
         for (String d : dar) {
@@ -643,7 +677,7 @@ public class OrderRpt extends javax.swing.JPanel {
             i++;
             
             
-            mymodel.addRow(new Object[]{
+            modeltable.addRow(new Object[]{
                             BlueSeerUtils.clickflag,
                             BlueSeerUtils.clickbasket,
                                bsNumber(s[0]), // bsNumber(res.getString("so_nbr")),
@@ -690,7 +724,7 @@ public class OrderRpt extends javax.swing.JPanel {
         list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
         
       //  rData = sendServerPost(list, postData, null, "dataServORD");
-        rData = sendServerPost(list, "", null, "dataServORD");
+        rsData = sendServerPost(list, "", null, "dataServORD");
         
         x[0] = "0";
         x[1] = "Processing complete";
@@ -698,11 +732,12 @@ public class OrderRpt extends javax.swing.JPanel {
         return x;
     }
     
-    public String[] runRemoteOrderReport() throws IOException {
+    public String[] getOrderBrowseView() {
         String[] x = new String[2];
       
         String fromcust = "";
         String tocust = "";
+        
         if (ddfromcust.getSelectedItem() == null || ddfromcust.getSelectedItem().toString().isEmpty()) {
                     fromcust = bsmf.MainFrame.lowchar;
         } else {
@@ -713,24 +748,113 @@ public class OrderRpt extends javax.swing.JPanel {
         } else {
             tocust = ddtocust.getSelectedItem().toString();
         }
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
         ArrayList<String[]> list = new ArrayList<String[]>();
-        list.add(new String[]{"id","orderReport"});
+        list.add(new String[]{"id","getOrderBrowseView"});
         list.add(new String[]{"fromdate",setDateDB(dcFrom.getDate())});
         list.add(new String[]{"todate",setDateDB(dcTo.getDate())});
         list.add(new String[]{"fromcust", fromcust});
         list.add(new String[]{"tocust",tocust});
         list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
         list.add(new String[]{"datetype",dddatetype.getSelectedItem().toString()});
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getOrderBrowseView")};
+            }
+        } else {
+            jsonString = ordData.getOrderBrowseView(new String[]{setDateDB(dcFrom.getDate()), 
+                setDateDB(dcTo.getDate()), 
+                fromcust, 
+                tocust, 
+                ddsite.getSelectedItem().toString(), 
+                dddatetype.getSelectedItem().toString()
+            });
+        }
         
-      //  rData = sendServerPost(list, postData, null, "dataServORD");
-        rData = sendServerPost(list, "", null, "dataServORD");
         
-        x[0] = "0";
-        x[1] = "Processing complete";
+        roData = jsonToData(jsonString);
        
-        return x;
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
     }
+
+    public void done_getOrderBrowseView() {
+        double qty = 0;
+        double dol = 0;
+        double total = 0;
+        int i = 0;
         
+        modeltable.setNumRows(0);
+        
+        if (roData != null) {
+        
+        /* potential data adjustment before adding
+        for (int j = 0; j < roData.length; j++) { // 
+                if (roData[j][7].equals("1")) { 
+                    roData[j][7] = "Confirmed";
+                } else {
+                    roData[j][7] = "Not Confirmed";
+                }
+        }
+        */
+        
+        for (Object[] rowData : roData) {
+            total = 0;
+                           
+          // bypass POs that are not in the search criteria
+            if (! tbpo.getText().isBlank() && ! rowData[4].toString().contains(tbpo.getText())) {
+                continue;
+            }  
+            if (! tbrmks.getText().isBlank() && ! rowData[5].toString().contains(tbrmks.getText())) {
+                continue;
+            }
+
+            if (! cbopen.isSelected() && rowData[11].toString().equals(getGlobalProgTag("open")))
+                continue;
+            if (! cbclose.isSelected() && rowData[11].toString().equals(getGlobalProgTag("closed")))
+                continue;
+            if (! cbbackorder.isSelected() && rowData[11].toString().equals(getGlobalProgTag("backorder")))
+                continue;
+            if (! cberror.isSelected() && rowData[11].toString().equals(getGlobalProgTag("error")))
+                continue;    
+            if (! cbcancel.isSelected() && rowData[11].toString().equals(getGlobalProgTag("cancel")))
+                continue; 
+
+
+            dol = dol + BlueSeerUtils.bsParseDouble(rowData[9].toString());
+            qty = qty + BlueSeerUtils.bsParseDouble(rowData[8].toString());
+            i++;
+            modeltable.addRow(rowData); 
+            /*
+            mymodel.addRow(new Object[]{
+                            BlueSeerUtils.clickflag,
+                            BlueSeerUtils.clickbasket,
+                               bsNumber(s[0]), // bsNumber(res.getString("so_nbr")),
+                               s[1], // res.getString("so_cust"),
+                               s[2], // res.getString("so_po"),
+                               s[3], // res.getString("so_rmks"),
+                               getDateDB(s[4]), // getDateDB(res.getString("so_create_date")),
+                               getDateDB(s[5]), // getDateDB(res.getString("so_due_date")),
+                               bsNumber(s[6]),  //  bsNumber(res.getDouble("totqty")),
+                               BlueSeerUtils.bsParseDouble(s[7]), // total,
+                               s[8], // res.getString("so_curr"),
+                               s[9], // res.getString("so_status"),
+                               s[10] // res.getString("so_mod_date")
+                               // planstatus
+                            });
+            */
+        }
+        labeldollar.setText(String.valueOf(currformatDouble(dol)));
+        labelcount.setText(String.valueOf(i));
+        labelqty.setText(bsNumber(qty));
+        
+        }          
+        roData = null;
+    }   
+        
+    
     public void runLocalOrderReport() {
         try {
             Connection con = null;
@@ -780,7 +904,7 @@ public class OrderRpt extends javax.swing.JPanel {
                 }
               
                    
-                mymodel.setNumRows(0);
+                modeltable.setNumRows(0);
                  
                  DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
                 res = st.executeQuery("SELECT so_nbr, so_rmks, so_type, so_cust, so_curr, so_po, so_create_date, so_due_date, so_mod_date, so_status, " +
@@ -845,7 +969,7 @@ public class OrderRpt extends javax.swing.JPanel {
                     dol = dol + total;
                     qty = qty + res.getDouble("totqty");
                     i++;
-                        mymodel.addRow(new Object[]{
+                        modeltable.addRow(new Object[]{
                             BlueSeerUtils.clickflag,
                             BlueSeerUtils.clickbasket,
                                 bsNumber(res.getString("so_nbr")),
@@ -1184,7 +1308,7 @@ public class OrderRpt extends javax.swing.JPanel {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jLabel8.setText("Total Lines");
+        jLabel8.setText("Total Lines:");
         jLabel8.setName("lbltotallines"); // NOI18N
 
         labelcount.setText("0");
@@ -1192,14 +1316,14 @@ public class OrderRpt extends javax.swing.JPanel {
         labelqty.setBackground(new java.awt.Color(195, 129, 129));
         labelqty.setText("0");
 
-        EndBal.setText("Total Quantity");
+        EndBal.setText("Total Quantity:");
         EndBal.setName("lbltotalqty"); // NOI18N
 
         labeldollar.setBackground(new java.awt.Color(195, 129, 129));
         labeldollar.setText("0");
 
         jLabel9.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        jLabel9.setText("Total Sales");
+        jLabel9.setText("Total Sales:");
         jLabel9.setName("lbltotamt"); // NOI18N
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
@@ -1207,12 +1331,12 @@ public class OrderRpt extends javax.swing.JPanel {
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap(74, Short.MAX_VALUE)
+                .addContainerGap(77, Short.MAX_VALUE)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(EndBal, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel8, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addGap(18, 18, 18)
+                    .addComponent(jLabel8, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(labeldollar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(labelqty, javax.swing.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
@@ -1230,7 +1354,7 @@ public class OrderRpt extends javax.swing.JPanel {
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(EndBal)
                     .addComponent(labelqty, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel9)
                     .addComponent(labeldollar, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1280,12 +1404,7 @@ public class OrderRpt extends javax.swing.JPanel {
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
 
-        if (bsmf.MainFrame.remoteDB) {
-            disableAll(); 
-            executeTask("runRemoteOrderReport", null);
-        } else {
-           runLocalOrderReport();
-        }
+        executeTask("getOrderBrowseView", null);
 
        
     }//GEN-LAST:event_btRunActionPerformed
@@ -1318,37 +1437,58 @@ public class OrderRpt extends javax.swing.JPanel {
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
 
-        if (tableorder != null && mymodel.getRowCount() > 0) {
-           OVData.printJTableToJasper("Sales Order Browse Report", tableorder, "genericJTableL10.jasper" );
-            /*
-            try {
-
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                HashMap hm = new HashMap();
-                hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
-                File mytemplate = new File("jasper/orderbrowsesumary.jasper");
-
-                JasperPrint jasperPrint = JasperFillManager.fillReport(mytemplate.getPath(), hm, new JRTableModelDataSource(tableorder.getModel()) );
-                JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ordbrowse.pdf");
-
-                JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
-                jasperViewer.setVisible(true);
-            } catch (Exception e) {
-                MainFrame.bslog(e);
+        if (tableorder != null && modeltable.getRowCount() > 0) {
+          // OVData.printJTableToJasper("Sales Order Browse Report", tableorder, "genericJTableL10.jasper" );
+            String[] rec;
+            String[] columnnames = new String[8];
+            List<Object[]> list = new ArrayList<>();
+            for (int j = 0; j < tableorder.getRowCount(); j++) {
+                 rec = new String[]{tableorder.getValueAt(j, 2).toString(),
+                   tableorder.getValueAt(j, 3).toString(),
+                   tableorder.getValueAt(j, 4).toString(),
+                   tableorder.getValueAt(j, 5).toString(),
+                   tableorder.getValueAt(j, 6).toString(),
+                   tableorder.getValueAt(j, 7).toString(),
+                   tableorder.getValueAt(j, 8).toString(),
+                   tableorder.getValueAt(j, 9).toString()}; 
+                 list.add(rec);
+             }
+            HashMap hm = new HashMap();
+            hm.put("REPORT_TITLE", "Sales Order Browse Report");
+            hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+            for (int j = 2; j < tableorder.getColumnCount(); j++) {
+               hm.put("d" + (j - 2),  tableorder.getColumnName(j));
+               columnnames[j - 2] = "COLUMN_" + (j - 2);
             }
-            */
+            JRDataSource datasource = new ListOfArrayDataSource(list, columnnames);
+            // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
+            // type = "L8C";  ...or type = genericJTableL8.jasper
+            // String jasperfile = (type.length() > 3) ? jasperfile = type  : OVData.getCodeValueByCodeKey("jasper", type)  ;
+            Path template = FileSystems.getDefault().getPath(cleanDirString(getSystemJasperDirectory()) + "genericJTableL10.jasper");
+            JasperPrint jasperPrint; 
+            try {
+             jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
+             JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+               jasperViewer.setVisible(true);
+                    jasperViewer.setTitle("Viewer");
+                    jasperViewer.setIconImage(null);
+                    jasperViewer.setFitPageZoomRatio();
+               //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
+           } catch (JRException ex) {
+               MainFrame.bslog(ex);
+           }
         }
     }//GEN-LAST:event_btprintActionPerformed
 
     private void btcsvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcsvActionPerformed
-       if (tableorder != null && mymodel.getRowCount() > 0) {
+       if (tableorder != null && modeltable.getRowCount() > 0) {
         OVData.exportCSV(tableorder);
         bsmf.MainFrame.show(getMessageTag(1126));
        }
     }//GEN-LAST:event_btcsvActionPerformed
 
     private void btexportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btexportActionPerformed
-        if (tableorder != null && mymodel.getRowCount() > 0) { // still necessary to click run if only for the exportOrderDetail (local grab)
+        if (tableorder != null && modeltable.getRowCount() > 0) { // still necessary to click run if only for the exportOrderDetail (local grab)
             if (bsmf.MainFrame.remoteDB) {
                 disableAll(); 
                 executeTask("exportOrderDetail", null);

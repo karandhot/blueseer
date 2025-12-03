@@ -18061,7 +18061,7 @@ return mystring;
                 
                Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
         HashMap hm = new HashMap();
-        hm.put("REPORT_TITLE", "SHIPPER XXX");
+        hm.put("REPORT_TITLE", "SHIPPER");
                 hm.put("myid",  shipper);
                 hm.put("site_csz", site_csz);
                 hm.put("bill_csz", bill_csz);

@@ -51,8 +51,10 @@ import com.blueseer.lbl.lblData.label_det;
 import com.blueseer.lbl.lblData.label_mstr;
 import com.blueseer.lbl.lblData.label_zebra;
 import static com.blueseer.lbl.lblData.updateLabelStatus;
+import com.blueseer.ord.ordData;
 import static com.blueseer.ord.ordData.getOrderLineInfo;
 import static com.blueseer.ord.ordData.getOrderMstr;
+import static com.blueseer.ord.ordData.getOrderMstrSet;
 import com.blueseer.ord.ordData.so_mstr;
 import com.blueseer.shp.shpData.Shipper;
 import static com.blueseer.shp.shpData.addShipperTransaction;
@@ -159,16 +161,16 @@ public class ShipOrderLine extends javax.swing.JPanel {
 
 
      // global variable declarations
-                boolean isLoad = false;
-                public static ship_mstr sh = null;
-                public static ArrayList<ship_det> shdlist = null;
+    boolean isLoad = false;
+    public static ship_mstr sh = null;
+    public static ArrayList<ship_det> shdlist = null;
     HashSet<String> assignedlabels = new HashSet<String>();
     boolean autoconfirm = false;
     boolean autonumber = true;
     String firstshipto = "";
     String firstbillto = "";
     boolean hasInit = false;
-  
+    public static ordData.salesOrder orderSet = null;
   
    
    ShipTableModel shipmodel = new ShipTableModel(new Object[][]{},
@@ -253,6 +255,11 @@ public class ShipOrderLine extends javax.swing.JPanel {
                 case "get":
                     message = getRecord(key);    
                     break;    
+                case "run":
+                    if (this.key[0].equals("getOrderMstrSet")) {
+                      message = run_getOrderMstrSet(this.key[1]);
+                    }
+                        
                 default:
                     message = new String[]{"1", "unknown action"};
             }
@@ -467,10 +474,9 @@ public class ShipOrderLine extends javax.swing.JPanel {
     }
     
     public String[] addRecord(String[] x) {
-        so_mstr so = getOrderMstr(new String[]{shiptable.getValueAt(0, 1).toString()});  // get first orderline of table
-        cm_mstr cm = getCustMstr(new String[]{so.so_cust()});
-        cms_det cms = getCMSDet(so.so_cust(), so.so_ship());
-        ArrayList<label_mstr> lmarray = createLabelRecord(cm, cms);
+        orderSet = getOrderMstrSet(new String[]{shiptable.getValueAt(0, 1).toString()});
+       
+        ArrayList<label_mstr> lmarray = createLabelRecord(orderSet.cm(), orderSet.cms());
         // add label records
         String[] m = addMultiLabelTransaction(null, lmarray);
         if (! m[0].equals("0")) {
@@ -478,7 +484,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
         }
         
         // now add shipper
-        m = addShipperTransaction(createDetRecord(so, cm), createRecord(so, cm), createTreeRecord(so, cm, lmarray));
+        m = addShipperTransaction(createDetRecord(orderSet.so(), orderSet.cm()), createRecord(orderSet.so(), orderSet.cm()), createTreeRecord(orderSet.so(), orderSet.cm(), lmarray));
         for (String label : assignedlabels) {
             updateLabelStatus(label, "1");
         }
@@ -490,15 +496,12 @@ public class ShipOrderLine extends javax.swing.JPanel {
     }
      
     public String[] updateRecord(String[] x) {
-     so_mstr so = getOrderMstr(new String[]{shiptable.getValueAt(0, 1).toString()});  // get first orderline of table
-     cm_mstr cm = getCustMstr(new String[]{so.so_cust()});
-     cms_det cms = getCMSDet(so.so_cust(), so.so_ship());
-     
-     String[] m = updateShipTransaction(null, createDetRecord(so, cm), createRecord(so, cm));
+     orderSet = getOrderMstrSet(new String[]{shiptable.getValueAt(0, 1).toString()});
+     String[] m = updateShipTransaction(null, createDetRecord(orderSet.so(), orderSet.cm()), createRecord(orderSet.so(), orderSet.cm()));
      
      if (m[0].equals("0") && changed()) {
          deleteLabelByShipper(x[0]);
-         addMultiLabelTransaction(null, createLabelRecord(cm, cms));
+         addMultiLabelTransaction(null, createLabelRecord(orderSet.cm(), orderSet.cms()));
          updateEDIASNStatus(x[0], "0");
      }
      
@@ -691,6 +694,17 @@ public class ShipOrderLine extends javax.swing.JPanel {
         //shdlist = null;
 
     }
+   
+    public String[] run_getOrderMstrSet(String order) {
+        orderSet = getOrderMstrSet(new String[]{order});
+        if (orderSet == null) {
+           bsmf.MainFrame.show(getMessageTag(1034,order));   
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }
+    
     
     
     public void initvars(String[] arg) {

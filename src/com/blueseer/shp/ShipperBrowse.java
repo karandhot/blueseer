@@ -370,6 +370,21 @@ public class ShipperBrowse extends javax.swing.JPanel {
         if (ddsite.getItemCount() > 0) {
             ddsite.setSelectedItem(defaultsite);
         }
+        
+        modeltable.setNumRows(0);
+        modeldetail.setNumRows(0);
+        
+        tabledetail.setModel(modeldetail);
+        tabledetail.getTableHeader().setReorderingAllowed(false);
+        tabledetail.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+               
+        tablereport.setModel(modeltable);
+        tablereport.getTableHeader().setReorderingAllowed(false);
+        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+      
+        tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+        tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
        
     }
 
@@ -443,24 +458,7 @@ public class ShipperBrowse extends javax.swing.JPanel {
          dcfrom.setDate(calfrom.getTime());
          calto.add(Calendar.DATE, 30);
          dcto.setDate(calto.getTime());
-               
-        modeltable.setNumRows(0);
-        modeldetail.setNumRows(0);
-        
-        tabledetail.setModel(modeldetail);
-        tabledetail.getTableHeader().setReorderingAllowed(false);
-        tabledetail.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
-               
-        tablereport.setModel(modeltable);
-        tablereport.getTableHeader().setReorderingAllowed(false);
-        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
-        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
-      
-        tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-        tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
-                
+              
         btdetail.setEnabled(false);
         detailpanel.setVisible(false);
         
@@ -871,44 +869,46 @@ public class ShipperBrowse extends javax.swing.JPanel {
     }//GEN-LAST:event_tbcsvActionPerformed
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
-        String[] rec;
-        String[] columnnames = new String[8];
-        List<Object[]> list = new ArrayList<>();
-        for (int j = 0; j < tablereport.getRowCount(); j++) {
-             rec = new String[]{tablereport.getValueAt(j, 2).toString(),
-               tablereport.getValueAt(j, 3).toString(),
-               tablereport.getValueAt(j, 4).toString(),
-               tablereport.getValueAt(j, 5).toString(),
-               tablereport.getValueAt(j, 6).toString(),
-               tablereport.getValueAt(j, 7).toString(),
-               tablereport.getValueAt(j, 8).toString(),
-               tablereport.getValueAt(j, 9).toString()}; 
-             list.add(rec);
-         }
-        HashMap hm = new HashMap();
-        hm.put("REPORT_TITLE", "Shipper Report");
-        hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
-        for (int j = 2; j < tablereport.getColumnCount(); j++) {
-           hm.put("d" + (j - 2),  tablereport.getColumnName(j));
-           columnnames[j - 2] = "COLUMN_" + (j - 2);
+        if (tablereport != null && modeltable.getRowCount() > 0) {
+            String[] rec;
+            String[] columnnames = new String[8];
+            List<Object[]> list = new ArrayList<>();
+            for (int j = 0; j < tablereport.getRowCount(); j++) {
+                 rec = new String[]{tablereport.getValueAt(j, 2).toString(),
+                   tablereport.getValueAt(j, 3).toString(),
+                   tablereport.getValueAt(j, 4).toString(),
+                   tablereport.getValueAt(j, 5).toString(),
+                   tablereport.getValueAt(j, 6).toString(),
+                   tablereport.getValueAt(j, 7).toString(),
+                   tablereport.getValueAt(j, 8).toString(),
+                   tablereport.getValueAt(j, 9).toString()}; 
+                 list.add(rec);
+             }
+            HashMap hm = new HashMap();
+            hm.put("REPORT_TITLE", "Shipper Report");
+            hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+            for (int j = 2; j < tablereport.getColumnCount(); j++) {
+               hm.put("d" + (j - 2),  tablereport.getColumnName(j));
+               columnnames[j - 2] = "COLUMN_" + (j - 2);
+            }
+            JRDataSource datasource = new ListOfArrayDataSource(list, columnnames);
+            // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
+            // type = "L8C";  ...or type = genericJTableL8.jasper
+            // String jasperfile = (type.length() > 3) ? jasperfile = type  : OVData.getCodeValueByCodeKey("jasper", type)  ;
+            Path template = FileSystems.getDefault().getPath(cleanDirString(getSystemJasperDirectory()) + "genericJTableL8.jasper");
+            JasperPrint jasperPrint; 
+            try {
+             jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
+             JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+               jasperViewer.setVisible(true);
+                    jasperViewer.setTitle("Viewer");
+                    jasperViewer.setIconImage(null);
+                    jasperViewer.setFitPageZoomRatio();
+               //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
+           } catch (JRException ex) {
+               MainFrame.bslog(ex);
+           }
         }
-        JRDataSource datasource = new ListOfArrayDataSource(list, columnnames);
-        // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
-        // type = "L8C";  ...or type = genericJTableL8.jasper
-        // String jasperfile = (type.length() > 3) ? jasperfile = type  : OVData.getCodeValueByCodeKey("jasper", type)  ;
-        Path template = FileSystems.getDefault().getPath(cleanDirString(getSystemJasperDirectory()) + "genericJTableL8.jasper");
-        JasperPrint jasperPrint; 
-        try {
-         jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
-         JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
-           jasperViewer.setVisible(true);
-                jasperViewer.setTitle("Viewer");
-                jasperViewer.setIconImage(null);
-                jasperViewer.setFitPageZoomRatio();
-           //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
-       } catch (JRException ex) {
-           MainFrame.bslog(ex);
-       }
     }//GEN-LAST:event_btprintActionPerformed
 
 

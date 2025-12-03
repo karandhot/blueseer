@@ -502,13 +502,13 @@
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace pref="74" max="32767" attributes="0"/>
+                      <EmptySpace pref="77" max="32767" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jLabel9" alignment="1" min="-2" pref="60" max="-2" attributes="0"/>
                           <Component id="EndBal" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel8" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel9" alignment="1" min="-2" pref="76" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="labeldollar" max="32767" attributes="0"/>
                           <Component id="labelqty" alignment="0" pref="107" max="32767" attributes="0"/>
@@ -531,7 +531,7 @@
                           <Component id="EndBal" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="labelqty" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jLabel9" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="labeldollar" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
@@ -544,7 +544,7 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="jLabel8">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Total Lines"/>
+                <Property name="text" type="java.lang.String" value="Total Lines:"/>
                 <Property name="name" type="java.lang.String" value="lbltotallines" noResource="true"/>
               </Properties>
             </Component>
@@ -563,7 +563,7 @@
             </Component>
             <Component class="javax.swing.JLabel" name="EndBal">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Total Quantity"/>
+                <Property name="text" type="java.lang.String" value="Total Quantity:"/>
                 <Property name="name" type="java.lang.String" value="lbltotalqty" noResource="true"/>
               </Properties>
             </Component>
@@ -578,7 +578,7 @@
             <Component class="javax.swing.JLabel" name="jLabel9">
               <Properties>
                 <Property name="horizontalAlignment" type="int" value="4"/>
-                <Property name="text" type="java.lang.String" value="Total Sales"/>
+                <Property name="text" type="java.lang.String" value="Total Sales:"/>
                 <Property name="name" type="java.lang.String" value="lbltotamt" noResource="true"/>
               </Properties>
             </Component>

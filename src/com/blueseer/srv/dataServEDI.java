@@ -165,6 +165,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(arrayToJson(addupdateEDICtrl(ecvar)));
             break;
             
+        case "updateEDIASNStatus" :
+            EDData.updateEDIASNStatus(request.getHeader("param1"), request.getHeader("param1"));
+            response.getWriter().print(arrayToJson(new String[]{"0",""}));    
+            break;
+            
         default:
         response.getWriter().print("no switch case exists in dataServEDI for id: " + id);
         System.out.println("no switch case exists in dataServEDI for id: " + id);    

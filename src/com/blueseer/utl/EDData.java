@@ -2166,6 +2166,20 @@ public class EDData {
    }
     
     public static void updateEDIASNStatus(String shipper, String status) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateEDIASNStatus"});
+            list.add(new String[]{"param1",shipper});
+            list.add(new String[]{"param2",status});
+            try {
+                sendServerPost(list, "", null, "dataServEDI");
+                return;
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        }
+        
        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd"); 
        try{
         Connection con = null;
