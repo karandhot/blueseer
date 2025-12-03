@@ -5684,8 +5684,8 @@ public class ordData {
                         " cm_name, cms_plantcode, cms_name, so_due_date, " +
                         " sod_line, sod_item, sod_desc, '' as msku, sod_custitem, sod_char1, " +
                         " sod_uom, sod_ord_qty, sod_netprice, sod_char2, " +
-                        " (select group_concat(concat(edim_key, '=', edim_value) separator ':') from edi_meta where not edim_type like 'detail%' and edim_id = so_po) as 'kvheader', " +
-                        " (select group_concat(concat(edim_key, '=', edim_value) separator ':') from edi_meta where edim_type = concat('detail:',sod_line) and edim_id = so_po) as 'kvdetail' " +
+                        " (select ifnull(group_concat(concat(edim_key, '=', edim_value) separator ':'),'') from edi_meta where not edim_type like 'detail%' and edim_id = so_po) as 'kvheader', " +
+                        " (select ifnull(group_concat(concat(edim_key, '=', edim_value) separator ':'),'') from edi_meta where edim_type = concat('detail:',sod_line) and edim_id = so_po) as 'kvdetail' " +
                         " from so_mstr " + 
                         " inner join sod_det on sod_nbr = so_nbr " +
                         " inner join cm_mstr on cm_code = so_cust " +

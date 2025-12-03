@@ -1500,13 +1500,15 @@ public class OrderRpt extends javax.swing.JPanel {
                    tableorder.getValueAt(j, 6).toString(),
                    tableorder.getValueAt(j, 7).toString(),
                    tableorder.getValueAt(j, 8).toString(),
-                   tableorder.getValueAt(j, 9).toString()}; 
+                   tableorder.getValueAt(j, 9).toString(),
+                   tableorder.getValueAt(j, 10).toString(),
+                   tableorder.getValueAt(j, 11).toString()}; 
                  list.add(rec);
              }
             HashMap hm = new HashMap();
             hm.put("REPORT_TITLE", "Sales Order Browse Report");
             hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
-            for (int j = 2; j < tableorder.getColumnCount() - 3; j++) {
+            for (int j = 2; j < tableorder.getColumnCount() - 1; j++) {
                hm.put("d" + (j - 2),  tableorder.getColumnName(j));
                columnnames[j - 2] = "COLUMN_" + (j - 2);
             }
