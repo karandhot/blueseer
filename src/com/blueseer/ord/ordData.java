@@ -4033,7 +4033,7 @@ public class ordData {
     
     public static ArrayList<String[]> getOrderBrowseInit(String panelClassName, String userid) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
-            ArrayList<String[]> list = new ArrayList<String[]>();
+            ArrayList<String[]> list = new ArrayList<>();
             list.add(new String[]{"id", "getOrderBrowseInit"});
             list.add(new String[]{"param1", panelClassName});
             list.add(new String[]{"param2", userid});
@@ -4061,7 +4061,7 @@ public class ordData {
         // states, warehouses, locations, customers, taxcodes, carriers, statuses    
             String[] sites = null;
             boolean allsites = false;
-            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + bsmf.MainFrame.userid + "'" + ";");
+            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + userid + "'" + ";");
             while (res.next()) {
               if (res.getString("user_allowedsites").equals("*")) {
                   allsites = true;
