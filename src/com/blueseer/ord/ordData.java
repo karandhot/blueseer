@@ -5468,9 +5468,9 @@ public class ordData {
                         JSONArray rowArray = new JSONArray(); 
                         rowArray.put(res.getString("sod_nbr"));
                         rowArray.put(res.getString("sod_item"));
-                        rowArray.put(res.getString("sod_netprice"));
-                        rowArray.put(res.getString("sod_ord_qty"));
-                        rowArray.put(res.getString("sod_shipped_qty"));
+                        rowArray.put(res.getDouble("sod_netprice"));
+                        rowArray.put(res.getDouble("sod_ord_qty"));
+                        rowArray.put(res.getDouble("sod_shipped_qty"));
                         rowArray.put(res.getString("sod_status"));
                         jsonarray.put(rowArray);
                     }

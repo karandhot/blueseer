@@ -1490,7 +1490,7 @@ public class OrderRpt extends javax.swing.JPanel {
         if (tableorder != null && modeltable.getRowCount() > 0) {
           // OVData.printJTableToJasper("Sales Order Browse Report", tableorder, "genericJTableL10.jasper" );
             String[] rec;
-            String[] columnnames = new String[10];
+            String[] columnnames = new String[12];
             List<Object[]> list = new ArrayList<>();
             for (int j = 0; j < tableorder.getRowCount(); j++) {
                  rec = new String[]{tableorder.getValueAt(j, 2).toString(),
@@ -1506,7 +1506,7 @@ public class OrderRpt extends javax.swing.JPanel {
             HashMap hm = new HashMap();
             hm.put("REPORT_TITLE", "Sales Order Browse Report");
             hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
-            for (int j = 2; j < tableorder.getColumnCount(); j++) {
+            for (int j = 2; j < tableorder.getColumnCount() - 3; j++) {
                hm.put("d" + (j - 2),  tableorder.getColumnName(j));
                columnnames[j - 2] = "COLUMN_" + (j - 2);
             }
