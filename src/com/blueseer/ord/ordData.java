@@ -5446,6 +5446,51 @@ public class ordData {
         return jsonarray.toString(); 
     }
     
+    public static String getOrderBrowseDetail(String order) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                res = st.executeQuery("select sod_nbr, sod_item, sod_netprice, sod_ord_qty, sod_shipped_qty, sod_status from sod_det " +
+                        " where sod_nbr = " + "'" + order + "'" +  ";");
+                    
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("sod_nbr"));
+                        rowArray.put(res.getString("sod_item"));
+                        rowArray.put(res.getString("sod_netprice"));
+                        rowArray.put(res.getString("sod_ord_qty"));
+                        rowArray.put(res.getString("sod_shipped_qty"));
+                        rowArray.put(res.getString("sod_status"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    
     public static String getOrderChangeReportData(String[] keys) {
         StringBuilder sb = new StringBuilder();
         try {

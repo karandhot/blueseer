@@ -217,6 +217,10 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                };     
         response.getWriter().print(getOrderBrowseView(or));  
         break;
+        
+        case "getOrderBrowseDetail" :
+            response.getWriter().print(ordData.getOrderBrowseDetail(request.getHeader("param1")));  
+            break;
 
         case "orderChangeReport" :
         String[] ocr = new String[]{

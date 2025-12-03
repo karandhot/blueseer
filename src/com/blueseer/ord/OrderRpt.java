@@ -58,6 +58,7 @@ import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
 import static com.blueseer.edi.ediData.getEDIMetaValueAsKVString;
 import static com.blueseer.edi.ediData.getEDIMetaValueAsKVStringPair;
+import static com.blueseer.ord.ordData.getOrderBrowseDetail;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
@@ -245,6 +246,10 @@ public class OrderRpt extends javax.swing.JPanel {
                 
                 case "getOrderBrowseView":
                     message = getOrderBrowseView();
+                    break; 
+                    
+                case "getOrderBrowseDetail":
+                    message = getDetail(this.key[0]);
                     break;    
                     
                 default:
@@ -277,6 +282,9 @@ public class OrderRpt extends javax.swing.JPanel {
             }
             if (this.action.equals("getOrderBrowseView")) {
                 done_getOrderBrowseView();
+            }
+            if (this.action.equals("getOrderBrowseDetail")) {
+                done_getDetail();
             }
             
             
@@ -500,8 +508,11 @@ public class OrderRpt extends javax.swing.JPanel {
         modeldetail.setNumRows(0);
         tableorder.setModel(modeltable);
         tabledetail.setModel(modeldetail);
-        tableorder.getTableHeader().setReorderingAllowed(false);
         
+        tabledetail.getColumnModel().getColumn(2).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+               
+        
+        tableorder.getTableHeader().setReorderingAllowed(false);        
         tableorder.getColumnModel().getColumn(0).setMaxWidth(100);
         tableorder.getColumnModel().getColumn(1).setMaxWidth(100);  
         tableorder.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency))); 
@@ -516,6 +527,44 @@ public class OrderRpt extends javax.swing.JPanel {
          }
         
        
+    }
+    
+    public String[] getDetail(String order) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getOrderBrowseDetail"});
+            list.add(new String[]{"param1", order});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getOrderBrowseDetail(order); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getDetail() {
+      modeldetail.setNumRows(0);
+         double dols = 0;
+         
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+                dols += (bsParseDouble(rowData[2].toString()) * bsParseDouble(rowData[3].toString()));
+                modeldetail.addRow(rowData);
+            } 
+        }
+        labeldettotal.setText(currformatDouble(dols));
+       }
+       roData = null;
     }
     
     public static void exportOrderDetail(JTable tablereport) {
@@ -1420,7 +1469,8 @@ public class OrderRpt extends javax.swing.JPanel {
         int row = tableorder.rowAtPoint(evt.getPoint());
         int col = tableorder.columnAtPoint(evt.getPoint());
         if ( col == 1) {
-                getdetail(bsNumberToUS(tableorder.getValueAt(row, 2).toString()) );
+               // getdetail(bsNumberToUS(tableorder.getValueAt(row, 2).toString()) );
+                executeTask("getOrderBrowseDetail", new String[]{tableorder.getValueAt(row, 2).toString()});
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
               
@@ -1440,7 +1490,7 @@ public class OrderRpt extends javax.swing.JPanel {
         if (tableorder != null && modeltable.getRowCount() > 0) {
           // OVData.printJTableToJasper("Sales Order Browse Report", tableorder, "genericJTableL10.jasper" );
             String[] rec;
-            String[] columnnames = new String[8];
+            String[] columnnames = new String[10];
             List<Object[]> list = new ArrayList<>();
             for (int j = 0; j < tableorder.getRowCount(); j++) {
                  rec = new String[]{tableorder.getValueAt(j, 2).toString(),
