@@ -311,60 +311,7 @@ public class OrderRpt extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
-    public void getdetail(String order) {
-      
-         modeldetail.setNumRows(0);
-         double total = 0;
-         labeldettotal.setText("");
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                double qty = 0;
-                res = st.executeQuery("select sod_nbr, sod_item, sod_netprice, sod_ord_qty, sod_shipped_qty, sod_status from sod_det " +
-                        " where sod_nbr = " + "'" + order + "'" +  ";");
-                while (res.next()) {
-                    qty += (res.getDouble("sod_netprice") * res.getDouble("sod_ord_qty"));
-                   modeldetail.addRow(new Object[]{ 
-                      bsNumber(res.getInt("sod_nbr")), 
-                       res.getString("sod_item"),
-                       bsParseDouble(currformatDouble(res.getDouble("sod_netprice"))),
-                      bsNumber(res.getInt("sod_ord_qty")), 
-                      bsNumber(res.getInt("sod_shipped_qty")), 
-                      res.getString("sod_status")});
-                }
-               
-                labeldettotal.setText(currformatDouble(qty));
-                tabledetail.setModel(modeldetail);
-                tabledetail.getColumnModel().getColumn(2).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
-    }
-    
+   
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -680,75 +627,7 @@ public class OrderRpt extends javax.swing.JPanel {
         
         
     }
-    
-    public void fillReportTable(String data) {
-        
-        double qty = 0;
-        double dol = 0;
-        double total = 0;
-        int i = 0;
-        
-        modeltable.setNumRows(0);
-        
-        String[] dar = data.split("\\n");
-        for (String d : dar) {
-            String[] s = d.split(",", -1);
             
-            if (s == null || s.length != 11) {
-                continue;
-            }
-            
-            total = 0;
-                  
-                           
-          // bypass POs that are not in the search criteria
-            if (! tbpo.getText().isBlank() && ! s[2].contains(tbpo.getText())) {
-                continue;
-            }  
-            if (! tbrmks.getText().isBlank() && ! s[3].contains(tbrmks.getText())) {
-                continue;
-            }
-
-            if (! cbopen.isSelected() && s[9].equals(getGlobalProgTag("open")))
-                continue;
-            if (! cbclose.isSelected() && s[9].equals(getGlobalProgTag("closed")))
-                continue;
-            if (! cbbackorder.isSelected() && s[9].equals(getGlobalProgTag("backorder")))
-                continue;
-            if (! cberror.isSelected() && s[9].equals(getGlobalProgTag("error")))
-                continue;    
-            if (! cbcancel.isSelected() && s[9].equals(getGlobalProgTag("cancel")))
-                continue; 
-
-
-            dol = dol + BlueSeerUtils.bsParseDouble(s[7]);
-            qty = qty + BlueSeerUtils.bsParseDouble(s[6]);
-            i++;
-            
-            
-            modeltable.addRow(new Object[]{
-                            BlueSeerUtils.clickflag,
-                            BlueSeerUtils.clickbasket,
-                               bsNumber(s[0]), // bsNumber(res.getString("so_nbr")),
-                               s[1], // res.getString("so_cust"),
-                               s[2], // res.getString("so_po"),
-                               s[3], // res.getString("so_rmks"),
-                               getDateDB(s[4]), // getDateDB(res.getString("so_create_date")),
-                               getDateDB(s[5]), // getDateDB(res.getString("so_due_date")),
-                               bsNumber(s[6]),  //  bsNumber(res.getDouble("totqty")),
-                               BlueSeerUtils.bsParseDouble(s[7]), // total,
-                               s[8], // res.getString("so_curr"),
-                               s[9], // res.getString("so_status"),
-                               s[10] // res.getString("so_mod_date")
-                               // planstatus
-                            });
-        }
-        labeldollar.setText(String.valueOf(currformatDouble(dol)));
-        labelcount.setText(String.valueOf(i));
-        labelqty.setText(bsNumber(qty));
-    }
-    
-        
     public String[] runRemoteExportDetail() throws IOException {
         String[] x = new String[2];
       

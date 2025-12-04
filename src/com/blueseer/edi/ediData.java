@@ -3600,7 +3600,20 @@ public class ediData {
     }   
     
     public static ArrayList<String[]> getEDIMetaValueDetail(String id, String line) {
-         ArrayList<String[]> r = new ArrayList<String[]>();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getEDIMetaValueDetail"});
+            list.add(new String[]{"param1", id});
+            list.add(new String[]{"param2", line});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }  
+        
+        ArrayList<String[]> r = new ArrayList<String[]>();
          
          try{
             
@@ -3641,7 +3654,19 @@ public class ediData {
     }   
     
     public static ArrayList<String[]> getEDIMetaValueHeader(String id) {
-         ArrayList<String[]> r = new ArrayList<String[]>();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getEDIMetaValueHeader"});
+            list.add(new String[]{"param1", id});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }   
+        
+        ArrayList<String[]> r = new ArrayList<String[]>();
          
          try{
             

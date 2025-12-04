@@ -30,6 +30,8 @@ import com.blueseer.edi.ediData;
 import com.blueseer.edi.ediData.edi_ctrl;
 import static com.blueseer.edi.ediData.getEDICtrl;
 import static com.blueseer.edi.ediData.addupdateEDICtrl;
+import static com.blueseer.edi.ediData.getEDIMetaValueDetail;
+import static com.blueseer.edi.ediData.getEDIMetaValueHeader;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
@@ -169,6 +171,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             EDData.updateEDIASNStatus(request.getHeader("param1"), request.getHeader("param1"));
             response.getWriter().print(arrayToJson(new String[]{"0",""}));    
             break;
+            
+        case "getEDIMetaValueDetail" :
+            response.getWriter().print(ArrayListStringArrayToJson(ediData.getEDIMetaValueDetail(request.getHeader("param1"), request.getHeader("param2"))));
+            break;   
+            
+        case "getEDIMetaValueHeader" :
+            response.getWriter().print(ArrayListStringArrayToJson(ediData.getEDIMetaValueHeader(request.getHeader("param1"))));
+            break;     
             
         default:
         response.getWriter().print("no switch case exists in dataServEDI for id: " + id);

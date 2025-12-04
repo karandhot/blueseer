@@ -29,6 +29,7 @@ package com.blueseer.srv;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.ord.ordData;
+import static com.blueseer.ord.ordData.applyOrderChange;
 import static com.blueseer.ord.ordData.getOrderBrowseView;
 import static com.blueseer.ord.ordData.getOrderChangeExport;
 import static com.blueseer.ord.ordData.getOrderChangeReportData;
@@ -222,7 +223,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(ordData.getOrderBrowseDetail(request.getHeader("param1")));  
             break;
 
-        case "orderChangeReport" :
+        case "getOrderChangeBrowseView" :
         String[] ocr = new String[]{
                request.getHeader("fromdate"), 
                request.getHeader("todate"), 
@@ -247,7 +248,15 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         String rsd = omsd.writeValueAsString(sd);
         response.getWriter().print(rsd);
         break; 
+        
+        case "applyOrderChange" :
+            ordData.applyOrderChange(request.getHeader("param1"), request.getHeader("param2"));
+            break;
 
+        case "updateOrderChangeStatus" :
+            ordData.updateOrderChangeStatus(request.getHeader("param1"), request.getHeader("param2"));
+            break;
+            
         default:
         response.getWriter().print("no switch case exists in dataServORD for id: " + id);
         System.out.println("no switch case exists in dataServORD for id: " + id);    

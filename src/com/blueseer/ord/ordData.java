@@ -4977,7 +4977,21 @@ public class ordData {
     }
     
     public static void updateOrderChangeStatus(String changeID, String status) {
-       try{
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "updateOrderChangeStatus"});
+            list.add(new String[]{"param1",  changeID});
+            list.add(new String[]{"param2",  status});
+            try {
+                sendServerPost(list, "", null, "dataServORD");
+                return;
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        }
+       
+        try{
         Connection con = null;
             if (ds != null) {
               con = ds.getConnection();
@@ -5005,6 +5019,21 @@ public class ordData {
     }
     
     public static void applyOrderChange(String changeID, String po) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "applyOrderChange"});
+            list.add(new String[]{"param1",  changeID});
+            list.add(new String[]{"param2",  po});
+            try {
+                sendServerPost(list, "", null, "dataServORD");
+                return;
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        }
+        
        try{
         Connection con = null;
             if (ds != null) {
@@ -5490,6 +5519,148 @@ public class ordData {
        return jsonarray.toString(); 
     }
     
+    public static String getOrderChangeBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            String change = "";
+            String status = "";
+               
+            // keys :   fromdate, todate, fromcust, tocust, site, posearch, isdetached
+            try{
+                if (! keys[5].isBlank()) {
+                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
+                     " from so_mstr inner join so_chg on soc_po = so_po inner join cm_mstr on cm_code = so_cust where " +
+                        " so_site = " + "'" + keys[4] + "'" + " AND " +
+                        " so_po like " + "'%" + keys[5] + "%'" +
+                        " order by so_nbr desc ;");
+                 
+             } else if (keys[6].equals("true")) {
+                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
+                     " from so_chg left outer join so_mstr on so_po = soc_po left outer join cm_mstr on cm_code = so_cust where " +
+                         " soc_billto >= " + "'" + keys[2] + "'" + " AND " +        
+                        " soc_billto <= " + "'" + keys[3] + "'" + " AND " +
+                        " soc_chgdate >= " + "'" + keys[0] + "'" + " AND " +
+                        " soc_chgdate <= " + "'" + keys[1] + "'" + 
+                        " order by soc_id desc ;");
+             } else {
+                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
+                     " from so_mstr inner join so_chg on soc_po = so_po inner join cm_mstr on cm_code = so_cust where " +
+                        " so_site = " + "'" + keys[4] + "'" + " AND " +
+                        " so_cust >= " + "'" + keys[2] + "'" + " AND " +        
+                        " so_cust <= " + "'" + keys[3] + "'" + " AND " +
+                        " so_create_date >= " + "'" + keys[0] + "'" + " AND " +
+                        " so_create_date <= " + "'" + keys[1] + "'" +     
+                        " order by so_nbr desc ;");
+             }  
+                    
+                 
+                    while (res.next()) {
+                        
+                        if (res.getString("so_nbr") != null && ! res.getString("so_nbr").isBlank()) {   
+                        change = _evaluateOrderChange(res.getString("soc_id"), res.getString("so_po"), con); 
+                        status = res.getString("soc_status");
+                        } else {
+                            change = "N/A";
+                            status = "detached";
+                        }
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("soc_id"));
+                        rowArray.put(res.getString("so_nbr"));
+                        rowArray.put(res.getDouble("soc_po"));
+                        rowArray.put(res.getDouble("soc_chgdate"));
+                        rowArray.put(res.getDouble("cm_name"));
+                        rowArray.put(res.getString("so_due_date"));
+                        rowArray.put(res.getString("soc_duedate"));
+                        rowArray.put(change);
+                        rowArray.put(status);
+                        rowArray.put("change");
+                        rowArray.put("void");
+                        rowArray.put("gear");
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    public static String getOrderChangeBrowseDetail(String id, String po, String cbdetached) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                if (BlueSeerUtils.ConvertStringToBool(cbdetached)) {
+                    res = st.executeQuery("select sodc_line, sodc_item, sod_listprice, sodc_price, sod_ord_qty, sodc_qty from sod_chg " +
+                        " inner join so_chg on soc_id = sodc_id " +
+                        " left outer join sod_det on sodc_po = sod_po and sodc_line = sod_line " +
+                        " where sodc_po = " + "'" + po + "'" + 
+                        " and sodc_id = " + "'" + id + "'" +
+                        ";"); 
+                 } else {
+                   res = st.executeQuery("select sodc_line, sodc_item, sod_listprice, sodc_price, sod_ord_qty, sodc_qty from sod_chg " +
+                        " inner join so_chg on soc_id = sodc_id " +
+                        " inner join sod_det on sodc_po = sod_po and sodc_line = sod_line " +
+                        " where sod_po = " + "'" + po + "'" + 
+                        " and soc_id = " + "'" + id + "'" +
+                        ";");  
+                 }
+                    
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("sodc_line"));
+                        rowArray.put(res.getString("sodc_item"));
+                        rowArray.put(res.getDouble("sod_listprice"));
+                        rowArray.put(res.getDouble("sodc_price"));
+                        rowArray.put(res.getDouble("sod_ord_qty"));
+                        rowArray.put(res.getString("sodc_qty"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
     
     public static String getOrderChangeReportData(String[] keys) {
         StringBuilder sb = new StringBuilder();
@@ -5509,7 +5680,7 @@ public class ordData {
                 
                 // keys :   fromdate, todate, fromcust, tocust, site, posearch, isdetached
              
-                 if (! keys[5].isBlank()) {
+            if (! keys[5].isBlank()) {
                  res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
                      " from so_mstr inner join so_chg on soc_po = so_po inner join cm_mstr on cm_code = so_cust where " +
                         " so_site = " + "'" + keys[4] + "'" + " AND " +
@@ -5703,8 +5874,6 @@ public class ordData {
                      for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
                        line.append(res.getString(j).replace(",","")).append(",");
                      }
-                    // String[] hd = getEDIMetaValueAsKVStringPair(res.getString("so_po"), res.getString("sod_line"));
-                    // sb.append(line.toString()).append(hd[0]).append(",").append(hd[1]).append("\n");
                     sb.append(line.toString()).append("\n");
                  }
                

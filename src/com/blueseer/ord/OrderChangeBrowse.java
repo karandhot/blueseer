@@ -61,16 +61,21 @@ import static com.blueseer.edi.ediData.getEDIMetaValueDetail;
 import static com.blueseer.edi.ediData.getEDIMetaValueHeader;
 import static com.blueseer.ord.ordData._evaluateOrderChange;
 import static com.blueseer.ord.ordData.applyOrderChange;
+import static com.blueseer.ord.ordData.getOrderChangeBrowseDetail;
 import static com.blueseer.ord.ordData.updateOrderChangeStatus;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
+import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
+import static com.blueseer.utl.OVData.getSystemJasperDirectory;
 import com.blueseer.vdr.venData;
 import java.awt.Dimension;
 import java.awt.FileDialog;
@@ -81,9 +86,12 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.util.Calendar;
 import java.util.Enumeration;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
@@ -95,6 +103,12 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
+import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.data.ListOfArrayDataSource;
+import net.sf.jasperreports.view.JasperViewer;
 
 /**
  *
@@ -105,9 +119,12 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
      public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
      
      public String currentid = "";
-     public String rData;                     
+     public String rsData; 
+     Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultcurrency = "";
      
-    javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+    javax.swing.table.DefaultTableModel modeltable = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("detail"), 
                             getGlobalColumnTag("id"),
                             getGlobalColumnTag("order"),
@@ -282,16 +299,24 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
             message[0] = "";
             message[1] = "";
             
-            rData = "";
+            rsData = "";
             
             
             switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                    
                 case "exportOrderChange":
                     message = serverPostExportOrderChange();
                     break;
                     
-                case "runReport":
-                    message = serverPostOrderReport();
+                case "getOrderChangeBrowseView":
+                    message = getOrderChangeBrowseView();
+                    break; 
+                    
+                case "getOrderChangeBrowseDetail":
+                    message = getDetail(this.key[0], this.key[1], this.key[2]);
                     break;
                     
                 default:
@@ -312,16 +337,24 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
             BlueSeerUtils.endTask(message);           
             
             enableAll();
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
             if (this.action.equals("exportOrderChange")) {
-                if (rData != null && ! rData.isBlank()) {
-                  createExportFile(rData);
+                if (rsData != null && ! rsData.isBlank()) {
+                  createExportFile(rsData);
                   bsmf.MainFrame.show("export file created");
                 }
             }
-            if (this.action.equals("runReport")) {
-                if (rData != null && ! rData.isBlank()) {
-                  fillReportTable(rData);
-                }
+            
+            if (this.action.equals("getOrderChangeBrowseView")) {
+                done_getOrderChangeBrowseView();
+            }
+            
+            if (this.action.equals("getOrderChangeBrowseDetail")) {
+                done_getDetail();
             }
             
             } catch (Exception e) {
@@ -376,7 +409,7 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
                  }
                 
                  if (cbdetached.isSelected()) {
-                    res = st.executeQuery("select sodc_line, sodc_item, sod_ord_qty, sod_listprice, sodc_qty, sodc_price from sod_chg " +
+                    res = st.executeQuery("select sodc_line, sodc_item, sod_listprice, sodc_price, sod_ord_qty, sodc_qty from sod_chg " +
                         " inner join so_chg on soc_id = sodc_id " +
                         " left outer join sod_det on sodc_po = sod_po and sodc_line = sod_line " +
                         " where sodc_po = " + "'" + po + "'" + 
@@ -487,35 +520,85 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         btprint.setEnabled(true);
     }
     
-    public void clearAll() {
+    
+    public void initvars(String[] arg) {
+       executeTask("dataInit", null);         
+    }
+   
+    public String[] getInitialization() {
+        initDataSets = ordData.getOrderBrowseInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        Calendar calfrom = Calendar.getInstance();
+        Calendar calto = Calendar.getInstance();
+        ddsite.removeAllItems();
+        ddfromcust.removeAllItems();
+        ddtocust.removeAllItems(); 
+        String defaultsite = "";
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultcurrency = s[1];  
+            }
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultsite = s[1]; 
+            }
+            if (s[0].equals("customers")) {
+              ddfromcust.addItem(s[1]); 
+              ddtocust.addItem(s[1]);
+            }
+            
+            if (s[0].equals("system")) {
+              String[] t = s[1].split(",",-1);
+              if (t[0].equals("browse_start_date")) {
+               if (! t[1].isBlank() && BlueSeerUtils.isParsableToInt(t[1]) && t[1].length() < 8) {
+               calfrom.add(Calendar.DATE, Integer.valueOf(t[1]));
+               dcfrom.setDate(calfrom.getTime()); 
+               }
+               if (! t[1].isBlank() && BlueSeerUtils.isParsableToInt(t[1]) && t[1].length() == 8) {
+               dcfrom.setDate(BlueSeerUtils.parseDate(BlueSeerUtils.convertDateFormat("yyyyMMdd", t[1]))); 
+               }
+            }
+            if (t[0].equals("browse_end_date")) {
+               if (! t[1].isBlank() && BlueSeerUtils.isParsableToInt(t[1]) && t[1].length() < 8) {
+               calto.add(Calendar.DATE, Integer.valueOf(t[1]));
+               dcto.setDate(calto.getTime()); 
+               }
+               if (! t[1].isBlank() && BlueSeerUtils.isParsableToInt(t[1]) && t[1].length() == 8) {
+               dcto.setDate(BlueSeerUtils.parseDate(BlueSeerUtils.convertDateFormat("yyyyMMdd", t[1]))); 
+               }
+            }
+            }
+            
+        }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+        ddtocust.setSelectedIndex(ddtocust.getItemCount() - 1);
         lbltotrecs.setText("0");
         labeldettotal.setText("");
         tbsearch.setText("");
-       
-        
         currentid = "";
-        
         tabledetail.setModel(modeldetail);
         tabledetail.getColumnModel().getColumn(0).setMaxWidth(100);
-        
-        
-        
          cbopen.setSelected(true);
          cbclose.setSelected(false);
-        
         java.util.Date now = new java.util.Date();
-        Calendar calfrom = Calendar.getInstance();
-        Calendar calto = Calendar.getInstance();
-        
         calfrom.add(Calendar.DATE, -30);
         dcfrom.setDate(calfrom.getTime()); 
-        
         calto.add(Calendar.DATE, +30);
         dcto.setDate(calto.getTime());
-         
-        mymodel.setNumRows(0);
+        modeltable.setNumRows(0);
         modeldetail.setNumRows(0);
-        tablereport.setModel(mymodel);
+        tablereport.setModel(modeltable);
         tabledetail.setModel(modeldetail);
         
           tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
@@ -526,7 +609,7 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
        Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
          while (en.hasMoreElements()) {
              TableColumn tc = en.nextElement();
-             if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+             if (modeltable.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
                  continue;
              }
              tc.setCellRenderer(new OrderChangeBrowse.SomeRenderer());
@@ -535,41 +618,140 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         btdetail.setEnabled(false);
         detailpanel.setVisible(false);
         
-        ddsite.removeAllItems();
-        ArrayList sites = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (Object site : sites) {
-            ddsite.addItem(site);
-        }
-        
-        ddfromcust.removeAllItems();
-        ArrayList custs = cusData.getcustmstrlist();
-        for (Object cust : custs) {
-            ddfromcust.addItem(cust);
-        }
-        ddfromcust.insertItemAt("", 0);
-        ddfromcust.setSelectedIndex(0);
-        
-        
-        
-        
-        ddtocust.removeAllItems();
-        for (Object cust : custs) {
-            ddtocust.addItem(cust);
-        }
-        ddtocust.insertItemAt("", 0);
-       // ddcustto.setSelectedIndex(0);
-        
-        if (ddfromcust.getItemCount() > 0)
-        ddfromcust.setSelectedIndex(0);
-        
-        if (ddtocust.getItemCount() > 0)
-        ddtocust.setSelectedIndex(ddtocust.getItemCount() - 1);
+       
     }
     
-    public void initvars(String[] arg) {
-        clearAll();          
+    public String[] getDetail(String id, String po, String cbdetached) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getOrderChangeBrowseDetail"});
+            list.add(new String[]{"param1", id});
+            list.add(new String[]{"param2", po});
+            list.add(new String[]{"param3", cbdetached});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getOrderChangeBrowseDetail(id, po, cbdetached);  
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
     }
    
+    public void done_getDetail() {
+      modeldetail.setNumRows(0);
+         double dols = 0;
+         
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+                dols += (bsParseDouble(rowData[2].toString()) * bsParseDouble(rowData[4].toString()));
+                modeldetail.addRow(rowData);
+            } 
+        }
+        labeldettotal.setText(currformatDouble(dols));
+       }
+       roData = null;
+    }
+    
+    public String[] getOrderChangeBrowseView() {
+        String[] x = new String[2];
+      
+        String fromcust = "";
+        String tocust = "";
+        
+        if (ddfromcust.getSelectedItem() == null || ddfromcust.getSelectedItem().toString().isEmpty()) {
+                    fromcust = bsmf.MainFrame.lowchar;
+        } else {
+            fromcust = ddfromcust.getSelectedItem().toString();
+        }
+         if (ddtocust.getSelectedItem() == null || ddtocust.getSelectedItem().toString().isEmpty()) {
+            tocust = bsmf.MainFrame.hichar;
+        } else {
+            tocust = ddtocust.getSelectedItem().toString();
+        }
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(new String[]{"id","getOrderChangeBrowseView"});
+        list.add(new String[]{"fromdate",setDateDB(dcfrom.getDate())});
+        list.add(new String[]{"todate",setDateDB(dcto.getDate())});
+        list.add(new String[]{"fromcust", fromcust});
+        list.add(new String[]{"tocust",tocust});
+        list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
+        list.add(new String[]{"posearch",tbsearch.getText()});
+        list.add(new String[]{"isdetached", String.valueOf(cbdetached.isSelected())});
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getOrderChangeBrowseView")};
+            }
+        } else {
+            jsonString = ordData.getOrderChangeBrowseView(new String[]{setDateDB(dcfrom.getDate()), 
+                setDateDB(dcto.getDate()), 
+                fromcust, 
+                tocust, 
+                ddsite.getSelectedItem().toString(), 
+                tbsearch.getText(),
+                String.valueOf(cbdetached.isSelected())
+            });
+        }
+        
+        
+        roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getOrderChangeBrowseView() {
+       
+        int i = 0;
+        
+        modeltable.setNumRows(0);
+        
+        if (roData != null) {
+        
+         // potential data adjustment before adding
+        for (int j = 0; j < roData.length; j++) { // 
+                if (roData[j][10].equals("change")) { 
+                    roData[j][10] = BlueSeerUtils.clickchange;
+                } 
+                if (roData[j][11].equals("void")) { 
+                    roData[j][11] = BlueSeerUtils.clickvoid;
+                }
+                if (roData[j][12].equals("gear")) { 
+                    roData[j][12] = BlueSeerUtils.clickgear;
+                }
+        }
+        
+        for (Object[] rowData : roData) {
+            // bypass POs that are not in the search criteria
+         if (! cbopen.isSelected() && rowData[8].equals("open")) {
+                continue;
+         }
+         if (! cbclose.isSelected() && rowData[8].equals("closed")) {
+                continue;
+         }
+         if (! cbapplied.isSelected() && rowData[8].equals("applied")) {
+                continue;
+         }
+          modeltable.addRow(rowData);
+          i++;
+        }
+        lbltotrecs.setText(String.valueOf(i));
+        
+        }          
+        roData = null;
+    }   
+     
     public void showEDIKVHeader(String key) {
         javax.swing.JTextArea ta = new javax.swing.JTextArea();
         
@@ -709,201 +891,13 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
         
       //  rData = sendServerPost(list, postData, null, "dataServORD");
-        rData = sendServerPost(list, "", null, "dataServORD");
+        rsData = sendServerPost(list, "", null, "dataServORD");
         
         x[0] = "0";
         x[1] = "Processing complete";
        
         return x;
     }
-    
-    public String[] serverPostOrderReport() throws IOException {
-        String[] x = new String[2];
-      
-        String fromcust = "";
-        String tocust = "";
-        if (ddfromcust.getSelectedItem() == null || ddfromcust.getSelectedItem().toString().isEmpty()) {
-                    fromcust = bsmf.MainFrame.lowchar;
-        } else {
-            fromcust = ddfromcust.getSelectedItem().toString();
-        }
-         if (ddtocust.getSelectedItem() == null || ddtocust.getSelectedItem().toString().isEmpty()) {
-            tocust = bsmf.MainFrame.hichar;
-        } else {
-            tocust = ddtocust.getSelectedItem().toString();
-        }
-        ArrayList<String[]> list = new ArrayList<String[]>();
-        list.add(new String[]{"id","orderChangeReport"});
-        list.add(new String[]{"fromdate",setDateDB(dcfrom.getDate())});
-        list.add(new String[]{"todate",setDateDB(dcto.getDate())});
-        list.add(new String[]{"fromcust", fromcust});
-        list.add(new String[]{"tocust",tocust});
-        list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
-        list.add(new String[]{"posearch",tbsearch.getText()});
-        list.add(new String[]{"isdetached", String.valueOf(cbdetached.isSelected())});
-        rData = sendServerPost(list, "", null, "dataServORD");
-        
-        x[0] = "0";
-        x[1] = "Processing complete";
-       
-        return x;
-    }
-    
-    public void fillReportTable(String data) {
-        mymodel.setNumRows(0);
-        int i = 0;
-        String[] dar = data.split("\\n");
-        for (String d : dar) {
-        String[] s = d.split(",", -1);
-                        
-                           
-         if (! cbopen.isSelected() && s[8].equals("open"))
-         continue;
-         if (! cbclose.isSelected() && s[8].equals("closed"))
-         continue;
-         if (! cbapplied.isSelected() && s[8].equals("applied"))
-         continue;
-                           
-                    i++;         
-                    mymodel.addRow(new Object[]{ BlueSeerUtils.clickbasket, 
-                                s[0], //res.getString("soc_id"),
-                                s[1],// res.getString("so_nbr"),
-                                s[2],// res.getString("soc_po"),
-                                s[3], //res.getString("soc_chgdate"),
-                                s[4], //res.getString("cm_name"),
-                                s[5], //res.getString("so_due_date"),
-                                s[6], //res.getString("soc_duedate"),
-                                s[7], //change,
-                                s[8],// status,
-                                BlueSeerUtils.clickchange,
-                                BlueSeerUtils.clickvoid,
-                                BlueSeerUtils.clickgear
-                            });
-                   
-                }  
-                    
-               lbltotrecs.setText(String.valueOf(i));
-        
-    }
-    
-    public void btRunLocal() {
-         try {
-            Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-               mymodel.setNumRows(0);
-        
-              
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                
-                 int i = 0;
-                 String change = "";
-                 
-                 
-                 String custfrom = "";
-                 String custto = "";
-                 String status = "";
-                 
-                 
-                 if (ddfromcust.getSelectedItem() != null)
-                     custfrom = ddfromcust.getSelectedItem().toString();
-                 
-                 if (ddtocust.getSelectedItem() != null)
-                     custto = ddtocust.getSelectedItem().toString();
-                 
-                 
-                 
-                 
-                // tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                 
-             if (! tbsearch.getText().isBlank()) {
-                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
-                     " from so_mstr inner join so_chg on soc_po = so_po inner join cm_mstr on cm_code = so_cust where " +
-                        " so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +
-                        " so_po like " + "'%" + tbsearch.getText() + "%'" +
-                        " order by so_nbr desc ;");
-                 
-             } else if (cbdetached.isSelected()) {
-                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
-                     " from so_chg left outer join so_mstr on so_po = soc_po left outer join cm_mstr on cm_code = so_cust where " +
-                         " soc_billto >= " + "'" + custfrom + "'" + " AND " +        
-                        " soc_billto <= " + "'" + custto + "'" + " AND " +
-                        " soc_chgdate >= " + "'" + setDateDB(dcfrom.getDate()) + "'" + " AND " +
-                        " soc_chgdate <= " + "'" + setDateDB(dcto.getDate()) + "'" + 
-                        " order by soc_id desc ;");
-             } else {
-                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
-                     " from so_mstr inner join so_chg on soc_po = so_po inner join cm_mstr on cm_code = so_cust where " +
-                        " so_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +
-                        " so_cust >= " + "'" + custfrom + "'" + " AND " +        
-                        " so_cust <= " + "'" + custto + "'" + " AND " +
-                        " soc_chgdate >= " + "'" + setDateDB(dcfrom.getDate()) + "'" + " AND " +
-                        " soc_chgdate <= " + "'" + setDateDB(dcto.getDate()) + "'" +     
-                        " order by so_nbr desc ;");
-             }  
-             
-                     
-                  
-                
-                       while (res.next()) {
-                    
-                        if (res.getString("so_nbr") != null && ! res.getString("so_nbr").isBlank()) {   
-                        change = _evaluateOrderChange(res.getString("soc_id"), res.getString("so_po"), con); 
-                        status = res.getString("soc_status");
-                        } else {
-                            change = "N/A";
-                            status = "detached";
-                        }
-                           
-                             if (! cbopen.isSelected() && status.equals("open"))
-                             continue;
-                             if (! cbclose.isSelected() && status.equals("closed"))
-                             continue;
-                             if (! cbapplied.isSelected() && status.equals("applied"))
-                             continue;
-                           
-                    i++;         
-                    mymodel.addRow(new Object[]{ BlueSeerUtils.clickbasket, 
-                                res.getString("soc_id"),
-                                res.getString("so_nbr"),
-                                res.getString("soc_po"),
-                                res.getString("soc_chgdate"),
-                                res.getString("cm_name"),
-                                res.getString("so_due_date"),
-                                res.getString("soc_duedate"),
-                                change,
-                                status,
-                                BlueSeerUtils.clickchange,
-                                BlueSeerUtils.clickvoid,
-                                BlueSeerUtils.clickgear
-                            });
-                   
-                } // while   
-                    
-               lbltotrecs.setText(String.valueOf(i));
-               
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-     }
     
     
     /**
@@ -1235,15 +1229,7 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-        if (bsmf.MainFrame.remoteDB) {
-            disableAll(); 
-            executeTask("runReport", null);
-        } else {
-           btRunLocal();
-        }
-
-       
+       executeTask("getOrderChangeBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btdetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdetailActionPerformed
@@ -1257,7 +1243,8 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
         if ( col == 0) {
-                getdetail(tablereport.getValueAt(row, 1).toString(), tablereport.getValueAt(row, 3).toString());  // soc_id, soc_po
+               // getdetail(tablereport.getValueAt(row, 1).toString(), tablereport.getValueAt(row, 3).toString());  // soc_id, soc_po
+                executeTask("getOrderChangeBrowseDetail", new String[]{tablereport.getValueAt(row, 1).toString(), tablereport.getValueAt(row, 3).toString(), BlueSeerUtils.boolToString(cbdetached.isSelected())});
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
                 currentid = tablereport.getValueAt(row, 1).toString();
@@ -1285,11 +1272,54 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
     }//GEN-LAST:event_tablereportMouseClicked
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
-        OVData.printJTableToJasper("Order Change Report", tablereport, "genericJTableL9.jasper" );
+        
+        if (tablereport != null && modeltable.getRowCount() > 0) {
+          // OVData.printJTableToJasper("Order Change Report", tablereport, "genericJTableL9.jasper" );
+            String[] rec;
+            String[] columnnames = new String[11];
+            List<Object[]> list = new ArrayList<>();
+            for (int j = 0; j < tablereport.getRowCount(); j++) {
+                 rec = new String[]{tablereport.getValueAt(j, 2).toString(),
+                   tablereport.getValueAt(j, 3).toString(),
+                   tablereport.getValueAt(j, 4).toString(),
+                   tablereport.getValueAt(j, 5).toString(),
+                   tablereport.getValueAt(j, 6).toString(),
+                   tablereport.getValueAt(j, 7).toString(),
+                   tablereport.getValueAt(j, 8).toString(),
+                   tablereport.getValueAt(j, 9).toString(),
+                   tablereport.getValueAt(j, 10).toString(),
+                   tablereport.getValueAt(j, 11).toString()}; 
+                 list.add(rec);
+             }
+            HashMap hm = new HashMap();
+            hm.put("REPORT_TITLE", "Sales Order Browse Report");
+            hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+            for (int j = 1; j < tablereport.getColumnCount() - 2; j++) {
+               hm.put("d" + (j - 1),  tablereport.getColumnName(j));
+               columnnames[j - 1] = "COLUMN_" + (j - 1);
+            }
+            JRDataSource datasource = new ListOfArrayDataSource(list, columnnames);
+            // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
+            // type = "L8C";  ...or type = genericJTableL8.jasper
+            // String jasperfile = (type.length() > 3) ? jasperfile = type  : OVData.getCodeValueByCodeKey("jasper", type)  ;
+            Path template = FileSystems.getDefault().getPath(cleanDirString(getSystemJasperDirectory()) + "genericJTableL10.jasper");
+            JasperPrint jasperPrint; 
+            try {
+             jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
+             JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+               jasperViewer.setVisible(true);
+                    jasperViewer.setTitle("Viewer");
+                    jasperViewer.setIconImage(null);
+                    jasperViewer.setFitPageZoomRatio();
+               //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
+           } catch (JRException ex) {
+               MainFrame.bslog(ex);
+           }
+        }
     }//GEN-LAST:event_btprintActionPerformed
 
     private void btexportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btexportActionPerformed
-        if (tablereport != null && mymodel.getRowCount() > 0) { // still necessary to click run if only for the exportOrderDetail (local grab)
+        if (tablereport != null && modeltable.getRowCount() > 0) { // still necessary to click run if only for the exportOrderDetail (local grab)
             if (bsmf.MainFrame.remoteDB) {
                 disableAll(); 
                 executeTask("exportOrderChange", null);
