@@ -920,7 +920,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
        
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
-        isLoad = false;
+       isLoad = false;
         
         if (arg != null && arg.length > 0) {
             executeTask(dbaction.get, arg);
@@ -947,7 +947,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }  
     
     public void done_Initialization() {
+        isLoad = true;
         setComponentDefaultValues();
+        isLoad = false;
         if (bsmf.MainFrame.debug) {
          System.out.println("finish init: " + timediff(start));
         }

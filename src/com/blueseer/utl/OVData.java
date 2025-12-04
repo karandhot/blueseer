@@ -2505,6 +2505,18 @@ public class OVData {
 
     public static ArrayList<String[]> getTaxPercentElementsApplicableByTaxCode(String taxcode) {
 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getTaxPercentElementsApplicableByTaxCode"});
+            list.add(new String[]{"param1", taxcode});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
         ArrayList<String[]> myarray = new ArrayList<String[]>();
         try {
             

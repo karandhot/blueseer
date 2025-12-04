@@ -96,7 +96,9 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getDiscountRecsByCust" :        
             response.getWriter().print(ArrayListStringArrayToJson(cusData.getDiscountRecsByCust(request.getHeader("param1"))));
-            break;    
+            break;   
+            
+            
                      
         default:
         response.getWriter().print("no switch case exists in dataServOV for id: " + id);

@@ -27,11 +27,13 @@ package com.blueseer.srv;
 
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
+import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringIntegerToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.intToJson;
+import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.getCodeMstrValueList;
 import static com.blueseer.utl.OVData.getNextNbr;
 import static com.blueseer.utl.OVData.getSysMetaData;
@@ -191,6 +193,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getTableInfo" : 
             response.getWriter().print(HashMapStringIntegerToJson(getTableInfo(new String[]{request.getHeader("param1")})));
+            break;  
+            
+        case "getTaxPercentElementsApplicableByTaxCode" :        
+            response.getWriter().print(ArrayListStringArrayToJson(OVData.getTaxPercentElementsApplicableByTaxCode(request.getHeader("param1"))));
             break;    
                      
         default:
