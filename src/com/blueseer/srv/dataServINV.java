@@ -29,11 +29,13 @@ import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
+import static com.blueseer.inv.invData.getItemDataInit;
 import static com.blueseer.inv.invData.getItemMstr;
 import static com.blueseer.inv.invData.getLocationListByWarehouse;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringIntegerToJson;
+import static com.blueseer.utl.BlueSeerUtils.HashMapStringStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.intToJson;
@@ -102,7 +104,15 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getTableInfo" : 
             response.getWriter().print(HashMapStringIntegerToJson(getTableInfo(new String[]{request.getHeader("param1")})));
-            break;   
+            break; 
+            
+        case "getItemDataInit" : 
+            response.getWriter().print(HashMapStringStringToJson(getItemDataInit(
+                request.getHeader("param1"),
+                request.getHeader("param2"),
+                request.getHeader("param3"),
+                request.getHeader("param4"))));
+            break;    
             
         case "getItemMstr" :        
         invData.item_mstr itm = getItemMstr(request.getHeader("param1"));

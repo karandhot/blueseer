@@ -27,6 +27,7 @@ package com.blueseer.srv;
 
 import com.blueseer.ctr.cusData;
 import static com.blueseer.ctr.cusData.getCustShipSet;
+import static com.blueseer.ctr.cusData.getDiscountRecsByCust;
 import static com.blueseer.ctr.cusData.getcustshipmstrlist;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
 import static com.blueseer.inv.invData.getLocationListByWarehouse;
@@ -91,6 +92,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             ObjectMapper objectMapper = new ObjectMapper();
             String r = objectMapper.writeValueAsString(cs);
             response.getWriter().print(r);
+            break;  
+            
+        case "getDiscountRecsByCust" :        
+            response.getWriter().print(ArrayListStringArrayToJson(cusData.getDiscountRecsByCust(request.getHeader("param1"))));
             break;    
                      
         default:

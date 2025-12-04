@@ -29,6 +29,7 @@ package com.blueseer.srv;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.ord.ordData;
+import static com.blueseer.ord.ordData.addUpdateSOMeta;
 import static com.blueseer.ord.ordData.applyOrderChange;
 import static com.blueseer.ord.ordData.getOrderBrowseView;
 import static com.blueseer.ord.ordData.getOrderChangeExport;
@@ -39,10 +40,16 @@ import static com.blueseer.ord.ordData.getOrderDetailExportNew;
 import static com.blueseer.ord.ordData.getOrderMstrSet;
 import static com.blueseer.ord.ordData.getOrderReportData;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
+import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.boolToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -183,6 +190,54 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
     String id = request.getHeader("id"); 
     
     switch (id) {
+        case "addOrderTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            ordData.sod_det[] sdarray = om.readValue(ca[0], ordData.sod_det[].class);
+            ArrayList<ordData.sod_det> sdlist = new ArrayList<ordData.sod_det>(Arrays.asList(sdarray)); 
+            ordData.so_mstr sm = om.readValue(ca[1], ordData.so_mstr.class); 
+            ordData.so_tax[] starray = om.readValue(ca[2], ordData.so_tax[].class);
+            ArrayList<ordData.so_tax> stlist = new ArrayList<ordData.so_tax>(Arrays.asList(starray));
+            ordData.sod_tax[] sodtarray = om.readValue(ca[3], ordData.sod_tax[].class);
+            ArrayList<ordData.sod_tax> sodtlist = new ArrayList<ordData.sod_tax>(Arrays.asList(sodtarray));  
+            ordData.sos_det[] sosdarray = om.readValue(ca[4], ordData.sos_det[].class);
+            ArrayList<ordData.sos_det> sosdlist = new ArrayList<ordData.sos_det>(Arrays.asList(sosdarray)); 
+            response.getWriter().print(arrayToJson(ordData.addOrderTransaction(sdlist, sm, stlist, sodtlist, sosdlist))); 
+            }
+            break; 
+            
+        case "updateOrderTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            String key = ca[0];
+            ArrayList<String> badlist = om.readValue(ca[1], ArrayList.class);
+            ordData.sod_det[] sdarray = om.readValue(ca[2], ordData.sod_det[].class);
+            ArrayList<ordData.sod_det> sdlist = new ArrayList<ordData.sod_det>(Arrays.asList(sdarray)); 
+            ordData.so_mstr sm = om.readValue(ca[3], ordData.so_mstr.class); 
+            ordData.so_tax[] starray = om.readValue(ca[4], ordData.so_tax[].class);
+            ArrayList<ordData.so_tax> stlist = new ArrayList<ordData.so_tax>(Arrays.asList(starray));
+            ordData.sod_tax[] sodtarray = om.readValue(ca[5], ordData.sod_tax[].class);
+            ArrayList<ordData.sod_tax> sodtlist = new ArrayList<ordData.sod_tax>(Arrays.asList(sodtarray));  
+            ordData.sos_det[] sosdarray = om.readValue(ca[6], ordData.sos_det[].class);
+            ArrayList<ordData.sos_det> sosdlist = new ArrayList<ordData.sos_det>(Arrays.asList(sosdarray)); 
+            response.getWriter().print(arrayToJson(ordData.updateOrderTransaction(key, badlist, sdlist, sm, stlist, sodtlist, sosdlist))); 
+            }
+            break;    
+            
         case "getOrderBrowseInit" :
             response.getWriter().print(ArrayListStringArrayToJson(ordData.getOrderBrowseInit(request.getHeader("param1"), request.getHeader("param2"))));
             break;
@@ -219,11 +274,37 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         response.getWriter().print(getOrderBrowseView(or));  
         break;
         
+        case "validateOrderDetail" :
+            response.getWriter().print(arrayToJson(ordData.validateOrderDetail(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5"),
+                    request.getHeader("param6"),
+                    request.getHeader("param7")
+                    )));  
+            break;
+            
+        case "orderToInvoice" :
+            response.getWriter().print(arrayToJson(ordData.orderToInvoice(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3")
+                    )));  
+            break;    
+                        
         case "getOrderBrowseDetail" :
             response.getWriter().print(ordData.getOrderBrowseDetail(request.getHeader("param1")));  
             break;
+            
+        case "getOrderLines" :
+            response.getWriter().print(ArrayListStringToJson(ordData.getOrderLines(request.getHeader("param1"))));  
+            break; 
+        
+        case "getServiceOrderLines" :
+            response.getWriter().print(ArrayListStringToJson(ordData.getServiceOrderLines(request.getHeader("param1"))));  
+            break;    
 
-        case "getOrderChangeBrowseView" :
+        case "getOrderChangeBrowseView" : {
         String[] ocr = new String[]{
                request.getHeader("fromdate"), 
                request.getHeader("todate"), 
@@ -232,21 +313,24 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                request.getHeader("site"), 
                request.getHeader("datetype")
                };     
-        response.getWriter().println(getOrderChangeReportData(ocr)); 
+        response.getWriter().println(getOrderChangeReportData(ocr));
+        }
         break;
 
-        case "getOrderMstrSet" :        
+        case "getOrderMstrSet" : {       
         ordData.salesOrder cs = getOrderMstrSet(new String[]{request.getHeader("param1")});
         ObjectMapper objectMapper = new ObjectMapper();
         String r = objectMapper.writeValueAsString(cs);
         response.getWriter().print(r);
+        }
         break; 
         
-        case "getOrderDet" :        
+        case "getOrderDet" : {       
         ordData.sod_det sd = getOrderDet(request.getHeader("param1"), request.getHeader("param2"));
         ObjectMapper omsd = new ObjectMapper(); 
         String rsd = omsd.writeValueAsString(sd);
         response.getWriter().print(rsd);
+        }
         break; 
         
         case "applyOrderChange" :
@@ -256,6 +340,13 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         case "updateOrderChangeStatus" :
             ordData.updateOrderChangeStatus(request.getHeader("param1"), request.getHeader("param2"));
             break;
+            
+        case "addUpdateSOMeta" : 
+        response.getWriter().println(boolToJson(addUpdateSOMeta(request.getHeader("param1"), 
+                request.getHeader("param2"), 
+                request.getHeader("param3"), 
+                request.getHeader("param4")))); 
+        break;    
             
         default:
         response.getWriter().print("no switch case exists in dataServORD for id: " + id);

@@ -43,10 +43,15 @@ import com.blueseer.ctr.cusData.cms_det;
 import static com.blueseer.ctr.cusData.getCustInfo;
 import com.blueseer.edi.EDI.edi855;
 import static com.blueseer.edi.ediData.getEDIMetaValueAsKVStringPair;
+import com.blueseer.fgl.fglData;
+import static com.blueseer.shp.ShipOrderLine.orderSet;
 import com.blueseer.shp.shpData;
 import static com.blueseer.shp.shpData._addShipperTransaction;
 import static com.blueseer.shp.shpData._confirmShipperTransaction;
 import static com.blueseer.shp.shpData._updateShipperSAC;
+import static com.blueseer.shp.shpData.addShipperTransaction;
+import static com.blueseer.shp.shpData.confirmShipperTransaction;
+import static com.blueseer.shp.shpData.updateShipperSAC;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
@@ -56,7 +61,10 @@ import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToBoolean;
+import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.parseDateLD;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
@@ -305,6 +313,25 @@ public class ordData {
     
      // add order master.... multiple table transaction function
     public static String[] addOrderTransaction(ArrayList<sod_det> sod, so_mstr so, ArrayList<so_tax> sot, ArrayList<sod_tax> sotd, ArrayList<sos_det> sos) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addShipperTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(sod);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(so);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(sot);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(sotd);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(sos);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -373,6 +400,8 @@ public class ordData {
     }
      
     public static String[] updateOrderMstr(so_mstr x) {
+        
+        
         String[] m = new String[2];
         if (x == null) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordError};
@@ -538,6 +567,27 @@ public class ordData {
         
      // update order master.... multiple table transaction function
     public static String[] updateOrderTransaction(String x, ArrayList<String> lines, ArrayList<sod_det> sod, so_mstr so, ArrayList<so_tax> sot, ArrayList<sod_tax> sotd, ArrayList<sos_det> sos) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateOrderTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(lines);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(sod);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(so);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(sot);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(sotd);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(sos);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -612,9 +662,21 @@ public class ordData {
     return m;
     }
         
-    public static String[] deleteOrderMstr(so_mstr x) {
+    public static String[] deleteOrderMstr(String order) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "deleteOrderMstr"});
+            list.add(new String[]{"param1", order});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        } 
+        
         String[] m = new String[2];
-        if (x == null) {
+        if (order == null || order.isBlank()) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
         }
         Connection con = null;
@@ -624,7 +686,7 @@ public class ordData {
             } else {
               con = DriverManager.getConnection(url + db, user, pass);  
             }
-            _deleteOrderMstr(x, con);  // add cms_det
+            _deleteOrderMstr(order, con);  
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
         } catch (SQLException s) {
              MainFrame.bslog(s);
@@ -698,30 +760,52 @@ public class ordData {
         ps.executeUpdate();
     }
     
-    
-    private static void _deleteOrderMstr(so_mstr x, Connection con) throws SQLException { 
+    private static void _deleteOrderMstr(String x, Connection con) throws SQLException { 
         PreparedStatement ps = null; 
+        
+        String po = "";
+        String sqlSelect = "select * from so_mstr where so_nbr = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x);
+          ResultSet res = ps.executeQuery();
+            while(res.next()) {
+                po = res.getString("so_po");
+            }
+          res.close();
+            
+        
         String sql = "delete from so_mstr where so_nbr = ?; ";
         ps = con.prepareStatement(sql);
-        ps.setString(1, x.so_nbr);
+        ps.setString(1, x);
         ps.executeUpdate();
         sql = "delete from sod_det where sod_nbr = ?; ";
         ps = con.prepareStatement(sql);
-        ps.setString(1, x.so_nbr);
+        ps.setString(1, x);
         ps.executeUpdate();
         sql = "delete from sod_tax where sodt_nbr = ?; ";
         ps = con.prepareStatement(sql);
-        ps.setString(1, x.so_nbr);
+        ps.setString(1, x);
         ps.executeUpdate();
         sql = "delete from sos_det where sos_nbr = ?; ";
         ps = con.prepareStatement(sql);
-        ps.setString(1, x.so_nbr);
+        ps.setString(1, x);
         ps.executeUpdate();
         sql = "delete from so_tax where sot_nbr = ?; ";
         ps = con.prepareStatement(sql);
-        ps.setString(1, x.so_nbr);
+        ps.setString(1, x);
         ps.executeUpdate();
+        sql = "delete from so_meta where som_id = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        if (! po.isBlank()) {
+            sql = "delete from edi_meta where edim_id = ?; ";
+            ps = con.prepareStatement(sql);
+            ps.setString(1, po);
+            ps.executeUpdate();
+        }
         ps.close();
+        
     }
     
     private static void _deleteOrderTaxMstr(String x, Connection con) throws SQLException { 
@@ -3354,6 +3438,21 @@ public class ordData {
     
     // miscellaneous SQL queries
     public static boolean addUpdateSOMeta(String id, String type, String key, String value) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "addUpdateSOMeta"});
+            list.add(new String[]{"param1", id});
+            list.add(new String[]{"param2", type});
+            list.add(new String[]{"param3", key});
+            list.add(new String[]{"param4", value});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        } 
+        
         boolean x = false;
         try {
             
@@ -3454,6 +3553,135 @@ public class ordData {
         return x;
     }
 
+    public static String[] orderToInvoice(String order, String userid, String trackingnbr) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "orderToInvoice"});
+            list.add(new String[]{"param1", order});
+            list.add(new String[]{"param2", userid});
+            list.add(new String[]{"param3", trackingnbr});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        } 
+        
+        
+        String[] m;
+        int shipperid = OVData.getNextNbr("shipper");
+        salesOrder orderSet = getOrderMstrSet(new String[]{order});
+        shpData.ship_mstr sh = new shpData.ship_mstr(null, 
+                bsNumber(shipperid),
+                orderSet.so().so_cust(),
+                orderSet.so().so_ship(),
+                0, // pallets
+                0, // boxes
+                orderSet.so().so_shipvia(), // shipvia  
+                setDateDB(new java.util.Date()),
+                orderSet.so().so_ord_date(), // po date
+                orderSet.so().so_type(),
+                orderSet.so().so_po(), // po number
+                orderSet.so().so_rmks(),
+                userid,
+                orderSet.so().so_site(),
+                orderSet.so().so_curr(),
+                "", // wh
+                orderSet.cm().cm_terms(), // terms
+                "", // taxcode
+                orderSet.cm().cm_ar_acct(), // aracct
+                orderSet.cm().cm_ar_cc(), // arcc
+                "S", // type
+                orderSet.so().so_nbr(), // sh_so 
+                orderSet.so().so_site(),
+                trackingnbr, // tracking number
+                "", // status
+                "", // sh_char1
+                "1", // sh_char2 ...shipper complete 
+                "" // sh_char3
+                );
+        
+        
+        ArrayList<shpData.ship_det> shd = new ArrayList<shpData.ship_det>();
+        int i = 1;
+        for (sod_det sod : orderSet.sod()) {
+            shpData.ship_det z = new shpData.ship_det(null, 
+                bsNumber(shipperid), // shipper
+                i, //shline
+                sod.sod_item(), // item
+                sod.sod_custitem(), // custimtem
+                sod.sod_nbr(),  // order
+                sod.sod_line(), //soline    
+                setDateDB(new java.util.Date()),
+                sod.sod_po(), // po
+                sod.sod_ord_qty(), // qty
+                sod.sod_uom(), //uom
+                orderSet.so().so_curr(), //currency 
+                sod.sod_netprice(), // net price
+                sod.sod_disc(), // disc
+                sod.sod_listprice(), // list price
+                sod.sod_desc(), // desc
+                sod.sod_wh(), // wh
+                sod.sod_loc(), // loc
+                0, // taxamt
+                "0", // cont
+                "", // ref
+                trackingnbr, // serial   
+                sod.sod_site(),
+                sod.sod_bom(), // bom
+                sod.sod_ord_qty(),  // packqty
+                "" // kvpair    
+                );
+        shd.add(z);
+        }
+        
+        ArrayList<shpData.ship_tree> sht = new ArrayList<>();
+        shpData.ship_tree x = new shpData.ship_tree(null,
+            bsNumber(shipperid),
+            "", // label serial number ... no labels
+            orderSet.so().so_site(),
+            "f", // flat ...no labels
+            bsNumber(shipperid),
+            "",
+            "",
+            "",
+            "",
+            "", // empty item
+            1.0,
+            "" // get display serial
+            );
+            sht.add(x);
+            for (sod_det sod : orderSet.sod()) {
+                shpData.ship_tree y = new shpData.ship_tree(null,
+                bsNumber(shipperid),
+                sod.sod_nbr() + "," + sod.sod_item() + "," + sod.sod_line(),
+                sod.sod_site(),
+                "i",
+                bsNumber(shipperid),
+                bsNumber(sod.sod_line()),
+                sod.sod_nbr(),
+                bsNumber(sod.sod_line()),
+                sod.sod_po(),
+                sod.sod_item(),
+                sod.sod_ord_qty(),
+                "" // get display serial
+                );
+                sht.add(y);
+            }
+        
+        addShipperTransaction(shd, sh, sht);
+        
+        updateShipperSAC(bsNumber(shipperid));
+        
+        m = confirmShipperTransaction("order",bsNumber(shipperid),new java.util.Date());
+        
+        if (OVData.isAutoPost()) {
+            fglData.PostGL();
+        }
+        
+        return m;
+    }
     
     public static void addUpdateSOMetaNotes(String id, String[] values) {  //used primarily for order notes where key is counter
         
@@ -4004,15 +4232,19 @@ public class ordData {
             
             
             
-            res = st.executeQuery("select orc_custitem, orc_autoallocate from order_ctrl;");
+            res = st.executeQuery("select orc_custitem, orc_autoallocate, orc_autoinvoice from order_ctrl;");
             while (res.next()) {
-                String[] s = new String[2];
+               String[] s = new String[2];
                s[0] = "allocate";
                s[1] = res.getString("orc_autoallocate");
                lines.add(s);
                s = new String[2];
                s[0] = "custitemonly";
                s[1] = res.getString("orc_custitem");
+               lines.add(s);
+               s = new String[2];
+               s[0] = "autoinvoice";
+               s[1] = res.getString("orc_autoinvoice");
                lines.add(s);
             }
             
@@ -4127,6 +4359,41 @@ public class ordData {
     }
         return lines;
     }
+    
+    public static String[] validateOrderDetail(String key, String cust, String item, String qty, String site, String uom, String curr) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "validateOrderDetail"});
+            list.add(new String[]{"param1", key});
+            list.add(new String[]{"param2", cust});
+            list.add(new String[]{"param3", item});
+            list.add(new String[]{"param4", qty});
+            list.add(new String[]{"param5", site});
+            list.add(new String[]{"param6", uom});
+            list.add(new String[]{"param7", curr});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        // check unallocated qty
+        if (! OVData.isOrderExceedQOHU() && bsParseDouble(qty) > invData.getItemQOHUnallocated(item,site,key)) {
+             return new String[]{"0", "1092"};
+        }
+        if (OVData.isValidItem(item) && ! OVData.isValidUOMConversion(item, site, uom)) {
+                return new String[]{"0", "1093"};
+        }
+        if (OVData.isValidItem(item)
+                && OVData.getSysMetaValue("system", "ordercontrol", "uom_pricing").equals("1")
+                && ! OVData.isBaseUOMOfItem(item, site, uom) 
+                && ! OVData.isValidCustPriceRecordExists(cust,item,uom,curr)) {
+                return new String[]{"0", "1094"};
+        }
+        return new String[]{"1", ""}; // true
+    }
+    
     
     public static edi855 init_edi855_object(String order) {
         edi855 e = null;
@@ -4733,6 +5000,17 @@ public class ordData {
     
     
     public static ArrayList<String> getOrderLines(String order) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getOrderLines"});
+            list.add(new String[]{"param1", order});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
         ArrayList<String> lines = new ArrayList<String>();
         try{
         Connection con = null;
@@ -4766,6 +5044,17 @@ public class ordData {
     }
     
     public static ArrayList<String> getServiceOrderLines(String order) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getServiceOrderLines"});
+            list.add(new String[]{"param1", order});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
         ArrayList<String> lines = new ArrayList<String>();
         try{
         Connection con = null;

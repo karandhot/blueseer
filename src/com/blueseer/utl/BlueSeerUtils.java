@@ -3089,6 +3089,17 @@ public class BlueSeerUtils {
         return x;
     }
 
+    public static String HashMapStringStringToJson(HashMap<String,String> list) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String x = "";
+        try {   
+            x = objectMapper.writeValueAsString(list);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+
     
     public static String boolToJson(boolean b) {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -3163,6 +3174,17 @@ public class BlueSeerUtils {
         return x;
     }
     
+    public static boolean jsonToBoolean(String jsonstring) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        boolean x = false;
+        try {
+            x = objectMapper.readValue(jsonstring, boolean.class);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+    
     public static ArrayList<String> jsonToArrayListString(String jsonstring) {
         ObjectMapper objectMapper = new ObjectMapper();
         ArrayList<String> x = null;
@@ -3179,6 +3201,17 @@ public class BlueSeerUtils {
         Map<String,Integer> x = null;
         try {
             x = objectMapper.readValue(jsonstring, Map.class);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+
+    public static HashMap<String,String> jsonToHashMapStringString(String jsonstring) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        HashMap<String,String> x = null;
+        try {
+            x = objectMapper.readValue(jsonstring, HashMap.class);
         } catch (JsonProcessingException ex) {
             bslog(ex);
         }

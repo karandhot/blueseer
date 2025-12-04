@@ -46,6 +46,7 @@ import static com.blueseer.utl.BlueSeerUtils.formatUSZ;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToHashMapStringString;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.OVData;
@@ -5203,6 +5204,20 @@ public class invData {
     }
 
     public static HashMap<String, String> getItemDataInit(String item, String site, String entity, String type) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getItemDataInit"});
+            list.add(new String[]{"param1", item});
+            list.add(new String[]{"param2", site});
+            list.add(new String[]{"param3", entity});
+            list.add(new String[]{"param4", type}); 
+            try {
+                return jsonToHashMapStringString(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) { 
+                bslog(ex);
+                return null;
+            }
+        } 
         HashMap<String,String> hm = new HashMap<String,String>();
         String[] x = new String[]{"","","","","","","","","","",""};
         int days = 0;

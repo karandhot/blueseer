@@ -49,11 +49,13 @@ import static com.blueseer.inv.invData.getItemQOHTotal;
 import static com.blueseer.ord.ordData.addOrderTransaction;
 import static com.blueseer.ord.ordData.addUpdateSOMeta;
 import static com.blueseer.ord.ordData.addUpdateSOMetaNotes;
+import static com.blueseer.ord.ordData.deleteOrderMstr;
 import static com.blueseer.ord.ordData.getOrderItemAllocatedQty;
 import static com.blueseer.ord.ordData.getOrderLines;
 import static com.blueseer.ord.ordData.getOrderMstrSet;
 import static com.blueseer.ord.ordData.getSOMetaNotes;
 import static com.blueseer.ord.ordData.isDuplicatePO;
+import static com.blueseer.ord.ordData.orderToInvoice;
 import com.blueseer.ord.ordData.salesOrder;
 import com.blueseer.ord.ordData.sod_det;
 import com.blueseer.ord.ordData.so_mstr;
@@ -151,6 +153,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     // global variable declarations
                 boolean isLoad = false;
+                Object[][] rData;
+                ArrayList<String[]> initDataSets = new ArrayList<>();
                 String terms = "";
                 String aracct = "";
                 String arcc = "";
@@ -159,6 +163,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 String basecurr = "";
                 boolean custitemonly = true;
                 boolean autoallocate = false;
+                boolean autoinvoice = false;
                 boolean hasInit = false;
                 boolean canupdate = false;
                 String allocationStatus = "";
@@ -296,6 +301,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             
             
              switch(this.type) {
+                case "init":
+                    message = getInitialization();
+                    break; 
                 case "add":
                     message = addRecord(key);
                     break;
@@ -337,7 +345,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
            } else if (this.type.equals("update") && message[0].equals("0")) {
              initvars(key);    
            } else if (this.type.equals("run")) {
-             initvars(null);  
+             initvars(null); 
+           } else if (this.type.equals("init")) {
+             done_Initialization();  
            } else {
              initvars(null);  
            }
@@ -451,7 +461,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         
         
-        ArrayList<String[]> initDataSets = ordData.getSalesOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
+       // ArrayList<String[]> initDataSets = ordData.getSalesOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
         
        jTabbedPane1.removeAll();
        jTabbedPane1.add(getClassLabelTag("main", this.getClass().getSimpleName()), jPanelMain);
@@ -605,6 +615,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
             if (s[0].equals("allocate")) {
               autoallocate = bsmf.MainFrame.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("autoinvoice")) {
+              autoinvoice = bsmf.MainFrame.ConvertStringToBool(s[1]);  
             }
             if (s[0].equals("custitemonly")) {
               custitemonly = bsmf.MainFrame.ConvertStringToBool(s[1]);  
@@ -918,6 +931,20 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
     }
     
+    public String[] getInitialization() {
+        initDataSets = ordData.getSalesOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+        
+    }  
+    
+    public void done_Initialization() {
+        setComponentDefaultValues();
+    }
+
     public String[] addRecord(String[] x) {
      String[] m = new String[2];
      m = addOrderTransaction(createDetRecord(), createRecord(), createTaxRecord(), createTaxDetRecord(), createSOSRecord());
@@ -928,7 +955,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
      
       // if autoinvoice
-        if (m[0].equals("0") && OVData.isAutoInvoice()) {
+        if (m[0].equals("0") && autoinvoice) {
         boolean sure = bsmf.MainFrame.warn("This is an auto-invoice order...Are you sure you want to auto-invoice?");     
             if (sure) {     
                m = autoInvoice();
@@ -958,41 +985,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
      String[] m = new String[2];
         boolean proceed = bsmf.MainFrame.warn("Are you sure?");
         if (proceed) {
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            try {
-                        st.executeUpdate("delete from sod_det where sod_nbr = " + "'" + tbkey.getText() + "'" + ";");  
-                        st.executeUpdate("delete from so_tax where sot_nbr = " + "'" + tbkey.getText() + "'" + ";");
-                        st.executeUpdate("delete from sod_tax where sodt_nbr = " + "'" + tbkey.getText() + "'" + ";");
-                        st.executeUpdate("delete from sos_det where sos_nbr = " + "'" + tbkey.getText() + "'" + ";");
-                        st.executeUpdate("delete from so_meta where som_id = " + "'" + tbkey.getText() + "'" + ";");
-                        st.executeUpdate("delete from edi_meta where edim_id = " + "'" + ponbr.getText() + "'" + ";"); // based on PO
-                int i = st.executeUpdate("delete from so_mstr where so_nbr = " + "'" + tbkey.getText() + "'" + ";");
-                    if (i > 0) {
-                    m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
-                    }
-                } catch (SQLException s) {
-                 MainFrame.bslog(s); 
-                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordSQLError};  
-            } finally {
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordConnError};
-        }
-        } else {
-           m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordCanceled}; 
+            m = deleteOrderMstr(x[0]);
         }
      return m;
      }
@@ -1671,12 +1664,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public String[] Run_autoInvoice() {
-        
-        String[] m = autoInvoice();
-        // autopost
-        if (OVData.isAutoPost()) {
-            fglData.PostGL();
-        }
+      //  String[] m = autoInvoice();
+        String[] m = orderToInvoice(tbkey.getText(), bsmf.MainFrame.userid, tbtracking.getText());
         return m;
     }
     
@@ -2216,31 +2205,29 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             tbitem.requestFocus();
             return false;
         }
-        boolean isvalid = OVData.isValidItem(tbitem.getText());
         
-        // check unallocated qty
-        if (! OVData.isOrderExceedQOHU() && bsParseDouble(qtyshipped.getText()) > invData.getItemQOHUnallocated(tbitem.getText(),ddsite.getSelectedItem().toString(),tbkey.getText())) {
-             bsmf.MainFrame.show(getMessageTag(1092));
-             qtyshipped.requestFocus();
-             return false;
+        String[] v = ordData.validateOrderDetail(tbkey.getText(),  // returns boolean, tagnbr
+                ddcust.getSelectedItem().toString(), 
+                tbitem.getText(), 
+                qtyshipped.getText(), 
+                ddsite.getSelectedItem().toString(), 
+                dduom.getSelectedItem().toString(),
+                ddcurr.getSelectedItem().toString());
+        
+        bsmf.MainFrame.show(getMessageTag(Integer.parseInt(v[1])));  
+        if (v[1].equals("1092")) {
+            qtyshipped.requestFocus();
+            return false;
+        }
+        if (v[1].equals("1093")) {
+            dduom.requestFocus();
+            return false;
+        }
+        if (v[1].equals("1094")) {
+            dduom.requestFocus();
+            return false;
         }
         
-        if (isvalid && ! OVData.isValidUOMConversion(tbitem.getText(), ddsite.getSelectedItem().toString(), dduom.getSelectedItem().toString())) {
-                bsmf.MainFrame.show(getMessageTag(1093));
-                dduom.requestFocus();
-                return false;
-                
-        }
-        
-        if (isvalid
-                && OVData.getSysMetaValue("system", "ordercontrol", "uom_pricing").equals("1")
-                && ! OVData.isBaseUOMOfItem(tbitem.getText(), ddsite.getSelectedItem().toString(), dduom.getSelectedItem().toString()) 
-                && ! OVData.isValidCustPriceRecordExists(ddcust.getSelectedItem().toString(),tbitem.getText(),dduom.getSelectedItem().toString(),ddcurr.getSelectedItem().toString())) {
-                bsmf.MainFrame.show(getMessageTag(1094));
-                dduom.requestFocus();
-                return false;
-                
-        }
       return true;   
     }
     

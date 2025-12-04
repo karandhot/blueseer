@@ -37,6 +37,7 @@ import static bsmf.MainFrame.user;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -2319,6 +2320,18 @@ public class cusData {
     }
     
     public static ArrayList<String[]> getDiscountRecsByCust(String cust) {
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getDiscountRecsByCust"});
+            list.add(new String[]{"param1",  cust});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServCUS"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
        ArrayList<String[]> myarray = new ArrayList<String[]>();
        java.util.Date now = new java.util.Date(); 
        try{
