@@ -169,6 +169,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 String allocationStatus = "";
                 String currentline = "";
                 boolean isSOCommitted = false;
+                boolean isVoucherShipping = false;
                 public static so_mstr so = null;
                 public static ArrayList<sod_det> sodlist = null;
                 public static ArrayList<sos_det> soslist = null;
@@ -619,6 +620,16 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             if (s[0].equals("autoinvoice")) {
               autoinvoice = bsmf.MainFrame.ConvertStringToBool(s[1]);  
             }
+            if (s[0].equals("orcvarchar")) {
+                String[] delimfields = s[1].split(",",-1);
+                if (delimfields != null) {
+                    for (int i = 0; i < delimfields.length; i++) {
+                        if (i == 0) { // cbvouchershipping
+                          isVoucherShipping = BlueSeerUtils.ConvertStringToBool(delimfields[i]);  
+                        }
+                    }
+                } 
+            }
             if (s[0].equals("custitemonly")) {
               custitemonly = bsmf.MainFrame.ConvertStringToBool(s[1]);  
             }
@@ -690,7 +701,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddsactype.addItem("discount");
         ddsactype.addItem("charge");
         ddsactype.addItem("passive");
-        if (isVoucherShippingSO()) {
+        if (isVoucherShipping) {
             ddsactype.addItem("shipping ADD");
             ddsactype.addItem("shipping PPD");
             ddsactype.addItem("shipping BIL");

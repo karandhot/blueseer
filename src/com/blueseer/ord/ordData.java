@@ -4232,7 +4232,7 @@ public class ordData {
             
             
             
-            res = st.executeQuery("select orc_custitem, orc_autoallocate, orc_autoinvoice from order_ctrl;");
+            res = st.executeQuery("select orc_custitem, orc_autoallocate, orc_autoinvoice, orc_varchar from order_ctrl;");
             while (res.next()) {
                String[] s = new String[2];
                s[0] = "allocate";
@@ -4245,6 +4245,10 @@ public class ordData {
                s = new String[2];
                s[0] = "autoinvoice";
                s[1] = res.getString("orc_autoinvoice");
+               lines.add(s);
+               s = new String[2];
+               s[0] = "orcvarchar";
+               s[1] = res.getString("orc_varchar");
                lines.add(s);
             }
             
