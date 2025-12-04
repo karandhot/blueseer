@@ -314,7 +314,19 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       String r = objectMapper.writeValueAsString(emlist);
       response.getWriter().print(r);
     }
-       
+    
+    if (id.equals("getInvoiceBrowseView")) { 
+      response.getWriter().print(fglData.getInvoiceBrowseView(request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5"),
+                    request.getHeader("param6") ));
+    } 
+    
+    if (id.equals("getInvoiceBrowseDetail")) { 
+      response.getWriter().print(fglData.getInvoiceBrowseDetail(request.getHeader("param1"))); 
+    }     
     
     if (id.equals("getFINInit")) { 
       String param1 = request.getHeader("param1"); 

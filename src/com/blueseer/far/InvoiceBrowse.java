@@ -27,6 +27,7 @@ package com.blueseer.far;
 
 import com.blueseer.shp.*;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static bsmf.MainFrame.checkperms;
@@ -67,17 +68,25 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.fgl.fglData;
 import static com.blueseer.fgl.fglData.exportInvoiceCSV;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import static com.blueseer.utl.OVData.getSystemJasperDirectory;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -88,9 +97,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
+import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.data.ListOfArrayDataSource;
 import net.sf.jasperreports.view.JasperViewer;
 
 /**
@@ -100,9 +112,11 @@ import net.sf.jasperreports.view.JasperViewer;
 public class InvoiceBrowse extends javax.swing.JPanel {
  
     boolean sending = false;
-    
+    Object[][] rData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultcurrency = "";
    
-    javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+    javax.swing.table.DefaultTableModel modeltable = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("select"), 
                             getGlobalColumnTag("detail"), 
                             getGlobalColumnTag("invoice"), 
@@ -197,24 +211,44 @@ public class InvoiceBrowse extends javax.swing.JPanel {
     }
 
     
-    public void executeTask(String x, int y, String w) { 
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
       
         class Task extends SwingWorker<String[], Void> {
-       
+          String type = "";
+          String[] key = null; 
+          /*
           String key = "";
           int row = 0;
           String site = "";
-          
-          public Task(String key, int row, String site) { 
+          */
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
               this.key = key;
-              this.row = row;
-              this.site = site;
           } 
            
         @Override
         public String[] doInBackground() throws Exception {
             String[] message = new String[2];
-            message = OVData.sendInvoice(key, site); 
+            
+            switch(this.type) {
+                case "init":
+                    message = getInitialization();
+                    break;
+                    
+                case "run":
+                    if (this.key[0].equals("getInvoiceBrowseView")) {
+                      message = getInvoiceBrowseView();
+                    } 
+                    if (this.key[0].equals("getInvoiceBrowseDetail")) {
+                       message = getDetail(this.key[1]);  
+                    }
+                    if (this.key[0].equals("sendInvoice")) {
+                       message = OVData.sendInvoice(this.key[1], this.key[3]);   
+                    }
+                    break;
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
             return message;
         }
  
@@ -223,8 +257,21 @@ public class InvoiceBrowse extends javax.swing.JPanel {
             try {
             String[] message = get();
             BlueSeerUtils.endTask(message);
-            sending = false;
-            tablereport.getModel().setValueAt(BlueSeerUtils.clickmail,row,11);
+            if (this.type.equals("init")) {
+                    done_Initialization();
+            }
+            if (this.type.equals("run")) {
+                    if (this.key[0].equals("getInvoiceBrowseView")) {
+                      done_getInvoiceBrowseView();
+                    } 
+                    if (this.key[0].equals("getInvoiceBrowseDetail")) {
+                      done_getDetail(); 
+                    }
+            } 
+            if (this.key[0].equals("sendInvoice")) {
+                sending = false;
+                tablereport.getModel().setValueAt(BlueSeerUtils.clickmail,Integer.parseInt(this.key[2]),11);  
+            }
             } catch (Exception e) {
                 MainFrame.bslog(e);
             } 
@@ -232,8 +279,8 @@ public class InvoiceBrowse extends javax.swing.JPanel {
         }
     }  
       
-       BlueSeerUtils.startTask(new String[]{"","Running..."});
-       Task z = new Task(x, y, w); 
+       BlueSeerUtils.startTask(new String[]{"", getMessageTag(1189)});
+       Task z = new Task(x, y);  
        z.execute(); 
        
     }
@@ -282,59 +329,159 @@ public class InvoiceBrowse extends javax.swing.JPanel {
        }
     }
     
-    public void getdetail(String shipper) {
+    public String[] getInitialization() {
+        initDataSets = shpData.getShipperInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+        
+    }    
+    
+    public String[] getInvoiceBrowseView() {
+       
+       DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getInvoiceBrowseView"});
+            list.add(new String[]{"param1", tbfromshipper.getText()});
+            list.add(new String[]{"param2", tbtoshipper.getText()});
+            list.add(new String[]{"param3", tbfromcust.getText()});
+            list.add(new String[]{"param4", tbtocust.getText()});
+            list.add(new String[]{"param5", dfdate.format(dcfrom.getDate())});
+            list.add(new String[]{"param6", dfdate.format(dcto.getDate())});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServFIN"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getInvoiceBrowseView")};
+            }
+        } else {
+            jsonString = fglData.getInvoiceBrowseView(tbfromshipper.getText(), tbtoshipper.getText(), tbfromcust.getText(), tbtocust.getText(), dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()));
+        }
+         rData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+   }
+    
+    public String[] getDetail(String shipper) {
       
-         modeldetail.setNumRows(0);
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getInvoiceBrowseDetail"});
+            list.add(new String[]{"param1", shipper});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServFIN"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = fglData.getInvoiceBrowseDetail(shipper); 
+        }        
+        rData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_Initialization() {
+        
+        ddsite.removeAllItems();
+        
+        String defaultsite = "";
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+                      
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("currency")) {
+              defaultcurrency = s[1];  
+            }
+        }
+        
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+        
+        modeltable.setNumRows(0);
+        modeldetail.setNumRows(0);
+        
+        tabledetail.setModel(modeldetail);
+        tabledetail.getTableHeader().setReorderingAllowed(false);
+        tabledetail.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+               
+        tablereport.setModel(modeltable);
+        tablereport.getTableHeader().setReorderingAllowed(false);
+        tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+        tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+      
+        tablereport.getColumnModel().getColumn(11).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+        tablereport.getColumnModel().getColumn(11).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+      
+        tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+        tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
+        tablereport.getColumnModel().getColumn(12).setMaxWidth(100);
+        tablereport.getColumnModel().getColumn(13).setMaxWidth(100);
+       
+    }
+
+    public void done_getInvoiceBrowseView() {
+        double totsales = 0;
+        double totopen = 0;
+        modeltable.setNumRows(0);
+        tablereport.setModel(modeltable);
+        if (rData != null) {
+            for (int j = 0; j < rData.length; j++) { // 
+                if (rData[j][12].equals("print")) { 
+                    rData[j][12] = BlueSeerUtils.clickprint;
+                }
+                if (rData[j][13].equals("mail")) { 
+                    rData[j][13] = BlueSeerUtils.clickmail;
+                }
+            }
+        
+            int i = 0;
+            if (rData.length > 0) {
+                for (Object[] rowData : rData) {
+                 totsales = totsales + bsParseDouble(rowData[11].toString()); 
+                 totopen = totopen + bsParseDouble(rowData[10].toString());
+                 modeltable.addRow(rowData); 
+                 i++;
+                } 
+            }
+            tbtotopen.setText(currformatDouble(totopen));
+            tbtotsales.setText(currformatDouble(totsales));
+        }
+        rData = null;
+    }   
+     
+    public void done_getDetail() {
+      modeldetail.setNumRows(0);
          double totalsales = 0;
          double totalqty = 0;
          
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null; try {
-                
-                int i = 0;
-                String blanket = "";
-                res = st.executeQuery("select shd_id, shd_soline, shd_item, shd_custitem, shd_so, shd_po, shd_qty, shd_netprice from ship_det " +
-                        " where shd_id = " + "'" + shipper + "'" +  ";");
-                while (res.next()) {
-                    totalsales = totalsales + (res.getDouble("shd_qty") * res.getDouble("shd_netprice"));
-                    totalqty = totalqty + res.getDouble("shd_qty");
-                   modeldetail.addRow(new Object[]{ 
-                      res.getString("shd_id"), 
-                      res.getString("shd_item"),
-                      res.getString("shd_custitem"),
-                      res.getString("shd_so"),
-                      res.getString("shd_soline"), 
-                      res.getString("shd_po"),
-                      bsNumber(res.getString("shd_qty")),
-                      bsParseDouble(currformatDouble(res.getDouble("shd_netprice")))
-                   });
-                }
-               
-               tbdetsales.setText(currformatDouble(totalsales));
-               tbdetqty.setText(currformatDouble(totalqty));
-               
-                tabledetail.setModel(modeldetail);
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            }
-            bsmf.MainFrame.con.close();
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+       if (rData != null) {
+        if (rData.length > 0) {
+            for (Object[] rowData : rData) {
+                totalsales = totalsales + (bsParseDouble(rowData[6].toString()) * bsParseDouble(rowData[7].toString()));
+                totalqty = totalqty + bsParseDouble(rowData[6].toString());
+                modeldetail.addRow(rowData);
+            } 
+            tbdetsales.setText(currformatDouble(totalsales));
+            tbdetqty.setText(currformatDouble(totalqty));
         }
-
+       }
+       rData = null;
     }
-   
+    
     
     public void initvars(String[] arg) {
         tbdetqty.setText("0");
@@ -349,30 +496,17 @@ public class InvoiceBrowse extends javax.swing.JPanel {
         DateFormat dfperiod = new SimpleDateFormat("M");
         
                
-        mymodel.setNumRows(0);
+        modeltable.setNumRows(0);
         modeldetail.setNumRows(0);
         
-        tabledetail.setModel(modeldetail);
-        tabledetail.getTableHeader().setReorderingAllowed(false);
-        tabledetail.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-               
-        tablereport.setModel(mymodel);
-        tablereport.getTableHeader().setReorderingAllowed(false);
-        tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-      
-        tablereport.getColumnModel().getColumn(11).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        tablereport.getColumnModel().getColumn(11).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-      
-        tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-        tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
-        tablereport.getColumnModel().getColumn(12).setMaxWidth(100);
-        tablereport.getColumnModel().getColumn(13).setMaxWidth(100);
+        
                 //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
                     //       new ButtonEditor(new JCheckBox()));
                 
         btdetail.setEnabled(false);
         detailpanel.setVisible(false);
+        
+        executeTask(BlueSeerUtils.dbaction.init, null);
           
     }
     /**
@@ -410,6 +544,8 @@ public class InvoiceBrowse extends javax.swing.JPanel {
         dcto = new com.toedter.calendar.JDateChooser();
         tbcsv = new javax.swing.JButton();
         btprint = new javax.swing.JButton();
+        ddsite = new javax.swing.JComboBox<>();
+        jLabel9 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         tbtotsales = new javax.swing.JLabel();
@@ -523,6 +659,8 @@ public class InvoiceBrowse extends javax.swing.JPanel {
             }
         });
 
+        jLabel9.setText("Site:");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -530,10 +668,6 @@ public class InvoiceBrowse extends javax.swing.JPanel {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(114, 114, 114)
-                        .addComponent(datelabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(267, 267, 267))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel5)
@@ -558,12 +692,18 @@ public class InvoiceBrowse extends javax.swing.JPanel {
                                 .addComponent(jLabel1))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addGap(27, 27, 27)
-                                .addComponent(jLabel4)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(tbfromcust, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tbtocust, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)))
+                                .addComponent(jLabel4))))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(114, 114, 114)
+                        .addComponent(datelabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(95, 95, 95)
+                        .addComponent(jLabel9)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(tbfromcust, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
+                    .addComponent(tbtocust, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
+                    .addComponent(ddsite, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
                 .addComponent(btRun)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btdetail)
@@ -600,7 +740,11 @@ public class InvoiceBrowse extends javax.swing.JPanel {
                         .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel6))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(datelabel, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(datelabel, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel9)))
                 .addGap(13, 13, 13))
         );
 
@@ -675,7 +819,7 @@ public class InvoiceBrowse extends javax.swing.JPanel {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tablepanel, javax.swing.GroupLayout.DEFAULT_SIZE, 1191, Short.MAX_VALUE)
+                    .addComponent(tablepanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -706,120 +850,7 @@ public class InvoiceBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                String fromdate = "";
-                String todate = "";
-                mymodel.setNumRows(0);
-                 
-              //  tablereport.getColumnModel().getColumn(10).setCellRenderer(new InvoiceBrowsePanel.SomeRenderer());
-                
-                 double totsales = 0;
-                 double totopen = 0;
-                 
-            
-                // String site = ddsite.getSelectedItem().toString(); 
-                                  
-                 String shipperfrom = tbfromshipper.getText();
-                 String shipperto = tbtoshipper.getText();
-                 String custto = tbtocust.getText();
-                 String custfrom = tbfromcust.getText();
-                 String status = "";
-                
-                 
-                 if (shipperfrom.isEmpty()) {
-                     shipperfrom = "0";
-                 }
-                 if (shipperto.isEmpty()) {
-                     shipperto = "ZZZZZZZZ";
-                 }
-                 if (custfrom.isEmpty()) {
-                     custfrom = "0";
-                 }
-                 if (custto.isEmpty()) {
-                     custto = "ZZZZZZZZ";
-                 }
-                 if (dcfrom.getDate() == null) {
-                     fromdate = bsmf.MainFrame.lowdate;
-                 } else {
-                     fromdate = dfdate.format(dcfrom.getDate());
-                 }
-                 if (dcto.getDate() == null) {
-                     todate = bsmf.MainFrame.hidate;
-                 } else {
-                    todate = dfdate.format(dcto.getDate()); 
-                 }
-                
-                  res = st.executeQuery("select sh_id, ar_status, sh_cust, cm_name, sh_site, sh_shipdate, sh_confdate, ar_amt, ar_open_amt, sh_po from ship_mstr " +
-                        " inner join ar_mstr on ar_nbr = sh_id AND ar_type = 'I' " +
-                        " inner join cm_mstr on cm_code = sh_cust " +
-                        " where " +
-                        " sh_id >= " + "'" + shipperfrom + "'" + " AND " +
-                        " sh_id <= " + "'" + shipperto + "'" + " AND " +
-                        " sh_confdate >= " + "'" + fromdate + "'" + " AND " +
-                        " sh_confdate <= " + "'" + todate + "'" + " AND " +
-                        " sh_cust >= " + "'" + custfrom + "'" + " AND " +
-                        " sh_cust <= " + "'" + custto + "'" + " AND " +
-                        " sh_status = '1' " +
-                        " ;");
-                 
-                
-                       while (res.next()) {
-                           if (res.getString("ar_status").equals("c"))
-                               status = "Paid";
-                           else
-                               status = "Open";
-                         totsales = totsales + res.getDouble("ar_amt");
-                         totopen = totopen + res.getDouble("ar_open_amt");
-                         
-                         mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, BlueSeerUtils.clickbasket, 
-                                res.getString("sh_id"),
-                                res.getString("sh_po"),
-                                res.getString("sh_site"),
-                                res.getString("sh_cust"),
-                                res.getString("cm_name"),
-                                getDateDB(res.getString("sh_shipdate")),
-                                getDateDB(res.getString("sh_confdate")),
-                                status,
-                                bsParseDouble(currformatDouble(res.getDouble("ar_amt"))),
-                                bsParseDouble(currformatDouble(res.getDouble("ar_open_amt"))),
-                                BlueSeerUtils.clickprint,
-                                BlueSeerUtils.clickmail
-                            });
-                                
-                       }
-              
-                tbtotopen.setText(currformatDouble(totopen));
-                tbtotsales.setText(currformatDouble(totsales));
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
+        executeTask(BlueSeerUtils.dbaction.run, new String[]{"getInvoiceBrowseView",""});
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btdetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdetailActionPerformed
@@ -834,7 +865,8 @@ public class InvoiceBrowse extends javax.swing.JPanel {
         int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
         if ( col == 1) {
-                getdetail(tablereport.getValueAt(row, 2).toString());
+                executeTask(BlueSeerUtils.dbaction.run, new String[]{"getInvoiceBrowseDetail",tablereport.getValueAt(row, 2).toString()});
+               // getdetail(tablereport.getValueAt(row, 2).toString());
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
         }
@@ -856,7 +888,8 @@ public class InvoiceBrowse extends javax.swing.JPanel {
                // tablereport.setEnabled(false);
                 tablereport.getModel().setValueAt(BlueSeerUtils.clicklock,row,11);
                 sending = true; 
-                executeTask(tablereport.getValueAt(row, 2).toString(), row, bsNumberToUS(tablereport.getValueAt(row, 3).toString()));
+              //  executeTask(tablereport.getValueAt(row, 2).toString(), row, bsNumberToUS(tablereport.getValueAt(row, 3).toString()));
+                executeTask(BlueSeerUtils.dbaction.run, new String[]{"getInvoiceBrowseDetail",tablereport.getValueAt(row, 2).toString(), String.valueOf(row), bsNumberToUS(tablereport.getValueAt(row, 3).toString())});
             } else {
                 bsmf.MainFrame.show(x[1]);
             }
@@ -877,6 +910,48 @@ public class InvoiceBrowse extends javax.swing.JPanel {
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
         OVData.printJTableToJasper("Invoice Report", tablereport, "genericJTableL10.jasper" );
+        if (tablereport != null && modeltable.getRowCount() > 0) {
+            String[] rec;
+            String[] columnnames = new String[10];
+            List<Object[]> list = new ArrayList<>();
+            for (int j = 0; j < tablereport.getRowCount(); j++) {
+                 rec = new String[]{tablereport.getValueAt(j, 2).toString(),
+                   tablereport.getValueAt(j, 3).toString(),
+                   tablereport.getValueAt(j, 4).toString(),
+                   tablereport.getValueAt(j, 5).toString(),
+                   tablereport.getValueAt(j, 6).toString(),
+                   tablereport.getValueAt(j, 7).toString(),
+                   tablereport.getValueAt(j, 8).toString(),
+                   tablereport.getValueAt(j, 9).toString(),
+                   tablereport.getValueAt(j, 10).toString(),
+                   tablereport.getValueAt(j, 11).toString()};
+                 list.add(rec);
+             }
+            HashMap hm = new HashMap();
+            hm.put("REPORT_TITLE", "Shipper Report");
+            hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+            for (int j = 2; j < tablereport.getColumnCount() - 2; j++) {
+               hm.put("d" + (j - 2),  tablereport.getColumnName(j));
+               columnnames[j - 2] = "COLUMN_" + (j - 2);
+            }
+            JRDataSource datasource = new ListOfArrayDataSource(list, columnnames);
+            // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
+            // type = "L8C";  ...or type = genericJTableL8.jasper
+            // String jasperfile = (type.length() > 3) ? jasperfile = type  : OVData.getCodeValueByCodeKey("jasper", type)  ;
+            Path template = FileSystems.getDefault().getPath(cleanDirString(getSystemJasperDirectory()) + "genericJTableL8.jasper");
+            JasperPrint jasperPrint; 
+            try {
+             jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
+             JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+               jasperViewer.setVisible(true);
+                    jasperViewer.setTitle("Viewer");
+                    jasperViewer.setIconImage(null);
+                    jasperViewer.setFitPageZoomRatio();
+               //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
+           } catch (JRException ex) {
+               MainFrame.bslog(ex);
+           }
+        }
     }//GEN-LAST:event_btprintActionPerformed
 
 
@@ -889,6 +964,7 @@ public class InvoiceBrowse extends javax.swing.JPanel {
     private javax.swing.JLabel datelabel;
     private com.toedter.calendar.JDateChooser dcfrom;
     private com.toedter.calendar.JDateChooser dcto;
+    private javax.swing.JComboBox<String> ddsite;
     private javax.swing.JPanel detailpanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -898,6 +974,7 @@ public class InvoiceBrowse extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

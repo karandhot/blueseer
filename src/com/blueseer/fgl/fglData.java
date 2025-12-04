@@ -90,6 +90,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JTable;
+import org.json.JSONArray;
 
 /**
  *
@@ -1607,6 +1608,120 @@ public class fglData {
         MainFrame.bslog(e);
     }
         return lines;
+    }
+    
+    public static String getInvoiceBrowseView(String shipperfrom, String shipperto, String custfrom, String custto, String fromdate, String todate) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                custfrom = (custfrom.isBlank()) ? bsmf.MainFrame.lowchar : custfrom; 
+                custto = (custto.isBlank()) ? bsmf.MainFrame.hichar : custto;
+                shipperfrom = (shipperfrom.isBlank()) ? bsmf.MainFrame.lowchar : shipperfrom; 
+                shipperto = (shipperto.isBlank()) ? bsmf.MainFrame.hichar : shipperto;
+                
+                res = st.executeQuery("select sh_id, ar_status, sh_cust, cm_name, sh_site, sh_shipdate, sh_confdate, ar_amt, ar_open_amt, sh_po from ship_mstr " +
+                        " inner join ar_mstr on ar_nbr = sh_id AND ar_type = 'I' " +
+                        " inner join cm_mstr on cm_code = sh_cust " +
+                        " where " +
+                        " sh_id >= " + "'" + shipperfrom + "'" + " AND " +
+                        " sh_id <= " + "'" + shipperto + "'" + " AND " +
+                        " sh_confdate >= " + "'" + fromdate + "'" + " AND " +
+                        " sh_confdate <= " + "'" + todate + "'" + " AND " +
+                        " sh_cust >= " + "'" + custfrom + "'" + " AND " +
+                        " sh_cust <= " + "'" + custto + "'" + " AND " +
+                        " sh_status = '1' " +
+                        " ;");
+                    String status = "";
+                    while (res.next()) {
+                        if (res.getString("ar_status").equals("c"))
+                               status = "Paid";
+                           else
+                               status = "Open";
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("sh_id"));
+                        rowArray.put(res.getString("sh_po"));
+                        rowArray.put(res.getString("sh_site"));
+                        rowArray.put(res.getString("sh_cust"));
+                        rowArray.put(res.getString("cm_name"));
+                        rowArray.put(res.getString("sh_shipdate"));
+                        rowArray.put(res.getString("sh_confdate"));
+                        rowArray.put(status);
+                        rowArray.put(res.getDouble("ar_amt"));
+                        rowArray.put(res.getDouble("ar_open_amt"));
+                        rowArray.put("print");
+                        rowArray.put("mail");                        
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    public static String getInvoiceBrowseDetail(String shipper) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                res = st.executeQuery("select shd_id, shd_soline, shd_item, shd_custitem, shd_so, shd_po, shd_qty, shd_netprice from ship_det " +
+                        " where shd_id = " + "'" + shipper + "'" +  ";");
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("shd_id"));
+                        rowArray.put(res.getString("shd_item"));
+                        rowArray.put(res.getString("shd_custitem"));
+                        rowArray.put(res.getString("shd_so"));
+                        rowArray.put(res.getString("shd_soline"));
+                        rowArray.put(res.getString("shd_po"));
+                        rowArray.put(res.getDouble("shd_qty"));
+                        rowArray.put(res.getDouble("shd_netprice"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
     }
     
      
