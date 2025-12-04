@@ -3122,6 +3122,17 @@ public class BlueSeerUtils {
         }
         return x;
     }
+    
+    public static String doubleToJson(double i) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String x = "";
+        try {   
+            x = objectMapper.writeValueAsString(i);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
 
     public static Object[][] jsonToData(String jsonString) {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -3309,6 +3320,17 @@ public class BlueSeerUtils {
         int x = 0;
         try {
             x = objectMapper.readValue(jsonstring, Integer.class);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+    
+    public static double jsonToDouble(String jsonstring) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        double x = 0.00;
+        try {
+            x = objectMapper.readValue(jsonstring, Double.class);
         } catch (JsonProcessingException ex) {
             bslog(ex);
         }

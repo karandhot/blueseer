@@ -31,6 +31,7 @@ import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
 import static com.blueseer.inv.invData.getItemDataInit;
 import static com.blueseer.inv.invData.getItemMstr;
+import static com.blueseer.inv.invData.getItemQtyByWarehouseAndLocation;
 import static com.blueseer.inv.invData.getLocationListByWarehouse;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
@@ -38,6 +39,7 @@ import static com.blueseer.utl.BlueSeerUtils.HashMapStringIntegerToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import static com.blueseer.utl.BlueSeerUtils.doubleToJson;
 import static com.blueseer.utl.BlueSeerUtils.intToJson;
 import static com.blueseer.utl.OVData.getCodeMstrValueList;
 import static com.blueseer.utl.OVData.getNextNbr;
@@ -101,6 +103,13 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "getNextNbr" : 
             response.getWriter().print(intToJson(getNextNbr(request.getHeader("param1")))); 
             break;
+            
+        case "getItemQtyByWarehouseAndLocation" : 
+            response.getWriter().print(doubleToJson(getItemQtyByWarehouseAndLocation(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"))));  
+            break;    
             
         case "getTableInfo" : 
             response.getWriter().print(HashMapStringIntegerToJson(getTableInfo(new String[]{request.getHeader("param1")})));

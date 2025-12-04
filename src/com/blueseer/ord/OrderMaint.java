@@ -2224,16 +2224,19 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 dduom.getSelectedItem().toString(),
                 ddcurr.getSelectedItem().toString());
         
-        bsmf.MainFrame.show(getMessageTag(Integer.parseInt(v[1])));  
+         
         if (v[1].equals("1092")) {
+            bsmf.MainFrame.show(getMessageTag(Integer.parseInt(v[1]))); 
             qtyshipped.requestFocus();
             return false;
         }
         if (v[1].equals("1093")) {
+            bsmf.MainFrame.show(getMessageTag(Integer.parseInt(v[1]))); 
             dduom.requestFocus();
             return false;
         }
         if (v[1].equals("1094")) {
+            bsmf.MainFrame.show(getMessageTag(Integer.parseInt(v[1]))); 
             dduom.requestFocus();
             return false;
         }
@@ -3962,7 +3965,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                } else {
                    lbqtyavailable.setBackground(Color.green);
                }
-           }
+        }
     }//GEN-LAST:event_qtyshippedFocusLost
 
     private void listpriceFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_listpriceFocusLost

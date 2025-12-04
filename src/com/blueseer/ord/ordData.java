@@ -4395,7 +4395,7 @@ public class ordData {
                 && ! OVData.isValidCustPriceRecordExists(cust,item,uom,curr)) {
                 return new String[]{"0", "1094"};
         }
-        return new String[]{"1", ""}; // true
+        return new String[]{"1", "0"}; // true
     }
     
     

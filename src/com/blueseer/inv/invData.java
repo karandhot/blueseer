@@ -46,6 +46,7 @@ import static com.blueseer.utl.BlueSeerUtils.formatUSZ;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToDouble;
 import static com.blueseer.utl.BlueSeerUtils.jsonToHashMapStringString;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
@@ -4356,7 +4357,21 @@ public class invData {
     }   
 
     public static double getItemQtyByWarehouseAndLocation(String item, String site, String wh, String loc) {
-       double qty = 0;
+     if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getItemQtyByWarehouseAndLocation"});
+            list.add(new String[]{"param1",  item});
+            list.add(new String[]{"param2",  site});
+            list.add(new String[]{"param3",  wh});
+            list.add(new String[]{"param4",  loc});
+            try {
+                return jsonToDouble(sendServerPost(list, "", null, "dataServINV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0;
+            }
+        }
+     double qty = 0;
      try{
         Connection con = null;
         if (ds != null) {
