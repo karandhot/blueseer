@@ -918,13 +918,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
        setPanelComponentState(jPanelSched, false); 
        setPanelComponentState(this, false); 
        
-       
-       setComponentDefaultValues();
-       
-       if (bsmf.MainFrame.debug) {
-       System.out.println("setComponentDefaultValues: " + timediff(start));
-       }
-       
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         isLoad = false;
@@ -938,8 +931,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
         
         if (bsmf.MainFrame.debug) {
-         System.out.println("finish init: " + timediff(start));
+         System.out.println("setComponentDefaultValues: " + timediff(start));  // stop in done_Initialization
         }
+        executeTask(BlueSeerUtils.dbaction.init, null);
     }
     
     public String[] getInitialization() {
@@ -954,6 +948,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void done_Initialization() {
         setComponentDefaultValues();
+        if (bsmf.MainFrame.debug) {
+         System.out.println("finish init: " + timediff(start));
+        }
     }
 
     public String[] addRecord(String[] x) {
