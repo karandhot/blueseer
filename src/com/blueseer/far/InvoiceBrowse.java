@@ -261,14 +261,14 @@ public class InvoiceBrowse extends javax.swing.JPanel {
                     done_Initialization();
             }
             if (this.type.equals("run")) {
-                    if (this.key[0].equals("getInvoiceBrowseView")) {
+                    if (this.key != null && this.key[0].equals("getInvoiceBrowseView")) {
                       done_getInvoiceBrowseView();
                     } 
-                    if (this.key[0].equals("getInvoiceBrowseDetail")) {
+                    if (this.key != null && this.key[0].equals("getInvoiceBrowseDetail")) {
                       done_getDetail(); 
                     }
             } 
-            if (this.key[0].equals("sendInvoice")) {
+            if (this.key != null && this.key[0].equals("sendInvoice")) {
                 sending = false;
                 tablereport.getModel().setValueAt(BlueSeerUtils.clickmail,Integer.parseInt(this.key[2]),11);  
             }
@@ -491,10 +491,8 @@ public class InvoiceBrowse extends javax.swing.JPanel {
         
         
         java.util.Date now = new java.util.Date();
-        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-        DateFormat dfyear = new SimpleDateFormat("yyyy");
-        DateFormat dfperiod = new SimpleDateFormat("M");
-        
+        dcfrom.setDate(now);
+        dcto.setDate(now);
                
         modeltable.setNumRows(0);
         modeldetail.setNumRows(0);
@@ -909,7 +907,7 @@ public class InvoiceBrowse extends javax.swing.JPanel {
     }//GEN-LAST:event_tbcsvActionPerformed
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
-        OVData.printJTableToJasper("Invoice Report", tablereport, "genericJTableL10.jasper" );
+        // OVData.printJTableToJasper("Invoice Report", tablereport, "genericJTableL10.jasper" );
         if (tablereport != null && modeltable.getRowCount() > 0) {
             String[] rec;
             String[] columnnames = new String[10];
@@ -928,7 +926,7 @@ public class InvoiceBrowse extends javax.swing.JPanel {
                  list.add(rec);
              }
             HashMap hm = new HashMap();
-            hm.put("REPORT_TITLE", "Shipper Report");
+            hm.put("REPORT_TITLE", "Invoice Report");
             hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
             for (int j = 2; j < tablereport.getColumnCount() - 2; j++) {
                hm.put("d" + (j - 2),  tablereport.getColumnName(j));

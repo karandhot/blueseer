@@ -48,9 +48,11 @@ import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.jsonToDouble;
 import static com.blueseer.utl.BlueSeerUtils.jsonToHashMapStringString;
+import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.OVData;
+import static com.blueseer.utl.OVData.getPackQtyForItem;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.sql.DriverManager;
@@ -3027,10 +3029,27 @@ public class invData {
 
     }
 
-    public static String[] getItemPrice(String type, String entity, String item, String uom, String curr, String qty) {
+    public static String[] getItemPrice(String type, String partner, String item, String uom, String curr, String qty) {
 
            // type is either 'c' for customer price or 'v' for vendor price      
 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getItemPrice"});
+            list.add(new String[]{"param1", type});
+            list.add(new String[]{"param2", partner});
+            list.add(new String[]{"param3", item});
+            list.add(new String[]{"param4", uom});
+            list.add(new String[]{"param5", curr});
+            list.add(new String[]{"param6", qty});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) { 
+                bslog(ex);
+                return null;
+            }
+        } 
+           
            String[] TypeAndPrice = new String[3];   
            String Type = "none";
            String price = "0";
@@ -3052,17 +3071,17 @@ public class invData {
                     int v = 0;
                     // customer based pricing
                     if (type.equals("c")) {
-                        res = st.executeQuery("select cm_price_code from cm_mstr where cm_code = " + "'" + entity + "'" + ";");
+                        res = st.executeQuery("select cm_price_code from cm_mstr where cm_code = " + "'" + partner + "'" + ";");
                          while (res.next()) {
                            pricecode = res.getString("cm_price_code");
                         }     
                           // if there is no pricecode....it defaults to billto
                          if (! pricecode.isEmpty()) {
-                             entity = pricecode;
+                             partner = pricecode;
                          }
 
                         // check for volume pricing first
-                        res = st.executeQuery("select cpr_price from cpr_mstr where cpr_cust = " + "'" + entity + "'" + 
+                        res = st.executeQuery("select cpr_price from cpr_mstr where cpr_cust = " + "'" + partner + "'" + 
                                               " AND cpr_item = " + "'" + item + "'" +
                                               " AND cpr_uom = " + "'" + uom + "'" +
                                               " AND cpr_curr = " + "'" + curr + "'" +
@@ -3077,7 +3096,7 @@ public class invData {
                         }
                        
                        if (v == 0) { // ok now check for list price
-                        res = st.executeQuery("select cpr_price from cpr_mstr where cpr_cust = " + "'" + entity + "'" + 
+                        res = st.executeQuery("select cpr_price from cpr_mstr where cpr_cust = " + "'" + partner + "'" + 
                                               " AND cpr_item = " + "'" + item + "'" +
                                               " AND cpr_uom = " + "'" + uom + "'" +
                                               " AND cpr_curr = " + "'" + curr + "'" +
@@ -3093,16 +3112,16 @@ public class invData {
 
                     // vendor based pricing
                     if (type.equals("v")) {
-                       res = st.executeQuery("select vd_price_code from vd_mstr where vd_addr = " + "'" + entity + "'" + ";");
+                       res = st.executeQuery("select vd_price_code from vd_mstr where vd_addr = " + "'" + partner + "'" + ";");
                      while (res.next()) {
                        pricecode = res.getString("vd_price_code");
                     }     
                       // if there is no pricecode....it defaults to billto
                      if (! pricecode.isEmpty()) {
-                         entity = pricecode;
+                         partner = pricecode;
                      }
 
-                    res = st.executeQuery("select vpr_price from vpr_mstr where vpr_vend = " + "'" + entity + "'" + 
+                    res = st.executeQuery("select vpr_price from vpr_mstr where vpr_vend = " + "'" + partner + "'" + 
                                           " AND vpr_item = " + "'" + item + "'" +
                                           " AND vpr_uom = " + "'" + uom + "'" +
                                           " AND vpr_curr = " + "'" + curr + "'" +        
@@ -3132,16 +3151,16 @@ public class invData {
                 // discounts if applicable
                 if (type.equals("c")) {
                 
-                res = st.executeQuery("select cm_disc_code from cm_mstr where cm_code = " + "'" + entity + "'" + ";");
+                res = st.executeQuery("select cm_disc_code from cm_mstr where cm_code = " + "'" + partner + "'" + ";");
                 while (res.next()) {
                   disccode = res.getString("cm_disc_code");
                 }     
                  // if there is no pricecode....it defaults to billto
                 if (! disccode.isEmpty()) {
-                    entity = disccode;
+                    partner = disccode;
                 }
 
-               res = st.executeQuery("select cpr_disc from cpr_mstr where cpr_cust = " + "'" + entity + "'" + 
+               res = st.executeQuery("select cpr_disc from cpr_mstr where cpr_cust = " + "'" + partner + "'" + 
                                      " AND ( cpr_expire is null OR cpr_expire >= " + "'" + BlueSeerUtils.setDateFormat(now) + "'" + " ) " +
                                      " AND cpr_type = " + "'" + "DISCOUNT" + "'" + ";");
                int i = 0;
@@ -4414,6 +4433,32 @@ public class invData {
 
     }    
 
+    public static String[] getOrderMaintDetailEvent(String item, String site, String uom, String wh, String loc) {
+       // returns QOH, uomDesc, PackQtyPerUOM...per uom and qty events in OrderMaint
+       
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getOrderMaintDetailEvent"});
+            list.add(new String[]{"param1",  item});
+            list.add(new String[]{"param2",  site});
+            list.add(new String[]{"param3",  uom});
+            list.add(new String[]{"param4",  wh});
+            list.add(new String[]{"param5",  loc});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServINV"));  
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+       
+       double qoh = getItemQtyByWarehouseAndLocation(item, site, wh, loc);
+       String uomdesc = OVData.getUOMDesc(uom);
+       double packqty = getPackQtyForItem(item, site, uom);
+       
+       return new String[]{String.valueOf(qoh), uomdesc, String.valueOf(packqty)};
+       
+    }
     
     public static double getItemPOSDisc(String item) {
        double price = 0;

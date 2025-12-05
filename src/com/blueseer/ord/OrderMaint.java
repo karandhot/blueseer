@@ -26,6 +26,7 @@ SOFTWARE.
 package com.blueseer.ord;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.defaultDecimalSeparator;
 import static bsmf.MainFrame.ds;
@@ -83,6 +84,7 @@ import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.luModel;
 import static com.blueseer.utl.BlueSeerUtils.luTable;
 import static com.blueseer.utl.BlueSeerUtils.lual;
@@ -92,6 +94,7 @@ import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import static com.blueseer.utl.BlueSeerUtils.lurb2;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import static com.blueseer.utl.BlueSeerUtils.timediff;
 import static com.blueseer.utl.BlueSeerUtils.xZero;
@@ -110,6 +113,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -161,6 +165,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 String status = "";
                 String curr = "";
                 String basecurr = "";
+                String[] rDataDetEvent = null;
+                String[] TypeAndPriceAndDisc = new String[]{"","0", "0"};
                 boolean custitemonly = true;
                 boolean autoallocate = false;
                 boolean autoinvoice = false;
@@ -178,7 +184,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 public static cms_det cms = null;
                 public static cm_mstr cm = null;
                 public static ArrayList<String[]> someta = null;
-                public static LocalDateTime start;
+                
                 Map<Integer, ArrayList<String[]>> linetax = new HashMap<Integer, ArrayList<String[]>>();
                 ArrayList<String[]> headertax = new ArrayList<String[]>();
      
@@ -353,9 +359,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
              initvars(null);  
            }
            
-           if (bsmf.MainFrame.debug) {
-            System.out.println("done : " + timediff(start));
-           }
             
             } catch (Exception e) {
                 MainFrame.bslog(e);
@@ -369,6 +372,69 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
        z.execute(); 
        
     }
+    
+    public void eventTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+       
+          String type = "";
+          String[] key = null;
+          
+          public Task(String type, String[] key) { 
+              this.type = type;
+              this.key = key;
+          } 
+           
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+             switch(this.type) {
+                case "uomchange":
+                    getOrderMaintDetailEvent(key[0], key[1], key[2], key[3], key[4]);
+                    break; 
+                case "qtychange":
+                    getOrderMaintDetailEvent(key[0], key[1], key[2], key[3], key[4]);
+                    break;
+                case "getPrice":
+                    getPrice();
+                    break;
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            if (this.type.equals("uomchange")) {
+              done_getOrderMaintDetailEvent();  
+            } 
+            if (this.type.equals("qtychange")) {
+              done_getOrderMaintDetailEvent(); 
+            }
+            if (this.type.equals("getPrice")) {
+              done_getPrice(); 
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    } 
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
     
     public void setPanelComponentState(Object myobj, boolean b) {
         JPanel panel = null;
@@ -463,6 +529,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         
        // ArrayList<String[]> initDataSets = ordData.getSalesOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        initDataSets = ordData.getSalesOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        
         
        jTabbedPane1.removeAll();
        jTabbedPane1.add(getClassLabelTag("main", this.getClass().getSimpleName()), jPanelMain);
@@ -910,13 +978,17 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public void initvars(String[] arg) {
-       start = LocalDateTime.now();
        
        isLoad = true;
        setPanelComponentState(jPanelMain, false); 
        setPanelComponentState(jPanelLines, false); 
        setPanelComponentState(jPanelSched, false); 
+       setPanelComponentState(panelAttachment, false);
+       setPanelComponentState(panelNotes, false);
        setPanelComponentState(this, false); 
+       
+       setPanelComponentState(this, false); 
+       setComponentDefaultValues();
        
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
@@ -930,10 +1002,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             tbkey.requestFocus();
         }
         
-        if (bsmf.MainFrame.debug) {
-         System.out.println("setComponentDefaultValues: " + timediff(start));  // stop in done_Initialization
-        }
-        executeTask(BlueSeerUtils.dbaction.init, null);
+       // executeTask(BlueSeerUtils.dbaction.init, null);
     }
     
     public String[] getInitialization() {
@@ -950,9 +1019,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         isLoad = true;
         setComponentDefaultValues();
         isLoad = false;
-        if (bsmf.MainFrame.debug) {
-         System.out.println("finish init: " + timediff(start));
-        }
+        
     }
 
     public String[] addRecord(String[] x) {
@@ -1001,13 +1068,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
      }
       
     public String[] getRecord(String[] key) {
-        if (bsmf.MainFrame.debug) {
-       System.out.println("get start: " + timediff(start));
-       }
-      salesOrder z = getOrderMstrSet(key);
-      if (bsmf.MainFrame.debug) {
-       System.out.println("get after: " + timediff(start));
-       }
+       salesOrder z = getOrderMstrSet(key);
+     
       so = z.so();
       sodlist = z.sod();
       soslist = z.sos();
@@ -1021,9 +1083,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
       }
       
       getAttachments(key[0]);
-      if (bsmf.MainFrame.debug) {
-       System.out.println("get return: " + timediff(start));
-       }
+     
       return z.m();
     }
     
@@ -1474,9 +1534,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public void updateForm() throws ParseException {
-        if (bsmf.MainFrame.debug) {
-          System.out.println("update start: " + timediff(start));
-        }
+        
         boolean canInvoice = true;
         
         isLoad = true; 
@@ -1526,9 +1584,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         cbblanket.setSelected(false);
         cbblanket.setEnabled(false);
         } 
-        if (bsmf.MainFrame.debug) {
-          System.out.println("update header: " + timediff(start));
-        }
+       
         // now detail
         myorddetmodel.setRowCount(0);
         for (sod_det sod : sodlist) {
@@ -1558,9 +1614,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                         canInvoice = false;
                     }
                 }
-        if (bsmf.MainFrame.debug) {
-          System.out.println("update detail: " + timediff(start));
-        }
+        
         // summary charges and discounts
         if (soslist != null) {
         for (sos_det sos : soslist) {
@@ -1594,9 +1648,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         }
         
-        if (bsmf.MainFrame.debug) {
-          System.out.println("update sac: " + timediff(start));
-        }
+        
         
         // line tax
         linetax.clear();
@@ -1611,9 +1663,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
         }
         
-        if (bsmf.MainFrame.debug) {
-          System.out.println("update linetax: " + timediff(start));
-        }
+        
         
         // header tax
         /* done by ddtax change event when ddtax is assigned above
@@ -1623,9 +1673,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         setAction(so.m()); 
         
-        if (bsmf.MainFrame.debug) {
-          System.out.println("update setAction: " + timediff(start));
-        }
+       
         
         
         btinvoice.setEnabled(canInvoice);
@@ -1637,9 +1685,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         isLoad = false;
         
-        if (bsmf.MainFrame.debug) {
-          System.out.println("update done: " + timediff(start));
-        }
+        
     }
    
     public void getAttachments(String id) {
@@ -1990,8 +2036,31 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
     }
     
+    public void getOrderMaintDetailEvent(String item, String site, String uom, String wh, String loc) {
+      rDataDetEvent = invData.getOrderMaintDetailEvent(item, site, uom, wh, loc);  
+       
+    }
     
-    public void setPrice() {
+    public void done_getOrderMaintDetailEvent() {
+       if (rDataDetEvent != null) { // rDataDetEvent array = qoh, uomdesc, packqty
+               if (bsParseDouble(qtyshipped.getText()) > bsParseDouble(rDataDetEvent[0])) {
+                   lbqtyavailable.setBackground(Color.red);
+               } else {
+                   lbqtyavailable.setBackground(Color.green);
+               }
+               
+               tbpackqty.setText(rDataDetEvent[2]);
+               lbuomtext.setText(rDataDetEvent[1]);
+       }
+        
+    }
+    
+    public void getPrice() {
+        TypeAndPriceAndDisc = invData.getItemPrice("c", ddcust.getSelectedItem().toString(), tbitem.getText(), 
+                        dduom.getSelectedItem().toString(), ddcurr.getSelectedItem().toString(), qtyshipped.getText());
+    }
+    
+    public void done_getPrice() {
         
         // save current price if this is a line item update
         String cur_listprice = listprice.getText();
@@ -2004,13 +2073,11 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         String pricetype = "";
         double price = 0.00;
         double disc = 0;
-        String[] TypeAndPriceAndDisc = new String[]{"","0", "0"};
-        if (dduom.getItemCount() > 0 && ! tbitem.getText().isBlank() && ddcust.getItemCount() > 0) {
-                TypeAndPriceAndDisc = invData.getItemPrice("c", ddcust.getSelectedItem().toString(), tbitem.getText(), 
-                        dduom.getSelectedItem().toString(), ddcurr.getSelectedItem().toString(), qtyshipped.getText());
-        }     
-                if (TypeAndPriceAndDisc[0] != null)
+        
+             
+                if (TypeAndPriceAndDisc[0] != null) {
                 pricetype = TypeAndPriceAndDisc[0];
+                }
                 
                 if (TypeAndPriceAndDisc[1] != null) {
                     price = bsParseDouble(TypeAndPriceAndDisc[1]);
@@ -2215,6 +2282,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             tbitem.requestFocus();
             return false;
         }
+        
+        
         
         String[] v = ordData.validateOrderDetail(tbkey.getText(),  // returns boolean, tagnbr
                 ddcust.getSelectedItem().toString(), 
@@ -3877,9 +3946,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         if (! isLoad && ddcust.getItemCount() > 0) {
            custChangeEvent(ddcust.getSelectedItem().toString());
-           if (bsmf.MainFrame.debug) {
-            System.out.println("ddcust fired: " + timediff(start));
-           }
+          
         } // if ddcust has a list
         
     }//GEN-LAST:event_ddcustActionPerformed
@@ -3955,16 +4022,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         } else {
             qtyshipped.setText(x);
             qtyshipped.setBackground(Color.white);
-            setPrice();
-        }
-        
-       
-        if (! tbitem.getText().isBlank() && ! qtyshipped.getText().isEmpty()) {
-               if (bsParseDouble(qtyshipped.getText()) > invData.getItemQtyByWarehouseAndLocation(tbitem.getText(), ddsite.getSelectedItem().toString(), ddwh.getSelectedItem().toString(), ddloc.getSelectedItem().toString())) {
-                   lbqtyavailable.setBackground(Color.red);
-               } else {
-                   lbqtyavailable.setBackground(Color.green);
-               }
+            //setPrice();
+            eventTask("getPrice", new String[]{});
         }
     }//GEN-LAST:event_qtyshippedFocusLost
 
@@ -4023,9 +4082,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void ddwhActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddwhActionPerformed
         if (! isLoad && ddwh.getSelectedItem() != null) {
-            if (bsmf.MainFrame.debug) {
-            System.out.println("ddwh fired: " + timediff(start));
-           }
+           
              ddloc.removeAllItems();
              ArrayList<String> loc = invData.getLocationListByWarehouse(ddwh.getSelectedItem().toString());
              for (String lc : loc) {
@@ -4038,12 +4095,12 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void dduomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dduomActionPerformed
         if (! isLoad) {
-             setPrice();
-             tbpackqty.setText(String.valueOf(getPackQtyForItem(tbitem.getText(), ddsite.getSelectedItem().toString(), dduom.getSelectedItem().toString())));
-             lbuomtext.setText(OVData.getUOMDesc(dduom.getSelectedItem().toString()));
-             if (bsmf.MainFrame.debug) {
-             System.out.println("dduom fired: " + timediff(start));
-             }
+            eventTask("uomchange", new String[]{tbitem.getText(), ddsite.getSelectedItem().toString(), dduom.getSelectedItem().toString(), ddwh.getSelectedItem().toString(), ddloc.getSelectedItem().toString()});
+            
+            if (dduom.getItemCount() > 0 && ! tbitem.getText().isBlank() && ddcust.getItemCount() > 0) {
+                eventTask("getPrice", new String[]{});
+            } 
+            //setPrice();
         }    
     }//GEN-LAST:event_dduomActionPerformed
 
@@ -4070,9 +4127,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                    lbqtyavailable.setBackground(Color.green);
                }
            }
-           if (bsmf.MainFrame.debug) {
-            System.out.println("ddloc fired: " + timediff(start));
-           }
+          
            
        }
     }//GEN-LAST:event_ddlocActionPerformed
@@ -4196,9 +4251,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             for (String[] t : headertax) {
             sacmodel.addRow(new Object[]{ "tax", t[0], "percent", t[1]});
             }
-            if (bsmf.MainFrame.debug) {
-            System.out.println("ddtax fired: " + timediff(start));
-           }
+            
         }
     }//GEN-LAST:event_ddtaxActionPerformed
 
@@ -4307,9 +4360,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private void ddsiteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddsiteActionPerformed
             if (! isLoad) {
            
-            if (bsmf.MainFrame.debug) {
-            System.out.println("ddsite fired: " + timediff(start));
-           }
             }
     }//GEN-LAST:event_ddsiteActionPerformed
 

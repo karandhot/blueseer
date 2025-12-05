@@ -31,12 +31,15 @@ import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
 import static com.blueseer.inv.invData.getItemDataInit;
 import static com.blueseer.inv.invData.getItemMstr;
+import static com.blueseer.inv.invData.getItemPrice;
 import static com.blueseer.inv.invData.getItemQtyByWarehouseAndLocation;
 import static com.blueseer.inv.invData.getLocationListByWarehouse;
+import static com.blueseer.inv.invData.getOrderMaintDetailEvent;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringIntegerToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringStringToJson;
+import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.doubleToJson;
@@ -121,6 +124,25 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                 request.getHeader("param2"),
                 request.getHeader("param3"),
                 request.getHeader("param4"))));
+            break;  
+            
+        case "getItemPrice" : 
+            response.getWriter().print(arrayToJson(getItemPrice(
+                request.getHeader("param1"),
+                request.getHeader("param2"),
+                request.getHeader("param3"),
+                request.getHeader("param4"),
+                request.getHeader("param5"),
+                request.getHeader("param6"))));
+            break;
+            
+        case "getOrderMaintDetailEvent" : 
+            response.getWriter().print(arrayToJson(getOrderMaintDetailEvent(
+                request.getHeader("param1"),
+                request.getHeader("param2"),
+                request.getHeader("param3"),
+                request.getHeader("param4"),
+                request.getHeader("param5"))));
             break;    
             
         case "getItemMstr" :        
