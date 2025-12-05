@@ -37,8 +37,10 @@ import static com.blueseer.utl.BlueSeerUtils.doubleToJson;
 import static com.blueseer.utl.BlueSeerUtils.intToJson;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.getCodeMstrValueList;
+import static com.blueseer.utl.OVData.getExchangeRate;
 import static com.blueseer.utl.OVData.getNextNbr;
 import static com.blueseer.utl.OVData.getSysMetaData;
+import static com.blueseer.utl.OVData.getSysMetaValue;
 import static com.blueseer.utl.OVData.getTableInfo;
 import static com.blueseer.utl.OVData.getTaxAmtApplicableByItem;
 import static com.blueseer.utl.OVData.getTaxPercentElementsApplicableByItem;
@@ -193,6 +195,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getSysMetaData" :        
             response.getWriter().print(ArrayListStringToJson(getSysMetaData(request.getHeader("param1"),request.getHeader("param2"),request.getHeader("param3"))));
+            break; 
+            
+        case "getSysMetaValue" :        
+            response.getWriter().print(getSysMetaValue(request.getHeader("param1"),request.getHeader("param2"),request.getHeader("param3")));
+            break; 
+            
+        case "getExchangeRate" :        
+            response.getWriter().print(getExchangeRate(request.getHeader("param1"),request.getHeader("param2")));
             break;    
             
         case "getNextNbr" : 

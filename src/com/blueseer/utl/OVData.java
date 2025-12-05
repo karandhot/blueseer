@@ -9370,9 +9370,22 @@ public class OVData {
     }
     
     
-    public static String getExchangeRate(String base, String foreign) {
-   String myitem = "";
- try{
+public static String getExchangeRate(String base, String foreign) {
+   if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getExchangeRate"});
+            list.add(new String[]{"param1", base});
+            list.add(new String[]{"param2", foreign});
+            try {
+                return sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        } 
+    
+    String myitem = "";
+   try{
 
   Connection con = null;
             if (ds != null) {
@@ -21884,7 +21897,21 @@ return mylist;
 
     
     public static String getSysMetaValue(String id, String type, String key) {
-         String x = "";
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getSysMetaValue"});
+            list.add(new String[]{"param1", id});
+            list.add(new String[]{"param2", type});
+            list.add(new String[]{"param3", key});
+            try {
+                return sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        } 
+        
+        String x = "";
          try{
             
             Connection con = null;

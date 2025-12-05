@@ -4146,6 +4146,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private void ddwhActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddwhActionPerformed
         if (! isLoad && ddwh.getSelectedItem() != null) {
            
+             isLoad = true;
              ddloc.removeAllItems();
              ArrayList<String> loc = invData.getLocationListByWarehouse(ddwh.getSelectedItem().toString());
              for (String lc : loc) {
@@ -4153,6 +4154,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
              }
              ddloc.insertItemAt("", 0);
              ddloc.setSelectedIndex(0);
+             isLoad = false;
+             
         }
     }//GEN-LAST:event_ddwhActionPerformed
 
