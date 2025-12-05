@@ -24,6 +24,7 @@
 	<parameter name="bill_csz" class="java.lang.String"/>
 	<parameter name="ship_csz" class="java.lang.String"/>
 	<parameter name="curr" class="java.lang.String"/>
+	<parameter name="sacdatasource" class="ArrayList&lt;Object[]&gt;"/>
 	<queryString>
 		<![CDATA[select shd_id, sh_curr, it_desc, cm_terms, sh_trailer,
 (select case when sum(shs_amt) is null then 0 else sum(shs_amt) end 
@@ -476,7 +477,7 @@ where shd_id =  $P{myid}]]>
 				<subreportParameter name="curr">
 					<subreportParameterExpression><![CDATA[$F{sh_curr}]]></subreportParameterExpression>
 				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{sacdatasource})]]></dataSourceExpression>
 				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "sac.jasper"]]></subreportExpression>
 			</subreport>
 			<textField>
