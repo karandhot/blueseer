@@ -2119,8 +2119,11 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public void getPrice() {
-        TypeAndPriceAndDisc = invData.getItemPrice("c", ddcust.getSelectedItem().toString(), tbitem.getText(), 
-                        dduom.getSelectedItem().toString(), ddcurr.getSelectedItem().toString(), qtyshipped.getText());
+          String cust = (ddcust.getSelectedItem() == null) ? "" : ddcust.getSelectedItem().toString();
+          String curr = (ddcurr.getSelectedItem() == null) ? "" : ddcurr.getSelectedItem().toString();
+          String uom = (dduom.getSelectedItem() == null) ? "" : dduom.getSelectedItem().toString();
+        TypeAndPriceAndDisc = invData.getItemPrice("c", cust, tbitem.getText(), 
+                        uom, curr, qtyshipped.getText());
     }
     
     public void done_getPrice() {
@@ -4161,7 +4164,11 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void dduomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dduomActionPerformed
         if (! isLoad) {
-            eventTask("uomchange", new String[]{tbitem.getText(), ddsite.getSelectedItem().toString(), dduom.getSelectedItem().toString(), ddwh.getSelectedItem().toString(), ddloc.getSelectedItem().toString(), tbkey.getText()});
+          String loc = (ddloc.getSelectedItem() == null) ? "" : ddloc.getSelectedItem().toString();
+          String wh = (ddwh.getSelectedItem() == null) ? "" : ddwh.getSelectedItem().toString();
+          String uom = (dduom.getSelectedItem() == null) ? "" : dduom.getSelectedItem().toString();
+          String site = (ddsite.getSelectedItem() == null) ? "" : ddsite.getSelectedItem().toString();
+            eventTask("uomchange", new String[]{tbitem.getText(), site, uom, wh, loc, tbkey.getText()});
             
             if (dduom.getItemCount() > 0 && ! tbitem.getText().isBlank() && ddcust.getItemCount() > 0) {
                 eventTask("getPrice", new String[]{});
@@ -4173,7 +4180,11 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private void ddlocActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddlocActionPerformed
        
         if (! isLoad) {
-          eventTask("locchange", new String[]{tbitem.getText(), ddsite.getSelectedItem().toString(), dduom.getSelectedItem().toString(), ddwh.getSelectedItem().toString(), ddloc.getSelectedItem().toString(), tbkey.getText()});
+          String loc = (ddloc.getSelectedItem() == null) ? "" : ddloc.getSelectedItem().toString();
+          String wh = (ddwh.getSelectedItem() == null) ? "" : ddwh.getSelectedItem().toString();
+          String uom = (dduom.getSelectedItem() == null) ? "" : dduom.getSelectedItem().toString();
+          String site = (ddsite.getSelectedItem() == null) ? "" : ddsite.getSelectedItem().toString();
+          eventTask("locchange", new String[]{tbitem.getText(), site, uom, wh, loc, tbkey.getText()});
         }
         
     }//GEN-LAST:event_ddlocActionPerformed
