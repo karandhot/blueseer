@@ -29,6 +29,7 @@ package com.blueseer.srv;
 import com.blueseer.adm.admData;
 import com.blueseer.shp.shpData;
 import static com.blueseer.shp.shpData.getShipperMstrSet;
+import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
@@ -162,7 +163,13 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getShipperPrintData" :
             response.getWriter().print(shpData.getShipperPrintData(request.getHeader("param1")));  
-            break;    
+            break;
+            
+        case "getInvoicePrintData" :
+            response.getWriter().print(shpData.getInvoicePrintData(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3")));    
+            break;     
             
         default:
         response.getWriter().print("no switch case exists in dataServADM for id: " + id);
