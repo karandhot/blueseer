@@ -4445,7 +4445,7 @@ public class invData {
 
     }    
 
-    public static String[] getOrderMaintDetailEvent(String item, String site, String uom, String wh, String loc) {
+    public static String[] getOrderMaintDetailEvent(String item, String site, String uom, String wh, String loc, String key) {
        // returns QOH, uomDesc, PackQtyPerUOM...per uom and qty events in OrderMaint
        
        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
@@ -4456,6 +4456,7 @@ public class invData {
             list.add(new String[]{"param3",  uom});
             list.add(new String[]{"param4",  wh});
             list.add(new String[]{"param5",  loc});
+            list.add(new String[]{"param6",  key});
             try {
                 return jsonToStringArray(sendServerPost(list, "", null, "dataServINV"));  
             } catch (IOException ex) {
@@ -4467,8 +4468,9 @@ public class invData {
        double qoh = getItemQtyByWarehouseAndLocation(item, site, wh, loc);
        String uomdesc = OVData.getUOMDesc(uom);
        double packqty = getPackQtyForItem(item, site, uom);
+       double qualloc = getItemQOHUnallocated(item, site, key);
        
-       return new String[]{String.valueOf(qoh), uomdesc, String.valueOf(packqty)};
+       return new String[]{String.valueOf(qoh), uomdesc, String.valueOf(packqty), String.valueOf(qualloc)};
        
     }
     
@@ -4708,7 +4710,7 @@ public class invData {
 
     public static ArrayList<String[]> getBOMsByItemSite(String item) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
-            ArrayList<String[]> list = new ArrayList<String[]>();
+            ArrayList<String[]> list = new ArrayList<>();
             list.add(new String[]{"id", "getBOMsByItemSite"});
             list.add(new String[]{"param1",  item});
             try {

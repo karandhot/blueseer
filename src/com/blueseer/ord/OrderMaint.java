@@ -394,10 +394,10 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             
              switch(this.type) {
                 case "uomchange":
-                    getOrderMaintDetailEvent(key[0], key[1], key[2], key[3], key[4]);
+                    getOrderMaintDetailEvent(key[0], key[1], key[2], key[3], key[4], key[5]);
                     break; 
                 case "qtychange":
-                    getOrderMaintDetailEvent(key[0], key[1], key[2], key[3], key[4]);
+                    getOrderMaintDetailEvent(key[0], key[1], key[2], key[3], key[4], key[5]);
                     break;
                 case "getPrice":
                     getPrice();
@@ -415,10 +415,13 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             String[] message = get();
            
             if (this.type.equals("uomchange")) {
-              done_getOrderMaintDetailEvent();  
+              done_uomchange();  
             } 
             if (this.type.equals("qtychange")) {
-              done_getOrderMaintDetailEvent(); 
+              done_qtychange(); 
+            }
+            if (this.type.equals("locchange")) {
+              done_locchange(); 
             }
             if (this.type.equals("getPrice")) {
               done_getPrice(); 
@@ -2047,23 +2050,72 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
     }
     
-    public void getOrderMaintDetailEvent(String item, String site, String uom, String wh, String loc) {
-      rDataDetEvent = invData.getOrderMaintDetailEvent(item, site, uom, wh, loc);  
-       
+    public void getOrderMaintDetailEvent(String item, String site, String uom, String wh, String loc, String key) {
+      rDataDetEvent = invData.getOrderMaintDetailEvent(item, site, uom, wh, loc, key); 
     }
     
     public void done_getOrderMaintDetailEvent() {
-       if (rDataDetEvent != null) { // rDataDetEvent array = qoh, uomdesc, packqty
-               if (bsParseDouble(qtyshipped.getText()) > bsParseDouble(rDataDetEvent[0])) {
-                   lbqtyavailable.setBackground(Color.red);
-               } else {
-                   lbqtyavailable.setBackground(Color.green);
-               }
+       
                
-               tbpackqty.setText(rDataDetEvent[2]);
-               lbuomtext.setText(rDataDetEvent[1]);
-       }
+               
+               
+               
+               
+               
+       
         
+    }
+    
+    public void done_uomchange() {
+        // uom
+        if (rDataDetEvent != null) { // rDataDetEvent array = qoh, uomdesc, packqty, qtyunalloc
+           if (bsParseDouble(qtyshipped.getText()) > bsParseDouble(rDataDetEvent[0])) {
+               lbqtyavailable.setBackground(Color.red);
+           } else {
+               lbqtyavailable.setBackground(Color.green);
+           }
+
+           tbpackqty.setText(rDataDetEvent[2]);
+           lbuomtext.setText(rDataDetEvent[1]);
+        }
+    }
+    
+    public void done_qtychange() {
+        if (rDataDetEvent != null) { // rDataDetEvent array = qoh, uomdesc, packqty, qtyunalloc
+           if (bsParseDouble(qtyshipped.getText()) > bsParseDouble(rDataDetEvent[0])) {
+               lbqtyavailable.setBackground(Color.red);
+           } else {
+               lbqtyavailable.setBackground(Color.green);
+           }
+
+           tbpackqty.setText(rDataDetEvent[2]);
+           lbuomtext.setText(rDataDetEvent[1]);
+        }
+    }
+    
+    public void done_locchange() {
+       // loc
+       if (rDataDetEvent != null) { // rDataDetEvent array = qoh, uomdesc, packqty, qtyunalloc
+        String prefix;
+        double qtycheck;
+        if (cbisallocated.isSelected()) {
+          prefix = "QOH Unallocated=";
+          qtycheck = bsParseDouble(rDataDetEvent[3]);
+
+         } else {
+          prefix = "QOH Available=";
+          qtycheck = bsParseDouble(rDataDetEvent[0]);
+         }
+
+         lbqtyavailable.setText(prefix + String.valueOf(qtycheck));
+         if (! qtyshipped.getText().isEmpty()) {
+             if (bsParseDouble(qtyshipped.getText()) > qtycheck || qtycheck == 0 ) {
+                 lbqtyavailable.setBackground(Color.red);
+             } else {
+                 lbqtyavailable.setBackground(Color.green);
+             }
+         } 
+       }
     }
     
     public void getPrice() {
@@ -4106,7 +4158,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void dduomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dduomActionPerformed
         if (! isLoad) {
-            eventTask("uomchange", new String[]{tbitem.getText(), ddsite.getSelectedItem().toString(), dduom.getSelectedItem().toString(), ddwh.getSelectedItem().toString(), ddloc.getSelectedItem().toString()});
+            eventTask("uomchange", new String[]{tbitem.getText(), ddsite.getSelectedItem().toString(), dduom.getSelectedItem().toString(), ddwh.getSelectedItem().toString(), ddloc.getSelectedItem().toString(), tbkey.getText()});
             
             if (dduom.getItemCount() > 0 && ! tbitem.getText().isBlank() && ddcust.getItemCount() > 0) {
                 eventTask("getPrice", new String[]{});
@@ -4116,31 +4168,11 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_dduomActionPerformed
 
     private void ddlocActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddlocActionPerformed
-       if (ddwh.getSelectedItem() != null && ddloc.getSelectedItem() != null && ! tbitem.getText().isBlank() && ! isLoad) {
-           
-           double qty = 0.0;
-           String prefix = "";
-           if (cbisallocated.isSelected()) {
-               prefix = "QOH Unallocated=";
-           qty = invData.getItemQOHUnallocated(tbitem.getText(), ddsite.getSelectedItem().toString(), tbkey.getText());
-           
-           } else {
-            prefix = "QOH Available=";
-           qty = invData.getItemQtyByWarehouseAndLocation(tbitem.getText(), ddsite.getSelectedItem().toString(), ddwh.getSelectedItem().toString(), ddloc.getSelectedItem().toString());
-          
-           }
-           String sqty = String.valueOf(qty);
-           lbqtyavailable.setText(prefix + sqty);
-           if (! qtyshipped.getText().isEmpty()) {
-               if (bsParseDouble(qtyshipped.getText()) > qty || qty == 0 ) {
-                   lbqtyavailable.setBackground(Color.red);
-               } else {
-                   lbqtyavailable.setBackground(Color.green);
-               }
-           }
-          
-           
-       }
+       
+        if (! isLoad) {
+          eventTask("locchange", new String[]{tbitem.getText(), ddsite.getSelectedItem().toString(), dduom.getSelectedItem().toString(), ddwh.getSelectedItem().toString(), ddloc.getSelectedItem().toString(), tbkey.getText()});
+        }
+        
     }//GEN-LAST:event_ddlocActionPerformed
 
     private void btsacdeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btsacdeleteActionPerformed
@@ -4215,11 +4247,17 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         ddbom.removeAllItems();
         ddbom.insertItemAt("", 0);
-        ArrayList<String[]> boms = invData.getBOMsByItemSite(tbitem.getText());
+        String primary = "";
+        ArrayList<String[]> boms = invData.getBOMsByItemSite_mg(tbitem.getText());
         for (String[] wh : boms) {
-            ddbom.addItem(wh[0]);
+            if (wh[0].equals("boms")) {
+            ddbom.addItem(wh[1]);
+            }
+            if (wh[0].equals("bomprimary")) {
+             primary = wh[1];
+            }
         }
-        ddbom.setSelectedItem(OVData.getDefaultBomID(tbitem.getText()));
+        ddbom.setSelectedItem(primary);
         
         
         if(orddet.getModel().getValueAt(row, 17).toString().isBlank()) {
