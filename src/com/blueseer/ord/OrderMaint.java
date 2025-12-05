@@ -529,16 +529,16 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         
        // ArrayList<String[]> initDataSets = ordData.getSalesOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
-        initDataSets = ordData.getSalesOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
+       // initDataSets = ordData.getSalesOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
         
-        
+        /*
        jTabbedPane1.removeAll();
        jTabbedPane1.add(getClassLabelTag("main", this.getClass().getSimpleName()), jPanelMain);
        jTabbedPane1.add(getClassLabelTag("lines", this.getClass().getSimpleName()), jPanelLines);
        jTabbedPane1.add(getClassLabelTag("summary", this.getClass().getSimpleName()), jPanelSched);
        jTabbedPane1.add(getClassLabelTag("attachments", this.getClass().getSimpleName()), panelAttachment);
        jTabbedPane1.add(getClassLabelTag("notes", this.getClass().getSimpleName()), panelNotes);
-        
+        */
         
        // jTabbedPane1.setEnabledAt(1, false);
         //jTabbedPane1.setEnabledAt(2, false);
@@ -980,19 +980,30 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void initvars(String[] arg) {
        
        isLoad = true;
+       /*
        setPanelComponentState(jPanelMain, false); 
        setPanelComponentState(jPanelLines, false); 
        setPanelComponentState(jPanelSched, false); 
        setPanelComponentState(panelAttachment, false);
        setPanelComponentState(panelNotes, false);
+       */
+       
+       
+       jTabbedPane1.removeAll();
+       jTabbedPane1.add(getClassLabelTag("main", this.getClass().getSimpleName()), jPanelMain);
+       jTabbedPane1.add(getClassLabelTag("lines", this.getClass().getSimpleName()), jPanelLines);
+       jTabbedPane1.add(getClassLabelTag("summary", this.getClass().getSimpleName()), jPanelSched);
+       jTabbedPane1.add(getClassLabelTag("attachments", this.getClass().getSimpleName()), panelAttachment);
+       jTabbedPane1.add(getClassLabelTag("notes", this.getClass().getSimpleName()), panelNotes);
        setPanelComponentState(this, false); 
        
-       setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+      // setComponentDefaultValues();
        
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
-       isLoad = false;
+        
+        executeTask(BlueSeerUtils.dbaction.init, null);
+        isLoad = false;
         
         if (arg != null && arg.length > 0) {
             executeTask(dbaction.get, arg);
@@ -1002,7 +1013,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             tbkey.requestFocus();
         }
         
-       // executeTask(BlueSeerUtils.dbaction.init, null);
+       
     }
     
     public String[] getInitialization() {
