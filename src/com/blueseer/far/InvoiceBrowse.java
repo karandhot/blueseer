@@ -875,7 +875,8 @@ public class InvoiceBrowse extends javax.swing.JPanel {
                reinitpanels(mypanel, true, args);
         }
         if (col == 12) {
-            OVData.printInvoice(tablereport.getValueAt(row, 2).toString(), true); 
+            OVData.printInvoiceRemote(tablereport.getValueAt(row, 2).toString(), "shipper", true);
+           // OVData.printInvoice(tablereport.getValueAt(row, 2).toString(), true); 
         }
         if (col == 13) {
             if (sending) {

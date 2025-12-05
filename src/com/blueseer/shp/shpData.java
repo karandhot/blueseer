@@ -1729,14 +1729,21 @@ public class shpData {
                         " where shd_so = " + "'" + key + "'"  +
                                 ";");
                 } else {
-                    res = st.executeQuery("select shd_id, it_desc, sh_cust, sh_cust, sh_rmks, shd_po, " +
+                    res = st.executeQuery("select " +
+                        " (select case when sum(shs_amt) is null then 0 else sum(shs_amt) end from shs_det " +
+                        " where shs_nbr = shd_id and shs_amttype = 'amount' and shs_type <> 'tax' and shs_type <> 'passive' " +
+                        " and shs_type <> 'shipping Bil' and shs_type <> 'shipping PPD' ) as charges, " +
+                        " (select case when sum(shs_amt) is null then 0 else sum(shs_amt) end from shs_det " +
+                        " where shs_nbr = shd_id and shs_amttype = 'amount' and shs_type = 'tax' ) as taxes, " +
+                        " shd_id, it_desc, sh_cust, sh_cust, sh_rmks, shd_po, " +
                         " shd_item, shd_custitem, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, " +
                         " cms_name, cms_line1, site_desc, site_line1, sh_boxes, sh_pallets, sh_shipvia, " +
                         " cm_terms, sh_ref, sh_bol, shd_serial, shd_cont, sh_trailer, " +
                         " cm_city, cm_state, cm_zip, cm_country, cms_city, cms_state, cms_zip, cms_country, " +
                         " site_city, site_state, site_zip, site_country, site_site, " +
                         " cm_logo, site_logo, ov_image_directory, cm_iv_jasper, site_iv_jasper, ov_jasper_directory, " +
-                        " sh_type, ifNull(cfod_date,'') as cfod_date, ifNull(cfo_mileage, '0') as cfo_mileage, ifNull(cfo_weight, '0') as cfo_weight, sh_so, sh_curr " +
+                        " sh_type, ifNull(cfod_date,'') as cfod_date, ifNull(cfo_mileage, '0') as cfo_mileage, ifNull(cfo_weight, '0') as cfo_weight, sh_so, sh_curr, " +
+                        " shd_taxamt, shd_taxpercent, shd_uom, sh_confdate, ar_duedate, shd_listprice, cms_line2 " +
                         " from ship_det " +
                         " left outer join item_mstr on it_item = shd_item " + 
                         " inner join ship_mstr on sh_id = shd_id " +
@@ -1751,8 +1758,12 @@ public class shpData {
                                 ";");
                 }
                     
-                 
+                    String shipper = "";
+                    int i = 0;
                     while (res.next()) {
+                        if (i == 0) {
+                         shipper = res.getString("shd_id");
+                        }
                         JSONArray rowArray = new JSONArray(); 
                         rowArray.put(res.getString("shd_id")); 
                         rowArray.put(res.getString("it_desc"));
@@ -1815,7 +1826,28 @@ public class shpData {
                         rowArray.put(res.getDouble("shd_listprice"));
                         rowArray.put(res.getString("cms_line2"));
                         jsonarray.put(rowArray);
+                        i++;
                     }
+                
+              // get SAC
+              if (i > 0) {
+              res = st.executeQuery("select shs_desc, " +
+                      " case when shs_amttype = 'percent' and shs_type <> 'tax' then (myamt * -1 * (shs_amt / 100.0)) " +
+                      " when shs_amttype = 'percent' and shs_type = 'tax' then (myamt * (shs_amt / 100.0)) " +
+                      " else shs_amt end as 'amt' " +
+                      " from shs_det, (select shd_id, sum(shd_qty * shd_listprice) as 'myamt' from ship_det group by shd_id) sub " +
+                      " where sub.shd_id = shs_nbr and shs_nbr = " + "'" + shipper + "'");
+              while (res.next()) {
+                  JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("sacarray");
+                        rowArray.put(res.getString("shs_desc")); 
+                        rowArray.put(res.getString("amt"));
+                        jsonarray.put(rowArray);
+              }
+              
+              
+              }
+                    
            }
             catch (SQLException s){
                  MainFrame.bslog(s);

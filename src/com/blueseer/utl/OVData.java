@@ -17333,9 +17333,13 @@ return mystring;
         String miles = "";
         String order = "";
         String currency = "";
-        
+        ArrayList<Object[]> saclist = new ArrayList<>();
         int k = 0;
         for (Object[] rowData : rData) {
+            if (rowData[0].toString().equals("sacarray")) {
+                saclist.add(new Object[]{rowData[1], bsParseDouble(rowData[2].toString())});
+                continue;
+            }
             if (k == 0) {
                 invoice = rowData[0].toString();
                 cust = rowData[2].toString();
@@ -17379,30 +17383,32 @@ return mystring;
                         "sh_type,cfod_date,cfo_mileage,cfo_weight,sh_so,sh_curr," +
                         "shd_taxamt,shd_taxpercent,shd_uom,sh_confdate,ar_duedate,charges,taxes,shd_listprice,cms_line2";
         String[] columnnamesarray = columnnames.split(",", -1);
-        ArrayList<Object[]> saclist = new ArrayList<>();
-        saclist.add(new Object[]{"test", 55});
-        JRDataSource sacds = new ListOfArrayDataSource(saclist, new String[]{"shs_desc", "amt"});
-                
-               Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
-        HashMap hm = new HashMap();
-                hm.put("REPORT_TITLE", "INVOICE");
-                hm.put("myid",  invoice);
-                if (shtype.equals("F")) {
-                   hm.put("myfreightnbr", order); 
-                   hm.put("linecount", k);
-                   hm.put("deliverydate", deliverydate);
-                   hm.put("miles", miles);
-                   hm.put("weight", weight);
-                }
-                hm.put("site_csz", site_csz);
-                hm.put("bill_csz", bill_csz);
-                hm.put("ship_csz", ship_csz);
-                hm.put("imagepath", imagepath.toString());
-                hm.put("REPORT_LOCALE", BlueSeerUtils.getCurrencyLocale(currency));
-                hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
-                hm.put("sacdatasource", sacds);
-       
+        
         JRDataSource datasource = new ListOfArrayDataSource(list, columnnamesarray);
+        JRDataSource sacds = new ListOfArrayDataSource(saclist, new String[]{"shs_desc", "amt"});
+        
+                
+        Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
+        HashMap hm = new HashMap();
+        hm.put("REPORT_TITLE", "INVOICE");
+        hm.put("myid",  invoice);
+        if (shtype.equals("F")) {
+           hm.put("myfreightnbr", order); 
+           hm.put("linecount", k);
+           hm.put("deliverydate", deliverydate);
+           hm.put("miles", miles);
+           hm.put("weight", weight);
+        }
+        hm.put("site_csz", site_csz);
+        hm.put("bill_csz", bill_csz);
+        hm.put("ship_csz", ship_csz);
+        hm.put("imagepath", imagepath.toString());
+        hm.put("REPORT_LOCALE", BlueSeerUtils.getCurrencyLocale(currency));
+        hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+        hm.put("sacdatasource", sacds);
+       
+        
+        
         // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
         // type = "L8C";  ...or type = genericJTableL8.jasper
         // String jasperfile = (type.length() > 3) ? jasperfile = type  : OVData.getCodeValueByCodeKey("jasper", type)  ;
