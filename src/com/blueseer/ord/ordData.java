@@ -3635,6 +3635,7 @@ public class ordData {
                 "" // kvpair    
                 );
         shd.add(z);
+        i++;
         }
         
         ArrayList<shpData.ship_tree> sht = new ArrayList<>();

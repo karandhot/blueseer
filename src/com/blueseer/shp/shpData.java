@@ -1686,6 +1686,152 @@ public class shpData {
        return jsonarray.toString(); 
     }
     
+    public static String getInvoicePrintData(String key, String keytype, String display) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                if (keytype.equals("order")) {
+                res = st.executeQuery("select " +
+                        " (select case when sum(shs_amt) is null then 0 else sum(shs_amt) end from shs_det " +
+                        " where shs_nbr = shd_id and shs_amttype = 'amount' and shs_type <> 'tax' and shs_type <> 'passive' " +
+                        " and shs_type <> 'shipping Bil' and shs_type <> 'shipping PPD' ) as charges, " +
+                        " (select case when sum(shs_amt) is null then 0 else sum(shs_amt) end from shs_det " +
+                        " where shs_nbr = shd_id and shs_amttype = 'amount' and shs_type = 'tax' ) as taxes, " +
+                        " shd_id, it_desc, sh_cust, sh_cust, sh_rmks, shd_po, " +
+                        " shd_item, shd_custitem, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, " +
+                        " cms_name, cms_line1, site_desc, site_line1, sh_boxes, sh_pallets, sh_shipvia, " +
+                        " cm_terms, sh_ref, sh_bol, shd_serial, shd_cont, sh_trailer, " +
+                        " cm_city, cm_state, cm_zip, cm_country, cms_city, cms_state, cms_zip, cms_country, " +
+                        " site_city, site_state, site_zip, site_country, site_site, " +
+                        " cm_logo, site_logo, ov_image_directory, cm_iv_jasper, site_iv_jasper, ov_jasper_directory, " +
+                        " sh_type, ifNull(cfod_date,'') as cfod_date, ifNull(cfo_mileage, '0') as cfo_mileage, ifNull(cfo_weight, '0') as cfo_weight, sh_so, sh_curr, " +
+                        " shd_taxamt, shd_taxpercent, shd_uom, sh_confdate, ar_duedate, shd_listprice, cms_line2 " +
+                        " from ship_det " +
+                        " left outer join item_mstr on it_item = shd_item " + 
+                        " inner join ship_mstr on sh_id = shd_id " +
+                        " inner join ar_mstr on ar_nbr = sh_id " + 
+                        " left outer join cfo_det on cfod_nbr = sh_so and cfod_type = 'Unload Complete' and sh_type = 'F' " +
+                        " left outer join cfo_mstr on cfo_nbr = sh_so and sh_type = 'F' " +
+                        " inner join cm_mstr on cm_code = sh_cust " +
+                        " left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship " +
+                        " inner join site_mstr on site_site = sh_site " +
+                        " inner join ov_ctrl " +
+                        " where shd_so = " + "'" + key + "'"  +
+                                ";");
+                } else {
+                    res = st.executeQuery("select shd_id, it_desc, sh_cust, sh_cust, sh_rmks, shd_po, " +
+                        " shd_item, shd_custitem, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, " +
+                        " cms_name, cms_line1, site_desc, site_line1, sh_boxes, sh_pallets, sh_shipvia, " +
+                        " cm_terms, sh_ref, sh_bol, shd_serial, shd_cont, sh_trailer, " +
+                        " cm_city, cm_state, cm_zip, cm_country, cms_city, cms_state, cms_zip, cms_country, " +
+                        " site_city, site_state, site_zip, site_country, site_site, " +
+                        " cm_logo, site_logo, ov_image_directory, cm_iv_jasper, site_iv_jasper, ov_jasper_directory, " +
+                        " sh_type, ifNull(cfod_date,'') as cfod_date, ifNull(cfo_mileage, '0') as cfo_mileage, ifNull(cfo_weight, '0') as cfo_weight, sh_so, sh_curr " +
+                        " from ship_det " +
+                        " left outer join item_mstr on it_item = shd_item " + 
+                        " inner join ship_mstr on sh_id = shd_id " +
+                        " inner join ar_mstr on ar_nbr = sh_id " +    
+                        " left outer join cfo_det on cfod_nbr = sh_so and cfod_type = 'Unload Complete' and sh_type = 'F' " +
+                        " left outer join cfo_mstr on cfo_nbr = sh_so and sh_type = 'F' " +    
+                        " inner join cm_mstr on cm_code = sh_cust " +
+                        " left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship " +
+                        " inner join site_mstr on site_site = sh_site " +
+                        " inner join ov_ctrl " +
+                        " where shd_id = " + "'" + key + "'"  +
+                                ";");
+                }
+                    
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("shd_id")); 
+                        rowArray.put(res.getString("it_desc"));
+                        rowArray.put(res.getString("sh_cust"));
+                        rowArray.put(res.getString("sh_rmks"));
+                        rowArray.put(res.getString("shd_po"));
+                        rowArray.put(res.getString("shd_item"));
+                        rowArray.put(res.getString("shd_custitem"));
+                        rowArray.put(res.getString("shd_qty"));
+                        rowArray.put(res.getDouble("shd_netprice")); 
+                        rowArray.put(res.getString("cm_code"));
+                        rowArray.put(res.getString("cm_name")); // 10 zero base
+                        rowArray.put(res.getString("cm_line1"));
+                        rowArray.put(res.getString("cm_line2"));
+                        rowArray.put(res.getString("cms_name"));
+                        rowArray.put(res.getString("cms_line1"));
+                        rowArray.put(res.getString("site_desc"));
+                        rowArray.put(res.getString("site_line1"));
+                        rowArray.put(res.getString("sh_boxes"));
+                        rowArray.put(res.getString("sh_pallets"));
+                        rowArray.put(res.getString("sh_shipvia"));
+                        rowArray.put(res.getString("cm_terms")); // 20 zero base
+                        rowArray.put(res.getString("sh_ref"));
+                        rowArray.put(res.getString("sh_bol"));
+                        rowArray.put(res.getString("shd_serial"));
+                        rowArray.put(res.getString("shd_cont"));
+                        rowArray.put(res.getString("sh_trailer"));
+                        rowArray.put(res.getString("cm_city"));
+                        rowArray.put(res.getString("cm_state"));
+                        rowArray.put(res.getString("cm_zip"));
+                        rowArray.put(res.getString("cm_country"));
+                        rowArray.put(res.getString("cms_city"));  // 30 zero base
+                        rowArray.put(res.getString("cms_state"));
+                        rowArray.put(res.getString("cms_zip"));
+                        rowArray.put(res.getString("cms_country"));
+                        rowArray.put(res.getString("site_city"));
+                        rowArray.put(res.getString("site_state"));
+                        rowArray.put(res.getString("site_zip"));
+                        rowArray.put(res.getString("site_country"));
+                        rowArray.put(res.getString("site_site"));
+                        rowArray.put(res.getString("cm_logo"));
+                        rowArray.put(res.getString("site_logo")); // 40 zero base
+                        rowArray.put(res.getString("ov_image_directory"));
+                        rowArray.put(res.getString("cm_iv_jasper"));
+                        rowArray.put(res.getString("site_iv_jasper"));
+                        rowArray.put(res.getString("ov_jasper_directory"));
+                        rowArray.put(res.getString("sh_type"));
+                        rowArray.put(res.getString("cfod_date"));
+                        rowArray.put(res.getString("cfo_weight"));
+                        rowArray.put(res.getString("cfo_mileage"));
+                        rowArray.put(res.getString("sh_so"));
+                        rowArray.put(res.getString("sh_curr")); // 50 zero base
+                        rowArray.put(res.getDouble("shd_taxamt"));
+                        rowArray.put(res.getDouble("shd_taxpercent"));
+                        rowArray.put(res.getString("shd_uom"));
+                        rowArray.put(res.getString("sh_confdate"));
+                        rowArray.put(res.getString("ar_duedate"));
+                        rowArray.put(res.getDouble("charges"));
+                        rowArray.put(res.getDouble("taxes"));
+                        rowArray.put(res.getDouble("shd_listprice"));
+                        rowArray.put(res.getString("cms_line2"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
     
     public static void _updateShipperStatus(String shipper, Date effdate, Connection bscon) throws SQLException {
         Statement st = bscon.createStatement();

@@ -55,6 +55,7 @@ import static com.blueseer.ord.ordData.getSVOrderTotalTax;
 import static com.blueseer.pur.purData.getPOTotalTax;
 import com.blueseer.sch.schData;
 import com.blueseer.shp.shpData;
+import static com.blueseer.shp.shpData.getInvoicePrintData;
 import static com.blueseer.shp.shpData.getShipperPrintData;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble5;
@@ -166,6 +167,7 @@ import javax.swing.table.TableModel;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.data.JRTableModelDataSource;
 import net.sf.jasperreports.engine.data.ListOfArrayDataSource;
 
@@ -17291,6 +17293,137 @@ return mystring;
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
+    }    
+    
+    public static void printInvoiceRemote(String key, String keytype, boolean display) {
+        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getInvoicePrintData"});
+            list.add(new String[]{"param1", key});
+            list.add(new String[]{"param2", keytype});
+            list.add(new String[]{"param3", BlueSeerUtils.boolToString(display)});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServSHP"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        } else {
+            jsonString = getInvoicePrintData(key, keytype, BlueSeerUtils.boolToString(display)); 
+        }        
+        Object[][] rData = jsonToData(jsonString);
+        
+        List<Object[]> list = new ArrayList<>();
+        String site_csz = "";
+        String bill_csz = "";
+        String ship_csz = "";
+        String cust = "";
+        String site = "";
+        String logo = "";
+        String imagedir = "";
+        String jasperfile = "";
+        String jasperdir = "";
+        
+        String invoice = "";
+        String shtype = "S";
+        String deliverydate = "";
+        String weight = "";
+        String miles = "";
+        String order = "";
+        String currency = "";
+        
+        int k = 0;
+        for (Object[] rowData : rData) {
+            if (k == 0) {
+                invoice = rowData[0].toString();
+                cust = rowData[2].toString();
+                site = rowData[2].toString();
+                logo = (rowData[39].toString().isBlank()) ? rowData[40].toString() : rowData[39].toString(); // if cm_logo = "" then site_logo
+                jasperfile = (rowData[42].toString().isBlank()) ? rowData[43].toString() : rowData[42].toString(); // if cm_iv_jasper = "" then site_iv_jasper
+                jasperdir = rowData[44].toString();
+                shtype = rowData[45].toString();
+                deliverydate = rowData[46].toString();
+                weight = rowData[47].toString();
+                miles = rowData[48].toString();
+                order = rowData[49].toString();
+                currency = rowData[50].toString();
+                imagedir = rowData[41].toString();
+                bill_csz = rowData[26].toString() + " " + rowData[27].toString() + " " + rowData[28].toString() + " " + rowData[29].toString();
+                ship_csz = rowData[30].toString() + " " + rowData[31].toString() + " " + rowData[32].toString() + " " + rowData[33].toString();
+                site_csz = rowData[34].toString() + " " + rowData[35].toString() + " " + rowData[36].toString() + " " + rowData[37].toString();
+            }
+              //  totalsales = totalsales + (bsParseDouble(rowData[6].toString()) * bsParseDouble(rowData[7].toString()));
+             //   totalqty = totalqty + bsParseDouble(rowData[6].toString());
+                rowData[7] = bsParseDouble(rowData[7].toString());
+                rowData[8] = bsParseDouble(rowData[8].toString());
+                rowData[51] = bsParseDouble(rowData[51].toString());
+                rowData[52] = bsParseDouble(rowData[52].toString());
+                rowData[56] = bsParseDouble(rowData[56].toString());
+                rowData[57] = bsParseDouble(rowData[57].toString());
+                rowData[58] = bsParseDouble(rowData[58].toString());
+                list.add(rowData);
+                k++;
+        }
+        
+        
+        String[] rec;
+        String columnnames = "shd_id,it_desc,sh_cust,sh_rmks,shd_po," +
+                        "shd_item,shd_custitem,shd_qty,shd_netprice,cm_code,cm_name,cm_line1,cm_line2," +
+                        "cms_name,cms_line1,site_desc,site_line1,sh_boxes,sh_pallets,sh_shipvia," +
+                        "cm_terms,sh_ref,sh_bol,shd_serial,shd_cont,sh_trailer," +
+                        "cm_city,cm_state,cm_zip,cm_country,cms_city,cms_state,cms_zip,cms_country," +
+                        "site_city,site_state,site_zip,site_country,site_site,cm_logo,site_logo,ov_image_directory," +
+                        "cm_iv_jasper,site_iv_jasper,ov_jasper_directory," +
+                        "sh_type,cfod_date,cfo_mileage,cfo_weight,sh_so,sh_curr," +
+                        "shd_taxamt,shd_taxpercent,shd_uom,sh_confdate,ar_duedate,charges,taxes,shd_listprice,cms_line2";
+        String[] columnnamesarray = columnnames.split(",", -1);
+               
+                
+               Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
+        HashMap hm = new HashMap();
+                hm.put("REPORT_TITLE", "INVOICE");
+                hm.put("myid",  invoice);
+                if (shtype.equals("F")) {
+                   hm.put("myfreightnbr", order); 
+                   hm.put("linecount", k);
+                   hm.put("deliverydate", deliverydate);
+                   hm.put("miles", miles);
+                   hm.put("weight", weight);
+                }
+                hm.put("site_csz", site_csz);
+                hm.put("bill_csz", bill_csz);
+                hm.put("ship_csz", ship_csz);
+                hm.put("imagepath", imagepath.toString());
+                hm.put("REPORT_LOCALE", BlueSeerUtils.getCurrencyLocale(currency));
+                hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+       
+        JRDataSource datasource = new ListOfArrayDataSource(list, columnnamesarray);
+        // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
+        // type = "L8C";  ...or type = genericJTableL8.jasper
+        // String jasperfile = (type.length() > 3) ? jasperfile = type  : OVData.getCodeValueByCodeKey("jasper", type)  ;
+        
+        Path template = checkForCustomPath(jasperdir, jasperfile);
+        
+        JasperPrint jasperPrint; 
+        try {
+         jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
+         
+         if (display) {
+                JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+                jasperViewer.setVisible(true);
+                jasperViewer.setTitle("Viewer");
+                jasperViewer.setIconImage(null);
+                jasperViewer.setFitPageZoomRatio();
+                
+        } else {
+           JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");  
+         }
+         
+       } catch (JRException ex) {
+           MainFrame.bslog(ex);
+       }
     }    
     
     public static void printInvoiceByOrder(String order) {
