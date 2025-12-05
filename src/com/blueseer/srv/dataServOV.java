@@ -30,14 +30,18 @@ import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringIntegerToJson;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import static com.blueseer.utl.BlueSeerUtils.doubleToJson;
 import static com.blueseer.utl.BlueSeerUtils.intToJson;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.getCodeMstrValueList;
 import static com.blueseer.utl.OVData.getNextNbr;
 import static com.blueseer.utl.OVData.getSysMetaData;
 import static com.blueseer.utl.OVData.getTableInfo;
+import static com.blueseer.utl.OVData.getTaxAmtApplicableByItem;
+import static com.blueseer.utl.OVData.getTaxPercentElementsApplicableByItem;
 import java.io.IOException;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
@@ -183,6 +187,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(ArrayListStringToJson(getCodeMstrValueList(request.getHeader("code"))));
             break;
             
+        case "getTaxPercentElementsApplicableByItem" :        
+            response.getWriter().print(ArrayListStringArrayToJson(getTaxPercentElementsApplicableByItem(request.getHeader("param1"))));
+            break;    
+            
         case "getSysMetaData" :        
             response.getWriter().print(ArrayListStringToJson(getSysMetaData(request.getHeader("param1"),request.getHeader("param2"),request.getHeader("param3"))));
             break;    
@@ -190,6 +198,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "getNextNbr" : 
             response.getWriter().print(intToJson(getNextNbr(request.getHeader("param1")))); 
             break;
+            
+        case "getTaxAmtApplicableByItem" : 
+            response.getWriter().print(doubleToJson(getTaxAmtApplicableByItem(request.getHeader("param1"),
+                    bsParseDouble(request.getHeader("param2")))));   
+            break;    
             
         case "getTableInfo" : 
             response.getWriter().print(HashMapStringIntegerToJson(getTableInfo(new String[]{request.getHeader("param1")})));

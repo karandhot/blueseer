@@ -59,6 +59,7 @@ import static com.blueseer.shp.shpData.getShipperPrintData;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble5;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDoubleUS;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.bsformat;
@@ -71,6 +72,7 @@ import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.jsonToDouble;
 import static com.blueseer.utl.BlueSeerUtils.jsonToHashMapStringInteger;
 import static com.blueseer.utl.BlueSeerUtils.jsonToInt;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
@@ -2563,6 +2565,20 @@ public class OVData {
     public static ArrayList<String[]> getTaxPercentElementsApplicableByItem(String item) {
 
         ArrayList<String[]> myarray = new ArrayList();
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getTaxPercentElementsApplicableByItem"});
+            list.add(new String[]{"param1",  item});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServOV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return myarray;
+            }
+        }
+        
+        
 
         try {
             
@@ -2696,6 +2712,19 @@ public class OVData {
     }
     
     public static double getTaxAmtApplicableByItem(String item, double amt) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getTaxAmtApplicableByItem"});
+            list.add(new String[]{"param1",  item});
+            list.add(new String[]{"param2",  bsNumber(amt)});
+            try {
+                return jsonToDouble(sendServerPost(list, "", null, "dataServOV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0.00;
+            }
+        }
+        
         double taxamt = 0.00;
         double taxpercent = 0.00;
 
