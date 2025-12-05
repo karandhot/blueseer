@@ -17379,7 +17379,9 @@ return mystring;
                         "sh_type,cfod_date,cfo_mileage,cfo_weight,sh_so,sh_curr," +
                         "shd_taxamt,shd_taxpercent,shd_uom,sh_confdate,ar_duedate,charges,taxes,shd_listprice,cms_line2";
         String[] columnnamesarray = columnnames.split(",", -1);
-               
+        ArrayList<Object[]> saclist = new ArrayList<>();
+        saclist.add(new Object[]{"test", 55});
+        JRDataSource sacds = new ListOfArrayDataSource(saclist, new String[]{"shs_desc", "amt"});
                 
                Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
         HashMap hm = new HashMap();
@@ -17398,6 +17400,7 @@ return mystring;
                 hm.put("imagepath", imagepath.toString());
                 hm.put("REPORT_LOCALE", BlueSeerUtils.getCurrencyLocale(currency));
                 hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+                hm.put("sacdatasource", sacds);
        
         JRDataSource datasource = new ListOfArrayDataSource(list, columnnamesarray);
         // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
