@@ -4238,7 +4238,19 @@ public class invData {
     }
 
     public static double getItemQOHTotal(String item, String site) {
-       double qty = 0;
+      if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getItemQOHTotal"});
+            list.add(new String[]{"param1",  item});
+            list.add(new String[]{"param2",  site});
+            try {
+                return jsonToDouble(sendServerPost(list, "", null, "dataServINV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0.00;
+            }
+        }
+     double qty = 0;
      try{
         Connection con = null;
         if (ds != null) {

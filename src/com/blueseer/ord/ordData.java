@@ -64,6 +64,7 @@ import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.jsonToBoolean;
+import static com.blueseer.utl.BlueSeerUtils.jsonToDouble;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.parseDateLD;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
@@ -4656,7 +4657,20 @@ public class ordData {
 
     
     public static Double getOrderItemAllocatedQty(String item, String site) {
-       Double qty = 0.00;
+     if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getOrderItemAllocatedQty"});
+            list.add(new String[]{"param1",  item});
+            list.add(new String[]{"param2",  site});
+            try {
+                return jsonToDouble(sendServerPost(list, "", null, "dataServINV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0.00;
+            }
+     }
+     
+     Double qty = 0.00;
      try{
         Connection con = null;
         if (ds != null) {
