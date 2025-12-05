@@ -317,7 +317,7 @@ public class ordData {
         
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
-            list.add(new String[]{"id","addShipperTransaction"});
+            list.add(new String[]{"id","addOrderTransaction"});
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 String jsonString = objectMapper.writeValueAsString(sod);
