@@ -1589,7 +1589,7 @@ public class shpData {
        return jsonarray.toString(); 
     }
     
-    public static String getShipperPrintData(String shipper) {
+    public static String getShipperPrintData(String key, String keytype) {
         JSONArray jsonarray = new JSONArray();
         try {
             
@@ -1603,6 +1603,7 @@ public class shpData {
             ResultSet res = null;
             
             try{
+                if (keytype.equals("order")) {
                 res = st.executeQuery("select shd_id, it_desc, sh_cust, sh_cust, sh_rmks, shd_po, " +
                         " shd_item, shd_custitem, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, " +
                         " cms_name, cms_line1, site_desc, site_line1, sh_boxes, sh_pallets, sh_shipvia, " +
@@ -1617,8 +1618,26 @@ public class shpData {
                         " left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship " +
                         " inner join site_mstr on site_site = sh_site " +
                         " inner join ov_ctrl " +
-                        " where shd_id = " + "'" + shipper + "'"  +
+                        " where shd_so = " + "'" + key + "'"  +
                                 ";");
+                } else {
+                  res = st.executeQuery("select shd_id, it_desc, sh_cust, sh_cust, sh_rmks, shd_po, " +
+                        " shd_item, shd_custitem, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, " +
+                        " cms_name, cms_line1, site_desc, site_line1, sh_boxes, sh_pallets, sh_shipvia, " +
+                        " cm_terms, sh_ref, sh_bol, shd_serial, shd_cont, sh_trailer, " +
+                        " cm_city, cm_state, cm_zip, cm_country, cms_city, cms_state, cms_zip, cms_country, " +
+                        " site_city, site_state, site_zip, site_country, site_site, " +
+                        " cm_logo, site_logo, ov_image_directory, cm_ps_jasper, site_sh_jasper, ov_jasper_directory " +
+                        " from ship_det " +
+                        " left outer join item_mstr on it_item = shd_item " + 
+                        " inner join ship_mstr on sh_id = shd_id " +
+                        " inner join cm_mstr on cm_code = sh_cust " +
+                        " left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship " +
+                        " inner join site_mstr on site_site = sh_site " +
+                        " inner join ov_ctrl " +
+                        " where shd_id = " + "'" + key + "'"  +
+                                ";");  
+                }
                     
                  
                     while (res.next()) {
@@ -1686,7 +1705,7 @@ public class shpData {
        return jsonarray.toString(); 
     }
     
-    public static String getInvoicePrintData(String key, String keytype, String display) {
+    public static String getInvoicePrintData(String key, String keytype) {
         JSONArray jsonarray = new JSONArray();
         try {
             

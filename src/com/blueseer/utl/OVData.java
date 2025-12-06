@@ -50,6 +50,7 @@ import com.blueseer.hrm.hrmData;
 import com.blueseer.inv.calcCost;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData._updateInventoryBalance;
+import static com.blueseer.lbl.lblData.getLabelMultiPrintData;
 import static com.blueseer.ord.ordData.getOrderTotalTax;
 import static com.blueseer.ord.ordData.getSVOrderTotalTax;
 import static com.blueseer.pur.purData.getPOTotalTax;
@@ -340,7 +341,8 @@ public class OVData {
         return nbr;
         
     }
-        
+     
+    //example remote return Integer
     public static int getNextNbr(String countername) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
@@ -2507,6 +2509,7 @@ public class OVData {
 
     }
 
+    //example remote return ArrayList<String[]>
     public static ArrayList<String[]> getTaxPercentElementsApplicableByTaxCode(String taxcode) {
 
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
@@ -2713,6 +2716,7 @@ public class OVData {
 
     }
     
+    //example remote return double
     public static double getTaxAmtApplicableByItem(String item, double amt) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<>();
@@ -7064,6 +7068,7 @@ public class OVData {
         
     }
     
+    
     public static ArrayList getCodeMstrValueList(String code) {
         
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
@@ -9371,7 +9376,7 @@ public class OVData {
         
     }
     
-    
+   
 public static String getExchangeRate(String base, String foreign) {
    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<>();
@@ -16803,6 +16808,7 @@ return mystring;
         }
     }
     
+    //example remote return Map<String,Integer>
     public static Map<String,Integer> getTableInfo(String[] tablenames) {
        
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
@@ -17295,6 +17301,7 @@ return mystring;
         }
     }    
     
+    //example remote NO RETURN
     public static void printInvoiceRemote(String key, String keytype, boolean display) {
         
         String jsonString = null;
@@ -17303,7 +17310,6 @@ return mystring;
             list.add(new String[]{"id", "getInvoicePrintData"});
             list.add(new String[]{"param1", key});
             list.add(new String[]{"param2", keytype});
-            list.add(new String[]{"param3", BlueSeerUtils.boolToString(display)});
             try {
                 jsonString = sendServerPost(list, "", null, "dataServSHP"); 
             } catch (IOException ex) {
@@ -17311,7 +17317,7 @@ return mystring;
                 return;
             }
         } else {
-            jsonString = getInvoicePrintData(key, keytype, BlueSeerUtils.boolToString(display)); 
+            jsonString = getInvoicePrintData(key, keytype); 
         }        
         Object[][] rData = jsonToData(jsonString);
         
@@ -17343,7 +17349,7 @@ return mystring;
             if (k == 0) {
                 invoice = rowData[0].toString();
                 cust = rowData[2].toString();
-                site = rowData[2].toString();
+                site = rowData[38].toString();
                 logo = (rowData[39].toString().isBlank()) ? rowData[40].toString() : rowData[39].toString(); // if cm_logo = "" then site_logo
                 jasperfile = (rowData[42].toString().isBlank()) ? rowData[43].toString() : rowData[42].toString(); // if cm_iv_jasper = "" then site_iv_jasper
                 jasperdir = rowData[44].toString();
@@ -17762,6 +17768,79 @@ return mystring;
             MainFrame.bslog(e);
         }
     }    
+    
+    public static void printJasperLabelMultiNew(String shipper, String jasperfile) {
+        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getLabelMultiPrintData"});
+            list.add(new String[]{"param1", shipper});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServLBL"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        } else {
+            jsonString = getLabelMultiPrintData(shipper); 
+        }        
+        Object[][] rData = jsonToData(jsonString);
+        
+        List<Object[]> list = new ArrayList<>();
+        String site_csz = "";
+        String ship_csz = "";
+        String logo = "";
+        String imagedir = "";
+        String jasperdir = "";
+        String  now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        int k = 0;
+        for (Object[] rowData : rData) {
+            if (k == 0) {
+                logo = (rowData[39].toString().isBlank()) ? rowData[40].toString() : rowData[39].toString(); // if cm_logo = "" then site_logo
+                jasperdir = rowData[44].toString();
+                imagedir = rowData[41].toString();
+                ship_csz = rowData[30].toString() + " " + rowData[31].toString() + " " + rowData[32].toString() + " " + rowData[33].toString();
+                site_csz = rowData[34].toString() + " " + rowData[35].toString() + " " + rowData[36].toString() + " " + rowData[37].toString();
+            }
+                list.add(rowData);
+                k++;
+        }
+        
+        
+        String[] rec;
+        String columnnames = "sh_id, shd_so, lbl_id, lbl_id_str, lbl_item, shd_desc, lbl_qty," +
+                "sh_cust,sh_shipvia,lbl_po,shd_uom,cm_code,cm_name,cm_line1,cm_line2," +
+                "cms_name,cms_line1,cms_line2,cms_zip,cms_plantcode,site_desc,site_line1";
+        String[] columnnamesarray = columnnames.split(",", -1);
+        JRDataSource datasource = new ListOfArrayDataSource(list, columnnamesarray);
+        Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
+        HashMap hm = new HashMap();
+        hm.put("REPORT_TITLE", "");
+        hm.put("mydate",  now);
+        hm.put("shipper", shipper);
+        hm.put("dbtype", bsmf.MainFrame.dbtype);
+        hm.put("site_csz", site_csz);
+        hm.put("ship_csz", ship_csz);
+        hm.put("imagepath", imagepath.toString());
+        hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+        
+        Path template = checkForCustomPath(jasperdir, jasperfile);
+        
+        JasperPrint jasperPrint; 
+        try {
+         jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
+            JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+            jasperViewer.setVisible(true);
+            jasperViewer.setTitle("Viewer");
+            jasperViewer.setIconImage(null);
+            jasperViewer.setFitPageZoomRatio();
+         
+       } catch (JRException ex) {
+           MainFrame.bslog(ex);
+       }
+    }    
+    
     
     public static void printJasperItem(String item, String jasperfile) {
         try{ 
@@ -18197,13 +18276,14 @@ return mystring;
         }
     }    
      
-    public static void printShipperRemote(String shipper) {
+    public static void printShipperRemote(String shipper, String keytype) {
         
         String jsonString = null;
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<>();
             list.add(new String[]{"id", "getShipperPrintData"});
             list.add(new String[]{"param1", shipper});
+            list.add(new String[]{"param2", keytype});
             try {
                 jsonString = sendServerPost(list, "", null, "dataServSHP"); 
             } catch (IOException ex) {
@@ -18211,7 +18291,7 @@ return mystring;
                 return;
             }
         } else {
-            jsonString = getShipperPrintData(shipper); 
+            jsonString = getShipperPrintData(shipper, keytype); 
         }        
         Object[][] rData = jsonToData(jsonString);
         
@@ -21906,6 +21986,7 @@ return mylist;
         return (Files.exists(path)) ? path : null;
     }
    
+    //example remote return ArrayList<String>
     public static ArrayList getSysMetaData(String id, String type, String key) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
@@ -22037,7 +22118,7 @@ return mylist;
         
     }   
 
-    
+    //example remote return String
     public static String getSysMetaValue(String id, String type, String key) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<>();

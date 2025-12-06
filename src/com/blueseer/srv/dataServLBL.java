@@ -101,6 +101,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "deleteLabelByShipper" :
             lblData.deleteLabelByShipper(request.getHeader("param1"));
+            break; 
+            
+        case "getLabelMultiPrintData" :
+            response.getWriter().print(lblData.getLabelMultiPrintData(request.getHeader("param1")));    
             break;    
         
         default:

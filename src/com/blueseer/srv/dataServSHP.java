@@ -162,13 +162,12 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;   
             
         case "getShipperPrintData" :
-            response.getWriter().print(shpData.getShipperPrintData(request.getHeader("param1")));  
+            response.getWriter().print(shpData.getShipperPrintData(request.getHeader("param1"), request.getHeader("param2")));  
             break;
             
         case "getInvoicePrintData" :
             response.getWriter().print(shpData.getInvoicePrintData(request.getHeader("param1"),
-                    request.getHeader("param2"),
-                    request.getHeader("param3")));    
+                    request.getHeader("param2")));    
             break;     
             
         default:

@@ -98,6 +98,7 @@ import static com.blueseer.utl.OVData.checkForCustomPath;
 import static com.blueseer.utl.OVData.getSystemLabelDirectory;
 import static com.blueseer.utl.OVData.printJasperLabel;
 import static com.blueseer.utl.OVData.printJasperLabelMulti;
+import static com.blueseer.utl.OVData.printJasperLabelMultiNew;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -1374,23 +1375,13 @@ public class ShipOrderLine extends javax.swing.JPanel {
 
     private void btprintlabelsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintlabelsActionPerformed
 
-        /*
-        if (! validateInput(false)) {
-            return;
-        }
-        */
         try {
 
-            String cust = getShipperBillto(tbkey.getText());
-            String label = cusData.getCustLabel(cust);
+            String label = cusData.getCustLabel(sh.sh_cust());
             label  = (label.isBlank()) ? "sscc18J" : label; 
-            
             label_zebra lz = getLabelZebraMstr(new String[]{label});
-
-           
-
             if (lz.lblz_file().endsWith("jasper")) {
-                printJasperLabelMulti(tbkey.getText(), lz.lblz_file());
+                printJasperLabelMultiNew(tbkey.getText(), lz.lblz_file());
             } else {
                 bsmf.MainFrame.show(getMessageTag(1206));  
             }

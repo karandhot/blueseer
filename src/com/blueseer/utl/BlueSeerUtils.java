@@ -2103,11 +2103,21 @@ public class BlueSeerUtils {
         message(message);
      }
      
+     public static void startTaskNoBar(String[] message) {
+        bsmf.MainFrame.disableAllMenus();
+        message(message);
+     }
+     
      
      public static void endTask(String[] message) {
         bsmf.MainFrame.enableAllMenus();
         bsmf.MainFrame.MainProgressBar.setVisible(false);
         bsmf.MainFrame.MainProgressBar.setIndeterminate(false);
+        message(message);
+     }
+     
+     public static void endTaskNoBar(String[] message) {
+        bsmf.MainFrame.enableAllMenus();
         message(message);
      }
           

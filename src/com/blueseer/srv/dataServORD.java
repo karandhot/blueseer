@@ -346,7 +346,11 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                 request.getHeader("param2"), 
                 request.getHeader("param3"), 
                 request.getHeader("param4")))); 
-        break;    
+        break; 
+        
+        case "getOrderPrintData" :
+            response.getWriter().print(ordData.getOrderPrintData(request.getHeader("param1")));    
+            break;
             
         default:
         response.getWriter().print("no switch case exists in dataServORD for id: " + id);

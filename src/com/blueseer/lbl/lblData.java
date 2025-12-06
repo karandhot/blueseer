@@ -45,6 +45,7 @@ import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.ArrayList;
+import org.json.JSONArray;
 
 /**
  *
@@ -539,6 +540,22 @@ public class lblData {
     public static label_zebra getLabelZebraMstr(String[] x) {
         label_zebra r = null;
         String[] m = new String[2];
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getLabelZebraMstr"});
+            list.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServLBL");
+                r = objectMapper.readValue(returnstring, label_zebra.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
         String sql = "select * from label_zebra where lblz_code = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -566,6 +583,106 @@ public class lblData {
         return r;
     }
     
+    public static String getLabelMultiPrintData(String shipper) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                String sqlquery = ""; 
+               if (bsmf.MainFrame.dbtype.equals("sqlite")) {
+               sqlquery = "select sh_id, shd_so, lbl_id, lbl_id_str, lbl_item, shd_desc, lbl_qty," +
+                "sh_cust,  sh_shipvia," +
+                "lbl_po, shd_uom," +
+                "cm_code, cm_name, cm_line1," +
+                "cm_line2," +
+                "cms_name, cms_line1, cms_line2, cms_zip, cms_plantcode," +
+                "site_desc, site_line1," +
+                "(select edim_value from edi_meta where edim_id = lbl_po and edim_type = 'detail:' || lbl_line AND edim_key = 'CL' ) as color," +
+                "(select edim_value from edi_meta where edim_id = lbl_po and edim_type = 'detail:' || lbl_line AND edim_key = 'IZ' ) as size " +
+                "from label_mstr " +
+                "inner join ship_det on shd_id = $P{shipper} and shd_so = lbl_order and shd_soline = lbl_line  " +
+                "inner join ship_mstr on sh_id = $P{shipper} " +
+                "inner join cm_mstr on cm_code = sh_cust " +
+                "left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship " +
+                "inner join site_mstr on site_site = sh_site " +
+                " where lbl_ref = " + "'" + shipper + "'"; 
+               } else {
+                sqlquery = "select sh_id, shd_so, lbl_id, lbl_id_str, lbl_item, shd_desc, lbl_qty," +
+                "sh_cust,  sh_shipvia," +
+                "lbl_po, shd_uom," +
+                "cm_code, cm_name, cm_line1," +
+                "cm_line2," +
+                "cms_name, cms_line1, cms_line2, cms_zip, cms_plantcode," +
+                "site_desc, site_line1," +
+                "(select edim_value from edi_meta where edim_id = lbl_po and edim_type = concat('detail:',lbl_line) AND edim_key = 'CL' ) as color," +
+                "(select edim_value from edi_meta where edim_id = lbl_po and edim_type = concat('detail:',lbl_line) AND edim_key = 'IZ' ) as size " +
+                "from label_mstr " +
+                "inner join ship_det on shd_id = $P{shipper} and shd_so = lbl_order and shd_soline = lbl_line  " +
+                "inner join ship_mstr on sh_id = $P{shipper} " +
+                "inner join cm_mstr on cm_code = sh_cust " +
+                "left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship " +
+                "inner join site_mstr on site_site = sh_site " +
+                " where lbl_ref = " + "'" + shipper + "'"; 
+               }
+                    
+                   
+                    int i = 0;
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("sh_id")); 
+                        rowArray.put(res.getString("shd_so"));
+                        rowArray.put(res.getString("lbl_id"));
+                        rowArray.put(res.getString("lbl_id_str"));
+                        rowArray.put(res.getString("lbl_item"));
+                        rowArray.put(res.getString("shd_desc"));
+                        rowArray.put(res.getString("lbl_qty"));
+                        rowArray.put(res.getString("sh_cust"));
+                        rowArray.put(res.getDouble("lbl_po")); 
+                        rowArray.put(res.getString("shd_uom"));
+                        rowArray.put(res.getString("cm_code")); // 10 zero base
+                        rowArray.put(res.getString("cm_name")); 
+                        rowArray.put(res.getString("cm_line1"));
+                        rowArray.put(res.getString("cm_line2"));
+                        rowArray.put(res.getString("cms_name"));
+                        rowArray.put(res.getString("cms_line1"));
+                        rowArray.put(res.getString("cms_line2"));
+                        rowArray.put(res.getString("cms_city"));  
+                        rowArray.put(res.getString("cms_state"));
+                        rowArray.put(res.getString("cms_zip"));
+                        rowArray.put(res.getString("cms_country")); // 20 zero base
+                        rowArray.put(res.getString("cms_plantcode"));
+                        rowArray.put(res.getString("site_desc"));
+                        rowArray.put(res.getString("site_line1"));
+                        rowArray.put(res.getString("color"));
+                        rowArray.put(res.getString("size"));
+                        
+                        jsonarray.put(rowArray);
+                        i++;
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
     
     public static String CreateLabelMstr(String serialno, String item, String custpart, String serialnostring, 
               String conttype, String qty, String po, String order, String line, String ref, String lot,

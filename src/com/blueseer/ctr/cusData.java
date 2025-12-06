@@ -532,6 +532,20 @@ public class cusData {
     public static cm_mstr getCustMstr(String[] x) {
         cm_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getCustMstr"});
+            list.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServCUS");
+                r = objectMapper.readValue(returnstring, cm_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         String sql = "select * from cm_mstr where cm_code = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -734,6 +748,20 @@ public class cusData {
     public static cust_term getTermsMstr(String[] x) {
         cust_term r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getTermsMstr"});
+            list.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServCUS");
+                r = objectMapper.readValue(returnstring, cust_term.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         String sql = "select * from cust_term where cut_code = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -765,8 +793,6 @@ public class cusData {
         }
         return r;
     }
-   
-    
    
     
     public static String[] addUpdateCMCtrl(cm_ctrl x) {
@@ -2319,6 +2345,7 @@ public class cusData {
         
     }
     
+    
     public static ArrayList<String[]> getDiscountRecsByCust(String cust) {
        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
@@ -2493,6 +2520,7 @@ public class cusData {
         return myarray;
 
     }
+
 
     public static ArrayList getcustshipmstrlist(String cust) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
@@ -2817,6 +2845,17 @@ public class cusData {
 
     
     public static String getCustLabel(String cust) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getCustLabel"});
+            list.add(new String[]{"param1", cust});
+            try {
+                return sendServerPost(list, "", null, "dataServCUS"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        }
         String myitem = "";
         try{
 

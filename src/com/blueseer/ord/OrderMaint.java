@@ -4418,7 +4418,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btprintinvoiceActionPerformed
 
     private void btprintpsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintpsActionPerformed
-        OVData.printShipperByOrder(tbkey.getText());
+        OVData.printShipperRemote(tbkey.getText(), "order");
     }//GEN-LAST:event_btprintpsActionPerformed
 
     private void ddsiteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddsiteActionPerformed

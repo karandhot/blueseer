@@ -2648,7 +2648,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btdelitemActionPerformed
 
     private void btprintshipperActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintshipperActionPerformed
-         OVData.printShipperRemote(tbkey.getText());
+         OVData.printShipperRemote(tbkey.getText(), "shipper");
        // OVData.printJTableToJasper("Shipper Report", tabledetail ); 
 
     }//GEN-LAST:event_btprintshipperActionPerformed
