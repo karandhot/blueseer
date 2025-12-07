@@ -26,6 +26,7 @@ SOFTWARE.
 package com.blueseer.srv;
 
 import com.blueseer.ctr.cusData;
+import static com.blueseer.ctr.cusData.getCustLabel;
 import static com.blueseer.ctr.cusData.getCustShipSet;
 import static com.blueseer.ctr.cusData.getDiscountRecsByCust;
 import static com.blueseer.ctr.cusData.getcustshipmstrlist;
@@ -96,7 +97,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getDiscountRecsByCust" :        
             response.getWriter().print(ArrayListStringArrayToJson(cusData.getDiscountRecsByCust(request.getHeader("param1"))));
-            break;   
+            break;  
+            
+        case "getCustLabel" :        
+            response.getWriter().print(getCustLabel(request.getHeader("param1")));
+            break;    
             
             
                      
