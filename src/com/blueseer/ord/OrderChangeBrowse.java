@@ -667,7 +667,7 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
        if (roData != null) {
         if (roData.length > 0) {
             for (Object[] rowData : roData) {
-                dols += (bsParseDouble(rowData[2].toString()) * bsParseDouble(rowData[4].toString()));
+                dols += (bsParseDouble(rowData[3].toString()) * bsParseDouble(rowData[5].toString()));
                 modeldetail.addRow(rowData);
             } 
         }
