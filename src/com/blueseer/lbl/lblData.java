@@ -852,7 +852,21 @@ public class lblData {
     }
     
     public static void updateLabelStatus(String serialno, String value) {
-          try {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "updateLabelStatus"});
+            list.add(new String[]{"param1",  serialno});
+            list.add(new String[]{"param2",  value});
+            try {
+                sendServerPost(list, "", null, "dataServLBL");
+                return;
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        }
+        
+        try {
             Connection con = null;
         if (ds != null) {
           con = ds.getConnection();

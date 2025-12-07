@@ -27,6 +27,7 @@ package com.blueseer.srv;
 
 
 import com.blueseer.lbl.lblData;
+import static com.blueseer.lbl.lblData.getLabelZebraMstr;
 import com.blueseer.shp.shpData;
 import static com.blueseer.shp.shpData.getShipperMstrSet;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
@@ -82,7 +83,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     
     switch (id) {
             
-        case "addMultiLabelTransaction" : 
+        case "addMultiLabelTransaction" : {
             String line;
             StringBuilder sb = new StringBuilder();  
             BufferedReader reader = request.getReader();  // as string
@@ -103,14 +104,30 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             ArrayList<lblData.label_mstr> stlist = new ArrayList<>(Arrays.asList(starray));
             response.getWriter().print(arrayToJson(lblData.addMultiLabelTransaction(sdlist, stlist)));  
             break;
+        }
             
-        case "deleteLabelByShipper" :
+        case "deleteLabelByShipper" : {
             lblData.deleteLabelByShipper(request.getHeader("param1"));
             break; 
+        }
             
-        case "getLabelMultiPrintData" :
-            response.getWriter().print(lblData.getLabelMultiPrintData(request.getHeader("param1")));    
+        case "updateLabelStatus" : {
+            lblData.updateLabelStatus(request.getHeader("param1"), request.getHeader("param2"));
             break;    
+        }
+            
+        case "getLabelMultiPrintData" : {
+            response.getWriter().print(lblData.getLabelMultiPrintData(request.getHeader("param1")));    
+            break;   
+        }
+            
+        case "getLabelZebraMstr" : {       
+        lblData.label_zebra lz = getLabelZebraMstr(new String[]{request.getHeader("param1")});
+        ObjectMapper objectMapper = new ObjectMapper();
+        String r = objectMapper.writeValueAsString(lz);
+        response.getWriter().print(r);
+        }
+        break;    
         
         default:
         response.getWriter().print("no switch case exists in dataServLBL for id: " + id);
