@@ -32,6 +32,7 @@ import com.blueseer.ord.ordData;
 import static com.blueseer.ord.ordData.addUpdateSOMeta;
 import static com.blueseer.ord.ordData.applyOrderChange;
 import static com.blueseer.ord.ordData.getOrderBrowseView;
+import static com.blueseer.ord.ordData.getOrderChangeBrowseView;
 import static com.blueseer.ord.ordData.getOrderChangeExport;
 import static com.blueseer.ord.ordData.getOrderChangeReportData;
 import static com.blueseer.ord.ordData.getOrderDet;
@@ -325,7 +326,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                request.getHeader("posearch"),
                request.getHeader("isdetached")               
                };     
-        response.getWriter().println(getOrderChangeReportData(ocr));
+        response.getWriter().print(getOrderChangeBrowseView(ocr));
         }
         break;
 
