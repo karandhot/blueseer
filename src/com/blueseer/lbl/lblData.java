@@ -540,11 +540,12 @@ public class lblData {
     public static label_zebra getLabelZebraMstr(String[] x) {
         label_zebra r = null;
         String[] m = new String[2];
+        System.out.println("HERE: " + x[0] + " / " + x[0].length());
         
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id", "getLabelZebraMstr"});
-            list.add(new String[]{"param1",  x[0]});
+            list.add(new String[]{"param1", x[0]});
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 String returnstring = sendServerPost(list, "", null, "dataServLBL");
@@ -604,35 +605,38 @@ public class lblData {
                 "lbl_po, shd_uom," +
                 "cm_code, cm_name, cm_line1," +
                 "cm_line2," +
-                "cms_name, cms_line1, cms_line2, cms_zip, cms_plantcode," +
-                "site_desc, site_line1," +
+                "cms_name, cms_line1, cms_line2, cms_city, cms_state, cms_zip, cms_country, cms_plantcode," +
+                "site_desc, site_line1, site_city, site_state, site_zip, site_country, ov_jasper_directory, " +
                 "(select edim_value from edi_meta where edim_id = lbl_po and edim_type = 'detail:' || lbl_line AND edim_key = 'CL' ) as color," +
                 "(select edim_value from edi_meta where edim_id = lbl_po and edim_type = 'detail:' || lbl_line AND edim_key = 'IZ' ) as size " +
                 "from label_mstr " +
-                "inner join ship_det on shd_id = $P{shipper} and shd_so = lbl_order and shd_soline = lbl_line  " +
-                "inner join ship_mstr on sh_id = $P{shipper} " +
-                "inner join cm_mstr on cm_code = sh_cust " +
+                "inner join ship_det on shd_id = " + "'" + shipper + "'" + " and shd_so = lbl_order and shd_soline = lbl_line  " +
+                "inner join ship_mstr on sh_id = " + "'" + shipper + "'" +
+                " inner join cm_mstr on cm_code = sh_cust " +
                 "left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship " +
                 "inner join site_mstr on site_site = sh_site " +
+                "inner join ov_ctrl " +        
                 " where lbl_ref = " + "'" + shipper + "'"; 
                } else {
                 sqlquery = "select sh_id, shd_so, lbl_id, lbl_id_str, lbl_item, shd_desc, lbl_qty," +
-                "sh_cust,  sh_shipvia," +
+                "sh_cust, sh_shipvia," +
                 "lbl_po, shd_uom," +
                 "cm_code, cm_name, cm_line1," +
                 "cm_line2," +
-                "cms_name, cms_line1, cms_line2, cms_zip, cms_plantcode," +
-                "site_desc, site_line1," +
+                "cms_name, cms_line1, cms_line2, cms_city, cms_state, cms_zip, cms_country, cms_plantcode," +
+                "site_desc, site_line1, site_city, site_state, site_zip, site_country, ov_jasper_directory, " +
                 "(select edim_value from edi_meta where edim_id = lbl_po and edim_type = concat('detail:',lbl_line) AND edim_key = 'CL' ) as color," +
                 "(select edim_value from edi_meta where edim_id = lbl_po and edim_type = concat('detail:',lbl_line) AND edim_key = 'IZ' ) as size " +
                 "from label_mstr " +
-                "inner join ship_det on shd_id = $P{shipper} and shd_so = lbl_order and shd_soline = lbl_line  " +
-                "inner join ship_mstr on sh_id = $P{shipper} " +
-                "inner join cm_mstr on cm_code = sh_cust " +
+                "inner join ship_det on shd_id = " + "'" + shipper + "'" + " and shd_so = lbl_order and shd_soline = lbl_line  " +
+                "inner join ship_mstr on sh_id = " + "'" + shipper + "'" +
+                " inner join cm_mstr on cm_code = sh_cust " +
                 "left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship " +
                 "inner join site_mstr on site_site = sh_site " +
+                "inner join ov_ctrl " +        
                 " where lbl_ref = " + "'" + shipper + "'"; 
                }
+               res = st.executeQuery(sqlquery);
                     
                    
                     int i = 0;
@@ -646,9 +650,10 @@ public class lblData {
                         rowArray.put(res.getString("shd_desc"));
                         rowArray.put(res.getString("lbl_qty"));
                         rowArray.put(res.getString("sh_cust"));
-                        rowArray.put(res.getDouble("lbl_po")); 
-                        rowArray.put(res.getString("shd_uom"));
-                        rowArray.put(res.getString("cm_code")); // 10 zero base
+                        rowArray.put(res.getString("sh_shipvia"));
+                        rowArray.put(res.getString("lbl_po")); 
+                        rowArray.put(res.getString("shd_uom")); // 10 zero base
+                        rowArray.put(res.getString("cm_code")); 
                         rowArray.put(res.getString("cm_name")); 
                         rowArray.put(res.getString("cm_line1"));
                         rowArray.put(res.getString("cm_line2"));
@@ -657,12 +662,17 @@ public class lblData {
                         rowArray.put(res.getString("cms_line2"));
                         rowArray.put(res.getString("cms_city"));  
                         rowArray.put(res.getString("cms_state"));
-                        rowArray.put(res.getString("cms_zip"));
-                        rowArray.put(res.getString("cms_country")); // 20 zero base
+                        rowArray.put(res.getString("cms_zip")); // 20 zero base
+                        rowArray.put(res.getString("cms_country"));
                         rowArray.put(res.getString("cms_plantcode"));
                         rowArray.put(res.getString("site_desc"));
                         rowArray.put(res.getString("site_line1"));
-                        rowArray.put(res.getString("color"));
+                        rowArray.put(res.getString("site_city"));
+                        rowArray.put(res.getString("site_state"));
+                        rowArray.put(res.getString("site_zip"));
+                        rowArray.put(res.getString("site_country"));
+                        rowArray.put(res.getString("ov_jasper_directory"));
+                        rowArray.put(res.getString("color")); // 30 zero base
                         rowArray.put(res.getString("size"));
                         
                         jsonarray.put(rowArray);

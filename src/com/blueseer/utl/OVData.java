@@ -17797,11 +17797,11 @@ return mystring;
         int k = 0;
         for (Object[] rowData : rData) {
             if (k == 0) {
-                logo = (rowData[39].toString().isBlank()) ? rowData[40].toString() : rowData[39].toString(); // if cm_logo = "" then site_logo
-                jasperdir = rowData[44].toString();
-                imagedir = rowData[41].toString();
-                ship_csz = rowData[30].toString() + " " + rowData[31].toString() + " " + rowData[32].toString() + " " + rowData[33].toString();
-                site_csz = rowData[34].toString() + " " + rowData[35].toString() + " " + rowData[36].toString() + " " + rowData[37].toString();
+               // logo = (rowData[39].toString().isBlank()) ? rowData[40].toString() : rowData[39].toString(); // if cm_logo = "" then site_logo
+                jasperdir = rowData[29].toString();
+               // imagedir = rowData[41].toString();
+                ship_csz = rowData[18].toString() + " " + rowData[19].toString() + " " + rowData[20].toString() + " " + rowData[21].toString();
+                site_csz = rowData[25].toString() + " " + rowData[26].toString() + " " + rowData[27].toString() + " " + rowData[28].toString();
             }
                 list.add(rowData);
                 k++;
@@ -17809,9 +17809,10 @@ return mystring;
         
         
         String[] rec;
-        String columnnames = "sh_id, shd_so, lbl_id, lbl_id_str, lbl_item, shd_desc, lbl_qty," +
+        String columnnames = "sh_id,shd_so,lbl_id,lbl_id_str,lbl_item,shd_desc,lbl_qty," +
                 "sh_cust,sh_shipvia,lbl_po,shd_uom,cm_code,cm_name,cm_line1,cm_line2," +
-                "cms_name,cms_line1,cms_line2,cms_zip,cms_plantcode,site_desc,site_line1";
+                "cms_name,cms_line1,cms_line2,cms_zip,cms_plantcode,site_desc,site_line1," +
+                "site_city,site_state,site_zip,site_country,ov_jasper_directory,color,size";
         String[] columnnamesarray = columnnames.split(",", -1);
         JRDataSource datasource = new ListOfArrayDataSource(list, columnnamesarray);
         Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
