@@ -1096,6 +1096,18 @@ public class lblData {
 
     public static String getLabelSerialDisplay(String serialno) {
 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id","getLabelSerialDisplay"});
+            list.add(new String[]{"param1",serialno});
+            try {
+                return sendServerPost(list, "", null, "dataServLBL"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        }
+        
         String r = "";
         
       try {

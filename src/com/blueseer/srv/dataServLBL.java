@@ -27,6 +27,7 @@ package com.blueseer.srv;
 
 
 import com.blueseer.lbl.lblData;
+import static com.blueseer.lbl.lblData.getLabelSerialDisplay;
 import static com.blueseer.lbl.lblData.getLabelZebraMstr;
 import com.blueseer.shp.shpData;
 import static com.blueseer.shp.shpData.getShipperMstrSet;
@@ -127,7 +128,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         String r = objectMapper.writeValueAsString(lz);
         response.getWriter().print(r);
         }
-        break;    
+        break; 
+        
+        case "getLabelSerialDisplay" :        
+            response.getWriter().print(getLabelSerialDisplay(request.getHeader("param1")));
+            break; 
         
         default:
         response.getWriter().print("no switch case exists in dataServLBL for id: " + id);
