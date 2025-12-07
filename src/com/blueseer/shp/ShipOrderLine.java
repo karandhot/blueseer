@@ -446,7 +446,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
                    btadd.setEnabled(false);
                    tbkey.setEditable(false);
                    tbkey.setForeground(Color.blue);
-                   if (getShipperStatus(tbkey.getText()).equals("1")) {
+                   if (sh.sh_status().equals("1")) {
                       btadd.setEnabled(false);
                       btupdate.setEnabled(false);
                       btdelete.setEnabled(false);
