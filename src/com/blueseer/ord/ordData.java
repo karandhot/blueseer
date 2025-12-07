@@ -5143,6 +5143,20 @@ public class ordData {
     
     
     public static String[] getOrderLineInfo(String order, String line) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getOrderLineInfo"});
+            list.add(new String[]{"param1", order});
+            list.add(new String[]{"param2", line});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        } 
+        
         String[] x = null;  // returns item, desc, ordqty, uom, listprice, disc, netprice, custitem, wh, loc, po
         try{
         Connection con = null;

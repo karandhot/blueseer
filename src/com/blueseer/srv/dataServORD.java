@@ -37,6 +37,7 @@ import static com.blueseer.ord.ordData.getOrderChangeReportData;
 import static com.blueseer.ord.ordData.getOrderDet;
 import static com.blueseer.ord.ordData.getOrderDetailExport;
 import static com.blueseer.ord.ordData.getOrderDetailExportNew;
+import static com.blueseer.ord.ordData.getOrderMstr;
 import static com.blueseer.ord.ordData.getOrderMstrSet;
 import static com.blueseer.ord.ordData.getOrderReportData;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
@@ -299,6 +300,12 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         case "getOrderLines" :
             response.getWriter().print(ArrayListStringToJson(ordData.getOrderLines(request.getHeader("param1"))));  
             break; 
+            
+        case "getOrderLineInfo" :
+            response.getWriter().print(arrayToJson(ordData.getOrderLineInfo(request.getHeader("param1"),
+                    request.getHeader("param2")
+                    )));  
+            break;    
         
         case "getServiceOrderLines" :
             response.getWriter().print(ArrayListStringToJson(ordData.getServiceOrderLines(request.getHeader("param1"))));  
@@ -324,6 +331,14 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         response.getWriter().print(r);
         }
         break; 
+        
+        case "getOrderMstr" : {       
+        ordData.so_mstr so = getOrderMstr(new String[]{request.getHeader("param1")});
+        ObjectMapper objectMapper = new ObjectMapper();
+        String r = objectMapper.writeValueAsString(so);
+        response.getWriter().print(r);
+        }
+        break;
         
         case "getOrderDet" : {       
         ordData.sod_det sd = getOrderDet(request.getHeader("param1"), request.getHeader("param2"));
