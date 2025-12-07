@@ -95,7 +95,9 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             ArrayList<lblData.label_det> sdlist = null;
             if (ca[0] != null) {
             lblData.label_det[] sdarray = objectMapper.readValue(ca[0], lblData.label_det[].class);
-            sdlist = new ArrayList<>(Arrays.asList(sdarray));
+                if (sdarray != null) {
+                sdlist = new ArrayList<>(Arrays.asList(sdarray));
+                }
             }
             lblData.label_mstr[] starray = objectMapper.readValue(ca[1], lblData.label_mstr[].class);
             ArrayList<lblData.label_mstr> stlist = new ArrayList<>(Arrays.asList(starray));
