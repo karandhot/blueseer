@@ -6136,15 +6136,16 @@ public class ordData {
                         ";");  
                  }
                     
-                 
+                
                     while (res.next()) {
                         JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("gear");
                         rowArray.put(res.getString("sodc_line"));
                         rowArray.put(res.getString("sodc_item"));
                         rowArray.put(res.getDouble("sod_listprice"));
                         rowArray.put(res.getDouble("sodc_price"));
                         rowArray.put(res.getDouble("sod_ord_qty"));
-                        rowArray.put(res.getString("sodc_qty"));
+                        rowArray.put(res.getDouble("sodc_qty"));
                         jsonarray.put(rowArray);
                     }
            }

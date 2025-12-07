@@ -648,6 +648,21 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
     public void done_getDetail() {
       modeldetail.setNumRows(0);
          double dols = 0;
+         /*
+         BlueSeerUtils.clickgear,
+                      bsNumber(res.getString("sodc_line")), 
+                      res.getString("sodc_item"),
+                      bsParseDouble(currformatDouble(res.getDouble("sod_listprice"))),
+                      bsParseDouble(currformatDouble(res.getDouble("sodc_price"))),
+                      bsNumber(res.getDouble("sod_ord_qty")), 
+                      bsNumber(res.getDouble("sodc_qty"))});
+         */
+         
+         for (int j = 0; j < roData.length; j++) { 
+            if (roData[j][0].equals("gear")) { 
+                roData[j][0] = BlueSeerUtils.clickgear;
+            }
+        }
          
        if (roData != null) {
         if (roData.length > 0) {
