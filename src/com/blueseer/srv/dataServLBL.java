@@ -92,10 +92,12 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             reader.close();
             ObjectMapper objectMapper = new ObjectMapper();
             String[] ca = sb.toString().split("=_=", -1);
+            if (ca[0] != null) {
             lblData.label_det[] sdarray = objectMapper.readValue(ca[0], lblData.label_det[].class);
-            ArrayList<lblData.label_det> sdlist = new ArrayList<lblData.label_det>(Arrays.asList(sdarray));
+            ArrayList<lblData.label_det> sdlist = new ArrayList<>(Arrays.asList(sdarray));
+            }
             lblData.label_mstr[] starray = objectMapper.readValue(ca[1], lblData.label_mstr[].class);
-            ArrayList<lblData.label_mstr> stlist = new ArrayList<lblData.label_mstr>(Arrays.asList(starray));
+            ArrayList<lblData.label_mstr> stlist = new ArrayList<>(Arrays.asList(starray));
             response.getWriter().print(arrayToJson(lblData.addMultiLabelTransaction(sdlist, stlist)));  
             break;
             
