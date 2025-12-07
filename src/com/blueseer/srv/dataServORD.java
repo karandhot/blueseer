@@ -32,6 +32,7 @@ import com.blueseer.ord.ordData;
 import static com.blueseer.ord.ordData.addUpdateSOMeta;
 import static com.blueseer.ord.ordData.applyOrderChange;
 import static com.blueseer.ord.ordData.getOrderBrowseView;
+import static com.blueseer.ord.ordData.getOrderChangeBrowseDetail;
 import static com.blueseer.ord.ordData.getOrderChangeBrowseView;
 import static com.blueseer.ord.ordData.getOrderChangeExport;
 import static com.blueseer.ord.ordData.getOrderChangeReportData;
@@ -297,6 +298,12 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         case "getOrderBrowseDetail" :
             response.getWriter().print(ordData.getOrderBrowseDetail(request.getHeader("param1")));  
             break;
+            
+        case "getOrderChangeBrowseDetail" :
+            response.getWriter().print(ordData.getOrderChangeBrowseDetail(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3")));  
+            break;    
             
         case "getOrderLines" :
             response.getWriter().print(ArrayListStringToJson(ordData.getOrderLines(request.getHeader("param1"))));  
