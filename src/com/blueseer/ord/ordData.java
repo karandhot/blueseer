@@ -6078,9 +6078,9 @@ public class ordData {
                         rowArray.put("detail");
                         rowArray.put(res.getString("soc_id"));
                         rowArray.put(res.getString("so_nbr"));
-                        rowArray.put(res.getDouble("soc_po"));
-                        rowArray.put(res.getDouble("soc_chgdate"));
-                        rowArray.put(res.getDouble("cm_name"));
+                        rowArray.put(res.getString("soc_po"));
+                        rowArray.put(res.getString("soc_chgdate"));
+                        rowArray.put(res.getString("cm_name"));
                         rowArray.put(res.getString("so_due_date"));
                         rowArray.put(res.getString("soc_duedate"));
                         rowArray.put(change);
