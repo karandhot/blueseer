@@ -1379,6 +1379,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
 
             String label = cusData.getCustLabel(sh.sh_cust());
             label  = (label.isBlank()) ? "sscc18J" : label; 
+            System.out.println("HERE b4: " + label + " / " + label.length());
             label_zebra lz = getLabelZebraMstr(new String[]{label});
             if (lz.lblz_file().endsWith("jasper")) {
                 printJasperLabelMultiNew(tbkey.getText(), lz.lblz_file());
