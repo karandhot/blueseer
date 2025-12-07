@@ -2642,7 +2642,7 @@ public class BlueSeerUtils {
 
 
                 while ((output = br.readLine()) != null) {
-                    sb.append(output).append("\n");
+                    sb.append(output);
                 }
                 br.close(); 
             }
@@ -2709,7 +2709,6 @@ public class BlueSeerUtils {
 
 
                 while ((output = br.readLine()) != null) {
-                    // sb.append(output).append("\n");
                     sb.append(output);
                 }
                 br.close(); 

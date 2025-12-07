@@ -540,8 +540,6 @@ public class lblData {
     public static label_zebra getLabelZebraMstr(String[] x) {
         label_zebra r = null;
         String[] m = new String[2];
-        System.out.println("HERE: " + x[0] + " / " + x[0].length());
-        
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id", "getLabelZebraMstr"});

@@ -322,7 +322,8 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                request.getHeader("fromcust"), 
                request.getHeader("tocust"), 
                request.getHeader("site"), 
-               request.getHeader("datetype")
+               request.getHeader("posearch"),
+               request.getHeader("isdetached")               
                };     
         response.getWriter().println(getOrderChangeReportData(ocr));
         }
