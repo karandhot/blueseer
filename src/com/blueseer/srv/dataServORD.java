@@ -301,6 +301,10 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(ArrayListStringToJson(ordData.getOrderLines(request.getHeader("param1"))));  
             break; 
             
+        case "getSOMetaNotes" :
+            response.getWriter().print(ArrayListStringToJson(ordData.getSOMetaNotes(request.getHeader("param1"))));  
+            break;    
+            
         case "getOrderLineInfo" :
             response.getWriter().print(arrayToJson(ordData.getOrderLineInfo(request.getHeader("param1"),
                     request.getHeader("param2")

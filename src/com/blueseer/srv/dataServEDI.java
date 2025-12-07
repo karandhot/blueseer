@@ -174,7 +174,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getEDIMetaValueDetail" :
             response.getWriter().print(ArrayListStringArrayToJson(ediData.getEDIMetaValueDetail(request.getHeader("param1"), request.getHeader("param2"))));
-            break;   
+            break;  
+            
+        case "getEDIMetaValueAll" :
+            response.getWriter().print(ArrayListStringArrayToJson(ediData.getEDIMetaValueAll(request.getHeader("param1"))));
+            break;    
             
         case "getEDIMetaValueHeader" :
             response.getWriter().print(ArrayListStringArrayToJson(ediData.getEDIMetaValueHeader(request.getHeader("param1"))));

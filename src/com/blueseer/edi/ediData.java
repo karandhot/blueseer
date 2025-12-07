@@ -3561,7 +3561,19 @@ public class ediData {
     }   
     
     public static ArrayList<String[]> getEDIMetaValueAll(String id) {
-         ArrayList<String[]> r = new ArrayList<String[]>();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getEDIMetaValueAll"});
+            list.add(new String[]{"param1", id});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        
+        ArrayList<String[]> r = new ArrayList<String[]>();
          
          try{
             

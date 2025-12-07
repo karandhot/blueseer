@@ -3915,6 +3915,19 @@ public class ordData {
     }
 
     public static ArrayList<String> getSOMetaNotes(String id) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getSOMetaNotes"});
+            list.add(new String[]{"param1", id});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
         ArrayList<String> r = new ArrayList<String>();
         
         try{
