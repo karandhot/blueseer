@@ -168,7 +168,15 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "getInvoicePrintData" :
             response.getWriter().print(shpData.getInvoicePrintData(request.getHeader("param1"),
                     request.getHeader("param2")));    
-            break;     
+            break; 
+            
+        case "getShipperHeader" :
+            response.getWriter().print(arrayToJson(shpData.getShipperHeader(request.getHeader("param1"))));  
+            break;
+            
+        case "getShipperLines" :
+            response.getWriter().print(ArrayListStringArrayToJson(shpData.getShipperLines(request.getHeader("param1"))));
+            break;    
             
         default:
         response.getWriter().print("no switch case exists in dataServADM for id: " + id);

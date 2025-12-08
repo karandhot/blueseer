@@ -3430,6 +3430,18 @@ public class shpData {
     
     public static String[] getShipperHeader(String shipper) {
 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getShipperHeader"});
+            list.add(new String[]{"param1",shipper});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServSHP"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
           String[] H = new String[35];
           for (int i = 0; i < H.length; i++) {
               H[i] = "";
@@ -3566,7 +3578,20 @@ public class shpData {
     
     
     public static ArrayList<String[]> getShipperLines(String shipper) {
-          ArrayList<String[]> mylist = new ArrayList();  
+    
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id","getShipperLines"});
+            list.add(new String[]{"param1",shipper});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServSHP"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+    ArrayList<String[]> mylist = new ArrayList();  
 
     try{
 
