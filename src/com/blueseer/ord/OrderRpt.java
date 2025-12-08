@@ -606,7 +606,7 @@ public class OrderRpt extends javax.swing.JPanel {
         File f = new File(path);
         BufferedWriter output = null;
         
-        String[] dar = data.split("\\n");
+        String[] dar = data.split("=_=");
         try {
             output = new BufferedWriter(new FileWriter(f));
             for (String d : dar) {
@@ -643,7 +643,7 @@ public class OrderRpt extends javax.swing.JPanel {
         } else {
             tocust = ddtocust.getSelectedItem().toString();
         }
-        ArrayList<String[]> list = new ArrayList<String[]>();
+        ArrayList<String[]> list = new ArrayList<>();
         list.add(new String[]{"id","exportOrderDetail"});
         list.add(new String[]{"fromdate",setDateDB(dcFrom.getDate())});
         list.add(new String[]{"todate",setDateDB(dcTo.getDate())});

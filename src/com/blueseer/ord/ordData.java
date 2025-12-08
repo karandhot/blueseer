@@ -6054,6 +6054,7 @@ public class ordData {
                         " soc_chgdate <= " + "'" + keys[1] + "'" + 
                         " order by soc_id desc ;");
              } else {
+                 
                  res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status  " +
                      " from so_mstr inner join so_chg on soc_po = so_po inner join cm_mstr on cm_code = so_cust where " +
                         " so_site = " + "'" + keys[4] + "'" + " AND " +
@@ -6062,8 +6063,29 @@ public class ordData {
                         " so_create_date >= " + "'" + keys[0] + "'" + " AND " +
                         " so_create_date <= " + "'" + keys[1] + "'" +     
                         " order by so_nbr desc ;");
+                 
+                 /*
+                 res = st.executeQuery("select cm_name, so_nbr, so_po, soc_po, soc_id, soc_chgdate, so_due_date, soc_duedate, soc_status,  " +
+                     " (select sodc_qty from sod_chg where sodc_id = soc_id) as chgqty " +    
+                     " from so_mstr inner join so_chg on soc_po = so_po inner join cm_mstr on cm_code = so_cust where " +
+                        " so_site = " + "'" + keys[4] + "'" + " AND " +
+                        " so_cust >= " + "'" + keys[2] + "'" + " AND " +        
+                        " so_cust <= " + "'" + keys[3] + "'" + " AND " +
+                        " so_create_date >= " + "'" + keys[0] + "'" + " AND " +
+                        " so_create_date <= " + "'" + keys[1] + "'" +     
+                        " order by so_nbr desc ;");
+                 */
+                 
              }  
-                    
+             
+                /* 
+                String sql = "select soc_type, sod_line, sod_item, sod_ord_qty, sod_listprice, sodc_qty, sodc_price from sod_chg " +
+                " inner join so_chg on soc_id = sodc_id " +
+                " inner join sod_det on sodc_po = sod_po and sodc_line = sod_line " +
+                " where sod_po = ? " +
+                " and sodc_id = ? " +
+                ";";
+                */
                  
                     while (res.next()) {
                         
@@ -6348,7 +6370,7 @@ public class ordData {
             
             String header = "Sales Order Number, PO Number, Order Create Date, PO/Order Date, Customer Name, Shipto ID, Shipto Name, DueDate, Order Line Number, Item Number, Item Description, Master Sku, Sku Number, AltItemNumber, UOM, Order Quantity, Order Price, Pack Qty, Header KVPair, Detail KVPair";
           //  output.write(header + "\n");
-            sb.append(header).append("\n");
+            sb.append(header).append("=_=");
             try {
                 // for (int i = 0; i < list.size(); i++) {
                
@@ -6377,7 +6399,7 @@ public class ordData {
                      for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
                        line.append(res.getString(j).replace(",","")).append(",");
                      }
-                    sb.append(line.toString()).append("\n");
+                    sb.append(line.toString()).append("=_=");
                  }
                
                 

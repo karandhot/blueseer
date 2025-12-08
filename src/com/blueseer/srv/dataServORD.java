@@ -250,7 +250,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             break;    
             
         case "exportOrderDetail" : 
-        response.getWriter().println(getOrderDetailExportNew(request.getHeader("fromdate"), 
+        response.getWriter().print(getOrderDetailExportNew(request.getHeader("fromdate"), 
                 request.getHeader("todate"), 
                 request.getHeader("fromcust"), 
                 request.getHeader("tocust"), 
