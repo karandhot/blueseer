@@ -6399,7 +6399,6 @@ public class ordData {
                     xline = "";
                     // StringBuilder line = new StringBuilder();
                      for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
-                      // line.append(res.getString(j).replace(",","")).append(",");
                        xline = xline + res.getString(j).replace(",","") + ",";
                      }
                      if (xline != null && xline.length() > 0 && xline.charAt(xline.length() - 1) == ',') {
@@ -6470,17 +6469,22 @@ public class ordData {
                
                
                 int k = 0;
+                String xline = "";
                 while (res.next()) {
+                    xline = "";
                     k++;
-                     StringBuilder line = new StringBuilder();
+                     // StringBuilder line = new StringBuilder();
                      for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
-                       line.append(res.getString(j).replace(",","")).append(",");
+                       xline = xline + res.getString(j).replace(",","") + ",";
+                     }
+                     if (xline != null && xline.length() > 0 && xline.charAt(xline.length() - 1) == ',') {
+                        xline = xline.substring(0, xline.length() - 1); // SB remove last ,
                      }
                      String[] hd = getEDIMetaValueAsKVStringPair(res.getString("soc_id"), res.getString("sod_line"));
                     // headerkvpair = getEDIMetaValueAsKVString(res.getString("so_nbr"), "header", "");
                     // detailkvpair = getEDIMetaValueAsKVString(res.getString("so_nbr"), "detail", res.getString("sod_line"));
                      
-                     sb.append(line.toString()).append(hd[0]).append(",").append(hd[1]).append("=_=");
+                     sb.append(xline).append(hd[0]).append(",").append(hd[1]).append("=_=");
                     // output.write(line.toString() + headerkvpair + "," + detailkvpair);
                     // output.write("\n");
                      // now add detailkvpair

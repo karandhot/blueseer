@@ -1,6 +1,7 @@
 param(
 [string] $version,
-[string] $patch
+[string] $patch,
+[string] $onlyjar
 )
 
 if (-not($version)) { throw "You must supply a version:  6.4, 6.5, etc" }
@@ -19,6 +20,19 @@ $wip = "c:\bs\wip"
 #     } 
 #}
 
+
+if ($onlyjar) {
+
+# create jar only patch zip file
+$jaronly = "blueseer.jaronly." + $version + "." + $patch  + ".zip"
+rm $wip\$jaronly
+compress-archive -update -path ..\dist\blueseer.jar -destinationpath $wip\$jaronly
+compress-archive -update -path ..\dist\bsmf.jar -destinationpath $wip\$jaronly
+compress-archive -update -path instructions.txt -destinationpath $wip\$jaronly
+
+exit
+
+}
 
 # create jar only patch zip file
 $jaronly = "blueseer.jaronly." + $version + "." + $patch  + ".zip"
