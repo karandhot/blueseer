@@ -51,6 +51,8 @@ import static com.blueseer.edi.apiUtils.getPublicKeyAsPEM;
 import static com.blueseer.edi.apiUtils.hashdigest;
 import static com.blueseer.edi.apiUtils.postAS2;
 import static com.blueseer.edi.apiUtils.runAPIPost;
+import com.blueseer.far.farData;
+import static com.blueseer.far.farData.getARMstr;
 import com.blueseer.fgl.fglData;
 import com.blueseer.fgl.fglData.AcctMstr;
 import static com.blueseer.fgl.fglData.addAcctMstr;
@@ -312,6 +314,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       ArrayList<exc_mstr> emlist = getExcMstr(base);
       ObjectMapper objectMapper = new ObjectMapper();
       String r = objectMapper.writeValueAsString(emlist);
+      response.getWriter().print(r);
+    }
+    
+    if (id.equals("getARMstr")) { 
+      String[] key = new String[]{request.getHeader("param1"), request.getHeader("param2")}; 
+      farData.ar_mstr am = getARMstr(key);
+      ObjectMapper objectMapper = new ObjectMapper();
+      String r = objectMapper.writeValueAsString(am);
       response.getWriter().print(r);
     }
     

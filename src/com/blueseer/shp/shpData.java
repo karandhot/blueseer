@@ -36,6 +36,7 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
 import static com.blueseer.ctr.cusData._getCMSDet;
+import static com.blueseer.ctr.cusData._getCustMstr;
 import com.blueseer.ctr.cusData.cm_mstr;
 import com.blueseer.edi.EDI.edi810;
 import com.blueseer.edi.EDI.edi855;
@@ -859,9 +860,10 @@ public class shpData {
             ArrayList<ship_tree> sht = _getShipTree(x, bscon, ps, res);
             ArrayList<sh_meta> shm = _getShipMeta(x, bscon, ps, res);
             cusData.cms_det cms = _getCMSDet(sh.sh_cust(), sh.sh_ship(), bscon, ps, res );
+            cusData.cm_mstr cm = _getCustMstr(sh.sh_cust(), bscon, ps, res );
             
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
-            r = new Shipper(m, sh, shd, shs, sht, shm, cms);
+            r = new Shipper(m, sh, shd, shs, sht, shm, cms, cm);
             
         } catch (SQLException s) {
              MainFrame.bslog(s);
@@ -4784,9 +4786,10 @@ public class shpData {
     }   
     
     public record Shipper(String[] m, ship_mstr sh, ArrayList<ship_det> shd,
-        ArrayList<shs_det> shs, ArrayList<ship_tree> sht, ArrayList<sh_meta> shmeta, cusData.cms_det cms) {
+        ArrayList<shs_det> shs, ArrayList<ship_tree> sht, ArrayList<sh_meta> shmeta, 
+        cusData.cms_det cms, cusData.cm_mstr cm) {
         public Shipper(String[] m) {
-            this (m, null, null, null, null, null, null);
+            this (m, null, null, null, null, null, null, null);
         }
     }
     

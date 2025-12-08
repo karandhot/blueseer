@@ -26,6 +26,7 @@ SOFTWARE.
 package com.blueseer.far;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
@@ -33,6 +34,9 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -289,10 +293,28 @@ public class farData {
     public static ar_mstr getARMstr(String[] x) {
         ar_mstr r = null;
         String[] m = new String[2];
-        String sql = "select * from ar_mstr where ar_nbr = ? ;";
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id","getARMstr"});
+            list.add(new String[]{"param1",x[0]});
+            list.add(new String[]{"param2",x[1]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServFIN");
+                r = objectMapper.readValue(returnstring, ar_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new ar_mstr(m);
+                return r;
+            }
+        }
+        String sql = "select * from ar_mstr where ar_nbr = ? and ar_type = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
         ps.setString(1, x[0]);
+        ps.setString(2, x[1]);
              try (ResultSet res = ps.executeQuery();) {
                 if (! res.isBeforeFirst()) {
                 m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};

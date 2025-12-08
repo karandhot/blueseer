@@ -35,12 +35,22 @@ import com.blueseer.utl.OVData;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.ctr.cusData.cm_mstr;
+import com.blueseer.ctr.cusData.cms_det;
+import com.blueseer.far.farData.ar_mstr;
 import com.blueseer.fgl.fglData;
 import static com.blueseer.fgl.fglData.AcctBalEntry;
 import com.blueseer.ord.ordData;
+
 import com.blueseer.shp.shpData;
 import static com.blueseer.shp.shpData.getShipperHeader;
 import static com.blueseer.shp.shpData.getShipperLines;
+import static com.blueseer.shp.shpData.getShipperMstrSet;
+import com.blueseer.shp.shpData.sh_meta;
+import com.blueseer.shp.shpData.ship_det;
+import com.blueseer.shp.shpData.ship_mstr;
+import com.blueseer.shp.shpData.ship_tree;
+import com.blueseer.shp.shpData.shs_det;
 import static com.blueseer.srv.SalesOrdServ.getSalesOrderJSON;
 import static com.blueseer.srv.ShipperServ.getInvoiceJSON;
 import static com.blueseer.srv.ShipperServ.getInvoiceXML;
@@ -51,6 +61,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.currformatDoubleWithSymbol;
+import com.blueseer.utl.BlueSeerUtils.dbaction;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
@@ -116,8 +127,21 @@ public class InvoiceMaint extends javax.swing.JPanel {
 
      // global variable declarations
                 boolean isLoad = false;
+                boolean canupdate = false;
                 int ordercount = 0;
+                String basecurr = "USD";
+                String defaultsite = "";
                 String status = "";
+                Object[][] rData;
+                ArrayList<String[]> initDataSets = new ArrayList<>();
+                 public static ship_mstr sh = null;
+                public static ArrayList<ship_det> shdlist = null;
+                public static ArrayList<shs_det> shslist = null;
+                public static ArrayList<ship_tree> shtlist = null;
+                public static ArrayList<sh_meta> shmlist = null;
+                public static cms_det cms = null;
+                public static cm_mstr cm = null;
+                public static ar_mstr ar = null;
                
             
                 
@@ -166,15 +190,15 @@ public class InvoiceMaint extends javax.swing.JPanel {
    
     
      // interface functions implemented
-    public void executeTask(String x, String[] y) { 
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
       
         class Task extends SwingWorker<String[], Void> {
        
           String type = "";
           String[] key = null;
           
-          public Task(String type, String[] key) { 
-              this.type = type;
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
               this.key = key;
           } 
            
@@ -186,6 +210,9 @@ public class InvoiceMaint extends javax.swing.JPanel {
             
             
              switch(this.type) {
+                case "init":
+                    message = getInitialization();
+                    break; 
                 case "add":
                     message = addRecord(key);
                     break;
@@ -216,6 +243,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
            } else if (this.type.equals("get") && message[0].equals("1")) {
              tbkey.requestFocus();
            } else if (this.type.equals("get") && message[0].equals("0")) {
+             updateForm();
              tbkey.requestFocus();
            } else {
              initvars(null);  
@@ -382,18 +410,34 @@ public class InvoiceMaint extends javax.swing.JPanel {
        
        
         ddcurr.removeAllItems();
-        ArrayList<String> curr = fglData.getCurrlist();
-        for (int i = 0; i < curr.size(); i++) {
-            ddcurr.addItem(curr.get(i));
-        }
-        ddcurr.setSelectedItem(OVData.getDefaultCurrency());
-        
         ddsite.removeAllItems();
-        ArrayList<String> mylist = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (String code : mylist) {
-            ddsite.addItem(code);
+        ddshipvia.removeAllItems();
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              basecurr = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canupdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultsite = s[1]; 
+            }
+            if (s[0].equals("currencies")) {
+              ddcurr.addItem(s[1]); 
+            }
+            if (s[0].equals("carriers")) {
+              ddshipvia.addItem(s[1]); 
+            }
         }
-        ddsite.setSelectedItem(OVData.getDefaultSite());
+        
+        ddsite.setSelectedItem(defaultsite);
+        ddcurr.insertItemAt("", 0);
+        ddcurr.setSelectedIndex(0);
+        
         
         attachmentmodel.setNumRows(0);
         tableattachment.setModel(attachmentmodel);
@@ -424,35 +468,34 @@ public class InvoiceMaint extends javax.swing.JPanel {
         tbkey.requestFocus();
     }
     
-    public String[] setAction(int i) {
-        String[] m = new String[2];
-        if (i > 0) {
-            m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};  
-                   setPanelComponentState(this, true);
-                   btvoid.setEnabled(false);
-                   tbkey.setEditable(false);
-                   tbkey.setForeground(Color.blue);
-                   
-                   // custom set
-                   if (status.equals("c")) {
-                       lbmessage.setText(getGlobalProgTag("closed"));
-                       lbmessage.setForeground(Color.red);
-                       btvoid.setEnabled(false);
-                       btupdate.setEnabled(false);
-                       cbispaid.setSelected(true);
-                   } else {
-                       lbmessage.setText(getGlobalProgTag("open"));
-                       lbmessage.setForeground(Color.blue);
-                       btvoid.setEnabled(true);
-                       btupdate.setEnabled(false);
-                       cbispaid.setSelected(false);
-                   }
+    public void setAction(String[] m) {
+        
+        if (m[0].equals("0")) {
+             
+           setPanelComponentState(this, true);
+           btvoid.setEnabled(false);
+           tbkey.setEditable(false);
+           tbkey.setForeground(Color.blue);
+
+           // custom set
+           if (status.equals("c")) {
+               lbmessage.setText(getGlobalProgTag("closed"));
+               lbmessage.setForeground(Color.red);
+               btvoid.setEnabled(false);
+               btupdate.setEnabled(false);
+               cbispaid.setSelected(true);
+           } else {
+               lbmessage.setText(getGlobalProgTag("open"));
+               lbmessage.setForeground(Color.blue);
+               btvoid.setEnabled(true);
+               btupdate.setEnabled(false);
+               cbispaid.setSelected(false);
+           }
                    
         } else {
-           m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};  
-                   tbkey.setForeground(Color.red); 
+           tbkey.setForeground(Color.red); 
         }
-        return m;
+        
     }
     
     public boolean validateInput(String x) {
@@ -485,17 +528,35 @@ public class InvoiceMaint extends javax.swing.JPanel {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
         btclear.setEnabled(true);
         btlookup.setEnabled(true);
         
+        executeTask(BlueSeerUtils.dbaction.init, null);
+        
         if (arg != null && arg.length > 0) {
-            executeTask("get",arg);
+            executeTask(dbaction.get ,arg);
         } else {
             tbkey.setEnabled(true);
             tbkey.setEditable(true);
             tbkey.requestFocus();
         }
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = ordData.getSalesOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+        
+    }  
+    
+    public void done_Initialization() {
+        isLoad = true;
+        setComponentDefaultValues();
+        isLoad = false;
+        
     }
     
     public String[] addRecord(String[] x) {
@@ -589,7 +650,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
      return m;
      }
      
-     public String[] deleteRecord(String[] x) {
+    public String[] deleteRecord(String[] x) {
      String[] m = new String[2];
         bsmf.MainFrame.show(getMessageTag(1131));
         boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
@@ -733,122 +794,92 @@ public class InvoiceMaint extends javax.swing.JPanel {
         }
      return m;
      }
-   
-      
+         
     public String[] getRecord(String[] x) {
-       String[] m = new String[2];
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        
+        shpData.Shipper z = getShipperMstrSet(x); 
+        sh = z.sh();
+        shdlist = z.shd();
+        shslist = z.shs();
+        shtlist = z.sht();
+        shmlist = z.shmeta();
+        cms = z.cms();
+        cm = z.cm();
+        ar = farData.getARMstr(new String[]{x[0], "I"});
+        return z.m();
+    }
+   
+    public void updateForm() {
+        
+        String po = "";
+        String order = "";
+        int d = 0;
+        for (ship_det sd : shdlist) {
+            if (d > 0) {
+               if ( po.compareTo(sd.shd_po()) != 0) {
+               po = "multi-PO";
+               order = "multi-order";
+               break;
+               }
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                 int i = 0;
-                int d = 0;
-                String order = "";
-                String po = "";
-                
-                 res = st.executeQuery("select shd_soline, shd_item, shd_so, shd_po, sum(shd_qty) as sumqty, shd_netprice, shd_desc, " +
-                         " shd_disc, shd_listprice, shd_taxamt " +
-                         " from ship_det where shd_id = " + "'" + x[0] + "'" +
-                                       " group by shd_so, shd_soline, shd_item, shd_po, shd_netprice, shd_desc, shd_disc, shd_listprice, shd_taxamt " + ";");
-                while (res.next()) {
-                  myshipdetmodel.addRow(new Object[]{res.getString("shd_soline"), res.getString("shd_item"), 
-                      res.getString("shd_so"), 
-                      res.getString("shd_po"), 
-                      res.getString("sumqty"), 
-                      res.getString("shd_netprice"),
-                      res.getString("shd_desc"),
-                      res.getString("shd_disc"),
-                      res.getString("shd_listprice"),
-                      res.getString("shd_taxamt")
+         d++;
+         po = sd.shd_po();
+         order = sd.shd_so();
+        myshipdetmodel.addRow(new Object[]{sd.shd_soline(), sd.shd_item(), 
+                      sd.shd_so(), 
+                      sd.shd_po(), 
+                      (sd.shd_qty() * sd.shd_netprice()), 
+                      sd.shd_netprice(),
+                      sd.shd_desc(),
+                      sd.shd_disc(),
+                      sd.shd_listprice(),
+                      sd.shd_taxamt()
                   });
-                  
-                  // lets determine if single or multi PO / SO
-                  if (d > 0) {
-                           if ( po.compareTo(res.getString("shd_po")) != 0) {
-                           po = "multi-PO";
-                           order = "multi-order";
-                           break;
-                           }
-                         }
-                         d++;
-                         po = res.getString("shd_po");
-                         order = res.getString("shd_so");
-                }
-                
-                res = st.executeQuery("select * from ship_mstr left outer join cms_det on cms_shipto = sh_ship " +
-                        " inner join cm_mstr on cm_code = sh_cust " + 
-                        " inner join ar_mstr on ar_nbr = sh_id and ar_type = 'I' " +
-                         " where sh_id = " + "'" + x[0] + "'" + ";");
-                while (res.next()) {
-                    i++;
-                    
-                    tbkey.setText(res.getString("sh_id"));
-                    tbcust.setText(res.getString("sh_cust"));
-                    lbcust.setText(res.getString("cm_name"));
-                    tbship.setText(res.getString("sh_ship"));
-                    tbordnbr.setText(order);
-                    tbpo.setText(po);
-                    tbtype.setText(res.getString("sh_type"));
-                    ddcurr.setSelectedItem(res.getString("sh_curr"));
-                    tbref.setText(res.getString("sh_ref"));
-                    tbtrailer.setText(res.getString("sh_trailer"));
-                    tbuserid.setText(res.getString("sh_userid"));
-                    tbremarks.setText(res.getString("sh_rmks"));
-                   // ddpo.setSelectedItem(res.getString("sh_po"));
-                    dcshipdate.setDate(parseDate(res.getString("sh_shipdate")));
-                    dcinvduedate.setDate(parseDate(res.getString("ar_duedate")));
-                    tbterms.setText(res.getString("ar_terms"));
-                    tbtaxcode.setText(res.getString("ar_tax_code"));
-                    tbaramt.setText(bsFormatDouble(res.getDouble("ar_amt")));
-                    tbartaxamt.setText(bsFormatDouble(res.getDouble("ar_amt_tax")));
-                    tbopenamt.setText(bsFormatDouble(res.getDouble("ar_open_amt")));
-                    tbbank.setText(res.getString("ar_bank"));
-                    ddshipvia.setSelectedItem(res.getString("sh_shipvia"));
-                    ddsite.setSelectedItem(res.getString("sh_site"));
-                    status = res.getString("ar_status");
-                    tbaracct.setText(res.getString("sh_ar_acct"));
-                    tbarcc.setText(res.getString("sh_ar_cc"));
-                    lbladdr.setText(res.getString("cms_name") + "  " + res.getString("cms_line1") + "..." + res.getString("cms_city") +
-                                    ", " + res.getString("cms_state") + " " + res.getString("cms_zip"));
-                }
-                
-                
-                    // now get sac table
-                    ArrayList<String[]> sac = shpData.getShipperSAC(x[0]);
-                 //write to shs_det
-                     for (String[] s : sac) {
-                         sacmodel.addRow(new Object[]{
-                         s[0], s[1], s[2], s[3], s[4]
-                         });
-                     }
-                   sactable.setModel(sacmodel);
-                
-                getAttachments(tbkey.getText());
-                
-                retotal();
-               
-                // set Action if Record found (i > 0)
-                m = setAction(i);
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordSQLError};  
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordConnError};  
         }
-      return m;
+        
+        
+        tbkey.setText(sh.sh_id());
+        tbcust.setText(sh.sh_cust());
+        lbcust.setText(cm.cm_name());
+        tbship.setText(sh.sh_ship());
+        tbordnbr.setText(order);
+        tbpo.setText(po);
+        tbtype.setText(sh.sh_type());
+        ddcurr.setSelectedItem(sh.sh_curr());
+        tbref.setText(sh.sh_ref());
+        tbtrailer.setText(sh.sh_trailer());
+        tbuserid.setText(sh.sh_userid());
+        tbremarks.setText(sh.sh_rmks());
+       // ddpo.setSelectedItem(res.getString("sh_po"));
+        dcshipdate.setDate(parseDate(sh.sh_shipdate()));
+        dcinvduedate.setDate(parseDate(ar.ar_duedate()));
+        tbterms.setText(ar.ar_terms());
+        tbtaxcode.setText(ar.ar_tax_code());
+        tbaramt.setText(bsFormatDouble(ar.ar_amt()));
+        tbartaxamt.setText(bsFormatDouble(ar.ar_amt_tax()));
+        tbopenamt.setText(bsFormatDouble(ar.ar_open_amt()));
+        tbbank.setText(ar.ar_bank());
+        ddshipvia.setSelectedItem(sh.sh_shipvia());
+        ddsite.setSelectedItem(sh.sh_site());
+        status = ar.ar_status();
+        tbaracct.setText(sh.sh_ar_acct());
+        tbarcc.setText(sh.sh_ar_cc());
+        lbladdr.setText(cms.cms_name() + "  " + cms.cms_line1() + "..." + cms.cms_city() +
+                        ", " + cms.cms_state() + " " + cms.cms_zip());
+        
+        for (shs_det shs : shslist) {
+         sacmodel.addRow(new Object[]{
+         shs.shs_so(), shs.shs_desc(), shs.shs_type(), shs.shs_amttype(), shs.shs_amt()
+         });
+        }
+        sactable.setModel(sacmodel);
+                
+        getAttachments(tbkey.getText());
+                
+        retotal();
+        setAction(sh.m());
+        
+        
     }
     
     public void lookUpFrame() {
@@ -952,36 +983,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
          sumlinecount();
     }
         
-    public void setLabelByShipTo(String shipto) {
-        try {
-            
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-                ResultSet res = null;
-            int i = 0;
-            try {
-                res = st.executeQuery("select * from cms_det where cms_shipto = " + "'" + shipto + "'" + ";");
-                while (res.next()) {
-                    i++;
-                }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }  
-    
+   
         
    
     
@@ -1652,16 +1654,16 @@ public class InvoiceMaint extends javax.swing.JPanel {
            return;
        }
         setPanelComponentState(this, false);
-        executeTask("delete", new String[]{tbkey.getText()});    
+        executeTask(dbaction.delete, new String[]{tbkey.getText()});    
     }//GEN-LAST:event_btvoidActionPerformed
 
     private void btPrintShpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btPrintShpActionPerformed
-        OVData.printShipper(tbkey.getText());
+        OVData.printShipperRemote(tbkey.getText(), "shipper");
 
     }//GEN-LAST:event_btPrintShpActionPerformed
 
     private void btPrintInvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btPrintInvActionPerformed
-       OVData.printInvoice(tbkey.getText().toUpperCase(), true);
+       OVData.printInvoiceRemote(tbkey.getText().toUpperCase(), "shipper", true);
     }//GEN-LAST:event_btPrintInvActionPerformed
 
     private void btupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateActionPerformed
@@ -1669,7 +1671,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
     }//GEN-LAST:event_btupdateActionPerformed
 
     private void tbkeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbkeyActionPerformed
-        executeTask("get", new String[]{tbkey.getText()});
+        executeTask(dbaction.get, new String[]{tbkey.getText()});
     }//GEN-LAST:event_tbkeyActionPerformed
 
     private void btlookupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupActionPerformed
