@@ -240,9 +240,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
             BlueSeerUtils.endTask(message);
            if (this.type.equals("delete")) {
              initvars(null);  
-           } else if (this.type.equals("get") && message[0].equals("1")) {
-             tbkey.requestFocus();
-           } else if (this.type.equals("get") && message[0].equals("0")) {
+           } else if (this.type.equals("get")) {
              updateForm();
              tbkey.requestFocus();
            } else {
@@ -373,6 +371,8 @@ public class InvoiceMaint extends javax.swing.JPanel {
     public void setComponentDefaultValues() {
        isLoad = true;
         
+       initDataSets = ordData.getSalesOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
+       
        jTabbedPane1.removeAll();
        jTabbedPane1.add("Main", panelMain);
        jTabbedPane1.add("Attachments", panelAttachment);
@@ -528,10 +528,11 @@ public class InvoiceMaint extends javax.swing.JPanel {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
+       setComponentDefaultValues();
         btclear.setEnabled(true);
         btlookup.setEnabled(true);
         
-        executeTask(BlueSeerUtils.dbaction.init, null);
+       // executeTask(BlueSeerUtils.dbaction.init, null);
         
         if (arg != null && arg.length > 0) {
             executeTask(dbaction.get ,arg);
@@ -811,6 +812,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
    
     public void updateForm() {
         
+        myshipdetmodel.setRowCount(0);
         String po = "";
         String order = "";
         int d = 0;
@@ -828,7 +830,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
         myshipdetmodel.addRow(new Object[]{sd.shd_soline(), sd.shd_item(), 
                       sd.shd_so(), 
                       sd.shd_po(), 
-                      (sd.shd_qty() * sd.shd_netprice()), 
+                      sd.shd_qty(), 
                       sd.shd_netprice(),
                       sd.shd_desc(),
                       sd.shd_disc(),

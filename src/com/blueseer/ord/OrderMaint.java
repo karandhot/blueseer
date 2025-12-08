@@ -546,6 +546,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
        // jTabbedPane1.setEnabledAt(1, false);
         //jTabbedPane1.setEnabledAt(2, false);
         
+        initDataSets = ordData.getSalesOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        
+        
         currentline = "";
         btitemkv.setEnabled(false);
         
@@ -1000,12 +1003,12 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
        jTabbedPane1.add(getClassLabelTag("notes", this.getClass().getSimpleName()), panelNotes);
        setPanelComponentState(this, false); 
        
-      // setComponentDefaultValues();
+       setComponentDefaultValues();
        
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         
-        executeTask(BlueSeerUtils.dbaction.init, null);
+       // executeTask(BlueSeerUtils.dbaction.init, null);
         isLoad = false;
         
         if (arg != null && arg.length > 0) {
