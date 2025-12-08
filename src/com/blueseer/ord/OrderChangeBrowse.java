@@ -860,7 +860,7 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         File f = new File(path);
         BufferedWriter output = null;
         
-        String[] dar = data.split("\\n");
+        String[] dar = data.split("=_=");
         try {
             output = new BufferedWriter(new FileWriter(f));
             for (String d : dar) {

@@ -6399,6 +6399,9 @@ public class ordData {
                      for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
                        line.append(res.getString(j).replace(",","")).append(",");
                      }
+                     if (line.length() > 0 && line.charAt(line.length() - 1) == ',') {
+                        line.substring(0, line.length() - 1); // SB remove last ,
+                     }
                     sb.append(line.toString()).append("=_=");
                  }
                
@@ -6440,7 +6443,7 @@ public class ordData {
             
             
            String header = "ChangeID, Sales Order Number, PO Number, Order Date, Change Date, Customer Name, Shipto Name, Shipto City, Shipto State, Shipto Zip,  Original DueDate, New DueDate, Remarks, Change Remarks, Order Line Number, Change Code, Item Number, Item Description, Sku Number, Original Order Quantity, Change Quantity, Original Order Price, Change Price, HeaderKVPair, DetailKVPair ";
-           sb.append(header).append("\n");
+           sb.append(header).append("=_=");
             try {
                 // for (int i = 0; i < list.size(); i++) {
                
@@ -6474,7 +6477,7 @@ public class ordData {
                     // headerkvpair = getEDIMetaValueAsKVString(res.getString("so_nbr"), "header", "");
                     // detailkvpair = getEDIMetaValueAsKVString(res.getString("so_nbr"), "detail", res.getString("sod_line"));
                      
-                     sb.append(line.toString()).append(hd[0]).append(",").append(hd[1]).append("\n");
+                     sb.append(line.toString()).append(hd[0]).append(",").append(hd[1]).append("=_=");
                     // output.write(line.toString() + headerkvpair + "," + detailkvpair);
                     // output.write("\n");
                      // now add detailkvpair
