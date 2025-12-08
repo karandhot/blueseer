@@ -6393,16 +6393,18 @@ public class ordData {
                         " AND so_site = " + "'" + site + "'" + 
                          " order by so_nbr asc ;"); 
                 int k = 0;
+                String xline = "";
                 while (res.next()) {
                     k++;
-                     StringBuilder line = new StringBuilder();
+                    // StringBuilder line = new StringBuilder();
                      for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
-                       line.append(res.getString(j).replace(",","")).append(",");
+                      // line.append(res.getString(j).replace(",","")).append(",");
+                       xline = xline + res.getString(j).replace(",","") + ",";
                      }
-                     if (line.length() > 0 && line.charAt(line.length() - 1) == ',') {
-                        line.substring(0, line.length() - 1); // SB remove last ,
+                     if (xline != null && xline.length() > 0 && xline.charAt(xline.length() - 1) == ',') {
+                        xline = xline.substring(0, xline.length() - 1); // SB remove last ,
                      }
-                    sb.append(line.toString()).append("=_=");
+                    sb.append(xline).append("=_=");
                  }
                
                 
