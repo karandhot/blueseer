@@ -6396,6 +6396,7 @@ public class ordData {
                 String xline = "";
                 while (res.next()) {
                     k++;
+                    xline = "";
                     // StringBuilder line = new StringBuilder();
                      for (int j = 1; j <= res.getMetaData().getColumnCount(); j++) {
                       // line.append(res.getString(j).replace(",","")).append(",");
