@@ -298,6 +298,46 @@ public class ShipperBrowse extends javax.swing.JPanel {
         
     }    
     
+    public void done_Initialization() {
+        
+        ddsite.removeAllItems();
+        
+        String defaultsite = "";
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+                      
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("currency")) {
+              defaultcurrency = s[1];  
+            }
+        }
+        
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+        
+        modeltable.setNumRows(0);
+        modeldetail.setNumRows(0);
+        
+        tabledetail.setModel(modeldetail);
+        tabledetail.getTableHeader().setReorderingAllowed(false);
+        tabledetail.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+               
+        tablereport.setModel(modeltable);
+        tablereport.getTableHeader().setReorderingAllowed(false);
+        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+      
+        tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+        tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
+       
+    }
+
     public String[] getShipperBrowseView() {
        
        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");        
@@ -348,46 +388,7 @@ public class ShipperBrowse extends javax.swing.JPanel {
       
     }
    
-    public void done_Initialization() {
-        
-        ddsite.removeAllItems();
-        
-        String defaultsite = "";
-        for (String[] s : initDataSets) {
-            if (s[0].equals("site")) {
-              defaultsite = s[1];  
-            }
-                      
-            if (s[0].equals("sites")) {
-              ddsite.addItem(s[1]); 
-            }
-            
-            if (s[0].equals("currency")) {
-              defaultcurrency = s[1];  
-            }
-        }
-        
-        if (ddsite.getItemCount() > 0) {
-            ddsite.setSelectedItem(defaultsite);
-        }
-        
-        modeltable.setNumRows(0);
-        modeldetail.setNumRows(0);
-        
-        tabledetail.setModel(modeldetail);
-        tabledetail.getTableHeader().setReorderingAllowed(false);
-        tabledetail.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
-               
-        tablereport.setModel(modeltable);
-        tablereport.getTableHeader().setReorderingAllowed(false);
-        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
-        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
-      
-        tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-        tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
-       
-    }
-
+    
     public void done_getShipperBrowseView() {
         double totsales = 0;
         double totqty = 0;

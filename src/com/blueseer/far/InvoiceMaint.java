@@ -542,7 +542,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
                         + " sh_rmks = " + "'" + tbremarks.getText() + "'" + ","
                         + " sh_userid = " + "'" + tbuserid.getText() + "'" + ","
                         + " sh_site = " + "'" + ddsite.getSelectedItem().toString() + "'"   
-                        + " where sh_id = " + "'" + tbkey.getText().toString() + "'"
+                        + " where sh_id = " + "'" + tbkey.getText() + "'"
                         + ";");
                     // delete the sod_det records and add back.
                     //  "Line", "Part", "SO", "PO", "Qty", "Price", "Desc"
@@ -1661,7 +1661,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
     }//GEN-LAST:event_btPrintShpActionPerformed
 
     private void btPrintInvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btPrintInvActionPerformed
-       OVData.printInvoice(tbkey.getText(), true);
+       OVData.printInvoice(tbkey.getText().toUpperCase(), true);
     }//GEN-LAST:event_btPrintInvActionPerformed
 
     private void btupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateActionPerformed

@@ -27,6 +27,8 @@ package com.blueseer.srv;
 
 
 import com.blueseer.adm.admData;
+import static com.blueseer.adm.admData.getSiteInit;
+import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import java.io.IOException;
@@ -74,7 +76,12 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "getAllPKSKeysExceptStore" : 
             response.getWriter().print(ArrayListStringToJson(admData.getAllPKSKeysExceptStore()));
             break;
-            
+     
+        case "getSiteInit" : { 
+            response.getWriter().print(ArrayListStringArrayToJson(getSiteInit(request.getHeader("param1"), request.getHeader("param2"))));
+            break;  
+        }    
+        
         default:
         response.getWriter().print("no switch case exists in dataServADM for id: " + id);
         System.out.println("no switch case exists in dataServADM for id: " + id);    

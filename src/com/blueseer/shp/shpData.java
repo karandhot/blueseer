@@ -1642,7 +1642,7 @@ public class shpData {
                  
                     while (res.next()) {
                         JSONArray rowArray = new JSONArray(); 
-                        rowArray.put(res.getString("shd_id"));
+                        rowArray.put(res.getString("shd_id").toUpperCase());
                         rowArray.put(res.getString("it_desc"));
                         rowArray.put(res.getString("sh_cust"));
                         rowArray.put(res.getString("sh_rmks"));
@@ -1784,7 +1784,7 @@ public class shpData {
                          shipper = res.getString("shd_id");
                         }
                         JSONArray rowArray = new JSONArray(); 
-                        rowArray.put(res.getString("shd_id")); 
+                        rowArray.put(res.getString("shd_id").toUpperCase()); 
                         rowArray.put(res.getString("it_desc"));
                         rowArray.put(res.getString("sh_cust"));
                         rowArray.put(res.getString("sh_rmks"));

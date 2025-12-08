@@ -25,6 +25,7 @@ SOFTWARE.
  */
 package com.blueseer.utl;
 
+import bsmf.MainFrame;
 import java.awt.Color;
 import java.awt.Component;
 import javax.swing.JButton;
@@ -39,9 +40,13 @@ import static bsmf.MainFrame.main;
 import static bsmf.MainFrame.menumap;
 import static bsmf.MainFrame.panelmap;
 import static bsmf.MainFrame.reinitpanels;
+import com.blueseer.adm.admData;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
+import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import javax.swing.JPanel;
 import java.awt.Container;
+import java.util.ArrayList;
+import javax.swing.SwingWorker;
 
 
 
@@ -52,6 +57,10 @@ import java.awt.Container;
 public class ReportPanel extends javax.swing.JPanel {
 public int mypage = 0;
 public int[] mywidth;
+ArrayList<String[]> initDataSets = new ArrayList<>();
+public String defaultcurrency = "";
+public String defaultsite = "";
+public String conditionalsite = "";
 
     /**
      * Creates new form ReportPanel
@@ -82,7 +91,7 @@ public int[] mywidth;
     }
     }
     
-      class ButtonRenderer extends JButton implements TableCellRenderer {
+    class ButtonRenderer extends JButton implements TableCellRenderer {
 
         public ButtonRenderer() {
             setOpaque(true);
@@ -101,214 +110,302 @@ public int[] mywidth;
             return this;
         }
     }
-     
+    
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+       
+          String type = "";
+          String[] key = null;
+          
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
+              this.key = key;
+          } 
+           
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+             switch(this.type) {
+                case "init":
+                    message = getInitialization();
+                    break;
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+            BlueSeerUtils.endTask(message);
+                if (this.type.equals("init")) {
+                    done_Initialization(this.key[0]);
+                }
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"", getMessageTag(1189)});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+   
+    
     public void initvars(String[] arg) {
        // TableReport.setModel(new javax.swing.table.DefaultTableModel());
         
-         javax.swing.table.DefaultTableModel mymodel = null;
+       if (arg == null || arg.length < 1) {
+            return;
+        }
+        executeTask(BlueSeerUtils.dbaction.init, new String[]{arg[0]});
+        
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getSiteInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+        
+    }    
+    
+    public void done_Initialization(String key) {
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+            if (s[0].equals("conditionalsite")) {
+              conditionalsite = s[1];  
+            }
+            if (s[0].equals("currency")) {
+              defaultcurrency = s[1];  
+            }
+        }
+        
+        
+        
+        javax.swing.table.DefaultTableModel mymodel = null;
         java.util.Date now = new java.util.Date();
        
         if (mymodel != null) {
         mymodel.setRowCount(0);
         }
         
-        if (arg == null || arg.length < 1) {
-            return;
-        } 
          
-        if (arg[0].equals("ReqPendingApproval")) {
+         
+        if (key.equals("ReqPendingApproval")) {
              mymodel = DTData.getReqByApprover(bsmf.MainFrame.userid);
              TableReport.setModel(mymodel);
-             TableReport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+             TableReport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
         }
-         if (arg[0].equals("ReqBrowseAll")) {
+         if (key.equals("ReqBrowseAll")) {
              mymodel = DTData.getReqAll();
              TableReport.setModel(mymodel);
-             TableReport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+             TableReport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
         }
        
-        if (arg[0].equals("ReqPendRpt1")) {
+        if (key.equals("ReqPendRpt1")) {
              mymodel = DTData.getReqPending();
               TableReport.setModel(mymodel);
-             TableReport.getColumnModel().getColumn(5).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+             TableReport.getColumnModel().getColumn(5).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
         }
-        if (arg[0].equals("SchemaBrowse")) {
+        if (key.equals("SchemaBrowse")) {
              mymodel = DTData.getDBSchema();
         }
-        if (arg[0].equals("UserBrowse")) {
+        if (key.equals("UserBrowse")) {
              mymodel = DTData.getUserAll();
         }
-        if (arg[0].equals("ProdCodeBrowse")) {
+        if (key.equals("ProdCodeBrowse")) {
              mymodel = DTData.getProdCodeAll();
         }
-        if (arg[0].equals("QPRBrowse")) {
+        if (key.equals("QPRBrowse")) {
              mymodel = DTData.getQPRAll();
         }
-        if (arg[0].equals("ShipperBrowse")) {
+        if (key.equals("ShipperBrowse")) {
              mymodel = DTData.getShipperAll();
         }
-        if (arg[0].equals("OpenOrdReport")) {
+        if (key.equals("OpenOrdReport")) {
              mymodel = DTData.getOrderOpen();
         }
-        if (arg[0].equals("ReqApprovedBrowse")) {
+        if (key.equals("ReqApprovedBrowse")) {
              mymodel = DTData.getReqApproved();
               TableReport.setModel(mymodel);
-             TableReport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+             TableReport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
         }
-        if (arg[0].equals("PlantDirectoryMenu")) {
+        if (key.equals("PlantDirectoryMenu")) {
              mymodel = DTData.getPlantDirectory();
         }
-        if (arg[0].equals("NavCodeBrowse")) {
+        if (key.equals("NavCodeBrowse")) {
              mymodel = DTData.getNavCodeList();
         }
         
-        if (arg[0].equals("AcctBrowse")) {
+        if (key.equals("AcctBrowse")) {
              mymodel = DTData.getGLAcctAll();
         }
-        if (arg[0].equals("ItemBrowse")) {
+        if (key.equals("ItemBrowse")) {
              mymodel = DTData.getItemBrowse(); 
              TableReport.setModel(mymodel);
-             TableReport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-             TableReport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+             TableReport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+             TableReport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
         }
-        if (arg[0].equals("ItemRoutingRpt")) {
+        if (key.equals("ItemRoutingRpt")) {
              mymodel = DTData.getItemRoutingAll();
         }
        
-        if (arg[0].equals("EmpBrowse")) {
+        if (key.equals("EmpBrowse")) {
              mymodel = DTData.getEmployeeAll();
         }
-        if (arg[0].equals("GenCodeBrowse")) {
+        if (key.equals("GenCodeBrowse")) {
              mymodel = DTData.getGenCodeAll();
         }
-        if (arg[0].equals("FreightCodeBrowse")) {
+        if (key.equals("FreightCodeBrowse")) {
              mymodel = DTData.getFreightCodeAll();
         }
-        if (arg[0].equals("WorkCellBrowse")) {
+        if (key.equals("WorkCellBrowse")) {
              mymodel = DTData.getWorkCellAll();
         }
-        if (arg[0].equals("RoutingBrowse")) {
+        if (key.equals("RoutingBrowse")) {
              mymodel = DTData.getRoutingsAll();
         }
-        if (arg[0].equals("LocationBrowse")) {
+        if (key.equals("LocationBrowse")) {
              mymodel = DTData.getLocationsAll();
         }
-        if (arg[0].equals("WareHouseBrowse")) {
+        if (key.equals("WareHouseBrowse")) {
              mymodel = DTData.getWareHousesAll();
         }
-        if (arg[0].equals("DeptBrowse")) {
+        if (key.equals("DeptBrowse")) {
              mymodel = DTData.getDeptsAll();
         }
-        if (arg[0].equals("CustReport1")) {
+        if (key.equals("CustReport1")) {
              mymodel = DTData.getCustAddrInfoAll();
         }
-        if (arg[0].equals("VendBrowse")) {
+        if (key.equals("VendBrowse")) {
              mymodel = DTData.getVendorAll();
         }
-         if (arg[0].equals("MenuBrowse")) {
+         if (key.equals("MenuBrowse")) {
              mymodel = DTData.getMenusAll();
         }
-        if (arg[0].equals("PanelBrowse")) {
+        if (key.equals("PanelBrowse")) {
              mymodel = DTData.getPanelsAll();
         }
-        if (arg[0].equals("TermsBrowse")) {
+        if (key.equals("TermsBrowse")) {
              mymodel = DTData.getTermsAll();
         }
-        if (arg[0].equals("AS2Browse")) {
+        if (key.equals("AS2Browse")) {
              mymodel = DTData.getAS2All();
         }
-        if (arg[0].equals("WorkFlowBrowse")) {
+        if (key.equals("WorkFlowBrowse")) {
              mymodel = DTData.getWorkFlowAll();
         }
-        if (arg[0].equals("CronBrowse")) {
+        if (key.equals("CronBrowse")) {
              mymodel = DTData.getCronAll();
         }
-        if (arg[0].equals("PKSBrowse")) {
+        if (key.equals("PKSBrowse")) {
              mymodel = DTData.getPKSAll();
         }
-        if (arg[0].equals("FreightBrowse")) {
+        if (key.equals("FreightBrowse")) {
              mymodel = DTData.getFreightAll();
         }
-        if (arg[0].equals("VehicleBrowse")) {
+        if (key.equals("VehicleBrowse")) {
              mymodel = DTData.getVehicleAll(); 
         }
-        if (arg[0].equals("DriverBrowse")) {
+        if (key.equals("DriverBrowse")) {
              mymodel = DTData.getDriverAll(); 
         }
-        if (arg[0].equals("BrokerBrowse")) {
+        if (key.equals("BrokerBrowse")) {
              mymodel = DTData.getBrokerAll(); 
         }
-        if (arg[0].equals("CarrierBrowse")) {
+        if (key.equals("CarrierBrowse")) {
              mymodel = DTData.getCarrierAll();
         }
-        if (arg[0].equals("EDIXrefBrowse")) {
-             mymodel = DTData.getEDIXrefAll(OVData.getSiteListConditional(bsmf.MainFrame.userid)); 
+        if (key.equals("EDIXrefBrowse")) {
+             mymodel = DTData.getEDIXrefAll(conditionalsite); 
         }
-        if (arg[0].equals("TaxBrowse")) {
+        if (key.equals("TaxBrowse")) {
              mymodel = DTData.getTaxAll();
         }
-         if (arg[0].equals("PayProfileBrowse")) {
+         if (key.equals("PayProfileBrowse")) {
              mymodel = DTData.getPayProfileAll(); 
         }
-        if (arg[0].equals("EDIPartnerBrowse")) {
-             mymodel = DTData.getEDITPAll(OVData.getSiteListConditional(bsmf.MainFrame.userid));
+        if (key.equals("EDIPartnerBrowse")) {
+             mymodel = DTData.getEDITPAll(conditionalsite);
         }
-        if (arg[0].equals("EDITPDocBrowse")) {
-             mymodel = DTData.getEDITPDOCAll(OVData.getSiteListConditional(bsmf.MainFrame.userid));
+        if (key.equals("EDITPDocBrowse")) {
+             mymodel = DTData.getEDITPDOCAll(conditionalsite);
         }
-        if (arg[0].equals("noStdCostBrowse")) {
+        if (key.equals("noStdCostBrowse")) {
              mymodel = DTData.getNoStdCostItems();
         }
-        if (arg[0].equals("BankBrowse")) {
+        if (key.equals("BankBrowse")) {
              mymodel = DTData.getBankAll();
         }
-        if (arg[0].equals("UnPostedTransRpt")) {
+        if (key.equals("UnPostedTransRpt")) {
              mymodel = DTData.getUnPostedGLTrans();
               TableReport.setModel(mymodel);
-              TableReport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              TableReport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
         }
-        if (arg[0].equals("CalendarBrowse")) {
+        if (key.equals("CalendarBrowse")) {
              mymodel = DTData.getGLCalendar();
         }
-         if (arg[0].equals("SiteBrowse")) {
+         if (key.equals("SiteBrowse")) {
              mymodel = DTData.getSitesAll();
         }
-         if (arg[0].equals("ForecastBrowse")) {
+         if (key.equals("ForecastBrowse")) {
             // mymodel = DTData.getForecast13weeks(OVData.getForecastWeek(now));
             mymodel = DTData.getForecastAll();
         }
-        if (arg[0].equals("PrinterBrowse")) {
+        if (key.equals("PrinterBrowse")) {
              mymodel = DTData.getPrintersAll();
         } 
-        if (arg[0].equals("EDIPartnerDocBrowse")) {
-             mymodel = DTData.getEDIPartnerDocAll(OVData.getSiteListConditional(bsmf.MainFrame.userid));
+        if (key.equals("EDIPartnerDocBrowse")) {
+             mymodel = DTData.getEDIPartnerDocAll(conditionalsite);
         } 
-        if (arg[0].equals("LabelFileBrowse")) {
+        if (key.equals("LabelFileBrowse")) {
              mymodel = DTData.getLabelFileAll();
         } 
-         if (arg[0].equals("ShiftBrowse")) {
+         if (key.equals("ShiftBrowse")) {
              mymodel = DTData.getShiftAll();
         } 
-          if (arg[0].equals("ClockCodeBrowse")) {
+          if (key.equals("ClockCodeBrowse")) {
              mymodel = DTData.getClockCodesAll();
         } 
-          if (arg[0].equals("ClockCode66Browse")) {
+          if (key.equals("ClockCode66Browse")) {
              mymodel = DTData.getClockRecords66All();
         } 
-         if (arg[0].equals("ARPaymentBrowse")) {
+         if (key.equals("ARPaymentBrowse")) {
              mymodel = DTData.getARPaymentBrowse();
         }  
          
         if (mymodel != null) { 
             TableReport.setModel(mymodel);
-            TableReport.setName(arg[0]);
+            TableReport.setName(key);
             if (TableReport.getColumnModel().getColumn(0).getIdentifier().equals(getGlobalColumnTag("select"))) {
                 TableReport.getColumnModel().getColumn(0).setMaxWidth(100);
             }
         }
-         
+        
+        
+        
+        
+        
         
     }
+
     
     /**
      * This method is called from within the constructor to initialize the form.

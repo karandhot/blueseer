@@ -330,7 +330,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     
     if (id.equals("getFINInit")) { 
       String param1 = request.getHeader("param1"); 
-      String user = request.getHeader("user");
+      String user = request.getHeader("param2");
       response.getWriter().print(ArrayListStringArrayToJson(getFINInit(param1, user)));
     }     
     

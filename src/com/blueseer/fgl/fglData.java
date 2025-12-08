@@ -1485,6 +1485,7 @@ public class fglData {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id", "getFINInit"});
             list.add(new String[]{"param1", panelClassName});
+            list.add(new String[]{"param2", userid});
             try {
                 return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServFIN"));
             } catch (IOException ex) {
@@ -6618,6 +6619,7 @@ return myarray;
             list.add(new String[]{"id", "PostGL"});
             try {
                 sendServerPost(list, "", null, "dataServFIN");
+                return;
             } catch (IOException ex) {
                 bslog(ex);
                 return;
