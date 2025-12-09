@@ -276,6 +276,9 @@ public class ediData {
             list.add(new String[]{"id","getEDIXref"});
             list.add(new String[]{"param1",x[0]});
             list.add(new String[]{"param2",x[1]});
+            list.add(new String[]{"param3",x[2]});
+            list.add(new String[]{"param4",x[3]});
+            list.add(new String[]{"param5",x[4]});
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 String returnstring = sendServerPost(list, "", null, "dataServEDI");
