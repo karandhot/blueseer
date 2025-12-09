@@ -126,7 +126,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
           }
         
         case "getEDIXref" : { 
-            String[] key = new String[]{request.getHeader("key")}; 
+            String[] key = new String[]{request.getHeader("param1"),request.getHeader("param2")}; 
             ediData.edi_xref x = getEDIXref(key);
             ObjectMapper objectMapper = new ObjectMapper();
             String r = objectMapper.writeValueAsString(x);
