@@ -2967,7 +2967,7 @@ public class ediData {
                }
             }
             
-            res = st.executeQuery("select ov_site, ov_currency from ov_mstr;" );
+            res = st.executeQuery("select ov_site, ov_currency, user_site from ov_mstr inner join user_mstr on  user_id = " + "'" + userid + "'" + ";" );
             while (res.next()) {
                String[] s = new String[2];
                s[0] = "currency";
@@ -2975,7 +2975,7 @@ public class ediData {
                lines.add(s);
                s = new String[2];
                s[0] = "site";
-               s[1] = res.getString("ov_site");
+               s[1] = res.getString("user_site");
                lines.add(s);
             }
             

@@ -1189,9 +1189,9 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         lual = new ActionListener() {
         public void actionPerformed(ActionEvent event) {
         if (lurb1.isSelected()) {  
-         luModel = DTData.getMapBrowseUtil(luinput.getText(),0, "map_id", OVData.getSiteListConditional(bsmf.MainFrame.userid)); 
+         luModel = DTData.getMapBrowseUtil(luinput.getText(),0, "map_id", defaultsite); 
         } else {
-         luModel = DTData.getMapBrowseUtil(luinput.getText(),0, "map_desc", OVData.getSiteListConditional(bsmf.MainFrame.userid));   
+         luModel = DTData.getMapBrowseUtil(luinput.getText(),0, "map_desc", defaultsite);   
         }
         luTable.setModel(luModel);
         luTable.getColumnModel().getColumn(0).setMaxWidth(50);
