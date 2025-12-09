@@ -289,19 +289,34 @@ public class EDIXrefMaint extends javax.swing.JPanel implements IBlueSeerT    {
     
     public void setComponentDefaultValues() {
         isLoad = true;
-           tbgsid.setText("");
+        
+        ArrayList<String[]> initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        
+        tbgsid.setText("");
         tbtpid.setText("");
         tbtpaddr.setText("");
         
         ddsite.removeAllItems();
-       OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));  
-       ddsite.insertItemAt("", 0);
-       ddsite.setSelectedItem(OVData.getDefaultSiteForUserid(bsmf.MainFrame.userid));
-       
         ddtype.removeAllItems();
-        ArrayList<String> mylist = OVData.getCodeMstrKeyList("edixreftype");
-        for (int i = 0; i < mylist.size(); i++) {
-            ddtype.addItem(mylist.get(i));
+        
+        String defaultsite = "";
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+                      
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("edixreftype")) {
+              ddtype.addItem(s[1]); 
+            }
+            
+        }
+        
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
         }
         ddtype.insertItemAt("", 0);
         ddtype.setSelectedIndex(0);

@@ -27,11 +27,15 @@ package com.blueseer.srv;
 
 
 import com.blueseer.edi.ediData;
+import static com.blueseer.edi.ediData.addEDIXref;
 import com.blueseer.edi.ediData.edi_ctrl;
 import static com.blueseer.edi.ediData.getEDICtrl;
 import static com.blueseer.edi.ediData.addupdateEDICtrl;
+import static com.blueseer.edi.ediData.deleteEDIXref;
 import static com.blueseer.edi.ediData.getEDIMetaValueDetail;
 import static com.blueseer.edi.ediData.getEDIMetaValueHeader;
+import static com.blueseer.edi.ediData.getEDIXref;
+import static com.blueseer.edi.ediData.updateEDIXref;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
@@ -82,6 +86,54 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     String id = request.getHeader("id");
     
     switch (id) {
+        case "addEDIXref" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            ediData.edi_xref x = objectMapper.readValue(sb.toString(), ediData.edi_xref.class);            
+            response.getWriter().print(arrayToJson(addEDIXref(x)));
+            break;
+          }
+        
+        case "updateEDIXref" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            ediData.edi_xref x = objectMapper.readValue(sb.toString(), ediData.edi_xref.class);            
+            response.getWriter().print(arrayToJson(updateEDIXref(x)));
+            break;
+          }
+        
+        case "deleteEDIXref" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            ediData.edi_xref x = objectMapper.readValue(sb.toString(), ediData.edi_xref.class);            
+            response.getWriter().print(arrayToJson(deleteEDIXref(x)));
+            break;
+          }
+        
+        case "getEDIXref" : { 
+            String[] key = new String[]{request.getHeader("key")}; 
+            ediData.edi_xref x = getEDIXref(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
         case "getEDIInit" :
             response.getWriter().print(ArrayListStringArrayToJson(ediData.getEDIInit(request.getHeader("param1"), request.getHeader("param2"))));
             break;

@@ -1066,6 +1066,11 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
         jLabel2.setText("PO Search");
 
         btclear.setText("Clear");
+        btclear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btclearActionPerformed(evt);
+            }
+        });
 
         dcfrom.setDateFormatString("yyyy-MM-dd");
 
@@ -1360,6 +1365,12 @@ public class OrderChangeBrowse extends javax.swing.JPanel {
             btexport.setEnabled(true);
         }
     }//GEN-LAST:event_cbdetachedActionPerformed
+
+    private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
+        modeldetail.setNumRows(0);
+        tbsearch.setText("");
+        cbdetached.setSelected(false);
+    }//GEN-LAST:event_btclearActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

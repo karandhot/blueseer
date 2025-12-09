@@ -106,6 +106,18 @@ import org.json.JSONArray;
 public class ediData {
     
     public static String[] addEDIXref(edi_xref x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addEDIXref"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  edi_xref where exr_bsgs = ? and exr_tpaddr = ? " +
                 " and exr_bsaddr = ? and exr_tpgs = ? and exr_type = ?";
@@ -191,6 +203,18 @@ public class ediData {
     }
 
     public static String[] updateEDIXref(edi_xref x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateEDIXref"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlUpdate = "update edi_xref set exr_tpaddr = ?, exr_bsaddr = ? " +
                            " where exr_bsgs = ? and exr_tpgs = ? and exr_type = ? ; "; 
@@ -212,7 +236,19 @@ public class ediData {
     
     
     public static String[] deleteEDIXref(edi_xref x) { 
-       String[] m = new String[2];
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteEDIXref"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
         String sql = "delete from edi_xref where exr_bsgs = ? and exr_tpaddr = ? " +
                 " and exr_bsaddr = ? and exr_tpgs = ? and exr_type = ?";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
@@ -233,7 +269,25 @@ public class ediData {
     
     public static edi_xref getEDIXref(String[] x) {
         edi_xref r = null;
-        String[] m = new String[2];       
+        String[] m = new String[2];   
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getEDIXref"});
+            list.add(new String[]{"key",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServEDI");
+                r = objectMapper.readValue(returnstring, edi_xref.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new edi_xref(m);
+                return r;
+            }
+        }
+        
         String sqlSelect = "SELECT * FROM  edi_xref where exr_tpgs = ? and exr_bsgs = ? " +
                 " and exr_type = ? and exr_tpaddr = ? and exr_bsaddr = ?";
         
@@ -2910,6 +2964,14 @@ public class ediData {
             while (res.next()) {
                String[] s = new String[2];
                s[0] = "doctypes";
+               s[1] = res.getString("code_key");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select code_key from code_mstr where code_code = 'edixreftype' order by code_key ;");
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "edixreftype";
                s[1] = res.getString("code_key");
                lines.add(s);
             }
