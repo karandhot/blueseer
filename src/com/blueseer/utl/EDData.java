@@ -41,9 +41,11 @@ import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.OVData.getSMTPCredentials;
 import static com.blueseer.utl.OVData.sendEmail;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -823,8 +825,21 @@ public class EDData {
          */
     public static String[] getEDITPDefaults(String doctype, String gssndid, String gsrcvid) {
            
-                    
-             String[] mystring = new String[]{"","","","","","","0","0","0","","","","","","","","","","","","0","","","",""};
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getEDITPDefaults"});
+            list.add(new String[]{"param1",doctype});
+            list.add(new String[]{"param2",gssndid});
+            list.add(new String[]{"param3",gsrcvid});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
+        String[] mystring = new String[]{"","","","","","","0","0","0","","","","","","","","","","","","0","","","",""};
         try{
             Class.forName(driver);
             Connection con = null;
@@ -1130,7 +1145,17 @@ public class EDData {
          }
     
     public static ArrayList<String> getEDISenderReceiverByDocTypeOUT(String doctype) {
-           
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getEDISenderReceiverByDocTypeOUT"});
+            list.add(new String[]{"param1", doctype});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }   
                     
         ArrayList<String> list = new ArrayList<String>();
         try{

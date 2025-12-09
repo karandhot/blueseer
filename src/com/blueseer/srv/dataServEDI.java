@@ -32,9 +32,11 @@ import com.blueseer.edi.ediData.edi_ctrl;
 import static com.blueseer.edi.ediData.getEDICtrl;
 import static com.blueseer.edi.ediData.addupdateEDICtrl;
 import static com.blueseer.edi.ediData.deleteEDIXref;
+import static com.blueseer.edi.ediData.getDFSMstr;
 import static com.blueseer.edi.ediData.getEDIMetaValueDetail;
 import static com.blueseer.edi.ediData.getEDIMetaValueHeader;
 import static com.blueseer.edi.ediData.getEDIXref;
+import static com.blueseer.edi.ediData.getMapMstr;
 import static com.blueseer.edi.ediData.updateEDIXref;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
@@ -138,6 +140,25 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
           }
         
+        case "getMapMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            ediData.map_mstr x = getMapMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "getDFSMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            ediData.dfs_mstr x = getDFSMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        
         case "getEDIInit" :
             response.getWriter().print(ArrayListStringArrayToJson(ediData.getEDIInit(request.getHeader("param1"), request.getHeader("param2"))));
             break;
@@ -162,7 +183,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(ArrayListStringToJson(EDData.getEDIAckFile(request.getHeader("param1"), 
                     request.getHeader("param2"),
                     request.getHeader("param3") )));
-            break;    
+            break; 
+            
+        case "getEDISenderReceiverByDocTypeOUT" :
+            response.getWriter().print(ArrayListStringToJson(EDData.getEDISenderReceiverByDocTypeOUT(request.getHeader("param1"))));
+            break;      
             
         case "getEDIBatchFromedi_file" :
             response.getWriter().print(EDData.getEDIBatchFromedi_file(request.getHeader("param1")));
@@ -224,9 +249,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
             
         case "updateEDIASNStatus" :
-            EDData.updateEDIASNStatus(request.getHeader("param1"), request.getHeader("param1"));
+            EDData.updateEDIASNStatus(request.getHeader("param1"), request.getHeader("param2"));
             response.getWriter().print(arrayToJson(new String[]{"0",""}));    
             break;
+            
+        case "getEDITPDefaults" :
+            EDData.getEDITPDefaults(request.getHeader("param1"), request.getHeader("param2"), request.getHeader("param3"));
+            response.getWriter().print(arrayToJson(new String[]{"0",""}));    
+            break;    
             
         case "getEDIMetaValueDetail" :
             response.getWriter().print(ArrayListStringArrayToJson(ediData.getEDIMetaValueDetail(request.getHeader("param1"), request.getHeader("param2"))));

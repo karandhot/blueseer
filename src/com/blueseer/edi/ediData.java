@@ -418,6 +418,22 @@ public class ediData {
     public static map_mstr getMapMstr(String[] x) {
         map_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getMapMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServEDI");
+                r = objectMapper.readValue(returnstring, map_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new map_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from map_mstr where map_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -739,6 +755,22 @@ public class ediData {
     public static dfs_mstr getDFSMstr(String[] x) {
         dfs_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getDFSMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServEDI");
+                r = objectMapper.readValue(returnstring, dfs_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new dfs_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from dfs_mstr where dfs_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -2980,6 +3012,14 @@ public class ediData {
                lines.add(s);
             }
             
+            res = st.executeQuery("select dfs_id from dfs_mstr order by dfs_id ; ");
+             while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "dfs_id";
+               s[1] = res.getString("dfs_id");
+               lines.add(s);
+            }
+             
             res = st.executeQuery("select edic_indir, edic_outdir, edic_inarch, edic_outarch, edic_batch, edic_errordir, edic_mapdir, edic_delete, edic_archyesno from edi_ctrl ;");
             while (res.next()) {
                String[] s = new String[2];

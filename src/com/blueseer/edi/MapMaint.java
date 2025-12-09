@@ -213,6 +213,14 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
      File infile = null;
      // global variable declarations
                 boolean isLoad = false;
+                String indir = "";
+                String outdir = "";
+                String inarch = "";
+                String outarch = "";
+                String batchdir = "";
+                String errordir = "";
+                String mapdir = "";
+                String defaultsite = "";
                 
                 public static map_mstr x = null;
                 JPopupMenu mymenu = new JPopupMenu();
@@ -901,6 +909,9 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
     
     public void setComponentDefaultValues() {
         isLoad = true;
+        
+        ArrayList<String[]> initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        
         tbkey.setText("");
         tbdesc.setText("");
         tbversion.setText("");
@@ -917,10 +928,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         OutputTabbedPane.removeAll();
         OutputTabbedPane.add("Output", outScrollPaneOutput);
         OutputTabbedPane.add("Structure", structScrollPaneout);
-        
-      //  InputTabbedPane.setEnabledAt(1, false);
-      //  InputTabbedPane.setEnabledAt(2, false);
-        
+      
         
         tamap.setText("");
         tainput.setText("");
@@ -949,31 +957,50 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         cbinternal.setEnabled(false);
         ddofs.removeAllItems();
         ddifs.removeAllItems();
-        ArrayList<String> structs = ediData.getMapStructList();
-        for (int i = 0; i < structs.size(); i++) {
-            ddofs.addItem(structs.get(i));
-        }
-        for (int i = 0; i < structs.size(); i++) {
-            ddifs.addItem(structs.get(i));
-        }
-        
         ddoutdoctype.removeAllItems();
         ddindoctype.removeAllItems();
-        ArrayList<String> mylist = OVData.getCodeMstrKeyList("edidoctype");
-        for (int i = 0; i < mylist.size(); i++) {
-            ddoutdoctype.addItem(mylist.get(i));
-            ddindoctype.addItem(mylist.get(i));
-        }
+        ddsite.removeAllItems();
         
         ddinfiletype.setEnabled(false);
         ddoutfiletype.setEnabled(false);
         ddindoctype.setEnabled(false);
         ddoutdoctype.setEnabled(false);
         
-        ddsite.removeAllItems();
-        OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));  
-        ddsite.insertItemAt("", 0);
-        ddsite.setSelectedItem(OVData.getDefaultSiteForUserid(bsmf.MainFrame.userid));
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+                      
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("doctypes")) {
+              ddindoctype.addItem(s[1]);
+              ddoutdoctype.addItem(s[1]);
+            }
+            
+            if (s[0].equals("dfs_id")) {
+              ddifs.addItem(s[1]);
+              ddofs.addItem(s[1]);
+            }
+            
+            if (s[0].equals("directories")) {
+              String[] dirs = s[1].split(",", -1);
+              indir = dirs[0];
+              outdir = dirs[1];
+              inarch = dirs[2];
+              outarch = dirs[3];
+              batchdir = dirs[4];
+              errordir = dirs[5];
+              mapdir = dirs[6];
+            }
+            
+        }
+         if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+        
         
        isLoad = false;
     }
@@ -2177,7 +2204,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         
         // if all is good here...copy map (filename.java) over to edi/maps directory
         Path sourcepath = FileSystems.getDefault().getPath(cleanDirString(pathextractdir.toString()) + v_map);
-        Path destinationpath = FileSystems.getDefault().getPath(cleanDirString(EDData.getEDIMapDir()) + v_map);
+        Path destinationpath = FileSystems.getDefault().getPath(cleanDirString(mapdir) + v_map);
         
         boolean mapOverwrite = true;
         if (destinationpath.toFile().exists()) {
@@ -2219,9 +2246,9 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
                         v[9],
                         v[10], // package
                         v[11], // tinyint
-                        OVData.getDefaultSiteForUserid(bsmf.MainFrame.userid));
+                        defaultsite);
             }
-               m = addMapMstr(x);
+               m = addMapMstr(x); 
             }
 
             if (! m[0].equals("0")) {
@@ -2373,7 +2400,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
             manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
             manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, filename);
             JarOutputStream target;
-            Path path = FileSystems.getDefault().getPath(cleanDirString(EDData.getEDIMapDir()) + jarname);
+            Path path = FileSystems.getDefault().getPath(cleanDirString(mapdir) + jarname);
             
          try {
              target = new JarOutputStream(new FileOutputStream(path.toFile()), manifest);
@@ -3438,7 +3465,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         URLClassLoader cl = null;
         try {
                 // hot reloadable class capability...new classloader created and closed in finally block
-                List<File> jars = Arrays.asList(new File(cleanDirString(EDData.getEDIMapDir())).listFiles(new FilenameFilter() {
+                List<File> jars = Arrays.asList(new File(cleanDirString(mapdir)).listFiles(new FilenameFilter() {
                     public boolean accept(File dir, String name) {
                     return name.toLowerCase().endsWith(".jar");
                 }
@@ -3596,7 +3623,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
       //  Path path = FileSystems.getDefault().getPath(infile.getAbsolutePath());
         if (infile != null && infile.exists()) {
             Path currpath = FileSystems.getDefault().getPath(infile.getAbsolutePath());
-            Path newpath = FileSystems.getDefault().getPath(cleanDirString(EDData.getEDIMapDir()) + infile.getName());
+            Path newpath = FileSystems.getDefault().getPath(cleanDirString(mapdir) + infile.getName());
             
             tbpath.setText(newpath.toString());
             tamap.setText("");
@@ -3694,7 +3721,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         // java Map file into Zip
         e = new ZipEntry(tbkey.getText() + ".java");
         out.putNextEntry(e);
-        dirpath = cleanDirString(EDData.getEDIMapDir()) + tbkey.getText() + ".java";
+        dirpath = cleanDirString(mapdir) + tbkey.getText() + ".java";
         path = FileSystems.getDefault().getPath(dirpath);
         file = path.toFile();
         data = null;
@@ -3822,7 +3849,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
         }
         
         if (! tbkey.getText().isBlank() && tbkey.isEditable() && tbpath.isEnabled() && tbpath.getText().isBlank()) {
-           tbpath.setText(cleanDirString(EDData.getEDIMapDir()) + tbkey.getText() + ".java");
+           tbpath.setText(cleanDirString(mapdir) + tbkey.getText() + ".java");
         }
     }//GEN-LAST:event_tbkeyFocusLost
 
@@ -3898,7 +3925,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
                 if (file.exists()) {
                 String filename = file.getName().split("\\.")[0].replace("\\", "").replace("/", "");  // strip leading dir backslash
                 String jarname = filename + ".jar";
-                Path jarpath = FileSystems.getDefault().getPath(cleanDirString(EDData.getEDIMapDir()) + jarname);
+                Path jarpath = FileSystems.getDefault().getPath(cleanDirString(mapdir) + jarname);
                     if (jarpath.toFile().exists()) {
                         byte[] b = getFileContentBytes(jarpath.toString());
                         ArrayList<String[]> arrx = new ArrayList<String[]>();
