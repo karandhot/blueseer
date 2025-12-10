@@ -49,6 +49,7 @@ import static com.blueseer.utl.BlueSeerUtils.ConvertStringToBool;
 import static com.blueseer.utl.BlueSeerUtils.bsret;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.parseFileName;
@@ -4242,7 +4243,17 @@ public class ediData {
     }
     
     public static ArrayList<String[]> getDFSasArray(String code) {
-        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getDFSasArray"});
+            list.add(new String[]{"param1", code});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServEDI")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         ArrayList<String[]> list = new ArrayList<String[]>();
         String sql = "select * from dfs_det where dfsd_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
@@ -4276,7 +4287,17 @@ public class ediData {
     }
     
     public static ArrayList<String> getDSFasString(String code) {
-        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getDSFasString"});
+            list.add(new String[]{"param1", code});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
         ArrayList<String> list = new ArrayList<String>();
         String sql = "select * from dfs_det where dfsd_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
@@ -5967,9 +5988,7 @@ public class ediData {
         return new JRRT(r[0], messg, logdetails);
       //  return new String[]{"0", messg};  // overall...workflow suceeds even if individual internal actions do not...will be logged regardless
     }
-    
-    
-    
+     
     public static String[] wkfaction_as2outbound(wkf_mstr wkf, wkf_det wkfd, ArrayList<wkfd_meta> list) {
        StringBuilder messg = new StringBuilder();
         String site = "";

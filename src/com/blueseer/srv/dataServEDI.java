@@ -189,6 +189,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(ArrayListStringToJson(EDData.getEDISenderReceiverByDocTypeOUT(request.getHeader("param1"))));
             break;      
             
+        case "getDSFasString" :
+            response.getWriter().print(ArrayListStringToJson(ediData.getDSFasString(request.getHeader("param1"))));
+            break;
+            
+        case "getDFSasArray" :
+            response.getWriter().print(ArrayListStringArrayToJson(ediData.getDFSasArray(request.getHeader("param1"))));
+            break;    
+            
         case "getEDIBatchFromedi_file" :
             response.getWriter().print(EDData.getEDIBatchFromedi_file(request.getHeader("param1")));
             break;  

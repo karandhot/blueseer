@@ -61,10 +61,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class bsComm {
     private ScheduledExecutorService scheduler;
 
-    public void startService() {
+    public void startService(int cycle) {
         scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(new MyScheduledTask(), 0, 30, TimeUnit.SECONDS);
-        System.out.println("Service started. Task scheduled every 30 seconds.");
+        scheduler.scheduleAtFixedRate(new MyScheduledTask(), 0, cycle, TimeUnit.SECONDS);
+        System.out.println("Service started. Task scheduled every cycle seconds.");
 
         // Register shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdownService()));
@@ -91,8 +91,13 @@ public class bsComm {
     }
 
     public static void main(String[] args)  {
-    	bsComm service = new bsComm();
-        service.startService();
+    	int cycle = 30;
+        if (args != null && args.length > 0) {
+            cycle = Integer.parseInt(args[0]);
+        }
+        
+        bsComm service = new bsComm();
+        service.startService(cycle);
         // Keep the main thread alive for the service to run (e.g., in a server application)
         // For a simple standalone example, you might add a delay or a loop.
     }
@@ -114,6 +119,9 @@ public class bsComm {
                 try {                    
                     List<String> lines = Files.readAllLines(filePath);
                     for (String line : lines) {
+                       if (line.startsWith("#")) {
+                           continue;
+                       }
                        trafficlist.add(line.split(",", -1));  
                        // tpname, rectype, sourcedir|trantype, destdir, archdir, parse, extract
                        // the rectype element (p or c) determines master directories to loop
