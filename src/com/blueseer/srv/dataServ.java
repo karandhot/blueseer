@@ -155,12 +155,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
 protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
       response.setContentType("text/plain");
-    
+   
+    /*
     if (! confirmServerAuthAPI(request, authServ.hmuser)) {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.getWriter().println(" dataServ post authorization failed");
         return;
     }
+    */
     
     if (request.getHeader("id") == null || request.getHeader("id").isEmpty()) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
