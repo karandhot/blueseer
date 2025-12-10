@@ -239,6 +239,11 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             ArrayList<ordData.sos_det> sosdlist = new ArrayList<ordData.sos_det>(Arrays.asList(sosdarray)); 
             response.getWriter().print(arrayToJson(ordData.updateOrderTransaction(key, badlist, sdlist, sm, stlist, sodtlist, sosdlist))); 
             }
+            break;  
+            
+        case "deleteOrderMstr" :
+            response.getWriter().print(arrayToJson(ordData.deleteOrderMstr(request.getHeader("param1")
+                    )));  
             break;    
             
         case "getOrderBrowseInit" :

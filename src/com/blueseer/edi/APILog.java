@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.edi;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
@@ -37,6 +38,8 @@ import com.blueseer.utl.EDData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.EDData.updateEDIFileLogStatusManual;
 import com.blueseer.utl.OVData;
 import java.awt.Color;
@@ -68,6 +71,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
 import jcifs.smb.SmbException;
 
@@ -77,6 +81,8 @@ import jcifs.smb.SmbException;
  */
 public class APILog extends javax.swing.JPanel {
  
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    Object[][] rData;
     
     javax.swing.table.DefaultTableModel modeltable = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{"Select", "LogID", "ID", "Method", "TimeStamp", "Error", "File", "Status"})
@@ -306,6 +312,75 @@ public class APILog extends javax.swing.JPanel {
        }
     }
     
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+       
+          String type = "";
+          String[] key = null;
+          
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
+              this.key = key;
+          } 
+           
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+             switch(this.type) {
+                case "init":
+                    message = getInitialization();
+                    break;
+                    
+                case "run":
+                    if (this.key[0].equals("getAPILogView")) {
+                      message = getAPILogView();
+                    } else {
+                    //   message = getDetail(this.key[1]);  
+                    }
+                    break;
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+            BlueSeerUtils.endTask(message);
+            
+                if (this.type.equals("init")) {
+                    done_Initialization();
+                }
+                
+                if (this.type.equals("run")) {
+                    if (this.key[0].equals("getAPILogView")) {
+                      done_getAPILogView();
+                    } else {
+                    //  done_getDetail(); 
+                    }
+                } 
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"", getMessageTag(1189)});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+   
     
     public void initvars(String[] arg) {
        
@@ -343,11 +418,102 @@ public class APILog extends javax.swing.JPanel {
         detailpanel.setVisible(false);
         textpanel.setVisible(false);
         
-        ddsite.removeAllItems();
-        OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));  
-        ddsite.setSelectedItem(OVData.getDefaultSite());
-          
+        
+        executeTask(BlueSeerUtils.dbaction.init, null);
+        
     }
+    
+    public String[] getInitialization() {
+        initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+        
+    }    
+    
+    public void done_Initialization() {
+        
+        ddsite.removeAllItems();
+        
+        String defaultsite = "";
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+                      
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+        }
+        
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+        
+        
+        
+        tbtoterrors.setText("0");
+        tbtot.setText("0");
+    }
+
+    public String[] getAPILogView() {
+       
+       DateFormat dfdate = new SimpleDateFormat("yyyyMMdd");        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getAPILogView"});
+            list.add(new String[]{"param1", tbapiid.getText()});
+            list.add(new String[]{"param2", ddsite.getSelectedItem().toString()});
+            list.add(new String[]{"param3", dfdate.format(dcfrom.getDate())});
+            list.add(new String[]{"param4", dfdate.format(dcto.getDate())});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServEDI"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getAPILogView")};
+            }
+        } else {
+            jsonString = ediData.getAPILogView(tbapiid.getText(), ddsite.getSelectedItem().toString(), dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()));
+        }
+        
+         rData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+   }
+    
+    public void done_getAPILogView() {
+        modeltable.setNumRows(0);
+        tafile.setText("");
+        tablereport.setModel(modeltable);
+        if (rData != null) {
+            for (int j = 0; j < rData.length; j++) { // 
+                if (rData[j][7].equals("success")) { 
+                    rData[j][7] = BlueSeerUtils.clickcheck;
+                } else if (rData[j][7].equals("passive")) {
+                    rData[j][7] = BlueSeerUtils.clickcheckyellow;
+                } else {
+                    rData[j][7] = BlueSeerUtils.clicknocheck;
+                }
+            }
+        
+            int i = 0;
+            if (rData.length > 0) {
+                for (Object[] rowData : rData) {
+                modeltable.addRow(rowData);
+                i++;
+                } 
+            }
+            tbtot.setText(String.valueOf(i));
+        }
+        rData = null;
+    }   
+    
+    
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

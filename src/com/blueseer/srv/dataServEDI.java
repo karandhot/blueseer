@@ -233,8 +233,19 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     request.getHeader("param4") )); 
             break; 
             
+        case "getAPILogView" :
+            response.getWriter().print(ediData.getAPILogView(request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4") )); 
+            break;    
+            
         case "getAS2LogDetailDetail" :
             response.getWriter().print(ediData.getAS2LogDetailDetail(request.getHeader("param1"))); 
+            break;  
+            
+        case "getAPILogDetailDetail" :
+            response.getWriter().print(ediData.getAPILogDetailDetail(request.getHeader("param1"))); 
             break;    
             
         case "getEDICtrl" : 

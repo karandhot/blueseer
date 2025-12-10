@@ -5464,7 +5464,7 @@ public class EDI {
          String isa4 = "          ";
          if (attrkeys.containsKey("ISA04")) {isa4 = String.format("%10s",attrkeys.get("ISA04"));}
          
-         String isa5 = String.format("%2s", defaults[4]);
+         String isa5 = String.format("%2s", defaults[1]);
          
          String isa6 = "";
          if (attrkeys.containsKey("ISA06")) {
@@ -5473,7 +5473,7 @@ public class EDI {
              isa6 = String.format("%-15s", defaults[0]); // turnaround receiver ID as sender 
          }
          
-         String isa7 = String.format("%2s", defaults[1]);
+         String isa7 = String.format("%2s", defaults[4]);
          
          String isa8 = "";
          if (attrkeys.containsKey("ISA08")) {

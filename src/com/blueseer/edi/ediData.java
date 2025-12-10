@@ -3319,6 +3319,66 @@ public class ediData {
        return jsonarray.toString(); 
     }
     
+    public static String getAPILogView(String apiid, String site, String fromdate, String todate) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                if (apiid.isEmpty()) {
+                    res = st.executeQuery("SELECT * FROM api_log  " +
+                    " where apil_datetime >= " + "'" + fromdate + "000000" + "'" +
+                    " AND apil_datetime <= " + "'" + todate  + "235959" + "'" +
+                    " AND apil_site = " + "'" + site + "'" +         
+                    " order by apil_logid desc ;" ) ;
+                    } else {
+                    res = st.executeQuery("SELECT * FROM api_log  " +
+                    " where apil_id = " + "'" + apiid + "'" +     
+                    " AND apil_datetime >= " + "'" + fromdate + "000000" + "'" +
+                    " AND apil_datetime <= " + "'" + todate  + "235959" + "'" +
+                    " AND apil_site = " + "'" + site + "'" +        
+                    " order by apil_logid desc ;" ) ;    
+                    }
+                
+                 
+                    while (res.next()) {
+                        
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("apil_logid"));
+                        rowArray.put(res.getString("apil_id"));
+                        rowArray.put(res.getString("apil_method"));
+                        rowArray.put(res.getString("apil_ts"));
+                        rowArray.put(res.getString("apil_error"));
+                        rowArray.put(res.getString("apil_file"));
+                        rowArray.put(res.getString("apil_status"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    
     public static String getAS2LogView(String as2id, String site, String fromdate, String todate) {
         JSONArray jsonarray = new JSONArray();
         try {
@@ -3382,6 +3442,49 @@ public class ediData {
     }
     
     public static String getAS2LogDetailDetail(String key) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                res = st.executeQuery("SELECT * FROM as2_log  " +     
+                    " where as2l_parent = " + "'" + key + "'" +
+                    " order by as2l_logid;" ) ;
+                    
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("as2l_logid"));
+                        rowArray.put(res.getString("as2l_parent"));
+                        rowArray.put(res.getString("as2l_messg"));
+                        rowArray.put(res.getString("as2l_status"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    public static String getAPILogDetailDetail(String key) {
         JSONArray jsonarray = new JSONArray();
         try {
             
