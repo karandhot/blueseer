@@ -157,6 +157,7 @@ public class ediData {
     }
 
     public static String[] addOrUpdateEDIXref(edi_xref x) {
+        
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  edi_xref where exr_bsgs = ? and exr_tpaddr = ? " +
                 " and exr_bsaddr = ? and exr_tpgs = ? and exr_type = ?";
@@ -1565,69 +1566,6 @@ public class ediData {
         return m;
     }
 
-    public static String[] addAS2Maint(as2_mstr x) {
-        String[] m = new String[2];
-        String sqlSelect = "select * from as2_mstr where as2_id = ?";
-        String sqlInsert = "insert into as2_mstr (as2_id, as2_desc, as2_version," +
-        " as2_url, as2_port, as2_path, as2_user, " +
-        " as2_pass, as2_key, as2_protocol, as2_class, as2_indir, as2_outdir, as2_encrypted, as2_signed, as2_enccert, " +
-                " as2_forceencrypted, as2_forcesigned, as2_signcert, as2_encalgo, as2_signalgo, as2_micalgo, as2_contenttype, as2_enabled, as2_sysas2id, as2_site, " +
-                " as2_inwkf, as2_outwkf, as2_sysenccert, as2_syssigncert, as2_syscert_bool, as2_signmdn, as2_flatmdn, as2_eol ) " +
-                " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
-        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
-             PreparedStatement ps = con.prepareStatement(sqlSelect);) {
-             ps.setString(1, x.as2_id);
-          try (ResultSet res = ps.executeQuery();
-               PreparedStatement psi = con.prepareStatement(sqlInsert);) {  
-            if (! res.isBeforeFirst()) {
-            psi.setString(1, x.as2_id);
-            psi.setString(2, x.as2_desc);
-            psi.setString(3, x.as2_version);
-            psi.setString(4, x.as2_url);
-            psi.setString(5, x.as2_port);
-            psi.setString(6, x.as2_path);
-            psi.setString(7, x.as2_user);
-            psi.setString(8, x.as2_pass);
-            psi.setString(9, x.as2_key);
-            psi.setString(10, x.as2_protocol);
-            psi.setString(11, x.as2_class);
-            psi.setString(12, x.as2_indir);
-            psi.setString(13, x.as2_outdir);
-            ps.setString(14, x.as2_encrypted);
-            ps.setString(15, x.as2_signed);
-            ps.setString(16, x.as2_enccert);
-            ps.setString(17, x.as2_forceencrypted);
-            ps.setString(18, x.as2_forcesigned);
-            ps.setString(19, x.as2_signcert);
-            ps.setString(20, x.as2_encalgo);
-            ps.setString(21, x.as2_signalgo);
-            ps.setString(22, x.as2_micalgo);
-            ps.setString(23, x.as2_contenttype);
-            ps.setString(24, x.as2_enabled);
-            ps.setString(25, x.as2_sysas2id);
-            ps.setString(26, x.as2_site);
-            ps.setString(27, x.as2_inwkf);
-            ps.setString(28, x.as2_outwkf);
-            ps.setString(29, x.as2_sysenccert);
-            ps.setString(30, x.as2_syssigncert);
-            ps.setString(31, x.as2_syscert_bool);
-            ps.setString(32, x.as2_signmdn);
-            ps.setString(33, x.as2_flatmdn);
-            ps.setString(34, x.as2_eol);
-            
-            int rows = psi.executeUpdate();
-            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
-            } else {
-            m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordAlreadyExists};    
-            }
-          }
-        } catch (SQLException s) {
-	       MainFrame.bslog(s);
-               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
-        }
-        return m;
-    }
-
     
     private static int _addAPIMstr(api_mstr x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
         int rows = 0;
@@ -1833,7 +1771,20 @@ public class ediData {
     return m;
     }
         
-    public static String[] addAS2Transaction(as2_mstr as2) {
+    public static String[] addAS2Mstr(as2_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addAS2Transaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -1841,7 +1792,7 @@ public class ediData {
         try { 
             bscon = DriverManager.getConnection(url + db, user, pass);
             bscon.setAutoCommit(false);
-            _addAS2Mstr(as2, bscon, ps, res); 
+            _addAS2Mstr(x, bscon, ps, res); 
             bscon.commit();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
         } catch (SQLException s) {
@@ -1878,8 +1829,7 @@ public class ediData {
         }
     return m;
     }
-    
-    
+       
     public static String[] updateAPIMaint(api_mstr x) {
         String[] m = new String[2];
         String sql = "update api_mstr set api_desc = ?, api_version = ?, api_url = ?, api_port = ?, " +
@@ -1918,6 +1868,18 @@ public class ediData {
     }
     
     public static String[] updateAS2Maint(as2_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateAS2Maint"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sql = "update as2_mstr set as2_desc = ?, as2_version = ?, as2_url = ?, as2_port = ?, " +
                 " as2_path = ?, as2_user = ?, as2_pass = ?, as2_key = ?, as2_protocol = ?, as2_class = ?,  " +
@@ -2260,7 +2222,21 @@ public class ediData {
     }
     
     
-    public static String[] updateAS2Transaction(String x, as2_mstr as2) {
+    public static String[] updateAS2Mstr(String x, as2_mstr as2) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id","updateAS2Mstr"});
+            list.add(new String[]{"param1", x});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(as2);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -2324,7 +2300,19 @@ public class ediData {
     }
       
     public static String[] deleteAS2Mstr(as2_mstr x) { 
-       String[] m = new String[2];
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id","deleteAS2Mstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
         String sql = "delete from as2_mstr where as2_id = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql)) {

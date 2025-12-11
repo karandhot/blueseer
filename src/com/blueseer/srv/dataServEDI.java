@@ -27,10 +27,12 @@ package com.blueseer.srv;
 
 
 import com.blueseer.edi.ediData;
+import static com.blueseer.edi.ediData.addAS2Mstr;
 import static com.blueseer.edi.ediData.addEDIXref;
 import com.blueseer.edi.ediData.edi_ctrl;
 import static com.blueseer.edi.ediData.getEDICtrl;
 import static com.blueseer.edi.ediData.addupdateEDICtrl;
+import static com.blueseer.edi.ediData.deleteAS2Mstr;
 import static com.blueseer.edi.ediData.deleteEDIXref;
 import static com.blueseer.edi.ediData.getAS2Mstr;
 import static com.blueseer.edi.ediData.getDFSMstr;
@@ -38,6 +40,7 @@ import static com.blueseer.edi.ediData.getEDIMetaValueDetail;
 import static com.blueseer.edi.ediData.getEDIMetaValueHeader;
 import static com.blueseer.edi.ediData.getEDIXref;
 import static com.blueseer.edi.ediData.getMapMstr;
+import static com.blueseer.edi.ediData.updateAS2Mstr;
 import static com.blueseer.edi.ediData.updateEDIXref;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
@@ -169,6 +172,46 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(r);
             break;
           }
+        
+        case "addAS2Mstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            ediData.as2_mstr x = objectMapper.readValue(sb.toString(), ediData.as2_mstr.class);            
+            response.getWriter().print(arrayToJson(addAS2Mstr(x)));
+            break;
+          }
+        
+        case "updateAS2Mstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            ediData.as2_mstr x = objectMapper.readValue(sb.toString(), ediData.as2_mstr.class);            
+            response.getWriter().print(arrayToJson(updateAS2Mstr(request.getHeader("param1"), x)));
+            break;
+          }
+        
+        case "deleteAS2Mstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            ediData.as2_mstr x = objectMapper.readValue(sb.toString(), ediData.as2_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteAS2Mstr(x)));
+            break;
+          }
+        
         
         case "getEDIInit" :
             response.getWriter().print(ArrayListStringArrayToJson(ediData.getEDIInit(request.getHeader("param1"), request.getHeader("param2"))));

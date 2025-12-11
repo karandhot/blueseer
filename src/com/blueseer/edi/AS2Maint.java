@@ -33,11 +33,12 @@ import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.tags;
-import static com.blueseer.edi.ediData.updateAS2Transaction;
-import static com.blueseer.edi.ediData.addAS2Transaction;
+import static com.blueseer.edi.ediData.addAS2Mstr;
+
 import com.blueseer.edi.ediData.as2_mstr;
 import static com.blueseer.edi.ediData.deleteAS2Mstr;
 import static com.blueseer.edi.ediData.getAS2Mstr;
+import static com.blueseer.edi.ediData.updateAS2Mstr;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import com.blueseer.utl.BlueSeerUtils.dbaction;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
@@ -505,13 +506,13 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public String[] addRecord(String[] x) {
-    String[] m = addAS2Transaction(createRecord());
+    String[] m = addAS2Mstr(createRecord());
          return m;
      }
      
     public String[] updateRecord(String[] x) {
     String[] m = new String[2];
-        m = updateAS2Transaction(tbkey.getText(), createRecord());
+        m = updateAS2Mstr(tbkey.getText(), createRecord());
      return m;
      }
      
