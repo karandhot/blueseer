@@ -2603,6 +2603,22 @@ public class ediData {
     public static as2_mstr getAS2Mstr(String[] x) {
         as2_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getAS2Mstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServEDI");
+                r = objectMapper.readValue(returnstring, as2_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new as2_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from as2_mstr where as2_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -3010,6 +3026,22 @@ public class ediData {
                String[] s = new String[2];
                s[0] = "edixreftype";
                s[1] = res.getString("code_key");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select wkf_id from wkf_mstr order by wkf_id ;");
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "workflows";
+               s[1] = res.getString("wkf_id");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select pks_id from pks_mstr where pks_type <> 'store' ;");
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "pks";
+               s[1] = res.getString("pks_id");
                lines.add(s);
             }
             

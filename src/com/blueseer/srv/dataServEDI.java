@@ -32,6 +32,7 @@ import com.blueseer.edi.ediData.edi_ctrl;
 import static com.blueseer.edi.ediData.getEDICtrl;
 import static com.blueseer.edi.ediData.addupdateEDICtrl;
 import static com.blueseer.edi.ediData.deleteEDIXref;
+import static com.blueseer.edi.ediData.getAS2Mstr;
 import static com.blueseer.edi.ediData.getDFSMstr;
 import static com.blueseer.edi.ediData.getEDIMetaValueDetail;
 import static com.blueseer.edi.ediData.getEDIMetaValueHeader;
@@ -42,8 +43,10 @@ import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.boolToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import com.blueseer.utl.EDData;
+import static com.blueseer.utl.EDData.addAS2AttributeRecord;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -158,10 +161,22 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
           }
         
+        case "getAS2Mstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            ediData.as2_mstr x = getAS2Mstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
         
         case "getEDIInit" :
             response.getWriter().print(ArrayListStringArrayToJson(ediData.getEDIInit(request.getHeader("param1"), request.getHeader("param2"))));
             break;
+            
+        case "getAS2AttributesList" :
+            response.getWriter().print(ArrayListStringToJson(EDData.getAS2AttributesList(request.getHeader("param1"), request.getHeader("param2"))));
+            break;    
             
         case "readEDIRawFile" :
             response.getWriter().print(ArrayListStringToJson(EDData.readEDIRawFile(request.getHeader("param1"), 
@@ -271,6 +286,18 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             EDData.updateEDIASNStatus(request.getHeader("param1"), request.getHeader("param2"));
             response.getWriter().print(arrayToJson(new String[]{"0",""}));    
             break;
+            
+        case "deleteAS2attribute" :
+            EDData.deleteAS2attribute(request.getHeader("param1"), request.getHeader("param2"), request.getHeader("param3"));
+            response.getWriter().print(arrayToJson(new String[]{"0",""}));    
+            break;    
+           
+        case "addAS2AttributeRecord" : 
+        response.getWriter().println(boolToJson(addAS2AttributeRecord(request.getHeader("param1"), 
+                request.getHeader("param2"), 
+                request.getHeader("param3"), 
+                request.getHeader("param4")))); 
+        break;
             
         case "getEDITPDefaults" :
             EDData.getEDITPDefaults(request.getHeader("param1"), request.getHeader("param2"), request.getHeader("param3"));

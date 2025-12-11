@@ -33,7 +33,6 @@ import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.tags;
-import com.blueseer.adm.admData;
 import static com.blueseer.edi.ediData.updateAS2Transaction;
 import static com.blueseer.edi.ediData.addAS2Transaction;
 import com.blueseer.edi.ediData.as2_mstr;
@@ -71,8 +70,6 @@ import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
@@ -105,6 +102,14 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
                 public static Store certs = null;
                 public static as2_mstr x = null;
                 public static String rData = null;
+                String indir = "";
+                String outdir = "";
+                String inarch = "";
+                String outarch = "";
+                String batchdir = "";
+                String errordir = "";
+                String mapdir = "";
+                String defaultsite = "";
     // global datatablemodel declarations   
    
     
@@ -307,7 +312,10 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public void setComponentDefaultValues() {
-       isLoad = true;
+        isLoad = true;
+        
+        ArrayList<String[]> initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        
         tbkey.setText("");
       
           
@@ -337,17 +345,65 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
            cbflatmdn.setSelected(false);
            cbeol.setSelected(false);
            
+           ddsite.removeAllItems();
+           ddinworkflow.removeAllItems();
+           ddoutworkflow.removeAllItems();
            ddsigncert.removeAllItems();
            ddenccert.removeAllItems();
            ddsysenccert.removeAllItems();
            ddsyssigncert.removeAllItems();
-        ArrayList<String> keys = admData.getAllPKSKeysExceptStore();
-        for (String code : keys) {
-            ddsigncert.addItem(code);
-            ddenccert.addItem(code);
-            ddsysenccert.addItem(code);
-            ddsyssigncert.addItem(code);
+       
+        
+        if (! ddcontenttype.getItemAt(0).isBlank()) {
+         ddcontenttype.insertItemAt("", 0);
         }
+        ddcontenttype.setSelectedIndex(0);
+        
+        headerlist.setModel(listmodel);
+        
+        
+        
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+                      
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("workflows")) {
+              ddinworkflow.addItem(s[1]); 
+              ddoutworkflow.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("pks")) {
+                ddsigncert.addItem(s[1]);
+                ddenccert.addItem(s[1]);
+                ddsysenccert.addItem(s[1]);
+                ddsyssigncert.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("directories")) {
+              String[] dirs = s[1].split(",", -1);
+              indir = dirs[0];
+              outdir = dirs[1];
+              inarch = dirs[2];
+              outarch = dirs[3];
+              batchdir = dirs[4];
+              errordir = dirs[5];
+              mapdir = dirs[6];
+            }
+            
+        }
+         if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+        ddinworkflow.insertItemAt("", 0);
+        ddinworkflow.setSelectedIndex(0);
+        ddoutworkflow.insertItemAt("", 0);
+        ddoutworkflow.setSelectedIndex(0);
         ddsigncert.insertItemAt("", 0);
         ddenccert.insertItemAt("", 0);
         ddsysenccert.insertItemAt("", 0);
@@ -356,29 +412,7 @@ public class AS2Maint extends javax.swing.JPanel implements IBlueSeerT {
         ddenccert.setSelectedIndex(0); 
         ddsysenccert.setSelectedIndex(0);
         ddsyssigncert.setSelectedIndex(0);
-        if (! ddcontenttype.getItemAt(0).isBlank()) {
-         ddcontenttype.insertItemAt("", 0);
-        }
-        ddcontenttype.setSelectedIndex(0);
         
-        headerlist.setModel(listmodel);
-        
-        ddsite.removeAllItems();
-        OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));  
-        ddsite.insertItemAt("", 0);
-        ddsite.setSelectedIndex(0);
-        
-        ddinworkflow.removeAllItems();
-        ddoutworkflow.removeAllItems();
-        ArrayList<String> ids = ediData.getWkfMstrList();
-        for (String id : ids) {
-        ddinworkflow.addItem(id);
-        ddoutworkflow.addItem(id);
-        }
-        ddinworkflow.insertItemAt("", 0);
-        ddinworkflow.setSelectedIndex(0);
-        ddoutworkflow.insertItemAt("", 0);
-        ddoutworkflow.setSelectedIndex(0);
         
        isLoad = false;
     }

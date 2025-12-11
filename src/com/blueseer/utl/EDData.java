@@ -41,6 +41,7 @@ import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToBoolean;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.OVData.getSMTPCredentials;
@@ -139,6 +140,21 @@ public class EDData {
              } 
     
     public static boolean addAS2AttributeRecord(String as2id, String metatype, String key, String value) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addAS2AttributeRecord"});
+            list.add(new String[]{"param1",as2id});
+            list.add(new String[]{"param2",metatype});
+            list.add(new String[]{"param3",key});
+            list.add(new String[]{"param4",value});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+        
         boolean myreturn = false;
           try {
             Connection con = null;
@@ -1236,7 +1252,20 @@ public class EDData {
     
     public static ArrayList<String> getAS2AttributesList(String as2id, String metatype) {
            
-             ArrayList<String> x = new ArrayList<String>();
+        ArrayList<String> x = new ArrayList<String>();
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getAS2AttributesList"});
+            list.add(new String[]{"param1", as2id});
+            list.add(new String[]{"param2", metatype});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return x;
+            }
+        } 
         try{
             Class.forName(driver);
             Connection con = null;
@@ -3848,6 +3877,21 @@ public class EDData {
     }
    
     public static void deleteAS2attribute(String as2id, String metatype, String key) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteAS2attribute"});
+            list.add(new String[]{"param1",as2id});
+            list.add(new String[]{"param2",metatype});
+            list.add(new String[]{"param3",key});
+            try {
+                sendServerPost(list, "", null, "dataServEDI");
+                return;
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        }
+        
         try {
             Class.forName(driver);
             Connection con = null;
