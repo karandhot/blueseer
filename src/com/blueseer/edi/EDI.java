@@ -3518,7 +3518,7 @@ public class EDI {
         String SuppressDuplicate = getSysMetaValue("system", "ordercontrol", "suppressduplicate");
         if (! SuppressDuplicate.isBlank() && SuppressDuplicate.equals("1")) {
             if (isDuplicatePO(e.bs_billto, e.po)) {
-                m[0] = "1";
+                m[0] = "error";
                 m[1] = "duplicate PO for this BillTo/PO: " + e.bs_billto + "/" + e.po;
                 return m;
             }
@@ -3910,7 +3910,7 @@ public class EDI {
              //  System.out.println("detcount: " + j + "/" + e.getDetType(j));
                 dettype = ediData.getEDIXvalue("204", "S5", "2", e.getDetType(j)); // three types supported... LD = Load; CU = Unload Complete; UL = Unload Partial
                 if (dettype.isBlank()) {
-                   m[0] = "1"; 
+                   m[0] = "error"; 
                    m[1] = "unknown S5 type: " + e.getDetType(j);
                    break;
                 }
