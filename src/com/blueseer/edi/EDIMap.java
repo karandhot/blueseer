@@ -830,10 +830,10 @@ public abstract class EDIMap {  // took out the implements EDIMapi
          int filenumber = OVData.getNextNbr("edifile");
          String batchfile = "X" + String.format("%07d", filenumber);
          String outfilemulti = "";
-        if (outfile.isBlank()) {
-            outfile = tp[10] + String.format("%07d", filenumber) + "." + tp[11];
-        }
-        
+         outfile = tp[10] + String.format("%07d", filenumber) + "." + tp[11];
+         if (! c[12].isBlank() && ! c[8].isBlank()) {
+             outfile = c[8];
+         }
         
        // System.out.println("HERE: " + c[29]);
         
