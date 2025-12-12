@@ -53,6 +53,7 @@ import static com.blueseer.ord.ordData.addOrderTransaction;
 import static com.blueseer.ord.ordData.addUpdateSOMetaNotes;
 import static com.blueseer.ord.ordData.isDuplicatePO;
 import com.blueseer.ord.ordData.so_mstr;
+import static com.blueseer.ord.ordData.updateOrderStatusByPO;
 import com.blueseer.pur.purData;
 import com.blueseer.pur.purData.po_mstr;
 import com.blueseer.shp.shpData;
@@ -3514,7 +3515,22 @@ public class EDI {
     public static String[] createSOFrom850(edi850 e, String[] control) {
         String[] m = new String[]{"",""};
         
-        // check for duplication PO
+        // check for change or cancel purpose code...then set new data then return
+        if (e.purposecode.equals("04")) { // cancel
+            updateOrderStatusByPO(e.po, getGlobalProgTag("cancel"));
+            m[0] = "success";
+            m[1] = "Purpose Code=04...PO has been cancelled: " + e.bs_billto + "/" + e.po;
+            return m;
+        }
+        
+        if (e.purposecode.equals("05")) { // change
+            // update order by PO
+            m[0] = "success";
+            m[1] = "Purpose Code=05...PO has been updated: " + e.bs_billto + "/" + e.po;
+            return m;
+        }        
+        
+        // check for duplicate PO...assumes purpose code is not 04 nor 05 ...must be 00 (original)...bounce if duplicate
         String SuppressDuplicate = getSysMetaValue("system", "ordercontrol", "suppressduplicate");
         if (! SuppressDuplicate.isBlank() && SuppressDuplicate.equals("1")) {
             if (isDuplicatePO(e.bs_billto, e.po)) {
@@ -6859,6 +6875,7 @@ public class EDI {
     public String st_state = "";
     public String st_zip = "";
     public String st_country = "";
+    public String purposecode = "00";
     
     // Notes field
     public ArrayList<String> notes = new ArrayList<String>();
@@ -6945,6 +6962,9 @@ public class EDI {
         public void setPO(String v) {
            this.po = v;
         }
+        public void setPurposeCode(String v) {
+           this.purposecode = v;
+        }
         public void setPODate(String v) {
            this.podate = v;
         }
@@ -6997,6 +7017,9 @@ public class EDI {
         // Getters for Header
         public String getPO() {
            return this.po;
+        }
+        public String getPurposeCode() {
+           return this.purposecode;
         }
         public String getPODate() {
            return this.podate;

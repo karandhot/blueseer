@@ -374,6 +374,14 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             ordData.updateOrderChangeStatus(request.getHeader("param1"), request.getHeader("param2"));
             break;
             
+        case "updateOrderStatus" :
+            ordData.updateOrderStatus(request.getHeader("param1"), request.getHeader("param2"));
+            break;  
+            
+        case "updateOrderStatusByPO" :
+            ordData.updateOrderStatusByPO(request.getHeader("param1"), request.getHeader("param2"));
+            break;    
+            
         case "addUpdateSOMeta" : 
         response.getWriter().println(boolToJson(addUpdateSOMeta(request.getHeader("param1"), 
                 request.getHeader("param2"), 

@@ -5520,6 +5520,91 @@ public class ordData {
     }
     }
     
+    public static void updateOrderStatus(String order, String status) {
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "updateOrderStatus"});
+            list.add(new String[]{"param1",  order});
+            list.add(new String[]{"param2",  status});
+            try {
+                sendServerPost(list, "", null, "dataServORD");
+                return;
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        }
+       
+        try{
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        try{
+           st.executeUpdate(
+                 " update so_mstr set so_status = " + "'" + status + "'" + 
+                 " where so_nbr = " + "'" + order + "'" + ";" );
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+            if (st != null) {
+                st.close();
+            }
+            con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    }
+    
+    public static void updateOrderStatusByPO(String po, String status) {
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "updateOrderStatusByPO"});
+            list.add(new String[]{"param1",  po});
+            list.add(new String[]{"param2",  status});
+            try {
+                sendServerPost(list, "", null, "dataServORD");
+                return;
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        }
+       
+        try{
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        try{
+           st.executeUpdate(
+                 " update so_mstr set so_status = " + "'" + status + "'" + 
+                 " where so_po = " + "'" + po + "'" + ";" );
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+            if (st != null) {
+                st.close();
+            }
+            con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    }
+    
+    
     public static void applyOrderChange(String changeID, String po) {
         
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
