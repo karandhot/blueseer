@@ -250,10 +250,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             String[] ca = sb.toString().split("=_=", -1);
             String key = ca[0];
             ArrayList<String> badlist = om.readValue(ca[1], ArrayList.class);
-            ediData.apid_meta sdarray = om.readValue(ca[0], ediData.apid_meta.class);
+            ediData.apid_meta sdarray = om.readValue(ca[2], ediData.apid_meta.class);
             ArrayList<ediData.apid_meta> sdlist = new ArrayList<ediData.apid_meta>(Arrays.asList(sdarray)); 
-            ediData.api_mstr sm = om.readValue(ca[2], ediData.api_mstr.class); 
-            ediData.api_det starray = om.readValue(ca[1], ediData.api_det.class);
+            ediData.api_mstr sm = om.readValue(ca[4], ediData.api_mstr.class); 
+            ediData.api_det starray = om.readValue(ca[3], ediData.api_det.class);
             ArrayList<ediData.api_det> stlist = new ArrayList<ediData.api_det>(Arrays.asList(starray));
             response.getWriter().print(arrayToJson(ediData.updateAPITransaction(key, badlist, sdlist, stlist, sm))); 
             }
