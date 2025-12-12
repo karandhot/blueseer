@@ -32,14 +32,18 @@ import static com.blueseer.edi.ediData.addEDIXref;
 import com.blueseer.edi.ediData.edi_ctrl;
 import static com.blueseer.edi.ediData.getEDICtrl;
 import static com.blueseer.edi.ediData.addupdateEDICtrl;
+import static com.blueseer.edi.ediData.deleteAPIMstr;
 import static com.blueseer.edi.ediData.deleteAS2Mstr;
 import static com.blueseer.edi.ediData.deleteEDIXref;
+import static com.blueseer.edi.ediData.getAPIDet;
+import static com.blueseer.edi.ediData.getAPIMstr;
 import static com.blueseer.edi.ediData.getAS2Mstr;
 import static com.blueseer.edi.ediData.getDFSMstr;
 import static com.blueseer.edi.ediData.getEDIMetaValueDetail;
 import static com.blueseer.edi.ediData.getEDIMetaValueHeader;
 import static com.blueseer.edi.ediData.getEDIXref;
 import static com.blueseer.edi.ediData.getMapMstr;
+import static com.blueseer.edi.ediData.isAPIMethodUnique;
 import static com.blueseer.edi.ediData.updateAS2Mstr;
 import static com.blueseer.edi.ediData.updateEDIXref;
 import com.blueseer.utl.BlueSeerUtils;
@@ -53,6 +57,8 @@ import static com.blueseer.utl.EDData.addAS2AttributeRecord;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -212,6 +218,101 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
           }
         
+        case "addAPITransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            ediData.apid_meta sdarray = om.readValue(ca[0], ediData.apid_meta.class);
+            ArrayList<ediData.apid_meta> sdlist = new ArrayList<ediData.apid_meta>(Arrays.asList(sdarray)); 
+            ediData.api_mstr sm = om.readValue(ca[2], ediData.api_mstr.class); 
+            ediData.api_det starray = om.readValue(ca[1], ediData.api_det.class);
+            ArrayList<ediData.api_det> stlist = new ArrayList<ediData.api_det>(Arrays.asList(starray));
+            response.getWriter().print(arrayToJson(ediData.addAPITransaction(sdlist, stlist, sm))); 
+            }
+            break; 
+            
+        case "updateAPITransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            String key = ca[0];
+            ArrayList<String> badlist = om.readValue(ca[1], ArrayList.class);
+            ediData.apid_meta sdarray = om.readValue(ca[0], ediData.apid_meta.class);
+            ArrayList<ediData.apid_meta> sdlist = new ArrayList<ediData.apid_meta>(Arrays.asList(sdarray)); 
+            ediData.api_mstr sm = om.readValue(ca[2], ediData.api_mstr.class); 
+            ediData.api_det starray = om.readValue(ca[1], ediData.api_det.class);
+            ArrayList<ediData.api_det> stlist = new ArrayList<ediData.api_det>(Arrays.asList(starray));
+            response.getWriter().print(arrayToJson(ediData.updateAPITransaction(key, badlist, sdlist, stlist, sm))); 
+            }
+            break;   
+            
+        case "updateAPIDetTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            String key = ca[0];
+            ArrayList<String> badlist = om.readValue(ca[1], ArrayList.class);
+            ediData.apid_meta sdarray = om.readValue(ca[0], ediData.apid_meta.class);
+            ArrayList<ediData.apid_meta> apidm = new ArrayList<ediData.apid_meta>(Arrays.asList(sdarray)); 
+            ediData.api_mstr sm = om.readValue(ca[2], ediData.api_mstr.class); 
+            ediData.api_det starray = om.readValue(ca[1], ediData.api_det.class);
+            ArrayList<ediData.api_det> apid = new ArrayList<ediData.api_det>(Arrays.asList(starray));
+            response.getWriter().print(arrayToJson(ediData.updateAPIDetTransaction(key, apidm, apid))); 
+            }
+            break;     
+        
+        case "deleteAPIMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            ediData.api_mstr x = objectMapper.readValue(sb.toString(), ediData.api_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteAPIMstr(x)));
+            break;
+          }
+        
+        case "getAPIMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            ediData.api_mstr x = getAPIMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "getAPIDet" : { 
+            ArrayList<ediData.api_det> x = getAPIDet(request.getHeader("param1"));
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "isAPIMethodUnique" : 
+        response.getWriter().println(boolToJson(isAPIMethodUnique(request.getHeader("param1"), 
+                request.getHeader("param2")))); 
+        break; 
         
         case "getEDIInit" :
             response.getWriter().print(ArrayListStringArrayToJson(ediData.getEDIInit(request.getHeader("param1"), request.getHeader("param2"))));

@@ -51,6 +51,7 @@ import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToBoolean;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.parseFileName;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
@@ -1518,7 +1519,19 @@ public class ediData {
       
     
     
-    public static String[] addAPIMaint(api_mstr x) {
+    public static String[] addAPIMstr(api_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addAPIMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlSelect = "select * from api_mstr where api_id = ?";
         String sqlInsert = "insert into api_mstr (api_id, api_desc, api_version," +
@@ -1720,6 +1733,22 @@ public class ediData {
     }
           
     public static String[] addAPITransaction(ArrayList<apid_meta> apidm, ArrayList<api_det> apid, api_mstr api) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addAPITransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(apidm);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(apid);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(api);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -1774,7 +1803,7 @@ public class ediData {
     public static String[] addAS2Mstr(as2_mstr x) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
-            list.add(new String[]{"id","addAS2Transaction"});
+            list.add(new String[]{"id","addAS2Mstr"});
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 String jsonString = objectMapper.writeValueAsString(x);
@@ -2112,6 +2141,23 @@ public class ediData {
     
     
     public static String[] updateAPITransaction(String x, ArrayList<String> lines, ArrayList<apid_meta> apidm, ArrayList<api_det> apid, api_mstr api) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateAPITransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(lines);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(apidm);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(apid);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(api);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -2169,6 +2215,22 @@ public class ediData {
     
     public static String[] updateAPIDetTransaction(String x, ArrayList<apid_meta> apidm, ArrayList<api_det> apid) {
         // used for single Detail Record Updates;  apid should have only a single record
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateAPIDetTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(apidm);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(apid);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -2285,7 +2347,19 @@ public class ediData {
     
     
     public static String[] deleteAPIMstr(api_mstr x) { 
-       String[] m = new String[2];
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id","deleteAPIMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
         String sql = "delete from api_mstr where api_id = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql)) {
@@ -2354,6 +2428,22 @@ public class ediData {
     public static api_mstr getAPIMstr(String[] x) {
         api_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getAPIMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServEDI");
+                r = objectMapper.readValue(returnstring, api_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new api_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from api_mstr where api_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -2375,52 +2465,6 @@ public class ediData {
                             res.getString("api_pass"),
                             res.getString("api_key"),
                                 res.getString("api_keylabel"),
-                            res.getString("api_protocol"),
-                            res.getString("api_class"),
-                            res.getString("api_encrypted"),
-                            res.getString("api_signed"),
-                            res.getString("api_contenttype"),
-                            res.getString("api_auth"),
-                            res.getString("api_char1"),
-                            res.getString("api_char2"),
-                            res.getString("api_char3"),
-                            res.getString("api_notes")
-                        );
-                    }
-                }
-            }
-        } catch (SQLException s) {   
-	       MainFrame.bslog(s);  
-               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
-               r = new api_mstr(m);
-        }
-        return r;
-    }
-    
-    public static api_mstr getAPIMstr(String id) {
-        api_mstr r = null;
-        String[] m = new String[2];
-        String sql = "select * from api_mstr where api_id = ? ;";
-        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
-	PreparedStatement ps = con.prepareStatement(sql);) {
-        ps.setString(1, id);
-             try (ResultSet res = ps.executeQuery();) {
-                if (! res.isBeforeFirst()) {
-                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
-                r = new api_mstr(m);
-                } else {
-                    while(res.next()) {
-                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
-                        r = new api_mstr(m, res.getString("api_id"), 
-                            res.getString("api_desc"),
-                            res.getString("api_version"),
-                            res.getString("api_url"),
-                            res.getString("api_port"),
-                            res.getString("api_path"),
-                            res.getString("api_user"),
-                            res.getString("api_pass"),
-                            res.getString("api_key"),
-                            res.getString("api_keylabel"),
                             res.getString("api_protocol"),
                             res.getString("api_class"),
                             res.getString("api_encrypted"),
@@ -2730,6 +2774,24 @@ public class ediData {
         api_det r = null;
         String[] m = new String[2];
         ArrayList<api_det> list = new ArrayList<api_det>();
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<>();
+            paramlist.add(new String[]{"id","getAPIDet"});
+            paramlist.add(new String[]{"param1",code});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServEDI");
+                r = objectMapper.readValue(returnstring, api_det.class);
+                list = new ArrayList<>(Arrays.asList(r)); 
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+                return list;
+            }
+        }
+        
+        
         String sql = "select * from api_det where apid_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -4512,6 +4574,18 @@ public class ediData {
     
     
     public static boolean isAPIMethodUnique(String api, String method) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isAPIMethodUnique"});
+            list.add(new String[]{"param1", api});
+            list.add(new String[]{"param2", method});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        } 
         boolean x = false;
          String sql = "select * from api_det where apid_id = ? and apid_method = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
@@ -5861,7 +5935,7 @@ public class ediData {
         }
         
         
-        api_mstr api = getAPIMstr(apiid);
+        api_mstr api = getAPIMstr(new String[]{apiid});
         api_det apid = getAPIDet(apiid, apimethod);
         
         if (api.m[0].equals("0") && apid.m[0].equals("0")) { 

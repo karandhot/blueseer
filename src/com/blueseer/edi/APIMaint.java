@@ -379,6 +379,8 @@ public class APIMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void setComponentDefaultValues() {
         isLoad = true;
         
+       // ArrayList<String[]> initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        
         if (bsmf.MainFrame.remoteDB) {
             cblocal.setEnabled(true);
             cblocal.setSelected(false);
@@ -429,6 +431,7 @@ public class APIMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddauth.setSelectedIndex(0);
         tbapikey.setText("");
         tbkeylabel.setText("");
+        
         isLoad = false;
     }
     
