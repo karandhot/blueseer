@@ -436,7 +436,7 @@ public class apiUtils {
         StringBuilder sb = new StringBuilder();
         StringBuilder responseHeaders = new StringBuilder();
         StringBuilder requestHeaders = new StringBuilder();
-        api_mstr api = getAPIMstr(key);
+        api_mstr api = getAPIMstr(new String[]{key});
         api_det apid = getAPIDet(key, method);
         
         int k = 0;
