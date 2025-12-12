@@ -35,6 +35,7 @@ import static com.blueseer.edi.ediData.addupdateEDICtrl;
 import static com.blueseer.edi.ediData.deleteAPIMstr;
 import static com.blueseer.edi.ediData.deleteAS2Mstr;
 import static com.blueseer.edi.ediData.deleteEDIXref;
+import static com.blueseer.edi.ediData.getAPIDMeta;
 import static com.blueseer.edi.ediData.getAPIDet;
 import static com.blueseer.edi.ediData.getAPIMstr;
 import static com.blueseer.edi.ediData.getAS2Mstr;
@@ -303,6 +304,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         case "getAPIDet" : { 
             ArrayList<ediData.api_det> x = getAPIDet(request.getHeader("param1"));
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "getAPIDMeta" : { 
+            ArrayList<ediData.apid_meta> x = getAPIDMeta(request.getHeader("param1"));
             ObjectMapper objectMapper = new ObjectMapper();
             String r = objectMapper.writeValueAsString(x);
             response.getWriter().print(r);

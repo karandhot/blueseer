@@ -2905,6 +2905,20 @@ public class ediData {
         apid_meta r = null;
         String[] m = new String[2];
         ArrayList<apid_meta> list = new ArrayList<apid_meta>();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<>();
+            paramlist.add(new String[]{"id","getAPIDMeta"});
+            paramlist.add(new String[]{"param1",code});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServEDI");
+                list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<apid_meta>>() {});
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+                return list;
+            }
+        }
         String sql = "select * from apid_meta where apidm_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
