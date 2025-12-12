@@ -63,6 +63,7 @@ import static com.blueseer.utl.OVData.isSMTPServerBool;
 import static com.blueseer.utl.OVData.sendEmail;
 import static com.blueseer.utl.OVData.sendEmailwSession;
 import static com.blueseer.utl.OVData.setEmailSession;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.BufferedOutputStream;
@@ -2782,8 +2783,7 @@ public class ediData {
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 String returnstring = sendServerPost(paramlist, "", null, "dataServEDI");
-                r = objectMapper.readValue(returnstring, api_det.class);
-                list = new ArrayList<>(Arrays.asList(r)); 
+                list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<api_det>>() {});
                 return list;
             } catch (IOException ex) {
                 bslog(ex);
@@ -3442,6 +3442,110 @@ public class ediData {
                         rowArray.put(res.getString("apil_error"));
                         rowArray.put(res.getString("apil_file"));
                         rowArray.put(res.getString("apil_status"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    public static String getAPIBrowseView(String search, String ddtype) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                if (ddtype.equals("URL")) {    
+                    res = st.executeQuery("select * " +
+                         " from api_mstr where " +
+                     " api_url like " + "'%" + search + "%'" + 
+                     " order by api_id ;");
+                } else {
+                    res = st.executeQuery("select * " +
+                         " from api_mstr where " +
+                     " api_desc like " + "'%" + search + "%'" + 
+                     " order by api_id ;");   
+                }
+                
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("api_id"));
+                        rowArray.put(res.getString("api_desc"));
+                        rowArray.put(res.getString("api_class"));
+                        rowArray.put(res.getString("api_url"));
+                        rowArray.put(res.getString("api_port"));
+                        rowArray.put(res.getString("api_path"));
+                        rowArray.put(res.getString("api_protocol"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    public static String getAPIBrowseDetView(String apid) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                res = st.executeQuery("select * " +
+                        " from api_det " +
+                        " where apid_id = " + "'" + apid + "'" + ";");
+                
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("apid_id"));
+                        rowArray.put(res.getString("apid_method"));
+                        rowArray.put(res.getString("apid_seq"));
+                        rowArray.put(res.getString("apid_verb"));
+                        rowArray.put(res.getString("apid_type"));
+                        rowArray.put(res.getString("apid_key"));
+                        rowArray.put(res.getString("apid_value"));
+                        rowArray.put(res.getString("apid_source"));
+                        rowArray.put(res.getString("apid_destination"));
+                        rowArray.put(res.getString("apid_enabled"));
                         jsonarray.put(rowArray);
                     }
            }

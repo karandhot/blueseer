@@ -26,57 +26,37 @@ SOFTWARE.
 
 package com.blueseer.edi;
 
-import com.blueseer.rcv.*;
+
 import bsmf.MainFrame;
-import com.blueseer.utl.OVData;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.BlueSeerUtils;
 import static bsmf.MainFrame.checkperms;
 import static bsmf.MainFrame.db;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.FileDialog;
-import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
-import static bsmf.MainFrame.driver;
 import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.mydialog;
 import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
-import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
+import static com.blueseer.edi.ediData.getAPIBrowseDetView;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
-import com.blueseer.vdr.venData;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import java.sql.Connection;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -84,6 +64,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 
 /**
  *
@@ -92,8 +73,11 @@ import javax.swing.JTabbedPane;
 public class APIBrowse extends javax.swing.JPanel {
  
      public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
-     
-    javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+     Object[][] rData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    
+    
+    javax.swing.table.DefaultTableModel modeltable = new javax.swing.table.DefaultTableModel(new Object[][]{},
                     new String[]{
                             getGlobalColumnTag("select"), 
                             getGlobalColumnTag("detail"), 
@@ -158,62 +142,75 @@ public class APIBrowse extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
-     public void getdetail(String apiid) {
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
       
-         modeldetail.setNumRows(0);
-         double total = 0;
-        
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            } 
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-                int i = 0;
-                String blanket = "";
-                
-                res = st.executeQuery("select * " +
-                        " from api_det " +
-                        " where apid_id = " + "'" + apiid + "'" + ";");
-                while (res.next()) {
-                   modeldetail.addRow(new Object[]{ 
-                      res.getString("apid_id"), 
-                       res.getString("apid_method"),
-                       res.getString("apid_seq"),
-                       res.getString("apid_verb"),
-                       res.getString("apid_type"),
-                       res.getString("apid_key"),
-                       res.getString("apid_value"),
-                       res.getString("apid_source"),
-                       res.getString("apid_destination"),
-                       res.getString("apid_enabled")
-                   });
-                }
-                tabledetail.setModel(modeldetail);
-                // this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
+        class Task extends SwingWorker<String[], Void> {
+       
+          String type = "";
+          String[] key = null;
+          
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
+              this.key = key;
+          } 
+           
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+             switch(this.type) {
+                case "init":
+                   // message = getInitialization();
+                    break;
+                    
+                case "run":
+                    if (this.key[0].equals("getAPIBrowseView")) {
+                      message = getAPIBrowseView();
+                    } else {
+                       message = getDetail(this.key[1]);  
+                    }
+                    break;
+                default:
+                    message = new String[]{"1", "unknown action"};
             }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+            
+            return message;
         }
-
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+            BlueSeerUtils.endTask(message);
+            
+                if (this.type.equals("init")) {
+                 //   done_Initialization();
+                }
+                
+                if (this.type.equals("run")) {
+                    if (this.key[0].equals("getAPIBrowseView")) {
+                      done_getAPIBrowseView();
+                    } else {
+                      done_getDetail(); 
+                    }
+                } 
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"", getMessageTag(1189)});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
     }
+   
     
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
@@ -261,36 +258,94 @@ public class APIBrowse extends javax.swing.JPanel {
     
     public void initvars(String[] arg) {
      
-        
-        java.util.Date now = new java.util.Date();
-        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-        DateFormat dfyear = new SimpleDateFormat("yyyy");
-        DateFormat dfperiod = new SimpleDateFormat("M");
-        
-        mymodel.setNumRows(0);
+        modeltable.setNumRows(0);
         modeldetail.setNumRows(0);
-        tablereport.setModel(mymodel);
+        tablereport.setModel(modeltable);
         tabledetail.setModel(modeldetail);
         
         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
         tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
          
-        tbsearchtext.setText("");
-        
-       
-          
-         
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
-        
-        
-        
-        
+        tbsearch.setText("");
         btdetail.setEnabled(false);
         detailpanel.setVisible(false);
           
-          
     }
+    
+    public String[] getAPIBrowseView() {
+       
+       DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getAPIBrowseView"});
+            list.add(new String[]{"param1", tbsearch.getText()});
+            list.add(new String[]{"param2", ddtype.getSelectedItem().toString()});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServEDI"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getShipperBrowseView")};
+            }
+        } else {
+            jsonString = ediData.getAPIBrowseView(tbsearch.getText(), ddtype.getSelectedItem().toString());
+        }
+         rData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+   }
+    
+    public void done_getAPIBrowseView() {
+        
+        modeltable.setNumRows(0);
+        tablereport.setModel(modeltable);
+        if (rData != null) {
+            int i = 0;
+            if (rData.length > 0) {
+                for (Object[] rowData : rData) {
+                 modeltable.addRow(rowData); 
+                 i++;
+                } 
+            }
+        }
+        rData = null;
+    }   
+    
+    public String[] getDetail(String id) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getAPIBrowseDetView"});
+            list.add(new String[]{"param1", id});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServEDI"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getAPIBrowseDetView(id); 
+        }        
+        rData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getDetail() {
+      modeldetail.setNumRows(0);
+       if (rData != null) {
+        if (rData.length > 0) {
+            for (Object[] rowData : rData) {
+                modeldetail.addRow(rowData);
+            } 
+        }
+       }
+       rData = null;
+    }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -313,7 +368,7 @@ public class APIBrowse extends javax.swing.JPanel {
         btRun = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
-        tbsearchtext = new javax.swing.JTextField();
+        tbsearch = new javax.swing.JTextField();
         ddtype = new javax.swing.JComboBox<>();
         jPanel3 = new javax.swing.JPanel();
 
@@ -405,7 +460,7 @@ public class APIBrowse extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbsearchtext, javax.swing.GroupLayout.PREFERRED_SIZE, 253, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(tbsearch, javax.swing.GroupLayout.PREFERRED_SIZE, 253, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 183, Short.MAX_VALUE)
                 .addComponent(btRun)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -419,7 +474,7 @@ public class APIBrowse extends javax.swing.JPanel {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btRun)
                     .addComponent(btdetail)
-                    .addComponent(tbsearchtext, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tbsearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -477,68 +532,7 @@ public class APIBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-    
-try {
-        Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-               mymodel.setNumRows(0);
-                
-             if (ddtype.getSelectedItem().toString().equals("URL")) {    
-             res = st.executeQuery("select * " +
-                         " from api_mstr where " +
-                     " api_url like " + "'%" + tbsearchtext.getText() + "%'" + 
-                     " order by api_id ;");
-             } else {
-              res = st.executeQuery("select * " +
-                         " from api_mstr where " +
-                     " api_desc like " + "'%" + tbsearchtext.getText() + "%'" + 
-                     " order by api_id ;");   
-             }
-                     
-                  
-                
-                       while (res.next()) {
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, BlueSeerUtils.clickbasket, 
-                        res.getString("api_id"),
-                        res.getString("api_desc"),
-                        res.getString("api_class"),
-                        res.getString("api_url"),
-                        res.getString("api_port"),
-                        res.getString("api_path"),
-                        res.getString("api_protocol")
-                    });
-               
-             
-                   
-                } // while   
-                    
-                 
-        
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
+        executeTask(BlueSeerUtils.dbaction.run, new String[]{"getAPIBrowseView",""});
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btdetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdetailActionPerformed
@@ -551,10 +545,9 @@ try {
         int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
         if ( col == 1) {
-                getdetail(tablereport.getValueAt(row, 2).toString());
+                executeTask(BlueSeerUtils.dbaction.run, new String[]{"getAPIBrowseDetail",tablereport.getValueAt(row, 2).toString()});
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
-              
         }
         if ( col == 0) {
                 String mypanel = "APIMaint";
@@ -582,6 +575,6 @@ try {
     private javax.swing.JTable tabledetail;
     private javax.swing.JPanel tablepanel;
     private javax.swing.JTable tablereport;
-    private javax.swing.JTextField tbsearchtext;
+    private javax.swing.JTextField tbsearch;
     // End of variables declaration//GEN-END:variables
 }
