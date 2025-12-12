@@ -2872,6 +2872,18 @@ public class ediData {
     }
      
     public static ArrayList<String> getAPIMethodsList(String nbr) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getAPIMethodsList"});
+            list.add(new String[]{"param1", nbr});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        
         ArrayList<String> lines = new ArrayList<String>();
         try{
         Connection con = null;

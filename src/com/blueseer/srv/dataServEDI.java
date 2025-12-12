@@ -318,6 +318,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
           }
         
+        case "getAPIMethodsList" :
+            response.getWriter().print(ArrayListStringToJson(ediData.getAPIMethodsList(request.getHeader("param1"))));
+            break;
+        
         case "isAPIMethodUnique" : 
         response.getWriter().println(boolToJson(isAPIMethodUnique(request.getHeader("param1"), 
                 request.getHeader("param2")))); 
@@ -355,7 +359,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getEDISenderReceiverByDocTypeOUT" :
             response.getWriter().print(ArrayListStringToJson(EDData.getEDISenderReceiverByDocTypeOUT(request.getHeader("param1"))));
-            break;      
+            break; 
             
         case "getDSFasString" :
             response.getWriter().print(ArrayListStringToJson(ediData.getDSFasString(request.getHeader("param1"))));
