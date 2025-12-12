@@ -2166,8 +2166,10 @@ public class ediData {
         try { 
             bscon = DriverManager.getConnection(url + db, user, pass);
             bscon.setAutoCommit(false);
-            for (String line : lines) {
-               _deleteAPILines(x, line, bscon);  // discard unwanted lines
+            if (lines != null) {
+                for (String line : lines) {
+                   _deleteAPILines(x, line, bscon);  // discard unwanted lines
+                }
             }
             for (api_det z : apid) {
                 _updateAPIdet(z, bscon, ps, res);

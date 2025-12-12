@@ -251,11 +251,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             String key = ca[0];
             ArrayList<String> badlist = om.readValue(ca[1], ArrayList.class);
             ediData.apid_meta sdarray = om.readValue(ca[2], ediData.apid_meta.class);
-            ArrayList<ediData.apid_meta> sdlist = new ArrayList<ediData.apid_meta>(Arrays.asList(sdarray)); 
-            ediData.api_mstr sm = om.readValue(ca[4], ediData.api_mstr.class); 
+            ArrayList<ediData.apid_meta> apidm = new ArrayList<>(Arrays.asList(sdarray)); 
+            ediData.api_mstr api = om.readValue(ca[4], ediData.api_mstr.class); 
             ediData.api_det starray = om.readValue(ca[3], ediData.api_det.class);
-            ArrayList<ediData.api_det> stlist = new ArrayList<ediData.api_det>(Arrays.asList(starray));
-            response.getWriter().print(arrayToJson(ediData.updateAPITransaction(key, badlist, sdlist, stlist, sm))); 
+            ArrayList<ediData.api_det> apid = new ArrayList<>(Arrays.asList(starray));
+            response.getWriter().print(arrayToJson(ediData.updateAPITransaction(key, badlist, apidm, apid, api))); 
             }
             break;   
             
