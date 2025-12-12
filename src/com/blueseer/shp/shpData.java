@@ -547,13 +547,13 @@ public class shpData {
                 "shd_soline = ?, shd_date = ?, shd_po = ?, shd_qty = ?, " +
                 " shd_netprice = ?, shd_disc = ?, shd_listprice = ?, shd_desc = ?, " +
                 "shd_wh = ?, shd_loc = ?, shd_taxamt = ?, shd_cont = ?, shd_serial = ?, " +
-                " shd_site = ?, shd_bom = ?, shd_packqty = ?" +
+                " shd_site = ?, shd_bom = ?, shd_packqty = ?, shd_uom = ?, shd_custitem = ? " +
                  " where shd_id = ? and shd_line = ? ; ";
         String sqlInsert = "insert into ship_det (shd_id, shd_line, shd_item, shd_so, shd_soline, " 
                         + " shd_date, shd_po, shd_qty,"
                         + "shd_netprice, shd_disc, shd_listprice, shd_desc, shd_wh, "
-                        + " shd_loc, shd_taxamt, shd_cont, shd_serial, shd_site, shd_bom, shd_packqty, shd_kvpair  ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); ";
+                        + " shd_loc, shd_taxamt, shd_cont, shd_serial, shd_site, shd_bom, shd_packqty, shd_kvpair, shd_uom, shd_custitem  ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); ";
         ps = con.prepareStatement(sqlSelect); 
         ps.setString(1, x.shd_id);
         ps.setInt(2, x.shd_line);
@@ -581,11 +581,13 @@ public class shpData {
             ps.setString(19, x.shd_bom); 
             ps.setDouble(20, x.shd_packqty);
             ps.setString(21, x.shd_kvpair);
+            ps.setString(22, x.shd_uom);
+            ps.setString(23, x.shd_custitem);
             rows = ps.executeUpdate();
         } else {    // update
          ps = con.prepareStatement(sqlUpdate) ;
-            ps.setString(18, x.shd_id);
-            ps.setInt(19, x.shd_line);
+            ps.setString(21, x.shd_id);
+            ps.setInt(22, x.shd_line);
             ps.setString(1, x.shd_item);
             ps.setString(2, x.shd_so);
             ps.setInt(3, x.shd_soline);
@@ -604,6 +606,8 @@ public class shpData {
             ps.setString(16, x.shd_site); 
             ps.setString(17, x.shd_bom);
             ps.setDouble(18, x.shd_packqty);
+            ps.setString(19, x.shd_uom);
+            ps.setString(20, x.shd_custitem);
             rows = ps.executeUpdate();
         }
             
