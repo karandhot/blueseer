@@ -2159,7 +2159,7 @@ public class ediData {
                 return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
             }
         }
-        String[] m = new String[]{"1", "oops"};
+        String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
         ResultSet res = null;
