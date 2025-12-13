@@ -300,8 +300,16 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
           }
         
-        case "getAPIDet" : { 
+        case "getAPIDets" : { 
             ArrayList<ediData.api_det> x = getAPIDet(request.getHeader("param1"));
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "getAPIDet" : { 
+            ediData.api_det x = getAPIDet(request.getHeader("param1"), request.getHeader("param2"));
             ObjectMapper objectMapper = new ObjectMapper();
             String r = objectMapper.writeValueAsString(x);
             response.getWriter().print(r);

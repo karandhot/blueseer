@@ -2780,7 +2780,7 @@ public class ediData {
         
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> paramlist = new ArrayList<>();
-            paramlist.add(new String[]{"id","getAPIDet"});
+            paramlist.add(new String[]{"id","getAPIDets"});
             paramlist.add(new String[]{"param1",code});
             ObjectMapper objectMapper = new ObjectMapper();
             try {
@@ -2834,8 +2834,29 @@ public class ediData {
     }
     
     public static api_det getAPIDet(String id, String method) { 
+        
         api_det r = null;
         String[] m = new String[2];
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getAPIDet"});
+            list.add(new String[]{"param1",id});
+            list.add(new String[]{"param2",method});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServEDI");
+                r = objectMapper.readValue(returnstring, api_det.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new api_det(m);
+                return r;
+            }
+        }
+        
+        
         String sql = "select * from api_det where apid_id = ? and apid_method = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
