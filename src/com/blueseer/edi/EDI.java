@@ -53,6 +53,7 @@ import static com.blueseer.ord.ordData.addOrderTransaction;
 import static com.blueseer.ord.ordData.addUpdateSOMetaNotes;
 import static com.blueseer.ord.ordData.isDuplicatePO;
 import com.blueseer.ord.ordData.so_mstr;
+import com.blueseer.ord.ordData.sos_det;
 import static com.blueseer.ord.ordData.updateOrderStatusByPO;
 import com.blueseer.pur.purData;
 import com.blueseer.pur.purData.po_mstr;
@@ -3581,19 +3582,20 @@ public class EDI {
                 "0", // isPlanned
                 "edi",
                 "0",
-                bsmf.MainFrame.dfdate.format(new Date())
+                bsmf.MainFrame.dfdate.format(new Date()),
+                custinfo[9]
                 );
         
          // sacs discount/charges 5 elements 
          // discount/charges must be done before detail assignment...as cumalative discount/charge 'percent' is applied at item level
         double disc = 0;
         ArrayList<ordData.sos_det> sacs = new ArrayList<ordData.sos_det>();
-        for (String[] s : e.getSAC()) {
+        for (String[] s : e.getSAC()) { // 5 elements   po, desc, type (charge | discount), amttype (percent | amount) , amount
             if (s[2].equals("discount") && s[3].equals("percent")) {
-                disc += bsParseDouble(s[4]);
+                disc -= bsParseDouble(s[4]);
             }
             if (s[2].equals("charge") && s[3].equals("percent")) {
-                disc -= bsParseDouble(s[4]);
+                disc += bsParseDouble(s[4]);
             }
             ordData.sos_det sos = new ordData.sos_det(null, 
                 String.valueOf(sonbr), // key
@@ -3620,30 +3622,53 @@ public class EDI {
         }
         
         
+        
+        
+        
         // detail
         ArrayList<ordData.sod_det> detail = new ArrayList<ordData.sod_det>();
         String uom;
+        double principal = 0.00;
+        double netprice = 0.00;
         for (int j = 0; j < e.getDetCount(); j++ ) {
+           principal = 0.00;
+           netprice = 0.00;
+           
            if (e.getDetUOM(j).isBlank()) {
                uom = OVData.getUOMByItem(e.getDetItem(j));  
            } else { 
                uom = e.getDetUOM(j);
            }
            
-           disc = (e.getDetDisc(j).isEmpty()) ? disc : bsParseDouble(e.getDetDisc(j));  // override disc with map assigned e.getDetDisc if not blank...otherwise use calculated disc
-          // System.out.println("HERE: " + uom + "/" + e.getDetItem(j) + "/" + e.getDetUOM(j));
+           disc = (e.getDetDisc(j).isEmpty() || e.getDetDisc(j).equals("0")) ? disc : bsParseDouble(e.getDetDisc(j));  // override disc with map assigned e.getDetDisc if not blank...otherwise use calculated disc
+           netprice = bsParseDouble(e.getDetListPrice(j).replace(defaultDecimalSeparator, '.'));
+           if (disc != 0) {
+             netprice = netprice + (netprice * (disc / 100));
+           }
+           // new method for cascading/successive discounts/charges...if customer is 'cascading'
+           if (BlueSeerUtils.ConvertStringToBool(custinfo[9])) {
+             principal = bsParseDouble(e.getDetQty(j).replace(defaultDecimalSeparator, '.')) * bsParseDouble(e.getDetListPrice(j).replace(defaultDecimalSeparator, '.')); 
+             for (sos_det sac : sacs) {
+               principal = (principal + (principal * (sac.sos_amt() / 100)));
+               System.out.println(principal + "/" + sac.sos_amt() + "/" + e.getDetListPrice(j));
+             }
+             netprice = principal / bsParseDouble(e.getDetQty(j).replace(defaultDecimalSeparator, '.'));
+             disc = netprice / bsParseDouble(e.getDetListPrice(j).replace(defaultDecimalSeparator, '.'));
+           }
+          
+          
         ordData.sod_det sod = new ordData.sod_det(null, 
                 String.valueOf(sonbr),
                 j + 1,
                 e.getDetItem(j), 
                 e.getDetCustItem(j), 
                 e.po,
-                bsParseDouble(e.getDetQty(j).replace(defaultDecimalSeparator, '.')),
+                bsParseDouble(e.getDetQty(j).replace(defaultDecimalSeparator, '.')), 
                 uom,
                 0, // allocation value
                 bsParseDouble(e.getDetListPrice(j).replace(defaultDecimalSeparator, '.')),
                 bsParseDouble(bsNumber(disc).replace(defaultDecimalSeparator, '.')),  
-                bsParseDouble(e.getDetNetPrice(j).replace(defaultDecimalSeparator, '.')),
+                bsParseDouble(bsNumber(netprice).replace(defaultDecimalSeparator, '.')),
                 e.podate,
                 e.duedate,   
                 0, // ship qty

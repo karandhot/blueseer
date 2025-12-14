@@ -260,7 +260,8 @@ CREATE TABLE "cm_mstr" (
   "cm_email" varchar(60) NOT NULL COLLATE NOCASE DEFAULT '',
   "cm_is855export" tinyint(1) DEFAULT '0',
   "cm_is856export" tinyint(1) DEFAULT '0',
-  "cm_is810export" tinyint(1) DEFAULT '0'
+  "cm_is810export" tinyint(1) DEFAULT '0',
+  "cm_cascade" tinyint(1) DEFAULT '0'
 );
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -2417,7 +2418,8 @@ CREATE TABLE "so_mstr" (
   "so_entrytype" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
   "so_confirm" tinyint(1) NOT NULL DEFAULT '0',
   "so_plan" tinyint(1) NOT NULL DEFAULT '1',
-  "so_mod_date" date DEFAULT '0000-00-00'
+  "so_mod_date" date DEFAULT '0000-00-00',
+  "so_cascade" tinyint(1) NOT NULL DEFAULT '0'
 );
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

@@ -579,6 +579,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         cbconfirm.setSelected(false);
         cbplan.setSelected(true);
         cbedi.setSelected(false);
+        cbcascade.setSelected(false);
         
         listprice.setText("0");
         netprice.setText("0");
@@ -1152,7 +1153,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 String.valueOf(BlueSeerUtils.boolToInt(cbplan.isSelected())),
                 "", // entrytype...blank for manual; 'edi' for EDI entry
                 "0",
-                setDateDB(new Date())
+                setDateDB(new Date()),
+                String.valueOf(BlueSeerUtils.boolToInt(cbcascade.isSelected()))
                 );
         return x;
     }
@@ -1561,6 +1563,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddcust.setSelectedItem(so.so_cust());
         ddcust.setEnabled(false);
         cbissourced.setSelected(BlueSeerUtils.ConvertStringToBool(so.so_issourced()));
+        cbcascade.setSelected(BlueSeerUtils.ConvertStringToBool(so.so_cascade()));
         cbconfirm.setSelected(BlueSeerUtils.ConvertStringToBool(so.so_confirm()));
         cbedi.setSelected((so.so_entrytype().equals("edi") ? true : false));
         cbplan.setSelected(BlueSeerUtils.ConvertStringToBool(so.so_plan()));
@@ -1841,6 +1844,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
         
         lblcustname.setText(css.cm().cm_name());
+        cbcascade.setSelected(BlueSeerUtils.ConvertStringToBool(css.cm().cm_cascade()));
         ddshipvia.setSelectedItem((css.cm().cm_carrier()));
         ddtax.setSelectedItem((css.cm().cm_tax_code()));
         ddcurr.setSelectedItem(css.cm().cm_curr());
@@ -2522,6 +2526,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel13 = new javax.swing.JLabel();
         dccreate = new com.toedter.calendar.JDateChooser();
         jLabel14 = new javax.swing.JLabel();
+        cbcascade = new javax.swing.JCheckBox();
         btdelete = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jLabel11 = new javax.swing.JLabel();
@@ -2874,6 +2879,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel14.setText("Create Date");
         jLabel14.setName("lblcreatedate"); // NOI18N
 
+        cbcascade.setText("Cascade");
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -2926,12 +2933,14 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                                     .addComponent(duedate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(ddtax, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(dccreate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                            .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addComponent(cbisallocated)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(cbissourced)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(cbconfirm)))
+                            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(cbcascade)
+                                .addGroup(jPanel3Layout.createSequentialGroup()
+                                    .addComponent(cbisallocated)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addComponent(cbissourced)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addComponent(cbconfirm))))
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel3Layout.createSequentialGroup()
                                 .addGap(40, 40, 40)
@@ -2998,7 +3007,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(ddcurr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel98))
+                            .addComponent(jLabel98)
+                            .addComponent(cbcascade))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -3279,7 +3289,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addGap(87, 87, 87))
             .addGroup(jPanelMainLayout.createSequentialGroup()
                 .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 875, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 888, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanelMainLayout.createSequentialGroup()
                         .addGap(474, 474, 474)
                         .addComponent(btprintorder)
@@ -3329,7 +3339,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(btLookUpShipTo)
                     .addComponent(lblshiptoname, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
@@ -4634,6 +4644,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btupdate;
     private javax.swing.JButton btupdateitem;
     private javax.swing.JCheckBox cbblanket;
+    private javax.swing.JCheckBox cbcascade;
     private javax.swing.JCheckBox cbconfirm;
     private javax.swing.JCheckBox cbedi;
     private javax.swing.JCheckBox cbisallocated;

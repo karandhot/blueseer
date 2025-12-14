@@ -6765,6 +6765,20 @@ public class ediData {
         }
     }
     
+    public record edp_partner(String[] m, String edp_id, String edp_desc, String edp_site,
+        String edp_type, String edp_defoutdir, String edp_defindir, String edp_outwkfl, String edp_inwkfl,
+        String edp_outenabled, String edp_inenabled ) {
+        public edp_partner(String[] m) {
+            this(m, "", "", "", "", "", "", "", "", "", "");
+        }
+    }
+    
+    public record edpd_partner(String[] m, String edpd_parent, String edpd_alias, String edpd_default ) {
+        public edpd_partner(String[] m) {
+            this(m, "", "", "");
+        }
+    }
+    
     public record map_mstr(String[] m, String map_id, String map_desc, String map_version,
         String map_ifs, String map_ofs, String map_indoctype, String map_infiletype ,
         String map_outdoctype, String map_outfiletype, String map_source, String map_package, String map_internal, String map_site ) {

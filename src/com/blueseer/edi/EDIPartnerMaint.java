@@ -91,6 +91,7 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
 
     // global variable declarations
                 boolean isLoad = false;
+                String defaultsite = "";
     
     // global datatablemodel declarations       
      javax.swing.table.DefaultTableModel aliasmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -283,6 +284,9 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
     
     public void setComponentDefaultValues() {
        isLoad = true;
+       
+       ArrayList<String[]> initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
+       
        aliasmodel.setRowCount(0);
        tablealias.setModel(aliasmodel);
        tablealias.getTableHeader().setReorderingAllowed(false);
@@ -299,15 +303,27 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
        
        ddinwkfl.removeAllItems();
        ddoutwkfl.removeAllItems();
-       ediData.getWkfMstrList().stream().forEach((s) -> ddoutwkfl.addItem(s));
-       ediData.getWkfMstrList().stream().forEach((s) -> ddinwkfl.addItem(s));
+       ddsite.removeAllItems();
+       
+       for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+                      
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("workflows")) {
+              ddinwkfl.addItem(s[1]); 
+              ddoutwkfl.addItem(s[1]); 
+            }
+        }
+         if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
        ddoutwkfl.insertItemAt("",0);
        ddinwkfl.insertItemAt("",0);
-       
-       ddsite.removeAllItems();
-       OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));  
-       ddsite.insertItemAt("", 0);
-       ddsite.setSelectedItem(OVData.getDefaultSiteForUserid(bsmf.MainFrame.userid));
         
        isLoad = false;
     }

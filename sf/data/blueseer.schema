@@ -362,7 +362,8 @@ CREATE TABLE IF NOT EXISTS `cm_mstr` (
   `cm_email` varchar(60) NOT NULL  DEFAULT '',
   `cm_is855export` tinyint(1) NOT NULL DEFAULT '0',
   `cm_is856export` tinyint(1) NOT NULL DEFAULT '0',
-  `cm_is810export` tinyint(1) NOT NULL DEFAULT '0'
+  `cm_is810export` tinyint(1) NOT NULL DEFAULT '0',
+  `cm_cascade` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `cmc_det` (
   `cmc_id` int(12) NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -2115,6 +2116,7 @@ CREATE TABLE IF NOT EXISTS `so_mstr` (
   `so_confirm` tinyint(1)  NOT NULL DEFAULT '0',
   `so_plan` tinyint(1)  NOT NULL DEFAULT '1',
   `so_mod_date` date DEFAULT NULL,
+  `so_cascade` tinyint(1)  NOT NULL DEFAULT '0',
   index cust (`so_cust`),
   index sitestatus (`so_site`, `so_status`),
   index custstatus(`so_cust`, `so_status`),
