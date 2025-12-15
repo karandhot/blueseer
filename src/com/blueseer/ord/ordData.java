@@ -1124,7 +1124,8 @@ public class ordData {
                     res.getDouble("sod_listprice"), res.getDouble("sod_disc"), res.getDouble("sod_netprice"), res.getString("sod_ord_date"), res.getString("sod_due_date"),
                     res.getDouble("sod_shipped_qty"), res.getString("sod_status"), res.getString("sod_wh"), res.getString("sod_loc"), 
                     res.getString("sod_desc"), res.getDouble("sod_taxamt"), res.getString("sod_site"), res.getString("sod_bom"), res.getString("sod_ship"),
-                    res.getString("sod_char1"), res.getString("sod_char2"), res.getString("sod_char3"));
+                    res.getString("sod_char1"), res.getString("sod_char2"), res.getString("sod_char3"),
+                    res.getString("sod_custline"), res.getString("sod_custuom"), res.getString("sod_custprice"));
                     }
                 }
             }
@@ -1152,7 +1153,8 @@ public class ordData {
                     res.getDouble("sod_listprice"), res.getDouble("sod_disc"), res.getDouble("sod_netprice"), res.getString("sod_ord_date"), res.getString("sod_due_date"),
                     res.getDouble("sod_shipped_qty"), res.getString("sod_status"), res.getString("sod_wh"), res.getString("sod_loc"), 
                     res.getString("sod_desc"), res.getDouble("sod_taxamt"), res.getString("sod_site"), res.getString("sod_bom"), res.getString("sod_ship"),
-                    res.getString("sod_char1"), res.getString("sod_char2"), res.getString("sod_char3"));
+                    res.getString("sod_char1"), res.getString("sod_char2"), res.getString("sod_char3"),
+                    res.getString("sod_custline"), res.getString("sod_custuom"), res.getString("sod_custprice"));
                     list.add(r);
                     }
                 
@@ -1182,7 +1184,8 @@ public class ordData {
                     res.getDouble("sod_listprice"), res.getDouble("sod_disc"), res.getDouble("sod_netprice"), res.getString("sod_ord_date"), res.getString("sod_due_date"),
                     res.getDouble("sod_shipped_qty"), res.getString("sod_status"), res.getString("sod_wh"), res.getString("sod_loc"), 
                     res.getString("sod_desc"), res.getDouble("sod_taxamt"), res.getString("sod_site"), res.getString("sod_bom"), res.getString("sod_ship"),
-                    res.getString("sod_char1"),res.getString("sod_char2"),res.getString("sod_char3"));
+                    res.getString("sod_char1"),res.getString("sod_char2"),res.getString("sod_char3"),
+                    res.getString("sod_custline"), res.getString("sod_custuom"), res.getString("sod_custprice"));
                     list.add(r);
                     }
             }
@@ -1338,8 +1341,9 @@ public class ordData {
                         + "sod_po, sod_ord_qty, sod_uom, sod_all_qty, " 
                         + "sod_listprice, sod_disc, sod_netprice, sod_ord_date, sod_due_date, " 
                         + "sod_shipped_qty, sod_status, sod_wh, sod_loc, "
-                        + "sod_desc, sod_taxamt, sod_site, sod_bom, sod_ship, sod_char1, sod_char2, sod_char3 ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                        + "sod_desc, sod_taxamt, sod_site, sod_bom, sod_ship, sod_char1, sod_char2, sod_char3, "
+                        + " sod_custline, sod_custuom, sod_custprice ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
        
           ps = con.prepareStatement(sqlSelect); 
           ps.setString(1, x.sod_nbr);
@@ -1372,6 +1376,9 @@ public class ordData {
             ps.setString(23, x.sod_char1);
             ps.setString(24, x.sod_char2);
             ps.setString(25, x.sod_char3);
+            ps.setString(26, x.sod_custline);
+            ps.setString(27, x.sod_custuom);
+            ps.setString(28, x.sod_custprice);
             rows = ps.executeUpdate();
             } 
             return rows;
@@ -4609,7 +4616,8 @@ public class ordData {
                     res.getDouble("sod_listprice"), res.getDouble("sod_disc"), res.getDouble("sod_netprice"), res.getString("sod_ord_date"), res.getString("sod_due_date"),
                     res.getDouble("sod_shipped_qty"), res.getString("sod_status"), res.getString("sod_wh"), res.getString("sod_loc"), 
                     res.getString("sod_desc"), res.getDouble("sod_taxamt"), res.getString("sod_site"), res.getString("sod_bom"), res.getString("sod_ship"),
-                    res.getString("sod_char1"),res.getString("sod_char2"),res.getString("sod_char3"));
+                    res.getString("sod_char1"),res.getString("sod_char2"),res.getString("sod_char3"), 
+                    res.getString("sod_custline"), res.getString("sod_custuom"), res.getString("sod_custprice"));
                     lines.add(sod);
                 }
 
@@ -4838,6 +4846,52 @@ public class ordData {
 
     }
          return billto;
+     }
+
+    public static String getOrderByPO(String po) {
+         String order = "";
+          try{
+
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+            
+           java.util.Date now = new java.util.Date();
+            DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+            DateFormat dftime = new SimpleDateFormat("HH:mm:ss");
+            String mydate = dfdate.format(now);
+
+
+
+                  res = st.executeQuery("select so_nbr from so_mstr where so_po = " + "'" + po + "'" +";");
+                while (res.next()) {
+                    order = res.getString("so_nbr");
+                }
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+
+        } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+
+    }
+         return order;
      }
 
     
@@ -5593,6 +5647,54 @@ public class ordData {
            st.executeUpdate(
                  " update so_mstr set so_status = " + "'" + status + "'" + 
                  " where so_po = " + "'" + po + "'" + ";" );
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+            if (st != null) {
+                st.close();
+            }
+            con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    }
+    
+    public static void updateOrder05(String po, String duedate, ArrayList<String[]> detlist) {
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "updateOrder05"});
+            list.add(new String[]{"param1",  po});
+            try {
+                sendServerPost(list, "", null, "dataServORD");
+                return;
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        }
+       
+        try{
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        try{
+           st.executeUpdate(
+                 " update so_mstr set so_due_date = " + "'" + duedate + "'" + 
+                 " where so_po = " + "'" + po + "'" + ";" );
+           for (String[] det : detlist) { // line, qty, listprice
+               st.executeUpdate(
+                 " update sod_det set sod_ord_qty = " + "'" + det[1] + "'" + "," +
+                 " sod_listprice = " + "'" + det[2] + "'" +
+                 " where sod_po = " + "'" + po + "'" +
+                 " and sod_item = " + "'" + det[0] + "'" + ";" );
+           }
         }
         catch (SQLException s){
              MainFrame.bslog(s);
@@ -6624,11 +6726,11 @@ public class ordData {
         double sod_listprice, double sod_disc, double sod_netprice, String sod_ord_date, 
         String sod_due_date, double sod_shipped_qty, String sod_status, String sod_wh, 
         String sod_loc, String sod_desc, double sod_taxamt, String sod_site, String sod_bom, String sod_ship,
-        String sod_char1, String sod_char2, String sod_char3) {
+        String sod_char1, String sod_char2, String sod_char3, String sod_custline, String sod_custuom, String sod_custprice) {
         public sod_det(String[] m) {
             this (m, "", 0, "", "", "", 0.00, "", 0.00, 0.00, 0.00,
                     0.00, "", "", 0.00, "", "", "", "", 0.00, "",
-                    "", "", "", "", "" );
+                    "", "", "", "", "", "", "", "" );
         }
     }
     

@@ -29,6 +29,8 @@ package com.blueseer.edi;
 import bsmf.MainFrame;
 import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.defaultDecimalSeparator;
+import static com.blueseer.adm.admData.addChangeLog;
+import com.blueseer.adm.admData.change_log;
 import com.blueseer.ctr.cusData;
 import static com.blueseer.ctr.cusData.getDiscountRecsByCust;
 import static com.blueseer.edi.EDIMap.HASH;
@@ -51,9 +53,13 @@ import com.blueseer.ord.ordData;
 import static com.blueseer.ord.ordData.addOrderChangeTransaction;
 import static com.blueseer.ord.ordData.addOrderTransaction;
 import static com.blueseer.ord.ordData.addUpdateSOMetaNotes;
+import static com.blueseer.ord.ordData.getOrderByPO;
+import static com.blueseer.ord.ordData.getOrderMstrSet;
 import static com.blueseer.ord.ordData.isDuplicatePO;
+import com.blueseer.ord.ordData.salesOrder;
 import com.blueseer.ord.ordData.so_mstr;
 import com.blueseer.ord.ordData.sos_det;
+import static com.blueseer.ord.ordData.updateOrder05;
 import static com.blueseer.ord.ordData.updateOrderStatusByPO;
 import com.blueseer.pur.purData;
 import com.blueseer.pur.purData.po_mstr;
@@ -3526,8 +3532,40 @@ public class EDI {
         
         if (e.purposecode.equals("05")) { // change
             // update order by PO
-            m[0] = "success";
-            m[1] = "Purpose Code=05...PO has been updated: " + e.bs_billto + "/" + e.po;
+            // get original order to compare
+            salesOrder sales = getOrderMstrSet(new String[]{getOrderByPO(e.po)});
+            ArrayList<String[]> changelines = new ArrayList<>();
+            String changedesc = "";
+            ArrayList<change_log> cllist = new ArrayList<>();
+            
+            for (int j = 0; j < e.getDetCount(); j++ ) {
+                changelines.add(new String[]{e.getDetItem(j), e.getDetQty(j), e.getDetListPrice(j)});
+            }
+            updateOrder05(e.po, e.duedate, changelines);
+            
+            changedesc = "so_due_date-> " + " Old: " + sales.so().so_due_date() + "  New: " + e.duedate;
+            change_log cl = new change_log(null, "", e.po, "so_mstr", "OrderMaint", "EDI_850", changedesc, "", "EDI_05", "");
+            cllist.add(cl);
+            for (int j = 0; j < e.getDetCount(); j++ ) {
+                System.out.println("HERE: " + sales.sod().get(j).sod_listprice() + "/" + e.getDetListPrice(j) );
+               changedesc = "sod_listprice-> " + " Old: " + sales.sod().get(j).sod_listprice() + "  New: " + e.getDetListPrice(j); 
+               cl = new change_log(null, "", e.po, "so_mstr", "OrderMaint", "EDI_850", changedesc, "", "EDI_05", "");
+               cllist.add(cl);
+               changedesc = "sod_ord_qty-> " + " Old: " + sales.sod().get(j).sod_ord_qty() + "  New: " + e.getDetQty(j); 
+               cl = new change_log(null, "", e.po, "so_mstr", "OrderMaint", "EDI_850", changedesc, "", "EDI_05", "");
+               cllist.add(cl);
+            }
+            
+            m = addChangeLog(cllist);
+            
+            if (m[0].equals("0")) {
+                m[0] = "success";
+                m[1] = "Purpose Code=05...billto/PO has been updated: " + e.bs_billto + "/" + e.po;
+            } else {
+                m[0] = "error";
+                m[1] = "Purpose Code=05...unable to update billto/PO: " + e.bs_billto + "/" + e.po;
+            }
+            
             return m;
         }        
         
@@ -3682,7 +3720,10 @@ public class EDI {
                 shipto,
                 e.getDetAltItem(j), // sod_char1
                 e.getDetPackQty(j), // sod_char2
-                "" // sod_char3
+                "", // sod_char3,
+                e.getDetLine(j), // sod_custline
+                e.getDetUOM(j), // sod_custuom
+                e.getDetListPrice(j) // sod_custprice
                 );  
                 detail.add(sod);
         }

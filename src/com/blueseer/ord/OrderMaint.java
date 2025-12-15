@@ -594,7 +594,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbsacdesc.setText("");
         tbsacamt.setText("");
         duedate.setDate(now);
-        duedate.setDateFormatString("dd-MM-yyyy");
+        duedate.setDateFormatString("yyyy-MM-dd");
         
         
         orddate.setDate(now);
@@ -1209,7 +1209,10 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 orddet.getModel().getValueAt(j, 17).toString(),
                 orddet.getModel().getValueAt(j, 19).toString(), // sod_char1   altitem
                 orddet.getModel().getValueAt(j, 18).toString(), // sod_char2   packqty
-                ""  // sod_char3
+                "",  // sod_char3
+                "", // sod_custline..edi only
+                "", // sod_custuom..edi only
+                ""  // sod_custprice..edi only
                 );  
                 list.add(x);
             }    

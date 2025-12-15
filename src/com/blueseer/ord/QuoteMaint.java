@@ -870,7 +870,10 @@ public class QuoteMaint extends javax.swing.JPanel implements IBlueSeerT {
                 "", // shipcode
                 "", // sod_char1
                 "", // sod_char2
-                ""  // sod_char3
+                "",  // sod_char3
+                "", // sod_custline..edi only
+                "", // sod_custuom..edi only
+                ""  // sod_custprice..edi only
                 );  
                 list.add(x);
             }    
