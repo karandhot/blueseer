@@ -1053,7 +1053,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         if (m[0].equals("0") && autoinvoice) {
         boolean sure = bsmf.MainFrame.warn("This is an auto-invoice order...Are you sure you want to auto-invoice?");     
             if (sure) {     
-               m = autoInvoice();
+               m = Run_autoInvoice();
             }
         } // if autoinvoice
      return m;
@@ -1747,85 +1747,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         String[] m = orderToInvoice(tbkey.getText(), bsmf.MainFrame.userid, tbtracking.getText());
         return m;
     }
-    
-    public String[] autoInvoice() {
-        String[] m = new String[2];
-        Connection bscon = null;
-        PreparedStatement ps = null;
-        ResultSet res = null;
-        try { 
-            if (ds != null) {
-              bscon = ds.getConnection();
-            } else {
-              bscon = DriverManager.getConnection(url + db, user, pass);  
-            }
         
-        
-        int shipperid = OVData.getNextNbr("shipper", bscon);   
-         
-        ship_mstr sh = shpData.createShipMstrJRT(String.valueOf(shipperid), 
-                ddsite.getSelectedItem().toString(),
-                String.valueOf(shipperid), 
-                ddcust.getSelectedItem().toString(),
-                tbshipto.getText(),
-                bsNumberToUS(tbkey.getText()),
-                ponbr.getText().replace("'", ""),  // po
-                ponbr.getText().replace("'", ""),  // ref
-                setDateDB(duedate.getDate()),
-                setDateDB(orddate.getDate()),
-                remarks.getText().replace("'", ""),
-                ddshipvia.getSelectedItem().toString(),
-                "S", 
-                ddtax.getSelectedItem().toString(),
-                ddsite.getSelectedItem().toString(),
-                tbtracking.getText()); 
-        ArrayList<String[]> detail = tableToArrayList();
-        ArrayList<shpData.ship_det> shd = shpData.createShipDetJRT(detail, String.valueOf(shipperid), setDateDB(orddate.getDate()), ddsite.getSelectedItem().toString());
-        ArrayList<shpData.ship_tree> sht = createTreeRecord(sh.sh_id());
-        
-        bscon.setAutoCommit(false);    
-                        
-        _addShipperTransaction(shd, sh, sht, bscon);
-        _updateShipperSAC(sh.sh_id(), bscon);
-        m = _confirmShipperTransaction("order", String.valueOf(shipperid), new java.util.Date(), bscon);
-        
-        bscon.commit();
-        
-        } catch (SQLException s) {
-             MainFrame.bslog(s);
-             try {
-                 bscon.rollback();
-                 m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordError};
-             } catch (SQLException rb) {
-                 MainFrame.bslog(rb);
-             }
-        } finally {
-            if (res != null) {
-                try {
-                    res.close();
-                } catch (SQLException ex) {
-                    MainFrame.bslog(ex);
-                }
-            }
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException ex) {
-                    MainFrame.bslog(ex);
-                }
-            }
-            if (bscon != null) {
-                try {
-                    bscon.setAutoCommit(true);
-                    bscon.close();
-                } catch (SQLException ex) {
-                    MainFrame.bslog(ex);
-                }
-            }
-        }
-    return m;
-    }
-    
     public void custChangeEvent(String mykey) {
         
         if (! isLoad) {
@@ -1883,9 +1805,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         } // if ! isLoad
     }
-  
-   
-    
+      
     public void clearShipAddress() {
         tbname.setText("");
         tbaddr1.setText("");
@@ -2201,7 +2121,11 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
              listprice.setText("0");
              netprice.setText("0");
            } else {  
-           net = list - ((disc / 100) * list);
+               if (cbcascade.isSelected()) {
+                 net = disc * list; 
+               } else {
+                 net = list + ((disc / 100) * list);  
+               }
            netprice.setText(bsNumber(net));
            }
         }
@@ -2307,14 +2231,33 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         double listprice = 0;
          //"Line", "Part", "CustPart", "SO", "PO", "Qty", "uom", "ListPrice", "Discount", "NetPrice", "QtyShip", "Status", "WH", "LOC", "Desc"
         
-         for (int j = 0; j < sactable.getRowCount(); j++) {
-            if (sactable.getValueAt(j,0).toString().equals("discount") &&
-                sactable.getValueAt(j,2).toString().equals("percent")) {
-            newdisc += bsParseDouble(sactable.getValueAt(j,3).toString());
-            }
-            if (sactable.getValueAt(j,0).toString().equals("charge") &&
-                sactable.getValueAt(j,2).toString().equals("percent")) {
-            newdisc -= bsParseDouble(sactable.getValueAt(j,3).toString());
+         
+         
+         if (cbcascade.isSelected()) {
+             // get gross total first in case of cascade
+             double grosslistprice = 0.00;
+         for (int j = 0; j < orddet.getRowCount(); j++) {
+             grosslistprice = (bsParseDouble(orddet.getValueAt(j, 7).toString()));
+            for (int k = 0; k < sactable.getRowCount(); k++) {
+               if (sactable.getValueAt(k,2).toString().equals("percent")) {
+                    grosslistprice = (grosslistprice + (grosslistprice * (bsParseDouble(sactable.getValueAt(k,3).toString()) / 100)));
+               }
+            } 
+            newdisc = (grosslistprice / bsParseDouble(orddet.getValueAt(j, 7).toString()));
+          }
+         } 
+         
+         
+         if (! cbcascade.isSelected()) {
+            for (int j = 0; j < sactable.getRowCount(); j++) {
+               if (sactable.getValueAt(j,0).toString().equals("discount") &&
+                   sactable.getValueAt(j,2).toString().equals("percent")) {
+               newdisc += bsParseDouble(sactable.getValueAt(j,3).toString());
+               }
+               if (sactable.getValueAt(j,0).toString().equals("charge") &&
+                   sactable.getValueAt(j,2).toString().equals("percent")) {
+               newdisc -= bsParseDouble(sactable.getValueAt(j,3).toString());
+               }
             }
          }
          
@@ -2323,15 +2266,17 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
          for (int j = 0; j < orddet.getRowCount(); j++) {
              listprice = bsParseDouble(orddet.getValueAt(j, 7).toString());
-             orddet.setValueAt(currformatDouble(newdisc), j, 8);
-             if (newdisc > 0) {
-             newprice = listprice - (listprice * (newdisc / 100));
-             } else if (newdisc == 0) {
+             orddet.setValueAt(bsNumber(newdisc), j, 8);
+             if (newdisc == 0) {
              newprice = listprice;    
              } else {
-             newprice = listprice - (listprice * (newdisc / 100));  // minus a negative disc increases newprice...aka charge
+                 if (cbcascade.isSelected()) {
+                     newprice = listprice * newdisc;  // calculated cascading discount is absolute increase/decrease...must be multiplied
+                 } else {
+                     newprice = listprice + (listprice * (newdisc / 100));  // minus a negative disc increases newprice...aka charge
+                 }
              }
-             orddet.setValueAt(currformatDouble(newprice), j, 9);
+             orddet.setValueAt(bsNumber(newprice), j, 9);
          }
                
          
@@ -4219,7 +4164,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private void btsacaddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btsacaddActionPerformed
         boolean proceed = true;
         double amount = 0;
-        Pattern p = Pattern.compile("^[0-9]\\d*(\\.\\d+)?$");
+        Pattern p = Pattern.compile("^-?[0-9]\\d*(\\.\\d+)?$");
         Matcher m = p.matcher(tbsacamt.getText());
         if (!m.find() || tbsacamt.getText() == null) {
             bsmf.MainFrame.show(getMessageTag(1033));

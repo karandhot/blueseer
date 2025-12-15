@@ -3964,7 +3964,12 @@ public class shpData {
         ResultSet res = null;
         try{
 
-
+            // determine if cascading
+            boolean isCascade = false;
+            res = st.executeQuery("select so_cascade from so_mstr inner join ship_mstr on sh_so = so_nbr where sh_id = " + "'" + shipper + "'" + ";");
+             while (res.next()) {
+                 isCascade = BlueSeerUtils.ConvertStringToBool(res.getString("so_cascade"));
+             }
 
              // get Orders on shipper
              res = st.executeQuery("select shd_so from ship_det where shd_id = " + "'" + shipper + "'" + " group by shd_so;");
@@ -3993,17 +3998,13 @@ public class shpData {
 
                  // sac order of elements...sos_nbr, sos_desc, sos_type, sos_amttype, sos_amt
                  for (String[] s : sac) {
-                 myamttype = s[3].toString();
-                 myamt = bsParseDouble(s[4].toString());
-
+                 myamttype = s[3];
+                 myamt = bsParseDouble(s[4]);
+                 
                  // adjust if percent based
-                 if (s[3].toString().equals("percent") && bsParseDouble(s[4].toString()) > 0) {
-                   myamttype = "amount";
-                   if (s[2].equals("discount")) {
-                     myamt = -1 * (bsParseDouble(s[4].toString()) / 100) * totamt;
-                   } else {
-                     myamt = (bsParseDouble(s[4].toString()) / 100) * totamt;  
-                   }
+                 if (s[3].equals("percent")) {
+                    myamttype = "amount";
+                    myamt = (bsParseDouble(s[4]) / 100) * totamt; 
                  }    
                  st.executeUpdate(" insert into shs_det (shs_nbr, shs_so, shs_desc, shs_type, shs_amttype, shs_amt ) " +
                                  " values ( "  + "'" + shipper + "'" + "," +
@@ -4013,6 +4014,10 @@ public class shpData {
                                  "'" + myamttype + "'" + "," +
                                  "'" + currformatDoubleUS(myamt) + "'" + 
                                  ") ;");
+                 
+                    if (isCascade) {
+                    totamt = (totamt + (totamt * (bsParseDouble(s[4]) / 100)));
+                    }
                  }
                  // now insert matltax if any for summary purposes
                  if (matltax > 0) {
@@ -4068,7 +4073,12 @@ public class shpData {
         ResultSet res = null;
         try{
 
-
+             // determine if cascading
+            boolean isCascade = false;
+            res = st.executeQuery("select so_cascade from so_mstr inner join ship_mstr on sh_so = so_nbr where sh_id = " + "'" + shipper + "'" + ";");
+             while (res.next()) {
+                 isCascade = BlueSeerUtils.ConvertStringToBool(res.getString("so_cascade"));
+             }
 
              // get Orders on shipper
              res = st.executeQuery("select shd_so from ship_det where shd_id = " + "'" + shipper + "'" + " group by shd_so;");
@@ -4097,18 +4107,19 @@ public class shpData {
 
                  // sac order of elements...sos_nbr, sos_desc, sos_type, sos_amttype, sos_amt
                  for (String[] s : sac) {
-                 myamttype = s[3].toString();
-                 myamt = bsParseDouble(s[4].toString());
+                 myamttype = s[3];
+                 myamt = bsParseDouble(s[4]);
+                 
+                 if (isCascade) {
+                 totamt = (totamt + (totamt * (bsParseDouble(s[4]) / 100)));
+                 }
 
-                 // adjust if percent based
-                 if (s[3].toString().equals("percent") && bsParseDouble(s[4].toString()) > 0) {
+                 // adjust if percent based...shs_det should have absolute value of discounts...not percentages
+                 if (s[3].equals("percent")) {
                    myamttype = "amount";
-                   if (s[2].equals("discount")) {
-                     myamt = -1 * (bsParseDouble(s[4].toString()) / 100) * totamt;
-                   } else {
-                     myamt = (bsParseDouble(s[4].toString()) / 100) * totamt;  
-                   }
+                   myamt = (bsParseDouble(s[4]) / 100) * totamt;
                  }    
+                 
                  st.executeUpdate(" insert into shs_det (shs_nbr, shs_so, shs_desc, shs_type, shs_amttype, shs_amt ) " +
                                  " values ( "  + "'" + shipper + "'" + "," +
                                  "'" + s[0] + "'" + "," +
