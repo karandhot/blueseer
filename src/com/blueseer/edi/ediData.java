@@ -46,6 +46,7 @@ import static com.blueseer.edi.wfUtils.trafficDir;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ConvertIntToYesNo;
 import static com.blueseer.utl.BlueSeerUtils.ConvertStringToBool;
+import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.bsret;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
@@ -94,12 +95,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.mail.Session;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.mail.smime.SMIMEException;
-import org.bouncycastle.openpgp.PGPException;
 import org.json.JSONArray;
 
 /**
@@ -1212,6 +1209,291 @@ public class ediData {
                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
         }
         return r;
+    }
+    
+    public static String[] addEDIPartnerTransaction(ArrayList<edpd_partner> edpd, edp_partner edp) {
+        String[] m = new String[2];
+        Connection bscon = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            bscon = DriverManager.getConnection(url + db, user, pass);
+            bscon.setAutoCommit(false);
+            _addEDIPartner(edp, bscon, ps, res);  
+            for (edpd_partner z : edpd) {
+                _addEDIPartnerDet(z, bscon, ps, res);
+            }
+            bscon.commit();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             try {
+                 bscon.rollback();
+                 m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordError};
+             } catch (SQLException rb) {
+                 MainFrame.bslog(rb);
+             }
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.setAutoCommit(true);
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+    
+    private static int _addEDIPartner(edp_partner x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        int rows = 0;
+        String sqlSelect = "select * from edp_partner where edp_id = ?";
+        String sqlInsert = "insert into edp_partner (edp_id, edp_desc, edp_site, edp_type, " +
+                " edp_defoutdir, edp_defindir, edp_outwkfl, edp_inwkfl, edp_outenabled, edp_inenabled  " 
+                + "  )  " +
+                " values (?,?,?,?,?,?,?,?,?,?); "; 
+        
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x.edp_id);
+          res = ps.executeQuery();
+          ps = con.prepareStatement(sqlInsert);
+            if (! res.isBeforeFirst()) {
+            ps.setString(1, x.edp_id);
+            ps.setString(2, x.edp_desc);
+            ps.setString(3, x.edp_site);
+            ps.setString(4, x.edp_type);
+            ps.setString(5, x.edp_defoutdir);
+            ps.setString(6, x.edp_defindir);
+            ps.setString(7, x.edp_outwkfl);
+            ps.setString(8, x.edp_inwkfl);
+            ps.setString(9, x.edp_outenabled);
+            ps.setString(10, x.edp_inenabled);
+            rows = ps.executeUpdate();
+            } 
+            return rows;
+    }
+    
+    private static int _addEDIPartnerDet(edpd_partner x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        int rows = 0;
+        String sqlSelect = "select * from edpd_partner where edpd_parent = ? and edpd_alias = ?;";
+        String sqlInsert = "insert into edpd_partner (edpd_parent, edpd_alias, edpd_default )  " 
+                        + " values (?,?,?); "; 
+                
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x.edpd_parent);
+          ps.setString(2, x.edpd_alias);
+          res = ps.executeQuery();
+          ps = con.prepareStatement(sqlInsert);  
+            if (! res.isBeforeFirst()) {
+            ps.setString(1, x.edpd_parent);
+            ps.setString(2, x.edpd_alias);
+            ps.setString(3, x.edpd_default);
+            rows = ps.executeUpdate();
+            } 
+            return rows;
+    }
+    
+    public static String[] updateEDIPartnerTransaction(String x, ArrayList<edpd_partner> edpd, edp_partner edp) {
+        String[] m = new String[2];
+        Connection bscon = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            bscon = DriverManager.getConnection(url + db, user, pass);
+            bscon.setAutoCommit(false);
+             _deleteEDIPartnerDetLines(x, bscon);  // discard all lines
+            for (edpd_partner z : edpd) {
+                _addEDIPartnerDet(z, bscon, ps, res); 
+            }
+             _updateEDIPartner(edp, bscon, ps);  // update so_mstr
+            bscon.commit();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             try {
+                 bscon.rollback();
+                 m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordError};
+             } catch (SQLException rb) {
+                 MainFrame.bslog(rb);
+             }
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.setAutoCommit(true);
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+    
+    private static int _updateEDIPartner(edp_partner x, Connection con, PreparedStatement ps) throws SQLException {
+        int rows = 0;
+        String sql = "update edp_partner set edp_desc = ?, edp_site = ?, edp_type = ?, " +
+                " edp_defoutdir = ?, edp_defindir = ?, edp_outwkfl = ?, edp_inwkfl = ?, " +
+                " edp_outenabled = ?, edp_inenabled = ? " +
+                "  where edp_id = ? ";
+	ps = con.prepareStatement(sql) ;
+            ps.setString(1, x.edp_desc);
+            ps.setString(2, x.edp_site);
+            ps.setString(3, x.edp_type);
+            ps.setString(4, x.edp_defoutdir);
+            ps.setString(5, x.edp_defindir);
+            ps.setString(6, x.edp_outwkfl);
+            ps.setString(7, x.edp_inwkfl);
+            ps.setString(8, x.edp_outenabled);
+            ps.setString(9, x.edp_inenabled);
+            ps.setString(10, x.edp_id);
+            rows = ps.executeUpdate();
+        return rows;
+    }
+    
+    private static void _deleteEDIPartnerDetLines(String x, Connection con) throws SQLException { 
+        PreparedStatement ps = null; 
+        String sql = "delete from edpd_partner where edpd_id = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        ps.close();
+    }
+    
+    public static EDIPartnerSet getEDIPartnerSet(String[] x ) {
+        EDIPartnerSet r = null;
+        String[] m = new String[2];
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getEDIPartnerSet"});
+            list.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServEDI");
+                r = objectMapper.readValue(returnstring, EDIPartnerSet.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        
+        Connection bscon = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            if (ds != null) {
+              bscon = ds.getConnection();
+            } else {
+              bscon = DriverManager.getConnection(url + db, user, pass);  
+            }
+            
+            // order master
+            edp_partner edp = _getEDIPartner(x, bscon, ps, res);
+            ArrayList<edpd_partner> edpd = _getEDIPartnerDet(x, bscon, ps, res);
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+            r = new EDIPartnerSet(m, edp, edpd);
+            
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+             r = new EDIPartnerSet(m);
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return r;
+    }
+    
+    private static edp_partner _getEDIPartner(String[] x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        edp_partner r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from edp_partner where edp_id = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setInt(1, bsParseInt(x[0]));
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new edp_partner(m);
+            } else {
+                while(res.next()) {
+                    m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                    r = new edp_partner(m, res.getString("edp_id"), res.getString("edp_desc"), res.getString("edp_site"),
+                res.getString("edp_type"), res.getString("edp_defoutdir"), res.getString("edp_defindir"), res.getString("edp_outwkfl"), res.getString("edp_inwkfl"),
+                res.getString("edp_outenabled"), res.getString("edp_inenabled"));
+                }
+            }
+            return r;
+    }
+    
+    private static ArrayList<edpd_partner> _getEDIPartnerDet(String[] x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        ArrayList<edpd_partner> list = new ArrayList<edpd_partner>();
+        edpd_partner r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from edpd_partner where edpd_parent = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x[0]);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new edpd_partner(m);
+            } else {
+                while(res.next()) {
+                    m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                    r = new edpd_partner(m, res.getString("edpd_parent"), res.getString("edpd_alias"), res.getString("edpd_default"));
+                    list.add(r);
+                    }
+            }
+            return list;
     }
     
     public static ArrayList<String[]> getEDIPartners(String edptype) {
@@ -6897,6 +7179,12 @@ public class ediData {
         public api_log(String[] m) {
             this(m, "", "", "", "", "", "", "", "", "", "",
                     "");
+        }
+    }
+    
+    public record EDIPartnerSet(String[] m, edp_partner edp, ArrayList<edpd_partner> edpd) {
+        public EDIPartnerSet(String[] m) {
+            this (m, null, null);
         }
     }
     
