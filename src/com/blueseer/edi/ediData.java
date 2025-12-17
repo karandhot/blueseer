@@ -1214,6 +1214,20 @@ public class ediData {
     public static String[] addEDIPartnerTransaction(ArrayList<edpd_partner> edpd, edp_partner edp) {
         String[] m = new String[2];
         Connection bscon = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addEDIPartnerTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(edpd);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(edp);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         PreparedStatement ps = null;
         ResultSet res = null;
         try { 
@@ -1311,6 +1325,20 @@ public class ediData {
     public static String[] updateEDIPartnerTransaction(String x, ArrayList<edpd_partner> edpd, edp_partner edp) {
         String[] m = new String[2];
         Connection bscon = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateEDIPartnerTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(edpd);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(edp);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         PreparedStatement ps = null;
         ResultSet res = null;
         try { 
@@ -1381,13 +1409,50 @@ public class ediData {
     
     private static void _deleteEDIPartnerDetLines(String x, Connection con) throws SQLException { 
         PreparedStatement ps = null; 
-        String sql = "delete from edpd_partner where edpd_id = ?; ";
+        String sql = "delete from edpd_partner where edpd_parent = ?; ";
         ps = con.prepareStatement(sql);
         ps.setString(1, x);
         ps.executeUpdate();
         ps.close();
     }
     
+    public static String[] deleteEDIPartner(String x) { 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "deleteEDIPartner"});
+            list.add(new String[]{"param1", x});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        } 
+        String[] m = new String[2];
+        String sql = "delete from edp_partner where edp_id = ?; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, x);
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        sql = "delete from edpd_partner where edpd_parent = ?; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, x);
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        
+        return m;
+    }
+     
     public static EDIPartnerSet getEDIPartnerSet(String[] x ) {
         EDIPartnerSet r = null;
         String[] m = new String[2];
@@ -1459,7 +1524,7 @@ public class ediData {
         String[] m = new String[2];
         String sqlSelect = "select * from edp_partner where edp_id = ?";
           ps = con.prepareStatement(sqlSelect); 
-          ps.setInt(1, bsParseInt(x[0]));
+          ps.setString(1, x[0]);
           res = ps.executeQuery();
             if (! res.isBeforeFirst()) {
                 m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};

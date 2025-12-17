@@ -25,23 +25,24 @@ SOFTWARE.
  */
 package com.blueseer.edi;
 
-import com.blueseer.fgl.*;
 import bsmf.MainFrame;
 import com.blueseer.utl.BlueSeerUtils;
-import static bsmf.MainFrame.backgroundcolor;
-import static bsmf.MainFrame.backgroundpanel;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
-import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
-import static com.blueseer.utl.BlueSeerUtils.ConvertStringToBool;
+import com.blueseer.edi.ediData.EDIPartnerSet;
+import static com.blueseer.edi.ediData.addEDIPartnerTransaction;
+import static com.blueseer.edi.ediData.deleteEDIPartner;
+import com.blueseer.edi.ediData.edp_partner;
+import com.blueseer.edi.ediData.edpd_partner;
+import static com.blueseer.edi.ediData.getEDIPartnerSet;
+import static com.blueseer.edi.ediData.updateEDIPartnerTransaction;
 import static com.blueseer.utl.BlueSeerUtils.ConvertTrueFalseToBoolean;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
-import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.luModel;
 import static com.blueseer.utl.BlueSeerUtils.luTable;
@@ -51,20 +52,14 @@ import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import com.blueseer.utl.DTData;
-import com.blueseer.utl.IBlueSeer;
+import com.blueseer.utl.IBlueSeerT;
 import com.blueseer.utl.OVData;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.GradientPaint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -87,11 +82,13 @@ import javax.swing.SwingWorker;
  */
 
 
-public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
+public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     // global variable declarations
                 boolean isLoad = false;
                 String defaultsite = "";
+                public static EDIPartnerSet set = null;
+               
     
     // global datatablemodel declarations       
      javax.swing.table.DefaultTableModel aliasmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -106,15 +103,15 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
     }
 
     // interface functions implemented
-    public void executeTask(String x, String[] y) { 
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
       
         class Task extends SwingWorker<String[], Void> {
        
           String type = "";
           String[] key = null;
           
-          public Task(String type, String[] key) { 
-              this.type = type;
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
               this.key = key;
           } 
            
@@ -153,10 +150,13 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
             BlueSeerUtils.endTask(message);
            if (this.type.equals("delete")) {
              initvars(null);  
-           } else if (this.type.equals("get") && message[0].equals("1")) {
+           } else if (this.type.equals("get")) {
+             updateForm();
              tbkey.requestFocus();
-           } else if (this.type.equals("get") && message[0].equals("0")) {
-             tbkey.requestFocus();
+           } else if (this.type.equals("add") && message[0].equals("0")) {
+             initvars(key);
+           } else if (this.type.equals("update") && message[0].equals("0")) {
+             initvars(key); 
            } else {
              initvars(null);  
            }
@@ -328,6 +328,26 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
        isLoad = false;
     }
     
+    public boolean validateInput(BlueSeerUtils.dbaction x) {
+        boolean b = true;
+                
+                
+                if (tbkey.getText().isEmpty()) {
+                    b = false;
+                    bsmf.MainFrame.show(getMessageTag(1024, "ID"));
+                    tbkey.requestFocus();
+                    return b;
+                }
+                
+                if (ddsite.getSelectedItem() == null || ddsite.getSelectedItem().toString().isEmpty()) {
+                    b = false;
+                    bsmf.MainFrame.show(getMessageTag(1024, "Site"));
+                    return b;
+                }
+               
+               
+        return b;
+    }
     public void newAction(String x) {
        setPanelComponentState(this, true);
         setComponentDefaultValues();
@@ -344,19 +364,17 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
         tbkey.requestFocus();
     }
     
-    public String[] setAction(int i) {
-        String[] m = new String[2];
-        if (i > 0) {
-            m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};  
+    public void setAction(String[] x) {
+        
+        if (x[0].equals("0")) {
                    setPanelComponentState(this, true);
                    btadd.setEnabled(false);
                    tbkey.setEditable(false);
                    tbkey.setForeground(Color.blue);
+                   btadd.setEnabled(false);
         } else {
-           m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};  
-                   tbkey.setForeground(Color.red); 
-        }
-        return m;
+           tbkey.setForeground(Color.red); 
+        } 
     }
     
     public boolean validateInput(String x) {
@@ -402,7 +420,7 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
         btlookup.setEnabled(true);
         
         if (arg != null && arg.length > 0) {
-            executeTask("get",arg);
+            executeTask(BlueSeerUtils.dbaction.get,arg);
         } else {
             tbkey.setEnabled(true);
             tbkey.setEditable(true);
@@ -411,248 +429,61 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
     }
     
     public String[] addRecord(String[] x) {
-     String[] m = new String[2];
-     
-     try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                boolean proceed = true;
-                int i = 0;
-                
-                proceed = validateInput("addRecord");
-                
-                if (proceed) {
-
-                    res = st.executeQuery("SELECT edp_id FROM  edp_partner where edp_id = " + "'" + x[0] + "'" + ";");
-                    while (res.next()) {
-                        i++;
-                    }
-                    if (i == 0) {
-                        st.executeUpdate("insert into edp_partner (edp_id, edp_desc, edp_site, edp_type, edp_defoutdir, edp_defindir, edp_outwkfl, edp_inwkfl, edp_outenabled, edp_inenabled) values (" + 
-                            "'" + tbkey.getText() + "'" + "," +
-                            "'" + tbdesc.getText() + "'"  + "," +
-                            "'" + ddsite.getSelectedItem().toString() + "'"  + "," +
-                            "'" + ddtype.getSelectedItem().toString() + "'"  + "," +     
-                            "'" + tboutdir.getText() + "'"  + "," +
-                            "'" + tbindir.getText() + "'"  + "," +
-                            "'" + ddoutwkfl.getSelectedItem().toString() + "'"  + "," +
-                            "'" + ddinwkfl.getSelectedItem().toString() + "'"  + "," + 
-                            "'" + BlueSeerUtils.boolToString(cboutenabled.isSelected()) + "'"  + "," +  
-                            "'" + BlueSeerUtils.boolToString(cbinenabled.isSelected()) + "'"  +    
-                            ")" + ";");     
-                
-                 String defaultvalue = "";
-                 for (int j = 0; j < tablealias.getRowCount(); j++) {
-                     
-                    if (tablealias.getValueAt(j, 1).toString().toLowerCase().equals("yes")) {
-                        defaultvalue = "1";
-                    } else {
-                        defaultvalue = "0";
-                    }   
-                st.executeUpdate("insert into edpd_partner (edpd_parent, edpd_alias, edpd_default ) values ( " 
-                        + "'" + tbkey.getText() + "'" + ","
-                        + "'" + tablealias.getValueAt(j, 0).toString() + "'" + ","
-                        + "'" + defaultvalue + "'" 
-                        + " );" );
-                 }
-                        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
-                    } else {
-                       m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordAlreadyExists}; 
-                    }
-
-                   initvars(null);
-                   
-                } // if proceed
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                 m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordSQLError};  
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-             m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordConnError};
-        }
-     
-     return m;
+     String[] m = addEDIPartnerTransaction(createDetRecord(), createRecord());  
+     return m; 
      }
      
     public String[] updateRecord(String[] x) {
-     String[] m = new String[2];
-     
-     
-     try {
-            boolean proceed = true;
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            try {
-                   
-               proceed = validateInput("updateRecord");
-                             
-                if (proceed) {
-                       st.executeUpdate("update edp_partner set " + 
-                           "edp_desc = " + "'" + tbdesc.getText() + "'" + ", " +
-                           " edp_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + ", " + 
-                           " edp_type = " + "'" + ddtype.getSelectedItem().toString() + "'" + ", " +   
-                           "edp_defoutdir = " + "'" + tboutdir.getText() + "'" + ", " +
-                           "edp_defindir = " + "'" + tbindir.getText() + "'" + ", " +   
-                           " edp_outwkfl = " + "'" + ddoutwkfl.getSelectedItem().toString() + "'" + ", " +
-                           " edp_inwkfl = " + "'" + ddinwkfl.getSelectedItem().toString() + "'" + ", " + 
-                           " edp_outenabled = " + "'" + BlueSeerUtils.boolToString(cboutenabled.isSelected()) + "'" + ", " +  
-                           " edp_inenabled = " + "'" + BlueSeerUtils.boolToString(cbinenabled.isSelected()) + "'" +     
-                           " where edp_id = " + "'" + tbkey.getText() + "'" +
-                             ";");     
-                
-                       //  now lets delete all stored actions of this master task...then add back from table
-                        st.executeUpdate("delete from edpd_partner where edpd_parent = " + "'" + tbkey.getText() + "'" + ";");
-                        String defaultvalue = "";
-                        for (int j = 0; j < tablealias.getRowCount(); j++) {
-                          if (tablealias.getValueAt(j, 1).toString().toLowerCase().equals("yes")) {
-                              defaultvalue = "1";
-                          } else {
-                              defaultvalue = "0";
-                          }
-                        st.executeUpdate("insert into edpd_partner (edpd_parent, edpd_alias, edpd_default ) values ( " 
-                        + "'" + tbkey.getText() + "'" + ","
-                        + "'" + tablealias.getValueAt(j, 0).toString() + "'" + ","
-                        + "'" + defaultvalue + "'" 
-                        + " );" );
-                         }
-                    m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
-                    initvars(null);
-                } 
-         
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordSQLError};  
-            } finally {
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordConnError};
-        }
-     
+     String[] m = updateEDIPartnerTransaction(tbkey.getText(), createDetRecord(), createRecord());
      return m;
      }
      
     public String[] deleteRecord(String[] x) {
      String[] m = new String[2];
-        boolean proceed = bsmf.MainFrame.warn("Are you sure?");
+        boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
         if (proceed) {
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            try {
-                    
-                    int i = st.executeUpdate("delete from edp_partner where edp_id = " + "'" + tbkey.getText() + "'" + ";");
-                    int j = st.executeUpdate("delete from edpd_partner where edpd_parent = " + "'" + tbkey.getText() + "'" + ";");
-                    if (i > 0 && j > 0) {
-                    m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
-                    initvars(null);
-                    }
-                } catch (SQLException s) {
-                 MainFrame.bslog(s); 
-                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordSQLError};  
-            } finally {
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordConnError};
-        }
+         m = deleteEDIPartner(x[0]); 
+         initvars(null);
         } else {
            m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordCanceled}; 
         }
-     return m;
+         return m;
      }
       
     public String[] getRecord(String[] x) {
-       String[] m = new String[2];
-       
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                res = st.executeQuery("SELECT * FROM  edp_partner where edp_id = " + "'" + x[0] + "'" + ";");
-                    while (res.next()) {
-                        i++;
-                        tbdesc.setText(res.getString("edp_desc"));
-                        tbkey.setText(res.getString("edp_id"));
-                        ddsite.setSelectedItem(res.getString("edp_site"));
-                        ddtype.setSelectedItem(res.getString("edp_type"));
-                        tboutdir.setText(res.getString("edp_defoutdir"));
-                        tbindir.setText(res.getString("edp_defindir"));
-                        ddoutwkfl.setSelectedItem(res.getString("edp_outwkfl"));
-                        ddinwkfl.setSelectedItem(res.getString("edp_inwkfl"));
-                        cboutenabled.setSelected(BlueSeerUtils.ConvertIntegerToBool(res.getInt("edp_outenabled")));
-                        cbinenabled.setSelected(BlueSeerUtils.ConvertIntegerToBool(res.getInt("edp_inenabled")));
-                    }
-                    res = st.executeQuery("SELECT * FROM  edpd_partner where " +
-                            " edpd_parent = " + "'" + x[0] + "'" + ";");
-                    while (res.next()) {
-                     aliasmodel.addRow(new Object[]{res.getString("edpd_alias"), BlueSeerUtils.ConvertIntToYesNo(res.getInt("edpd_default"))});   
-                    }
-               
-                // set Action if Record found (i > 0)
-                m = setAction(i);
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordSQLError};  
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordConnError};  
-        }
-      return m;
+       set = getEDIPartnerSet(x);
+      return set.m();
+    }
+    
+    public edp_partner createRecord() {
+        java.util.Date now = new java.util.Date();
+        
+        edp_partner x = new edp_partner(null, 
+                tbkey.getText(), 
+                tbdesc.getText(),
+                ddsite.getSelectedItem().toString(),
+                ddtype.getSelectedItem().toString(),
+                tboutdir.getText(), 
+                tbindir.getText(), 
+                ddoutwkfl.getSelectedItem().toString(),
+                ddinwkfl.getSelectedItem().toString(),
+                BlueSeerUtils.boolToString(cboutenabled.isSelected()),
+                BlueSeerUtils.boolToString(cbinenabled.isSelected())
+        ); 
+        return x;  
+    }
+    
+    public ArrayList<edpd_partner> createDetRecord() {
+        ArrayList<edpd_partner> list = new ArrayList<edpd_partner>();
+         for (int j = 0; j < tablealias.getRowCount(); j++) {
+             edpd_partner x = new edpd_partner(null,
+                tbkey.getText(),
+                tablealias.getValueAt(j, 0).toString(), 
+                tablealias.getValueAt(j, 1).toString()
+                );
+        list.add(x);
+         }
+        return list;   
     }
     
     public void lookUpFrame() {
@@ -696,6 +527,36 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
         
     }
 
+    public void updateForm() {
+        isLoad = true;
+        tbkey.setText(set.edp().edp_id());
+        tbdesc.setText(set.edp().edp_desc());
+        ddtype.setSelectedItem(set.edp().edp_type());
+        ddsite.setSelectedItem(set.edp().edp_site());
+        ddinwkfl.setSelectedItem(set.edp().edp_inwkfl());
+        ddoutwkfl.setSelectedItem(set.edp().edp_outwkfl());
+        tbindir.setText(set.edp().edp_defindir());
+        tboutdir.setText(set.edp().edp_defoutdir());
+        cbinenabled.setSelected(BlueSeerUtils.ConvertStringToBool(set.edp().edp_inenabled()));
+        cboutenabled.setSelected(BlueSeerUtils.ConvertStringToBool(set.edp().edp_outenabled()));
+                
+         // now detail
+        
+        aliasmodel.setRowCount(0);
+        for (edpd_partner edpd : set.edpd()) {
+                    aliasmodel.addRow(new Object[]{
+                      edpd.edpd_alias(),
+                      edpd.edpd_default()
+                  });
+        }
+       
+        
+        setAction(set.m()); 
+        
+        isLoad = false;
+        
+    }
+    
     public boolean hasDefault() {
         boolean x = false;
         for (int j = 0; j < tablealias.getRowCount(); j++) {
@@ -1051,7 +912,7 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
            return;
        }
         setPanelComponentState(this, false);
-        executeTask("update", new String[]{tbkey.getText()});  
+        executeTask(BlueSeerUtils.dbaction.update, new String[]{tbkey.getText()});  
     }//GEN-LAST:event_btupdateActionPerformed
 
     private void btnewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnewActionPerformed
@@ -1088,7 +949,7 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
            return;
        }
         setPanelComponentState(this, false);
-        executeTask("add", new String[]{tbkey.getText()});   
+        executeTask(BlueSeerUtils.dbaction.add, new String[]{tbkey.getText()});   
     }//GEN-LAST:event_btaddActionPerformed
 
     private void btdeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteActionPerformed
@@ -1096,11 +957,11 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeer {
            return;
        }
         setPanelComponentState(this, false);
-        executeTask("delete", new String[]{tbkey.getText()});   
+        executeTask(BlueSeerUtils.dbaction.delete, new String[]{tbkey.getText()});   
     }//GEN-LAST:event_btdeleteActionPerformed
 
     private void tbkeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbkeyActionPerformed
-         executeTask("get", new String[]{tbkey.getText()});
+         executeTask(BlueSeerUtils.dbaction.get, new String[]{tbkey.getText()});
     }//GEN-LAST:event_tbkeyActionPerformed
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed

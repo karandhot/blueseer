@@ -101,6 +101,46 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     String id = request.getHeader("id");
     
     switch (id) {
+        case "addEDIPartnerTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            ediData.edpd_partner[] sdarray = om.readValue(ca[0], ediData.edpd_partner[].class);
+            ArrayList<ediData.edpd_partner> sdlist = new ArrayList<ediData.edpd_partner>(Arrays.asList(sdarray)); 
+            ediData.edp_partner sm = om.readValue(ca[1], ediData.edp_partner.class); 
+            response.getWriter().print(arrayToJson(ediData.addEDIPartnerTransaction(sdlist, sm)));  
+            break;
+            }
+        
+        case "updateEDIPartnerTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            String x = ca[0];
+            ediData.edpd_partner[] sdarray = om.readValue(ca[1], ediData.edpd_partner[].class);
+            ArrayList<ediData.edpd_partner> sdlist = new ArrayList<ediData.edpd_partner>(Arrays.asList(sdarray)); 
+            ediData.edp_partner sm = om.readValue(ca[2], ediData.edp_partner.class); 
+            response.getWriter().print(arrayToJson(ediData.updateEDIPartnerTransaction(x, sdlist, sm)));  
+            break;
+            }
+         
+        case "deleteEDIPartner" :
+            response.getWriter().print(arrayToJson(ediData.deleteEDIPartner(request.getHeader("param1")
+                    )));  
+            break;
+            
         case "addEDIXref" : { 
             String line;
             StringBuilder sb = new StringBuilder();  
