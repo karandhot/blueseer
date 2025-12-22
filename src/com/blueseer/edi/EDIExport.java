@@ -55,6 +55,8 @@ public class EDIExport extends javax.swing.JPanel {
 
      // global variable declarations
                 boolean isLoad = false;
+                String defaultsite = "";
+                
     /**
      * Creates new form FileOrderLoadPanel
      */
@@ -171,18 +173,31 @@ public class EDIExport extends javax.swing.JPanel {
     }
     
     public void setComponentDefaultValues() {
-       Date today = new Date();
-       isLoad = true;
-       tacomments.setText("");
-       dcfrom.setDate(today);
-       dcto.setDate(today);
-       tbnbrfrom.setText("");
-       tbnbrto.setText("");
-       cboverride.setSelected(false);
+        Date today = new Date();
+        isLoad = true;
        
-       ddsite.removeAllItems();
-       OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));
-       ddsite.setSelectedItem(OVData.getDefaultSite());
+        ArrayList<String[]> initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
+       
+        tacomments.setText("");
+        dcfrom.setDate(today);
+        dcto.setDate(today);
+        tbnbrfrom.setText("");
+        tbnbrto.setText("");
+        cboverride.setSelected(false);
+       
+        ddsite.removeAllItems();
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+        }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+        
        
        isLoad = false;
        

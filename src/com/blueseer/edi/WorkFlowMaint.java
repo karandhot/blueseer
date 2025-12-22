@@ -33,9 +33,7 @@ import com.blueseer.adm.admData;
 import static com.blueseer.adm.admData.addChangeLog;
 import static com.blueseer.edi.ediData.addWkfTransaction;
 import static com.blueseer.edi.ediData.deleteWkfMstr;
-import static com.blueseer.edi.ediData.getWkfDet;
-import static com.blueseer.edi.ediData.getWkfMstr;
-import static com.blueseer.edi.ediData.getWkfdMeta;
+import static com.blueseer.edi.ediData.getWorkFlowSet;
 import static com.blueseer.edi.ediData.updateWkfMstrTransaction;
 import com.blueseer.edi.ediData.wkf_det;
 import com.blueseer.edi.ediData.wkf_mstr;
@@ -90,11 +88,10 @@ public class WorkFlowMaint extends javax.swing.JPanel implements IBlueSeerT {
     // global variable declarations
                 boolean isLoad = false;
                 int currentkvm = 0;
-                public static wkf_mstr x = null;
-                public static ArrayList<wkf_det> wkfdetlist = null;
-                public static ArrayList<wkfd_meta> wkfdmetalist = null;
                 public static LinkedHashMap<String, ArrayList<String[]>> kvs = new  LinkedHashMap<String, ArrayList<String[]>>();
                 public static LinkedHashMap<String, ArrayList<String[]>> kvm = new  LinkedHashMap<String, ArrayList<String[]>>();
+                String defaultsite = "";
+                public static ediData.WorkFlowSet set = null;
     // global datatablemodel declarations       
    javax.swing.table.DefaultTableModel keyvaluemodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
             new String[]{
@@ -300,6 +297,7 @@ public class WorkFlowMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void setComponentDefaultValues() {
        isLoad = true;
+       ArrayList<String[]> initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
        tbkey.setText("");
         tbdesc.setText("");
         cbenabled.setSelected(false);
@@ -312,7 +310,14 @@ public class WorkFlowMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbkvValue.setText("");
         
         ddsite.removeAllItems();
-        OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));  
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+        }
         ddsite.insertItemAt("", 0);
         ddsite.setSelectedIndex(0);
         
@@ -388,13 +393,13 @@ public class WorkFlowMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public String[] addRecord(String[] x) {
-     String[] m = addWkfTransaction(createDetMetaRecord(), createDetRecord(), createRecord());
-         return m;
+        String[] m = addWkfTransaction(createDetMetaRecord(), createDetRecord(), createRecord());
+        return m;
      }
      
     public String[] updateRecord(String[] x) {
      
-     wkf_mstr _x = this.x;
+     wkf_mstr _x = set.wkf();
      wkf_mstr _y = createRecord();   
      String[] m = updateWkfMstrTransaction(x[0], createDetMetaRecord(), createDetRecord(), _y);
      
@@ -420,8 +425,8 @@ public class WorkFlowMaint extends javax.swing.JPanel implements IBlueSeerT {
         // change log check
         if (m[0].equals("0")) {
             ArrayList<admData.change_log> c = new ArrayList<admData.change_log>();
-            c.add(clog(this.x.wkf_id(), 
-                     this.x.getClass().getName(), 
+            c.add(clog(set.wkf().wkf_id(), 
+                     set.wkf().getClass().getName(), 
                      this.getClass().getSimpleName(), 
                      "deletion", 
                      "", 
@@ -434,10 +439,8 @@ public class WorkFlowMaint extends javax.swing.JPanel implements IBlueSeerT {
      }
       
     public String[] getRecord(String[] key) {
-       x = getWkfMstr(key);  
-        wkfdetlist = getWkfDet(key[0]); 
-        wkfdmetalist = getWkfdMeta(key[0]); 
-        return x.m();
+      set = getWorkFlowSet(key);
+      return set.m();
     }
     
     public wkf_mstr createRecord() { 
@@ -528,15 +531,15 @@ public class WorkFlowMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
 
     public void updateForm() {
-        tbkey.setText(x.wkf_id());
-        tbdesc.setText(x.wkf_desc());
-        ddsite.setSelectedItem(x.wkf_site());
-        cbenabled.setSelected(BlueSeerUtils.ConvertStringToBool(x.wkf_enabled()));
-        setAction(x.m());
+        tbkey.setText(set.wkf().wkf_id());
+        tbdesc.setText(set.wkf().wkf_desc());
+        ddsite.setSelectedItem(set.wkf().wkf_site());
+        cbenabled.setSelected(BlueSeerUtils.ConvertStringToBool(set.wkf().wkf_enabled()));
+        setAction(set.wkf().m());
         
         // now detail
         actionlistmodel.removeAllElements();
-        for (wkf_det dfsd : wkfdetlist) {
+        for (wkf_det dfsd : set.wkfd()) {
             actionlistmodel.addElement(dfsd.wkfd_action());
         }
         
@@ -544,7 +547,7 @@ public class WorkFlowMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         for (int i = 0; i < actionlistmodel.getSize(); i++) {
            ArrayList<String[]> list = new ArrayList<String[]>();
-           for (wkfd_meta dfsdm : wkfdmetalist) { 
+           for (wkfd_meta dfsdm : set.wkfm()) { 
             if (dfsdm.wkfdm_line().equals(String.valueOf(i))) {
                 list.add(new String[]{dfsdm.wkfdm_key(), dfsdm.wkfdm_value()});
             } 

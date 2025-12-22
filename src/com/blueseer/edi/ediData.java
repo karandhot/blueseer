@@ -1283,6 +1283,143 @@ public class ediData {
         return list;
     }
     
+    public static WorkFlowSet getWorkFlowSet(String[] x ) {
+        WorkFlowSet r = null;
+        String[] m = new String[2];
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getWorkFlowSet"});
+            list.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServEDI");
+                r = objectMapper.readValue(returnstring, WorkFlowSet.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        
+        Connection bscon = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            if (ds != null) {
+              bscon = ds.getConnection();
+            } else {
+              bscon = DriverManager.getConnection(url + db, user, pass);  
+            }
+            
+            // order master
+            wkf_mstr wkf = _getWkfMstr(x, bscon, ps, res);
+            ArrayList<wkf_det> wkfd = _getWkfDet(x, bscon, ps, res);
+            ArrayList<wkfd_meta> wkfdm = _getWkfDetMeta(x, bscon, ps, res);
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+            r = new WorkFlowSet(m, wkf, wkfd, wkfdm);
+            
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+             r = new WorkFlowSet(m);
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return r;
+    }
+    
+    private static wkf_mstr _getWkfMstr(String[] x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        wkf_mstr r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from wkf_mstr where wkf_id = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x[0]);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new wkf_mstr(m);
+            } else {
+                while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new wkf_mstr(m, res.getString("wkf_id"), 
+                            res.getString("wkf_desc"),
+                            res.getString("wkf_enabled"),
+                            res.getString("wkf_site")
+                        );
+                }
+            }
+            return r;
+    }
+    
+    private static ArrayList<wkf_det> _getWkfDet(String[] x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        ArrayList<wkf_det> list = new ArrayList<wkf_det>();
+        wkf_det r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from wkf_det where wkfd_id = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x[0]);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new wkf_det(m);
+            } else {
+                while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new wkf_det(m, res.getString("wkfd_id"), 
+                        res.getString("wkfd_action"), 
+                        res.getString("wkfd_line"));
+                        list.add(r);
+                    }
+            }
+            return list;
+    }
+    
+    private static ArrayList<wkfd_meta> _getWkfDetMeta(String[] x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        ArrayList<wkfd_meta> list = new ArrayList<wkfd_meta>();
+        wkfd_meta r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from wkfd_meta where wkfdm_id = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x[0]);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new wkfd_meta(m);
+            } else {
+                while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new wkfd_meta(m, res.getString("wkfdm_id"), 
+                        res.getString("wkfdm_line"), 
+                        res.getString("wkfdm_key"),
+                        res.getString("wkfdm_value"));
+                        list.add(r);
+                }
+            }
+            return list;
+    }
+    
     
     public static wkf_mstr getWkfMstr(String[] x) {
         wkf_mstr r = null;
@@ -7964,6 +8101,12 @@ public class ediData {
     public record DFSSet(String[] m, dfs_mstr dfs, ArrayList<dfs_det> dfsd) {
         public DFSSet(String[] m) {
             this (m, null, null);
+        }
+    }
+    
+    public record WorkFlowSet(String[] m, wkf_mstr wkf, ArrayList<wkf_det> wkfd, ArrayList<wkfd_meta> wkfm) {
+        public WorkFlowSet(String[] m) {
+            this (m, null, null, null);
         }
     }
     

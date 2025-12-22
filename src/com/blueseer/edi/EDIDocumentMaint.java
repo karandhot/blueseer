@@ -155,10 +155,13 @@ public class EDIDocumentMaint extends javax.swing.JPanel  {
             BlueSeerUtils.endTask(message);
            if (this.type.equals("delete")) {
              initvars(null);  
-           } else if (this.type.equals("get") && message[0].equals("1")) {
+           } else if (this.type.equals("get")) {
+             updateForm();
              tbkey.requestFocus();
-           } else if (this.type.equals("get") && message[0].equals("0")) {
-             tbkey.requestFocus();
+           } else if (this.type.equals("add") && message[0].equals("0")) {
+             initvars(key);
+           } else if (this.type.equals("update") && message[0].equals("0")) {
+             initvars(key); 
            } else {
              initvars(null);  
            }
