@@ -958,6 +958,21 @@ public class ediData {
     }
     
     public static String[] addWkfTransaction(ArrayList<wkfd_meta> wkfdm, ArrayList<wkf_det> wkfd, wkf_mstr wkf) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addWkfTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(wkfdm);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(wkfd);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(wkf);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -1074,6 +1089,21 @@ public class ediData {
     }
     
     public static String[] updateWkfMstrTransaction(String x, ArrayList<wkfd_meta> wkfdm, ArrayList<wkf_det> wkfd, wkf_mstr wkf) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateWkfMstrTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = x;
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(wkfdm);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(wkfd);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(wkf);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -1186,7 +1216,64 @@ public class ediData {
         }
         return m;
     }
-      
+    
+    public static String[] deleteWkfMstr(String x) { 
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "deleteWkfMstr"});
+            list.add(new String[]{"param1", x});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }  
+       String[] m = new String[2];
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            PreparedStatement ps = null;
+            
+            try {
+                String sql = "delete from wkfd_meta where wkfdm_id = ?; ";
+                ps = con.prepareStatement(sql);
+                ps.setString(1, x);
+                ps.executeUpdate();
+                
+                sql = "delete from wkf_det where wkfd_id = ?; ";
+                ps = con.prepareStatement(sql);
+                ps.setString(1, x);
+                ps.executeUpdate();
+                
+                sql = "delete from wkf_mstr where wkf_id = ?; ";
+                ps = con.prepareStatement(sql);
+                ps.setString(1, x);
+                ps.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};   
+            } // if proceed
+            catch (SQLException s) {
+                MainFrame.bslog(s);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+            } finally {
+                if (ps != null) {
+                    ps.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+            m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+        }
+        return m;
+    }
+    
+    
     public static ArrayList<wkf_det> getWkfDet(String code) {
         wkf_det r = null;
         String[] m = new String[2];

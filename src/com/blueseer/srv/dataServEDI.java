@@ -50,6 +50,7 @@ import static com.blueseer.edi.ediData.getEDIPartnerSet;
 import static com.blueseer.edi.ediData.getEDIXref;
 import static com.blueseer.edi.ediData.getEdiMstr;
 import static com.blueseer.edi.ediData.getMapMstr;
+import static com.blueseer.edi.ediData.getWorkFlowSet;
 import static com.blueseer.edi.ediData.isAPIMethodUnique;
 import static com.blueseer.edi.ediData.updateAS2Mstr;
 import static com.blueseer.edi.ediData.updateEDIXref;
@@ -258,6 +259,61 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         response.getWriter().print(r);
         break;
         }
+        
+        
+        case "addWkfTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            ediData.wkfd_meta[] wkfdmarray = om.readValue(ca[0], ediData.wkfd_meta[].class);  
+            ArrayList<ediData.wkfd_meta> wkfdmlist = new ArrayList<ediData.wkfd_meta>(Arrays.asList(wkfdmarray));  
+            ediData.wkf_det[] wkfdarray = om.readValue(ca[1], ediData.wkf_det[].class);
+            ArrayList<ediData.wkf_det> wkfdlist = new ArrayList<ediData.wkf_det>(Arrays.asList(wkfdarray)); 
+            ediData.wkf_mstr wkf = om.readValue(ca[2], ediData.wkf_mstr.class); 
+            response.getWriter().print(arrayToJson(ediData.addWkfTransaction(wkfdmlist, wkfdlist, wkf)));   
+            break;
+            }
+        
+        case "updateWkfMstrTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            String x = ca[0];
+            ediData.wkfd_meta[] wkfdmarray = om.readValue(ca[1], ediData.wkfd_meta[].class);  
+            ArrayList<ediData.wkfd_meta> wkfdmlist = new ArrayList<ediData.wkfd_meta>(Arrays.asList(wkfdmarray));  
+            ediData.wkf_det[] wkfdarray = om.readValue(ca[2], ediData.wkf_det[].class);
+            ArrayList<ediData.wkf_det> wkfdlist = new ArrayList<ediData.wkf_det>(Arrays.asList(wkfdarray)); 
+            ediData.wkf_mstr wkf = om.readValue(ca[3], ediData.wkf_mstr.class); 
+            response.getWriter().print(arrayToJson(ediData.updateWkfMstrTransaction(x, wkfdmlist, wkfdlist, wkf)));     
+            break;
+            }
+        
+        case "deleteWkfMstr" : {
+            response.getWriter().print(arrayToJson(ediData.deleteWkfMstr(request.getHeader("param1")
+                    )));  
+            break;
+        }
+        
+        case "getWorkFlowSet" : {       
+        ediData.WorkFlowSet x = getWorkFlowSet(new String[]{request.getHeader("param1")});
+        ObjectMapper objectMapper = new ObjectMapper();
+        String r = objectMapper.writeValueAsString(x);
+        response.getWriter().print(r);
+        break;
+        }
+        
         
             
         case "addEDIXref" : { 
