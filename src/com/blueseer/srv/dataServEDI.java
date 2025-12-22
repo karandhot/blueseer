@@ -43,6 +43,7 @@ import static com.blueseer.edi.ediData.getAPIMstr;
 import static com.blueseer.edi.ediData.getAS2Mstr;
 import static com.blueseer.edi.ediData.getDFSMstr;
 import static com.blueseer.edi.ediData.getEDIDFSSet;
+import static com.blueseer.edi.ediData.getEDIDocSet;
 import static com.blueseer.edi.ediData.getEDIMetaValueDetail;
 import static com.blueseer.edi.ediData.getEDIMetaValueHeader;
 import static com.blueseer.edi.ediData.getEDIPartnerSet;
@@ -157,6 +158,57 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         response.getWriter().print(r);
         break;
         }
+        
+        
+        case "addEDIDocTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            ediData.edi_docdet[] sdarray = om.readValue(ca[0], ediData.edi_docdet[].class);
+            ArrayList<ediData.edi_docdet> sdlist = new ArrayList<ediData.edi_docdet>(Arrays.asList(sdarray)); 
+            ediData.edi_doc sm = om.readValue(ca[1], ediData.edi_doc.class); 
+            response.getWriter().print(arrayToJson(ediData.addEDIDocTransaction(sdlist, sm)));   
+            break;
+            }
+        
+        case "updateEDIDocTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            String x = ca[0];
+            ediData.edi_docdet[] sdarray = om.readValue(ca[1], ediData.edi_docdet[].class);
+            ArrayList<ediData.edi_docdet> sdlist = new ArrayList<ediData.edi_docdet>(Arrays.asList(sdarray)); 
+            ediData.edi_doc sm = om.readValue(ca[2], ediData.edi_doc.class); 
+            response.getWriter().print(arrayToJson(ediData.updateEDIDocTransaction(x, sdlist, sm)));   
+            break;
+            }
+        
+        case "deleteEDIDoc" : {
+            response.getWriter().print(arrayToJson(ediData.deleteEDIDoc(request.getHeader("param1")
+                    )));  
+            break;
+        }
+                
+        case "getEDIDocSet" : {       
+        ediData.EDIDocSet x = getEDIDocSet(new String[]{request.getHeader("param1")});
+        ObjectMapper objectMapper = new ObjectMapper();
+        String r = objectMapper.writeValueAsString(x);
+        response.getWriter().print(r);
+        break;
+        }
+        
         
         case "addDFStructureTransaction" : {
             String line;
