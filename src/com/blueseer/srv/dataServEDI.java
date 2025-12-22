@@ -279,7 +279,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
           }
         
         case "getEdiMstr" : { 
-            String[] key = new String[]{request.getHeader("param1")}; 
+            String[] key = new String[]{request.getHeader("param1"),
+            request.getHeader("param2"),
+            request.getHeader("param3"),
+            request.getHeader("param4")}; 
             ediData.edi_mstr x = getEdiMstr(key);
             ObjectMapper objectMapper = new ObjectMapper();
             String r = objectMapper.writeValueAsString(x);

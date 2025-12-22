@@ -1882,6 +1882,9 @@ public class ediData {
             ArrayList<String[]> list = new ArrayList<>();
             list.add(new String[]{"id","getEdiMstr"});
             list.add(new String[]{"param1",x[0]});
+            list.add(new String[]{"param2",x[1]});
+            list.add(new String[]{"param3",x[2]});
+            list.add(new String[]{"param4",x[3]});
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 String returnstring = sendServerPost(list, "", null, "dataServEDI");
