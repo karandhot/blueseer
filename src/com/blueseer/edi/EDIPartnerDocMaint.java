@@ -82,6 +82,7 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
     boolean isLoad = false;
     public static edi_mstr em = null;
     public static ArrayList<String> attrlist = new ArrayList<>();
+    String defaultsite = "";
     
     /**
      * Creates new form CarrierMaintPanel
@@ -310,7 +311,6 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
         dddoc.removeAllItems();
         ddoutdoctype.removeAllItems();
         
-        String defaultsite = "";
         for (String[] s : initDataSets) {
             if (s[0].equals("site")) {
               defaultsite = s[1];  
@@ -505,11 +505,11 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
         lual = new ActionListener() {
         public void actionPerformed(ActionEvent event) {
         if (lurb1.isSelected()) {  
-         luModel = DTData.getEDICustBrowseUtil(luinput.getText(),0, "edi_id", OVData.getSiteListConditional(bsmf.MainFrame.userid));
+         luModel = DTData.getEDICustBrowseUtil(luinput.getText(),0, "edi_id", defaultsite);
         } else if (lurb2.isSelected()) {
-         luModel = DTData.getEDICustBrowseUtil(luinput.getText(),0, "edi_doc", OVData.getSiteListConditional(bsmf.MainFrame.userid));   
+         luModel = DTData.getEDICustBrowseUtil(luinput.getText(),0, "edi_doc", defaultsite);   
         } else {
-         luModel = DTData.getEDICustBrowseUtil(luinput.getText(),0, "edi_sndgs", OVData.getSiteListConditional(bsmf.MainFrame.userid));   
+         luModel = DTData.getEDICustBrowseUtil(luinput.getText(),0, "edi_sndgs", defaultsite);   
         }
         luTable.setModel(luModel);
         luTable.getColumnModel().getColumn(0).setMaxWidth(50);
