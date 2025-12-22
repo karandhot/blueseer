@@ -33,14 +33,16 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
-import static com.blueseer.edi.ediData.getMapStructList;
+import static com.blueseer.edi.ediData.addEDIDocTransaction;
+import static com.blueseer.edi.ediData.deleteEDIDoc;
+import com.blueseer.edi.ediData.edi_doc;
+import com.blueseer.edi.ediData.edi_docdet;
+import static com.blueseer.edi.ediData.getEDIDocSet;
 import static com.blueseer.edi.ediData.isValidEDDid;
-import static com.blueseer.utl.BlueSeerUtils.ConvertIntegerToBool;
+import static com.blueseer.edi.ediData.updateEDIDocTransaction;
 import static com.blueseer.utl.BlueSeerUtils.ConvertTrueFalseToBoolean;
-import static com.blueseer.utl.BlueSeerUtils.boolToString;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
-import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.luModel;
 import static com.blueseer.utl.BlueSeerUtils.luTable;
@@ -50,7 +52,6 @@ import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import com.blueseer.utl.DTData;
-import com.blueseer.utl.IBlueSeer;
 import com.blueseer.utl.OVData;
 import java.awt.Color;
 import java.awt.Component;
@@ -58,11 +59,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -85,7 +81,9 @@ import javax.swing.SwingWorker;
 public class EDIDocumentMaint extends javax.swing.JPanel  {
 
     // global variable declarations
-                boolean isLoad = false;
+    boolean isLoad = false;
+    String defaultsite = "";
+    public static ediData.EDIDocSet set = null;
     
     // global datatablemodel declarations       
      javax.swing.table.DefaultTableModel rulemodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -288,6 +286,7 @@ public class EDIDocumentMaint extends javax.swing.JPanel  {
     
     public void setComponentDefaultValues() {
        isLoad = true;
+       ArrayList<String[]> initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
         rulemodel.setRowCount(0);
            tablerole.setModel(rulemodel);
            tablerole.getTableHeader().setReorderingAllowed(false);
@@ -312,16 +311,23 @@ public class EDIDocumentMaint extends javax.swing.JPanel  {
         ddtag.setSelectedIndex(0);
            
        dddoc.removeAllItems();
-        ArrayList<String> mylist = OVData.getCodeMstrKeyList("edidoctype");
-        for (int i = 0; i < mylist.size(); i++) {
-            dddoc.addItem(mylist.get(i));
-        } 
+       ddstruct.removeAllItems();
         
-        ddstruct.removeAllItems();
-        ArrayList<String> mystructs = getMapStructList();
-        for (int i = 0; i < mystructs.size(); i++) {
-            ddstruct.addItem(mystructs.get(i));
-        } 
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+            
+            if (s[0].equals("doctypes")) {
+              dddoc.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("dfs_id")) {
+              ddstruct.addItem(s[1]); 
+            }
+        }
+        
+        
         ddstruct.insertItemAt("", 0);
         ddstruct.setSelectedIndex(0);
         
@@ -345,19 +351,18 @@ public class EDIDocumentMaint extends javax.swing.JPanel  {
         tbkey.requestFocus();
     }
     
-    public String[] setAction(int i) {
-        String[] m = new String[2];
-        if (i > 0) {
-            m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};  
+    public void setAction(String[] x) {
+       
+        if (x[0].equals("0")) {
+           
                    setPanelComponentState(this, true);
                    btadd.setEnabled(false);
                    tbkey.setEditable(false);
                    tbkey.setForeground(Color.blue);
         } else {
-           m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};  
+           
                    tbkey.setForeground(Color.red); 
         }
-        return m;
     }
     
     public boolean validateInput(String x) {
@@ -406,357 +411,97 @@ public class EDIDocumentMaint extends javax.swing.JPanel  {
     }
     
     public String[] addRecord(String[] x) {
-     String[] m = new String[2];
-     
-     try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                boolean proceed = true;
-                int i = 0;
-                
-                proceed = validateInput("addRecord");
-                String headerenabled = "0";
-                if (cbenabledhdr.isSelected()) {
-                    headerenabled = "1";
-                }
-                if (proceed) {
-
-                    res = st.executeQuery("SELECT edd_id FROM  edi_doc where edd_id = " + "'" + x[0] + "'" + ";");
-                    while (res.next()) {
-                        i++;
-                    }
-                    if (i == 0) {
-                        st.executeUpdate("insert into edi_doc (edd_id, edd_desc, edd_type, edd_subtype, edd_segdelim, edd_eledelim, edd_priority, edd_landmark, edd_enabled) values (" + 
-                            "'" + tbkey.getText() + "'" + "," +
-                            "'" + tbdesc.getText() + "'"  +  "," + 
-                            "'" + dddoc.getSelectedItem().toString() + "'"  +  "," + 
-                            "'" + ddstruct.getSelectedItem().toString() + "'"  + "," + 
-                            "'" + tbsegdelimiter.getText() + "'"  +  "," + 
-                            "'" + tbeledelimiter.getText() + "'"  +  "," +         
-                            "'" + tbpriority.getText() + "'"  +  "," + 
-                            "'" + tblandmark.getText() + "'"  + "," +
-                            "'" + headerenabled + "'" +
-                            ")" + ";");     
-                
-              
-                 for (int j = 0; j < tablerole.getRowCount(); j++) {
-                st.executeUpdate("insert into edi_docdet (edid_id, edid_role, edid_rectype, edid_valuetype, " +
-                        " edid_row, edid_col, edid_length, edid_regex, edid_value, edid_tag, edid_xpath, edid_enabled ) values ( " 
-                        + "'" + tbkey.getText() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 0).toString() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 1).toString() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 2).toString() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 3).toString() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 4).toString() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 5).toString() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 6).toString() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 7).toString() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 8).toString() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 9).toString() + "'" + ","
-                        + "'" + BlueSeerUtils.boolToInt(Boolean.valueOf(tablerole.getValueAt(j, 10).toString())) + "'" 
-                        + " );" );
-                 }
-                        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
-                    } else {
-                       m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordAlreadyExists}; 
-                    }
-
-                   initvars(null);
-                   
-                } // if proceed
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                 m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordSQLError};  
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-             m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordConnError};
-        }
-     
+     String[] m = addEDIDocTransaction(createDetRecord(x[0]), createRecord(x[0]));  
      return m;
      }
-    
-    public String[] copyRecord(String newkey) {
-     String[] m = new String[2];
-     
-     try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                boolean proceed = true;
-                int i = 0;
-                
-                proceed = validateInput("addRecord");
-                String headerenabled = "0";
-                if (cbenabledhdr.isSelected()) {
-                    headerenabled = "1";
-                }
-                if (proceed) {
-
-                    res = st.executeQuery("SELECT edd_id FROM  edi_doc where edd_id = " + "'" + newkey + "'" + ";");
-                    while (res.next()) {
-                        i++;
-                    }
-                    if (i == 0) {
-                        st.executeUpdate("insert into edi_doc (edd_id, edd_desc, edd_type, edd_subtype, edd_segdelim, edd_eledelim, edd_priority, edd_landmark, edd_enabled) values (" + 
-                            "'" + newkey + "'" + "," +
-                            "'" + tbdesc.getText() + "'"  +  "," + 
-                            "'" + dddoc.getSelectedItem().toString() + "'"  +  "," + 
-                            "'" + ddstruct.getSelectedItem().toString() + "'"  + "," + 
-                            "'" + tbsegdelimiter.getText() + "'"  +  "," + 
-                            "'" + tbeledelimiter.getText() + "'"  +  "," +         
-                            "'" + tbpriority.getText() + "'"  +  "," + 
-                            "'" + tblandmark.getText() + "'"  + "," +
-                            "'" + headerenabled + "'" +
-                            ")" + ";");     
-                
-              
-                 for (int j = 0; j < tablerole.getRowCount(); j++) {
-                st.executeUpdate("insert into edi_docdet (edid_id, edid_role, edid_rectype, edid_valuetype, " +
-                        " edid_row, edid_col, edid_length, edid_regex, edid_value, edid_tag, edid_xpath, edid_enabled ) values ( " 
-                        + "'" + newkey + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 0).toString() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 1).toString() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 2).toString() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 3).toString() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 4).toString() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 5).toString() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 6).toString() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 7).toString() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 8).toString() + "'" + ","
-                        + "'" + tablerole.getValueAt(j, 9).toString() + "'" + ","
-                        + "'" + BlueSeerUtils.boolToInt(Boolean.valueOf(tablerole.getValueAt(j, 10).toString())) + "'" 
-                        + " );" );
-                 }
-                        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
-                    } else {
-                       m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordAlreadyExists}; 
-                    }
-
-                   initvars(null);
-                   
-                } // if proceed
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                 m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordSQLError};  
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-             m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordConnError};
-        }
-     
-     return m;
-     }
-    
-    
+        
     public String[] updateRecord(String[] x) {
-     String[] m = new String[2];
-     
-     try {
-            boolean proceed = true;
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            try {
-                   
-               proceed = validateInput("updateRecord");
-               String headerenabled = "0";
-                if (cbenabledhdr.isSelected()) {
-                    headerenabled = "1";
-                }
-                
-                if (proceed) {
-                       st.executeUpdate("update edi_doc set " + 
-                           "edd_desc = " + "'" + tbdesc.getText() + "'" + "," +
-                           "edd_type = " + "'" + dddoc.getSelectedItem().toString() + "'" + "," +
-                           "edd_subtype = " + "'" + ddstruct.getSelectedItem().toString() + "'" + "," +
-                           "edd_segdelim = " + "'" + tbsegdelimiter.getText() + "'" + "," +
-                           "edd_eledelim = " + "'" + tbeledelimiter.getText() + "'" + "," +        
-                           "edd_priority = " + "'" + tbpriority.getText() + "'" + "," +
-                           "edd_landmark = " + "'" + tblandmark.getText() + "'" + "," +
-                           "edd_enabled = " + "'" + headerenabled + "'" +     
-                           " where edd_id = " + "'" + tbkey.getText() + "'" +
-                             ";");     
-                
-                       //  now lets delete all stored actions of this master task...then add back from table
-                        st.executeUpdate("delete from edi_docdet where edid_id = " + "'" + tbkey.getText() + "'" + ";");
-
-                         for (int j = 0; j < tablerole.getRowCount(); j++) {
-                        st.executeUpdate("insert into edi_docdet (edid_id, edid_role, edid_rectype, edid_valuetype, " +
-                                " edid_row, edid_col, edid_length, edid_regex, edid_value, edid_tag, edid_xpath, edid_enabled ) values ( " 
-                                + "'" + tbkey.getText() + "'" + ","
-                                + "'" + tablerole.getValueAt(j, 0).toString() + "'" + ","
-                                + "'" + tablerole.getValueAt(j, 1).toString() + "'" + ","
-                                + "'" + tablerole.getValueAt(j, 2).toString() + "'" + ","
-                                + "'" + tablerole.getValueAt(j, 3).toString() + "'" + ","
-                                + "'" + tablerole.getValueAt(j, 4).toString() + "'" + ","
-                                + "'" + tablerole.getValueAt(j, 5).toString() + "'" + ","
-                                + "'" + tablerole.getValueAt(j, 6).toString() + "'" + ","
-                                + "'" + tablerole.getValueAt(j, 7).toString() + "'" + ","
-                                + "'" + tablerole.getValueAt(j, 8).toString() + "'" + ","  
-                                + "'" + tablerole.getValueAt(j, 9).toString() + "'" + ","         
-                                + "'" + BlueSeerUtils.boolToInt(Boolean.valueOf(tablerole.getValueAt(j, 10).toString())) + "'" 
-                                + " );" );
-                         }
-                    m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
-                    initvars(null);
-                } 
-         
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordSQLError};  
-            } finally {
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordConnError};
-        }
-     
+     String[] m = updateEDIDocTransaction(tbkey.getText(), createDetRecord(x[0]), createRecord(x[0]));
      return m;
      }
      
     public String[] deleteRecord(String[] x) {
      String[] m = new String[2];
-        boolean proceed = bsmf.MainFrame.warn("Are you sure?");
+        boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
         if (proceed) {
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            try {
-                  
-                    int i = st.executeUpdate("delete from edi_doc where edd_id = " + "'" + tbkey.getText() + "'" + ";");
-                    int j = st.executeUpdate("delete from edi_docdet where edid_id = " + "'" + tbkey.getText() + "'" + ";");
-                    if (i > 0 && j > 0) {
-                    m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
-                    initvars(null);
-                    }
-                } catch (SQLException s) {
-                 MainFrame.bslog(s); 
-                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordSQLError};  
-            } finally {
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordConnError};
-        }
+         m = deleteEDIDoc(x[0]); 
+         initvars(null);
         } else {
            m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordCanceled}; 
         }
-     return m;
+         return m;
      }
       
     public String[] getRecord(String[] x) {
-       String[] m = new String[2];
-       
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                res = st.executeQuery("SELECT * FROM  edi_doc where edd_id = " + "'" + x[0] + "'" + ";");
-                    while (res.next()) {
-                        i++;
-                        tbdesc.setText(res.getString("edd_desc"));
-                        tbkey.setText(res.getString("edd_id"));
-                        dddoc.setSelectedItem(res.getString("edd_type"));
-                        ddstruct.setSelectedItem(res.getString("edd_subtype"));
-                        tbsegdelimiter.setText(res.getString("edd_segdelim"));
-                        tbeledelimiter.setText(res.getString("edd_eledelim"));
-                        tblandmark.setText(res.getString("edd_landmark"));
-                        cbenabledhdr.setSelected(BlueSeerUtils.ConvertStringToBool(res.getString("edd_enabled")));
-                    }
-                    res = st.executeQuery("SELECT * FROM  edi_docdet where " +
-                            " edid_id = " + "'" + x[0] + "'" + ";");
-                    while (res.next()) {
-                     rulemodel.addRow(new Object[]{res.getString("edid_role"), 
-                         res.getString("edid_rectype"), 
-                         res.getString("edid_valuetype"),
-                         res.getString("edid_row"),
-                         res.getString("edid_col"),
-                         res.getString("edid_length"),
-                         res.getString("edid_regex"),
-                         res.getString("edid_value"),
-                         res.getString("edid_tag"),
-                         res.getString("edid_xpath"),
-                         res.getBoolean("edid_enabled")});   
-                    }
-               
-                // set Action if Record found (i > 0)
-                m = setAction(i);
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordSQLError};  
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordConnError};  
+       set = getEDIDocSet(x);
+      return set.m();
+    }
+    
+    public edi_doc createRecord(String key) {        
+        edi_doc x = new edi_doc(null, 
+                key, 
+                tbdesc.getText(),
+                dddoc.getSelectedItem().toString(),
+                ddstruct.getSelectedItem().toString(),
+                tbsegdelimiter.getText(), 
+                tbeledelimiter.getText(), 
+                tbpriority.getText(),
+                tblandmark.getText(),
+                BlueSeerUtils.boolToString(cbenabledhdr.isSelected())
+        ); 
+        return x;  
+    }
+        
+    public ArrayList<edi_docdet> createDetRecord(String key) {
+        ArrayList<edi_docdet> list = new ArrayList<edi_docdet>();
+         for (int j = 0; j < tablerole.getRowCount(); j++) {
+             edi_docdet x = new edi_docdet(null,
+                key,
+                tablerole.getValueAt(j, 0).toString(),
+                tablerole.getValueAt(j, 1).toString(),
+                tablerole.getValueAt(j, 2).toString(),
+                tablerole.getValueAt(j, 3).toString(),
+                tablerole.getValueAt(j, 4).toString(),
+                tablerole.getValueAt(j, 5).toString(),
+                tablerole.getValueAt(j, 6).toString(),
+                tablerole.getValueAt(j, 7).toString(),
+                tablerole.getValueAt(j, 8).toString(),
+                tablerole.getValueAt(j, 9).toString(),
+                BlueSeerUtils.ConvertTrueFalseToStringInt(tablerole.getValueAt(j, 10).toString())
+                );
+        list.add(x);
+         }
+        return list;   
+    }
+    
+    public void updateForm() {
+        isLoad = true;
+        tbdesc.setText(set.edd().edd_desc());
+        tbkey.setText(set.edd().edd_id());
+        dddoc.setSelectedItem(set.edd().edd_type());
+        ddstruct.setSelectedItem(set.edd().edd_subtype());
+        tbsegdelimiter.setText(set.edd().edd_segdelim());
+        tbeledelimiter.setText(set.edd().edd_eledelim());
+        tblandmark.setText(set.edd().edd_landmark());
+        cbenabledhdr.setSelected(BlueSeerUtils.ConvertStringToBool(set.edd().edd_enabled()));
+        
+        for (edi_docdet edid : set.edid()) {
+        rulemodel.addRow(new Object[]{edid.edid_role(),
+                         edid.edid_rectype(), 
+                         edid.edid_valuetype(),
+                         edid.edid_row(),
+                         edid.edid_col(),
+                         edid.edid_length(),
+                         edid.edid_regex(),
+                         edid.edid_value(),
+                         edid.edid_tag(),
+                         edid.edid_xpath(),
+                         edid.edid_enabled()}); 
         }
-      return m;
+        
+        setAction(set.m()); 
+        
+        isLoad = false;
     }
     
     public void lookUpFrame() {
@@ -1467,11 +1212,12 @@ public class EDIDocumentMaint extends javax.swing.JPanel  {
 
     private void btcopyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcopyActionPerformed
         String newkey = bsmf.MainFrame.input("Enter new key: ");
-        if (! newkey.isBlank() && ! isValidEDDid(newkey)) {
-         String[] m = copyRecord(newkey);
+        if (! newkey.isBlank()) {
+         executeTask("add", new String[]{newkey}); 
         } else {
             bsmf.MainFrame.show(getMessageTag(1180));
         }
+        
     }//GEN-LAST:event_btcopyActionPerformed
 
     private void btlookupeleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupeleActionPerformed

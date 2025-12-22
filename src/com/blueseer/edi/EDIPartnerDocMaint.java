@@ -26,18 +26,16 @@ SOFTWARE.
 
 package com.blueseer.edi;
 
-import com.blueseer.ctr.*;
 import bsmf.MainFrame;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.pass;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
-import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
+import static com.blueseer.edi.ediData.addEdiMstr;
+import static com.blueseer.edi.ediData.deleteEdiMstr;
+import com.blueseer.edi.ediData.edi_mstr;
+import static com.blueseer.edi.ediData.getEdiMstr;
 import static com.blueseer.edi.ediData.getMapMstr;
+import static com.blueseer.edi.ediData.updateEdiMstr;
 import static com.blueseer.utl.BlueSeerUtils.asciivalues;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
@@ -52,6 +50,7 @@ import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import static com.blueseer.utl.BlueSeerUtils.lurb2;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.EDData;
+import static com.blueseer.utl.EDData.deleteEDIAttributeRecord;
 import static com.blueseer.utl.EDData.getEDIPartnerDesc;
 import java.awt.Color;
 import java.awt.Component;
@@ -59,11 +58,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -75,6 +69,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JViewport;
+import javax.swing.SwingWorker;
 
 /**
  *
@@ -84,6 +80,9 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
 
     DefaultListModel listmodel = new DefaultListModel();
     boolean isLoad = false;
+    public static edi_mstr em = null;
+    public static ArrayList<String> attrlist = new ArrayList<>();
+    
     /**
      * Creates new form CarrierMaintPanel
      */
@@ -92,256 +91,139 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
         setLanguageTags(this);
     }
     
-    public void getCustEDI(String code, String doctype, String sndid, String rcvid, String map) {
-        
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+       
+          String type = "";
+          String[] key = null;
+          
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
+              this.key = key;
+          } 
+           
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+             switch(this.type) {
+                case "add":
+                    message = addRecord(key);
+                    break;
+                case "update":
+                    message = updateRecord(key);
+                    break;
+                case "delete":
+                    message = deleteRecord(key);    
+                    break;
+                case "get":
+                    message = getRecord(key);    
+                    break;    
+                default:
+                    message = new String[]{"1", "unknown action"};
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
+            
+            return message;
+        }
+ 
+        
+       public void done() {
             try {
-                int i = 0;
-                res = st.executeQuery("select * from edi_mstr where edi_id = " + "'" + code + "'" +
-                                      " AND edi_doc = " + "'" + doctype + "'" +
-                                      " AND edi_sndgs = " + "'" + sndid + "'" + 
-                                      " AND edi_rcvgs = " + "'" + rcvid + "'" + 
-                                      " AND edi_map = " + "'" + map + "'" +        
-                                              ";");
-                while (res.next()) {
-                    i++;
-                    ddkey.setSelectedItem(code);
-                    dddoc.setSelectedItem(doctype);
-                    ddoutdoctype.setSelectedItem(res.getString("edi_doctypeout"));
-                    ddoutfiletype.setSelectedItem(res.getString("edi_filetypeout"));
-                    ddinfiletype.setSelectedItem(res.getString("edi_filetype"));
-                    tbIFS.setText(res.getString("edi_ifs"));
-                    tbOFS.setText(res.getString("edi_ofs"));
-                    tbrcvisa.setText(res.getString("edi_rcvisa"));
-                    tbrcvq.setText(res.getString("edi_rcvq"));
-                    tbrcvgs.setText(res.getString("edi_rcvgs"));
-                    ddmap.setSelectedItem(res.getString("edi_map"));
-                    tbelement.setText(res.getString("edi_eledelim"));
-                    tbsegment.setText(res.getString("edi_segdelim"));
-                    tbsub.setText(res.getString("edi_subdelim"));
-                    tbfileprefix.setText(res.getString("edi_fileprefix"));
-                    tbfilesuffix.setText(res.getString("edi_filesuffix"));
-                    tbfilepath.setText(res.getString("edi_filepath"));
-                    tbversion.setText(res.getString("edi_version"));
-                    tbsndisa.setText(res.getString("edi_sndisa"));
-                    tbsndgs.setText(res.getString("edi_sndgs"));
-                    tbsndq.setText(res.getString("edi_sndq"));
-                    tbsupplier.setText(res.getString("edi_supcode"));
-                    cbfa.setSelected(BlueSeerUtils.ConvertStringToBool(res.getString("edi_fa_required")));
-                    cbenvelopeall.setSelected(BlueSeerUtils.ConvertStringToBool(res.getString("edi_envelopeall")));
-                    cbuna.setSelected(BlueSeerUtils.ConvertStringToBool(res.getString("edi_una")));
-                    cbung.setSelected(BlueSeerUtils.ConvertStringToBool(res.getString("edi_ung")));
-                    cbemail.setSelected(BlueSeerUtils.ConvertStringToBool(res.getString("edi_mflag")));
-                    ddsite.setSelectedItem(res.getString("edi_site"));
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+           if (this.type.equals("delete")) {
+             initvars(null);  
+           } else if (this.type.equals("get")) {
+             updateForm();
+             ddkey.requestFocus();
+           } else if (this.type.equals("add") && message[0].equals("0")) {
+             initvars(key);
+           } else if (this.type.equals("update") && message[0].equals("0")) {
+             initvars(key);    
+           } else {
+             initvars(null);  
+           }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+      
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        JScrollPane scrollpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else if (myobj instanceof JScrollPane) {
+           scrollpane = (JScrollPane) myobj;    
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                if (component instanceof JScrollPane) {
+                    setPanelComponentState((JScrollPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    
+                    component.setEnabled(b);
                     
                 }
-               
-                
-                if (i > 0) {
-                   enableAll();
-                   getAttributes(tbsndgs.getText(), tbrcvgs.getText(), doctype);
-                   btadd.setEnabled(false);
-                   ddkey.setEnabled(false);
-                   dddoc.setEnabled(false);
-                   tbrcvgs.setEnabled(false);
-                   tbsndgs.setEnabled(false);
-                   btcopy.setEnabled(true);
-                } else {
-                    btcopy.setEnabled(false);
-                }
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
             }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
-    }
-    
-    public void getAttributes(String sndid, String rcvid, String doctype) {
-        listmodel.removeAllElements();
-        ArrayList<String> list = EDData.getEDIAttributesList(doctype, sndid, rcvid);
-        for (String x : list) {
-            listmodel.addElement(x);
-        }
-    }
-    
-    public void clearAll() {
-        isLoad = true;
-        jTabbedPane1.removeAll();
-        jTabbedPane1.add("Main", panelMain);
-        jTabbedPane1.add("Attributes", panelOutbound);
-        
-        lblmessg.setText("");
-        lblmessg.setForeground(Color.black);
-        lblpartner.setText("");
-        
-        lblelem.setText("");
-        lblseg.setText("");
-        lblsub.setText("");
-        
-       // jTabbedPane1.setEnabledAt(1, false);
-        
-        listAttributes.setModel(listmodel);
-        
-        ddsite.removeAllItems();
-        OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));  
-        ddsite.insertItemAt("", 0);
-        ddsite.setSelectedItem(OVData.getDefaultSiteForUserid(bsmf.MainFrame.userid));
-        
-        dddoc.removeAllItems();
-        ArrayList<String> mylist = OVData.getCodeMstrKeyList("edidoctype");
-        for (int i = 0; i < mylist.size(); i++) {
-            dddoc.addItem(mylist.get(i));
-        }
-        ddoutdoctype.removeAllItems();
-        for (int i = 0; i < mylist.size(); i++) {
-            ddoutdoctype.addItem(mylist.get(i));
-        }
-        
-        ddmap.removeAllItems();
-        ArrayList<String> maps = ediData.getMapMstrList();
-        for (int i = 0; i < maps.size(); i++) {
-            ddmap.addItem(maps.get(i));
-        }
-        ddmap.insertItemAt("", 0);
-        
-        
-        ddkey.removeAllItems();
-        ArrayList<String> keys = EDData.getEDIPartners();
-        for (int i = 0; i < keys.size(); i++) {
-            ddkey.addItem(keys.get(i));
-        }
-        ddkey.insertItemAt("", 0);
-        ddkey.setSelectedIndex(0);
-        
-        
-        
-        
-        tbrcvisa.setText("");
-        tbrcvq.setText("");
-        tbrcvgs.setText("");
-        tbsndisa.setText("");
-        tbsndgs.setText("");
-        tbsndq.setText("");
-        tbversion.setText("");
-        tbsupplier.setText("");
-        tbelement.setText("");
-        tbsegment.setText("");
-        tbsub.setText("");
-        tbfilepath.setText("");
-        tbIFS.setText("");
-        tbOFS.setText("");
-        tbfileprefix.setText("");
-        tbfilesuffix.setText("");
-        ddattributekey.setSelectedIndex(0);
-        tbattributevalue.setText("");
-        cbenvelopeall.setSelected(false);
-        cbuna.setSelected(false);
-        cbung.setSelected(false);
-        cbemail.setSelected(false);
-        isLoad = false;
-    }
-    
-    public void enableAll() {
-        btadd.setEnabled(true);
-        btnew.setEnabled(true);
-        btupdate.setEnabled(true);
-        btdelete.setEnabled(true);
-        btlookup.setEnabled(true);
-        btdeleteattribute.setEnabled(true);
-        btaddattribute.setEnabled(true);
-        tbrcvisa.setEnabled(true);
-        tbrcvq.setEnabled(true);
-        tbrcvgs.setEnabled(true);
-        tbsndisa.setEnabled(true);
-        tbsndgs.setEnabled(true);
-        tbsndq.setEnabled(true);
-        ddmap.setEnabled(true);
-        dddoc.setEnabled(true);
-     //   ddoutfiletype.setEnabled(true);
-     //   ddoutdoctype.setEnabled(true);
-        tbversion.setEnabled(true);
-        tbsupplier.setEnabled(true);
-        tbelement.setEnabled(true);
-        tbsegment.setEnabled(true);
-        tbsub.setEnabled(true);
-        tbfilepath.setEnabled(true);
-      //  tbIFS.setEnabled(true);
-      //  tbOFS.setEnabled(true);
-        tbfileprefix.setEnabled(true);
-        tbfilesuffix.setEnabled(true);
-        ddkey.setEnabled(true);
-        cbenvelopeall.setEnabled(true);
-        cbuna.setEnabled(true);
-        cbung.setEnabled(true);
-        cbfa.setEnabled(true);
-        cbemail.setEnabled(true);
-     
-        ddattributekey.setEnabled(true);
-        tbattributevalue.setEnabled(true);
-        ddsite.setEnabled(true);
-    }
-    
-    public void disableAll() {
-         btadd.setEnabled(false);
-          btnew.setEnabled(false);
-        btupdate.setEnabled(false);
-        btdelete.setEnabled(false);
-        btlookup.setEnabled(false);
-        btdeleteattribute.setEnabled(false);
-        btaddattribute.setEnabled(false);
-        tbrcvisa.setEnabled(false);
-        tbrcvq.setEnabled(false);
-        tbrcvgs.setEnabled(false);
-        tbsndisa.setEnabled(false);
-        tbsndgs.setEnabled(false);
-        tbsndq.setEnabled(false);
-        ddmap.setEnabled(false);
-        dddoc.setEnabled(false);
-        ddoutfiletype.setEnabled(false);
-        ddinfiletype.setEnabled(false);
-        ddoutdoctype.setEnabled(false);
-        tbversion.setEnabled(false);
-        tbsupplier.setEnabled(false);
-        tbelement.setEnabled(false);
-        tbsegment.setEnabled(false);
-        tbsub.setEnabled(false);
-        tbfilepath.setEnabled(false);
-        tbIFS.setEnabled(false);
-        tbOFS.setEnabled(false);
-        tbfileprefix.setEnabled(false);
-        tbfilesuffix.setEnabled(false);
-        ddkey.setEnabled(false);
-        cbenvelopeall.setEnabled(false);
-        cbuna.setEnabled(false);
-        cbung.setEnabled(false);
-        cbfa.setEnabled(false);
-        cbemail.setEnabled(false);
-        ddattributekey.setEnabled(false);
-        tbattributevalue.setEnabled(false);
-        btcopy.setEnabled(false);
-        ddsite.setEnabled(false);
-    }
+            if (scrollpane != null) {
+                scrollpane.setEnabled(b);
+                JViewport viewport = scrollpane.getViewport();
+                Component[] componentspane = viewport.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
     
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
@@ -387,19 +269,232 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
        }
     }
     
+    public void setComponentDefaultValues() {
+        isLoad = true;
+        
+        ArrayList<String[]> initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        
+        lblmessg.setText("");
+        lblmessg.setForeground(Color.black);
+        lblpartner.setText("");
+        
+        lblelem.setText("");
+        lblseg.setText("");
+        lblsub.setText("");
+        
+         tbrcvisa.setText("");
+        tbrcvq.setText("");
+        tbrcvgs.setText("");
+        tbsndisa.setText("");
+        tbsndgs.setText("");
+        tbsndq.setText("");
+        tbversion.setText("");
+        tbsupplier.setText("");
+        tbelement.setText("");
+        tbsegment.setText("");
+        tbsub.setText("");
+        tbfilepath.setText("");
+        tbIFS.setText("");
+        tbOFS.setText("");
+        tbfileprefix.setText("");
+        tbfilesuffix.setText("");
+        ddattributekey.setSelectedIndex(0);
+        tbattributevalue.setText("");
+        cbenvelopeall.setSelected(false);
+        cbuna.setSelected(false);
+        cbung.setSelected(false);
+        cbemail.setSelected(false);
+        
+        listAttributes.setModel(listmodel); 
+        ddsite.removeAllItems();
+        dddoc.removeAllItems();
+        ddoutdoctype.removeAllItems();
+        
+        String defaultsite = "";
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+                      
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("doctypes")) {
+              dddoc.addItem(s[1]); 
+            }
+            if (s[0].equals("doctypes")) {
+              ddoutdoctype.addItem(s[1]); 
+            }
+            if (s[0].equals("maps")) {
+              ddmap.addItem(s[1]); 
+            }
+            if (s[0].equals("partners")) {
+              ddkey.addItem(s[1]); 
+            }
+        }
+        
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+        dddoc.insertItemAt("", 0);
+        ddoutdoctype.insertItemAt("", 0);
+        ddmap.insertItemAt("", 0);
+        ddkey.insertItemAt("", 0);
+        dddoc.setSelectedIndex(0);
+        ddoutdoctype.setSelectedIndex(0);
+        ddmap.setSelectedIndex(0);
+        ddkey.setSelectedIndex(0);
+      
+        
+       isLoad = false;
+    }
+    
+    public void newAction(String x) {
+       setPanelComponentState(this, true);
+        setComponentDefaultValues();
+        BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
+        btupdate.setEnabled(false);
+        btdelete.setEnabled(false);
+        btnew.setEnabled(false);
+        ddkey.requestFocus();
+    }
+    
+    public void setAction(String[] x) {
+        if (x[0].equals("0")) { 
+           setPanelComponentState(this, true);
+           btadd.setEnabled(false);
+           ddkey.setEnabled(false);
+           dddoc.setEnabled(false);
+           tbrcvgs.setEnabled(false);
+           tbsndgs.setEnabled(false);
+           btcopy.setEnabled(true);
+        } else {
+            btcopy.setEnabled(false);
+        } 
+    }
+    
+    public boolean validateInput(BlueSeerUtils.dbaction x) {
+        boolean b = true;
+               
+                if (ddkey.getSelectedItem().toString().isEmpty()) {
+                    b = false;
+                    bsmf.MainFrame.show(getMessageTag(1024));
+                    ddkey.requestFocus();
+                    return b;
+                }
+                
+                if (dddoc.getSelectedItem().toString().isEmpty()) {
+                    b = false;
+                    bsmf.MainFrame.show(getMessageTag(1024));
+                    dddoc.requestFocus();
+                    return b;
+                }
+                
+                if (tbsndgs.getText().isEmpty()) {
+                    b = false;
+                    bsmf.MainFrame.show(getMessageTag(1024));
+                    tbsndgs.requestFocus();
+                    return b;
+                }
+                
+                if (tbrcvgs.getText().isEmpty()) {
+                    b = false;
+                    bsmf.MainFrame.show(getMessageTag(1024));
+                    tbrcvgs.requestFocus();
+                    return b;
+                }
+                
+                if (ddmap.getSelectedItem().toString().isEmpty()) {
+                    b = false;
+                    bsmf.MainFrame.show(getMessageTag(1024));
+                    ddmap.requestFocus();
+                    return b;
+                }
+               
+        return b;
+    }
+    
+    public String[] addRecord(String[] x) {
+        String[] m = addEdiMstr(createRecord());
+         return m;
+    }
+    
+    public String[] updateRecord(String[] x) {
+        String[] m = updateEdiMstr(createRecord());
+         return m;
+    }
+    
+    public String[] deleteRecord(String[] x) {
+       String[] m = new String[2];
+        boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
+        if (proceed) {
+         m = deleteEdiMstr(createRecord()); 
+         initvars(null);
+        } else {
+           m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordCanceled}; 
+        }
+         return m;
+    }
+       
+    public String[] getRecord(String[] key) {
+        em = getEdiMstr(key);
+        attrlist = EDData.getEDIAttributesList(em.edi_doctypeout(), em.edi_sndgs(), em.edi_rcvgs() );
+        return em.m();
+    }
+     
+    public edi_mstr createRecord() { 
+        String envelopeall = (cbenvelopeall.isSelected()) ? "1" : "0";
+        String una = (cbuna.isSelected()) ? "1" : "0";
+        String ung = (cbung.isSelected()) ? "1" : "0";
+        String mflag = (cbemail.isSelected()) ? "1" : "0";
+        String fa = (cbfa.isSelected()) ? "1" : "0";
+                
+        edi_mstr x = new edi_mstr(null, 
+                ddkey.getSelectedItem().toString(),
+                dddoc.getSelectedItem().toString(),
+                tbsndisa.getText(),
+                tbsndq.getText(),
+                tbsndgs.getText(),
+                ddmap.getSelectedItem().toString(),
+                tbelement.getText(),
+                tbsegment.getText(),
+                tbsub.getText(),
+                tbfileprefix.getText(),
+                tbfilesuffix.getText(),
+                tbfilepath.getText(),
+                tbversion.getText(),
+                tbrcvisa.getText(),
+                tbrcvgs.getText(),
+                tbrcvq.getText(),
+                tbsupplier.getText(),
+                ddoutdoctype.getSelectedItem().toString(),
+                ddoutfiletype.getSelectedItem().toString(),
+                tbIFS.getText(),
+                tbOFS.getText(),      
+                ddinfiletype.getSelectedItem().toString(),      
+                fa,
+                envelopeall,
+                una,
+                ung,
+                ddsite.getSelectedItem().toString(),
+                mflag
+                );
+        return x;
+    }
     
     public void initvars(String[] arg) {
        isLoad = true; 
-       clearAll();
-       disableAll();
+       jTabbedPane1.removeAll();
+       jTabbedPane1.add("Main", panelMain);
+       jTabbedPane1.add("Attributes", panelOutbound);
+       setPanelComponentState(this, false); 
+       setComponentDefaultValues();       
        btnew.setEnabled(true);
        btlookup.setEnabled(true);
        isLoad = false; 
        
-      // ddmap.setSelectedIndex(0);
-       
         if (arg != null && arg.length > 0) {
-            getCustEDI(arg[0], arg[1], arg[2], arg[3], arg[4]);
+            executeTask(BlueSeerUtils.dbaction.get, arg); // 4 args required
         }
        
     }
@@ -435,7 +530,7 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
                 int column = target.getSelectedColumn();
                 if ( column == 0) {
                 ludialog.dispose();
-                initvars(new String[]{target.getValueAt(row,1).toString(), target.getValueAt(row,2).toString(), target.getValueAt(row,3).toString(), target.getValueAt(row,4).toString(), target.getValueAt(row,5).toString()});
+                initvars(new String[]{target.getValueAt(row,1).toString(), target.getValueAt(row,2).toString(), target.getValueAt(row,4).toString(), target.getValueAt(row,6).toString()});
                 }
             }
         };
@@ -520,6 +615,44 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
         
     }
 
+    public void updateForm() {
+        
+        ddkey.setSelectedItem(em.edi_id());
+        dddoc.setSelectedItem(em.edi_doc());
+        ddoutdoctype.setSelectedItem(em.edi_doctypeout());
+        ddoutfiletype.setSelectedItem(em.edi_filetypeout());
+        ddinfiletype.setSelectedItem(em.edi_filetype());
+        tbIFS.setText(em.edi_ifs());
+        tbOFS.setText(em.edi_ofs());
+        tbrcvisa.setText(em.edi_rcvisa());
+        tbrcvq.setText(em.edi_rcvq());
+        tbrcvgs.setText(em.edi_rcvgs());
+        ddmap.setSelectedItem(em.edi_map());
+        tbelement.setText(em.edi_eledelim());
+        tbsegment.setText(em.edi_segdelim());
+        tbsub.setText(em.edi_subdelim());
+        tbfileprefix.setText(em.edi_fileprefix());
+        tbfilesuffix.setText(em.edi_filesuffix());
+        tbfilepath.setText(em.edi_filepath());
+        tbversion.setText(em.edi_version());
+        tbsndisa.setText(em.edi_sndisa());
+        tbsndgs.setText(em.edi_sndgs());
+        tbsndq.setText(em.edi_sndq());
+        tbsupplier.setText(em.edi_supcode());
+        cbfa.setSelected(BlueSeerUtils.ConvertStringToBool(em.edi_fa_required()));
+        cbenvelopeall.setSelected(BlueSeerUtils.ConvertStringToBool(em.edi_envelopeall()));
+        cbuna.setSelected(BlueSeerUtils.ConvertStringToBool(em.edi_una())); 
+        cbung.setSelected(BlueSeerUtils.ConvertStringToBool(em.edi_ung()));
+        cbemail.setSelected(BlueSeerUtils.ConvertStringToBool(em.edi_mflag()));
+        ddsite.setSelectedItem(em.edi_site());
+        
+        listmodel.removeAllElements();
+        for (String x : attrlist) {
+            listmodel.addElement(x);
+        }
+        
+        setAction(em.m());
+    }
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -1230,298 +1363,32 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btaddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddActionPerformed
-       try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                boolean proceed = true;
-                String fa = "";
-                String envelopeall = "";
-                String una = "";
-                String ung = "";
-                int i = 0;
-               
-                
-               
-               
-                if (ddkey.getSelectedItem() == null || ddkey.getSelectedItem().toString().isEmpty()) {
-                    proceed = false;
-                    bsmf.MainFrame.show(getMessageTag(1024));
-                    ddkey.requestFocus();
-                    return;
-                }
-              
-                
-                if (tbrcvgs.getText().isEmpty()) {
-                    proceed = false;
-                    bsmf.MainFrame.show(getMessageTag(1024));
-                    tbrcvgs.requestFocus();
-                    return;
-                }
-               
-                if (tbsndgs.getText().isEmpty()) {
-                    proceed = false;
-                    bsmf.MainFrame.show(getMessageTag(1024));
-                    tbsndgs.requestFocus();
-                    return;
-                }
-                
-                if ( cbfa.isSelected() ) {
-                   fa = "1";    
-                } else {
-                    fa = "0";
-                }
-                
-                envelopeall = (cbenvelopeall.isSelected()) ? "1" : "0";
-                una = (cbuna.isSelected()) ? "1" : "0";
-                ung = (cbung.isSelected()) ? "1" : "0";
-                String mflag = (cbemail.isSelected()) ? "1" : "0";
-                
-                
-                if (proceed) {
-
-                    res = st.executeQuery("SELECT edi_id, edi_doc FROM  edi_mstr where edi_id = " + "'" + ddkey.getSelectedItem().toString() + "'" +
-                                          " AND edi_doc = " + "'" + dddoc.getSelectedItem().toString() + "'" + 
-                                          " AND edi_rcvgs = " + "'" + tbrcvgs.getText() + "'" +
-                                          " AND edi_sndgs = " + "'" + tbsndgs.getText() + "'" +        
-                                          ";");
-                    while (res.next()) {
-                        i++;
-                    }
-                    if (i == 0) {
-                        
-                        st.executeUpdate("insert into edi_mstr "
-                            + "(edi_id, edi_doc, edi_sndisa, edi_sndq, " 
-                            + "edi_sndgs, edi_map, edi_eledelim, edi_segdelim, edi_subdelim, edi_fileprefix, edi_filesuffix, edi_filepath, "
-                            + "edi_version, edi_rcvisa, edi_rcvgs, edi_rcvq, edi_supcode, edi_doctypeout, edi_filetypeout, edi_ifs, edi_ofs, edi_filetype, " +
-                                " edi_fa_required, edi_envelopeall, edi_una, edi_ung, edi_site, edi_mflag ) "
-                            + " values ( " + "'" + ddkey.getSelectedItem().toString() + "'" + ","
-                                + "'" + dddoc.getSelectedItem().toString() + "'" + ","
-                                + "'" + tbsndisa.getText() + "'" + ","
-                                + "'" + tbsndq.getText() + "'" + ","
-                                + "'" + tbsndgs.getText() + "'" + ","
-                                + "'" + ddmap.getSelectedItem().toString() + "'" + ","
-                                + "'" + tbelement.getText() + "'" + ","
-                                + "'" + tbsegment.getText() + "'" + ","
-                                + "'" + tbsub.getText() + "'" + ","
-                                + "'" + tbfileprefix.getText() + "'" + ","
-                                + "'" + tbfilesuffix.getText() + "'" + ","
-                                + "'" + tbfilepath.getText() + "'" + ","
-                                + "'" + tbversion.getText() + "'" + ","
-                                + "'" + tbrcvisa.getText() + "'" + ","
-                                + "'" + tbrcvgs.getText() + "'" + ","
-                                + "'" + tbrcvq.getText() + "'" + ","
-                                + "'" + tbsupplier.getText() + "'"  + ","
-                                + "'" + ddoutdoctype.getSelectedItem().toString() + "'" + ","
-                                + "'" + ddoutfiletype.getSelectedItem().toString() + "'" + ","
-                                + "'" + tbIFS.getText() + "'"  + ","
-                                + "'" + tbOFS.getText() + "'"  + ","      
-                                + "'" + ddinfiletype.getSelectedItem().toString() + "'"  + ","        
-                                + "'" + fa + "'" + ","
-                                + "'" + envelopeall + "'" + ","
-                                + "'" + una + "'" + ","
-                                + "'" + ung + "'" + "," 
-                                + "'" + ddsite.getSelectedItem().toString() + "'" + ","
-                                + "'" + mflag + "'"        
-                            + ")"
-                            + ";");
-                        bsmf.MainFrame.show(getMessageTag(1007));
-                    } else {
-                        bsmf.MainFrame.show(getMessageTag(1014));
-                    }
-
-                   initvars(null);
-                   
-                } // if proceed
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+         if (! validateInput(BlueSeerUtils.dbaction.add)) {
+           return;
+       }
+        setPanelComponentState(this, false);
+        executeTask(BlueSeerUtils.dbaction.add, null);
     }//GEN-LAST:event_btaddActionPerformed
 
     private void btupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateActionPerformed
-       try {
-            boolean proceed = true;
-           
-            String fa = "";
-            String envelopeall = "";
-            String una = "";
-            String ung = "";
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            try {
-                   
-               if (ddkey.getSelectedItem() == null || ddkey.getSelectedItem().toString().isEmpty()) {
-                    proceed = false;
-                    bsmf.MainFrame.show(getMessageTag(1024));
-                    ddkey.requestFocus();
-                    return;
-                }
-                /*
-                if (ddmap.getSelectedItem() == null || ddmap.getSelectedItem().toString().isEmpty()) {
-                    proceed = false;
-                    bsmf.MainFrame.show(getMessageTag(1024));
-                    ddmap.requestFocus();
-                    return;
-                }
-                */
-                
-                if (tbrcvgs.getText().isEmpty()) {
-                    proceed = false;
-                    bsmf.MainFrame.show(getMessageTag(1024));
-                    tbrcvgs.requestFocus();
-                    return;
-                }
-               
-                if (tbsndgs.getText().isEmpty()) {
-                    proceed = false;
-                    bsmf.MainFrame.show(getMessageTag(1024));
-                    tbsndgs.requestFocus();
-                    return;
-                }
-              
-              
-                
-               
-                if ( cbfa.isSelected() ) {
-                   fa = "1";    
-                } else {
-                    fa = "0";
-                }
-                
-                envelopeall = (cbenvelopeall.isSelected()) ? "1" : "0";
-                una = (cbuna.isSelected()) ? "1" : "0";
-                ung = (cbung.isSelected()) ? "1" : "0";
-                String mflag = (cbemail.isSelected()) ? "1" : "0";
-                
-                if (proceed) {
-                    st.executeUpdate("update edi_mstr set edi_sndisa = " + "'" + tbsndisa.getText() + "'" + ","
-                            + "edi_sndq = " + "'" + tbsndq.getText() + "'" + ","
-                            + "edi_sndgs = " + "'" + tbsndgs.getText() + "'" + ","
-                            + "edi_map = " + "'" + ddmap.getSelectedItem().toString() + "'" + ","
-                            + "edi_eledelim = " + "'" + tbelement.getText() + "'" + ","
-                            + "edi_segdelim = " + "'" + tbsegment.getText() + "'" + ","
-                            + "edi_subdelim = " + "'" + tbsub.getText() + "'" + ","
-                            + "edi_fileprefix = " + "'" + tbfileprefix.getText() + "'" + ","
-                            + "edi_filesuffix = " + "'" + tbfilesuffix.getText() + "'" + ","
-                            + "edi_filepath = " + "'" + tbfilepath.getText() + "'" + ","
-                            + "edi_version = " + "'" + tbversion.getText() + "'" + ","
-                            + "edi_rcvisa = " + "'" + tbrcvisa.getText() + "'" + ","
-                            + "edi_rcvgs = " + "'" + tbrcvgs.getText() + "'" + ","
-                            + "edi_rcvq = " + "'" + tbrcvq.getText() + "'" + ","
-                            + "edi_supcode = " + "'" + tbsupplier.getText() + "'"  + ","
-                            + "edi_doctypeout = " + "'" + ddoutdoctype.getSelectedItem() + "'"  + ","
-                            + "edi_filetypeout = " + "'" + ddoutfiletype.getSelectedItem() + "'"  + ","        
-                            + "edi_ifs = " + "'" + tbIFS.getText() + "'" + ","
-                            + "edi_ofs = " + "'" + tbOFS.getText() + "'" + ","        
-                            + "edi_fa_required = " + "'" + fa + "'" + ","
-                            + "edi_mflag = " + "'" + mflag + "'" + ","        
-                            + "edi_envelopeall = " + "'" + envelopeall + "'" + ","
-                            + "edi_una = " + "'" + una + "'" + ","
-                            + "edi_ung = " + "'" + ung + "'" + ","
-                            + "edi_site = " + "'" + ddsite.getSelectedItem().toString() + "'"
-                            + " where edi_id = " + "'" + ddkey.getSelectedItem().toString() + "'"     
-                            + " AND edi_doc = " + "'" + dddoc.getSelectedItem().toString() + "'"
-                            + " AND edi_rcvgs = " + "'" + tbrcvgs.getText() + "'"
-                            + " AND edi_sndgs = " + "'" + tbsndgs.getText() + "'"        
-                            + ";");
-                    bsmf.MainFrame.show(getMessageTag(1008));
-                    initvars(null);
-                } 
-         
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        if (! validateInput(BlueSeerUtils.dbaction.update)) {
+           return;
+       }
+        setPanelComponentState(this, false);
+        executeTask(BlueSeerUtils.dbaction.update, new String[]{ddkey.getSelectedItem().toString(), dddoc.getSelectedItem().toString(), tbsndgs.getText(), tbrcvgs.getText(), ddmap.getSelectedItem().toString()});
     }//GEN-LAST:event_btupdateActionPerformed
 
     private void btdeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteActionPerformed
          
-        boolean proceed = bsmf.MainFrame.warn("Are you sure?");
-       
-        if (proceed) {
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            try {
-              
-                 
-                
-                   int i = st.executeUpdate("delete from edi_mstr where edi_id = " + "'" + ddkey.getSelectedItem().toString() + "'" + 
-                                            " and edi_doc = " + "'" + dddoc.getSelectedItem().toString() + "'" +
-                                            " and edi_sndgs = " + "'" + tbsndgs.getText() + "'" +
-                                            " and edi_rcvgs = " + "'" + tbrcvgs.getText() + "'" +        
-                                            ";");
-                    if (i > 0) {
-                    bsmf.MainFrame.show(getMessageTag(1031, ddkey.getSelectedItem().toString() + "/" + dddoc.getSelectedItem().toString() + "/" + tbsndgs.getText() + "/" + tbrcvgs.getText()));
-                    initvars(null);
-                    }
-                } catch (SQLException s) {
-                    MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-        }
+       if (! validateInput(BlueSeerUtils.dbaction.delete)) {
+           return;
+       }
+        setPanelComponentState(this, false);
+        executeTask(BlueSeerUtils.dbaction.delete, new String[]{ddkey.getSelectedItem().toString(), dddoc.getSelectedItem().toString(), tbsndgs.getText(), tbrcvgs.getText(), ddmap.getSelectedItem().toString()});   
     }//GEN-LAST:event_btdeleteActionPerformed
 
     private void btnewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnewActionPerformed
-        isLoad = true;
-        clearAll();
-        dddoc.setSelectedIndex(0);
-        isLoad = false;
-        
-       // ddmap.setSelectedIndex(0);
-        
-        enableAll();
-        
-        btupdate.setEnabled(false);
-        btdelete.setEnabled(false);
-        btlookup.setEnabled(false);
-        btnew.setEnabled(false);
+        newAction("");
     }//GEN-LAST:event_btnewActionPerformed
 
     private void tbelementFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbelementFocusLost
@@ -1575,7 +1442,11 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
     private void btaddattributeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddattributeActionPerformed
        
         EDData.addEDIAttributeRecord(tbsndgs.getText(), tbrcvgs.getText(), ddoutdoctype.getSelectedItem().toString(), ddattributekey.getSelectedItem().toString(), tbattributevalue.getText());
-        getAttributes(tbsndgs.getText(), tbrcvgs.getText(), ddoutdoctype.getSelectedItem().toString());
+        attrlist = EDData.getEDIAttributesList(ddoutdoctype.getSelectedItem().toString(), tbsndgs.getText(), tbrcvgs.getText());
+        listmodel.removeAllElements();
+        for (String x : attrlist) {
+            listmodel.addElement(x);
+        }
         ddattributekey.setSelectedIndex(0);
         tbattributevalue.setText("");
     }//GEN-LAST:event_btaddattributeActionPerformed
@@ -1591,39 +1462,15 @@ public class EDIPartnerDocMaint extends javax.swing.JPanel {
         }
         if (proceed) {
             String[] z = listAttributes.getSelectedValue().toString().split(":");
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+            deleteEDIAttributeRecord(tbsndgs.getText(), tbrcvgs.getText(), ddoutdoctype.getSelectedItem().toString(), z[0]);
+            attrlist = EDData.getEDIAttributesList(ddoutdoctype.getSelectedItem().toString(), tbsndgs.getText(), tbrcvgs.getText());
+            listmodel.removeAllElements();
+            for (String x : attrlist) {
+                listmodel.addElement(x);
             }
-            Statement st = con.createStatement();
-            try {
-              
-                   int i = st.executeUpdate("delete from edi_attr where exa_sndid = " + "'" + tbsndgs.getText() + "'" + 
-                                            " and exa_rcvid = " + "'" + tbrcvgs.getText() + "'" +
-                                            " and exa_doc = " + "'" + ddoutdoctype.getSelectedItem().toString() + "'" +
-                                            " and exa_key = " + "'" + z[0].toString() + "'" +
-                                             ";");
-                    if (i > 0) {
-                    bsmf.MainFrame.show(getMessageTag(1031,listAttributes.getSelectedValue().toString()));
-                    getAttributes(tbsndgs.getText(), tbrcvgs.getText(), ddoutdoctype.getSelectedItem().toString());
-                    }
-                } catch (SQLException s) {
-                    MainFrame.bslog(s);
-                    bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
+            ddattributekey.setSelectedIndex(0);
+            tbattributevalue.setText("");
             }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-        }
     }//GEN-LAST:event_btdeleteattributeActionPerformed
 
     private void btlookupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupActionPerformed

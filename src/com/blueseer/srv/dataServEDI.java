@@ -40,8 +40,10 @@ import static com.blueseer.edi.ediData.getAPIDet;
 import static com.blueseer.edi.ediData.getAPIMstr;
 import static com.blueseer.edi.ediData.getAS2Mstr;
 import static com.blueseer.edi.ediData.getDFSMstr;
+import static com.blueseer.edi.ediData.getEDIDFSSet;
 import static com.blueseer.edi.ediData.getEDIMetaValueDetail;
 import static com.blueseer.edi.ediData.getEDIMetaValueHeader;
+import static com.blueseer.edi.ediData.getEDIPartnerSet;
 import static com.blueseer.edi.ediData.getEDIXref;
 import static com.blueseer.edi.ediData.getMapMstr;
 import static com.blueseer.edi.ediData.isAPIMethodUnique;
@@ -55,6 +57,8 @@ import static com.blueseer.utl.BlueSeerUtils.boolToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import com.blueseer.utl.EDData;
 import static com.blueseer.utl.EDData.addAS2AttributeRecord;
+import static com.blueseer.utl.EDData.addEDIAttributeRecord;
+import static com.blueseer.utl.EDData.deleteEDIAttributeRecord;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -136,10 +140,69 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
             }
          
-        case "deleteEDIPartner" :
+        case "deleteEDIPartner" : {
             response.getWriter().print(arrayToJson(ediData.deleteEDIPartner(request.getHeader("param1")
                     )));  
             break;
+        }
+            
+        case "getEDIPartnerSet" : {       
+        ediData.EDIPartnerSet x = getEDIPartnerSet(new String[]{request.getHeader("param1")});
+        ObjectMapper objectMapper = new ObjectMapper();
+        String r = objectMapper.writeValueAsString(x);
+        response.getWriter().print(r);
+        break;
+        }
+        
+        case "addDFStructureTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            ediData.dfs_det[] sdarray = om.readValue(ca[0], ediData.dfs_det[].class);
+            ArrayList<ediData.dfs_det> sdlist = new ArrayList<ediData.dfs_det>(Arrays.asList(sdarray)); 
+            ediData.dfs_mstr sm = om.readValue(ca[1], ediData.dfs_mstr.class); 
+            response.getWriter().print(arrayToJson(ediData.addDFStructureTransaction(sdlist, sm)));   
+            break; 
+            }
+        
+        case "updateDFStructureTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            String x = ca[0];
+            ediData.dfs_det[] sdarray = om.readValue(ca[1], ediData.dfs_det[].class);
+            ArrayList<ediData.dfs_det> sdlist = new ArrayList<ediData.dfs_det>(Arrays.asList(sdarray)); 
+            ediData.dfs_mstr sm = om.readValue(ca[2], ediData.dfs_mstr.class); 
+            response.getWriter().print(arrayToJson(ediData.updateDFStructureTransaction(x, sdlist, sm)));   
+            break; 
+            }
+        
+        case "deleteDFStructure" : {
+            response.getWriter().print(arrayToJson(ediData.deleteDFStructure(request.getHeader("param1")
+                    )));  
+            break;
+        }
+        
+        case "getEDIDFSSet" : {       
+        ediData.DFSSet x = getEDIDFSSet(new String[]{request.getHeader("param1")});
+        ObjectMapper objectMapper = new ObjectMapper();
+        String r = objectMapper.writeValueAsString(x);
+        response.getWriter().print(r);
+        break;
+        }
+        
             
         case "addEDIXref" : { 
             String line;
@@ -379,7 +442,12 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getAS2AttributesList" :
             response.getWriter().print(ArrayListStringToJson(EDData.getAS2AttributesList(request.getHeader("param1"), request.getHeader("param2"))));
-            break;    
+            break; 
+            
+        case "getEDIAttributesList" :
+            response.getWriter().print(ArrayListStringToJson(EDData.getEDIAttributesList(request.getHeader("param1"), 
+                    request.getHeader("param2"), request.getHeader("param3"))));
+            break;     
             
         case "readEDIRawFile" :
             response.getWriter().print(ArrayListStringToJson(EDData.readEDIRawFile(request.getHeader("param1"), 
@@ -413,11 +481,19 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getDFSasArray" :
             response.getWriter().print(ArrayListStringArrayToJson(ediData.getDFSasArray(request.getHeader("param1"))));
+            break; 
+            
+        case "getMapMstrList" :
+            response.getWriter().print(ArrayListStringToJson(ediData.getMapMstrList(request.getHeader("param1"))));
             break;    
             
         case "getEDIBatchFromedi_file" :
             response.getWriter().print(EDData.getEDIBatchFromedi_file(request.getHeader("param1")));
             break;  
+           
+        case "getEDIPartnerDesc" :
+            response.getWriter().print(EDData.getEDIPartnerDesc(request.getHeader("param1")));
+            break;    
             
         case "getEDITransBrowseDocView" :
             response.getWriter().print(ediData.getEDITransBrowseDocView(request.getHeader("param1"), 
@@ -506,6 +582,21 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
            
         case "addAS2AttributeRecord" : 
         response.getWriter().println(boolToJson(addAS2AttributeRecord(request.getHeader("param1"), 
+                request.getHeader("param2"), 
+                request.getHeader("param3"), 
+                request.getHeader("param4")))); 
+        break;
+        
+        case "addEDIAttributeRecord" : 
+        response.getWriter().println(boolToJson(addEDIAttributeRecord(request.getHeader("param1"), 
+                request.getHeader("param2"), 
+                request.getHeader("param3"), 
+                request.getHeader("param4"),
+                request.getHeader("param5")))); 
+        break;
+        
+        case "deleteEDIAttributeRecord" : 
+        response.getWriter().println(boolToJson(deleteEDIAttributeRecord(request.getHeader("param1"), 
                 request.getHeader("param2"), 
                 request.getHeader("param3"), 
                 request.getHeader("param4")))); 

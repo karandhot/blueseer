@@ -348,6 +348,7 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeerT {
                
         return b;
     }
+    
     public void newAction(String x) {
        setPanelComponentState(this, true);
         setComponentDefaultValues();

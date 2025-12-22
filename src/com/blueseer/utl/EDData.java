@@ -88,6 +88,22 @@ public class EDData {
     
        
     public static boolean addEDIAttributeRecord(String sndid, String rcvid, String doc, String key, String value) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addEDIAttributeRecord"});
+            list.add(new String[]{"param1",sndid});
+            list.add(new String[]{"param2",rcvid});
+            list.add(new String[]{"param3",doc});
+            list.add(new String[]{"param4",key});
+            list.add(new String[]{"param5",value});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+        
         boolean myreturn = false;
           try {
             Connection con = null;
@@ -122,6 +138,57 @@ public class EDData {
                     +  ");"
                            );     
                    }
+                   
+            } // if proceed
+            catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                myreturn = true;
+           } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               if (con != null) con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }  
+                  return myreturn;
+             } 
+    
+    public static boolean deleteEDIAttributeRecord(String sndid, String rcvid, String doc, String key) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteEDIAttributeRecord"});
+            list.add(new String[]{"param1",sndid});
+            list.add(new String[]{"param2",rcvid});
+            list.add(new String[]{"param3",doc});
+            list.add(new String[]{"param4",key});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+        
+        boolean myreturn = false;
+          try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                st.executeUpdate("delete from edi_attr where " +
+                                           " exa_sndid = " + "'" + sndid + "'" +
+                                           " and exa_rcvid = " + "'" + rcvid + "'" +
+                                           " and exa_doc = " + "'" + doc + "'" +
+                                           " and exa_key = " + "'" + key + "'" +
+                                           ";");
+                    
                    
             } // if proceed
             catch (SQLException s) {
@@ -1213,6 +1280,23 @@ public class EDData {
     public static ArrayList<String> getEDIAttributesList(String doctype, String sndid, String rcvid) {
            
              ArrayList<String> x = new ArrayList<String>();
+             
+             if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getEDIAttributesList"});
+            list.add(new String[]{"param1", doctype});
+            list.add(new String[]{"param2", sndid});
+            list.add(new String[]{"param3", rcvid});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return x;
+            }
+        } 
+
+             
+             
         try{
             Class.forName(driver);
             Connection con = null;
@@ -2540,7 +2624,19 @@ public class EDData {
     }
      
     public static String getEDIPartnerDesc(String code) {
-       String x = "";
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getEDIPartnerDesc"});
+            list.add(new String[]{"param1", code});            
+            try {
+                return (sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        String x = "";
         try{
             Class.forName(driver);
             Connection con = null;

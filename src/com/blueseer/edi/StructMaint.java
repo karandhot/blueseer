@@ -33,26 +33,24 @@ import static com.blueseer.edi.EDIMap.csvToSegment;
 import static com.blueseer.edi.EDIMap.jsonTagsToSegment;
 import static com.blueseer.edi.EDIMap.xmlTagsToSegments;
 import static com.blueseer.edi.ediData.addDFStructureTransaction;
-import static com.blueseer.edi.ediData.addMapStruct;
 import static com.blueseer.edi.ediData.deleteDFStructure;
 import com.blueseer.edi.ediData.dfs_det;
 import com.blueseer.edi.ediData.dfs_mstr;
 import static com.blueseer.edi.ediData.getDFSDet;
 import static com.blueseer.edi.ediData.getDFSMstr;
+import static com.blueseer.edi.ediData.getEDIDFSSet;
+import static com.blueseer.edi.ediData.getEDIDocSet;
 import static com.blueseer.edi.ediData.isValidDFSid;
 import static com.blueseer.edi.ediData.updateDFStructureTransaction;
-import static com.blueseer.edi.ediData.updateMapStruct;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ConvertIntToYesNo;
 import static com.blueseer.utl.BlueSeerUtils.ConvertTrueFalseToBoolean;
-import static com.blueseer.utl.BlueSeerUtils.asciivalues;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.checkLength;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import com.blueseer.utl.BlueSeerUtils.dbaction;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
-import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.luModel;
 import static com.blueseer.utl.BlueSeerUtils.luTable;
@@ -62,9 +60,6 @@ import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import com.blueseer.utl.DTData;
-import com.blueseer.utl.EDData;
-import static com.blueseer.utl.EDData.getEDIStructureDir;
-import com.blueseer.utl.IBlueSeerT;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -82,8 +77,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -96,7 +89,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.SwingWorker;
-import javax.swing.text.JTextComponent;
 
 /**
  *
@@ -107,8 +99,15 @@ public class StructMaint extends javax.swing.JPanel  {
     
     // global variable declarations
                 boolean isLoad = false;
-                public static dfs_mstr x = null;
-                public static ArrayList<dfs_det> dfsdetlist = null;
+                public static ediData.DFSSet set = null;
+                String indir = "";
+                String outdir = "";
+                String inarch = "";
+                String outarch = "";
+                String batchdir = "";
+                String errordir = "";
+                String mapdir = "";
+                String structdir = "";
     
                 // global datatablemodel declarations       
      javax.swing.table.DefaultTableModel detailmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -301,8 +300,8 @@ public class StructMaint extends javax.swing.JPanel  {
     }
     
     public void setComponentDefaultValues() {
-        isLoad = true;
-        
+       isLoad = true;
+       ArrayList<String[]> initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid); 
        detailmodel.setRowCount(0);
        tabledetail.setModel(detailmodel);
        tabledetail.getTableHeader().setReorderingAllowed(false);
@@ -313,10 +312,25 @@ public class StructMaint extends javax.swing.JPanel  {
         tbversion.setText("");
         ddfiletype.setSelectedIndex(0);
         dddoctype.removeAllItems();
-        ArrayList<String> mylist = OVData.getCodeMstrKeyList("edidoctype");
-        for (int i = 0; i < mylist.size(); i++) {
-            dddoctype.addItem(mylist.get(i));
-        } 
+        
+        for (String[] s : initDataSets) {
+                        
+            if (s[0].equals("doctypes")) {
+              dddoctype.addItem(s[1]); 
+            }
+            if (s[0].equals("directories")) {
+              String[] dirs = s[1].split(",", -1);
+              indir = dirs[0];
+              outdir = dirs[1];
+              inarch = dirs[2];
+              outarch = dirs[3];
+              batchdir = dirs[4];
+              errordir = dirs[5];
+              mapdir = dirs[6];
+              structdir = dirs[9];
+            }
+        }
+        
         dddoctype.insertItemAt("", 0);
         dddoctype.setSelectedIndex(0);
        isLoad = false;
@@ -389,28 +403,7 @@ public class StructMaint extends javax.swing.JPanel  {
             return false;
         }
        
-        /*
-         if (! BlueSeerUtils.isFile(EDData.getEDIStructureDir(), tbkey.getText())) {
-                    bsmf.MainFrame.show(getMessageTag(1145,tbkey.getText()));
-                    tbkey.requestFocus();
-                    return false;
-        }
-        */
-        
-        /*
-        if (! checkStructure(tbkey.getText())) {
-            int errornum = 0;
-            if (x.toString().equals("add")) {
-                errornum = 1011;
-            }
-            if (x.toString().equals("update")) {
-                errornum = 1012;
-            }
-            bsmf.MainFrame.show(getMessageTag(errornum,tbkey.getText()));
-            tbkey.requestFocus();
-            return false;
-        } 
-        */
+       
       return true;
     }
     
@@ -433,9 +426,8 @@ public class StructMaint extends javax.swing.JPanel  {
     }
    
     public String[] getRecord(String[] key) {
-        x = getDFSMstr(key);  
-        dfsdetlist = getDFSDet(key[0]); 
-        return x.m();
+      set = getEDIDFSSet(key);
+      return set.m();
     }
     
     public dfs_mstr createRecord(String copykey) { 
@@ -497,7 +489,7 @@ public class StructMaint extends javax.swing.JPanel  {
         String[] m = new String[2];
         boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
         if (proceed) {
-         m = deleteDFStructure(createRecord(null)); 
+         m = deleteDFStructure(key[0]); 
          initvars(null);
         } else {
            m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordCanceled}; 
@@ -574,24 +566,24 @@ public class StructMaint extends javax.swing.JPanel  {
    
     
     public void updateForm() {
-        tbdesc.setText(x.dfs_desc());
-        tbkey.setText(x.dfs_id());
-        tbversion.setText(x.dfs_version());
-        dddoctype.setSelectedItem(x.dfs_doctype()); 
-        ddfiletype.setSelectedItem(x.dfs_filetype()); 
-        tbdelimiter.setText(x.dfs_delimiter());
-        cbsuppress.setSelected(BlueSeerUtils.ConvertStringToBool(x.dfs_suppressemptytag()));
-        setAction(x.m()); 
+        tbdesc.setText(set.dfs().dfs_desc());
+        tbkey.setText(set.dfs().dfs_id());
+        tbversion.setText(set.dfs().dfs_version());
+        dddoctype.setSelectedItem(set.dfs().dfs_doctype()); 
+        ddfiletype.setSelectedItem(set.dfs().dfs_filetype()); 
+        tbdelimiter.setText(set.dfs().dfs_delimiter());
+        cbsuppress.setSelected(BlueSeerUtils.ConvertStringToBool(set.dfs().dfs_suppressemptytag()));
+        setAction(set.dfs().m()); 
         
         // now detail
         detailmodel.setRowCount(0);
-        for (dfs_det dfsd : dfsdetlist) {
+        for (dfs_det dfsd : set.dfsd()) {
                     detailmodel.addRow(new Object[]{
                       dfsd.dfsd_segment(),   
                       dfsd.dfsd_parent(),
                       dfsd.dfsd_loopcount(),
-                      ConvertIntToYesNo(Integer.valueOf(dfsd.dfsd_isgroup())),
-                      ConvertIntToYesNo(Integer.valueOf(dfsd.dfsd_islandmark())),
+                      ConvertIntToYesNo(Integer.parseInt(dfsd.dfsd_isgroup())),
+                      ConvertIntToYesNo(Integer.parseInt(dfsd.dfsd_islandmark())),
                       dfsd.dfsd_field(),
                       dfsd.dfsd_desc(),
                       dfsd.dfsd_min(),
@@ -610,7 +602,7 @@ public class StructMaint extends javax.swing.JPanel  {
         String dirpath;
         boolean isgood = true;
         List<String> lines = new ArrayList<>();
-        dirpath = cleanDirString(EDData.getEDIStructureDir()) + structureName;
+        dirpath = cleanDirString(structdir) + structureName;
         Path path = FileSystems.getDefault().getPath(dirpath);
         File file = path.toFile();
         long count = 0;
@@ -1524,7 +1516,7 @@ public class StructMaint extends javax.swing.JPanel  {
     private void btdownloadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdownloadActionPerformed
         
         String filename = "file." + Long.toHexString(System.currentTimeMillis()) + ".csv";
-        Path path = FileSystems.getDefault().getPath(cleanDirString(EDData.getEDIStructureDir()) + filename);
+        Path path = FileSystems.getDefault().getPath(cleanDirString(structdir) + filename);
         BufferedWriter output = null;
          try {
              if (tabledetail.getRowCount() > 0) {

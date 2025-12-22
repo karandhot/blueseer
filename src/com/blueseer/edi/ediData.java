@@ -473,6 +473,19 @@ public class ediData {
     
     public static String[] addDFStructureTransaction(ArrayList<dfs_det> dfsd, dfs_mstr dfs) {
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addDFStructureTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(dfsd);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(dfs);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         Connection bscon = null;
         PreparedStatement ps = null;
         ResultSet res = null;
@@ -581,6 +594,20 @@ public class ediData {
     
     public static String[] updateDFStructureTransaction(String x, ArrayList<dfs_det> dfsd, dfs_mstr dfs) {
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateDFStructureTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = x;
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(dfsd);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(dfs);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         Connection bscon = null;
         PreparedStatement ps = null;
         ResultSet res = null;
@@ -752,6 +779,133 @@ public class ediData {
         }
         return list;
     }
+    
+    public static DFSSet getEDIDFSSet(String[] x ) {
+        DFSSet r = null;
+        String[] m = new String[2];
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getEDIDFSSet"});
+            list.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServEDI");
+                r = objectMapper.readValue(returnstring, DFSSet.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        
+        Connection bscon = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            if (ds != null) {
+              bscon = ds.getConnection();
+            } else {
+              bscon = DriverManager.getConnection(url + db, user, pass);  
+            }
+            
+            // order master
+            dfs_mstr dfs = _getDFSMstr(x, bscon, ps, res);
+            ArrayList<dfs_det> dfsd = _getDFSDet(x, bscon, ps, res);
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+            r = new DFSSet(m, dfs, dfsd);
+            
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+             r = new DFSSet(m);
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return r;
+    }
+    
+    private static dfs_mstr _getDFSMstr(String[] x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        dfs_mstr r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from dfs_mstr where dfs_id = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x[0]);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new dfs_mstr(m);
+            } else {
+                while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new dfs_mstr(m, res.getString("dfs_id"), 
+                            res.getString("dfs_desc"),
+                            res.getString("dfs_version"),
+                            res.getString("dfs_doctype"),
+                            res.getString("dfs_filetype"),
+                            res.getString("dfs_delimiter"),
+                            res.getString("dfs_misc"),
+                            res.getString("dfs_suppressemptytag")
+                        );
+                    }
+            }
+            return r;
+    }
+    
+    private static ArrayList<dfs_det> _getDFSDet(String[] x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        ArrayList<dfs_det> list = new ArrayList<dfs_det>();
+        dfs_det r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from dfs_det where dfsd_id = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x[0]);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new dfs_det(m);
+            } else {
+                while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new dfs_det(m, res.getString("dfsd_id"), 
+                        res.getString("dfsd_segment"), 
+                        res.getString("dfsd_parent"), 
+                        res.getString("dfsd_loopcount"), 
+                        res.getString("dfsd_isgroup"),
+                        res.getString("dfsd_islandmark"),
+                        res.getString("dfsd_field"),
+                        res.getString("dfsd_desc"),
+                        res.getString("dfsd_min"),
+                        res.getString("dfsd_max"),        
+                        res.getString("dfsd_align"),
+                        res.getString("dfsd_status"),
+                        res.getString("dfsd_type"));
+                        list.add(r);
+                    }
+            }
+            return list;
+    }
+    
     
     public static dfs_mstr getDFSMstr(String[] x) {
         dfs_mstr r = null;
@@ -1594,6 +1748,578 @@ public class ediData {
     }
     
     
+    public static String[] addEdiMstr(edi_mstr x) {
+        String[] m = new String[2];
+        String sqlSelect = "select * from edi_mstr where edi_id = ? and edi_doc = ? and edi_sndgs = ? and edi_rcvgs = ?";
+        String sqlInsert = "insert into edi_mstr (edi_id, edi_doc, edi_sndisa, edi_sndq, " 
+                            + "edi_sndgs, edi_map, edi_eledelim, edi_segdelim, edi_subdelim, edi_fileprefix, edi_filesuffix, edi_filepath, "
+                            + "edi_version, edi_rcvisa, edi_rcvgs, edi_rcvq, edi_supcode, edi_doctypeout, edi_filetypeout, edi_ifs, edi_ofs, edi_filetype, " +
+                                " edi_fa_required, edi_envelopeall, edi_una, edi_ung, edi_site, edi_mflag )  " +
+                " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+             PreparedStatement ps = con.prepareStatement(sqlSelect);) {
+             ps.setString(1, x.edi_id);
+             ps.setString(2, x.edi_doc);
+             ps.setString(3, x.edi_sndgs);
+             ps.setString(4, x.edi_rcvgs);
+          try (ResultSet res = ps.executeQuery();
+               PreparedStatement psi = con.prepareStatement(sqlInsert);) {
+            if (! res.isBeforeFirst()) {
+            psi.setString(1, x.edi_id);
+            psi.setString(2, x.edi_doc);
+            psi.setString(3, x.edi_sndisa);
+            psi.setString(4, x.edi_sndq);
+            psi.setString(5, x.edi_sndgs);
+            psi.setString(6, x.edi_map);
+            psi.setString(7, x.edi_eledelim);
+            psi.setString(8, x.edi_segdelim);
+            psi.setString(9, x.edi_subdelim);
+            psi.setString(10, x.edi_fileprefix);
+            psi.setString(11, x.edi_filesuffix);
+            psi.setString(12, x.edi_filepath);
+            psi.setString(13, x.edi_version);
+            psi.setString(14, x.edi_rcvisa);
+            psi.setString(15, x.edi_rcvgs);
+            psi.setString(16, x.edi_rcvq);
+            psi.setString(17, x.edi_supcode);
+            psi.setString(18, x.edi_doctypeout);
+            psi.setString(19, x.edi_filetypeout);
+            psi.setString(20, x.edi_ifs);
+            psi.setString(21, x.edi_ofs);
+            psi.setString(22, x.edi_filetype);
+            psi.setString(23, x.edi_fa_required);
+            psi.setString(24, x.edi_envelopeall);
+            psi.setString(25, x.edi_una);
+            psi.setString(26, x.edi_ung);
+            psi.setString(27, x.edi_site);
+            psi.setString(28, x.edi_mflag);
+            
+            int rows = psi.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+            } else {
+            m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordAlreadyExists};    
+            }
+          }
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
+    public static String[] updateEdiMstr(edi_mstr x) {
+        String[] m = new String[2];
+        String sql = "update edi_mstr set edi_sndisa = ?, edi_sndq  = ?, " +
+                " edi_eledelim = ?, edi_segdelim = ?, edi_subdelim = ?, edi_fileprefix = ?, " +
+                " edi_filesuffix = ?, edi_filepath = ?, edi_version = ?, edi_rcvisa = ?, edi_rcvq = ?, edi_supcode = ?, " +
+                " edi_doctypeout = ?, edi_filetypeout = ?, edi_ifs = ?, edi_ofs = ?, edi_filetype = ?, edi_fa_required = ?, edi_envelopeall = ?, " +
+                " edi_una = ?, edi_ung = ?, edi_site = ?, edi_mflag = ?, edi_map = ? " +
+                " where edi_id = ? and edi_doc = ? and edi_sndgs = ? and edi_rcvgs = ?  ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql)) {
+       ;
+        ps.setString(1, x.edi_sndisa);
+        ps.setString(2, x.edi_sndq);
+        ps.setString(3, x.edi_eledelim);
+        ps.setString(4, x.edi_segdelim);
+        ps.setString(5, x.edi_subdelim);
+        ps.setString(6, x.edi_fileprefix);
+        ps.setString(7, x.edi_filesuffix);
+        ps.setString(8, x.edi_filepath);
+        ps.setString(9, x.edi_version);
+        ps.setString(10, x.edi_rcvisa);
+        ps.setString(11, x.edi_rcvq);
+        ps.setString(12, x.edi_supcode);
+        ps.setString(13, x.edi_doctypeout);
+        ps.setString(14, x.edi_filetypeout);
+        ps.setString(15, x.edi_ifs);
+        ps.setString(16, x.edi_ofs);
+        ps.setString(17, x.edi_filetype);
+        ps.setString(18, x.edi_fa_required);
+        ps.setString(19, x.edi_envelopeall);
+        ps.setString(20, x.edi_una);
+        ps.setString(21, x.edi_ung);
+        ps.setString(22, x.edi_site);
+        ps.setString(23, x.edi_mflag);
+        ps.setString(24, x.edi_map);
+        ps.setString(25, x.edi_id);
+        ps.setString(26, x.edi_doc);
+        ps.setString(27, x.edi_sndgs);
+        ps.setString(28, x.edi_rcvgs);
+        
+                
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
+    public static String[] deleteEdiMstr(edi_mstr x) { 
+       String[] m = new String[2];
+        String sql = "delete from edi_mstr where edi_id = ? and edi_doc = ? and edi_sndgs = ? and edi_rcvgs = ? ; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql)) {
+         ps.setString(1, x.edi_id);
+         ps.setString(2, x.edi_doc);
+         ps.setString(3, x.edi_sndgs);
+         ps.setString(4, x.edi_rcvgs);
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+      
+    public static edi_mstr getEdiMstr(String[] x) {
+        edi_mstr r = null;
+        String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id","getEdiMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServEDI");
+                r = objectMapper.readValue(returnstring, edi_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new edi_mstr(m);
+                return r;
+            }
+        }
+        String sql = "select * from edi_mstr where edi_id = ? "  +
+                                      " AND edi_doc = ? " + 
+                                      " AND edi_sndgs = ? " +
+                                      " AND edi_rcvgs = ? " +
+                                      ";";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, x[0]);
+        ps.setString(2, x[1]);
+        ps.setString(3, x[2]);
+        ps.setString(4, x[3]);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new edi_mstr(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                 
+                        r = new edi_mstr(m, 
+                                res.getString("edi_id"),
+                                res.getString("edi_doc"),
+                                res.getString("edi_sndisa"),
+                                res.getString("edi_sndq"),
+                                res.getString("edi_sndgs"),
+                                res.getString("edi_map"),
+                                res.getString("edi_eledelim"),
+                                res.getString("edi_segdelim"),
+                                res.getString("edi_subdelim"),
+                                res.getString("edi_fileprefix"),
+                                res.getString("edi_filesuffix"),
+                                res.getString("edi_filepath"),
+                                res.getString("edi_version"),
+                                res.getString("edi_rcvisa"),
+                                res.getString("edi_rcvgs"),
+                                res.getString("edi_rcvq"),
+                                res.getString("edi_supcode"),
+                                res.getString("edi_doctypeout"),
+                                res.getString("edi_filetypeout"),
+                                res.getString("edi_ifs"),
+                                res.getString("edi_ofs"),
+                                res.getString("edi_filetype"),
+                                res.getString("edi_fa_required"),
+                                res.getString("edi_envelopeall"),
+                                res.getString("edi_una"),
+                                res.getString("edi_ung"),
+                                res.getString("edi_site"),
+                                res.getString("edi_mflag")
+                        );
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new edi_mstr(m);
+        }
+        return r;
+    }
+    
+    
+    public static String[] addEDIDocTransaction(ArrayList<edi_docdet> edid, edi_doc edd) {
+        String[] m = new String[2];
+        Connection bscon = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addEDIDocTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(edid);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(edd);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            bscon = DriverManager.getConnection(url + db, user, pass);
+            bscon.setAutoCommit(false);
+            _addEDIDoc(edd, bscon, ps, res);  
+            for (edi_docdet z : edid) {
+                _addEDIDocDet(z, bscon, ps, res);
+            }
+            bscon.commit();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             try {
+                 bscon.rollback();
+                 m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordError};
+             } catch (SQLException rb) {
+                 MainFrame.bslog(rb);
+             }
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.setAutoCommit(true);
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+    
+    private static int _addEDIDoc(edi_doc x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        int rows = 0;
+        String sqlSelect = "select * from edi_doc where edd_id = ?";
+        String sqlInsert = "insert into edi_doc (edd_id, edd_desc, edd_type, edd_subtype, " +
+                " edd_segdelim, edd_eledelim, edd_priority, edd_landmark, edd_enabled  " 
+                + "  )  " +
+                " values (?,?,?,?,?,?,?,?,?); "; 
+        
+        
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x.edd_id);
+          res = ps.executeQuery();
+          ps = con.prepareStatement(sqlInsert);
+            if (! res.isBeforeFirst()) {
+            ps.setString(1, x.edd_id);
+            ps.setString(2, x.edd_desc);
+            ps.setString(3, x.edd_type);
+            ps.setString(4, x.edd_subtype);
+            ps.setString(5, x.edd_segdelim);
+            ps.setString(6, x.edd_eledelim);
+            ps.setString(7, x.edd_priority);
+            ps.setString(8, x.edd_landmark);
+            ps.setString(9, x.edd_enabled);
+            rows = ps.executeUpdate();
+            } 
+            return rows;
+    }
+    
+    private static int _addEDIDocDet(edi_docdet x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        int rows = 0;
+        String sqlSelect = "select * from edi_docdet where edid_id = ?;";
+        String sqlInsert = "insert into edi_docdet (edid_id, edid_role, edid_rectype, edid_valuetype, edid_row, edid_col, " +
+                " edid_length, edid_regex, edid_value, edid_tag, edid_xpath, edid_enabled  )  " 
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?); "; 
+             
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x.edid_id);
+          res = ps.executeQuery();
+          ps = con.prepareStatement(sqlInsert);  
+            if (! res.isBeforeFirst()) {
+            ps.setString(1, x.edid_id);
+            ps.setString(2, x.edid_role);
+            ps.setString(3, x.edid_rectype);
+            ps.setString(4, x.edid_valuetype);
+            ps.setString(5, x.edid_row);
+            ps.setString(6, x.edid_col);
+            ps.setString(7, x.edid_length);
+            ps.setString(8, x.edid_regex);
+            ps.setString(9, x.edid_value);
+            ps.setString(10, x.edid_tag);
+            ps.setString(11, x.edid_xpath);
+            ps.setString(12, x.edid_enabled);
+            rows = ps.executeUpdate();
+            } 
+            return rows;
+    }
+    
+    public static String[] updateEDIDocTransaction(String x, ArrayList<edi_docdet> edid, edi_doc edd) {
+        String[] m = new String[2];
+        Connection bscon = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateEDIDocTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(edid);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(edd);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            bscon = DriverManager.getConnection(url + db, user, pass);
+            bscon.setAutoCommit(false);
+             _deleteEDIDocDetLines(x, bscon);  // discard all lines
+            for (edi_docdet z : edid) {
+                _addEDIDocDet(z, bscon, ps, res); 
+            }
+             _updateEDIDoc(edd, bscon, ps);  
+            bscon.commit();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             try {
+                 bscon.rollback();
+                 m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordError};
+             } catch (SQLException rb) {
+                 MainFrame.bslog(rb);
+             }
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.setAutoCommit(true);
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+    
+    private static int _updateEDIDoc(edi_doc x, Connection con, PreparedStatement ps) throws SQLException {
+        int rows = 0;
+        String sql = "update edi_doc set edd_desc = ?, edd_type = ?, " +
+                " edd_subtype = ?, edd_segdelim = ?, edd_eledelim = ?, edd_priority = ?, " +
+                " edd_landmark = ?, edd_enabled = ? " +
+                "  where edd_id = ? ";
+         
+          ps = con.prepareStatement(sql);
+            ps.setString(9, x.edd_id);
+            ps.setString(2, x.edd_desc);
+            ps.setString(3, x.edd_type);
+            ps.setString(4, x.edd_subtype);
+            ps.setString(5, x.edd_segdelim);
+            ps.setString(6, x.edd_eledelim);
+            ps.setString(7, x.edd_priority);
+            ps.setString(8, x.edd_landmark);
+            ps.setString(9, x.edd_enabled);
+            rows = ps.executeUpdate();
+            return rows;
+    }
+    
+    private static void _deleteEDIDocDetLines(String x, Connection con) throws SQLException { 
+        PreparedStatement ps = null; 
+        String sql = "delete from edi_docdet where edid_id = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        ps.close();
+    }
+    
+    public static String[] deleteEDIDoc(String x) { 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "deleteEDIDoc"});
+            list.add(new String[]{"param1", x});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        } 
+        String[] m = new String[2];
+        String sql = "delete from edi_doc where edd_id = ?; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, x);
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        sql = "delete from edi_docdet where edid_id = ?; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, x);
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        
+        return m;
+    }
+    
+    public static EDIDocSet getEDIDocSet(String[] x ) {
+        EDIDocSet r = null;
+        String[] m = new String[2];
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getEDIDocSet"});
+            list.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServEDI");
+                r = objectMapper.readValue(returnstring, EDIDocSet.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        
+        Connection bscon = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            if (ds != null) {
+              bscon = ds.getConnection();
+            } else {
+              bscon = DriverManager.getConnection(url + db, user, pass);  
+            }
+            
+            // order master
+            edi_doc edd = _getEDIDoc(x, bscon, ps, res);
+            ArrayList<edi_docdet> edid = _getEDIDocDet(x, bscon, ps, res);
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+            r = new EDIDocSet(m, edd, edid);
+            
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+             r = new EDIDocSet(m);
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return r;
+    }
+   
+    private static edi_doc _getEDIDoc(String[] x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        edi_doc r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from edi_doc where edd_id = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x[0]);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new edi_doc(m);
+            } else {
+                while(res.next()) {
+                    m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                    r = new edi_doc(m, res.getString("edd_id"), res.getString("edd_desc"), res.getString("edd_type"),
+                res.getString("edd_subtype"), res.getString("edd_segdelim"), res.getString("edd_eledelim"), res.getString("edd_priority"), res.getString("edd_landmark"),
+                res.getString("edd_enabled"));
+                }
+            }
+            return r;
+    }
+    
+    private static ArrayList<edi_docdet> _getEDIDocDet(String[] x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        ArrayList<edi_docdet> list = new ArrayList<edi_docdet>();
+        edi_docdet r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from edi_docdet where edid_id = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x[0]);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new edi_docdet(m);
+            } else {
+                while(res.next()) {
+                    m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                    r = new edi_docdet(m, res.getString("edid_id"), res.getString("edid_role"), res.getString("edid_rectype"),
+                    res.getString("edid_valuetype"), res.getString("edid_row"), res.getString("edid_col"), res.getString("edid_length"),
+                    res.getString("edid_regex"), res.getString("edid_value"), res.getString("edid_tag"), res.getString("edid_xpath"),
+                    res.getString("edid_enabled"));
+                    list.add(r);
+                    }
+            }
+            return list;
+    }
+    
+    
+    
+    
     public static int writeWFLog(wkf_log wkfl, int origparentid, ArrayList<wkfd_log> wkfdl) {
         boolean isError = false;
         int parentid = -1;
@@ -1864,7 +2590,43 @@ public class ediData {
         }
         return m;
     }
-      
+    
+    public static String[] deleteDFStructure(String x) { 
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "deleteDFStructure"});
+            list.add(new String[]{"param1", x});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        } 
+        String[] m = new String[2];
+        String sql = "delete from dfs_det where dfsd_id = ?; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, x);
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        sql = "delete from dfs_mstr where dfs_id = ?; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, x);
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
     
     
     public static String[] addAPIMstr(api_mstr x) {
@@ -3483,6 +4245,22 @@ public class ediData {
                lines.add(s);
             }
             
+            res = st.executeQuery("select map_id from map_mstr order by map_id ;");
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "maps";
+               s[1] = res.getString("map_id");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select edp_id from edp_partner order by edp_id ;");
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "partners";
+               s[1] = res.getString("edp_id");
+               lines.add(s);
+            }
+            
             res = st.executeQuery("select pks_id from pks_mstr where pks_type <> 'store' ;");
             while (res.next()) {
                String[] s = new String[2];
@@ -3499,7 +4277,7 @@ public class ediData {
                lines.add(s);
             }
              
-            res = st.executeQuery("select edic_indir, edic_outdir, edic_inarch, edic_outarch, edic_batch, edic_errordir, edic_mapdir, edic_delete, edic_archyesno from edi_ctrl ;");
+            res = st.executeQuery("select edic_indir, edic_outdir, edic_inarch, edic_outarch, edic_batch, edic_errordir, edic_mapdir, edic_delete, edic_archyesno, edic_structure from edi_ctrl ;");
             while (res.next()) {
                String[] s = new String[2];
                s[0] = "directories";
@@ -3511,7 +4289,8 @@ public class ediData {
                        res.getString("edic_errordir") + "," +
                        res.getString("edic_mapdir") + "," +
                        res.getString("edic_delete") + "," +
-                       res.getString("edic_archyesno");
+                       res.getString("edic_archyesno") + "," +
+                       res.getString("edic_structure");
                lines.add(s);
             }
             
@@ -4830,6 +5609,17 @@ public class ediData {
     }
             
     public static ArrayList<String> getMapMstrList(String indoctype) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getMapMstrList"});
+            list.add(new String[]{"param1", indoctype});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServEDI")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
        ArrayList mylist = new ArrayList();
         try{
             Connection con = null;
@@ -7126,6 +7916,56 @@ public class ediData {
         }
     }
     
+    public record EDIPartnerSet(String[] m, edp_partner edp, ArrayList<edpd_partner> edpd) {
+        public EDIPartnerSet(String[] m) {
+            this (m, null, null);
+        }
+    }
+    
+    public record DFSSet(String[] m, dfs_mstr dfs, ArrayList<dfs_det> dfsd) {
+        public DFSSet(String[] m) {
+            this (m, null, null);
+        }
+    }
+    
+    
+    public record edi_doc(String[] m, String edd_id, String edd_desc, String edd_type,
+        String edd_subtype, String edd_segdelim, String edd_eledelim, String edd_priority, String edd_landmark,
+        String edd_enabled) {
+        public edi_doc(String[] m) {
+            this(m, "", "", "", "", "", "", "", "", "");
+        }
+    }
+    
+    public record edi_docdet(String[] m, String edid_id, String edid_role, String edid_rectype,
+        String edid_valuetype, String edid_row, String edid_col, String edid_length, String edid_regex,
+        String edid_value, String edid_tag, String edid_xpath, String edid_enabled) {
+        public edi_docdet(String[] m) {
+            this(m, "", "", "", "", "", "", "", "", "", "",
+                    "", "");
+        }
+    }
+    
+    public record EDIDocSet(String[] m, edi_doc edd, ArrayList<edi_docdet> edid) {
+        public EDIDocSet(String[] m) {
+            this (m, null, null);
+        }
+    }
+    
+   
+    public record edi_mstr(String[] m, String edi_id, String edi_doc, String edi_sndisa, String edi_sndq,
+        String edi_sndgs, String edi_map, String edi_eledelim, String edi_segdelim, String edi_subdelim,
+        String edi_fileprefix, String edi_filesuffix, String edi_filepath, String edi_version, String edi_rcvisa, String edi_rcvgs,
+        String edi_rcvq, String edi_supcode, String edi_doctypeout, String edi_filetypeout, String edi_ifs, String edi_ofs, 
+        String edi_filetype, String edi_fa_required, String edi_envelopeall, String edi_una, String edi_ung,
+        String edi_site, String edi_mflag) {
+        public edi_mstr(String[] m) {
+            this(m, "", "", "", "", "", "", "", "", "", "",
+                    "", "", "", "", "", "", "", "", "", "",
+                    "", "", "", "", "", "", "", "");
+        }
+    }
+   
     public record map_mstr(String[] m, String map_id, String map_desc, String map_version,
         String map_ifs, String map_ofs, String map_indoctype, String map_infiletype ,
         String map_outdoctype, String map_outfiletype, String map_source, String map_package, String map_internal, String map_site ) {
@@ -7247,11 +8087,6 @@ public class ediData {
         }
     }
     
-    public record EDIPartnerSet(String[] m, edp_partner edp, ArrayList<edpd_partner> edpd) {
-        public EDIPartnerSet(String[] m) {
-            this (m, null, null);
-        }
-    }
     
     
     public record JRRT(String status, String messg, ArrayList<String> rarray) {};

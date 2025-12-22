@@ -8687,7 +8687,7 @@ public class DTData {
         }
         Object[][] data = jsonToData(jsonString);
         javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
-                      new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("code"), getGlobalColumnTag("doctype"), "Sender", "Receiver", getGlobalColumnTag("map")})
+                      new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("code"), getGlobalColumnTag("doctype"), "SenderISA", "SenderGS", "ReceiverISA", "ReceiverGS", getGlobalColumnTag("map")})
                 {
                       @Override  
                       public Class getColumnClass(int col) {  
