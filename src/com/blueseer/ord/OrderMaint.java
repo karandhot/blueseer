@@ -2121,12 +2121,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
              listprice.setText("0");
              netprice.setText("0");
            } else {  
-               if (cbcascade.isSelected()) {
-                 net = disc * list; 
-               } else {
-                 net = list + ((disc / 100) * list);  
-               }
-           netprice.setText(bsNumber(net));
+            net = list + ((disc / 100) * list); 
+            netprice.setText(bsNumber(net));
            }
         }
 
