@@ -591,6 +591,64 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
           }
         
+        case "exportInvoices" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            ArrayList<String> list = om.readValue(sb.toString(), ArrayList.class); 
+            response.getWriter().print(ArrayListStringArrayToJson(ediData.exportInvoices(list)));     
+            break; 
+            }
+        
+        case "exportASNs" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            ArrayList<String> list = om.readValue(sb.toString(), ArrayList.class); 
+            response.getWriter().print(ArrayListStringArrayToJson(ediData.exportASNs(list)));     
+            break; 
+            }
+        
+        case "exportACKs" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            ArrayList<String> list = om.readValue(sb.toString(), ArrayList.class); 
+            response.getWriter().print(ArrayListStringArrayToJson(ediData.exportACKs(list)));     
+            break; 
+            }
+        
+        case "exportPurchaseOrders" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            ArrayList<String> list = om.readValue(sb.toString(), ArrayList.class); 
+            response.getWriter().print(ArrayListStringArrayToJson(ediData.exportPurchaseOrders(list)));     
+            break; 
+            }
+        
+
+        
         case "getAPIMethodsList" :
             response.getWriter().print(ArrayListStringToJson(ediData.getAPIMethodsList(request.getHeader("param1"))));
             break;

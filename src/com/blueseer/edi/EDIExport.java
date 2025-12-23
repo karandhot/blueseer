@@ -56,6 +56,7 @@ public class EDIExport extends javax.swing.JPanel {
      // global variable declarations
                 boolean isLoad = false;
                 String defaultsite = "";
+                ArrayList<String[]> rlist = new ArrayList<>();
                 
     /**
      * Creates new form FileOrderLoadPanel
@@ -248,6 +249,7 @@ public class EDIExport extends javax.swing.JPanel {
                 message[0] = "1"; // cancel upload
             }
             BlueSeerUtils.endTask(message);
+            updateForm(); 
             setState(); 
             } catch (Exception e) {
                 edilog(e);
@@ -273,102 +275,36 @@ public class EDIExport extends javax.swing.JPanel {
     }
     
     public String[] exportPurchaseOrders(ArrayList<String> list) {
-         String[] m = new String[]{"", ""};
-        int l_error = 0;
-        int g_error = 0;
-        String status = "";
-        tacomments.append("Document count: " + list.size() + "\n");
-        for (String x : list) {
-          l_error = EDI.Create850(x); 
-          if (l_error == 0) {
-            status = "success";
-            EDData.updateEDIPOStatus(x);   
-          } else {
-            g_error = l_error;  
-            status = "error";  
-          }
-          tacomments.append("exporting number: " + x + "  Return Code: " + status + "\n");
-        }
-        // if hanoi is not null
-            packageEnvelopes();
-            
-        m[0] = String.valueOf(g_error);
-        m[1] = "Processing Complete";
-        return m;
+        rlist = ediData.exportPurchaseOrders(list);
+        return new String[]{"0", "Processing Complete"};
     }
     
     public String[] exportInvoices(ArrayList<String> list) {
-        String[] m = new String[]{"", ""};
-        int l_error = 0;
-        int g_error = 0;
-        String status = "";
-        tacomments.append("Document count: " + list.size() + "\n");
-        for (String x : list) {
-          l_error = EDI.Create810(x); 
-          if (l_error == 0) {
-            status = "success";
-            EDData.updateEDIInvoiceStatus(x);   
-          } else {
-            g_error = l_error;  
-            status = "error";  
-          }
-          tacomments.append("exporting number: " + x + "  Return Code: " + status + "\n");
-        }
-        // if hanoi is not null
-            packageEnvelopes();
-        m[0] = String.valueOf(g_error);
-        m[1] = "Processing Complete";
-        return m;
+        rlist = ediData.exportInvoices(list);
+        return new String[]{"0", "Processing Complete"};
     }
     
     public String[] exportASNs(ArrayList<String> list) {
-        String[] m = new String[]{"", ""};
-        int l_error = 0;
-        int g_error = 0;
-        String status = "";
-        tacomments.append("Document count: " + list.size() + "\n");
-        for (String x : list) {
-          l_error = EDI.Create856(x); 
-          if (l_error == 0) {
-            status = "success";
-            EDData.updateEDIASNStatus(x);   
-          } else {
-            g_error = l_error;  
-            status = "error";  
-          }
-          tacomments.append("exporting number: " + x + "  Return Code: " + status + "\n");
-        }
-        // if hanoi is not null
-            packageEnvelopes();
-        m[0] = String.valueOf(g_error);
-        m[1] = "Processing Complete";
-        return m;
+        rlist = ediData.exportASNs(list);
+        return new String[]{"0", "Processing Complete"};
     }
     
     public String[] exportACKs(ArrayList<String> list, String site) {
-        String[] m = new String[]{"", ""};
-        int l_error = 0;
-        int g_error = 0;
-        String status = "";
-        tacomments.append("Document count: " + list.size() + "\n");
-        for (String x : list) {
-          l_error = EDI.Create855(x); 
-          if (l_error == 0) {
-            status = "success";
-            EDData.updateEDIOrderStatus(x);   
-          } else {
-            g_error = l_error;  
-            status = "error";  
-          }
-          tacomments.append("exporting number: " + x + "  Return Code: " + status + "\n");
-        }
-        // if hanoi is not null
-            packageEnvelopes();
-        m[0] = String.valueOf(g_error);
-        m[1] = "Processing Complete";
-        return m;
+        rlist = ediData.exportACKs(list);
+        return new String[]{"0", "Processing Complete"};
     }
     
+    public void updateForm() {
+        tacomments.append("Number of export documents: " + rlist.size() + "\n");
+        int errorcount = 0;
+        for (String[] s : rlist) {
+          if (! s[1].equals("0")) {
+              errorcount++;
+          }
+          tacomments.append("export attempt for key: " + s[0] + "  --- " + (s[1].equals("0") ? "success" : "error") + "\n");  
+        }
+        tacomments.append("\n Summary Error Count: " + errorcount + "\n");
+    }
     
     /**
      * This method is called from within the constructor to initialize the form.

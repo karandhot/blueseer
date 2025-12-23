@@ -37,6 +37,7 @@ import static com.blueseer.adm.admData.getFTPMstr;
 import static com.blueseer.adm.admData.getPksMstr;
 import static com.blueseer.adm.admData.isValidKeyID;
 import com.blueseer.adm.admData.pks_mstr;
+import static com.blueseer.edi.EDI.packageEnvelopes;
 import static com.blueseer.edi.EDI.runEDIForSite;
 import static com.blueseer.edi.EDILoad.runTranslationSingleFile;
 import static com.blueseer.edi.apiUtils.runAPICall;
@@ -5716,6 +5717,118 @@ public class ediData {
         return r;
         
     }   
+    
+    public static ArrayList<String[]> exportInvoices(ArrayList<String> targetlist) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "exportInvoices"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(targetlist);
+                return jsonToArrayListStringArray(sendServerPost(list, jsonString, null, "dataServEDI")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        ArrayList<String[]> results = new ArrayList<>();
+        int l_error = 0;
+        for (String x : targetlist) {
+          l_error = EDI.Create810(x); 
+          if (l_error == 0) {
+            EDData.updateEDIInvoiceStatus(x);   
+          } 
+          results.add(new String[]{x, String.valueOf(l_error)});
+        }
+        // if hanoi is not null
+            packageEnvelopes();
+        return results;
+    }
+    
+    public static ArrayList<String[]> exportASNs(ArrayList<String> targetlist) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "exportASNs"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(targetlist);
+                return jsonToArrayListStringArray(sendServerPost(list, jsonString, null, "dataServEDI")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        ArrayList<String[]> results = new ArrayList<>();
+        int l_error = 0;
+        for (String x : targetlist) {
+          l_error = EDI.Create856(x); 
+          if (l_error == 0) {
+            EDData.updateEDIASNStatus(x);     
+          } 
+          results.add(new String[]{x, String.valueOf(l_error)});
+        }
+        // if hanoi is not null
+            packageEnvelopes();
+        return results;
+    }
+    
+    public static ArrayList<String[]> exportACKs(ArrayList<String> targetlist) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "exportACKs"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(targetlist);
+                return jsonToArrayListStringArray(sendServerPost(list, jsonString, null, "dataServEDI")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        ArrayList<String[]> results = new ArrayList<>();
+        int l_error = 0;
+        for (String x : targetlist) {
+          l_error = EDI.Create855(x); 
+          if (l_error == 0) {
+            EDData.updateEDIOrderStatus(x);       
+          } 
+          results.add(new String[]{x, String.valueOf(l_error)});
+        }
+        // if hanoi is not null
+            packageEnvelopes();
+        return results;
+    }
+    
+    public static ArrayList<String[]> exportPurchaseOrders(ArrayList<String> targetlist) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "exportPurchaseOrders"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(targetlist);
+                return jsonToArrayListStringArray(sendServerPost(list, jsonString, null, "dataServEDI")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        ArrayList<String[]> results = new ArrayList<>();
+        int l_error = 0;
+        for (String x : targetlist) {
+          l_error = EDI.Create850(x); 
+          if (l_error == 0) {
+            EDData.updateEDIPOStatus(x);       
+          } 
+          results.add(new String[]{x, String.valueOf(l_error)});
+        }
+        // if hanoi is not null
+            packageEnvelopes();
+        return results;
+    }
     
     
     public static boolean isValidAS2id(String id) {
