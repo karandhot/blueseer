@@ -172,91 +172,6 @@ public class APILog extends javax.swing.JPanel {
     }
     }
     
-    
-    public void getFileLogView() {
-     
-       DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-             
-        modeltable.setNumRows(0);
-        tafile.setText("");
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                int i = 0;
-
-               //  tablereport.getColumnModel().getColumn(8).setCellRenderer(new EDITransactionBrowse.SomeRenderer()); 
-              //   tablereport.getColumnModel().getColumn(7).setCellRenderer(new EDITransactionBrowse.FileViewRenderer()); 
-                
-                 
-                    
-                    if (tbapiid.getText().isEmpty()) {
-                    res = st.executeQuery("SELECT * FROM api_log  " +
-                    " where apil_ts >= " + "'" + dfdate.format(dcfrom.getDate()) + " 00:00:00" + "'" +
-                    " AND apil_ts <= " + "'" + dfdate.format(dcto.getDate())  + " 23:59:59" + "'" + 
-                    " AND apil_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +         
-                    " order by apil_logid desc ;" ) ;
-                    } else {
-                    res = st.executeQuery("SELECT * FROM api_log  " +
-                    " where apil_id >= " + "'" + tbapiid.getText() + "'" +
-                    " AND apil_id <= " + "'" + tbapiid.getText() + "'" +        
-                    " AND apil_ts >= " + "'" + dfdate.format(dcfrom.getDate()) + " 00:00:00" + "'" +
-                    " AND apil_ts <= " + "'" + dfdate.format(dcto.getDate())  + " 23:59:59" + "'" + 
-                    " AND apil_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +        
-                    " order by apil_logid desc ;" ) ;    
-                    }
-                    
-              
-                ImageIcon statusImage = null;
-                while (res.next()) {
-                    i++;
-                  if (res.getString("apil_status").equals("success")) {
-                      statusImage = BlueSeerUtils.clickcheck;
-                  }  else if (res.getString("apil_status").equals("passive")) {
-                      statusImage = BlueSeerUtils.clickcheckyellow;
-                  } else {
-                      statusImage = BlueSeerUtils.clicknocheck;
-                  }
-                 //   "Select", "IdxNbr", "ComKey", "SenderID", "ReceiverID", "TimeStamp", "InFileType", "InDocType", "InBatch", "OutFileType", "OutDocType", "OutBatch",  "Status"                     
-                   modeltable.addRow(new Object[]{BlueSeerUtils.clickbasket,
-                        res.getInt("apil_logid"),
-                        res.getString("apil_id"),
-                        res.getString("apil_method"),
-                        res.getString("apil_ts"),
-                        res.getString("apil_error"),
-                        res.getString("apil_file"),                        
-                        statusImage
-                    });
-                }
-                
-                tbtot.setText(String.valueOf(i));
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-   }
-    
-    
-     
    
     /**
      * Creates new form ScrapReportPanel
@@ -791,7 +706,7 @@ public class APILog extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-              getFileLogView();
+              executeTask(BlueSeerUtils.dbaction.run, new String[]{"getAPILogView",""});
     }//GEN-LAST:event_btRunActionPerformed
 
     private void tablereportMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablereportMouseClicked

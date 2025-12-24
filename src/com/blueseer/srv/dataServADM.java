@@ -27,11 +27,22 @@ package com.blueseer.srv;
 
 
 import com.blueseer.adm.admData;
+import static com.blueseer.adm.admData.addFTPMstr;
+import static com.blueseer.adm.admData.deleteFTPAttrMstr;
+import static com.blueseer.adm.admData.deleteFTPMstr;
+import static com.blueseer.adm.admData.getFTPAttr;
+import static com.blueseer.adm.admData.getFTPMstr;
 import static com.blueseer.adm.admData.getSiteInit;
+import static com.blueseer.adm.admData.updateFTPMstr;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
+import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -81,6 +92,84 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(ArrayListStringArrayToJson(getSiteInit(request.getHeader("param1"), request.getHeader("param2"))));
             break;  
         }    
+        
+        case "addFTPMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.ftp_mstr x = objectMapper.readValue(sb.toString(), admData.ftp_mstr.class);            
+            response.getWriter().print(arrayToJson(addFTPMstr(x)));
+            break;
+          }
+        
+        case "updateFTPMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.ftp_mstr x = objectMapper.readValue(sb.toString(), admData.ftp_mstr.class);            
+            response.getWriter().print(arrayToJson(updateFTPMstr(x)));
+            break;
+          }
+        
+        case "deleteFTPMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.ftp_mstr x = objectMapper.readValue(sb.toString(), admData.ftp_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteFTPMstr(x)));
+            break;
+          }
+        
+        case "getFTPMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            admData.ftp_mstr x = getFTPMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "getFTPAttr" : { 
+            ArrayList<admData.ftp_attr> x = getFTPAttr(new String[]{request.getHeader("param1")}); 
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "addUpdateFTPAttr" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            String x = ca[0];
+            ArrayList<String[]> list = om.readValue(ca[1], ArrayList.class);  
+            response.getWriter().print(arrayToJson(admData.addUpdateFTPAttr(x, list)));    
+            break; 
+            }
+        
+        case "deleteFTPAttrMstr" : {
+            response.getWriter().print(arrayToJson(deleteFTPAttrMstr(request.getHeader("param1")
+                    )));  
+            break;
+        }
         
         default:
         response.getWriter().print("no switch case exists in dataServADM for id: " + id);

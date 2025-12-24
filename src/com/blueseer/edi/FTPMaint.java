@@ -107,6 +107,15 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                 boolean isLoad = false;
                 public static ftp_mstr x = null;
                 public static ArrayList<ftp_attr> ftpa = null;
+                String indir = "";
+                String outdir = "";
+                String inarch = "";
+                String outarch = "";
+                String batchdir = "";
+                String errordir = "";
+                String mapdir = "";
+                String structdir = "";
+                String defaultsite = "";
     
     // global datatablemodel declarations   
             javax.swing.table.DefaultTableModel modelattributes = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -321,7 +330,7 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void setComponentDefaultValues() {
        isLoad = true;
-       
+       ArrayList<String[]> initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
        jTabbedPane1.removeAll();
        jTabbedPane1.add("Main", mainpanel);
        jTabbedPane1.add("Attributes", attributepanel);
@@ -353,9 +362,30 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
          tbtimeout.setText("10");
         
          ddsite.removeAllItems();
-        OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));  
+        for (String[] s : initDataSets) {
+            if (s[0].equals("directories")) {
+              String[] dirs = s[1].split(",", -1);
+              indir = dirs[0];
+              outdir = dirs[1];
+              inarch = dirs[2];
+              outarch = dirs[3];
+              batchdir = dirs[4];
+              errordir = dirs[5];
+              mapdir = dirs[6];
+              structdir = dirs[9];
+            }
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+                      
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            
+        }
+        
         ddsite.insertItemAt("", 0);
-        ddsite.setSelectedItem(OVData.getDefaultSiteForUserid(bsmf.MainFrame.userid));
+        ddsite.setSelectedItem(defaultsite);
          
        isLoad = false;
     }

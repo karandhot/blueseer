@@ -42,6 +42,7 @@ import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.log;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.EDData;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
@@ -470,6 +471,18 @@ public class admData {
     }
     
     public static String[] addFTPMstr(ftp_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addFTPMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m ;
         String sqlSelect = "SELECT * FROM  ftp_mstr where ftp_id = ?";
         String sqlInsert = "insert into ftp_mstr (ftp_id, ftp_desc, ftp_ip, ftp_login, " +
@@ -515,6 +528,18 @@ public class admData {
     }
 
     public static String[] updateFTPMstr(ftp_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateFTPMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m ;
         String sql = "update ftp_mstr set ftp_desc = ?, ftp_ip = ?, ftp_login = ?, " +
                           " ftp_passwd = ?, ftp_commands = ?, ftp_indir = ?, ftp_outdir = ?, " +
@@ -550,7 +575,19 @@ public class admData {
     }
     
     public static String[] deleteFTPMstr(ftp_mstr x) { 
-       String[] m ;
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteFTPMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m ;
         String sql = "delete from ftp_mstr where ftp_id = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql)) {
@@ -567,6 +604,23 @@ public class admData {
     public static ftp_mstr getFTPMstr(String[] x) {
         ftp_mstr r = null;
         String[] m ;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getFTPMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServADM");
+                r = objectMapper.readValue(returnstring, ftp_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new ftp_mstr(m);
+                return r;
+            }
+        }
+        
         String sql = "select * from ftp_mstr where ftp_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -1725,6 +1779,19 @@ public class admData {
 
     public static String[] addUpdateFTPAttr(String x, ArrayList<String[]> y) {
         String[] m = new String[2] ;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addUpdateFTPAttr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = x;
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(y);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String sqlDelete = "delete from ftp_attr where ftpa_id = ?";
         String sqlInsert = "insert into ftp_attr (ftpa_id, ftpa_key, ftpa_value)  " +
                 " values (?,?,?); "; 
@@ -1749,6 +1816,17 @@ public class admData {
     
     public static String[] deleteFTPAttrMstr(String x) { 
        String[] m ;
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteFTPAttrMstr"});
+            list.add(new String[]{"parm1",x});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String sql = "delete from ftp_attr where ftpa_id = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql)) {
@@ -2129,9 +2207,26 @@ public class admData {
     }  
 
     public static ArrayList<ftp_attr> getFTPAttr(String[] x) {
+        
         ftp_attr r = null;
         ArrayList<ftp_attr> list = new ArrayList<ftp_attr>();
         String[] m ;
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<>();
+            paramlist.add(new String[]{"id","getFTPAttr"});
+            paramlist.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServEDI");
+                list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<ftp_attr>>() {});
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+                return list;
+            }
+        }
+        
         String sql = "select * from ftp_attr where ftpa_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
