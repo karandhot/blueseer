@@ -546,9 +546,9 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
         lual = new ActionListener() {
         public void actionPerformed(ActionEvent event) {
         if (lurb1.isSelected()) {  
-         luModel = DTData.getFTPBrowseUtil(luinput.getText(),0, "ftp_id", OVData.getSiteListConditional(bsmf.MainFrame.userid));
+         luModel = DTData.getFTPBrowseUtil(luinput.getText(),0, "ftp_id", defaultsite);
         } else {
-         luModel = DTData.getFTPBrowseUtil(luinput.getText(),0, "ftp_desc", OVData.getSiteListConditional(bsmf.MainFrame.userid));   
+         luModel = DTData.getFTPBrowseUtil(luinput.getText(),0, "ftp_desc", defaultsite);   
         }
         luTable.setModel(luModel);
         luTable.getColumnModel().getColumn(0).setMaxWidth(50);
@@ -609,8 +609,8 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
         ftp_mstr fm = admData.getFTPMstr(new String[]{c[0]});
         HashMap<String, String> ftpa = getFTPAttrHash(new String[]{c[0]});
         
-        String homeIn = cleanDirString(EDData.getEDIInDir());
-        String homeOut = cleanDirString(EDData.getEDIOutDir());
+        String homeIn = cleanDirString(indir);
+        String homeOut = cleanDirString(outdir);
         if (! fm.ftp_indir().isEmpty()) {
          homeIn = cleanDirString(fm.ftp_indir());
         }

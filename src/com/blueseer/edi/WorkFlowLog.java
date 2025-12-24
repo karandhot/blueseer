@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.edi;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
@@ -37,6 +38,8 @@ import com.blueseer.utl.EDData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.EDData.updateEDIFileLogStatusManual;
 import java.awt.Color;
 import java.awt.Component;
@@ -67,6 +70,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
 import jcifs.smb.SmbException;
 
@@ -76,9 +80,10 @@ import jcifs.smb.SmbException;
  */
 public class WorkFlowLog extends javax.swing.JPanel {
  
-    
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    Object[][] rData;
   
-    javax.swing.table.DefaultTableModel filemodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+    javax.swing.table.DefaultTableModel modeltable = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{"Select", "ID", "Job", "Description", "TimeStamp", "Ref", "Message", "Status"})
             {
                       @Override  
@@ -168,88 +173,163 @@ public class WorkFlowLog extends javax.swing.JPanel {
     }
     }
     
-    
-    
-    public void getLogView() {
-     
-       DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-             
-        filemodel.setNumRows(0);
-        tafile.setText("");
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                int i = 0;
-
-               
-              //  tablereport.setModel(filemodel);
-               //  tablereport.getColumnModel().getColumn(8).setCellRenderer(new EDITransactionBrowse.SomeRenderer()); 
-              //   tablereport.getColumnModel().getColumn(7).setCellRenderer(new EDITransactionBrowse.FileViewRenderer()); 
-                 tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-                 tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
-                 tablereport.getColumnModel().getColumn(2).setMaxWidth(100);
-                 
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+       
+          String type = "";
+          String[] key = null;
+          
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
+              this.key = key;
+          } 
+           
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+             switch(this.type) {
+                case "init":
+                    message = getInitialization();
+                    break;
                     
-                    if (tbapiid.getText().isEmpty()) {
-                    res = st.executeQuery("SELECT * FROM wkf_log  " +
-                    " where wkfl_ts >= " + "'" + dfdate.format(dcfrom.getDate()) + " 00:00:00" + "'" +
-                    " AND wkfl_ts <= " + "'" + dfdate.format(dcto.getDate())  + " 23:59:59" + "'" + 
-                    " order by wkfl_id desc ;" ) ;
+                case "run":
+                    if (this.key[0].equals("getWKFLogView")) {
+                      message = getWKFLogView();
                     } else {
-                    res = st.executeQuery("SELECT * FROM wkf_log  " +
-                    " where wkfl_id = " + "'" + tbapiid.getText() + "'" +  
-                    " order by wkfl_id desc ;" ) ;    
+                    //   message = getDetail(this.key[1]);  
                     }
-                    
-              
-                ImageIcon statusImage = null;
-                while (res.next()) {
-                    i++;
-                  if (res.getString("wkfl_status").equals("0")) {
-                      statusImage = BlueSeerUtils.clickcheck;
-                  }  else {
-                      statusImage = BlueSeerUtils.clicknocheck;
-                  }
-                 //   "Select", "IdxNbr", "ComKey", "SenderID", "ReceiverID", "TimeStamp", "InFileType", "InDocType", "InBatch", "OutFileType", "OutDocType", "OutBatch",  "Status"                     
-                    filemodel.addRow(new Object[]{BlueSeerUtils.clickbasket,
-                        res.getInt("wkfl_id"),
-                        res.getString("wkfl_job"),
-                        res.getString("wkfl_desc"),
-                        res.getString("wkfl_ts"),
-                        res.getString("wkfl_ref"),
-                        res.getString("wkfl_messg"),
-                        statusImage
-                    });
+                    break;
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+            BlueSeerUtils.endTask(message);
+            
+                if (this.type.equals("init")) {
+                    done_Initialization();
                 }
                 
-                tbtot.setText(String.valueOf(i));
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+                if (this.type.equals("run")) {
+                    if (this.key[0].equals("getWKFLogView")) {
+                      done_getWKFLogView();
+                    } else {
+                    //  done_getDetail(); 
+                    }
+                } 
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
         }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"", getMessageTag(1189)});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+   
+    public String[] getWKFLogView() {
+       
+       DateFormat dfdate = new SimpleDateFormat("yyyyMMdd");        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getWKFLogView"});
+            list.add(new String[]{"param1", tbapiid.getText()});
+            list.add(new String[]{"param2", ddsite.getSelectedItem().toString()});
+            list.add(new String[]{"param3", dfdate.format(dcfrom.getDate())});
+            list.add(new String[]{"param4", dfdate.format(dcto.getDate())});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServEDI"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getWKFLogView")};
+            }
+        } else {
+            jsonString = ediData.getAPILogView(tbapiid.getText(), ddsite.getSelectedItem().toString(), dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()));
+        }
+        
+         rData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
    }
     
+    public void done_getWKFLogView() {
+        modeltable.setNumRows(0);
+        tafile.setText("");
+        tablereport.setModel(modeltable);
+        if (rData != null) {
+            for (int j = 0; j < rData.length; j++) { // 
+                if (rData[j][7].equals("success")) { 
+                    rData[j][7] = BlueSeerUtils.clickcheck;
+                } else if (rData[j][7].equals("passive")) {
+                    rData[j][7] = BlueSeerUtils.clickcheckyellow;
+                } else {
+                    rData[j][7] = BlueSeerUtils.clicknocheck;
+                }
+            }
+        
+            int i = 0;
+            if (rData.length > 0) {
+                for (Object[] rowData : rData) {
+                modeltable.addRow(rowData);
+                i++;
+                } 
+            }
+            tbtot.setText(String.valueOf(i));
+        }
+        rData = null;
+    }   
     
+    public String[] getInitialization() {
+        initDataSets = ediData.getEDIInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+        
+    }    
+    
+    public void done_Initialization() {
+        
+        ddsite.removeAllItems();
+        
+        String defaultsite = "";
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+                      
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+        }
+        
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+        
+        
+        
+        tbtoterrors.setText("0");
+        tbtot.setText("0");
+    }
+
      
    
     /**
@@ -378,9 +458,9 @@ public class WorkFlowLog extends javax.swing.JPanel {
        dcfrom.setDate(now);
         dcto.setDate(now);
         
-        filemodel.setNumRows(0);
+        modeltable.setNumRows(0);
         modeldetail.setNumRows(0);
-        tablereport.setModel(filemodel);
+        tablereport.setModel(modeltable);
         tabledetail.setModel(modeldetail);
         
         
@@ -399,6 +479,8 @@ public class WorkFlowLog extends javax.swing.JPanel {
         bthidetext.setEnabled(false);
         detailpanel.setVisible(false);
         textpanel.setVisible(false);
+        
+        executeTask(BlueSeerUtils.dbaction.init, null);
           
     }
     
@@ -436,6 +518,8 @@ public class WorkFlowLog extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         bthidetext = new javax.swing.JButton();
         lbsegdelim = new javax.swing.JLabel();
+        ddsite = new javax.swing.JComboBox<>();
+        jLabel1 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         tbtoterrors = new javax.swing.JLabel();
@@ -545,6 +629,8 @@ public class WorkFlowLog extends javax.swing.JPanel {
             }
         });
 
+        jLabel1.setText("Site:");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -559,10 +645,17 @@ public class WorkFlowLog extends javax.swing.JPanel {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(tbapiid, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(dcfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(31, 31, 31)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(124, 124, 124))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(dcfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                         .addComponent(btRun)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btdetail)
@@ -570,7 +663,7 @@ public class WorkFlowLog extends javax.swing.JPanel {
                         .addComponent(bthidetext)
                         .addGap(371, 371, 371)
                         .addComponent(lbsegdelim, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(12, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -583,7 +676,9 @@ public class WorkFlowLog extends javax.swing.JPanel {
                         .addComponent(btRun)
                         .addComponent(btdetail)
                         .addComponent(bthidetext)
-                        .addComponent(lbsegdelim, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(lbsegdelim, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel1)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel6)
@@ -669,7 +764,7 @@ public class WorkFlowLog extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-              getLogView();
+              executeTask(BlueSeerUtils.dbaction.run, new String[]{"getWKFLogView",""});
     }//GEN-LAST:event_btRunActionPerformed
 
     private void tablereportMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablereportMouseClicked
@@ -703,7 +798,9 @@ public class WorkFlowLog extends javax.swing.JPanel {
     private javax.swing.ButtonGroup buttonGroup1;
     private com.toedter.calendar.JDateChooser dcfrom;
     private com.toedter.calendar.JDateChooser dcto;
+    private javax.swing.JComboBox<String> ddsite;
     private javax.swing.JPanel detailpanel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
