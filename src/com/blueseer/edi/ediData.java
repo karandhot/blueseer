@@ -5003,6 +5003,60 @@ public class ediData {
        return jsonarray.toString(); 
     }
     
+    public static String getWKFLogView(String wkfid, String site, String fromdate, String todate) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                 if (wkfid.isEmpty()) {
+                    res = st.executeQuery("SELECT * FROM wkf_log  " +
+                    " where wkfl_ts >= " + "'" + fromdate + " 00:00:00" + "'" +
+                    " AND wkfl_ts <= " + "'" + todate  + " 23:59:59" + "'" + 
+                    " order by wkfl_id desc ;" ) ;
+                    } else {
+                    res = st.executeQuery("SELECT * FROM wkf_log  " +
+                    " where wkfl_id = " + "'" + wkfid + "'" +  
+                    " order by wkfl_id desc ;" ) ;    
+                    }
+                 
+                    while (res.next()) {
+                        
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("wkfl_id"));
+                        rowArray.put(res.getString("wkfl_job"));
+                        rowArray.put(res.getString("wkfl_desc"));
+                        rowArray.put(res.getString("wkfl_ts"));
+                        rowArray.put(res.getString("wkfl_ref"));
+                        rowArray.put(res.getString("wkfl_messg"));
+                        rowArray.put(res.getString("wkfl_status"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
     
     public static String getAS2LogView(String as2id, String site, String fromdate, String todate) {
         JSONArray jsonarray = new JSONArray();

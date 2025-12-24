@@ -756,6 +756,13 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     request.getHeader("param4") )); 
             break; 
             
+        case "getWKFLogView" :
+            response.getWriter().print(ediData.getWKFLogView(request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4") )); 
+            break;     
+            
         case "getAPIBrowseView" :
             response.getWriter().print(ediData.getAPIBrowseView(request.getHeader("param1"), 
                     request.getHeader("param2"))); 
