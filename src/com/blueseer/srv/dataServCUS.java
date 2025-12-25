@@ -26,22 +26,29 @@ SOFTWARE.
 package com.blueseer.srv;
 
 import com.blueseer.ctr.cusData;
+import static com.blueseer.ctr.cusData.deleteCustMstr;
 import static com.blueseer.ctr.cusData.getCustLabel;
+import static com.blueseer.ctr.cusData.getCustMstr;
 import static com.blueseer.ctr.cusData.getCustShipSet;
 import static com.blueseer.ctr.cusData.getDiscountRecsByCust;
 import static com.blueseer.ctr.cusData.getcustshipmstrlist;
+import static com.blueseer.ctr.cusData.updateCustMstr;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
 import static com.blueseer.inv.invData.getLocationListByWarehouse;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringIntegerToJson;
+import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.intToJson;
 import static com.blueseer.utl.OVData.getNextNbr;
 import static com.blueseer.utl.OVData.getSysMetaData;
 import static com.blueseer.utl.OVData.getTableInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -84,25 +91,79 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     
     switch (id) {
         
-        case "getcustshipmstrlist" :        
+        case "addCustomerTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            cusData.cm_mstr cm = om.readValue(ca[0], cusData.cm_mstr.class);
+            ArrayList<String[]> list = om.readValue(ca[1], ArrayList.class); 
+            cusData.cms_det cms = om.readValue(ca[2], cusData.cms_det.class);
+            response.getWriter().print(arrayToJson(cusData.addCustomerTransaction(cm, list, cms)));     
+            break; 
+            }    
+        
+        case "updateCustMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cm_mstr x = objectMapper.readValue(sb.toString(), cusData.cm_mstr.class);            
+            response.getWriter().print(arrayToJson(updateCustMstr(x)));
+            break;
+          }
+        
+        case "deleteCustMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cm_mstr x = objectMapper.readValue(sb.toString(), cusData.cm_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteCustMstr(x)));
+            break;
+          }
+        
+        case "getCustMstr" :  {      
+            cusData.cm_mstr cm = getCustMstr(new String[]{request.getHeader("param1")});
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(cm);
+            response.getWriter().print(r);
+            break;  
+        }
+        
+        case "getcustshipmstrlist" :   {     
             response.getWriter().print(ArrayListStringToJson(getcustshipmstrlist(request.getHeader("param1"))));
             break;
+        }
             
-        case "getCustShipSet" :        
+        case "getCustShipSet" :  {      
             cusData.CustShipSet cs = getCustShipSet(new String[]{request.getHeader("param1"), request.getHeader("param2")});
             ObjectMapper objectMapper = new ObjectMapper();
             String r = objectMapper.writeValueAsString(cs);
             response.getWriter().print(r);
             break;  
+        }
             
-        case "getDiscountRecsByCust" :        
+        case "getDiscountRecsByCust" :    {    
             response.getWriter().print(ArrayListStringArrayToJson(cusData.getDiscountRecsByCust(request.getHeader("param1"))));
             break;  
-            
-        case "getCustLabel" :        
+        }
+        
+        case "getCustLabel" :  {       
             response.getWriter().print(getCustLabel(request.getHeader("param1")));
             break;    
-            
+        }
             
                      
         default:

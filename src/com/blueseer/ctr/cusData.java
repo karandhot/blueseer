@@ -38,6 +38,7 @@ import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -110,6 +111,21 @@ public class cusData {
     
     // add customer master.... multiple table transaction function
     public static String[] addCustomerTransaction(cm_mstr cm, ArrayList<String[]> list, cms_det cms) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> xlist = new ArrayList<String[]>();
+            xlist.add(new String[]{"id","addCustomerTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(cm);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(list);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(cms);
+                return jsonToStringArray(sendServerPost(xlist, jsonString, null, "dataServCUS"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         Connection con = null;
         PreparedStatement ps = null;
@@ -364,6 +380,18 @@ public class cusData {
     
     
     public static String[] updateCustMstr(cm_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateCustMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServCUS"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         if (x == null) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordError};
@@ -471,6 +499,18 @@ public class cusData {
     
     
     public static String[] deleteCustMstr(cm_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteCustMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServCUS"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         if (x == null) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
@@ -1808,6 +1848,13 @@ public class cusData {
                lines.add(s);
             }
             
+            res = st.executeQuery("select cmc_autocust from cm_ctrl;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "autocust";
+               s[1] = res.getString("cmc_autocust");
+               lines.add(s);
+            }
             
             /*
              res = st.executeQuery("select car_id from car_mstr order by car_id;");

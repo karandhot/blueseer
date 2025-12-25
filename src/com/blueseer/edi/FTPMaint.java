@@ -38,6 +38,7 @@ import com.blueseer.adm.admData.ftp_mstr;
 import static com.blueseer.adm.admData.getFTPAttr;
 import static com.blueseer.adm.admData.getFTPAttrHash;
 import static com.blueseer.adm.admData.getFTPMstr;
+import static com.blueseer.adm.admData.runFTPClient;
 import static com.blueseer.adm.admData.updateFTPMstr;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
@@ -116,6 +117,7 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                 String mapdir = "";
                 String structdir = "";
                 String defaultsite = "";
+                public static ArrayList<String> rdata = null;
     
     // global datatablemodel declarations   
             javax.swing.table.DefaultTableModel modelattributes = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -162,7 +164,7 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                     message = getRecord(key);    
                     break;  
                 case "run":
-                    message = runClient(key); 
+                    message = runClientFTP(key); 
                     break;
                 default:
                     message = new String[]{"1", "unknown action"};
@@ -190,6 +192,7 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
              btupdate.setEnabled(true);
              btadd.setEnabled(true);
              btdelete.setEnabled(true);
+             runClientFTP_done();
            } else {
              initvars(null);  
            }
@@ -605,7 +608,12 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
         setAction(x.m());
     }
     // misc
-    public String[] runClient(String[] c) {
+    public String[] runClientFTP(String[] c) {
+        
+        rdata = runFTPClient(c[0]);
+        return new String[]{"0", "connection attempt complete"};
+        
+        /*
         ftp_mstr fm = admData.getFTPMstr(new String[]{c[0]});
         HashMap<String, String> ftpa = getFTPAttrHash(new String[]{c[0]});
         
@@ -892,8 +900,8 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                 }
                 showServerReply(client);
 		
-		    /* not sure why...but in scenario where login credentials are wrong...you have to execute a function (client.listFiles) that 
-		       returns IOError to generate the error.....client.login does not return an IOError when wrong login or password without subsequent data dive  */
+		    // not sure why...but in scenario where login credentials are wrong...you have to execute a function (client.listFiles) that 
+		     //  returns IOError to generate the error.....client.login does not return an IOError when wrong login or password without subsequent data dive  
 		
                 for (String line : fm.ftp_commands().split("\\n"))   {
                     String[] splitLine = line.trim().split("\\s+");
@@ -1031,8 +1039,19 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
           }
        }
     return new String[]{"0", "Connection complete"};
+    
+    */
+        
     }
     
+    public void runClientFTP_done() {
+        talog.setText("");
+        for (String s : rdata) {
+            talog.append(s + "\n");
+        }
+    }
+    
+    /*
     private void showServerReply(FTPClient ftpClient) {
         
         String[] replies = ftpClient.getReplyStrings();
@@ -1047,7 +1066,7 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         }
     }
-    
+    */
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

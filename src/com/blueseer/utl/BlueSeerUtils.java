@@ -2333,7 +2333,7 @@ public class BlueSeerUtils {
             for (String s : list) {
                 output.write(s + "\n");
             }
-            list.clear();
+           // list.clear();
         } catch (FileNotFoundException ex) {
             bslog(ex);
         } catch (IOException ex) {

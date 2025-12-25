@@ -98,6 +98,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
      boolean editmode = false;
      boolean isLoad = false;
      String basecurr = "";
+     boolean autocust = false;
    
      
      public static cm_mstr k = null;
@@ -408,6 +409,10 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
             
             if (s[0].equals("terms")) {
               ddterms.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("autocust")) {
+              autocust = BlueSeerUtils.ConvertStringToBool(s[1]); 
             }
             
             if (s[0].equals("freight")) {
@@ -803,19 +808,6 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
             bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
             tbremarks.requestFocus();
             return false;
-        }
-        
-
-        if ( ! OVData.isValidGLAcct(ddaccount.getSelectedItem().toString())) {
-          bsmf.MainFrame.show(getMessageTag(1052));
-          ddaccount.requestFocus();
-          return false;
-        }
-
-        if ( ! OVData.isValidGLcc(ddcc.getSelectedItem().toString())) {
-          bsmf.MainFrame.show(getMessageTag(1048));
-          ddcc.requestFocus();
-          return false;  
         }
 
       return true;
@@ -2269,7 +2261,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btshipeditActionPerformed
 
     private void btnewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnewActionPerformed
-        if (OVData.isAutoCust()) {
+        if (autocust) {
           newAction("customer");
         } else {
            newAction("");
@@ -2281,7 +2273,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btshipnewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btshipnewActionPerformed
         clearShipTo();
-         if (OVData.isAutoCust()) {
+         if (autocust) {
               tbshipcode.setText(String.valueOf(OVData.getNextNbr("shipto")));
               tbshipcode.setEditable(false);
               btshipadd.setEnabled(true);

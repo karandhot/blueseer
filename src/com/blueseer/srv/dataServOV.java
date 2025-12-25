@@ -31,6 +31,7 @@ import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringIntegerToJson;
+import static com.blueseer.utl.BlueSeerUtils.boolToJson;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
@@ -45,6 +46,7 @@ import static com.blueseer.utl.OVData.getSysMetaValue;
 import static com.blueseer.utl.OVData.getTableInfo;
 import static com.blueseer.utl.OVData.getTaxAmtApplicableByItem;
 import static com.blueseer.utl.OVData.getTaxPercentElementsApplicableByItem;
+import static com.blueseer.utl.OVData.isValidCustShipTo;
 import java.io.IOException;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
@@ -209,6 +211,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "getNextNbr" : 
             response.getWriter().print(intToJson(getNextNbr(request.getHeader("param1")))); 
             break;
+            
+        case "isValidCustShipTo" : 
+            response.getWriter().print(boolToJson(isValidCustShipTo(request.getHeader("param1"), request.getHeader("param2")))); 
+            break;    
             
         case "getTaxAmtApplicableByItem" : 
             response.getWriter().print(doubleToJson(getTaxAmtApplicableByItem(request.getHeader("param1"),

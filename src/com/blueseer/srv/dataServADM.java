@@ -31,9 +31,11 @@ import static com.blueseer.adm.admData.addFTPMstr;
 import static com.blueseer.adm.admData.deleteFTPAttrMstr;
 import static com.blueseer.adm.admData.deleteFTPMstr;
 import static com.blueseer.adm.admData.getFTPAttr;
+import static com.blueseer.adm.admData.getFTPAttrHash;
 import static com.blueseer.adm.admData.getFTPMstr;
 import static com.blueseer.adm.admData.getSiteInit;
 import static com.blueseer.adm.admData.updateFTPMstr;
+import com.blueseer.edi.FTPMaint;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
@@ -44,6 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -149,6 +152,15 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
           }
         
+        case "getFTPAttrHash" : { 
+            HashMap<String, String> x = getFTPAttrHash(new String[]{request.getHeader("param1")}); 
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        
         case "addUpdateFTPAttr" : {
             String line;
             StringBuilder sb = new StringBuilder();  
@@ -170,6 +182,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     )));  
             break;
         }
+        
+        case "runFTPClient" :
+            response.getWriter().print(ArrayListStringToJson(admData.runFTPClient(request.getHeader("param1"))));     
+            break;
         
         default:
         response.getWriter().print("no switch case exists in dataServADM for id: " + id);

@@ -73,6 +73,7 @@ import static com.blueseer.utl.BlueSeerUtils.getGlobalTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToBoolean;
 import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.jsonToDouble;
 import static com.blueseer.utl.BlueSeerUtils.jsonToHashMapStringInteger;
@@ -11806,7 +11807,20 @@ return autosource;
 
     public static boolean isValidCustShipTo(String cust, String ship) {
 
-   boolean isgood = false;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidCustShipTo"});
+            list.add(new String[]{"param1", cust});
+            list.add(new String[]{"param2", ship});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+        
+    boolean isgood = false;
     try{
 
             Connection con = null;

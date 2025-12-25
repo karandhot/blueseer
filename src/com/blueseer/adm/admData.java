@@ -2218,7 +2218,7 @@ public class admData {
             paramlist.add(new String[]{"param1",x[0]});
             ObjectMapper objectMapper = new ObjectMapper();
             try {
-                String returnstring = sendServerPost(paramlist, "", null, "dataServEDI");
+                String returnstring = sendServerPost(paramlist, "", null, "dataServADM");
                 list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<ftp_attr>>() {});
                 return list;
             } catch (IOException ex) {
@@ -2257,6 +2257,23 @@ public class admData {
     public static HashMap<String, String> getFTPAttrHash(String[] x) {
         ftp_attr r = null;
         HashMap<String, String> map = new HashMap<String, String>();
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<>();
+            paramlist.add(new String[]{"id","getFTPAttrHash"});
+            paramlist.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServADM");
+                map = objectMapper.readValue(returnstring, new TypeReference<HashMap<String, String>>() {});
+                return map;
+            } catch (IOException ex) {
+                bslog(ex);
+                return map;
+            }
+        }
+        
+        
         String[] m ;
         String sql = "select * from ftp_attr where ftpa_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
@@ -2280,6 +2297,7 @@ public class admData {
         }
         return map;
     }
+    
     
     
     public static boolean isValidPKSStore(String pksid) {
@@ -2487,8 +2505,19 @@ public class admData {
         
     }
     
-    public static void runFTPClient(String c) {
+    public static ArrayList<String> runFTPClient(String c) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "runFTPClient"});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         File lf = new File("ftpbss.lck");
+        ArrayList<String> logdata = new ArrayList<String>();
         ftp_mstr fm = admData.getFTPMstr(new String[]{c});
         HashMap<String, String> ftpa = getFTPAttrHash(new String[]{c});
         
@@ -2508,10 +2537,10 @@ public class admData {
                
         if (fm.m[0].equals(BlueSeerUtils.ErrorBit)) {
             log("ftp", fm.m[1]);
-            return;
+            return logdata;
         }
         
-        ArrayList<String> logdata = new ArrayList<String>();
+        
         
         // if sftp is set....run sftp logic then bail
         if (fm.ftp_sftp().equals("1")) {
@@ -2559,7 +2588,7 @@ public class admData {
                 if (lf.exists()) {
                     logdata.add("ftpbss:  lock file found...exiting.  ftpbss.lck");
                     log("ftp", logdata);
-                    return;
+                    return logdata;
                 } else {
                     lf.createNewFile();
                     logdata.add("ftpbss:  creating lock file.  ftpbss.lck");
@@ -2574,7 +2603,7 @@ public class admData {
                     jsch.setKnownHosts(knownHostsPath);
                  }
         
-                session = jsch.getSession(fm.ftp_login(), fm.ftp_ip(), Integer.valueOf(fm.ftp_port()));
+                session = jsch.getSession(fm.ftp_login(), fm.ftp_ip(), Integer.valueOf(fm.ftp_port())); 
                 session.setPassword(bsmf.MainFrame.PassWord("1", fm.ftp_passwd().toCharArray()));
                 
                 
@@ -2741,7 +2770,7 @@ public class admData {
                 }  
             }
             
-            return;
+            return logdata;
         } 
         
         
@@ -2768,7 +2797,7 @@ public class admData {
                 if (! FTPReply.isPositiveCompletion(replyCode)) {
                     logdata.add("connection failed..." + String.valueOf(replyCode));
                     log("ftp", logdata);  
-                return;
+                return logdata;
                 }
                 
                
@@ -2924,6 +2953,7 @@ public class admData {
           log("ftp", logdata);  
        }
    
+     return logdata;
     }
     
     private static void showServerReply(FTPClient ftpClient, ArrayList<String> list) {

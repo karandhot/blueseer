@@ -41,6 +41,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -88,7 +89,7 @@ public class jobFTP implements Job {
                 if (! ftpid.isBlank() && isValidFTPid(ftpid)) {
                     if (isFTPidEnabled(ftpid)) {
                         try {   
-                            admData.runFTPClient(ftpid);
+                            ArrayList<String> list = admData.runFTPClient(ftpid);
                         } catch (Exception ex) {
                             System.out.println(ex);
                         }
