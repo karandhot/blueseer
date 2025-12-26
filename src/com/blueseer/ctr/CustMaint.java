@@ -99,6 +99,8 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
      boolean isLoad = false;
      String basecurr = "";
      boolean autocust = false;
+     ArrayList<String[]> initDataSets = null;
+     String defaultsite = null;
    
      
      public static cm_mstr k = null;
@@ -317,7 +319,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void setComponentDefaultValues() {
         isLoad = true;
         
-         ArrayList<String[]> initDataSets = cusData.getCustMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        initDataSets = cusData.getCustMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
         
         jTabbedPane1.removeAll();
         jTabbedPane1.add("Main", mainPanel);
@@ -379,7 +381,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         clearShipTo();
         clearContacts();
        
-        String defaultsite = null;
+        
         
         ddsite.removeAllItems();
         ddcurr.removeAllItems();
