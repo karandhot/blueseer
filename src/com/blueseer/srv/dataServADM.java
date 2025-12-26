@@ -40,6 +40,7 @@ import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -172,7 +173,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             ObjectMapper om = new ObjectMapper();
             String[] ca = sb.toString().split("=_=", -1);
             String x = ca[0];
-            ArrayList<String[]> list = om.readValue(ca[1], ArrayList.class);  
+            ArrayList<String[]> list = om.readValue(ca[1], new TypeReference<ArrayList<String[]>>() {});
             response.getWriter().print(arrayToJson(admData.addUpdateFTPAttr(x, list)));    
             break; 
             }
