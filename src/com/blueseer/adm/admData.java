@@ -483,6 +483,7 @@ public class admData {
                 return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
             }
         }
+        String p = bsmf.MainFrame.PassWord("0", x.ftp_passwd().trim().toCharArray());
         String[] m ;
         String sqlSelect = "SELECT * FROM  ftp_mstr where ftp_id = ?";
         String sqlInsert = "insert into ftp_mstr (ftp_id, ftp_desc, ftp_ip, ftp_login, " +
@@ -499,7 +500,7 @@ public class admData {
             psi.setString(2, x.ftp_desc);
             psi.setString(3, x.ftp_ip);
             psi.setString(4, x.ftp_login);
-            psi.setString(5, x.ftp_passwd);
+            psi.setString(5, p);
             psi.setString(6, x.ftp_commands);
             psi.setString(7, x.ftp_indir);
             psi.setString(8, x.ftp_outdir);
@@ -540,6 +541,8 @@ public class admData {
                 return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
             }
         }
+        
+        String p = bsmf.MainFrame.PassWord("0", x.ftp_passwd().trim().toCharArray());
         String[] m ;
         String sql = "update ftp_mstr set ftp_desc = ?, ftp_ip = ?, ftp_login = ?, " +
                           " ftp_passwd = ?, ftp_commands = ?, ftp_indir = ?, ftp_outdir = ?, " +
@@ -553,7 +556,7 @@ public class admData {
             ps.setString(1, x.ftp_desc);
             ps.setString(2, x.ftp_ip);
             ps.setString(3, x.ftp_login);
-            ps.setString(4, x.ftp_passwd);
+            ps.setString(4, p);
             ps.setString(5, x.ftp_commands);
             ps.setString(6, x.ftp_indir);
             ps.setString(7, x.ftp_outdir);

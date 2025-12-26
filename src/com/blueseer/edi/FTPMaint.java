@@ -521,7 +521,8 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public ftp_mstr createRecord() { 
-        String passwd = bsmf.MainFrame.PassWord("0", tbpasswd.getPassword());
+       // String passwd = bsmf.MainFrame.PassWord("0", tbpasswd.getPassword());
+       String passwd = new String(tbpasswd.getPassword());
         ftp_mstr x = new ftp_mstr(null, 
                 tbkey.getText().toString(),
                 tbdesc.getText().toUpperCase(),
@@ -532,7 +533,7 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                 tacommands.getText().replace("'", ""),      
                 tbindir.getText(),
                 tboutdir.getText(),
-                String.valueOf(BlueSeerUtils.boolToInt(cbdelete.isSelected())),
+                String.valueOf(BlueSeerUtils.boolToInt(cbdelete.isSelected())), 
                 String.valueOf(BlueSeerUtils.boolToInt(cbpassive.isSelected())),
                 String.valueOf(BlueSeerUtils.boolToInt(cbbinary.isSelected())),       
                 tbtimeout.getText(),
