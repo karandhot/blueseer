@@ -22200,6 +22200,20 @@ return mylist;
         
     
     public static boolean addSysMetaDataNoUnique(String id, String type, String key, String value) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "addSysMetaDataNoUnique"});
+            list.add(new String[]{"param1", id});
+            list.add(new String[]{"param2", type});
+            list.add(new String[]{"param3", key});
+            list.add(new String[]{"param4", value});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        } 
         boolean x = false;
         try {
             

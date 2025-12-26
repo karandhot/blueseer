@@ -38,6 +38,7 @@ import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.doubleToJson;
 import static com.blueseer.utl.BlueSeerUtils.intToJson;
 import com.blueseer.utl.OVData;
+import static com.blueseer.utl.OVData.addSysMetaDataNoUnique;
 import static com.blueseer.utl.OVData.getCodeMstrValueList;
 import static com.blueseer.utl.OVData.getExchangeRate;
 import static com.blueseer.utl.OVData.getNextNbr;
@@ -234,7 +235,13 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(ArrayListStringArrayToJson(OVData.getTaxPercentElementsApplicableByTaxCode(request.getHeader("param1"))));
             break;   
             
-           
+        case "addSysMetaDataNoUnique" : {
+        response.getWriter().println(boolToJson(addSysMetaDataNoUnique(request.getHeader("param1"), 
+                request.getHeader("param2"),
+                request.getHeader("param3"),
+                request.getHeader("param4")))); 
+        break;   
+        }
                      
         default:
         response.getWriter().print("no switch case exists in dataServOV for id: " + id);
