@@ -63,7 +63,6 @@ import static com.blueseer.utl.BlueSeerUtils.lurb3;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerT;
 import com.blueseer.utl.OVData;
-import static com.blueseer.utl.OVData.canUpdate;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -101,6 +100,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
      boolean autocust = false;
      ArrayList<String[]> initDataSets = null;
      String defaultsite = null;
+     boolean canupdate = false;
    
      
      public static cm_mstr k = null;
@@ -405,6 +405,10 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
               basecurr = s[1];  
             }
           
+            if (s[0].equals("canupdate")) {
+              canupdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            
             if (s[0].equals("currencies")) {
               ddcurr.addItem(s[1]); 
             }
@@ -713,7 +717,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public boolean validateInput(dbaction action) {
         
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canupdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -816,7 +820,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
      }
     
     public boolean validateInputShipTo(dbaction action) {
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canupdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }

@@ -1764,6 +1764,20 @@ public class cusData {
               }
             }
             
+            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + userid + "'" + 
+                    " AND menu_panel = " + "'" + panelClassName + "'" +
+                    ";");
+           while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "canupdate";
+               s[1] = "0";
+               if (res.getString("perm_readonly").equals("0")) {
+                 s[1] = "1";
+               }
+               
+               lines.add(s);
+           }
+            
             res = st.executeQuery("select site_site from site_mstr;");
             while (res.next()) {
                if (allsites || Arrays.stream(sites).anyMatch(res.getString("site_site")::equals)) {
