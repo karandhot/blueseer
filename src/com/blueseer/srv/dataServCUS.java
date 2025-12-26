@@ -28,11 +28,16 @@ package com.blueseer.srv;
 import com.blueseer.ctr.cusData;
 import static com.blueseer.ctr.cusData.addCMCDet;
 import static com.blueseer.ctr.cusData.addCMSDet;
+import static com.blueseer.ctr.cusData.addCprMstr;
 import static com.blueseer.ctr.cusData.deleteCMCDet;
 import static com.blueseer.ctr.cusData.deleteCMSDet;
+import static com.blueseer.ctr.cusData.deleteCprMstr;
 import static com.blueseer.ctr.cusData.deleteCustMstr;
 import static com.blueseer.ctr.cusData.getCMCDet;
 import static com.blueseer.ctr.cusData.getCMSDet;
+import static com.blueseer.ctr.cusData.getCprDiscLists;
+import static com.blueseer.ctr.cusData.getCprMstr;
+import static com.blueseer.ctr.cusData.getCprPriceLists;
 import static com.blueseer.ctr.cusData.getCustLabel;
 import static com.blueseer.ctr.cusData.getCustMstr;
 import static com.blueseer.ctr.cusData.getCustShipSet;
@@ -40,6 +45,7 @@ import static com.blueseer.ctr.cusData.getDiscountRecsByCust;
 import static com.blueseer.ctr.cusData.getcustshipmstrlist;
 import static com.blueseer.ctr.cusData.updateCMCDet;
 import static com.blueseer.ctr.cusData.updateCMSDet;
+import static com.blueseer.ctr.cusData.updateCprMstr;
 import static com.blueseer.ctr.cusData.updateCustMstr;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
 import static com.blueseer.inv.invData.getLocationListByWarehouse;
@@ -285,6 +291,76 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(r);
             break;
           }
+        
+        case "addCprMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cpr_mstr x = objectMapper.readValue(sb.toString(), cusData.cpr_mstr.class);            
+            response.getWriter().print(arrayToJson(addCprMstr(x)));
+            break;
+          }
+        
+        case "updateCprMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cpr_mstr x = objectMapper.readValue(sb.toString(), cusData.cpr_mstr.class);            
+            response.getWriter().print(arrayToJson(updateCprMstr(x)));
+            break;
+          }
+        
+        case "deleteCprMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cpr_mstr x = objectMapper.readValue(sb.toString(), cusData.cpr_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteCprMstr(x)));
+            break;
+          }
+        
+        case "getCprMstr" :  {      
+            cusData.cpr_mstr cpr = getCprMstr(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5"),
+                    request.getHeader("param6")});
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(cpr);
+            response.getWriter().print(r);
+            break;  
+        }
+        
+        case "getCprPriceLists" : { 
+            ArrayList<cusData.cpr_mstr> x = getCprPriceLists(request.getHeader("param1"));
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "getCprDiscLists" : { 
+            ArrayList<cusData.cpr_mstr> x = getCprDiscLists(request.getHeader("param1"));
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        
         
         default:
         response.getWriter().print("no switch case exists in dataServOV for id: " + id);

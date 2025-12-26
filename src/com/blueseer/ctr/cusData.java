@@ -1840,6 +1840,299 @@ public class cusData {
         return r;
     }
     
+    public static String[] addCprMstr(cpr_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addCprMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServCUS"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
+        String sqlSelect = "SELECT * FROM  cpr_mstr where cpr_cust = ? and cpr_uom = ? and cpr_curr = ? and cpr_type = ? and cpr_volqty = ?";
+        String sqlInsert = "insert into cpr_mstr (cpr_cust, cpr_item, cpr_type, cpr_desc, cpr_uom, cpr_curr, "
+                        + "cpr_price, cpr_volqty, cpr_expire)  " 
+                        + " values (?,?,?,?,?,?,?,?,?); "; 
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+             PreparedStatement ps = con.prepareStatement(sqlSelect);) {
+             ps.setString(1, x.cpr_cust);
+             ps.setString(2, x.cpr_uom);
+             ps.setString(3, x.cpr_curr);
+             ps.setString(4, x.cpr_type);
+             ps.setDouble(5, x.cpr_volqty);
+          try (ResultSet res = ps.executeQuery();
+               PreparedStatement psi = con.prepareStatement(sqlInsert);) {  
+            if (! res.isBeforeFirst()) {
+            psi.setString(1, x.cpr_cust);
+            psi.setString(2, x.cpr_item);
+            psi.setString(3, x.cpr_type);
+            psi.setString(4, x.cpr_desc);
+            psi.setString(5, x.cpr_uom);
+            psi.setString(6, x.cpr_curr);
+            psi.setDouble(7, x.cpr_price);
+            psi.setDouble(8, x.cpr_volqty);
+            psi.setString(9, x.cpr_expire);
+            int rows = psi.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+            } else {
+            m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordAlreadyExists};    
+            }
+          } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+          }
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+
+    public static String[] updateCprMstr(cpr_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateCprMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServCUS"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
+        String sql = "update cpr_mstr set cpr_desc = ?, cpr_price = ?, cpr_expire = ? " +   
+                " where cpr_cust = ? and cpr_item = ? and cpr_uom = ? and cpr_curr = ? and cpr_type = ? and cpr_volqty = ? ; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql)) {
+        
+        ps.setString(1, x.cpr_desc);
+        ps.setDouble(2, x.cpr_price);
+        ps.setString(3, x.cpr_expire);
+        ps.setString(4, x.cpr_cust);
+        ps.setString(5, x.cpr_item);
+        ps.setString(6, x.cpr_uom);
+        ps.setString(7, x.cpr_curr);
+        ps.setString(8, x.cpr_type);
+        ps.setDouble(9, x.cpr_volqty);
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
+    public static String[] deleteCprMstr(cpr_mstr x) { 
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteCprMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServCUS"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
+        String sql = "delete from cpr_mstr where cpr_cust = ? and cpr_item = ? and cpr_uom = ? and cpr_curr = ? and cpr_type = ? and cpr_volqty = ?; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, x.cpr_cust);
+        ps.setString(2, x.cpr_item);
+        ps.setString(3, x.cpr_uom);
+        ps.setString(4, x.cpr_curr);
+        ps.setString(5, x.cpr_type);
+        ps.setDouble(6, x.cpr_volqty);
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
+    public static cpr_mstr getCprMstr(String[] x) {
+        cpr_mstr r = null;
+        String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getCprMstr"});
+            list.add(new String[]{"param1",x[0]});
+            list.add(new String[]{"param2",x[1]});
+            list.add(new String[]{"param3",x[2]});
+            list.add(new String[]{"param4",x[3]});
+            list.add(new String[]{"param5",x[4]});
+            list.add(new String[]{"param6",x[5]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServCUS");
+                r = objectMapper.readValue(returnstring, cpr_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new cpr_mstr(m);
+                return r;
+            }
+        }
+        String sql = "select * from cpr_mstr where cpr_cust = ? and cpr_item = ? and cpr_uom = ? and cpr_curr = ? and cpr_type = ? and cpr_volqty = ?;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, x[0]);
+        ps.setString(2, x[1]);
+        ps.setString(3, x[2]);
+        ps.setString(4, x[3]);
+        ps.setString(5, x[4]);
+        ps.setString(6, x[5]);
+        
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new cpr_mstr(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                      
+                        r = new cpr_mstr(m, res.getString("cpr_cust"), 
+                            res.getString("cpr_item"),
+                            res.getString("cpr_type"),
+                            res.getString("cpr_desc"),
+                            res.getString("cpr_uom"),
+                            res.getString("cpr_curr"),
+                            res.getDouble("cpr_price"),     
+                            res.getDouble("cpr_volqty"),
+                            res.getString("cpr_expire")
+                        );
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new cpr_mstr(m);
+        }
+        return r;
+    }
+    
+    public static ArrayList<cpr_mstr> getCprPriceLists(String code) {
+        cpr_mstr r = null;
+        String[] m = new String[2];
+        ArrayList<cpr_mstr> list = new ArrayList<cpr_mstr>();
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<>();
+            paramlist.add(new String[]{"id","getCprPriceLists"});
+            paramlist.add(new String[]{"param1",code});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServCUS");
+                list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<cpr_mstr>>() {});
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+                return list;
+            }
+        }
+        
+        String sql = "select * from cpr_mstr where cpr_cust = ? and cpr_type <> 'DISCOUNT' order by cpr_item ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, code);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new cpr_mstr(m);
+                } else {
+                    m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                    while(res.next()) {
+                        r = new cpr_mstr(m, res.getString("cpr_cust"), 
+                            res.getString("cpr_item"),
+                            res.getString("cpr_type"),
+                            res.getString("cpr_desc"),
+                            res.getString("cpr_uom"),
+                            res.getString("cpr_curr"),
+                            res.getDouble("cpr_price"),     
+                            res.getDouble("cpr_volqty"),
+                            res.getString("cpr_expire")
+                        );
+                        list.add(r);
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new cpr_mstr(m);
+               list.add(r);
+        }
+        return list;
+    }
+    
+    public static ArrayList<cpr_mstr> getCprDiscLists(String code) {
+        cpr_mstr r = null;
+        String[] m = new String[2];
+        ArrayList<cpr_mstr> list = new ArrayList<cpr_mstr>();
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<>();
+            paramlist.add(new String[]{"id","getCprDiscLists"});
+            paramlist.add(new String[]{"param1",code});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServCUS");
+                list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<cpr_mstr>>() {});
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+                return list;
+            }
+        }
+        
+        String sql = "select * from cpr_mstr where cpr_cust = ? and cpr_type = 'DISCOUNT' order by cpr_item ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, code);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new cpr_mstr(m);
+                } else {
+                    m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                    while(res.next()) {
+                        r = new cpr_mstr(m, res.getString("cpr_cust"), 
+                            res.getString("cpr_item"),
+                            res.getString("cpr_type"),
+                            res.getString("cpr_desc"),
+                            res.getString("cpr_uom"),
+                            res.getString("cpr_curr"),
+                            res.getDouble("cpr_price"),     
+                            res.getDouble("cpr_volqty"),
+                            res.getString("cpr_expire")
+                        );
+                        list.add(r);
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new cpr_mstr(m);
+               list.add(r);
+        }
+        return list;
+    }
+    
     
          
     // miscellaneous functions
@@ -3262,6 +3555,12 @@ public class cusData {
         }
     }
     
+    public record cpr_mstr(String[] m, String cpr_cust, String cpr_item, String cpr_type, String cpr_desc, 
+    String cpr_uom, String cpr_curr, double cpr_price, double cpr_volqty, String cpr_expire) {
+        public cpr_mstr(String[] m) {
+            this(m,"","","","","","",0.00,0.00,"");
+        }
+    }
     
     public record cust_term(String[] m, String cut_code, String cut_desc, int cut_days, 
         int cut_discdays, double cut_discpercent, String cut_syscode, String cut_mfi,
