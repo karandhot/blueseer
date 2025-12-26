@@ -317,7 +317,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void setComponentDefaultValues() {
         isLoad = true;
         
-         ArrayList<String[]> initDataSets = cusData.getCustMaintInit();
+         ArrayList<String[]> initDataSets = cusData.getCustMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
         
         jTabbedPane1.removeAll();
         jTabbedPane1.add("Main", mainPanel);

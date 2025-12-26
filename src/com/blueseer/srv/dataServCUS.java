@@ -173,7 +173,12 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(r);
             break;
           }
-                     
+        
+        case "getCustMaintInit" : {
+            response.getWriter().print(ArrayListStringArrayToJson(cusData.getCustMaintInit(request.getHeader("param1"), request.getHeader("param2"))));
+            break;
+        }
+        
         default:
         response.getWriter().print("no switch case exists in dataServOV for id: " + id);
         System.out.println("no switch case exists in dataServOV for id: " + id);    

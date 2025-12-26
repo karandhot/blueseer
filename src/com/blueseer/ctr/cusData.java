@@ -1726,8 +1726,21 @@ public class cusData {
          
     // miscellaneous functions
     
-     public static ArrayList<String[]> getCustMaintInit() {
-        String defaultsite = "";
+     public static ArrayList<String[]> getCustMaintInit(String panelClassName, String userid) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getCustMaintInit"});
+            list.add(new String[]{"param1", panelClassName});
+            list.add(new String[]{"param2", userid});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServCUS"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+         
+         String defaultsite = "";
         ArrayList<String[]> lines = new ArrayList<String[]>();
         try{
         Connection con = null;
