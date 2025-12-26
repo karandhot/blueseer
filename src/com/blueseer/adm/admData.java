@@ -2585,6 +2585,13 @@ public class admData {
                    config.put("PreferredAuthentications", "publickey,password"); 
             }
             
+            if (ftpa.containsKey("server_host_key")) {
+                   config.put("server_host_key", ftpa.get("server_host_key"));
+            } 
+            
+            if (ftpa.containsKey("PubkeyAcceptedAlgorithms")) {
+                   config.put("PubkeyAcceptedAlgorithms", ftpa.get("PubkeyAcceptedAlgorithms"));
+            } 
             
             
              try {
