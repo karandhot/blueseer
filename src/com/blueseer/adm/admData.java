@@ -2509,6 +2509,7 @@ public class admData {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<>();
             list.add(new String[]{"id", "runFTPClient"});
+            list.add(new String[]{"param1", c});
             try {
                 return jsonToArrayListString(sendServerPost(list, "", null, "dataServADM"));
             } catch (IOException ex) {
