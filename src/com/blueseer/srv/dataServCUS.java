@@ -26,13 +26,20 @@ SOFTWARE.
 package com.blueseer.srv;
 
 import com.blueseer.ctr.cusData;
+import static com.blueseer.ctr.cusData.addCMCDet;
+import static com.blueseer.ctr.cusData.addCMSDet;
+import static com.blueseer.ctr.cusData.deleteCMCDet;
+import static com.blueseer.ctr.cusData.deleteCMSDet;
 import static com.blueseer.ctr.cusData.deleteCustMstr;
 import static com.blueseer.ctr.cusData.getCMCDet;
+import static com.blueseer.ctr.cusData.getCMSDet;
 import static com.blueseer.ctr.cusData.getCustLabel;
 import static com.blueseer.ctr.cusData.getCustMstr;
 import static com.blueseer.ctr.cusData.getCustShipSet;
 import static com.blueseer.ctr.cusData.getDiscountRecsByCust;
 import static com.blueseer.ctr.cusData.getcustshipmstrlist;
+import static com.blueseer.ctr.cusData.updateCMCDet;
+import static com.blueseer.ctr.cusData.updateCMSDet;
 import static com.blueseer.ctr.cusData.updateCustMstr;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
 import static com.blueseer.inv.invData.getLocationListByWarehouse;
@@ -166,6 +173,111 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;    
         }
         
+        
+        case "getCustMaintInit" : {
+            response.getWriter().print(ArrayListStringArrayToJson(cusData.getCustMaintInit(request.getHeader("param1"), request.getHeader("param2"))));
+            break;
+        }
+        
+        case "addCMSDet" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cms_det x = objectMapper.readValue(sb.toString(), cusData.cms_det.class);            
+            response.getWriter().print(arrayToJson(addCMSDet(x)));
+            break;
+          }
+        
+        case "updateCMSDet" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cms_det x = objectMapper.readValue(sb.toString(), cusData.cms_det.class);            
+            response.getWriter().print(arrayToJson(updateCMSDet(x)));
+            break;
+          }
+        
+        case "deleteCMSDet" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cms_det x = objectMapper.readValue(sb.toString(), cusData.cms_det.class);            
+            response.getWriter().print(arrayToJson(deleteCMSDet(x)));
+            break;
+          }
+        
+        case "getCMSDets" : { 
+            ArrayList<cusData.cms_det> x = getCMSDet(request.getHeader("param1"));
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "getCMSDet" :  {      
+            cusData.cms_det cms = getCMSDet(request.getHeader("param1"), request.getHeader("param2"));
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(cms);
+            response.getWriter().print(r);
+            break;  
+        }
+        
+        case "deleteCMSDet_x" : { 
+            response.getWriter().print(arrayToJson(deleteCMSDet(request.getHeader("param1"), request.getHeader("param2"))));
+            break;
+          }
+        
+        case "addCMCDet" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cmc_det x = objectMapper.readValue(sb.toString(), cusData.cmc_det.class);            
+            response.getWriter().print(arrayToJson(addCMCDet(x)));
+            break;
+          }
+        
+        case "updateCMCDet" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cmc_det x = objectMapper.readValue(sb.toString(), cusData.cmc_det.class);            
+            response.getWriter().print(arrayToJson(updateCMCDet(x)));
+            break;
+          }
+        
+        case "deleteCMCDet" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cmc_det x = objectMapper.readValue(sb.toString(), cusData.cmc_det.class);            
+            response.getWriter().print(arrayToJson(deleteCMCDet(x)));
+            break;
+          }
+        
         case "getCMCDets" : { 
             ArrayList<cusData.cmc_det> x = getCMCDet(request.getHeader("param1"));
             ObjectMapper objectMapper = new ObjectMapper();
@@ -173,11 +285,6 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(r);
             break;
           }
-        
-        case "getCustMaintInit" : {
-            response.getWriter().print(ArrayListStringArrayToJson(cusData.getCustMaintInit(request.getHeader("param1"), request.getHeader("param2"))));
-            break;
-        }
         
         default:
         response.getWriter().print("no switch case exists in dataServOV for id: " + id);
