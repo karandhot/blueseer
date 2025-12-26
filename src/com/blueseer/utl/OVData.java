@@ -7745,6 +7745,16 @@ public class OVData {
 }
     
     public static String getSystemAttachmentDirectory() {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getSystemAttachmentDirectory"});
+            try {
+                return sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        } 
         String myreturn = "";
         try{
 
