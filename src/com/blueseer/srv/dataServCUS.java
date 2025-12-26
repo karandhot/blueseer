@@ -27,6 +27,7 @@ package com.blueseer.srv;
 
 import com.blueseer.ctr.cusData;
 import static com.blueseer.ctr.cusData.deleteCustMstr;
+import static com.blueseer.ctr.cusData.getCMCDet;
 import static com.blueseer.ctr.cusData.getCustLabel;
 import static com.blueseer.ctr.cusData.getCustMstr;
 import static com.blueseer.ctr.cusData.getCustShipSet;
@@ -164,7 +165,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(getCustLabel(request.getHeader("param1")));
             break;    
         }
-            
+        
+        case "getCMCDets" : { 
+            ArrayList<cusData.cmc_det> x = getCMCDet(request.getHeader("param1"));
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
                      
         default:
         response.getWriter().print("no switch case exists in dataServOV for id: " + id);

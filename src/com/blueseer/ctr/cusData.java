@@ -40,6 +40,7 @@ import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.sql.DriverManager;
@@ -1507,6 +1508,22 @@ public class cusData {
         cmc_det r = null;
         String[] m = new String[2];
         ArrayList<cmc_det> list = new ArrayList<cmc_det>();
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<>();
+            paramlist.add(new String[]{"id","getCMCDets"});
+            paramlist.add(new String[]{"param1",code});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServCUS");
+                list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<cmc_det>>() {});
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+                return list;
+            }
+        }
+        
         String sql = "select * from cmc_det where cmc_code = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql);) {
