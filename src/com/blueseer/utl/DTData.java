@@ -7597,6 +7597,7 @@ public class DTData {
             list.add(new String[]{"param1", str});
             list.add(new String[]{"param2", String.valueOf(state)});
             list.add(new String[]{"param3", myfield});
+            list.add(new String[]{"param4", cust});
             try {
                 jsonString = sendServerPost(list, "", null, "dataServDT"); 
             } catch (IOException ex) {
