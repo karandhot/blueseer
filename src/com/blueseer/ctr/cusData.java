@@ -1752,11 +1752,10 @@ public class cusData {
         Statement st = con.createStatement();
         ResultSet res = null;
         try{
-        // allocate, custitemonly, site, currency, sites, currencies, uoms, 
-        // states, warehouses, locations, customers, taxcodes, carriers, statuses
+      
             String[] sites = null;
             boolean allsites = false;
-            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + bsmf.MainFrame.userid + "'" + ";");
+            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + userid + "'" + ";");
             while (res.next()) {
               if (res.getString("user_allowedsites").equals("*")) {
                   allsites = true;
