@@ -34,6 +34,7 @@ import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData.ftp_mstr;
 import static com.blueseer.adm.admData.getSiteName;
 import com.blueseer.edi.EDI;
 import static com.blueseer.edi.EDI.escapeDelimiter;
@@ -3852,6 +3853,43 @@ public class EDData {
                             ps.setString(12, c[6]);
                             ps.setString(13, c[7]);
                             ps.setString(14, c[39]);
+                            ps.executeUpdate();
+                }  
+            } catch (SQLException s) {
+                 MainFrame.bslog(s);
+            } finally {
+               if (ps != null) ps.close();
+               con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+      }
+    
+    public static void writeFTPLogMulti(ArrayList<String[]> messages, ftp_mstr ftpm) {
+          try {
+            Class.forName(driver);
+            Connection con = null;
+            PreparedStatement ps = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            try {
+                String sqlInsert = "insert into ftp_log ( ftpl_clientid, ftpl_batch, ftpl_status, ftpl_messg, ftpl_type, ftpl_site, ftpl_mflag ) "
+                            + " values ( ?,?,?,?,?,?,?); " ; 
+                ps = con.prepareStatement(sqlInsert);
+                // controlarray in this order : senderid, doctype, map, filename, isacontrolnum, gsctrlnum, stctrlnum, ref ; 
+                String hextimestamp = Long.toHexString(System.currentTimeMillis());
+                for (String[] s : messages) {
+                            ps.setString(1, ftpm.ftp_id());
+                            ps.setString(2, hextimestamp);
+                            ps.setString(3, s[0]);
+                            ps.setString(4, (s[1].length() > 500) ? s[1].substring(0,500) : s[1]);
+                            ps.setString(5, ftpm.ftp_sftp());
+                            ps.setString(6, ftpm.ftp_site());
+                            ps.setString(7, "0");
                             ps.executeUpdate();
                 }  
             } catch (SQLException s) {

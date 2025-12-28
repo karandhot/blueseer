@@ -117,7 +117,7 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                 String mapdir = "";
                 String structdir = "";
                 String defaultsite = "";
-                public static ArrayList<String> rdata = null;
+                public static ArrayList<String[]> rdata = null;
     
     // global datatablemodel declarations   
             javax.swing.table.DefaultTableModel modelattributes = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -355,6 +355,7 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
          cbpassive.setSelected(false);
          cbenabled.setSelected(false);
          cbsftp.setSelected(false);
+         cbemailonerror.setSelected(false);
          tbindir.setText("");
          tboutdir.setText("");
          tblogin.setText("");
@@ -539,7 +540,8 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                 tbtimeout.getText(),
                 String.valueOf(BlueSeerUtils.boolToInt(cbenabled.isSelected())),
                 String.valueOf(BlueSeerUtils.boolToInt(cbsftp.isSelected())),
-                ddsite.getSelectedItem().toString()
+                ddsite.getSelectedItem().toString(),
+                String.valueOf(BlueSeerUtils.boolToInt(cbemailonerror.isSelected()))
                 );
         return x;
     }
@@ -602,6 +604,7 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
         cbenabled.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.ftp_enabled())));
         cbsftp.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.ftp_sftp())));
         ddsite.setSelectedItem(x.ftp_site());
+        cbemailonerror.setSelected(BlueSeerUtils.ConvertStringToBool(String.valueOf(x.ftp_email())));
         for (ftp_attr fa : ftpa) {
             modelattributes.addRow(new Object[]{fa.ftpa_key(), fa.ftpa_value()});   
         }
@@ -1047,8 +1050,8 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void runClientFTP_done() {
         talog.setText("");
-        for (String s : rdata) {
-            talog.append(s + "\n");
+        for (String[] s : rdata) {
+            talog.append(s[1] + "\n");
         }
     }
     
@@ -1117,6 +1120,7 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel12 = new javax.swing.JLabel();
         lblstatus = new javax.swing.JLabel();
         btrun = new javax.swing.JButton();
+        cbemailonerror = new javax.swing.JCheckBox();
         attributepanel = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         tableattribute = new javax.swing.JTable();
@@ -1262,6 +1266,8 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
+        cbemailonerror.setText("EmailOnError");
+
         javax.swing.GroupLayout mainpanelLayout = new javax.swing.GroupLayout(mainpanel);
         mainpanel.setLayout(mainpanelLayout);
         mainpanelLayout.setHorizontalGroup(
@@ -1281,19 +1287,21 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
                             .addComponent(jLabel11))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(mainpanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(mainpanelLayout.createSequentialGroup()
-                                .addComponent(cbenabled)
-                                .addGap(29, 29, 29)
-                                .addComponent(cbsftp))
+                            .addComponent(tbport, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(mainpanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addGroup(mainpanelLayout.createSequentialGroup()
+                                    .addComponent(cbenabled)
+                                    .addGap(29, 29, 29)
+                                    .addComponent(cbsftp)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(cbemailonerror))
                                 .addComponent(tbdesc, javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(tbip, javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(tblogin, javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(tbpasswd, javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(tbindir, javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(tboutdir, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 247, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(tbport, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 247, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(mainpanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jLabel9)
@@ -1327,7 +1335,8 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
             .addGroup(mainpanelLayout.createSequentialGroup()
                 .addGroup(mainpanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cbenabled)
-                    .addComponent(cbsftp))
+                    .addComponent(cbsftp)
+                    .addComponent(cbemailonerror))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(mainpanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbdesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1645,6 +1654,7 @@ public class FTPMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btupdate;
     private javax.swing.JCheckBox cbbinary;
     private javax.swing.JCheckBox cbdelete;
+    private javax.swing.JCheckBox cbemailonerror;
     private javax.swing.JCheckBox cbenabled;
     private javax.swing.JCheckBox cbpassive;
     private javax.swing.JCheckBox cbsftp;

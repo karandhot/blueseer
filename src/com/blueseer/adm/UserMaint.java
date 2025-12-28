@@ -83,7 +83,7 @@ public class UserMaint extends javax.swing.JPanel implements IBlueSeerT {
     // global variable declarations
         boolean isLoad = false;
         public static user_mstr x = null;
-    
+        ArrayList<String[]> initDataSet = null;
     // global datatablemodel declarations      
 
     public UserMaint() {
@@ -268,6 +268,9 @@ public class UserMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void setComponentDefaultValues() {
        isLoad = true;
+       String defaultsite = "";
+       
+       initDataSet = admData.getSiteInit(this.getClass().getName(), bsmf.MainFrame.userid);
         tbkey.setText("");
         tbUMLastName.setText("");
         tbUMFirstName.setText("");
@@ -278,10 +281,16 @@ public class UserMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbphone.setText("");
         tbcell.setText("");
         tballowedsites.setText("");
-        
         ddsite.removeAllItems();
-        OVData.getSiteListAll().stream().forEach((s) -> ddsite.addItem(s));  
-        ddsite.setSelectedItem(OVData.getDefaultSite());
+        for (String[] s : initDataSet) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]);  
+            }
+        }  
+        ddsite.setSelectedItem(defaultsite);
         
        isLoad = false;
     }

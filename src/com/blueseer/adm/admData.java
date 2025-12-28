@@ -42,6 +42,8 @@ import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.log;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.EDData;
+import static com.blueseer.utl.EDData.writeFTPLogMulti;
+import com.blueseer.utl.OVData;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jcraft.jsch.Channel;
@@ -89,6 +91,18 @@ import org.apache.commons.net.ftp.FTPReply;
 public class admData {
 
     public static String[] addSiteMstr(site_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addSiteMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m ;
         String sqlSelect = "SELECT * FROM  site_mstr where site_site = ?";
         String sqlInsert = "insert into site_mstr (site_site, site_desc, site_line1, site_line2, site_line3, "
@@ -137,6 +151,18 @@ public class admData {
     }
 
     public static String[] updateSiteMstr(site_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateSiteMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m ;
         String sql = "update site_mstr set site_desc = ?, site_line1 = ?, site_line2 = ?, "
                 + " site_line3 = ?, site_city = ?, site_state = ?, site_country = ?, "
@@ -177,6 +203,22 @@ public class admData {
     public static site_mstr getSiteMstr(String[] x) {
         site_mstr r = null;
         String[] m;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getSiteMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServADM");
+                r = objectMapper.readValue(returnstring, site_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new site_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from site_mstr where site_site = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -222,7 +264,19 @@ public class admData {
     }
     
     public static String[] deleteSiteMstr(site_mstr x) { 
-       String[] m ;
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteSiteMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m ;
         String sql = "delete from site_mstr where site_site = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql)) {
@@ -238,6 +292,18 @@ public class admData {
     
     
     public static String[] addUserMstr(user_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addUserMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m ;
         String sqlSelect = "SELECT * FROM  user_mstr where user_id = ?";
         String sqlInsert = "insert into user_mstr (user_id, user_site, user_lname, "
@@ -278,6 +344,18 @@ public class admData {
     }
 
     public static String[] updateUserMstr(user_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateUserMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m ;
         String sql = "update user_mstr set user_site = ?, user_lname = ?, user_fname = ?, "
                 + " user_mname = ?, user_email = ?, user_phone = ?, user_cell = ?, "
@@ -308,6 +386,22 @@ public class admData {
     public static user_mstr getUserMstr(String[] x) {
         user_mstr r = null;
         String[] m ;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getUserMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServADM");
+                r = objectMapper.readValue(returnstring, user_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new user_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from user_mstr where user_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -343,6 +437,18 @@ public class admData {
     }
         
     public static String[] deleteUserMstr(user_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteUserMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         if (x == null) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
@@ -386,6 +492,19 @@ public class admData {
         
     
     public static String[] addUpdateOVMstr(ov_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addUpdateOVMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         int rows = 0;
         String[] m ;
         String sqlSelect = "SELECT * FROM  ov_mstr"; // there should always be only 1 or 0 records in ov_mstr
@@ -488,8 +607,8 @@ public class admData {
         String sqlSelect = "SELECT * FROM  ftp_mstr where ftp_id = ?";
         String sqlInsert = "insert into ftp_mstr (ftp_id, ftp_desc, ftp_ip, ftp_login, " +
                           " ftp_passwd, ftp_commands, ftp_indir, ftp_outdir, ftp_delete, ftp_passive, " +
-                          " ftp_binary, ftp_timeout, ftp_port, ftp_enabled, ftp_sftp, ftp_site ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                          " ftp_binary, ftp_timeout, ftp_port, ftp_enabled, ftp_sftp, ftp_site, ftp_email ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
              PreparedStatement ps = con.prepareStatement(sqlSelect);) {
              ps.setString(1, x.ftp_id);
@@ -512,6 +631,7 @@ public class admData {
             psi.setString(14, x.ftp_enabled);
             psi.setString(15, x.ftp_sftp);
             psi.setString(16, x.ftp_site);
+            psi.setString(17, x.ftp_email);
             int rows = psi.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
             } else {
@@ -548,11 +668,11 @@ public class admData {
                           " ftp_passwd = ?, ftp_commands = ?, ftp_indir = ?, ftp_outdir = ?, " +
                           " ftp_delete = ?, ftp_passive = ?, " +
                           " ftp_binary = ?, ftp_timeout = ?, ftp_port = ?,  " +
-                          " ftp_enabled = ?, ftp_sftp = ?, ftp_site = ? " +
+                          " ftp_enabled = ?, ftp_sftp = ?, ftp_site = ?, ftp_email = ? " +
                           " where ftp_id = ? ; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql)) {
-        ps.setString(16, x.ftp_id);
+        ps.setString(17, x.ftp_id);
             ps.setString(1, x.ftp_desc);
             ps.setString(2, x.ftp_ip);
             ps.setString(3, x.ftp_login);
@@ -568,6 +688,7 @@ public class admData {
             ps.setString(13, x.ftp_enabled);
             ps.setString(14, x.ftp_sftp);
             ps.setString(15, x.ftp_site);
+            ps.setString(16, x.ftp_email);
         int rows = ps.executeUpdate();
         m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
         } catch (SQLException s) {
@@ -650,7 +771,8 @@ public class admData {
                             res.getString("ftp_timeout"),
                             res.getString("ftp_enabled"),
                             res.getString("ftp_sftp"),
-                            res.getString("ftp_site")
+                            res.getString("ftp_site"),
+                            res.getString("ftp_email")
                         );
                     }
                 }
@@ -2508,20 +2630,22 @@ public class admData {
         
     }
     
-    public static ArrayList<String> runFTPClient(String c) {
+    public static ArrayList<String[]> runFTPClient(String c) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<>();
             list.add(new String[]{"id", "runFTPClient"});
             list.add(new String[]{"param1", c});
             try {
-                return jsonToArrayListString(sendServerPost(list, "", null, "dataServADM"));
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServADM"));
             } catch (IOException ex) {
                 bslog(ex);
                 return null;
             }
         }
+        boolean dblogging = BlueSeerUtils.ConvertStringToBool(OVData.getSysMetaValue("system", "ftp", "dblogging"));
+        
         File lf = new File("ftpbss.lck");
-        ArrayList<String> logdata = new ArrayList<String>();
+        ArrayList<String[]> logdata = new ArrayList<String[]>();
         ftp_mstr fm = admData.getFTPMstr(new String[]{c});
         HashMap<String, String> ftpa = getFTPAttrHash(new String[]{c});
         
@@ -2540,8 +2664,13 @@ public class admData {
         timeout *= 1000;
                
         if (fm.m[0].equals(BlueSeerUtils.ErrorBit)) {
-            log("ftp", fm.m[1]);
-            return logdata;
+            if (dblogging) { 
+                logdata.add(new String[]{"1", "Unable to retrieve ftp_mstr record id"});
+                writeFTPLogMulti(logdata, fm);
+            } else {
+                log("ftp", fm.m[1]); 
+            } 
+            return logdata; 
         }
         
         
@@ -2597,12 +2726,16 @@ public class admData {
              try {
                  
                 if (lf.exists()) {
-                    logdata.add("ftpbss:  lock file found...exiting.  ftpbss.lck");
-                    log("ftp", logdata);
+                    logdata.add(new String[]{"0", "ftpbss:  lock file found...exiting.  ftpbss.lck"});
+                    if (dblogging) { 
+                        writeFTPLogMulti(logdata, fm);
+                    } else {
+                        log("ftp", logdata); 
+                    } 
                     return logdata;
                 } else {
                     lf.createNewFile();
-                    logdata.add("ftpbss:  creating lock file.  ftpbss.lck");
+                    logdata.add(new String[]{"0", "ftpbss:  creating lock file.  ftpbss.lck"});
                 }
                  
                  
@@ -2622,8 +2755,7 @@ public class admData {
                 
                 session.setConfig(config);
                 
-                logdata.add("***   Attempting sftp connection to " + fm.ftp_ip() + "   ***");
-                
+                logdata.add(new String[]{"0", "***   Attempting sftp connection to " + fm.ftp_ip() + "   ***"});
                 session.connect();
                 channel = session.openChannel("sftp");
                 channel.connect();
@@ -2634,10 +2766,10 @@ public class admData {
                     String[] splitLine = line.trim().split("\\s+");
                     if (splitLine.length > 1 && splitLine[0].equals("cd")) {
                         try{
-                            logdata.add("changing directory..." + splitLine[1]);
+                            logdata.add(new String[]{"0", "changing directory..." + splitLine[1]});
                         csftp.cd(splitLine[1]); 
                         } catch(SftpException e){
-                            logdata.add(e.toString());
+                            logdata.add(new String[]{"1", e.toString()});
                         }
                         
                     }
@@ -2648,17 +2780,17 @@ public class admData {
                         }
                         
                         try{
-                        logdata.add("listing contents...");
+                        logdata.add(new String[]{"0", "listing contents..."});
                         java.util.List ftpFiles = csftp.ls(x); 
-                        logdata.add("file count..." + ftpFiles.size() );
+                        logdata.add(new String[]{"0", "file count..." + ftpFiles.size()});
                         if (ftpFiles != null) {
                             for (Object f : ftpFiles) {
                                 ChannelSftp.LsEntry le = (ChannelSftp.LsEntry) f;
-                                logdata.add(le.getLongname() );
+                                logdata.add(new String[]{"0", le.getLongname()});
                             }
 		        }
                         } catch(SftpException e){
-                            logdata.add(e.toString() );
+                            logdata.add(new String[]{"1", e.toString()});
                         }
                     }
                     if (splitLine.length > 1 && splitLine[0].equals("put")) {
@@ -2675,14 +2807,14 @@ public class admData {
                               String x = ("\\Q" + splitLine[splitLine.length - 1] + "\\E").replace("*", "\\E.*\\Q");
                                 if (localFiles[i].getName().matches(x)) {
                                     InputStream inputStream = new FileInputStream(localFiles[i]);
-                                    logdata.add("storing file: " + localFiles[i].getName() + " size: " + localFiles[i].length() );
+                                    logdata.add(new String[]{"0", "storing file: " + localFiles[i].getName() + " size: " + localFiles[i].length()} );
                                     try {
                                     csftp.put(inputStream, localFiles[i].getName());
-                                    logdata.add("file stored: " + localFiles[i].getName() );
+                                     logdata.add(new String[]{"0", "file stored: " + localFiles[i].getName() } );
                                     isSuccess = true;
                                     } catch(SftpException e){
-                                    logdata.add("unable to store file: " + localFiles[i].getName() );
-                                    logdata.add(e.toString() );
+                                    logdata.add(new String[]{"0", "unable to store file: " + localFiles[i].getName()  } );  
+                                    logdata.add(new String[]{"1", e.toString()});
                                     isSuccess = false;
                                     } finally {
                                       if (inputStream != null) {
@@ -2707,17 +2839,17 @@ public class admData {
                                 if (! le.getAttrs().isDir() && le.getFilename().matches(x)) {
                                 Path inpath = FileSystems.getDefault().getPath(homeIn + "/" + le.getFilename());
 	              		in = new FileOutputStream(inpath.toFile());
-                                logdata.add("retrieving file: " + le.getFilename() + " size:" + le.getAttrs().getSize() );
+                                logdata.add(new String[]{"0", "retrieving file: " + le.getFilename() + " size:" + le.getAttrs().getSize()  } );  
                                 csftp.get(le.getFilename(), in);
                                 in.close();
-                                logdata.add("file retrieved: " + le.getFilename() );
+                                logdata.add(new String[]{"0", "file retrieved: " + le.getFilename()   } ); 
                                     if (BlueSeerUtils.ConvertStringToBool(String.valueOf(fm.ftp_delete()))) {
                                         try {
                                         csftp.rm(le.getFilename());
-                                        logdata.add("deleted from server: " + le.getFilename() );
+                                        logdata.add(new String[]{"0", "deleted from server: " + le.getFilename()    } );
                                         } catch(SftpException e){
-                                        logdata.add("Could not delete the file: "+ le.getFilename() );
-                                        logdata.add(e.toString() );
+                                        logdata.add(new String[]{"0", "Could not delete the file: "+ le.getFilename()} );
+                                        logdata.add(new String[]{"1", e.toString()});
                                         }
                                     }
                                 }
@@ -2734,10 +2866,10 @@ public class admData {
                                 if (! le.getAttrs().isDir() && le.getFilename().matches(x)) {
                                     try {
                                     csftp.rm(le.getFilename());
-                                    logdata.add("deleted from server: " + le.getFilename());
+                                    logdata.add(new String[]{"0", "deleted from server: " + le.getFilename()});
                                     } catch(SftpException e){
-                                    logdata.add("Could not delete the file: "+ le.getFilename() );
-                                    logdata.add(e.toString());
+                                    logdata.add(new String[]{"0", "Could not delete the file: "+ le.getFilename()} );
+                                    logdata.add(new String[]{"1", e.toString()});
                                     }
                                 in.close();
                                 }
@@ -2748,36 +2880,44 @@ public class admData {
                 } // for commands
                 
              } catch (Exception e) {
-                logdata.add("***   Unable to connect to FTP server. " + e.toString() + "   ***" + "");
+                logdata.add(new String[]{"1", "***   Unable to connect to FTP server. " + e.toString() + "   ***" + ""});
             } finally {
                 
                 try {
                     
                     if (lf.exists()) {
                     lf.delete();
-                    logdata.add("ftpbss:  process complete...removing lock file.  ftpbss.lck");
+                    logdata.add(new String[]{"0", "ftpbss:  process complete...removing lock file.  ftpbss.lck"});
                     }
                     
                     if(session != null) {
                         session.disconnect();
-                        logdata.add("disconnect session...");
+                        logdata.add(new String[]{"0", "disconnect session..."});
                     }
 
                     if(channel != null) {
                         channel.disconnect();
-                        logdata.add("disconnect channel...");
+                        logdata.add(new String[]{"0", "disconnect channel..."});
                     }
 
                     if(csftp != null) {
                         csftp.quit();
-                        logdata.add("quit...");
+                        logdata.add(new String[]{"0", "quit..."});
                     }
                    
-                  log("ftp", logdata);  
+                  if (dblogging) { 
+                        writeFTPLogMulti(logdata, fm);
+                    } else {
+                        log("ftp", logdata); 
+                    } 
             
                 } catch (Exception exc) {
-                    logdata.add("***   Unable to disconnect from sFTP server. " + exc.toString()+"   ***" );
-                    log("ftp", logdata);  
+                    logdata.add(new String[]{"1", "***   Unable to disconnect from sFTP server. " + exc.toString()+"   ***"});
+                    if (dblogging) { 
+                        writeFTPLogMulti(logdata, fm);
+                    } else {
+                        log("ftp", logdata); 
+                    }
                 }  
             }
             
@@ -2785,7 +2925,7 @@ public class admData {
         } 
         
         
-        
+         // vanilla FTP run
          FTPClient client = new FTPClient();
          FileOutputStream in = null;
          
@@ -2806,8 +2946,12 @@ public class admData {
                 
                 int replyCode = client.getReplyCode();
                 if (! FTPReply.isPositiveCompletion(replyCode)) {
-                    logdata.add("connection failed..." + String.valueOf(replyCode));
-                    log("ftp", logdata);  
+                    logdata.add(new String[]{"1", "connection failed..." + String.valueOf(replyCode)});
+                    if (dblogging) { 
+                        writeFTPLogMulti(logdata, fm);
+                    } else {
+                        log("ftp", logdata); 
+                    }
                 return logdata;
                 }
                 
@@ -2819,19 +2963,19 @@ public class admData {
                 
                  if (BlueSeerUtils.ConvertStringToBool(String.valueOf(fm.ftp_passive()))) {
 		client.enterLocalPassiveMode();
-                logdata.add("CLIENT: setting passive");
+                logdata.add(new String[]{"0", "CLIENT: setting passive"});
                 } else {
                 client.enterLocalActiveMode(); 
-                logdata.add("CLIENT: setting active");
+                logdata.add(new String[]{"0", "CLIENT: setting active"});
                 }
                 showServerReply(client, logdata);
                 
                 if (BlueSeerUtils.ConvertStringToBool(String.valueOf(fm.ftp_binary()))) {
 		client.setFileType(FTP.BINARY_FILE_TYPE);
-                logdata.add("CLIENT: setting binary");
+                logdata.add(new String[]{"0", "CLIENT: setting binary"});
                 } else {
                 client.setFileType(FTP.ASCII_FILE_TYPE);
-                logdata.add("CLIENT: setting ascii");
+                logdata.add(new String[]{"0", "CLIENT: setting ascii"});
                 }
                 showServerReply(client, logdata);
 		
@@ -2841,7 +2985,7 @@ public class admData {
                 for (String line : fm.ftp_commands().split("\\n"))   {
                     String[] splitLine = line.trim().split("\\s+");
                     if (splitLine.length > 1 && splitLine[0].equals("cd")) {
-                        logdata.add("changing directory..." + splitLine[1]);
+                        logdata.add(new String[]{"0", "changing directory..." + splitLine[1]});
                         client.changeWorkingDirectory(splitLine[1]);
                         showServerReply(client, logdata);
                     }
@@ -2853,7 +2997,7 @@ public class admData {
                         FTPFile[] ftpFiles = client.listFiles(x);
                         if (ftpFiles != null) {
                             for (FTPFile f : ftpFiles) {
-                                logdata.add(f.getName());
+                                logdata.add(new String[]{"0", f.getName()});
                             }
 		        }
                         showServerReply(client, logdata);
@@ -2874,16 +3018,16 @@ public class admData {
                                     boolean done = client.storeFile(localFiles[i].getName(), inputStream);
                                     inputStream.close();
                                     if (done) {
-                                        logdata.add("file stored: " + localFiles[i].getName());
+                                        logdata.add(new String[]{"0", "file stored: " + localFiles[i].getName()});
                                         isSuccess = true;
                                     } else {
-                                        logdata.add("unable to store file: " + localFiles[i].getName());
+                                        logdata.add(new String[]{"1", "unable to store file: " + localFiles[i].getName()});
                                         isSuccess = false;
                                     }   
                                     if (isLocalDelete && isSuccess && ! localFiles[i].getName().isBlank()) {
                                         Path filepath = FileSystems.getDefault().getPath(homeOut + localFiles[i].getName());
                                         Files.deleteIfExists(filepath);
-                                        logdata.add("deleting local file: " + localFiles[i].getName());
+                                        logdata.add(new String[]{"0", "deleting local file: " + localFiles[i].getName()});
                                     }    
                                 }
                           } 
@@ -2900,14 +3044,14 @@ public class admData {
 	              		in = new FileOutputStream(inpath.toFile());
                                 client.retrieveFile(f.getName(), in);
                                 in.close();
-                                logdata.add("retrieving file: " + f.getName());
+                                logdata.add(new String[]{"0", "retrieving file: " + f.getName()});
                                 showServerReply(client, logdata);
                                 if (BlueSeerUtils.ConvertStringToBool(String.valueOf(fm.ftp_delete()))) {
                                     boolean deleted = client.deleteFile(f.getName());
                                     if (deleted) {
-                                        logdata.add("deleted from server: " + f.getName());
+                                        logdata.add(new String[]{"0", "deleted from server: " + f.getName()});
                                     } else {
-                                        logdata.add("Could not delete the file: "+ f.getName());
+                                        logdata.add(new String[]{"1", "Could not delete the file: "+ f.getName()});
                                     }
                                 }
                                 }
@@ -2922,10 +3066,10 @@ public class admData {
                                 String x = ("\\Q" + splitLine[1] + "\\E").replace("*", "\\E.*\\Q");
                                // if (! le.getAttrs().isDir() && le.getFilename().matches(x)) {
                                 if (! f.isDirectory() && f.getName().matches(x)) {
-                                logdata.add("deleting file: " + f.getName() + " size:" + f.getSize());
+                                logdata.add(new String[]{"0", "deleting file: " + f.getName() + " size:" + f.getSize()});
                                 client.deleteFile(f.getName());
                                 in.close();
-                                logdata.add("file deleted: " + f.getName());
+                                logdata.add(new String[]{"0", "file deleted: " + f.getName()});
                                 showServerReply(client, logdata);
                                 }
                             }
@@ -2940,11 +3084,19 @@ public class admData {
 		
 		
 	} catch (SocketException e) {
-		logdata.add("socket error: " + e.getMessage());
-                log("ftp", logdata);  
+            logdata.add(new String[]{"1", "socket error: " + e.getMessage()});
+                if (dblogging) { 
+                        writeFTPLogMulti(logdata, fm);
+                    } else {
+                        log("ftp", logdata); 
+                    }  
 	} catch (IOException e) {
-		logdata.add("io error: " + e.getMessage());
-                log("ftp", logdata);  
+                logdata.add(new String[]{"1", "io error: " + e.getMessage()});
+                if (dblogging) { 
+                        writeFTPLogMulti(logdata, fm);
+                    } else {
+                        log("ftp", logdata); 
+                    }  
 		
         } finally {
             if (in != null) {
@@ -2961,18 +3113,22 @@ public class admData {
                   ex.printStackTrace();
               }
           }
-          log("ftp", logdata);  
+            if (dblogging) { 
+                writeFTPLogMulti(logdata, fm);
+            } else {
+                log("ftp", logdata); 
+            }  
        }
    
      return logdata;
     }
     
-    private static void showServerReply(FTPClient ftpClient, ArrayList<String> list) {
+    private static void showServerReply(FTPClient ftpClient, ArrayList<String[]> list) {
         String[] replies = ftpClient.getReplyStrings();
         if (replies != null && replies.length > 0) {
             
             for (String aReply : replies) {
-                list.add("SERVER: " + aReply);
+                list.add(new String[]{"0" + "SERVER: " + aReply});
             }
         }
     }
@@ -3255,10 +3411,10 @@ public class admData {
     public record ftp_mstr(String[] m, String ftp_id, String ftp_desc, String ftp_ip, String ftp_port, 
         String ftp_login, String ftp_passwd, String ftp_commands, String ftp_indir, 
         String ftp_outdir, String ftp_delete, String ftp_passive, String ftp_binary, 
-        String ftp_timeout, String ftp_enabled, String ftp_sftp, String ftp_site) {
+        String ftp_timeout, String ftp_enabled, String ftp_sftp, String ftp_site, String ftp_email) {
         public ftp_mstr(String[] m) {
             this(m, "", "", "", "", "", "", "", "", "", "",
-                    "", "", "", "", "", "");
+                    "", "", "", "", "", "", "");
         }
         
     }

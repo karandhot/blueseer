@@ -28,13 +28,22 @@ package com.blueseer.srv;
 
 import com.blueseer.adm.admData;
 import static com.blueseer.adm.admData.addFTPMstr;
+import static com.blueseer.adm.admData.addSiteMstr;
+import static com.blueseer.adm.admData.addUpdateOVMstr;
+import static com.blueseer.adm.admData.addUserMstr;
 import static com.blueseer.adm.admData.deleteFTPAttrMstr;
 import static com.blueseer.adm.admData.deleteFTPMstr;
+import static com.blueseer.adm.admData.deleteSiteMstr;
+import static com.blueseer.adm.admData.deleteUserMstr;
 import static com.blueseer.adm.admData.getFTPAttr;
 import static com.blueseer.adm.admData.getFTPAttrHash;
 import static com.blueseer.adm.admData.getFTPMstr;
 import static com.blueseer.adm.admData.getSiteInit;
+import static com.blueseer.adm.admData.getSiteMstr;
+import static com.blueseer.adm.admData.getUserMstr;
 import static com.blueseer.adm.admData.updateFTPMstr;
+import static com.blueseer.adm.admData.updateSiteMstr;
+import static com.blueseer.adm.admData.updateUserMstr;
 import com.blueseer.edi.FTPMaint;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
@@ -92,6 +101,104 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(ArrayListStringToJson(admData.getAllPKSKeysExceptStore()));
             break;
      
+        case "addSiteMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.site_mstr x = objectMapper.readValue(sb.toString(), admData.site_mstr.class);            
+            response.getWriter().print(arrayToJson(addSiteMstr(x)));
+            break;
+          }
+           
+        case "updateSiteMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.site_mstr x = objectMapper.readValue(sb.toString(), admData.site_mstr.class);            
+            response.getWriter().print(arrayToJson(updateSiteMstr(x)));
+            break;
+          }
+        
+        case "deleteSiteMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.site_mstr x = objectMapper.readValue(sb.toString(), admData.site_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteSiteMstr(x)));
+            break;
+          }
+        
+        case "getSiteMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            admData.site_mstr x = getSiteMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        
+        case "addUserMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.user_mstr x = objectMapper.readValue(sb.toString(), admData.user_mstr.class);            
+            response.getWriter().print(arrayToJson(addUserMstr(x)));
+            break;
+          }
+         
+        case "updateUserMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.user_mstr x = objectMapper.readValue(sb.toString(), admData.user_mstr.class);            
+            response.getWriter().print(arrayToJson(updateUserMstr(x)));
+            break;
+          }
+        
+        case "deleteUserMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.user_mstr x = objectMapper.readValue(sb.toString(), admData.user_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteUserMstr(x)));
+            break;
+          }
+        
+        case "getUserMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            admData.user_mstr x = getUserMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        
         case "getSiteInit" : { 
             response.getWriter().print(ArrayListStringArrayToJson(getSiteInit(request.getHeader("param1"), request.getHeader("param2"))));
             break;  
@@ -161,6 +268,19 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
           }
         
+        case "addUpdateOVMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.ov_mstr x = objectMapper.readValue(sb.toString(), admData.ov_mstr.class);            
+            response.getWriter().print(arrayToJson(addUpdateOVMstr(x)));
+            break;
+          }
+        
         
         case "addUpdateFTPAttr" : {
             String line;
@@ -185,7 +305,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         }
         
         case "runFTPClient" :
-            response.getWriter().print(ArrayListStringToJson(admData.runFTPClient(request.getHeader("param1"))));     
+            response.getWriter().print(ArrayListStringArrayToJson(admData.runFTPClient(request.getHeader("param1"))));     
             break;
         
         default:

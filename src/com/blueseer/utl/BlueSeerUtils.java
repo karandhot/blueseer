@@ -2310,7 +2310,7 @@ public class BlueSeerUtils {
     }
   
      
-     public static void log(String logtype, ArrayList<String> list) {
+     public static void log(String logtype, ArrayList<String[]> list) {
                  
         if (list == null || list.size() <= 0) {
             return;
@@ -2330,8 +2330,8 @@ public class BlueSeerUtils {
         try {
             output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(edilogpath.toFile(), true)));
             output.write("TIMESTAMP: " + now + "" + "\n");
-            for (String s : list) {
-                output.write(s + "\n");
+            for (String[] s : list) {
+                output.write(s[1] + "\n");
             }
            // list.clear();
         } catch (FileNotFoundException ex) {

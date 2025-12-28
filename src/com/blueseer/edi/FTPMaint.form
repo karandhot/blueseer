@@ -193,12 +193,15 @@
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" attributes="0">
-                                              <Component id="cbenabled" min="-2" max="-2" attributes="0"/>
-                                              <EmptySpace min="-2" pref="29" max="-2" attributes="0"/>
-                                              <Component id="cbsftp" min="-2" max="-2" attributes="0"/>
-                                          </Group>
+                                          <Component id="tbport" min="-2" pref="95" max="-2" attributes="0"/>
                                           <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                                              <Group type="102" attributes="0">
+                                                  <Component id="cbenabled" min="-2" max="-2" attributes="0"/>
+                                                  <EmptySpace min="-2" pref="29" max="-2" attributes="0"/>
+                                                  <Component id="cbsftp" min="-2" max="-2" attributes="0"/>
+                                                  <EmptySpace max="32767" attributes="0"/>
+                                                  <Component id="cbemailonerror" min="-2" max="-2" attributes="0"/>
+                                              </Group>
                                               <Component id="tbdesc" alignment="0" max="32767" attributes="0"/>
                                               <Component id="tbip" alignment="0" max="32767" attributes="0"/>
                                               <Component id="tblogin" alignment="0" max="32767" attributes="0"/>
@@ -207,7 +210,6 @@
                                               <Component id="tboutdir" alignment="0" max="32767" attributes="0"/>
                                               <Component id="jScrollPane2" alignment="0" min="-2" pref="247" max="-2" attributes="0"/>
                                           </Group>
-                                          <Component id="tbport" min="-2" pref="95" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
@@ -254,6 +256,7 @@
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="cbenabled" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="cbsftp" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbemailonerror" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
@@ -482,6 +485,11 @@
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btrunActionPerformed"/>
                       </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="cbemailonerror">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="EmailOnError"/>
+                      </Properties>
                     </Component>
                   </SubComponents>
                 </Container>

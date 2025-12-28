@@ -89,7 +89,7 @@ public class jobFTP implements Job {
                 if (! ftpid.isBlank() && isValidFTPid(ftpid)) {
                     if (isFTPidEnabled(ftpid)) {
                         try {   
-                            ArrayList<String> list = admData.runFTPClient(ftpid);
+                            ArrayList<String[]> list = admData.runFTPClient(ftpid);
                         } catch (Exception ex) {
                             System.out.println(ex);
                         }
