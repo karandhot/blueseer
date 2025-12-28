@@ -3106,13 +3106,13 @@ public class admData {
                     ex.printStackTrace();
                 }
             }
-          if (client.isConnected()) {
+            if (client.isConnected()) {
               try {
                       client.disconnect();
               } catch (IOException ex) {
                   ex.printStackTrace();
               }
-          }
+            }
             if (dblogging) { 
                 writeFTPLogMulti(logdata, fm);
             } else {
@@ -3128,7 +3128,7 @@ public class admData {
         if (replies != null && replies.length > 0) {
             
             for (String aReply : replies) {
-                list.add(new String[]{"0" + "SERVER: " + aReply});
+                list.add(new String[]{"0", "SERVER: " + aReply});
             }
         }
     }
