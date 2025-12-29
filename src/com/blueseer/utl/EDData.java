@@ -3887,10 +3887,11 @@ public class EDData {
                             ps.setString(2, hextimestamp);
                             ps.setString(3, s[0]);
                             ps.setString(4, (s[1].length() > 500) ? s[1].substring(0,500) : s[1]);
-                            ps.setString(5, ftpm.ftp_sftp());
+                            ps.setString(5, (ftpm.ftp_sftp().equals("1")) ? "sftp" : "ftp");
                             ps.setString(6, ftpm.ftp_site());
-                            ps.setString(7, "0");
+                            ps.setString(7, (ftpm.ftp_email().equals("1")) ? "0" : "1");
                             ps.executeUpdate();
+                            
                 }  
             } catch (SQLException s) {
                  MainFrame.bslog(s);
@@ -4249,6 +4250,101 @@ public class EDData {
          
         } 
     }
+    
+    public static void sendFTPErrorMail() {
+        
+        if (OVData.getSysMetaValue("system", "ftp", "errormail").equals("1")) {
+            try {
+                Class.forName(driver);
+                Connection con = null;
+                if (ds != null) {
+                  con = ds.getConnection();
+                } else {
+                  con = DriverManager.getConnection(url + db, user, pass);  
+                }
+                Statement st = con.createStatement();
+                ResultSet res = null;
+                try {
+
+
+                     ArrayList<String[]> list = new ArrayList<String[]>();
+                     ArrayList<String[]> maillist = new ArrayList<String[]>();
+                     res = st.executeQuery("select ftpl_clientid, ftpl_batch, ftpl_messg, ftpl_ts from ftp_log " +
+                             " where ftpl_status = '1' and ftpl_mflag = '0' " +
+                            ";" );
+                   while (res.next()) {
+                       list.add(new String[]{
+                           res.getString("ftpl_id"),
+                           res.getString("ftpl_clientid"),
+                           res.getString("ftpl_batch"),
+                           res.getString("ftpl_messg"),
+                           res.getString("ftpl_ts")
+                       });
+                    }
+                   
+                   if (list.size() == 0) {
+                       return;
+                   }
+                   
+                   for (String[] s : list) {
+                     res = st.executeQuery("select ftp_mflag from ftp_mstr " +
+                          " where ftp_id = " + "'" + s[1] +      
+                            ";" );  
+                     while (res.next()) {
+                         if (res.getString("ftp_mflag").equals("1")) {
+                             maillist.add(s);
+                         }
+                     }
+                   }
+                   
+                   if (maillist.isEmpty()) {
+                       return;
+                   }
+                   
+                   for (String[] s : list) {
+                     st.executeUpdate("update ftp_log set ftpl_mflag = '1' where " +
+                             " ftpl_id = " + "'" + s[0] + "'" );
+                   }
+
+                   // reduce list by site
+                   if (maillist != null && maillist.size() > 0) {
+                    LinkedHashMap<String, String> lhm = new LinkedHashMap<String, String>();
+                    for (String[] s : maillist) {
+                       if (lhm.containsKey(s[1])) {
+                           String x = lhm.get(s[1]);
+                           x = x + "ftp ID: " + s[1] + "    timestamp: " + s[3] + "     Message: " + s[2] + "\n";
+                           lhm.replace(s[1], x);
+                       } else {
+                           lhm.put(s[1], "ftp ID: " + s[1] + "    timestamp: " + s[3] + "     Message: " + s[2] + "\n");
+                       }
+                    }
+                    String to = "";
+                    String[] creds = getSMTPCredentials();
+                    for (Map.Entry<String, String> sitekey : lhm.entrySet()) {
+                        to = OVData.getSysMetaValue("system", "ftp_error_email_to", sitekey.getKey());
+                        if (! to.isBlank() && ! creds[1].isBlank()) {
+                          sendEmail(to, "BlueSeer FTP Error Log Entries: " + getSiteName(sitekey.getKey()), sitekey.getValue(), "");
+                        }
+                    }
+                   }
+                      
+
+
+                } catch (SQLException s) {
+                    MainFrame.bslog(s);
+                } finally {
+                   if (res != null) res.close();
+                   if (st != null) st.close();
+                   con.close();
+                }
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            }
+        
+         
+        } 
+    }
+    
     
     public static ArrayList<String> getEDIAckFile(String key, String batchdir, String segdelim) throws MalformedURLException, SmbException, UnknownHostException, IOException {
         
