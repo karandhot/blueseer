@@ -85,6 +85,7 @@ public class CronMaint extends javax.swing.JPanel implements IBlueSeerT  {
     // global variable declarations
                 boolean isLoad = false;
                 public static cron_mstr x = null;
+                ArrayList<String[]> initDataSet = null;
     
    // global datatablemodel declarations   
    
@@ -274,6 +275,7 @@ public class CronMaint extends javax.swing.JPanel implements IBlueSeerT  {
     
     public void setComponentDefaultValues() {
         isLoad = true;
+        initDataSet = admData.getCronInit(this.getClass().getName(), bsmf.MainFrame.userid);
         tbkey.setText("");
         tbdesc.setText("");
         tbgroup.setText("");
@@ -288,7 +290,11 @@ public class CronMaint extends javax.swing.JPanel implements IBlueSeerT  {
         
         ddjobclass.removeAllItems();
         ddjobclass.addItem("");
-        OVData.getCodeMstrKeyList("sys_job_class").stream().forEach((s) -> ddjobclass.addItem(s));
+        for (String[] s : initDataSet) {
+            if (s[0].equals("jobs")) {
+              ddjobclass.addItem(s[1]);  
+            }
+        }
         ddjobclass.setSelectedIndex(0);
         
        isLoad = false;
@@ -398,8 +404,6 @@ public class CronMaint extends javax.swing.JPanel implements IBlueSeerT  {
        setComponentDefaultValues();
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
-      
-       
         
         if (arg != null && arg.length > 0) {
             executeTask(dbaction.get,arg);

@@ -57,6 +57,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -79,7 +80,7 @@ public class SiteMaint extends javax.swing.JPanel implements IBlueSeerT {
     // global variable declarations
                 boolean isLoad = false;
                 public static site_mstr x = null;
-     
+                ArrayList<String[]> initDataSet = null;
                 
    // global datatablemodel declarations    
         
@@ -266,7 +267,9 @@ public class SiteMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void setComponentDefaultValues() {
        isLoad = true;
-           tbkey.setText("");
+       initDataSet = admData.getSiteInit(this.getClass().getName(), bsmf.MainFrame.userid);
+       
+        tbkey.setText("");
         tbdesc.setText("");
         tbline1.setText("");
         tbline2.setText("");
@@ -291,15 +294,20 @@ public class SiteMaint extends javax.swing.JPanel implements IBlueSeerT {
         tb_pos_generic.setBackground(Color.white);
         
         ddstate.removeAllItems();
-        ddstate.addItem("");
-        OVData.getCodeMstrKeyList("state").stream().forEach((s) -> ddstate.addItem(s));
-        ddstate.setSelectedIndex(0);
-        
         ddcountry.removeAllItems();
+        for (String[] s : initDataSet) {
+            if (s[0].equals("countries")) {
+              ddcountry.addItem(s[1]);  
+            }
+            if (s[0].equals("states")) {
+              ddstate.addItem(s[1]);    
+            }
+        }
+        
+        ddstate.addItem("");
         ddcountry.addItem("");
-        OVData.getCodeMstrKeyList("country").stream().forEach((s) -> ddcountry.addItem(s));  
+        ddstate.setSelectedIndex(0);
         ddcountry.setSelectedIndex(0);
-      
         
        isLoad = false;
     }

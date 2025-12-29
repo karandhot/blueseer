@@ -27,21 +27,34 @@ package com.blueseer.srv;
 
 
 import com.blueseer.adm.admData;
+import static com.blueseer.adm.admData.addCronMstr;
 import static com.blueseer.adm.admData.addFTPMstr;
+import static com.blueseer.adm.admData.addMenuMstr;
+import static com.blueseer.adm.admData.addPanelMstr;
 import static com.blueseer.adm.admData.addSiteMstr;
 import static com.blueseer.adm.admData.addUpdateOVMstr;
 import static com.blueseer.adm.admData.addUserMstr;
+import static com.blueseer.adm.admData.deleteCronMstr;
 import static com.blueseer.adm.admData.deleteFTPAttrMstr;
 import static com.blueseer.adm.admData.deleteFTPMstr;
+import static com.blueseer.adm.admData.deleteMenuMstr;
+import static com.blueseer.adm.admData.deletePanelMstr;
 import static com.blueseer.adm.admData.deleteSiteMstr;
 import static com.blueseer.adm.admData.deleteUserMstr;
+import static com.blueseer.adm.admData.getCronInit;
+import static com.blueseer.adm.admData.getCronMstr;
 import static com.blueseer.adm.admData.getFTPAttr;
 import static com.blueseer.adm.admData.getFTPAttrHash;
 import static com.blueseer.adm.admData.getFTPMstr;
+import static com.blueseer.adm.admData.getMenuMstr;
+import static com.blueseer.adm.admData.getPanelMstr;
 import static com.blueseer.adm.admData.getSiteInit;
 import static com.blueseer.adm.admData.getSiteMstr;
 import static com.blueseer.adm.admData.getUserMstr;
+import static com.blueseer.adm.admData.updateCronMstr;
 import static com.blueseer.adm.admData.updateFTPMstr;
+import static com.blueseer.adm.admData.updateMenuMstr;
+import static com.blueseer.adm.admData.updatePanelMstr;
 import static com.blueseer.adm.admData.updateSiteMstr;
 import static com.blueseer.adm.admData.updateUserMstr;
 import com.blueseer.edi.FTPMaint;
@@ -149,7 +162,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
           }
         
-        
+                
         case "addUserMstr" : { 
             String line;
             StringBuilder sb = new StringBuilder();  
@@ -201,6 +214,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         case "getSiteInit" : { 
             response.getWriter().print(ArrayListStringArrayToJson(getSiteInit(request.getHeader("param1"), request.getHeader("param2"))));
+            break;  
+        }    
+        
+        case "getCronInit" : { 
+            response.getWriter().print(ArrayListStringArrayToJson(getCronInit(request.getHeader("param1"), request.getHeader("param2"))));
             break;  
         }    
         
@@ -304,9 +322,155 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
         }
         
-        case "runFTPClient" :
+        case "runFTPClient" : {
             response.getWriter().print(ArrayListStringArrayToJson(admData.runFTPClient(request.getHeader("param1"))));     
             break;
+        }
+            
+        case "addCronMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.cron_mstr x = objectMapper.readValue(sb.toString(), admData.cron_mstr.class);            
+            response.getWriter().print(arrayToJson(addCronMstr(x)));
+            break;
+          }
+           
+        case "updateCronMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.cron_mstr x = objectMapper.readValue(sb.toString(), admData.cron_mstr.class);            
+            response.getWriter().print(arrayToJson(updateCronMstr(x)));
+            break;
+          }
+        
+        case "deleteCronMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.cron_mstr x = objectMapper.readValue(sb.toString(), admData.cron_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteCronMstr(x)));
+            break;
+          }
+        
+        case "getCronMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            admData.cron_mstr x = getCronMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+            
+        case "addMenuMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.menu_mstr x = objectMapper.readValue(sb.toString(), admData.menu_mstr.class);            
+            response.getWriter().print(arrayToJson(addMenuMstr(x)));
+            break;
+          }
+           
+        case "updateMenuMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.menu_mstr x = objectMapper.readValue(sb.toString(), admData.menu_mstr.class);            
+            response.getWriter().print(arrayToJson(updateMenuMstr(x)));
+            break;
+          }
+        
+        case "deleteMenuMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.menu_mstr x = objectMapper.readValue(sb.toString(), admData.menu_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteMenuMstr(x)));
+            break;
+          }
+        
+        case "getMenuMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            admData.menu_mstr x = getMenuMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+           
+        case "addPanelMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.panel_mstr x = objectMapper.readValue(sb.toString(), admData.panel_mstr.class);            
+            response.getWriter().print(arrayToJson(addPanelMstr(x)));
+            break;
+          }
+           
+        case "updatePanelMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.panel_mstr x = objectMapper.readValue(sb.toString(), admData.panel_mstr.class);            
+            response.getWriter().print(arrayToJson(updatePanelMstr(x)));
+            break;
+          }
+        
+        case "deletePanelMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.panel_mstr x = objectMapper.readValue(sb.toString(), admData.panel_mstr.class);            
+            response.getWriter().print(arrayToJson(deletePanelMstr(x)));
+            break;
+          }
+        
+        case "getPanelMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            admData.panel_mstr x = getPanelMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+            
         
         default:
         response.getWriter().print("no switch case exists in dataServADM for id: " + id);
