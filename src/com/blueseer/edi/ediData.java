@@ -2728,7 +2728,8 @@ public class ediData {
                             res.getString("wkfl_ts"),
                             res.getString("wkfl_ref"),
                             res.getString("wkfl_status"),
-                            res.getString("wkfl_messg")
+                            res.getString("wkfl_messg"),
+                            res.getString("wkfl_site")
                         );
                     }
                 }
@@ -2763,7 +2764,8 @@ public class ediData {
                         res.getString("wkfdl_ts"),
                         res.getString("wkfdl_ref"),
                         res.getString("wkfdl_status"),
-                        res.getString("wkfdl_messg"));
+                        res.getString("wkfdl_messg"),
+                        res.getString("wkfdl_site"));
                         list.add(r);
                     }
                 }
@@ -6654,18 +6656,19 @@ public class ediData {
         // log parent workflow ID
         wkf_log wkfl = new wkf_log(null,
                 "", // id
-                wkf.wkf_id,
-                wkf.wkf_desc,
+                wkf.wkf_id(),
+                wkf.wkf_desc(),
                 "", // ts auto assigned
                 "", // ref
                 "0", // status
-                "" // message
+                "", // message
+                wkf.wkf_site() // site
                 );
         
         int logid = writeWFLog(wkfl,0,null); // init log event
         ArrayList<String[]> logdetail = new ArrayList<String[]>();
         
-        if (wkf.wkf_enabled.equals("0")) {
+        if (wkf.wkf_enabled().equals("0")) {
          updateWFLog(logid, "error", "Workflow is disabled", "");
          return bsret("Workflow is disabled");
         }
@@ -6681,7 +6684,7 @@ public class ediData {
         for (wkf_det wkd : wkfdetlist) {
           suppress = false;
           String eventtime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));  
-          String[] lgd = new String[]{wkd.wkfd_action(), eventtime, "", "", ""}; // action,time,ref,status,messg
+          String[] lgd = new String[]{wkd.wkfd_action(), eventtime, "", "", "", ""}; // action,time,ref,status,messg,site
           
           JRRT rr = null;
           switch (wkd.wkfd_action()) {
@@ -6957,7 +6960,8 @@ public class ediData {
                 s[1], // timestamp
                 s[2], // ref
                 s[3], // status
-                s[4] // message
+                s[4], // message
+                s[5]
             );
             list.add(x);
             if (! s[3].equals("0")) {
@@ -8450,16 +8454,16 @@ public class ediData {
     }
     
     public record wkf_log(String[] m, String wkfl_id, String wkfl_job, String wkfl_desc, String wkfl_ts,
-        String wkfl_ref, String wkfl_status, String wkfl_messg ) {
+        String wkfl_ref, String wkfl_status, String wkfl_messg, String wkfl_site ) {
         public wkf_log(String[] m) {
-            this(m, "", "", "", "", "", "", "");
+            this(m, "", "", "", "", "", "", "", "");
         }
     }
     
     public record wkfd_log(String[] m, String wkfdl_id, String wkfdl_parentid, String wkfdl_action, String wkfdl_ts,
-        String wkfdl_ref, String wkfdl_status, String wkfdl_messg ) {
+        String wkfdl_ref, String wkfdl_status, String wkfdl_messg, String wkfdl_site ) {
         public wkfd_log(String[] m) {
-            this(m, "", "", "", "", "", "", "");
+            this(m, "", "", "", "", "", "", "", "");
         }
     }
     
