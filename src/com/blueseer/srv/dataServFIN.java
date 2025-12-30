@@ -237,11 +237,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     String id = request.getHeader("id");
     
     switch (id) {
-        
-    
-      case "getLoginInit" : { 
+     
+    case "getLoginInit" : { 
       String user = request.getHeader("user");          
       response.getWriter().print(ArrayListStringArrayToJson(getLoginInit(user)));
+      break;
     }
           
     case "addAcctMstr" : {
@@ -254,6 +254,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       ObjectMapper objectMapper = new ObjectMapper();
       AcctMstr am = objectMapper.readValue(sb.toString(), AcctMstr.class);            
       response.getWriter().print(arrayToJson(addAcctMstr(am)));
+      break;
     }
     
     case "updateAcctMstr" : {
@@ -266,6 +267,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       ObjectMapper objectMapper = new ObjectMapper();
       AcctMstr am = objectMapper.readValue(sb.toString(), AcctMstr.class);            
       response.getWriter().print(arrayToJson(updateAcctMstr(am)));
+      break;
     }
     
     case "deleteAcctMstr" : {
@@ -278,6 +280,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       ObjectMapper objectMapper = new ObjectMapper();
       AcctMstr am = objectMapper.readValue(sb.toString(), AcctMstr.class);            
       response.getWriter().print(arrayToJson(deleteAcctMstr(am)));
+      break;
     }
     
     case "getAcctMstr" : {
@@ -286,6 +289,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       ObjectMapper objectMapper = new ObjectMapper();
       String r = objectMapper.writeValueAsString(am);
       response.getWriter().print(r);
+      break;
     }
     
     case "getDeptMstr" : {
@@ -294,6 +298,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       ObjectMapper objectMapper = new ObjectMapper();
       String r = objectMapper.writeValueAsString(am);
       response.getWriter().print(r);
+      break;
     }
     
     case "getBankMstr" : {
@@ -302,6 +307,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       ObjectMapper objectMapper = new ObjectMapper();
       String r = objectMapper.writeValueAsString(am);
       response.getWriter().print(r);
+      break;
     }
     
     case "getCurrMstr" : {
@@ -310,6 +316,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       ObjectMapper objectMapper = new ObjectMapper();
       String r = objectMapper.writeValueAsString(am);
       response.getWriter().print(r);
+      break;
     }
     
     case "getExcMstr" : {
@@ -318,6 +325,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       ObjectMapper objectMapper = new ObjectMapper();
       String r = objectMapper.writeValueAsString(emlist);
       response.getWriter().print(r);
+      break;
     }
     
     case "getARMstr" : { 
@@ -326,6 +334,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       ObjectMapper objectMapper = new ObjectMapper();
       String r = objectMapper.writeValueAsString(am);
       response.getWriter().print(r);
+      break;
     }
     
     case "getInvoiceBrowseView" : { 
@@ -335,21 +344,25 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     request.getHeader("param4"),
                     request.getHeader("param5"),
                     request.getHeader("param6") ));
+      break;
     } 
     
     case "getInvoiceBrowseDetail" : { 
       response.getWriter().print(fglData.getInvoiceBrowseDetail(request.getHeader("param1"))); 
+      break;
     }     
     
     case "getFINInit" : {
       String param1 = request.getHeader("param1"); 
       String user = request.getHeader("param2");
       response.getWriter().print(ArrayListStringArrayToJson(getFINInit(param1, user)));
+      break;
     }     
     
     case "PostGL" : { 
       fglData.PostGL();
       response.getWriter().print(arrayToJson(new String[]{BlueSeerUtils.SuccessBit, getMessageTag(1125)}));
+      break;
     }
     
     default:
