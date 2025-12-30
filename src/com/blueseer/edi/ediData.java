@@ -2696,7 +2696,7 @@ public class ediData {
     
     private static int _addWkfDetlog(int parentid, wkfd_log x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
         int rows = 0;
-        String sqlInsert = "insert into wkfd_log (wkfdl_parentid, wkfdl_action, wkfdl_ref, wkfdl_status, wkfdl_messg  )  " 
+        String sqlInsert = "insert into wkfd_log (wkfdl_parentid, wkfdl_action, wkfdl_ref, wkfdl_status, wkfdl_messg, wkfdl_site  )  " 
                         + " values (?,?,?,?,?,?); ";
             ps = con.prepareStatement(sqlInsert);
             ps.setString(1, String.valueOf(parentid));
@@ -5061,6 +5061,49 @@ public class ediData {
        return jsonarray.toString(); 
     }
     
+    public static String getWKFLogDetail(String key) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                res = st.executeQuery("SELECT * FROM wkfd_log  " +     
+                    " where wkfdl_parentid = " + "'" + key + "'" +
+                    " order by wkfdl_id;" ) ;
+                    
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("wkfdl_id"));
+                        rowArray.put(res.getString("wkfdl_action"));
+                        rowArray.put(res.getString("wkfdl_messg"));
+                        rowArray.put(res.getString("wkfdl_status"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
     
     public static String getAS2LogView(String as2id, String site, String fromdate, String todate) {
         JSONArray jsonarray = new JSONArray();
@@ -5123,6 +5166,8 @@ public class ediData {
         }
        return jsonarray.toString(); 
     }
+    
+    
     
     public static String getAS2LogDetailDetail(String key) {
         JSONArray jsonarray = new JSONArray();

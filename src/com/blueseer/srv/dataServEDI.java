@@ -774,7 +774,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getAS2LogDetailDetail" :
             response.getWriter().print(ediData.getAS2LogDetailDetail(request.getHeader("param1"))); 
-            break;  
+            break;
+            
+        case "getWKFLogDetail" :
+            response.getWriter().print(ediData.getWKFLogDetail(request.getHeader("param1"))); 
+            break;    
             
         case "getAPILogDetailDetail" :
             response.getWriter().print(ediData.getAPILogDetailDetail(request.getHeader("param1"))); 

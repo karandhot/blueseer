@@ -34,6 +34,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.edi.ediData.getWKFLogDetail;
 import com.blueseer.utl.EDData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
@@ -201,7 +202,7 @@ public class WorkFlowLog extends javax.swing.JPanel {
                     if (this.key[0].equals("getWKFLogView")) {
                       message = getWKFLogView();
                     } else {
-                    //   message = getDetail(this.key[1]);  
+                      message = getDetail(this.key[1]); 
                     }
                     break;
                 default:
@@ -225,7 +226,7 @@ public class WorkFlowLog extends javax.swing.JPanel {
                     if (this.key[0].equals("getWKFLogView")) {
                       done_getWKFLogView();
                     } else {
-                    //  done_getDetail(); 
+                      done_getDetail(); 
                     }
                 } 
             
@@ -244,7 +245,7 @@ public class WorkFlowLog extends javax.swing.JPanel {
    
     public String[] getWKFLogView() {
        
-       DateFormat dfdate = new SimpleDateFormat("yyyyMMdd");        
+       DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");        
         String jsonString = null;
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
@@ -260,7 +261,7 @@ public class WorkFlowLog extends javax.swing.JPanel {
                 return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getWKFLogView")};
             }
         } else {
-            jsonString = ediData.getAPILogView(tbapiid.getText(), ddsite.getSelectedItem().toString(), dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()));
+            jsonString = ediData.getWKFLogView(tbapiid.getText(), ddsite.getSelectedItem().toString(), dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()));
         }
         
          rData = jsonToData(jsonString);
@@ -330,6 +331,39 @@ public class WorkFlowLog extends javax.swing.JPanel {
         tbtot.setText("0");
     }
 
+    public String[] getDetail(String parentkey) {
+        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getWKFLogDetail"});
+            list.add(new String[]{"param1", parentkey});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServEDI"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getWKFLogDetail(parentkey);
+        }        
+        rData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+    
+    public void done_getDetail() {
+       modeldetail.setNumRows(0);
+       if (rData != null) {
+        if (rData.length > 0) {
+            for (Object[] rowData : rData) {
+             modeldetail.addRow(rowData);
+            } 
+        }
+       }
+       rData = null;
+    }
+    
      
    
     /**
@@ -773,7 +807,7 @@ public class WorkFlowLog extends javax.swing.JPanel {
         int col = tablereport.columnAtPoint(evt.getPoint());
        
         if ( col == 0) {
-                getdetail(tablereport.getValueAt(row, 1).toString());
+                executeTask(BlueSeerUtils.dbaction.run, new String[]{"getDetail", tablereport.getValueAt(row, 1).toString()});
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
         }
