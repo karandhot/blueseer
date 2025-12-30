@@ -6754,7 +6754,7 @@ public class ediData {
                 rr = wkfaction_apicall(wkd, getWkfdMeta(wkd.wkfd_id(), wkd.wkfd_line()));
                 if (rr.rarray != null && ! rr.rarray().isEmpty()) {
                     for (String k : rr.rarray()) {
-                     logdetail.add(new String[]{wkd.wkfd_action(), eventtime, "", rr.status(), k});   
+                     logdetail.add(new String[]{wkd.wkfd_action(), eventtime, "", rr.status(), k, wkf.wkf_site()});   
                     }
                 }
                 if (! rr.status().equals("0")) {
@@ -6919,7 +6919,7 @@ public class ediData {
                 lgd[3] = rr.status();
                 if (! rr.rarray().isEmpty()) {
                     for (String k : rr.rarray()) {
-                     logdetail.add(new String[]{wkd.wkfd_action(), eventtime, "", rr.status(), k});   
+                     logdetail.add(new String[]{wkd.wkfd_action(), eventtime, "", rr.status(), k, wkf.wkf_site()});   
                     }
                 }
                 if (! rr.status().equals("0")) {
@@ -6932,7 +6932,7 @@ public class ediData {
                 rr = wkfaction_as2ToEDIIn(wkf, wkd, getWkfdMeta(wkd.wkfd_id(), wkd.wkfd_line()));
                 if (! rr.rarray().isEmpty()) {
                     for (String k : rr.rarray()) {
-                     logdetail.add(new String[]{wkd.wkfd_action(), eventtime, "", rr.status(), k});   
+                     logdetail.add(new String[]{wkd.wkfd_action(), eventtime, "", rr.status(), k, wkf.wkf_site()});   
                     }
                 }
                 if (! rr.status().equals("0")) {
