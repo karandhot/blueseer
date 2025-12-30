@@ -6686,7 +6686,7 @@ public class ediData {
         for (wkf_det wkd : wkfdetlist) {
           suppress = false;
           String eventtime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));  
-          String[] lgd = new String[]{wkd.wkfd_action(), eventtime, "", "", "", ""}; // action,time,ref,status,messg,site
+          String[] lgd = new String[]{wkd.wkfd_action(), eventtime, "", "", "", wkf.wkf_site()}; // action,time,ref,status,messg,site
           
           JRRT rr = null;
           switch (wkd.wkfd_action()) {
