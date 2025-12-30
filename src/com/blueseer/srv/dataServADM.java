@@ -27,34 +27,56 @@ package com.blueseer.srv;
 
 
 import com.blueseer.adm.admData;
+import static com.blueseer.adm.admData.addCodeMstr;
+import static com.blueseer.adm.admData.addCounter;
 import static com.blueseer.adm.admData.addCronMstr;
 import static com.blueseer.adm.admData.addFTPMstr;
+import static com.blueseer.adm.admData.addJaspMstr;
 import static com.blueseer.adm.admData.addMenuMstr;
+import static com.blueseer.adm.admData.addOrUpdateCodeMstr;
 import static com.blueseer.adm.admData.addPanelMstr;
+import static com.blueseer.adm.admData.addPksMstr;
+import static com.blueseer.adm.admData.addPrtMstr;
 import static com.blueseer.adm.admData.addSiteMstr;
 import static com.blueseer.adm.admData.addUpdateOVMstr;
 import static com.blueseer.adm.admData.addUserMstr;
+import static com.blueseer.adm.admData.deleteCodeMstr;
+import static com.blueseer.adm.admData.deleteCounter;
 import static com.blueseer.adm.admData.deleteCronMstr;
 import static com.blueseer.adm.admData.deleteFTPAttrMstr;
 import static com.blueseer.adm.admData.deleteFTPMstr;
+import static com.blueseer.adm.admData.deleteJaspMstr;
 import static com.blueseer.adm.admData.deleteMenuMstr;
 import static com.blueseer.adm.admData.deletePanelMstr;
+import static com.blueseer.adm.admData.deletePksMstr;
+import static com.blueseer.adm.admData.deletePrtMstr;
 import static com.blueseer.adm.admData.deleteSiteMstr;
 import static com.blueseer.adm.admData.deleteUserMstr;
+import static com.blueseer.adm.admData.getCodeMstr;
+import static com.blueseer.adm.admData.getCounter;
 import static com.blueseer.adm.admData.getCronInit;
 import static com.blueseer.adm.admData.getCronMstr;
 import static com.blueseer.adm.admData.getFTPAttr;
 import static com.blueseer.adm.admData.getFTPAttrHash;
 import static com.blueseer.adm.admData.getFTPMstr;
+import static com.blueseer.adm.admData.getJaspMstr;
 import static com.blueseer.adm.admData.getMenuMstr;
+import static com.blueseer.adm.admData.getPKSInit;
 import static com.blueseer.adm.admData.getPanelMstr;
+import static com.blueseer.adm.admData.getPksMstr;
+import static com.blueseer.adm.admData.getPrtMstr;
 import static com.blueseer.adm.admData.getSiteInit;
 import static com.blueseer.adm.admData.getSiteMstr;
 import static com.blueseer.adm.admData.getUserMstr;
+import static com.blueseer.adm.admData.updateCodeMstr;
+import static com.blueseer.adm.admData.updateCounter;
 import static com.blueseer.adm.admData.updateCronMstr;
 import static com.blueseer.adm.admData.updateFTPMstr;
+import static com.blueseer.adm.admData.updateJaspMstr;
 import static com.blueseer.adm.admData.updateMenuMstr;
 import static com.blueseer.adm.admData.updatePanelMstr;
+import static com.blueseer.adm.admData.updatePksMstr;
+import static com.blueseer.adm.admData.updatePrtMstr;
 import static com.blueseer.adm.admData.updateSiteMstr;
 import static com.blueseer.adm.admData.updateUserMstr;
 import com.blueseer.edi.FTPMaint;
@@ -219,6 +241,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         case "getCronInit" : { 
             response.getWriter().print(ArrayListStringArrayToJson(getCronInit(request.getHeader("param1"), request.getHeader("param2"))));
+            break;  
+        }    
+        
+        case "getPKSInit" : { 
+            response.getWriter().print(ArrayListStringArrayToJson(getPKSInit(request.getHeader("param1"), request.getHeader("param2"))));
             break;  
         }    
         
@@ -470,7 +497,262 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(r);
             break;
           }
-            
+         
+        case "addPksMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            admData.pks_mstr x = objectMapper.readValue(ca[0], admData.pks_mstr.class);      
+            String rtnkey = ca[1];
+            response.getWriter().print(arrayToJson(addPksMstr(x, rtnkey)));
+            break;
+          }
+           
+        case "updatePksMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.pks_mstr x = objectMapper.readValue(sb.toString(), admData.pks_mstr.class);            
+            response.getWriter().print(arrayToJson(updatePksMstr(x)));
+            break;
+          }
+        
+        case "deletePksMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.pks_mstr x = objectMapper.readValue(sb.toString(), admData.pks_mstr.class);            
+            response.getWriter().print(arrayToJson(deletePksMstr(x)));
+            break;
+          }
+        
+        case "getPksMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            admData.pks_mstr x = getPksMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "addPrtMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.prt_mstr x = objectMapper.readValue(sb.toString(), admData.prt_mstr.class);            
+            response.getWriter().print(arrayToJson(addPrtMstr(x)));
+            break;
+          }
+           
+        case "updatePrtMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.prt_mstr x = objectMapper.readValue(sb.toString(), admData.prt_mstr.class);            
+            response.getWriter().print(arrayToJson(updatePrtMstr(x)));
+            break;
+          }
+        
+        case "deletePrtMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.prt_mstr x = objectMapper.readValue(sb.toString(), admData.prt_mstr.class);            
+            response.getWriter().print(arrayToJson(deletePrtMstr(x)));
+            break;
+          }
+        
+        case "getPrtMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            admData.prt_mstr x = getPrtMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+         
+        case "addCounter" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.counter x = objectMapper.readValue(sb.toString(), admData.counter.class);            
+            response.getWriter().print(arrayToJson(addCounter(x)));
+            break;
+          }
+           
+        case "updateCounter" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.counter x = objectMapper.readValue(sb.toString(), admData.counter.class);            
+            response.getWriter().print(arrayToJson(updateCounter(x)));
+            break;
+          }
+        
+        case "deleteCounter" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.counter x = objectMapper.readValue(sb.toString(), admData.counter.class);            
+            response.getWriter().print(arrayToJson(deleteCounter(x)));
+            break;
+          }
+        
+        case "getCounter" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            admData.counter x = getCounter(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+         
+        case "addCodeMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.code_mstr x = objectMapper.readValue(sb.toString(), admData.code_mstr.class);            
+            response.getWriter().print(arrayToJson(addCodeMstr(x)));
+            break;
+          }
+           
+        case "addOrUpdateCodeMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.code_mstr x = objectMapper.readValue(sb.toString(), admData.code_mstr.class);            
+            response.getWriter().print(arrayToJson(addOrUpdateCodeMstr(x)));
+            break;
+          }
+        
+        case "updateCodeMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.code_mstr x = objectMapper.readValue(sb.toString(), admData.code_mstr.class);            
+            response.getWriter().print(arrayToJson(updateCodeMstr(x)));
+            break;
+          }
+        
+        case "deleteCodeMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.code_mstr x = objectMapper.readValue(sb.toString(), admData.code_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteCodeMstr(x)));
+            break;
+          }
+        
+        case "getCodeMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            admData.code_mstr x = getCodeMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+         
+        case "addJaspMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.jasp_mstr x = objectMapper.readValue(sb.toString(), admData.jasp_mstr.class);            
+            response.getWriter().print(arrayToJson(addJaspMstr(x)));
+            break;
+          }
+           
+        case "updateJaspMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.jasp_mstr x = objectMapper.readValue(sb.toString(), admData.jasp_mstr.class);            
+            response.getWriter().print(arrayToJson(updateJaspMstr(x)));
+            break;
+          }
+        
+        case "deleteJaspMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.jasp_mstr x = objectMapper.readValue(sb.toString(), admData.jasp_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteJaspMstr(x)));
+            break;
+          }
+        
+        case "getJaspMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            admData.jasp_mstr x = getJaspMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+         
         
         default:
         response.getWriter().print("no switch case exists in dataServADM for id: " + id);

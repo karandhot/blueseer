@@ -114,13 +114,13 @@ import org.bouncycastle.util.encoders.Base64;
  *
  * @author vaughnte
  */
-public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
+public class PKSMaint extends javax.swing.JPanel {
 
     // global variable declarations
         boolean isLoad = false;
         boolean isNew = false;
         public static pks_mstr x = null;
-    
+        ArrayList<String[]> initDataSet = null;
     
                 
    // global datatablemodel declarations    
@@ -309,10 +309,12 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
        }
     }
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
        isNew = false;
-       
+       if (init) {
+       initDataSet = admData.getPKSInit(this.getClass().getName(), bsmf.MainFrame.userid);
+       }
         cbphantom.setSelected(false);
         tbkey.setText("");
         tbdesc.setText("");
@@ -325,7 +327,12 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddtype.setSelectedIndex(0);
         
         ddparent.removeAllItems();
-        admData.getPKSStores().stream().forEach((s) -> ddparent.addItem(s)); 
+        for (String[] s : initDataSet) {
+            if (s[0].equals("stores")) {
+              ddparent.addItem(s[1]);    
+            }
+        }
+        
         ddparent.insertItemAt("", 0);
         ddparent.setSelectedIndex(0);
         
@@ -340,7 +347,7 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btdelete.setEnabled(false);
@@ -440,7 +447,11 @@ public class PKSMaint extends javax.swing.JPanel implements IBlueSeerT {
        Security.addProvider(new BouncyCastleProvider());
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       if (initDataSet == null) {
+        setComponentDefaultValues(true);
+       } else {
+        setComponentDefaultValues(false);   
+       }
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         

@@ -236,12 +236,15 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     
     String id = request.getHeader("id");
     
-    if (id.equals("getLoginInit")) { 
+    switch (id) {
+        
+    
+      case "getLoginInit" : { 
       String user = request.getHeader("user");          
       response.getWriter().print(ArrayListStringArrayToJson(getLoginInit(user)));
     }
           
-    if (id.equals("addAcctMstr")) { 
+    case "addAcctMstr" : {
       String line;
       StringBuilder sb = new StringBuilder();  
       BufferedReader reader = request.getReader();  // as string
@@ -253,7 +256,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       response.getWriter().print(arrayToJson(addAcctMstr(am)));
     }
     
-    if (id.equals("updateAcctMstr")) { 
+    case "updateAcctMstr" : {
       String line;
       StringBuilder sb = new StringBuilder();  
       BufferedReader reader = request.getReader();  // as string
@@ -265,7 +268,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       response.getWriter().print(arrayToJson(updateAcctMstr(am)));
     }
     
-    if (id.equals("deleteAcctMstr")) { 
+    case "deleteAcctMstr" : {
       String line;
       StringBuilder sb = new StringBuilder();  
       BufferedReader reader = request.getReader();  // as string
@@ -277,7 +280,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       response.getWriter().print(arrayToJson(deleteAcctMstr(am)));
     }
     
-    if (id.equals("getAcctMstr")) { 
+    case "getAcctMstr" : {
       String[] key = new String[]{request.getHeader("key")}; 
       AcctMstr am = getAcctMstr(key);
       ObjectMapper objectMapper = new ObjectMapper();
@@ -285,7 +288,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       response.getWriter().print(r);
     }
     
-    if (id.equals("getDeptMstr")) { 
+    case "getDeptMstr" : {
       String[] key = new String[]{request.getHeader("key")}; 
       fglData.dept_mstr am = getDeptMstr(key);
       ObjectMapper objectMapper = new ObjectMapper();
@@ -293,7 +296,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       response.getWriter().print(r);
     }
     
-    if (id.equals("getBankMstr")) { 
+    case "getBankMstr" : {
       String[] key = new String[]{request.getHeader("key")}; 
       fglData.BankMstr am = getBankMstr(key);
       ObjectMapper objectMapper = new ObjectMapper();
@@ -301,7 +304,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       response.getWriter().print(r);
     }
     
-    if (id.equals("getCurrMstr")) { 
+    case "getCurrMstr" : {
       String[] key = new String[]{request.getHeader("key")}; 
       fglData.CurrMstr am = getCurrMstr(key);
       ObjectMapper objectMapper = new ObjectMapper();
@@ -309,7 +312,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       response.getWriter().print(r);
     }
     
-    if (id.equals("getExcMstr")) { 
+    case "getExcMstr" : {
       String base = request.getHeader("base"); 
       ArrayList<exc_mstr> emlist = getExcMstr(base);
       ObjectMapper objectMapper = new ObjectMapper();
@@ -317,7 +320,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       response.getWriter().print(r);
     }
     
-    if (id.equals("getARMstr")) { 
+    case "getARMstr" : { 
       String[] key = new String[]{request.getHeader("param1"), request.getHeader("param2")}; 
       farData.ar_mstr am = getARMstr(key);
       ObjectMapper objectMapper = new ObjectMapper();
@@ -325,7 +328,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       response.getWriter().print(r);
     }
     
-    if (id.equals("getInvoiceBrowseView")) { 
+    case "getInvoiceBrowseView" : { 
       response.getWriter().print(fglData.getInvoiceBrowseView(request.getHeader("param1"), 
                     request.getHeader("param2"),
                     request.getHeader("param3"),
@@ -334,20 +337,26 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     request.getHeader("param6") ));
     } 
     
-    if (id.equals("getInvoiceBrowseDetail")) { 
+    case "getInvoiceBrowseDetail" : { 
       response.getWriter().print(fglData.getInvoiceBrowseDetail(request.getHeader("param1"))); 
     }     
     
-    if (id.equals("getFINInit")) { 
+    case "getFINInit" : {
       String param1 = request.getHeader("param1"); 
       String user = request.getHeader("param2");
       response.getWriter().print(ArrayListStringArrayToJson(getFINInit(param1, user)));
     }     
     
-    if (id.equals("PostGL")) { 
+    case "PostGL" : { 
       fglData.PostGL();
       response.getWriter().print(arrayToJson(new String[]{BlueSeerUtils.SuccessBit, getMessageTag(1125)}));
     }
+    
+    default:
+        response.getWriter().print("no switch case exists in dataServFIN for id: " + id);
+        System.out.println("no switch case exists in dataServFIN for id: " + id);    
+            
+    }   
        
     } // doPost
      

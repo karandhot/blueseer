@@ -75,7 +75,7 @@ import javax.swing.SwingWorker;
  *
  * @author vaughnte
  */
-public class SiteMaint extends javax.swing.JPanel implements IBlueSeerT {
+public class SiteMaint extends javax.swing.JPanel {
 
     // global variable declarations
                 boolean isLoad = false;
@@ -265,10 +265,11 @@ public class SiteMaint extends javax.swing.JPanel implements IBlueSeerT {
        }
     }
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
+       if (init) {
        initDataSet = admData.getSiteInit(this.getClass().getName(), bsmf.MainFrame.userid);
-       
+       }
         tbkey.setText("");
         tbdesc.setText("");
         tbline1.setText("");
@@ -314,7 +315,7 @@ public class SiteMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);   
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btdelete.setEnabled(false);
@@ -527,7 +528,11 @@ public class SiteMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void initvars(String[] arg) {
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       if (initDataSet == null) {
+        setComponentDefaultValues(true);
+       } else {
+        setComponentDefaultValues(false);   
+       }
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         if (arg != null && arg.length > 0) {

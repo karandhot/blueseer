@@ -93,52 +93,61 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     String id = request.getHeader("id"); 
     
     switch (id) {
-        case "getBOMsByItemSite_mg" :        
+        case "getBOMsByItemSite_mg" : {       
             response.getWriter().print(ArrayListStringArrayToJson(getBOMsByItemSite_mg(request.getHeader("param1"))));
             break;
+        }
             
-        case "getLocationListByWarehouse" :        
+        case "getLocationListByWarehouse" : {       
             response.getWriter().print(ArrayListStringToJson(getLocationListByWarehouse(request.getHeader("param1"))));
             break;    
+        }
             
-        case "getSysMetaData" :        
+        case "getSysMetaData" :   {     
             response.getWriter().print(ArrayListStringToJson(getSysMetaData(request.getHeader("param1"),request.getHeader("param2"),request.getHeader("param3"))));
             break;    
+        }
             
-        case "getNextNbr" : 
+        case "getNextNbr" : {
             response.getWriter().print(intToJson(getNextNbr(request.getHeader("param1")))); 
             break;
+        }
             
-        case "getItemQtyByWarehouseAndLocation" : 
+        case "getItemQtyByWarehouseAndLocation" : {
             response.getWriter().print(doubleToJson(getItemQtyByWarehouseAndLocation(request.getHeader("param1"),
                     request.getHeader("param2"),
                     request.getHeader("param3"),
                     request.getHeader("param4"))));  
             break;
+        }
             
-        case "getItemQOHTotal" : 
+        case "getItemQOHTotal" : {
             response.getWriter().print(doubleToJson(getItemQOHTotal(request.getHeader("param1"),
                     request.getHeader("param2"))));  
             break; 
+        }
             
-        case "getOrderItemAllocatedQty" : 
+        case "getOrderItemAllocatedQty" : {
             response.getWriter().print(doubleToJson(getOrderItemAllocatedQty(request.getHeader("param1"),
                     request.getHeader("param2"))));  
             break;    
+        }
             
-        case "getTableInfo" : 
+        case "getTableInfo" : {
             response.getWriter().print(HashMapStringIntegerToJson(getTableInfo(new String[]{request.getHeader("param1")})));
             break; 
+        }
             
-        case "getItemDataInit" : 
+        case "getItemDataInit" : {
             response.getWriter().print(HashMapStringStringToJson(getItemDataInit(
                 request.getHeader("param1"),
                 request.getHeader("param2"),
                 request.getHeader("param3"),
                 request.getHeader("param4"))));
             break;  
+        }
             
-        case "getItemPrice" : 
+        case "getItemPrice" : {
             response.getWriter().print(arrayToJson(getItemPrice(
                 request.getHeader("param1"),
                 request.getHeader("param2"),
@@ -147,8 +156,9 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                 request.getHeader("param5"),
                 request.getHeader("param6"))));
             break;
+        }
             
-        case "getOrderMaintDetailEvent" : 
+        case "getOrderMaintDetailEvent" : {
             response.getWriter().print(arrayToJson(getOrderMaintDetailEvent(
                 request.getHeader("param1"),
                 request.getHeader("param2"),
@@ -157,13 +167,15 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                 request.getHeader("param5"),
                 request.getHeader("param6"))));
             break;    
+        }
             
-        case "getItemMstr" :        
+        case "getItemMstr" :   {     
         invData.item_mstr itm = getItemMstr(request.getHeader("param1"));
         ObjectMapper omitm = new ObjectMapper(); 
         String rsd = omitm.writeValueAsString(itm);
         response.getWriter().print(rsd);
         break;    
+        }
                      
         default:
         response.getWriter().print("no switch case exists in dataServINV for id: " + id);

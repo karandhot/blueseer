@@ -44,12 +44,20 @@ import com.blueseer.srv.dataServADM;
 import com.blueseer.srv.dataServCUS;
 import com.blueseer.srv.dataServDT;
 import com.blueseer.srv.dataServEDI;
+import com.blueseer.srv.dataServENG;
 import com.blueseer.srv.dataServFIN;
+import com.blueseer.srv.dataServFRT;
+import com.blueseer.srv.dataServHRM;
 import com.blueseer.srv.dataServINV;
 import com.blueseer.srv.dataServLBL;
 import com.blueseer.srv.dataServORD;
 import com.blueseer.srv.dataServOV;
+import com.blueseer.srv.dataServPRD;
+import com.blueseer.srv.dataServPUR;
+import com.blueseer.srv.dataServRCV;
+import com.blueseer.srv.dataServSCH;
 import com.blueseer.srv.dataServSHP;
+import com.blueseer.srv.dataServVDR;
 import com.blueseer.srv.webServ;
 import static com.blueseer.utl.BlueSeerUtils.isParsableToInt;
 import java.io.FileInputStream;
@@ -76,7 +84,6 @@ import org.eclipse.jetty.server.SecureRequestCustomizer;
 
 
 import org.eclipse.jetty.servlet.ServletContextHandler; 
-import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
@@ -86,9 +93,6 @@ import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler;
-import org.eclipse.jetty.webapp.Configuration;
-import org.eclipse.jetty.webapp.WebAppContext;
-import static utilities.bsServer.createServerBS;
 
  
      
@@ -200,6 +204,14 @@ public class apiServer {
         context.addServlet(dataServINV.class, "/dataServINV/*");
         context.addServlet(dataServCUS.class, "/dataServCUS/*");
         context.addServlet(dataServLBL.class, "/dataServLBL/*");
+        context.addServlet(dataServENG.class, "/dataServENG/*");
+        context.addServlet(dataServFRT.class, "/dataServFRT/*");
+        context.addServlet(dataServHRM.class, "/dataServHRM/*");
+        context.addServlet(dataServPRD.class, "/dataServPRD/*");
+        context.addServlet(dataServPUR.class, "/dataServPUR/*");
+        context.addServlet(dataServRCV.class, "/dataServRCV/*");
+        context.addServlet(dataServSCH.class, "/dataServSCH/*");
+        context.addServlet(dataServVDR.class, "/dataServVDR/*");
         //server.setHandler(context);
         
         /*

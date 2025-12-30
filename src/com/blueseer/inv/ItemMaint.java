@@ -147,7 +147,7 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
                 public static item_mstr x = null;
                 String lastfcdir = "";
                 String defaultrouting = "";
-   
+                String defaultsite = "";
                 
    // global datatablemodel declarations    
     javax.swing.table.DefaultTableModel transmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -448,22 +448,33 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
        
        ArrayList<String[]> mylist = invData.getItemMaintInit();
        for (String[] code : mylist) {
-            if (code[0].equals("prodline"))
+            if (code[0].equals("prodline")) {
             ddprodcode.addItem(code[1]);
-            if (code[0].equals("sites"))
+            }
+            if (code[0].equals("sites")) {
             ddsite.addItem(code[1]);
-            if (code[0].equals("uom"))
+            }
+            if (code[0].equals("uom")) {
             dduom.addItem(code[1]);
-            if (code[0].equals("tax"))
+            }
+            if (code[0].equals("tax")) {
             ddtax.addItem(code[1]);
-            if (code[0].equals("loc"))
+            }
+            if (code[0].equals("loc")) {
             ddloc.addItem(code[1]);
-            if (code[0].equals("wh"))
+            }
+            if (code[0].equals("wh")) {
             ddwh.addItem(code[1]);
-            if (code[0].equals("type"))
+            }
+            if (code[0].equals("type")) {
             ddtype.addItem(code[1]);
-            if (code[0].equals("routing"))
+            }
+            if (code[0].equals("routing")) {
             ddrouting.addItem(code[1]);
+            }
+            if (code[0].equals("site")) {
+            defaultsite = code[1];
+            }
         }
        
         ddrouting.insertItemAt("", 0);
@@ -480,7 +491,7 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
         ddtax.setSelectedIndex(0);
         
        
-        ddsite.setSelectedItem(OVData.getDefaultSite());
+        ddsite.setSelectedItem(defaultsite);
         ddcode.setSelectedIndex(0);
         
         dduom.setSelectedItem("EA");

@@ -3505,6 +3505,27 @@ public class invData {
                  myarray.add(s);
                }
             }
+            
+            res = st.executeQuery("select ov_site, ov_currency from ov_mstr;" );
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "currency";
+               s[1] = res.getString("ov_currency");
+               myarray.add(s);
+               s = new String[2];
+               s[0] = "site";
+               s[1] = res.getString("ov_site");
+               myarray.add(s);
+            }
+            
+            res = st.executeQuery("select * from ov_ctrl;" );
+            while (res.next()) {
+               myarray.add(new String[]{"jasperdir", res.getString("ov_jasper_directory")});
+               myarray.add(new String[]{"imagedir", res.getString("ov_image_directory")});
+               myarray.add(new String[]{"tempdir", res.getString("ov_temp_directory")});
+               myarray.add(new String[]{"labeldir", res.getString("ov_label_directory")});
+               myarray.add(new String[]{"edidir", res.getString("ov_edi_directory")});
+            }
 
                     res = st.executeQuery("select uom_id from uom_mstr order by uom_id ;" );
                     while (res.next()) {
