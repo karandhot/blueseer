@@ -2675,15 +2675,16 @@ public class ediData {
     
     private static int _addWkfLog(wkf_log x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
         int returnkey = 0;
-        String sqlInsert = "insert into wkf_log (wkfl_job, wkfl_desc, wkfl_ref, wkfl_status, wkfl_messg "
+        String sqlInsert = "insert into wkf_log (wkfl_job, wkfl_desc, wkfl_ref, wkfl_status, wkfl_messg, wkfl_site "
                 + "  )  " +
-                " values (?,?,?,?,?); ";
+                " values (?,?,?,?,?,?); ";
             ps = con.prepareStatement(sqlInsert, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, x.wkfl_job);
             ps.setString(2, x.wkfl_desc);
             ps.setString(3, x.wkfl_ref);
             ps.setString(4, x.wkfl_status);
             ps.setString(5, x.wkfl_messg);
+            ps.setString(6, x.wkfl_site);
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
             while (rs.next()) {
@@ -2696,13 +2697,14 @@ public class ediData {
     private static int _addWkfDetlog(int parentid, wkfd_log x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
         int rows = 0;
         String sqlInsert = "insert into wkfd_log (wkfdl_parentid, wkfdl_action, wkfdl_ref, wkfdl_status, wkfdl_messg  )  " 
-                        + " values (?,?,?,?,?); ";
+                        + " values (?,?,?,?,?,?); ";
             ps = con.prepareStatement(sqlInsert);
             ps.setString(1, String.valueOf(parentid));
             ps.setString(2, x.wkfdl_action);
             ps.setString(3, x.wkfdl_ref);
             ps.setString(4, x.wkfdl_status);
             ps.setString(5, x.wkfdl_messg);
+            ps.setString(6, x.wkfdl_site);
             rows = ps.executeUpdate();
             return rows;
     }
