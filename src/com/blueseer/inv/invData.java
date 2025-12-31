@@ -3683,6 +3683,12 @@ public class invData {
                     String[] arr = new String[]{"routing",res.getString("wf_id")};
                     lines.add(arr); 
                     }
+                    
+                    res = st.executeQuery("select autoitem from inv_ctrl;");
+                    while (res.next()) {
+                    String[] arr = new String[]{"autoitem",res.getString("autoitem")};
+                    lines.add(arr); 
+                    }
 
                }
                 catch (SQLException s){

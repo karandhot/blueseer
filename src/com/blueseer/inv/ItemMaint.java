@@ -152,6 +152,7 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT {
                 String defaultsite = "";
                 String defaultprinter = "";
                 ArrayList<String[]> initDataSet = null;
+                boolean isAutoItem = false;
                 
    // global datatablemodel declarations    
     javax.swing.table.DefaultTableModel transmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -371,11 +372,7 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void setComponentDefaultValues() {
        isLoad = true;
       
-       jTabbedPane1.removeAll();
-       jTabbedPane1.add(getClassLabelTag("main", this.getClass().getSimpleName()), MainPanel);
-       jTabbedPane1.add(getClassLabelTag("costbom", this.getClass().getSimpleName()), CostBOMPanel);
-       jTabbedPane1.add(getClassLabelTag("images", this.getClass().getSimpleName()), ImagePanel);
-       jTabbedPane1.add(getClassLabelTag("attachments", this.getClass().getSimpleName()), panelAttachment);
+       
        
        attachmentmodel.setNumRows(0);
         tableattachment.setModel(attachmentmodel);
@@ -486,6 +483,9 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
             if (code[0].equals("printer")) {
             defaultprinter = code[1];
+            }
+            if (code[0].equals("autoitem")) {
+            isAutoItem = BlueSeerUtils.ConvertStringToBool(code[1]);
             }
         }
        }
@@ -625,7 +625,11 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public void initvars(String[] arg) {
-        
+       jTabbedPane1.removeAll();
+       jTabbedPane1.add(getClassLabelTag("main", this.getClass().getSimpleName()), MainPanel);
+       jTabbedPane1.add(getClassLabelTag("costbom", this.getClass().getSimpleName()), CostBOMPanel);
+       jTabbedPane1.add(getClassLabelTag("images", this.getClass().getSimpleName()), ImagePanel);
+       jTabbedPane1.add(getClassLabelTag("attachments", this.getClass().getSimpleName()), panelAttachment);
         setPanelComponentState(this, false); 
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
@@ -2247,7 +2251,7 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_cbmrpActionPerformed
 
     private void btnewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnewActionPerformed
-        if (OVData.isAutoItem()) {
+        if (isAutoItem) {
           newAction("item");
         } else {
            newAction("");
