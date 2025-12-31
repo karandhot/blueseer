@@ -26,13 +26,18 @@ SOFTWARE.
 package com.blueseer.inv;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListDouble;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData._getDefaultBOMID;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.DriverManager;
@@ -136,7 +141,8 @@ public class calcCost {
         return (lowermtlcost + uppermtlcost + lowerlbrcost + upperlbrcost + lowerbdncost + upperbdncost + lowerovhcost + upperovhcost + loweroutcost + upperoutcost );
     }
     
-    public ArrayList getTotalCost(String part, String bom) {
+    public ArrayList getTotalCost(String item, String bom) {
+        
              ArrayList mylist = new ArrayList();
              Connection bscon = null;
              if (ds != null) {
@@ -152,7 +158,7 @@ public class calcCost {
                      MainFrame.bslog(ex);
                  }
             }
-             _getTotalCostRecursive(part,1,bom,bscon);
+             _getTotalCostRecursive(item,1,bom,bscon);
              mylist.add(lowermtlcost + uppermtlcost);
              mylist.add(lowerlbrcost + upperlbrcost);
              mylist.add(lowerbdncost + upperbdncost);

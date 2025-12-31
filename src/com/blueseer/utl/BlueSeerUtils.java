@@ -3042,6 +3042,17 @@ public class BlueSeerUtils {
         return x;
     }
     
+    public static String ArrayListDoubleToJson(ArrayList<Double> list) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String x = "";
+        try {   
+            x = objectMapper.writeValueAsString(list);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+    
     public static String DefaultTableModelToJson(DefaultTableModel model) {
       /*
         // Create the main JSON object
@@ -3209,6 +3220,17 @@ public class BlueSeerUtils {
     public static ArrayList<String> jsonToArrayListString(String jsonstring) {
         ObjectMapper objectMapper = new ObjectMapper();
         ArrayList<String> x = null;
+        try {
+            x = objectMapper.readValue(jsonstring, ArrayList.class);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+
+    public static ArrayList<Double> jsonToArrayListDouble(String jsonstring) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ArrayList<Double> x = null;
         try {
             x = objectMapper.readValue(jsonstring, ArrayList.class);
         } catch (JsonProcessingException ex) {

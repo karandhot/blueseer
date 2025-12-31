@@ -28,15 +28,26 @@ package com.blueseer.srv;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.inv.invData;
+import static com.blueseer.inv.invData.addItemMstr;
+import static com.blueseer.inv.invData.bind_tree_op;
+import static com.blueseer.inv.invData.deleteItemMstr;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
+import static com.blueseer.inv.invData.getCurrentCost;
+import static com.blueseer.inv.invData.getInventoryQtyByItem;
+import static com.blueseer.inv.invData.getItemCostElements;
 import static com.blueseer.inv.invData.getItemDataInit;
+import static com.blueseer.inv.invData.getItemImagesFile;
+import static com.blueseer.inv.invData.getItemMaintInit;
 import static com.blueseer.inv.invData.getItemMstr;
 import static com.blueseer.inv.invData.getItemPrice;
 import static com.blueseer.inv.invData.getItemQOHTotal;
 import static com.blueseer.inv.invData.getItemQtyByWarehouseAndLocation;
 import static com.blueseer.inv.invData.getLocationListByWarehouse;
 import static com.blueseer.inv.invData.getOrderMaintDetailEvent;
+import static com.blueseer.inv.invData.getRecentTransByItem;
+import static com.blueseer.inv.invData.updateItemMstr;
 import static com.blueseer.ord.ordData.getOrderItemAllocatedQty;
+import static com.blueseer.utl.BlueSeerUtils.ArrayListDoubleToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringIntegerToJson;
@@ -51,12 +62,14 @@ import static com.blueseer.utl.OVData.getNextNbr;
 import static com.blueseer.utl.OVData.getSysMetaData;
 import static com.blueseer.utl.OVData.getTableInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 
 /**
@@ -93,6 +106,55 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     String id = request.getHeader("id"); 
     
     switch (id) {
+        
+        case "addItemMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.item_mstr x = objectMapper.readValue(sb.toString(), invData.item_mstr.class);            
+            response.getWriter().print(arrayToJson(addItemMstr(x)));
+            break;
+          }
+        
+        case "updateItemMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.item_mstr x = objectMapper.readValue(sb.toString(), invData.item_mstr.class);            
+            response.getWriter().print(arrayToJson(updateItemMstr(x)));
+            break;
+          }
+        
+        case "deleteItemMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.item_mstr x = objectMapper.readValue(sb.toString(), invData.item_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteItemMstr(x)));
+            break;
+          }
+        
+        case "getItemMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            invData.item_mstr x = getItemMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
         case "getBOMsByItemSite_mg" : {       
             response.getWriter().print(ArrayListStringArrayToJson(getBOMsByItemSite_mg(request.getHeader("param1"))));
             break;
@@ -137,7 +199,12 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(HashMapStringIntegerToJson(getTableInfo(new String[]{request.getHeader("param1")})));
             break; 
         }
-            
+           
+        case "getItemMaintInit" : { 
+            response.getWriter().print(ArrayListStringArrayToJson(getItemMaintInit(request.getHeader("param1"), request.getHeader("param2"))));
+            break;  
+        }    
+        
         case "getItemDataInit" : {
             response.getWriter().print(HashMapStringStringToJson(getItemDataInit(
                 request.getHeader("param1"),
@@ -168,15 +235,42 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                 request.getHeader("param6"))));
             break;    
         }
-            
-        case "getItemMstr" :   {     
-        invData.item_mstr itm = getItemMstr(request.getHeader("param1"));
-        ObjectMapper omitm = new ObjectMapper(); 
-        String rsd = omitm.writeValueAsString(itm);
-        response.getWriter().print(rsd);
-        break;    
+        
+        case "getCurrentCost" :   {     
+            response.getWriter().print(ArrayListDoubleToJson(getCurrentCost(request.getHeader("param1"))));
+            break;    
         }
-                     
+        
+        case "getItemCostElements" :   {     
+            response.getWriter().print(ArrayListDoubleToJson(getItemCostElements(request.getHeader("param1"), request.getHeader("param2"), request.getHeader("param3"))));
+            break;    
+        }
+        
+        case "getItemImagesFile" : { 
+            response.getWriter().print(ArrayListStringToJson(getItemImagesFile(request.getHeader("param1"))));
+            break;  
+        }
+          
+        case "getRecentTransByItem" : { 
+            response.getWriter().print(ArrayListStringArrayToJson(getRecentTransByItem(request.getHeader("param1"))));
+            break;  
+        }
+        
+        case "getInventoryQtyByItem" : { 
+            response.getWriter().print(ArrayListStringArrayToJson(getInventoryQtyByItem(request.getHeader("param1"))));
+            break;  
+        }
+        
+        case "bind_tree_op" : { 
+            DefaultMutableTreeNode x = bind_tree_op(request.getHeader("param1"));
+            ObjectMapper objectMapper = new ObjectMapper(); 
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        
+        
         default:
         response.getWriter().print("no switch case exists in dataServINV for id: " + id);
         System.out.println("no switch case exists in dataServINV for id: " + id);    

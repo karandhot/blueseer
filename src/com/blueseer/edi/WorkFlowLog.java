@@ -275,10 +275,8 @@ public class WorkFlowLog extends javax.swing.JPanel {
         tablereport.setModel(modeltable);
         if (rData != null) {
             for (int j = 0; j < rData.length; j++) { // 
-                if (rData[j][7].equals("success")) { 
+                if (rData[j][7].equals("0")) { 
                     rData[j][7] = BlueSeerUtils.clickcheck;
-                } else if (rData[j][7].equals("passive")) {
-                    rData[j][7] = BlueSeerUtils.clickcheckyellow;
                 } else {
                     rData[j][7] = BlueSeerUtils.clicknocheck;
                 }

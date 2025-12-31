@@ -16690,7 +16690,19 @@ return mystring;
     }    
       
     public static boolean isValidPrinter(String printer) {
-          boolean myreturn = false;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidPrinter"});
+            list.add(new String[]{"param1", printer});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }  
+        
+        boolean myreturn = false;
            
          try{
             

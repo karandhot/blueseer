@@ -39,7 +39,9 @@ import static bsmf.MainFrame.user;
 import com.blueseer.inv.invData.item_mstr;
 import static com.blueseer.inv.invData.addItemMstr;
 import static com.blueseer.inv.invData.deleteItemMstr;
+import static com.blueseer.inv.invData.getInventoryQtyByItem;
 import static com.blueseer.inv.invData.getItemMstr;
+import static com.blueseer.inv.invData.getRecentTransByItem;
 import static com.blueseer.inv.invData.resetBOMDefault;
 import static com.blueseer.inv.invData.updateCurrentItemCost;
 import static com.blueseer.inv.invData.updateItemMstr;
@@ -140,7 +142,7 @@ import org.apache.commons.io.FilenameUtils;
  *
  * @author vaughnte
  */
-public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
+public class ItemMaint extends javax.swing.JPanel {
 
     // global variable declarations
                 boolean isLoad = false;
@@ -148,6 +150,8 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
                 String lastfcdir = "";
                 String defaultrouting = "";
                 String defaultsite = "";
+                String defaultprinter = "";
+                ArrayList<String[]> initDataSet = null;
                 
    // global datatablemodel declarations    
     javax.swing.table.DefaultTableModel transmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -359,9 +363,13 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
     }
     
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
        
+      if (init) { 
+      initDataSet = invData.getItemMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
+      }
+      
        jTabbedPane1.removeAll();
        jTabbedPane1.add(getClassLabelTag("main", this.getClass().getSimpleName()), MainPanel);
        jTabbedPane1.add(getClassLabelTag("costbom", this.getClass().getSimpleName()), CostBOMPanel);
@@ -446,8 +454,8 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
        ddrouting.removeAllItems();
        
        
-       ArrayList<String[]> mylist = invData.getItemMaintInit();
-       for (String[] code : mylist) {
+       
+       for (String[] code : initDataSet) {
             if (code[0].equals("prodline")) {
             ddprodcode.addItem(code[1]);
             }
@@ -475,6 +483,9 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
             if (code[0].equals("site")) {
             defaultsite = code[1];
             }
+            if (code[0].equals("printer")) {
+            defaultprinter = code[1];
+            }
         }
        
         ddrouting.insertItemAt("", 0);
@@ -501,7 +512,7 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btdelete.setEnabled(false);
@@ -614,7 +625,11 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
     public void initvars(String[] arg) {
         
         setPanelComponentState(this, false); 
-        setComponentDefaultValues();
+        if (initDataSet == null) {
+        setComponentDefaultValues(true);
+       } else {
+        setComponentDefaultValues(false);   
+       }
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         
@@ -878,129 +893,54 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
         
       }
     
-    public void getrecenttrans(String parentpart) {
-       
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            PreparedStatement pstmt = con.prepareStatement("SELECT tr_type, tr_eff_date, tr_id, tr_base_qty  " +
-                        " FROM  tran_mstr  " +
-                        " where tr_item = ? " + 
-                        " order by tr_eff_date desc limit 25 ;");
-            pstmt.setString(1, parentpart);
-            ResultSet res = pstmt.executeQuery();
-            try {
-                int i = 0;
-               transmodel.setRowCount(0);
-                while (res.next()) {
-                    i++;
-                    transmodel.addRow(new Object[]{
-                                res.getString("tr_type"),
-                                getDateDB(res.getString("tr_eff_date")),
-                                bsFormatInt(res.getInt("tr_id")),
-                                bsFormatDoubleZ(res.getDouble("tr_base_qty"))
-                            });
-              
-                }
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                pstmt.close();
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+    public void getrecenttrans(String item) {
+        transmodel.setRowCount(0);
+        ArrayList<String[]> list = getRecentTransByItem(item);
+        for (String[] s : list) {
+            transmodel.addRow(new Object[]{
+                        s[0],
+                        getDateDB(s[1]),
+                        bsNumber(s[2]),
+                        bsFormatDoubleZ(bsParseDouble(s[3]))
+                    });
         }
-             
-             
-         }
+    }
       
-   
-    
-    public void getlocqty(String parentpart) {
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-               
-                int i = 0;
-                double tot = 0;
-
-                
-                locmodel.setRowCount(0);
-                
-                            
-                // ReportPanel.TableReport.getColumn("CallID").setCellRenderer(new ButtonRenderer());
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
-
-               res = st.executeQuery("SELECT in_site, in_wh, in_loc, in_qoh, in_serial, in_date  " +
-                        " FROM  in_mstr  " +
-                        " where in_item = " + "'" + parentpart + "'" + 
-                        " order by in_wh, in_loc ;");
-
-                while (res.next()) {
+    public void getlocqty(String item) {
+        ArrayList<String[]> list = getInventoryQtyByItem(item);
+        int i = 0;
+        double tot = 0;
+        locmodel.setRowCount(0);
+        for (String[] s : list) {
                     i++;
-                    tot = tot + bsParseDouble(res.getString("in_qoh"));
+                    tot = tot + bsParseDouble(s[3]);
                     locmodel.addRow(new Object[]{
-                                res.getString("in_site"),
-                                res.getString("in_loc"),
-                                res.getString("in_wh"),
-                                bsFormatDoubleZ(res.getDouble("in_qoh")),
-                                res.getString("in_serial"),
-                                getDateDB(res.getString("in_date"))
+                                s[0],
+                                s[1],
+                                s[2],
+                                bsFormatDoubleZ(bsParseDouble(s[3])),
+                                s[4],
+                                getDateDB(s[5])
                             });
               
                 }
-                tbqtyoh.setText(bsFormatDoubleZ(tot));
-            } catch (SQLException s) {
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-                MainFrame.bslog(s);
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-             
-             
-         }
+        tbqtyoh.setText(bsFormatDoubleZ(tot));
+    }
+    
      
-    public void getcurrentcost(String parentpart) {
-        calcCost cur = new calcCost();
-        ArrayList<Double> costlist = new ArrayList<Double>();
-        costlist = cur.getTotalCost(tbkey.getText(), ""); // assume default bom
+    public void getcurrentcost(String item) {
+     calcCost cur = new calcCost();
+     ArrayList<Double> costlist = invData.getCurrentCost(item);
      tbmtlcur.setText(currformatDouble(costlist.get(0)));
      tblbrcur.setText(currformatDouble(costlist.get(1)));
      tbbdncur.setText(currformatDouble(costlist.get(2)));
      tbovhcur.setText(currformatDouble(costlist.get(3)));
      tboutcur.setText(currformatDouble(costlist.get(4)));
      tbtotcostcur.setText(currformatDouble(costlist.get(0) + costlist.get(1) + costlist.get(2) + costlist.get(3) + costlist.get(4)));
-         }
+    }
     
-    public void getstandardcost(String parentpart) {
-    ArrayList<Double> costs = invData.getItemCostElements(tbkey.getText(), "standard", ddsite.getSelectedItem().toString());
+    public void getstandardcost(String item) {
+    ArrayList<Double> costs = invData.getItemCostElements(item, "standard", ddsite.getSelectedItem().toString());
      if (costs != null) {
      tbmtlstd.setText(currformatDouble(costs.get(0) + costs.get(5)));
      tblbrstd.setText(currformatDouble(costs.get(1) + costs.get(6)));
@@ -1013,79 +953,12 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
         
     
     public void bind_tree_op(String parentpart) {
-      //  jTree1.setModel(null);
-       
-      //  DefaultMutableTreeNode mynode = get_nodes(parentpart);
-          DefaultMutableTreeNode mynode = new DefaultMutableTreeNode(parentpart);
-          ArrayList<String> myops = new ArrayList<String>();
-          myops = OVData.getOperationsByItem(parentpart);
-          for (String myop : myops) {
-              mynode.add(get_nodes_by_op(parentpart, myop));
-          }
-
-      //get_nodes(parentpart);
-       
+        DefaultMutableTreeNode mynode = invData.bind_tree_op(parentpart);
         DefaultTreeModel model = (DefaultTreeModel)jTree1.getModel();
         model.setRoot(mynode);
         jTree1.setVisible(true);
-        
     }
        
-    public DefaultMutableTreeNode get_nodes_by_op(String mypart, String myop)  {
-        String pattern = "#0.00000";
-        DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.getDefault());    
-        df.applyPattern(pattern); 
-       DefaultMutableTreeNode mynode = new DefaultMutableTreeNode(myop);
-        String[] newpart = mypart.split("___");
-        ArrayList<String> mylist = new ArrayList<String>();
-        mylist = OVData.getpsmstrlistbyopWCost(newpart[0], myop);
-     //   mylist = OVData.getpsmstrlist(newpart[0]);
-        for ( String myvalue : mylist) {
-            String[] value = myvalue.toUpperCase().split(",");
-              if (value[0].toUpperCase().compareTo(newpart[0].toUpperCase().toString()) == 0) {
-               
-                  if (value[2].toUpperCase().compareTo("M") == 0) {
-                    DefaultMutableTreeNode mfgnode = new DefaultMutableTreeNode();   
-                   mfgnode = get_nodes_op(value[1] + "___" + value[4] + "___" + df.format(Double.valueOf(value[3])) + "___" + df.format(Double.valueOf(value[5])));
-                   
-                    mynode.add(mfgnode);
-                  } else {
-                  DefaultMutableTreeNode childnode = new DefaultMutableTreeNode(value[1] + "___" + value[4] + "___" + df.format(Double.valueOf(value[3])) + "___" + df.format(Double.valueOf(value[5])));   
-                 
-                  mynode.add(childnode);
-                  }
-              }
-        }
-        return mynode;
-     }
-      
-    public DefaultMutableTreeNode get_nodes_op(String mypart)  {
-        String pattern = "#0.00000";
-        DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.getDefault());    
-        df.applyPattern(pattern);  
-        DefaultMutableTreeNode mynode = new DefaultMutableTreeNode(mypart);
-        String[] newpart = mypart.split("___");
-        ArrayList<String> mylist = new ArrayList<String>();
-        ArrayList<String> myops = new ArrayList<String>();
-      //  myops = OVData.getpsmstrlist(newpart[0]);
-        mylist = OVData.getpsmstrlist(newpart[0]);
-        for ( String myvalue : mylist) {
-            String[] value = myvalue.toUpperCase().split(",");
-              if (value[0].toUpperCase().compareTo(newpart[0].toUpperCase().toString()) == 0) {
-               
-                  if (value[2].toUpperCase().compareTo("M") == 0) {
-                    DefaultMutableTreeNode mfgnode = new DefaultMutableTreeNode();   
-                    mfgnode = get_nodes_op(value[1] + "___" + value[4] + "___" + df.format(Double.valueOf(value[3])) + "___" + df.format(Double.valueOf(value[5])));
-                    mynode.add(mfgnode);
-                  } else {
-                  DefaultMutableTreeNode childnode = new DefaultMutableTreeNode(value[1] + "___" + value[4] + "___" + df.format(Double.valueOf(value[3])) + "___" + df.format(Double.valueOf(value[5])));   
-                 
-                  mynode.add(childnode);
-                  }
-              }
-        }
-        return mynode;
-     }
     
    
     
@@ -2734,7 +2607,7 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT  {
         
                 if (OVData.isValidPrinter(printer)) {
                     try {
-                        OVData.printLabelItem(tbkey.getText(), printer, lz.lblz_file());
+                        OVData.printLabelItem(tbkey.getText(), defaultprinter, lz.lblz_file());
                     } catch (IOException ex) { 
                         ex.printStackTrace();
                     } catch (PrintException ex) {

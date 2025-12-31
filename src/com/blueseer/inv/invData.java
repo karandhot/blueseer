@@ -44,6 +44,7 @@ import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.formatUSC;
 import static com.blueseer.utl.BlueSeerUtils.formatUSZ;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListDouble;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.jsonToDouble;
@@ -64,6 +65,7 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,6 +76,8 @@ import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
 import javax.swing.JOptionPane;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import org.threeten.bp.LocalDate;
 
 /**
@@ -164,6 +168,18 @@ public class invData {
     }
         
     public static String[] addItemMstr(item_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addItemMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         if (x == null) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordError};
@@ -374,6 +390,18 @@ public class invData {
     
     
     public static String[] updateItemMstr(item_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateItemMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         if (x == null) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordError};
@@ -460,6 +488,18 @@ public class invData {
     }
     
     public static String[] deleteItemMstr(item_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteItemMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         if (x == null) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
@@ -532,6 +572,22 @@ public class invData {
     public static item_mstr getItemMstr(String[] x) {
         item_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getItemMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServINV");
+                r = objectMapper.readValue(returnstring, item_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new item_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from item_mstr where it_item = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());   
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -3466,9 +3522,39 @@ public class invData {
         }
     }
 
+    public static ArrayList<Double> getCurrentCost(String item) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getCurrentCost"});
+            list.add(new String[]{"param1", item});
+            try {
+                return jsonToArrayListDouble(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+     calcCost cur = new calcCost();
+     ArrayList<Double> costlist = cur.getTotalCost(item, ""); // assume default bom
+     return costlist;
+    }
     
-    public static ArrayList getItemMaintInit() {
-               ArrayList myarray = new ArrayList();
+    public static ArrayList getItemMaintInit(String panelClassName, String userid) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getItemMaintInit"});
+            list.add(new String[]{"param1", panelClassName});
+             list.add(new String[]{"param2", userid});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        
+        ArrayList lines = new ArrayList();
              try{
                 Connection con = null;
                 if (ds != null) {
@@ -3480,15 +3566,15 @@ public class invData {
                 ResultSet res = null;
                 try{
                   
-                    res = st.executeQuery("select pl_line from pl_mstr order by pl_line ;" );
-                    while (res.next()) {
-                    String[] arr = new String[]{"prodline",res.getString("pl_line")};
-                    myarray.add(arr); 
-                    }
+            res = st.executeQuery("select pl_line from pl_mstr order by pl_line ;" );
+            while (res.next()) {
+            String[] arr = new String[]{"prodline",res.getString("pl_line")};
+            lines.add(arr); 
+            }
 
             String[] sites = null;
             boolean allsites = false;
-            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + bsmf.MainFrame.userid + "'" + ";");
+            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + userid + "'" + ";");
             while (res.next()) {
               if (res.getString("user_allowedsites").equals("*")) {
                   allsites = true;
@@ -3496,71 +3582,106 @@ public class invData {
                   sites = res.getString("user_allowedsites").split(",");
               }
             }
+            
+            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + userid + "'" + 
+                    " AND menu_panel = " + "'" + panelClassName + "'" +
+                    ";");
+           while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "canupdate";
+               s[1] = "0";
+               if (res.getString("perm_readonly").equals("0")) {
+                 s[1] = "1";
+               }
+               
+               lines.add(s);
+           }
+           
+           String conditionalsite = "";
+           res = st.executeQuery("select user_allowedsites, user_site from  " +
+                        "  user_mstr where user_id = " + "'" + userid + "'" + ";" );
+               while (res.next()) {
+                    if (res.getString("user_allowedsites").equals("*")) {
+                      conditionalsite = "all";
+                    } else {
+                      conditionalsite = res.getString("user_site");
+                    }
+               }
+               String[] sx = new String[2];
+               sx[0] = "conditionalsite";
+               sx[1] = conditionalsite;
+               lines.add(sx);
+               
+             
             res = st.executeQuery("select site_site from site_mstr;");
             while (res.next()) {
                if (allsites || Arrays.stream(sites).anyMatch(res.getString("site_site")::equals)) {
                  String[] s = new String[2];
                  s[0] = "sites";
                  s[1] = res.getString("site_site");
-                 myarray.add(s);
+                 lines.add(s);
                }
             }
             
-            res = st.executeQuery("select ov_site, ov_currency from ov_mstr;" );
+            res = st.executeQuery("select ov_site, ov_currency, ov_labelprinter from ov_mstr;" );
             while (res.next()) {
                String[] s = new String[2];
                s[0] = "currency";
                s[1] = res.getString("ov_currency");
-               myarray.add(s);
+               lines.add(s);
                s = new String[2];
                s[0] = "site";
                s[1] = res.getString("ov_site");
-               myarray.add(s);
+               lines.add(s);
+               s = new String[2];
+               s[0] = "printer";
+               s[1] = res.getString("ov_labelprinter");
+               lines.add(s);
             }
             
             res = st.executeQuery("select * from ov_ctrl;" );
             while (res.next()) {
-               myarray.add(new String[]{"jasperdir", res.getString("ov_jasper_directory")});
-               myarray.add(new String[]{"imagedir", res.getString("ov_image_directory")});
-               myarray.add(new String[]{"tempdir", res.getString("ov_temp_directory")});
-               myarray.add(new String[]{"labeldir", res.getString("ov_label_directory")});
-               myarray.add(new String[]{"edidir", res.getString("ov_edi_directory")});
+               lines.add(new String[]{"jasperdir", res.getString("ov_jasper_directory")});
+               lines.add(new String[]{"imagedir", res.getString("ov_image_directory")});
+               lines.add(new String[]{"tempdir", res.getString("ov_temp_directory")});
+               lines.add(new String[]{"labeldir", res.getString("ov_label_directory")});
+               lines.add(new String[]{"edidir", res.getString("ov_edi_directory")});
             }
 
                     res = st.executeQuery("select uom_id from uom_mstr order by uom_id ;" );
                     while (res.next()) {
                     String[] arr = new String[]{"uom",res.getString("uom_id")};
-                    myarray.add(arr); 
+                    lines.add(arr); 
                     }
 
                     res = st.executeQuery("select tax_code from tax_mstr order by tax_code ;" );
                     while (res.next()) {
                     String[] arr = new String[]{"tax",res.getString("tax_code")};
-                    myarray.add(arr); 
+                    lines.add(arr); 
                     }
 
                     res = st.executeQuery("select loc_loc from loc_mstr order by loc_loc ;" );
                     while (res.next()) {
                     String[] arr = new String[]{"loc",res.getString("loc_loc")};
-                    myarray.add(arr); 
+                    lines.add(arr); 
                     }
 
                     res = st.executeQuery("select wh_id from wh_mstr order by wh_id ;" );
                     while (res.next()) {
                     String[] arr = new String[]{"wh",res.getString("wh_id")};
-                    myarray.add(arr); 
+                    lines.add(arr); 
                     }
 
                     res = st.executeQuery("select code_key from code_mstr  where code_code = 'ItemType' order by code_key ;" );
                     while (res.next()) {
                     String[] arr = new String[]{"type",res.getString("code_key")};
-                    myarray.add(arr); 
+                    lines.add(arr); 
                     }
 
                     res = st.executeQuery("select distinct wf_id from wf_mstr order by wf_id ;" );
                     while (res.next()) {
                     String[] arr = new String[]{"routing",res.getString("wf_id")};
-                    myarray.add(arr); 
+                    lines.add(arr); 
                     }
 
                }
@@ -3579,7 +3700,7 @@ public class invData {
             catch (Exception e){
                 MainFrame.bslog(e);
             }
-            return myarray;
+            return lines;
 
         }
 
@@ -3909,8 +4030,19 @@ public class invData {
     }
     
     
-    public static ArrayList getItemImagesFile(String item) {
-               ArrayList myarray = new ArrayList();
+    public static ArrayList<String> getItemImagesFile(String item) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getItemImagesFile"});
+            list.add(new String[]{"param1",  item});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }    
+        ArrayList<String> myarray = new ArrayList();
              try{
                 Connection con = null;
                 if (ds != null) {
@@ -4627,7 +4759,20 @@ public class invData {
         }
 
     public static ArrayList getItemCostElements(String item, String set, String site) {
-               ArrayList<Double> mylist = new ArrayList<Double>();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getItemCostElements"});
+            list.add(new String[]{"param1", item});
+            list.add(new String[]{"param2", set});
+            list.add(new String[]{"param3", site});
+            try {
+                return jsonToArrayListDouble(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }    
+        ArrayList<Double> mylist = new ArrayList<Double>();
              try{
                 Connection con = null;
         if (ds != null) {
@@ -4888,6 +5033,116 @@ public class invData {
                     " order by loc_loc ;" );
            while (res.next()) {
             myarray.add(res.getString("loc_loc"));                    
+            }
+
+       }
+        catch (SQLException s){
+            MainFrame.bslog(s);
+             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    return myarray;
+
+}
+
+    public static ArrayList<String[]> getRecentTransByItem(String item) {
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getRecentTransByItem"});
+            list.add(new String[]{"param1",  item});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        ArrayList<String[]> myarray = new ArrayList();
+        try{
+
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+            res = st.executeQuery("SELECT tr_type, tr_eff_date, tr_id, tr_base_qty  " +
+                        " FROM  tran_mstr  " +
+                        " where tr_item =  " + "'" + item + "'" + 
+                        " order by tr_eff_date desc limit 25");
+           while (res.next()) {
+            myarray.add(new String[]{res.getString("tr_type"),
+                res.getString("tr_eff_date"),
+                res.getString("tr_id"),
+                res.getString("tr_base_qty")
+            });                    
+            }
+
+       }
+        catch (SQLException s){
+            MainFrame.bslog(s);
+             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    return myarray;
+
+}
+
+    public static ArrayList<String[]> getInventoryQtyByItem(String item) {
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getInventoryQtyByItem"});
+            list.add(new String[]{"param1",  item});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        ArrayList<String[]> myarray = new ArrayList();
+        try{
+
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+            res = st.executeQuery("SELECT in_site, in_wh, in_loc, in_qoh, in_serial, in_date  " +
+                        " FROM  in_mstr  " +
+                        " where in_item = " + "'" + item + "'" + 
+                        " order by in_wh, in_loc ;");
+           while (res.next()) {
+            myarray.add(new String[]{res.getString("in_site"),
+                res.getString("in_wh"),
+                res.getString("in_loc"),
+                res.getString("in_qoh"),
+                res.getString("in_serial"),
+                res.getString("in_date")
+            });                    
             }
 
        }
@@ -6329,7 +6584,89 @@ public class invData {
        return perqty;
      }
     
+    public static DefaultMutableTreeNode bind_tree_op(String parentpart) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","bind_tree_op"});
+            list.add(new String[]{"param1",parentpart});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServINV");
+                DefaultMutableTreeNode r = objectMapper.readValue(returnstring, DefaultMutableTreeNode.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+          DefaultMutableTreeNode mynode = new DefaultMutableTreeNode(parentpart);
+          ArrayList<String> myops = null;
+          myops = OVData.getOperationsByItem(parentpart);
+          for (String myop : myops) {
+              mynode.add(get_nodes_by_op(parentpart, myop));
+          }
+        
+        return mynode;
+        
+    }
     
+    public static DefaultMutableTreeNode get_nodes_by_op(String mypart, String myop)  {
+        String pattern = "#0.00000";
+        DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.getDefault());    
+        df.applyPattern(pattern); 
+       DefaultMutableTreeNode mynode = new DefaultMutableTreeNode(myop);
+        String[] newpart = mypart.split("___");
+        ArrayList<String> mylist = new ArrayList<String>();
+        mylist = OVData.getpsmstrlistbyopWCost(newpart[0], myop);
+     //   mylist = OVData.getpsmstrlist(newpart[0]);
+        for ( String myvalue : mylist) {
+            String[] value = myvalue.toUpperCase().split(",");
+              if (value[0].toUpperCase().compareTo(newpart[0].toUpperCase().toString()) == 0) {
+               
+                  if (value[2].toUpperCase().compareTo("M") == 0) {
+                    DefaultMutableTreeNode mfgnode = new DefaultMutableTreeNode();   
+                   mfgnode = get_nodes_op(value[1] + "___" + value[4] + "___" + df.format(Double.valueOf(value[3])) + "___" + df.format(Double.valueOf(value[5])));
+                   
+                    mynode.add(mfgnode);
+                  } else {
+                  DefaultMutableTreeNode childnode = new DefaultMutableTreeNode(value[1] + "___" + value[4] + "___" + df.format(Double.valueOf(value[3])) + "___" + df.format(Double.valueOf(value[5])));   
+                 
+                  mynode.add(childnode);
+                  }
+              }
+        }
+        return mynode;
+     }
+      
+    public static DefaultMutableTreeNode get_nodes_op(String mypart)  {
+        String pattern = "#0.00000";
+        DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.getDefault());    
+        df.applyPattern(pattern);  
+        DefaultMutableTreeNode mynode = new DefaultMutableTreeNode(mypart);
+        String[] newpart = mypart.split("___");
+        ArrayList<String> mylist = new ArrayList<String>();
+        ArrayList<String> myops = new ArrayList<String>();
+      //  myops = OVData.getpsmstrlist(newpart[0]);
+        mylist = OVData.getpsmstrlist(newpart[0]);
+        for ( String myvalue : mylist) {
+            String[] value = myvalue.toUpperCase().split(",");
+              if (value[0].toUpperCase().compareTo(newpart[0].toUpperCase().toString()) == 0) {
+               
+                  if (value[2].toUpperCase().compareTo("M") == 0) {
+                    DefaultMutableTreeNode mfgnode = new DefaultMutableTreeNode();   
+                    mfgnode = get_nodes_op(value[1] + "___" + value[4] + "___" + df.format(Double.valueOf(value[3])) + "___" + df.format(Double.valueOf(value[5])));
+                    mynode.add(mfgnode);
+                  } else {
+                  DefaultMutableTreeNode childnode = new DefaultMutableTreeNode(value[1] + "___" + value[4] + "___" + df.format(Double.valueOf(value[3])) + "___" + df.format(Double.valueOf(value[5])));   
+                 
+                  mynode.add(childnode);
+                  }
+              }
+        }
+        return mynode;
+     }
+    
+     
     
                
     public record item_mstr(String[] m, String it_item, String it_desc, int it_lotsize,

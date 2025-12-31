@@ -49,6 +49,7 @@ import static com.blueseer.utl.OVData.getTableInfo;
 import static com.blueseer.utl.OVData.getTaxAmtApplicableByItem;
 import static com.blueseer.utl.OVData.getTaxPercentElementsApplicableByItem;
 import static com.blueseer.utl.OVData.isValidCustShipTo;
+import static com.blueseer.utl.OVData.isValidPrinter;
 import java.io.IOException;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
@@ -220,7 +221,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "isValidCustShipTo" : 
             response.getWriter().print(boolToJson(isValidCustShipTo(request.getHeader("param1"), request.getHeader("param2")))); 
-            break;    
+            break; 
+            
+        case "isValidPrinter" : 
+            response.getWriter().print(boolToJson(isValidPrinter(request.getHeader("param1")))); 
+            break;     
             
         case "getTaxAmtApplicableByItem" : 
             response.getWriter().print(doubleToJson(getTaxAmtApplicableByItem(request.getHeader("param1"),
