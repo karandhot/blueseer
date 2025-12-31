@@ -142,7 +142,7 @@ import org.apache.commons.io.FilenameUtils;
  *
  * @author vaughnte
  */
-public class ItemMaint extends javax.swing.JPanel {
+public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     // global variable declarations
                 boolean isLoad = false;
@@ -514,7 +514,7 @@ public class ItemMaint extends javax.swing.JPanel {
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues(false);
+        setComponentDefaultValues();
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btdelete.setEnabled(false);
