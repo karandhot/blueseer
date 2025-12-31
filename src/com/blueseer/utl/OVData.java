@@ -78,6 +78,7 @@ import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.jsonToDouble;
 import static com.blueseer.utl.BlueSeerUtils.jsonToHashMapStringInteger;
 import static com.blueseer.utl.BlueSeerUtils.jsonToInt;
+import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPostByteR;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
@@ -1133,7 +1134,7 @@ public class OVData {
             list.add(new String[]{"param6", bsNumber(out)});
             list.add(new String[]{"param7", bsNumber(tot)});
             try {
-                String jsonString = sendServerPost(list, "", null, "dataServOV"); 
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServOV"));
             } catch (IOException ex) {
                 bslog(ex);
                 return new String[]{"1","failed"};

@@ -31,6 +31,7 @@ import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringIntegerToJson;
+import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.boolToJson;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
@@ -250,16 +251,17 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         }
         
         case "addItemCostRec" : {
-            response.getWriter().print(addItemCostRec(
+            response.getWriter().print(arrayToJson(addItemCostRec(
                 request.getHeader("param1"),
                 request.getHeader("param2"),
                 request.getHeader("param3"),
                 bsParseDouble(request.getHeader("param4")),
                 bsParseDouble(request.getHeader("param5")),
                 bsParseDouble(request.getHeader("param6")),
-                bsParseDouble(request.getHeader("param7")))); 
+                bsParseDouble(request.getHeader("param7"))))); 
             break;
         } 
+        
         default:
         response.getWriter().print("no switch case exists in dataServOV for id: " + id);
         System.out.println("no switch case exists in dataServOV for id: " + id);    

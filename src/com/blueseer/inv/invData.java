@@ -6598,7 +6598,10 @@ public class invData {
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 String returnstring = sendServerPost(list, "", null, "dataServINV");
-                DefaultMutableTreeNode r = objectMapper.readValue(returnstring, DefaultMutableTreeNode.class); 
+                DefaultMutableTreeNode r = new DefaultMutableTreeNode();
+                if (returnstring != null && ! returnstring.isBlank()) {
+                 r = objectMapper.readValue(returnstring, DefaultMutableTreeNode.class); 
+                }
                 return r;
             } catch (IOException ex) {
                 bslog(ex);
