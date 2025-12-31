@@ -639,6 +639,8 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT {
         btlookup.setEnabled(true);
         if (initDataSet == null) {
             executeTask(BlueSeerUtils.dbaction.init, null);
+        } else {
+            setComponentDefaultValues(); 
         }
         
         if (arg != null && arg.length > 0) {
