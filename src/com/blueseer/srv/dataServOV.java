@@ -38,6 +38,7 @@ import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.doubleToJson;
 import static com.blueseer.utl.BlueSeerUtils.intToJson;
 import com.blueseer.utl.OVData;
+import static com.blueseer.utl.OVData.addItemCostRec;
 import static com.blueseer.utl.OVData.addSysMetaDataNoUnique;
 import static com.blueseer.utl.OVData.getCodeMstrValueList;
 import static com.blueseer.utl.OVData.getExchangeRate;
@@ -247,11 +248,22 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                 request.getHeader("param4")))); 
         break;   
         }
-                     
+        
+        case "addItemCostRec" : {
+            response.getWriter().print(addItemCostRec(
+                request.getHeader("param1"),
+                request.getHeader("param2"),
+                request.getHeader("param3"),
+                bsParseDouble(request.getHeader("param4")),
+                bsParseDouble(request.getHeader("param5")),
+                bsParseDouble(request.getHeader("param6")),
+                bsParseDouble(request.getHeader("param7")))); 
+            break;
+        } 
         default:
         response.getWriter().print("no switch case exists in dataServOV for id: " + id);
         System.out.println("no switch case exists in dataServOV for id: " + id);    
-            
+             
     }    
        
     } // doPost

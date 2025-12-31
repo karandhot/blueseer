@@ -1120,7 +1120,26 @@ public class OVData {
     }
 
     
-    public static void addItemCostRec(String item, String site, String set, Double mtl, Double ovh, Double out, Double tot) {
+    public static String[] addItemCostRec(String item, String site, String set, Double mtl, Double ovh, Double out, Double tot) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "addItemCostRec"});
+            list.add(new String[]{"param1", item});
+            list.add(new String[]{"param2", site});
+            list.add(new String[]{"param3", set});
+            list.add(new String[]{"param4", bsNumber(mtl)});
+            list.add(new String[]{"param5", bsNumber(ovh)});
+            list.add(new String[]{"param6", bsNumber(out)});
+            list.add(new String[]{"param7", bsNumber(tot)});
+            try {
+                String jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{"1","failed"};
+            }
+        }
+        
         try {
             
             Connection con = null;
@@ -1167,6 +1186,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
+                return new String[]{"1", ""};
             } finally {
                 if (res != null) {
                     res.close();
@@ -1180,7 +1200,9 @@ public class OVData {
             }
         } catch (Exception e) {
             MainFrame.bslog(e);
+            return new String[]{"1", ""};
         }
+        return new String[]{"0", ""};
     }
 
     public static void updateItemCostRec(String item, String site, String set, Double mtl, Double ovh, Double out, Double tot) {

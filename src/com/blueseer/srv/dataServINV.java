@@ -264,10 +264,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "bind_tree_op" : { 
             DefaultMutableTreeNode x = bind_tree_op(request.getHeader("param1"));
             ObjectMapper objectMapper = new ObjectMapper(); 
-            String r = objectMapper.writeValueAsString(x);
+            String r = "";
+            if (x != null && x.getChildCount() > 0) {
+            r = objectMapper.writeValueAsString(x);
+            } 
             response.getWriter().print(r);
             break;
           }
+        
         
         
         
