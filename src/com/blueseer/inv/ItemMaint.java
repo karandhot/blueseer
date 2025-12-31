@@ -207,6 +207,10 @@ public class ItemMaint extends javax.swing.JPanel {
             
             
              switch(this.type) {
+                case "init":
+                    message = getInitialization();
+                    break;
+                    
                 case "add":
                     message = addRecord(key);
                     break;
@@ -232,10 +236,11 @@ public class ItemMaint extends javax.swing.JPanel {
             String[] message = get();
             
             BlueSeerUtils.endTask(message);
-           if (this.type.equals("delete")) {
-             initvars(null);  
+           if (this.type.equals("init")) {
+             setComponentDefaultValues();   
            } else if (this.type.equals("get")) {
-               updateForm();
+             setComponentDefaultValues();   
+             updateForm();
              tbkey.requestFocus();
            } else {
              initvars(null);  
@@ -363,12 +368,8 @@ public class ItemMaint extends javax.swing.JPanel {
     }
     
     
-    public void setComponentDefaultValues(boolean init) {
+    public void setComponentDefaultValues() {
        isLoad = true;
-       
-      if (init) { 
-      initDataSet = invData.getItemMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
-      }
       
        jTabbedPane1.removeAll();
        jTabbedPane1.add(getClassLabelTag("main", this.getClass().getSimpleName()), MainPanel);
@@ -454,7 +455,7 @@ public class ItemMaint extends javax.swing.JPanel {
        ddrouting.removeAllItems();
        
        
-       
+       if (initDataSet != null) {
        for (String[] code : initDataSet) {
             if (code[0].equals("prodline")) {
             ddprodcode.addItem(code[1]);
@@ -487,6 +488,7 @@ public class ItemMaint extends javax.swing.JPanel {
             defaultprinter = code[1];
             }
         }
+       }
        
         ddrouting.insertItemAt("", 0);
         ddrouting.setSelectedIndex(0);
@@ -625,14 +627,11 @@ public class ItemMaint extends javax.swing.JPanel {
     public void initvars(String[] arg) {
         
         setPanelComponentState(this, false); 
-        if (initDataSet == null) {
-        setComponentDefaultValues(true);
-       } else {
-        setComponentDefaultValues(false);   
-       }
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
-        
+        if (initDataSet == null) {
+            executeTask(BlueSeerUtils.dbaction.init, null);
+        }
         
         if (arg != null && arg.length > 0) {
             executeTask(dbaction.get,arg);
@@ -862,6 +861,15 @@ public class ItemMaint extends javax.swing.JPanel {
         setAction(x.m());
         return x.m();
     }
+    
+    public String[] getInitialization() {
+        initDataSet = invData.getItemMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSet == null || initDataSet.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }    
     
     public void getAttachments(String id) {
         attachmentmodel.setNumRows(0);
