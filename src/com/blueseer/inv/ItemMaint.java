@@ -153,6 +153,7 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT {
                 String defaultprinter = "";
                 ArrayList<String[]> initDataSet = null;
                 boolean isAutoItem = false;
+                boolean canupdate = false;
                 
    // global datatablemodel declarations    
     javax.swing.table.DefaultTableModel transmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -487,6 +488,9 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT {
             if (code[0].equals("autoitem")) {
             isAutoItem = BlueSeerUtils.ConvertStringToBool(code[1]);
             }
+            if (code[0].equals("canupdate")) {
+              canupdate = BlueSeerUtils.ConvertStringToBool(code[1]);  
+            }
         }
        }
        
@@ -540,7 +544,7 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public boolean validateInput(dbaction x) {
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canupdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
