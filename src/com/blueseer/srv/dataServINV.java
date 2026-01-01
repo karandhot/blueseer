@@ -29,8 +29,20 @@ import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.addItemMstr;
+import static com.blueseer.inv.invData.addLocationMstr;
+import static com.blueseer.inv.invData.addPLMstr;
+import static com.blueseer.inv.invData.addRoutingMstr;
+import static com.blueseer.inv.invData.addUOMMstr;
+import static com.blueseer.inv.invData.addWareHouseMstr;
+import static com.blueseer.inv.invData.addWorkCenterMstr;
 import static com.blueseer.inv.invData.bind_tree_op;
 import static com.blueseer.inv.invData.deleteItemMstr;
+import static com.blueseer.inv.invData.deleteLocationMstr;
+import static com.blueseer.inv.invData.deletePLMstr;
+import static com.blueseer.inv.invData.deleteRoutingMstr;
+import static com.blueseer.inv.invData.deleteUOMMstr;
+import static com.blueseer.inv.invData.deleteWareHouseMstr;
+import static com.blueseer.inv.invData.deleteWorkCenterMstr;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
 import static com.blueseer.inv.invData.getCurrentCost;
 import static com.blueseer.inv.invData.getInventoryQtyByItem;
@@ -43,9 +55,24 @@ import static com.blueseer.inv.invData.getItemPrice;
 import static com.blueseer.inv.invData.getItemQOHTotal;
 import static com.blueseer.inv.invData.getItemQtyByWarehouseAndLocation;
 import static com.blueseer.inv.invData.getLocationListByWarehouse;
+import static com.blueseer.inv.invData.getLocationMstr;
 import static com.blueseer.inv.invData.getOrderMaintDetailEvent;
+import static com.blueseer.inv.invData.getPLMstr;
 import static com.blueseer.inv.invData.getRecentTransByItem;
+import static com.blueseer.inv.invData.getRoutingMstr;
+import static com.blueseer.inv.invData.getUOMMstr;
+import static com.blueseer.inv.invData.getWareHouseMstr;
+import static com.blueseer.inv.invData.getWorkCenterMstr;
+import static com.blueseer.inv.invData.rebaseCurrentCost;
+import static com.blueseer.inv.invData.resetBOMDefault;
+import static com.blueseer.inv.invData.updateCurrentItemCost;
 import static com.blueseer.inv.invData.updateItemMstr;
+import static com.blueseer.inv.invData.updateLocationMstr;
+import static com.blueseer.inv.invData.updatePLMstr;
+import static com.blueseer.inv.invData.updateRoutingMstr;
+import static com.blueseer.inv.invData.updateUOMMstr;
+import static com.blueseer.inv.invData.updateWareHouseMstr;
+import static com.blueseer.inv.invData.updateWorkCenterMstr;
 import static com.blueseer.ord.ordData.getOrderItemAllocatedQty;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListDoubleToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
@@ -53,6 +80,7 @@ import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringIntegerToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.doubleToJson;
@@ -154,6 +182,296 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(r);
             break;
           }
+        
+        case "addPLMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.pl_mstr x = objectMapper.readValue(sb.toString(), invData.pl_mstr.class);            
+            response.getWriter().print(arrayToJson(addPLMstr(x)));
+            break;
+          }
+        
+        case "updatePLMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.pl_mstr x = objectMapper.readValue(sb.toString(), invData.pl_mstr.class);            
+            response.getWriter().print(arrayToJson(updatePLMstr(x)));
+            break;
+          }
+        
+        case "deletePLMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.pl_mstr x = objectMapper.readValue(sb.toString(), invData.pl_mstr.class);            
+            response.getWriter().print(arrayToJson(deletePLMstr(x)));
+            break;
+          }
+        
+        case "getPLMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            invData.pl_mstr x = getPLMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "addWareHouseMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.wh_mstr x = objectMapper.readValue(sb.toString(), invData.wh_mstr.class);            
+            response.getWriter().print(arrayToJson(addWareHouseMstr(x)));
+            break;
+          }
+        
+        case "updateWareHouseMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.wh_mstr x = objectMapper.readValue(sb.toString(), invData.wh_mstr.class);            
+            response.getWriter().print(arrayToJson(updateWareHouseMstr(x)));
+            break;
+          }
+        
+        case "deleteWareHouseMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.wh_mstr x = objectMapper.readValue(sb.toString(), invData.wh_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteWareHouseMstr(x)));
+            break;
+          }
+        
+        case "getWareHouseMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            invData.wh_mstr x = getWareHouseMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "addLocationMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.loc_mstr x = objectMapper.readValue(sb.toString(), invData.loc_mstr.class);            
+            response.getWriter().print(arrayToJson(addLocationMstr(x)));
+            break;
+          }
+        
+        case "updateLocationMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.loc_mstr x = objectMapper.readValue(sb.toString(), invData.loc_mstr.class);            
+            response.getWriter().print(arrayToJson(updateLocationMstr(x)));
+            break;
+          }
+        
+        case "deleteLocationMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.loc_mstr x = objectMapper.readValue(sb.toString(), invData.loc_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteLocationMstr(x)));
+            break;
+          }
+        
+        case "getLocationMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            invData.loc_mstr x = getLocationMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "addUOMMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.uom_mstr x = objectMapper.readValue(sb.toString(), invData.uom_mstr.class);            
+            response.getWriter().print(arrayToJson(addUOMMstr(x)));
+            break;
+          }
+        
+        case "updateUOMMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.uom_mstr x = objectMapper.readValue(sb.toString(), invData.uom_mstr.class);            
+            response.getWriter().print(arrayToJson(updateUOMMstr(x)));
+            break;
+          }
+        
+        case "deleteUOMMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.uom_mstr x = objectMapper.readValue(sb.toString(), invData.uom_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteUOMMstr(x)));
+            break;
+          }
+        
+        case "getUOMMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            invData.uom_mstr x = getUOMMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "addRoutingMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.wf_mstr x = objectMapper.readValue(sb.toString(), invData.wf_mstr.class);            
+            response.getWriter().print(arrayToJson(addRoutingMstr(x)));
+            break;
+          }
+        
+        case "updateRoutingMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.wf_mstr x = objectMapper.readValue(sb.toString(), invData.wf_mstr.class);            
+            response.getWriter().print(arrayToJson(updateRoutingMstr(x)));
+            break;
+          }
+        
+        case "deleteRoutingMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.wf_mstr x = objectMapper.readValue(sb.toString(), invData.wf_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteRoutingMstr(x)));
+            break;
+          }
+        
+        case "getRoutingMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            invData.wf_mstr x = getRoutingMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "addWorkCenterMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.wc_mstr x = objectMapper.readValue(sb.toString(), invData.wc_mstr.class);            
+            response.getWriter().print(arrayToJson(addWorkCenterMstr(x)));
+            break;
+          }
+        
+        case "updateWorkCenterMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.wc_mstr x = objectMapper.readValue(sb.toString(), invData.wc_mstr.class);            
+            response.getWriter().print(arrayToJson(updateWorkCenterMstr(x)));
+            break;
+          }
+        
+        case "deleteWorkCenterMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.wc_mstr x = objectMapper.readValue(sb.toString(), invData.wc_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteWorkCenterMstr(x)));
+            break;
+          }
+        
+        case "getWorkCenterMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            invData.wc_mstr x = getWorkCenterMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        
         
         case "getBOMsByItemSite_mg" : {       
             response.getWriter().print(ArrayListStringArrayToJson(getBOMsByItemSite_mg(request.getHeader("param1"))));
@@ -272,6 +590,23 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
           }
         
+        case "rebaseCurrentCost" : { 
+            rebaseCurrentCost(request.getHeader("param1"),
+                    bsParseDouble(request.getHeader("param2")),
+                    bsParseDouble(request.getHeader("param3")),
+                    bsParseDouble(request.getHeader("param4")));
+            break;  
+        }
+        
+        case "updateCurrentItemCost" : { 
+            updateCurrentItemCost(request.getHeader("param1"));
+            break;  
+        }
+        
+        case "resetBOMDefault" : { 
+            resetBOMDefault(request.getHeader("param1"));
+            break;  
+        }
         
         
         

@@ -37,6 +37,7 @@ import static bsmf.MainFrame.user;
 import com.blueseer.fgl.fglData;
 import com.blueseer.fgl.fglData.gl_pair;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.bsformat;
@@ -1017,6 +1018,18 @@ public class invData {
   
     
     public static String[] addWorkCenterMstr(wc_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addWorkCenterMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  wc_mstr where wc_cell = ?";
         String sqlInsert = "insert into wc_mstr (wc_cell, wc_desc, wc_site, "
@@ -1056,6 +1069,18 @@ public class invData {
     }
 
     public static String[] updateWorkCenterMstr(wc_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateWorkCenterMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sql = "update wc_mstr set wc_desc = ?, wc_site = ?, "
                         + " wc_cc = ?, wc_run_rate = ?, wc_setup_rate = ?, " 
@@ -1085,6 +1110,22 @@ public class invData {
     public static wc_mstr getWorkCenterMstr(String[] x) {
         wc_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getWorkCenterMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServINV");
+                r = objectMapper.readValue(returnstring, wc_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new wc_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from wc_mstr where wc_cell = ? ;";
         
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());   
@@ -1115,6 +1156,18 @@ public class invData {
     }
   
     public static String[] deleteWorkCenterMstr(wc_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteWorkCenterMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m;
         String sqlDelete = "delete from wc_mstr where wc_cell = ? ;"; 
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
@@ -1136,6 +1189,18 @@ public class invData {
     
     
     public static String[] addLocationMstr(loc_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addLocationMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  loc_mstr where loc_loc = ?";
         String sqlInsert = "insert into loc_mstr (loc_loc, loc_desc, loc_site, "
@@ -1169,6 +1234,18 @@ public class invData {
     }
 
     public static String[] updateLocationMstr(loc_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateLocationMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sql = "update loc_mstr set loc_desc = ?, loc_site = ?, "
                         + " loc_wh = ?, loc_active = ? " 
@@ -1190,7 +1267,19 @@ public class invData {
     }
 
     public static String[] deleteLocationMstr(loc_mstr x) { 
-       String[] m = new String[2];
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteLocationMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
         String sql = "delete from loc_mstr where loc_loc = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql)) {
@@ -1207,6 +1296,22 @@ public class invData {
     public static loc_mstr getLocationMstr(String[] x) {
         loc_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getLocationMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServINV");
+                r = objectMapper.readValue(returnstring, loc_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new loc_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from loc_mstr where loc_loc = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());   
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -1385,6 +1490,18 @@ public class invData {
     
     
     public static String[] addRoutingMstr(wf_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addRoutingMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  wf_mstr where wf_id = ? and wf_op = ?";
         String sqlInsert = "insert into wf_mstr (wf_id, wf_desc, wf_site, "
@@ -1424,6 +1541,18 @@ public class invData {
     }
 
     public static String[] updateRoutingMstr(wf_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateRoutingMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sql = "update wf_mstr set wf_desc = ?, wf_site = ?, "
                         + " wf_assert = ?, wf_op_desc = ?, wf_cell = ?, " +
@@ -1449,9 +1578,56 @@ public class invData {
         return m;
     }
 
+    public static String[] deleteRoutingMstr(wf_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteRoutingMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m;
+        String sqlDelete = "delete from wf_mstr where wf_id = ?;"; 
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+             PreparedStatement ps = con.prepareStatement(sqlDelete);) {
+             ps.setString(1, x.wf_id);
+             int rows = ps.executeUpdate();
+             if (rows > 0) {
+                m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess}; 
+             } else {
+                m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError}; 
+             }
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
     public static wf_mstr getRoutingMstr(String[] x) {
         wf_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getRoutingMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServINV");
+                r = objectMapper.readValue(returnstring, wf_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new wf_mstr(m);
+                return r;
+            }
+        }
         String sql = "";
         if (x.length == 1) {
             sql = "select * from wf_mstr where wf_id = ? ;";
@@ -1525,28 +1701,22 @@ public class invData {
     }
   
     
-    public static String[] deleteRoutingMstr(wf_mstr x) {
-        String[] m;
-        String sqlDelete = "delete from wf_mstr where wf_id = ?;"; 
-        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
-             PreparedStatement ps = con.prepareStatement(sqlDelete);) {
-             ps.setString(1, x.wf_id);
-             int rows = ps.executeUpdate();
-             if (rows > 0) {
-                m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess}; 
-             } else {
-                m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError}; 
-             }
-        } catch (SQLException s) {
-	       MainFrame.bslog(s);
-               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
-        }
-        return m;
-    }
      
     
     
     public static String[] addUOMMstr(uom_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addUOMMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  uom_mstr where uom_id = ?";
         String sqlInsert = "insert into uom_mstr (uom_id, uom_desc ) "
@@ -1576,6 +1746,18 @@ public class invData {
     }
 
     public static String[] updateUOMMstr(uom_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateUOMMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sql = "update uom_mstr set uom_desc = ? "
                         + " where uom_id = ? ;"; 
@@ -1595,6 +1777,22 @@ public class invData {
     public static uom_mstr getUOMMstr(String[] x) {
         uom_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getUOMMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServINV");
+                r = objectMapper.readValue(returnstring, uom_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new uom_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from uom_mstr where uom_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());   
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -1619,6 +1817,18 @@ public class invData {
     }
   
     public static String[] deleteUOMMstr(uom_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteUOMMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m;
         String sqlDelete = "delete from uom_mstr where uom_id = ? ;"; 
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
@@ -1639,6 +1849,18 @@ public class invData {
     
     
     public static String[] addWareHouseMstr(wh_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addWareHouseMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  wh_mstr where wh_id = ?";
         String sqlInsert = "insert into wh_mstr (wh_id, wh_site, wh_name, "
@@ -1676,6 +1898,18 @@ public class invData {
     }
 
     public static String[] updateWareHouseMstr(wh_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateWareHouseMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sql = "update wh_mstr set wh_site = ?, wh_name = ?, "
                         + " wh_addr1 = ?, wh_addr2 = ?, wh_city = ?, wh_state = ?, "
@@ -1702,7 +1936,19 @@ public class invData {
     }
 
     public static String[] deleteWareHouseMstr(wh_mstr x) { 
-       String[] m = new String[2];
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteWareHouseMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
         String sql = "delete from wh_mstr where wh_id = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql)) {
@@ -1719,6 +1965,22 @@ public class invData {
     public static wh_mstr getWareHouseMstr(String[] x) {
         wh_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getWareHouseMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServINV");
+                r = objectMapper.readValue(returnstring, wh_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new wh_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from wh_mstr where wh_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());   
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -1752,7 +2014,20 @@ public class invData {
     }
     
     
+    
     public static String[] addPLMstr(pl_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addPLMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  pl_mstr where pl_line = ?";
         String sqlInsert = "insert into pl_mstr "
@@ -1813,6 +2088,18 @@ public class invData {
     }
 
     public static String[] updatePLMstr(pl_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updatePLMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sql = "update pl_mstr set  pl_desc = ?,  pl_inventory = ?, " +
         "pl_inv_discr = ?,  pl_scrap = ?,  pl_wip = ?,  pl_wip_var = ?,  pl_inv_change = ?, " +
@@ -1862,7 +2149,19 @@ public class invData {
     }
 
     public static String[] deletePLMstr(pl_mstr x) { 
-       String[] m = new String[2];
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deletePLMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
         String sql = "delete from pl_mstr where pl_line = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql)) {
@@ -1879,6 +2178,22 @@ public class invData {
     public static pl_mstr getPLMstr(String[] x) {
         pl_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getPLMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServINV");
+                r = objectMapper.readValue(returnstring, pl_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new pl_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from pl_mstr where pl_line = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());   
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -2604,7 +2919,16 @@ public class invData {
     }
     
     public static void resetBOMDefault(String item) {
-       
+      if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "resetBOMDefault"});
+            list.add(new String[]{"param1", item});
+            try {
+                sendServerPost(list, "", null, "dataServINV");
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } 
      try{
         Connection con = null;
         if (ds != null) {
@@ -2702,9 +3026,42 @@ public class invData {
     }
     
     public static void updateCurrentItemCost(String item) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "updateCurrentItemCost"});
+            list.add(new String[]{"param1", item});
+            try {
+                sendServerPost(list, "", null, "dataServINV");
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        }
         calcCost cur = new calcCost();
         ArrayList<Double> costlist = cur.getTotalCost(item, OVData.getDefaultBomID(item) );
         OVData.updateItemCostRec(item, invData.getItemSite(item), "current", costlist.get(0), costlist.get(1), costlist.get(2), costlist.get(3), costlist.get(4), costlist.get(0) + costlist.get(1) + costlist.get(2) + costlist.get(3) + costlist.get(4));
+    }
+    
+    public static void rebaseCurrentCost(String item, double mtlcost, double ovhcost, double outcost) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "rebaseCurrentCost"});
+            list.add(new String[]{"param1", item});
+            list.add(new String[]{"param2", bsNumber(mtlcost)});
+            list.add(new String[]{"param3", bsNumber(ovhcost)});
+            list.add(new String[]{"param4", bsNumber(outcost)});
+            try {
+                sendServerPost(list, "", null, "dataServINV");
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        }
+        calcCost cur = new calcCost();
+        double curcost = cur.getTotalCostSum(item, OVData.getDefaultBomID(item));
+        updateCurrentItemCost(item);
+        if (curcost != (mtlcost + ovhcost + outcost)) {
+            Set<String> parents = OVData.getpsmstrparents2(item);
+            parents.stream().forEach((s) -> updateCurrentItemCost(s));
+        }
     }
     
     public static ArrayList getItemListFromCustCode(String cust) {

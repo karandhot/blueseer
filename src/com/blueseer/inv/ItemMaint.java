@@ -42,6 +42,7 @@ import static com.blueseer.inv.invData.deleteItemMstr;
 import static com.blueseer.inv.invData.getInventoryQtyByItem;
 import static com.blueseer.inv.invData.getItemMstr;
 import static com.blueseer.inv.invData.getRecentTransByItem;
+import static com.blueseer.inv.invData.rebaseCurrentCost;
 import static com.blueseer.inv.invData.resetBOMDefault;
 import static com.blueseer.inv.invData.updateCurrentItemCost;
 import static com.blueseer.inv.invData.updateItemMstr;
@@ -701,21 +702,11 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT {
             outcost = bsParseDouble(tboutcost.getText());
         }
         // capture the current cost 'before' committing to table
-        calcCost cur = new calcCost();
-        double curcost = cur.getTotalCostSum(tbkey.getText(), OVData.getDefaultBomID(tbkey.getText()));
         
-        // now update item master and current item cost record in item_cost
+        
         String[] m = updateItemMstr(createRecord());
-        updateCurrentItemCost(tbkey.getText());
-          
-        // if current item material cost has changed...blow back through all parents and set current price of parents
-        // bsmf.MainFrame.show(curcost + "/" + mtlcost + "/" + ovhcost + "/" + outcost);
-        if (curcost != (mtlcost + ovhcost + outcost)) {
-            Set<String> parents = OVData.getpsmstrparents2(tbkey.getText());
-            parents.stream().forEach((s) -> updateCurrentItemCost(s));
-        }
-         
-         return m;
+        rebaseCurrentCost(tbkey.getText(), mtlcost, ovhcost, outcost);
+        return m;
     }
     
     public String[] deleteRecord(String[] x) {
