@@ -4252,101 +4252,7 @@ public class EDData {
          
         } 
     }
-    
-    public static void sendFTPErrorMailPostEvent() {
         
-        if (OVData.getSysMetaValue("system", "ftp", "errormail").equals("1")) {
-            try {
-                Class.forName(driver);
-                Connection con = null;
-                if (ds != null) {
-                  con = ds.getConnection();
-                } else {
-                  con = DriverManager.getConnection(url + db, user, pass);  
-                }
-                Statement st = con.createStatement();
-                ResultSet res = null;
-                try {
-
-
-                     ArrayList<String[]> list = new ArrayList<String[]>();
-                     ArrayList<String[]> maillist = new ArrayList<String[]>();
-                     res = st.executeQuery("select ftpl_clientid, ftpl_batch, ftpl_messg, ftpl_ts from ftp_log " +
-                             " where ftpl_status = '1' and ftpl_mflag = '0' " +
-                            ";" );
-                   while (res.next()) {
-                       list.add(new String[]{
-                           res.getString("ftpl_id"),
-                           res.getString("ftpl_clientid"),
-                           res.getString("ftpl_batch"),
-                           res.getString("ftpl_messg"),
-                           res.getString("ftpl_ts")
-                       });
-                    }
-                   
-                   if (list.size() == 0) {
-                       return;
-                   }
-                   
-                   for (String[] s : list) {
-                     res = st.executeQuery("select ftp_mflag from ftp_mstr " +
-                          " where ftp_id = " + "'" + s[1] +      
-                            ";" );  
-                     while (res.next()) {
-                         if (res.getString("ftp_mflag").equals("1")) {
-                             maillist.add(s);
-                         }
-                     }
-                   }
-                   
-                   if (maillist.isEmpty()) {
-                       return;
-                   }
-                   
-                   for (String[] s : list) {
-                     st.executeUpdate("update ftp_log set ftpl_mflag = '1' where " +
-                             " ftpl_id = " + "'" + s[0] + "'" );
-                   }
-
-                   // reduce list by site
-                   if (maillist != null && maillist.size() > 0) {
-                    LinkedHashMap<String, String> lhm = new LinkedHashMap<String, String>();
-                    for (String[] s : maillist) {
-                       if (lhm.containsKey(s[1])) {
-                           String x = lhm.get(s[1]);
-                           x = x + "ftp ID: " + s[1] + "    timestamp: " + s[3] + "     Message: " + s[2] + "\n";
-                           lhm.replace(s[1], x);
-                       } else {
-                           lhm.put(s[1], "ftp ID: " + s[1] + "    timestamp: " + s[3] + "     Message: " + s[2] + "\n");
-                       }
-                    }
-                    String to = "";
-                    String[] creds = getSMTPCredentials();
-                    for (Map.Entry<String, String> sitekey : lhm.entrySet()) {
-                        to = OVData.getSysMetaValue("system", "ftp_error_email_to", sitekey.getKey());
-                        if (! to.isBlank() && ! creds[1].isBlank()) {
-                          sendEmail(to, "BlueSeer FTP Error Log Entries: " + getSiteName(sitekey.getKey()), sitekey.getValue(), "");
-                        }
-                    }
-                   }
-                      
-
-
-                } catch (SQLException s) {
-                    MainFrame.bslog(s);
-                } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-            } catch (Exception e) {
-                MainFrame.bslog(e);
-            }
-        
-         
-        } 
-    }
-    
     public static void sendFTPErrorMail(String clientid, ArrayList<String[]> messages) {
         String errormail = getSysMetaValue("system", "ftp", "sendEmailOnError");
         if (! errormail.isBlank() && errormail.equals("1")) {
@@ -4364,8 +4270,7 @@ public class EDData {
             }
         }
     }
-    
-    
+        
     public static void sendEDITranslationErrorMail(String[] c, ArrayList<String[]> messages) {
         String errormail = getSysMetaValue("system", "edi", "sendEmailOnError");
         if (! errormail.isBlank() && errormail.equals("1")) {
@@ -4410,6 +4315,32 @@ public class EDData {
                                     "ErrorMessg: " + "\t" + errormessage + "\n";
                       sendEmail(to, "BlueSeer EDI translation Error ", body, "");
                     }
+        }
+    }
+    
+    public static void sendAS2ErrorMail(String[] c, ArrayList<String[]> messages) {
+        String errormail = getSysMetaValue("system", "as2", "sendEmailOnError");
+        if (! errormail.isBlank() && errormail.equals("1")) {
+            for (String[] s : messages) {
+                if (s[0].equals("error")) {
+                    String[] creds = getSMTPCredentials();
+                    String to = OVData.getSysMetaValue("system", "as2", "errorEmailRecipient");
+                    if (! to.isBlank() && ! creds[1].isBlank()) {
+                      String body = "Sender: " + "\t" + c[0] + "\n" +
+                                    "Receiver: " + "\t" + c[21] + "\n" +
+                                    "DocType: " + "\t" + c[1] + "\n" +
+                                    "Map: " + "\t" + c[2] + "\n" +
+                                    "Date: " + "\t" + new Date() + "\n" +
+                                    "File: " + "\t" + c[3] + "\n" +
+                                    "ISA#: " + "\t" + c[4] + "\n" +
+                                    "GS#: " + "\t" + c[5] + "\n" +
+                                    "File: " + "\t" + c[6] + "\n" +
+                                    "ErrorMessg: " + "\t" + s[1] + "\n";
+                      sendEmail(to, "BlueSeer EDI translation Error ", body, "");
+                    }
+                    break;
+                }
+            }
         }
     }
     

@@ -2994,6 +2994,8 @@ public class EDI {
           if (parentPartner == null || parentPartner.isBlank()) {
             messages.add(new String[]{"error","Unknown parent partner using: " + gs02});  
             sendEDITranslationErrorMail(c, messages);
+            messages.clear();
+            continue; // bail
           } else {
             messages.add(new String[]{"info","Found parent partner: " + parentPartner});  
           }
@@ -3010,8 +3012,8 @@ public class EDI {
           }
           
           c[16] = String.valueOf(idxnbr);
-          EDData.writeEDILogMulti(c, messages);
-          messages.clear();  // clear message here...and at 997...and at end
+        //  EDData.writeEDILogMulti(c, messages);
+        //  messages.clear();  // clear message here...and at 997...and at end
           
           String map = c[2];
              
