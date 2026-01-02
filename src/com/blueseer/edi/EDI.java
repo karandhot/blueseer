@@ -2992,7 +2992,8 @@ public class EDI {
           }
           
           if (parentPartner == null || parentPartner.isBlank()) {
-            messages.add(new String[]{"error","Unknown parent partner using: " + gs02});  
+            messages.add(new String[]{"error","Unknown parent partner using: " + gs02}); 
+            EDData.writeEDILogMulti(c, messages);
             sendEDITranslationErrorMail(c, messages);
             messages.clear();
             continue; // bail
