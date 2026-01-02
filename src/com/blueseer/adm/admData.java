@@ -42,6 +42,7 @@ import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.log;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.EDData;
+import static com.blueseer.utl.EDData.sendFTPErrorMail;
 import static com.blueseer.utl.EDData.writeFTPLogMulti;
 import com.blueseer.utl.OVData;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -3351,6 +3352,7 @@ public class admData {
             }
         }
         boolean dblogging = BlueSeerUtils.ConvertStringToBool(OVData.getSysMetaValue("system", "ftp", "dblogging"));
+        boolean hasError = false;
         
         File lf = new File("ftpbss.lck");
         ArrayList<String[]> logdata = new ArrayList<String[]>();
@@ -3373,6 +3375,7 @@ public class admData {
                
         if (fm.m[0].equals(BlueSeerUtils.ErrorBit)) {
             if (dblogging) { 
+                hasError = true;
                 logdata.add(new String[]{"1", "Unable to retrieve ftp_mstr record id"});
                 writeFTPLogMulti(logdata, fm);
             } else {
@@ -3477,6 +3480,7 @@ public class admData {
                             logdata.add(new String[]{"0", "changing directory..." + splitLine[1]});
                         csftp.cd(splitLine[1]); 
                         } catch(SftpException e){
+                            hasError = true;
                             logdata.add(new String[]{"1", e.toString()});
                         }
                         
@@ -3498,6 +3502,7 @@ public class admData {
                             }
 		        }
                         } catch(SftpException e){
+                            hasError = true;
                             logdata.add(new String[]{"1", e.toString()});
                         }
                     }
@@ -3521,6 +3526,7 @@ public class admData {
                                      logdata.add(new String[]{"0", "file stored: " + localFiles[i].getName() } );
                                     isSuccess = true;
                                     } catch(SftpException e){
+                                        hasError = true;
                                     logdata.add(new String[]{"0", "unable to store file: " + localFiles[i].getName()  } );  
                                     logdata.add(new String[]{"1", e.toString()});
                                     isSuccess = false;
@@ -3556,6 +3562,7 @@ public class admData {
                                         csftp.rm(le.getFilename());
                                         logdata.add(new String[]{"0", "deleted from server: " + le.getFilename()    } );
                                         } catch(SftpException e){
+                                            hasError = true;
                                         logdata.add(new String[]{"0", "Could not delete the file: "+ le.getFilename()} );
                                         logdata.add(new String[]{"1", e.toString()});
                                         }
@@ -3576,6 +3583,7 @@ public class admData {
                                     csftp.rm(le.getFilename());
                                     logdata.add(new String[]{"0", "deleted from server: " + le.getFilename()});
                                     } catch(SftpException e){
+                                        hasError = true;
                                     logdata.add(new String[]{"0", "Could not delete the file: "+ le.getFilename()} );
                                     logdata.add(new String[]{"1", e.toString()});
                                     }
@@ -3588,6 +3596,7 @@ public class admData {
                 } // for commands
                 
              } catch (Exception e) {
+                 hasError = true;
                 logdata.add(new String[]{"1", "***   Unable to connect to FTP server. " + e.toString() + "   ***" + ""});
             } finally {
                 
@@ -3620,6 +3629,7 @@ public class admData {
                     } 
             
                 } catch (Exception exc) {
+                    hasError = true;
                     logdata.add(new String[]{"1", "***   Unable to disconnect from sFTP server. " + exc.toString()+"   ***"});
                     if (dblogging) { 
                         writeFTPLogMulti(logdata, fm);
@@ -3628,7 +3638,9 @@ public class admData {
                     }
                 }  
             }
-            
+            if (hasError) { 
+             sendFTPErrorMail(c, logdata);
+            }
             return logdata;
         } 
         
@@ -3654,6 +3666,7 @@ public class admData {
                 
                 int replyCode = client.getReplyCode();
                 if (! FTPReply.isPositiveCompletion(replyCode)) {
+                    hasError = true;
                     logdata.add(new String[]{"1", "connection failed..." + String.valueOf(replyCode)});
                     if (dblogging) { 
                         writeFTPLogMulti(logdata, fm);
@@ -3729,6 +3742,7 @@ public class admData {
                                         logdata.add(new String[]{"0", "file stored: " + localFiles[i].getName()});
                                         isSuccess = true;
                                     } else {
+                                        hasError = true;
                                         logdata.add(new String[]{"1", "unable to store file: " + localFiles[i].getName()});
                                         isSuccess = false;
                                     }   
@@ -3759,6 +3773,7 @@ public class admData {
                                     if (deleted) {
                                         logdata.add(new String[]{"0", "deleted from server: " + f.getName()});
                                     } else {
+                                        hasError = true;
                                         logdata.add(new String[]{"1", "Could not delete the file: "+ f.getName()});
                                     }
                                 }
@@ -3792,6 +3807,7 @@ public class admData {
 		
 		
 	} catch (SocketException e) {
+            hasError = true;
             logdata.add(new String[]{"1", "socket error: " + e.getMessage()});
                 if (dblogging) { 
                         writeFTPLogMulti(logdata, fm);
@@ -3799,6 +3815,7 @@ public class admData {
                         log("ftp", logdata); 
                     }  
 	} catch (IOException e) {
+                hasError = true;
                 logdata.add(new String[]{"1", "io error: " + e.getMessage()});
                 if (dblogging) { 
                         writeFTPLogMulti(logdata, fm);
@@ -3828,6 +3845,10 @@ public class admData {
             }  
        }
    
+     if (hasError) {      
+      sendFTPErrorMail(c, logdata);
+     }
+     
      return logdata;
     }
     

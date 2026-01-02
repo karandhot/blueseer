@@ -4253,7 +4253,7 @@ public class EDData {
         } 
     }
     
-    public static void sendFTPErrorMail() {
+    public static void sendFTPErrorMailPostEvent() {
         
         if (OVData.getSysMetaValue("system", "ftp", "errormail").equals("1")) {
             try {
@@ -4347,6 +4347,25 @@ public class EDData {
         } 
     }
     
+    public static void sendFTPErrorMail(String clientid, ArrayList<String[]> messages) {
+        String errormail = getSysMetaValue("system", "ftp", "sendEmailOnError");
+        if (! errormail.isBlank() && errormail.equals("1")) {
+            for (String[] s : messages) {
+                if (s[0].equals("error")) {
+                    String[] creds = getSMTPCredentials();
+                    String to = OVData.getSysMetaValue("system", "ftp", "errorEmailRecipient");
+                    if (! to.isBlank() && ! creds[1].isBlank()) {
+                      String body = "ClientID: " + "\t" + clientid + "\n" +
+                                    "ErrorMessg: " + "\t" + s[1] + "\n";
+                      sendEmail(to, "BlueSeer FTP Error ", body, "");
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    
+    
     public static void sendEDITranslationErrorMail(String[] c, ArrayList<String[]> messages) {
         String errormail = getSysMetaValue("system", "edi", "sendEmailOnError");
         if (! errormail.isBlank() && errormail.equals("1")) {
@@ -4367,6 +4386,7 @@ public class EDData {
                                     "ErrorMessg: " + "\t" + s[1] + "\n";
                       sendEmail(to, "BlueSeer EDI translation Error ", body, "");
                     }
+                    break;
                 }
             }
         }

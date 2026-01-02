@@ -272,7 +272,7 @@ public class LocationMaint extends javax.swing.JPanel implements IBlueSeerT {
          cbactive.setSelected(false);
          
         String defaultsite = "";
-        ArrayList<String[]> initDataSets = invData.getLocationMaintInit();
+        ArrayList<String[]> initDataSets = invData.getLocationMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
         
        
         ddsite.removeAllItems();

@@ -4239,7 +4239,19 @@ public class invData {
         }
 
     
-    public static ArrayList<String[]> getWareHouseMaintInit() {
+    public static ArrayList<String[]> getWareHouseMaintInit(String panelClassName, String userid) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getWareHouseMaintInit"});
+            list.add(new String[]{"param1", panelClassName});
+             list.add(new String[]{"param2", userid});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
         String defaultsite = "";
         ArrayList<String[]> lines = new ArrayList<String[]>();
         try{
@@ -4321,7 +4333,19 @@ public class invData {
         return lines;
     }
     
-    public static ArrayList<String[]> getLocationMaintInit() {
+    public static ArrayList<String[]> getLocationMaintInit(String panelClassName, String userid) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getLocationMaintInit"});
+            list.add(new String[]{"param1", panelClassName});
+             list.add(new String[]{"param2", userid});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
         String defaultsite = "";
         ArrayList<String[]> lines = new ArrayList<String[]>();
         try{

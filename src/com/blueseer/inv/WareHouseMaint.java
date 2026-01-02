@@ -276,7 +276,7 @@ public class WareHouseMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbzip.setText("");
         
         String defaultsite = "";
-        ArrayList<String[]> initDataSets = invData.getWareHouseMaintInit();
+        ArrayList<String[]> initDataSets = invData.getWareHouseMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
         
         ddstate.removeAllItems();
         ddcountry.removeAllItems();

@@ -55,12 +55,14 @@ import static com.blueseer.inv.invData.getItemPrice;
 import static com.blueseer.inv.invData.getItemQOHTotal;
 import static com.blueseer.inv.invData.getItemQtyByWarehouseAndLocation;
 import static com.blueseer.inv.invData.getLocationListByWarehouse;
+import static com.blueseer.inv.invData.getLocationMaintInit;
 import static com.blueseer.inv.invData.getLocationMstr;
 import static com.blueseer.inv.invData.getOrderMaintDetailEvent;
 import static com.blueseer.inv.invData.getPLMstr;
 import static com.blueseer.inv.invData.getRecentTransByItem;
 import static com.blueseer.inv.invData.getRoutingMstr;
 import static com.blueseer.inv.invData.getUOMMstr;
+import static com.blueseer.inv.invData.getWareHouseMaintInit;
 import static com.blueseer.inv.invData.getWareHouseMstr;
 import static com.blueseer.inv.invData.getWorkCenterMstr;
 import static com.blueseer.inv.invData.rebaseCurrentCost;
@@ -521,7 +523,17 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "getItemMaintInit" : { 
             response.getWriter().print(ArrayListStringArrayToJson(getItemMaintInit(request.getHeader("param1"), request.getHeader("param2"))));
             break;  
-        }    
+        }
+        
+        case "getLocationMaintInit" : { 
+            response.getWriter().print(ArrayListStringArrayToJson(getLocationMaintInit(request.getHeader("param1"), request.getHeader("param2"))));
+            break;  
+        }
+        
+        case "getWareHouseMaintInit" : { 
+            response.getWriter().print(ArrayListStringArrayToJson(getWareHouseMaintInit(request.getHeader("param1"), request.getHeader("param2"))));
+            break;  
+        }
         
         case "getItemDataInit" : {
             response.getWriter().print(HashMapStringStringToJson(getItemDataInit(
