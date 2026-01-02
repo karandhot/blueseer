@@ -46,6 +46,7 @@ import static com.blueseer.utl.BlueSeerUtils.jsonToBoolean;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.OVData.getSMTPCredentials;
+import static com.blueseer.utl.OVData.getSysMetaValue;
 import static com.blueseer.utl.OVData.sendEmail;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedInputStream;
@@ -3855,6 +3856,7 @@ public class EDData {
                             ps.setString(14, c[39]);
                             ps.executeUpdate();
                 }  
+                
             } catch (SQLException s) {
                  MainFrame.bslog(s);
             } finally {
@@ -4343,6 +4345,52 @@ public class EDData {
         
          
         } 
+    }
+    
+    public static void sendEDITranslationErrorMail(String[] c, ArrayList<String[]> messages) {
+        String errormail = getSysMetaValue("system", "edi", "sendEmailOnError");
+        if (! errormail.isBlank() && errormail.equals("1")) {
+            for (String[] s : messages) {
+                if (s[0].equals("error")) {
+                    String[] creds = getSMTPCredentials();
+                    String to = OVData.getSysMetaValue("system", "edi", "errorEmailRecipient");
+                    if (! to.isBlank() && ! creds[1].isBlank()) {
+                      String body = "Sender: " + "\t" + c[0] + "\n" +
+                                    "Receiver: " + "\t" + c[21] + "\n" +
+                                    "DocType: " + "\t" + c[1] + "\n" +
+                                    "Map: " + "\t" + c[2] + "\n" +
+                                    "Date: " + "\t" + new Date() + "\n" +
+                                    "File: " + "\t" + c[3] + "\n" +
+                                    "ISA#: " + "\t" + c[4] + "\n" +
+                                    "GS#: " + "\t" + c[5] + "\n" +
+                                    "File: " + "\t" + c[6] + "\n" +
+                                    "ErrorMessg: " + "\t" + s[1] + "\n";
+                      sendEmail(to, "BlueSeer EDI translation Error ", body, "");
+                    }
+                }
+            }
+        }
+    }
+    
+    public static void sendEDITranslationErrorMail(String[] c, String errormessage) {
+        String errormail = getSysMetaValue("system", "edi", "sendEmailOnError");
+        if (! errormail.isBlank() && errormail.equals("1")) {
+                    String[] creds = getSMTPCredentials();
+                    String to = OVData.getSysMetaValue("system", "edi", "errorEmailRecipient");
+                    if (! to.isBlank() && ! creds[1].isBlank()) {
+                      String body = "Sender: " + "\t" + c[0] + "\n" +
+                                    "Receiver: " + "\t" + c[21] + "\n" +
+                                    "DocType: " + "\t" + c[1] + "\n" +
+                                    "Map: " + "\t" + c[2] + "\n" +
+                                    "Date: " + "\t" + new Date() + "\n" +
+                                    "File: " + "\t" + c[3] + "\n" +
+                                    "ISA#: " + "\t" + c[4] + "\n" +
+                                    "GS#: " + "\t" + c[5] + "\n" +
+                                    "File: " + "\t" + c[6] + "\n" +
+                                    "ErrorMessg: " + "\t" + errormessage + "\n";
+                      sendEmail(to, "BlueSeer EDI translation Error ", body, "");
+                    }
+        }
     }
     
     

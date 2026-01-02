@@ -85,6 +85,7 @@ import static com.blueseer.utl.EDData.getEDIFFDocType;
 import static com.blueseer.utl.EDData.getEDIFFSubType;
 import static com.blueseer.utl.EDData.getEDIFileTypeDocType;
 import static com.blueseer.utl.EDData.getEDIPartnerSite;
+import static com.blueseer.utl.EDData.sendEDITranslationErrorMail;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.getSMTPCredentials;
 import static com.blueseer.utl.OVData.getSysMetaValue;
@@ -1092,14 +1093,17 @@ public class EDI {
          if (editype[0] == null || editype[0].isEmpty()) {
            m = new String[]{"1","unknown file type: " + infile};
            EDData.writeEDILog(c, "error", "Unknown File Type: " + infile + " DOCTYPE:FILETYPE " + editype[1] + ":" + editype[0]); 
+           sendEDITranslationErrorMail(c, "Unknown File Type: " + infile + " DOCTYPE:FILETYPE " + editype[1] + ":" + editype[0]);
            return m; 
          } else if (editype[1] == null || editype[1].isEmpty()) {
             m = new String[]{"1","unknown doc type: " + infile};
            EDData.writeEDILog(c, "error", "Unknown Doc Type: " + infile + " DOCTYPE:FILETYPE " + editype[1] + ":" + editype[0]); 
+           sendEDITranslationErrorMail(c, "Unknown Doc Type: " + infile + " DOCTYPE:FILETYPE " + editype[1] + ":" + editype[0]);
            return m; 
          } else if (editype[1].equals("??")) {
             m = new String[]{"1","unknown doc type: " + infile};
            EDData.writeEDILog(c, "error", "Unknown Doc Type: " + infile + " DOCTYPE:FILETYPE " + editype[1] + ":" + editype[0]); 
+           sendEDITranslationErrorMail(c, "Unknown Doc Type: " + infile + " DOCTYPE:FILETYPE " + editype[1] + ":" + editype[0]);
            return m;   
          } else {
            EDData.writeEDILog(c, "info", "File Type Info: " + " DOCTYPE:FILETYPE " + editype[1] + ":" + editype[0]);
@@ -2281,6 +2285,7 @@ public class EDI {
                    
                }
          EDData.writeEDILogMulti(c, messages);
+         sendEDITranslationErrorMail(c, messages);
            messages.clear();     
      
    
@@ -2308,6 +2313,7 @@ public class EDI {
              if (x[2].isEmpty()) {
                 messages.add(new String[]{"error", "unable to determine parent partner from content:(doctype,rcvid,parent,sndid) (" + x[0] + "," + x[1] + "," + x[2] + "," + x[3] + ")"});
                 EDData.writeEDILogMulti(c, messages);
+                sendEDITranslationErrorMail(c, messages);
                 messages.clear(); 
                 return;  
              }
@@ -2429,6 +2435,7 @@ public class EDI {
                    
                }
          EDData.writeEDILogMulti(c, messages);
+         sendEDITranslationErrorMail(c, messages);
            messages.clear();     
      
    
@@ -2586,6 +2593,7 @@ public class EDI {
                    
                }
              EDData.writeEDILogMulti(c, messages);
+             sendEDITranslationErrorMail(c, messages);
            messages.clear(); 
      
     } // FFDocs entries
@@ -2853,6 +2861,7 @@ public class EDI {
            }
            
            EDData.writeEDILogMulti(c, messages);
+           sendEDITranslationErrorMail(c, messages);
            messages.clear();
             
                
@@ -2984,6 +2993,7 @@ public class EDI {
           
           if (parentPartner == null || parentPartner.isBlank()) {
             messages.add(new String[]{"error","Unknown parent partner using: " + gs02});  
+            sendEDITranslationErrorMail(c, messages);
           } else {
             messages.add(new String[]{"info","Found parent partner: " + parentPartner});  
           }
@@ -3115,6 +3125,7 @@ public class EDI {
            } // else
            
            EDData.writeEDILogMulti(c, messages);
+           sendEDITranslationErrorMail(c, messages);
            messages.clear();
             
                
@@ -3280,6 +3291,7 @@ public class EDI {
                    
                }
          EDData.writeEDILogMulti(c, messages);
+         sendEDITranslationErrorMail(c, messages);
            messages.clear();     
      
     } // FFDocs entries
