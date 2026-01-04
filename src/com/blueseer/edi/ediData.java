@@ -60,6 +60,7 @@ import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.EDData;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.getSMTPCredentials;
+import static com.blueseer.utl.OVData.getSysMetaValue;
 import static com.blueseer.utl.OVData.isSMTPServer;
 import static com.blueseer.utl.OVData.isSMTPServerBool;
 import static com.blueseer.utl.OVData.sendEmail;
@@ -7019,11 +7020,21 @@ public class ediData {
             
             writeWFLog(wkfl,logid,list);
         
+        String status = (isError) ? "1" : "0";
+        if (isError && getSysMetaValue("system", "workflow", "sendEmailOnError").equals("1")) {
+            String to = OVData.getSysMetaValue("system", "workflow", "errorEmailRecipient");  
+            if (! to.isBlank()) {
+              String[] creds = getSMTPCredentials();
+              if (! creds[1].isBlank()) {
+                 sendEmail(to, "BlueSeer WorkFlow Error: " + wkf.wkf_id(), statusmessg, "");
+              }
+            }       
+        }
         wkf = null;
         wkfl = null;
         wkfdetlist = null;
         logdetail = null;
-        String status = (isError) ? "1" : "0";
+
         return bsret(status, statusmessg);
     }
     

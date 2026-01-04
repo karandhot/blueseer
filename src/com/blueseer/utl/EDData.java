@@ -4531,10 +4531,18 @@ public class EDData {
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
+          if (c[3].equals("error") && getSysMetaValue("system", "as2", "sendEmailOnError").equals("1")) {
+            String to = OVData.getSysMetaValue("system", "as2", "errorEmailRecipient");  
+            if (! to.isBlank()) {
+              String[] creds = getSMTPCredentials();
+              if (! creds[1].isBlank()) {
+                 sendEmail(to, "BlueSeer AS2 Server Error: " + c[1], c[4], "");
+              }
+            }       
+          }
           return returnkey;
       }
-    
-    
+        
     public static int writeAS2LogDetail(ArrayList<String[]> x, String as2id) {
             int returnkey = 0;
             boolean isError = false;
@@ -4597,12 +4605,12 @@ public class EDData {
             MainFrame.bslog(e);
         }
           
-          if (isError) {
-            String to = OVData.getSysMetaValue("system", "as2errormail", as2id);  // if no sys_meta record...then do not send email error alert
+          if (isError && getSysMetaValue("system", "as2", "sendEmailOnError").equals("1")) {
+            String to = OVData.getSysMetaValue("system", "as2", "errorEmailRecipient"); 
             if (! to.isBlank()) {
               String[] creds = getSMTPCredentials();
               if (! creds[1].isBlank()) {
-                 sendEmail(to, "BlueSeer AS2 Send Error: " + as2id, errorMessage, "");
+                 sendEmail(to, "BlueSeer AS2 Server Error: " + as2id, errorMessage, "");
               }
             }       
           }
