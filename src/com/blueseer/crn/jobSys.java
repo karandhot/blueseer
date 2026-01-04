@@ -34,7 +34,6 @@ import com.blueseer.fgl.fglData;
 import com.blueseer.ord.ordData;
 import com.blueseer.utl.EDData;
 import static com.blueseer.utl.EDData.getEDIIDXmail;
-import static com.blueseer.utl.EDData.sendFTPErrorMail;
 import static com.blueseer.utl.OVData.canReadDB;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
