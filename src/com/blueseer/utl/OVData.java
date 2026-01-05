@@ -22557,6 +22557,36 @@ return mylist;
             }
     }
     
+    public static void updateSet(String x, String y) {
+            try{
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            try {
+                 String passwd = bsmf.MainFrame.PassWord("0", y.toCharArray());
+                   st.executeUpdate(
+                         " update user_mstr set user_passwd = " + "'" + passwd + "'" +
+                         " where user_id = " + "'" + x + "'" + ";" );
+            }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+            } finally {
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        
+       }
+    
         
     
 }

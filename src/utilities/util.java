@@ -27,6 +27,7 @@ package utilities;
 
 import static bsmf.MainFrame.decryptConfig;
 import static bsmf.MainFrame.encryptConfig;
+import static com.blueseer.utl.OVData.updateSet;
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
@@ -63,6 +64,9 @@ public class util {
                         pass = args[i+1]; 
                         decrypt(pass);
                         break;
+                    case "-set" :
+                        set(args[i+1], args[i+2]);
+                        break;    
                     default:
                         System.out.println("Bad Qualifier");
                         System.exit(1);
@@ -114,6 +118,10 @@ public class util {
                 
         } 
         
+    }
+    
+    public static void set(String x, String y) {
+        updateSet(x,y);
     }
     
 }
