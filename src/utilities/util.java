@@ -27,6 +27,7 @@ package utilities;
 
 import static bsmf.MainFrame.decryptConfig;
 import static bsmf.MainFrame.encryptConfig;
+import static bsmf.MainFrame.tags;
 import static com.blueseer.utl.OVData.updateSet;
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
@@ -36,6 +37,8 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -48,6 +51,20 @@ public class util {
      */
     public static void main(String[] args) throws Exception {
         String pass = "";
+        
+    String configfile = "bs.cfg";
+    if (args != null && args.length > 0) {
+    int i = 0;
+        for (String s : args) {
+            if (s.equals("-config")) {
+            configfile = args[i+1];
+            }
+            i++;
+        }
+    }            
+    
+    bsmf.MainFrame.setConfig(configfile);
+    tags = ResourceBundle.getBundle("resources.bs", Locale.getDefault());
         
         for (int i = 0; i < args.length ;i++) {
             if (args[i].substring(0,1).equals("-")) {
