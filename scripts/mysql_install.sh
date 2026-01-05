@@ -114,7 +114,7 @@ mysql -e "create database if not exists $DB character set utf8mb4 collate utf8mb
 mysql -e "drop user if exists 'bs_user'@'%' ;" -u $ROOT 
 mysql -e "create user if not exists 'bs_user'@'%' identified by 'bsPasswd';" -u $ROOT
 mysql -e "grant select,insert,delete,update on bsdb.* to 'bs_user'@'%';"  -u $ROOT
-mysql -e "set global local_infile = 'ON';"
+mysql -e "set global local_infile = 'ON';" -u $ROOT
 
 #  The next line loads the database and table definitions
 mysql --local-infile=1 $DB -u $ROOT  <blueseer.schema 

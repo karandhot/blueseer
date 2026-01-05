@@ -1123,7 +1123,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
                 ddoutfiletype.getSelectedItem().toString(),
                 tbpath.getText(),
                 tbpackage.getText(), // package
-                String.valueOf(BlueSeerUtils.boolToInt(cbinternal.isSelected())),
+                "1", // internal
                 ddsite.getSelectedItem().toString()
                 );
         /* potential validation mechanism...would need association between record field and input field
