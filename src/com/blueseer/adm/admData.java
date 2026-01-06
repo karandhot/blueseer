@@ -326,7 +326,7 @@ public class admData {
             psi.setString(7, x.user_phone);
             psi.setString(8, x.user_cell);
             psi.setString(9, x.user_rmks);
-            psi.setString(10, x.user_passwd); 
+            psi.setString(10, bsmf.MainFrame.PassWord("0", x.user_passwd().toCharArray())); 
             psi.setString(11, x.user_allowedsites); 
             int rows = psi.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
@@ -373,7 +373,7 @@ public class admData {
             ps.setString(6, x.user_phone); 
             ps.setString(7, x.user_cell);
             ps.setString(8, x.user_rmks);
-            ps.setString(9, x.user_passwd);   
+            ps.setString(9, bsmf.MainFrame.PassWord("0", x.user_passwd().toCharArray()));   
             ps.setString(10, x.user_allowedsites); 
         int rows = ps.executeUpdate();
         m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
