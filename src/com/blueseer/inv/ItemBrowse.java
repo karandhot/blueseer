@@ -346,14 +346,25 @@ public void executeTask(String x, String[] y) {
     
     public String[] getItemBrowseView() {
         String[] x = new String[2];
-      
+        String fromitem = "";
+        String toitem = "";
+        if (ddfromitem.getSelectedItem() == null || ddfromitem.getSelectedItem().toString().isEmpty()) {
+                    fromitem = bsmf.MainFrame.lowchar;
+        } else {
+            fromitem = ddfromitem.getSelectedItem().toString();
+        }
+         if (ddtoitem.getSelectedItem() == null || ddtoitem.getSelectedItem().toString().isEmpty()) {
+            toitem = bsmf.MainFrame.hichar;
+        } else {
+            toitem = ddtoitem.getSelectedItem().toString();
+        }
         
         String jsonString = null; 
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
         ArrayList<String[]> list = new ArrayList<String[]>();
         list.add(new String[]{"id","getItemBrowseView"});
-        list.add(new String[]{"fromitem",ddfromitem.getSelectedItem().toString()});
-        list.add(new String[]{"toitem",ddtoitem.getSelectedItem().toString()});
+        list.add(new String[]{"fromitem",fromitem});
+        list.add(new String[]{"toitem",toitem});
         list.add(new String[]{"fromclass", ddfromclass.getSelectedItem().toString()});
         list.add(new String[]{"toclass",ddtoclass.getSelectedItem().toString()});
         list.add(new String[]{"site",ddsite.getSelectedItem().toString()});

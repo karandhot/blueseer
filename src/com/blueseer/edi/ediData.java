@@ -2144,6 +2144,52 @@ public class ediData {
         return m;
     }
     
+    public static void updateEdiMstrMM(map_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id","updateEDIMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                sendServerPost(list, jsonString, null, "dataServEDI");
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } 
+        
+        try {            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            try {
+                    // NOTE:   cannot change edi_doc (it is a key in edi_mstr) ...if map_mstr has changed inbound doctype, then edi_mstr has to be recreated.
+                    st.executeUpdate("update edi_mstr set "
+                            + "edi_doctypeout = " + "'" + x.map_outdoctype() + "'"  + ","
+                            + "edi_filetypeout = " + "'" + x.map_outfiletype() + "'"  + ","   
+                            + "edi_filetype = " + "'" + x.map_infiletype() + "'"  + ","         
+                            + "edi_ifs = " + "'" + x.map_ifs() + "'" + ","
+                            + "edi_ofs = " + "'" + x.map_ofs() + "'"
+                            + " where edi_map = " + "'" + x.map_id() + "'"  
+                            + ";");                
+         
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+    }
+    
     public static String[] deleteEdiMstr(edi_mstr x) { 
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();

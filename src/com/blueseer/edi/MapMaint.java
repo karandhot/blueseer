@@ -81,6 +81,7 @@ import static com.blueseer.edi.ediData.getMapMstr;
 import static com.blueseer.edi.ediData.isValidDFSid;
 import static com.blueseer.edi.ediData.isValidMapid;
 import com.blueseer.edi.ediData.map_mstr;
+import static com.blueseer.edi.ediData.updateEdiMstrMM;
 import static com.blueseer.edi.ediData.updateMapMstr;
 import com.blueseer.shp.shpData.ship_det;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
@@ -1146,7 +1147,7 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
          String[] m = updateMapMstr(mm);
          
          // also update edi_mstr for appropriate fields as the edi_mstr must stay commensurate with any map_mstr ancillary field updates
-         updateEDIMstr(mm);
+         updateEdiMstrMM(mm);
          return m;
     }
     

@@ -57,6 +57,7 @@ import static com.blueseer.edi.ediData.isAPIMethodUnique;
 import static com.blueseer.edi.ediData.updateAS2Mstr;
 import static com.blueseer.edi.ediData.updateEDIXref;
 import static com.blueseer.edi.ediData.updateEdiMstr;
+import static com.blueseer.edi.ediData.updateEdiMstrMM;
 import static com.blueseer.edi.ediData.updateMapMstr;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
@@ -464,6 +465,19 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             ObjectMapper objectMapper = new ObjectMapper();
             ediData.edi_mstr x = objectMapper.readValue(sb.toString(), ediData.edi_mstr.class);            
             response.getWriter().print(arrayToJson(updateEdiMstr(x)));
+            break;
+          }
+        
+        case "updateEdiMstrMM" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            ediData.map_mstr x = objectMapper.readValue(sb.toString(), ediData.map_mstr.class);            
+            updateEdiMstrMM(x); 
             break;
           }
         
