@@ -80,6 +80,7 @@ public class ItemBrowse extends javax.swing.JPanel {
      Object[][] roData;
     ArrayList<String[]> initDataSets = new ArrayList<>();
     String defaultsite = "";
+    String defaultcurrency = "";
     
      MyTableModel mymodel = new ItemBrowse.MyTableModel(new Object[][]{},
                         new String[]{
@@ -314,6 +315,9 @@ public void executeTask(String x, String[] y) {
             if (s[0].equals("site")) {
               defaultsite = s[1]; 
             }
+            if (s[0].equals("currency")) {
+              defaultcurrency = s[1]; 
+            }
             if (s[0].equals("items")) {
               ddfromitem.addItem(s[1]); 
               ddtoitem.addItem(s[1]);
@@ -334,8 +338,8 @@ public void executeTask(String x, String[] y) {
                      tc.setCellRenderer(new ItemBrowse.SomeRenderer());
                  }
                  tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-                 tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                 tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+                 tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+                 tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
                 
        
     }
