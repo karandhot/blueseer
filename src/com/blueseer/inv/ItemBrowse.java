@@ -26,63 +26,36 @@ SOFTWARE.
 
 package com.blueseer.inv;
 
-import com.blueseer.fgl.*;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.FileDialog;
-import java.awt.Frame;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.data.JRTableModelDataSource;
 import net.sf.jasperreports.view.JasperViewer;
 import static bsmf.MainFrame.checkperms;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.driver;
-import static bsmf.MainFrame.menumap;
-import static bsmf.MainFrame.mydialog;
-import static bsmf.MainFrame.panelmap;
-import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
-import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
-import static com.blueseer.utl.BlueSeerUtils.bsFormatDoubleZ;
-import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
-import static com.blueseer.utl.BlueSeerUtils.currformat;
-import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
+import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
-import java.sql.Connection;
-import java.text.DecimalFormatSymbols;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import static com.blueseer.utl.OVData.getSystemJasperDirectory;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -92,6 +65,10 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
+import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.data.ListOfArrayDataSource;
 
 /**
  *
@@ -99,6 +76,11 @@ import javax.swing.JTabbedPane;
  */
 public class ItemBrowse extends javax.swing.JPanel {
  
+    public String rsData; 
+     Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultsite = "";
+    
      MyTableModel mymodel = new ItemBrowse.MyTableModel(new Object[][]{},
                         new String[]{
                             getGlobalColumnTag("select"),
@@ -186,7 +168,76 @@ public class ItemBrowse extends javax.swing.JPanel {
         return c;
     }
     }
+    
+public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getItemBrowseView":
+                    message = getItemBrowseView();
+                    break; 
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
         
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getItemBrowseView")) {
+                done_getItemBrowseView();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+       
         
     public ItemBrowse() {
         initComponents();
@@ -239,37 +290,135 @@ public class ItemBrowse extends javax.swing.JPanel {
        }
     }
     
+    public String[] getInitialization() {
+        initDataSets = invData.getInvMaintInit_min(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
     
-    public void initvars(String[] arg) {
-        mymodel.setRowCount(0);
-        
+    public void done_Initialization() {
+        Calendar calfrom = Calendar.getInstance();
+        Calendar calto = Calendar.getInstance();
+        ddsite.removeAllItems();
         ddfromitem.removeAllItems();
         ddtoitem.removeAllItems();
-     //   ArrayList<String> items = invData.getItemMasterListBySite(OVData.getDefaultSite()); 
-        ArrayList<String> items = invData.getItemMasterAlllist(); 
-        for (String item : items) {
-        ddfromitem.addItem(item);
-        ddtoitem.addItem(item);
-        }  
-        if (ddfromitem.getSelectedItem() != null) {
-        ddfromitem.setSelectedIndex(0);
+        String defaultsite = "";
+        for (String[] s : initDataSets) {
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultsite = s[1]; 
+            }
+            if (s[0].equals("items")) {
+              ddfromitem.addItem(s[1]); 
+              ddtoitem.addItem(s[1]);
+            }
         }
-        if (ddtoitem.getSelectedItem() != null) {
-        ddtoitem.setSelectedIndex(ddtoitem.getItemCount() - 1);
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
         }
-        ddfromclass.setSelectedIndex(0);
-        ddtoclass.setSelectedIndex(ddtoclass.getItemCount() - 1);
         
-        ddsite.removeAllItems();
-        ArrayList sites = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (Object site : sites) {
-            ddsite.addItem(site);
-        }  
-         
-         
-         
+        mymodel.setRowCount(0);
+           tablereport.setModel(mymodel);
+              Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
+                 while (en.hasMoreElements()) {
+                     TableColumn tc = en.nextElement();
+                     if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+                         continue;
+                     }
+                     tc.setCellRenderer(new ItemBrowse.SomeRenderer());
+                 }
+                 tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+                 tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+                 tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+                
        
     }
+    
+    public String[] getItemBrowseView() {
+        String[] x = new String[2];
+      
+        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getItemBrowseView"});
+        list.add(new String[]{"fromitem",ddfromitem.getSelectedItem().toString()});
+        list.add(new String[]{"toitem",ddtoitem.getSelectedItem().toString()});
+        list.add(new String[]{"fromclass", ddfromclass.getSelectedItem().toString()});
+        list.add(new String[]{"toclass",ddtoclass.getSelectedItem().toString()});
+        list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getOrderBrowseView")};
+            }
+        } else {
+            jsonString = invData.getItemBrowseView(new String[]{ddfromitem.getSelectedItem().toString(), 
+                ddtoitem.getSelectedItem().toString(), 
+                ddfromclass.getSelectedItem().toString(), 
+                ddtoclass.getSelectedItem().toString(), 
+                ddsite.getSelectedItem().toString()
+            });
+        }
+        
+        
+        roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getItemBrowseView() {
+        
+        int i = 0;
+        
+        mymodel.setNumRows(0);
+        
+        if (roData != null) {
+        
+        /* potential data adjustment before adding
+        for (int j = 0; j < roData.length; j++) { // 
+                if (roData[j][7].equals("1")) { 
+                    roData[j][7] = "Confirmed";
+                } else {
+                    roData[j][7] = "Not Confirmed";
+                }
+        }
+        */
+        
+        for (Object[] rowData : roData) {
+            i++;
+            mymodel.addRow(rowData); 
+            /*
+            mymodel.addRow(new Object[]{
+                                BlueSeerUtils.clickflag,
+                                res.getString("it_item"),
+                                res.getString("it_desc"),
+                                res.getString("it_code"),
+                                res.getString("it_type"),
+                                res.getString("it_uom"),
+                                bsFormatDouble(res.getDouble("it_mtl_cost")),
+                                bsFormatDouble(res.getDouble("it_sell_price")),
+                                bsFormatDouble(res.getDouble("qty"))
+                            });
+            */
+        }
+        labelcount.setText(String.valueOf(i));
+        
+        }          
+        roData = null;
+    }   
+    
+    public void initvars(String[] arg) {
+        executeTask("dataInit", null);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -473,80 +622,14 @@ public class ItemBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-        if (ddfromitem.getSelectedItem() == null || ddtoitem.getSelectedItem() == null) {
-            return;
-        }
-    
-try {
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                 mymodel.setNumRows(0);
-                tablereport.setModel(mymodel);
-              Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
-                 while (en.hasMoreElements()) {
-                     TableColumn tc = en.nextElement();
-                     if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
-                         continue;
-                     }
-                     tc.setCellRenderer(new ItemBrowse.SomeRenderer());
-                 }
-                 tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-                 tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                 tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                
-                res = st.executeQuery("SELECT it_item, it_desc, it_code, " +
-                        " it_type, it_uom, it_mtl_cost, it_sell_price, it_site,  " +
-                        " coalesce(sum(in_qoh),0) as qty " +
-                        " from item_mstr " +
-                        " left outer join in_mstr on in_item = it_item and in_site = it_site " +
-                        " where it_item >= " + "'" + ddfromitem.getSelectedItem().toString()  + "'" + 
-                        " AND it_item <= " + "'" + ddtoitem.getSelectedItem().toString() + "'" +
-                         " AND it_code >= " + "'" + ddfromclass.getSelectedItem().toString() + "'" +
-                         " AND it_code <= " + "'" + ddtoclass.getSelectedItem().toString() + "'" +
-                         " AND it_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +
-                         " group by it_item, it_desc, it_code, it_type, it_uom, it_mtl_cost, it_sell_price, it_site order by it_item;");
-                while (res.next()) {
-                    i++;
-                    mymodel.addRow(new Object[]{
-                                BlueSeerUtils.clickflag,
-                                res.getString("it_item"),
-                                res.getString("it_desc"),
-                                res.getString("it_code"),
-                                res.getString("it_type"),
-                                res.getString("it_uom"),
-                                bsFormatDouble(res.getDouble("it_mtl_cost")),
-                                bsFormatDouble(res.getDouble("it_sell_price")),
-                                bsFormatDouble(res.getDouble("qty"))
-                            });
-                } 
-                
-                labelcount.setText(String.valueOf(i));
-               
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
+       executeTask("getItemBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btcsvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcsvActionPerformed
-        if (tablereport != null && mymodel.getRowCount() > 0)
+       if (tablereport != null && tablereport.getRowCount() > 0) {
         OVData.exportCSV(tablereport);
+        bsmf.MainFrame.show(getMessageTag(1126));
+       }
     }//GEN-LAST:event_btcsvActionPerformed
 
     private void tablereportMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablereportMouseClicked
@@ -562,8 +645,48 @@ try {
     private void tbprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbprintActionPerformed
 
         if (tablereport != null && mymodel.getRowCount() > 0) {
-            OVData.printJTableToJasper("Item Browse Report", tablereport, "genericJTableL8.jasper" );
+          // OVData.printJTableToJasper("Sales Order Browse Report", tableorder, "genericJTableL10.jasper" );
+         // OVData.printJTableToJasper("Item Browse Report", tablereport, "genericJTableL8.jasper" );
+            String[] rec;
+            String[] columnnames = new String[12];
+            List<Object[]> list = new ArrayList<>();
+            for (int j = 0; j < tablereport.getRowCount(); j++) {
+                 rec = new String[]{tablereport.getValueAt(j, 1).toString(),
+                   tablereport.getValueAt(j, 2).toString(),
+                   tablereport.getValueAt(j, 3).toString(),
+                   tablereport.getValueAt(j, 4).toString(),
+                   tablereport.getValueAt(j, 5).toString(),
+                   tablereport.getValueAt(j, 6).toString(),
+                   tablereport.getValueAt(j, 7).toString(),
+                   tablereport.getValueAt(j, 8).toString()}; 
+                 list.add(rec);
+             }
+            HashMap hm = new HashMap();
+            hm.put("REPORT_TITLE", "Item Browse Report");
+            hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+            for (int j = 2; j < tablereport.getColumnCount() - 1; j++) {
+               hm.put("d" + (j - 2),  tablereport.getColumnName(j));
+               columnnames[j - 2] = "COLUMN_" + (j - 2);
+            }
+            JRDataSource datasource = new ListOfArrayDataSource(list, columnnames);
+            // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
+            // type = "L8C";  ...or type = genericJTableL8.jasper
+            // String jasperfile = (type.length() > 3) ? jasperfile = type  : OVData.getCodeValueByCodeKey("jasper", type)  ;
+            Path template = FileSystems.getDefault().getPath(cleanDirString(getSystemJasperDirectory()) + "genericJTableL8.jasper");
+            JasperPrint jasperPrint; 
+            try {
+             jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
+             JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+               jasperViewer.setVisible(true);
+                    jasperViewer.setTitle("Viewer");
+                    jasperViewer.setIconImage(null);
+                    jasperViewer.setFitPageZoomRatio();
+               //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
+           } catch (JRException ex) {
+               MainFrame.bslog(ex);
+           }
         }
+       
     }//GEN-LAST:event_tbprintActionPerformed
 
 

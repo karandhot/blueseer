@@ -210,7 +210,7 @@ public class InventoryMaint extends javax.swing.JPanel {
         tbitem.setBackground(Color.white);
         tbqty.setBackground(Color.white);
         
-        ArrayList<String[]> initDataSets = invData.getInvMaintInit();
+        ArrayList<String[]> initDataSets = invData.getInvMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
         String defaultsite = "";
         
         ddtype.requestFocus();

@@ -79,6 +79,7 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import org.json.JSONArray;
 import org.threeten.bp.LocalDate;
 
 /**
@@ -2812,8 +2813,21 @@ public class invData {
     }
    
     
-    public static ArrayList<String[]> getInvMaintInit() {
-        String defaultsite = "";
+    public static ArrayList<String[]> getInvMaintInit(String panelClassName, String userid) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getInvMaintInit"});
+            list.add(new String[]{"param1", panelClassName});
+             list.add(new String[]{"param2", userid});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        String[] sites = null;
+        boolean allsites = false;
         ArrayList<String[]> lines = new ArrayList<String[]>();
         try{
         Connection con = null;
@@ -2825,11 +2839,7 @@ public class invData {
         Statement st = con.createStatement();
         ResultSet res = null;
         try{
-        // allocate, custitemonly, site, currency, sites, currencies, uoms, 
-        // states, warehouses, locations, customers, taxcodes, carriers, statuses    
-            String[] sites = null;
-            boolean allsites = false;
-            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + bsmf.MainFrame.userid + "'" + ";");
+        res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + userid + "'" + ";");
             while (res.next()) {
               if (res.getString("user_allowedsites").equals("*")) {
                   allsites = true;
@@ -2837,6 +2847,37 @@ public class invData {
                   sites = res.getString("user_allowedsites").split(",");
               }
             }
+            
+            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + userid + "'" + 
+                    " AND menu_panel = " + "'" + panelClassName + "'" +
+                    ";");
+           while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "canupdate";
+               s[1] = "0";
+               if (res.getString("perm_readonly").equals("0")) {
+                 s[1] = "1";
+               }
+               
+               lines.add(s);
+           }
+           
+           String conditionalsite = "";
+           res = st.executeQuery("select user_allowedsites, user_site from  " +
+                        "  user_mstr where user_id = " + "'" + userid + "'" + ";" );
+               while (res.next()) {
+                    if (res.getString("user_allowedsites").equals("*")) {
+                      conditionalsite = "all";
+                    } else {
+                      conditionalsite = res.getString("user_site");
+                    }
+               }
+               String[] sx = new String[2];
+               sx[0] = "conditionalsite";
+               sx[1] = conditionalsite;
+               lines.add(sx);
+               
+             
             res = st.executeQuery("select site_site from site_mstr;");
             while (res.next()) {
                if (allsites || Arrays.stream(sites).anyMatch(res.getString("site_site")::equals)) {
@@ -2857,7 +2898,6 @@ public class invData {
                s[0] = "site";
                s[1] = res.getString("ov_site");
                lines.add(s);
-               defaultsite = s[1];
             }
             
             res = st.executeQuery("select * from ov_ctrl;" );
@@ -2917,6 +2957,197 @@ public class invData {
     }
         return lines;
     }
+    
+    public static ArrayList<String[]> getInvMaintInit_min(String panelClassName, String userid) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getInvMaintInit_min"});
+            list.add(new String[]{"param1", panelClassName});
+             list.add(new String[]{"param2", userid});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        String[] sites = null;
+        boolean allsites = false;
+        ArrayList<String[]> lines = new ArrayList<String[]>();
+        try{
+        Connection con = null;
+        if (ds != null) {
+        con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+        res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + userid + "'" + ";");
+            while (res.next()) {
+              if (res.getString("user_allowedsites").equals("*")) {
+                  allsites = true;
+              } else {
+                  sites = res.getString("user_allowedsites").split(",");
+              }
+            }
+            
+            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + userid + "'" + 
+                    " AND menu_panel = " + "'" + panelClassName + "'" +
+                    ";");
+           while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "canupdate";
+               s[1] = "0";
+               if (res.getString("perm_readonly").equals("0")) {
+                 s[1] = "1";
+               }
+               
+               lines.add(s);
+           }
+           
+           String conditionalsite = "";
+           res = st.executeQuery("select user_allowedsites, user_site from  " +
+                        "  user_mstr where user_id = " + "'" + userid + "'" + ";" );
+               while (res.next()) {
+                    if (res.getString("user_allowedsites").equals("*")) {
+                      conditionalsite = "all";
+                    } else {
+                      conditionalsite = res.getString("user_site");
+                    }
+               }
+               String[] sx = new String[2];
+               sx[0] = "conditionalsite";
+               sx[1] = conditionalsite;
+               lines.add(sx);
+               
+             
+            res = st.executeQuery("select site_site from site_mstr;");
+            while (res.next()) {
+               if (allsites || Arrays.stream(sites).anyMatch(res.getString("site_site")::equals)) {
+                 String[] s = new String[2];
+                 s[0] = "sites";
+                 s[1] = res.getString("site_site");
+                 lines.add(s);
+               }
+            }
+            
+            res = st.executeQuery("select ov_site, ov_currency from ov_mstr;" );
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "currency";
+               s[1] = res.getString("ov_currency");
+               lines.add(s);
+               s = new String[2];
+               s[0] = "site";
+               s[1] = res.getString("ov_site");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select * from ov_ctrl;" );
+            while (res.next()) {
+               lines.add(new String[]{"jasperdir", res.getString("ov_jasper_directory")});
+               lines.add(new String[]{"imagedir", res.getString("ov_image_directory")});
+               lines.add(new String[]{"tempdir", res.getString("ov_temp_directory")});
+               lines.add(new String[]{"labeldir", res.getString("ov_label_directory")});
+               lines.add(new String[]{"edidir", res.getString("ov_edi_directory")});
+            }
+            
+            res = st.executeQuery("select it_item from item_mstr order by it_item;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "items";
+               s[1] = res.getString("it_item");
+               lines.add(s);
+            }
+            
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+        return lines;
+    }
+    
+    public static String getItemBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                res = st.executeQuery("SELECT it_item, it_desc, it_code, " +
+                        " it_type, it_uom, it_mtl_cost, it_sell_price, it_site,  " +
+                        " coalesce(sum(in_qoh),0) as qty " +
+                        " from item_mstr " +
+                        " left outer join in_mstr on in_item = it_item and in_site = it_site " +
+                        " where it_item >= " + "'" + keys[0]  + "'" + 
+                        " AND it_item <= " + "'" + keys[1] + "'" +
+                         " AND it_code >= " + "'" + keys[2] + "'" +
+                         " AND it_code <= " + "'" + keys[3] + "'" +
+                         " AND it_site = " + "'" + keys[4] + "'" +
+                         " group by it_item, it_desc, it_code, it_type, it_uom, it_mtl_cost, it_sell_price, it_site order by it_item;");
+                    while (res.next()) {
+                   
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("it_item"));
+                        rowArray.put(res.getString("it_desc"));
+                        rowArray.put(res.getString("it_code"));
+                        rowArray.put(res.getString("it_type"));
+                        rowArray.put(res.getString("it_uom"));
+                        rowArray.put(bsNumber(res.getDouble("it_mtl_cost"))); 
+                        rowArray.put(bsNumber(res.getDouble("it_sell_price")));
+                        rowArray.put(bsNumber(res.getDouble("qty")));
+                        jsonarray.put(rowArray);
+                    /*
+                    mymodel.addRow(new Object[]{
+                                BlueSeerUtils.clickflag,
+                                res.getString("it_item"),
+                                res.getString("it_desc"),
+                                res.getString("it_code"),
+                                res.getString("it_type"),
+                                res.getString("it_uom"),
+                                bsFormatDouble(res.getDouble("it_mtl_cost")),
+                                bsFormatDouble(res.getDouble("it_sell_price")),
+                                bsFormatDouble(res.getDouble("qty"))
+                            });
+                      */ 
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
     
     public static void resetBOMDefault(String item) {
       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {

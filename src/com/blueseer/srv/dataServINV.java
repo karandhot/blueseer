@@ -45,7 +45,10 @@ import static com.blueseer.inv.invData.deleteWareHouseMstr;
 import static com.blueseer.inv.invData.deleteWorkCenterMstr;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
 import static com.blueseer.inv.invData.getCurrentCost;
+import static com.blueseer.inv.invData.getInvMaintInit;
+import static com.blueseer.inv.invData.getInvMaintInit_min;
 import static com.blueseer.inv.invData.getInventoryQtyByItem;
+import static com.blueseer.inv.invData.getItemBrowseView;
 import static com.blueseer.inv.invData.getItemCostElements;
 import static com.blueseer.inv.invData.getItemDataInit;
 import static com.blueseer.inv.invData.getItemImagesFile;
@@ -533,6 +536,28 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "getWareHouseMaintInit" : { 
             response.getWriter().print(ArrayListStringArrayToJson(getWareHouseMaintInit(request.getHeader("param1"), request.getHeader("param2"))));
             break;  
+        }
+        
+        case "getInvMaintInit" : { 
+            response.getWriter().print(ArrayListStringArrayToJson(getInvMaintInit(request.getHeader("param1"), request.getHeader("param2"))));
+            break;  
+        }
+        
+        case "getInvMaintInit_min" : { 
+            response.getWriter().print(ArrayListStringArrayToJson(getInvMaintInit_min(request.getHeader("param1"), request.getHeader("param2"))));
+            break;  
+        }
+        
+        case "getItemBrowseView" : {
+        String[] it = new String[]{
+               request.getHeader("fromitem"), 
+               request.getHeader("toitem"), 
+               request.getHeader("fromclass"), 
+               request.getHeader("toclass"), 
+               request.getHeader("site")
+               };     
+        response.getWriter().print(getItemBrowseView(it));  
+        break;
         }
         
         case "getItemDataInit" : {
