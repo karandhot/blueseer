@@ -679,9 +679,9 @@ public void executeTask(String x, String[] y) {
             HashMap hm = new HashMap();
             hm.put("REPORT_TITLE", "Item Browse Report");
             hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
-            for (int j = 2; j < tablereport.getColumnCount() - 1; j++) {
-               hm.put("d" + (j - 2),  tablereport.getColumnName(j));
-               columnnames[j - 2] = "COLUMN_" + (j - 2);
+            for (int j = 1; j < tablereport.getColumnCount() - 1; j++) {
+               hm.put("d" + (j - 1),  tablereport.getColumnName(j));
+               columnnames[j - 1] = "COLUMN_" + (j - 1);
             }
             JRDataSource datasource = new ListOfArrayDataSource(list, columnnames);
             // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
