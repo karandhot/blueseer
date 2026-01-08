@@ -45,6 +45,7 @@ import static com.blueseer.inv.invData.deleteWareHouseMstr;
 import static com.blueseer.inv.invData.deleteWorkCenterMstr;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
 import static com.blueseer.inv.invData.getCurrentCost;
+import static com.blueseer.inv.invData.getInvBrowseView;
 import static com.blueseer.inv.invData.getInvMaintInit;
 import static com.blueseer.inv.invData.getInvMaintInit_min;
 import static com.blueseer.inv.invData.getInventoryQtyByItem;
@@ -557,6 +558,17 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                request.getHeader("site")
                };     
         response.getWriter().print(getItemBrowseView(it));  
+        break;
+        }
+        
+        case "getInvBrowseView" : {
+        String[] it = new String[]{
+               request.getHeader("fromitem"), 
+               request.getHeader("toitem"), 
+               request.getHeader("site"), 
+               request.getHeader("serial")
+               };     
+        response.getWriter().print(getInvBrowseView(it));  
         break;
         }
         

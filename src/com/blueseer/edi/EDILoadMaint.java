@@ -32,6 +32,7 @@ import static bsmf.MainFrame.tags;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.EDData;
 import com.blueseer.utl.OVData;
@@ -108,7 +109,7 @@ public class EDILoadMaint extends javax.swing.JPanel {
     public static String isDelete = "0";
     public static String isArchive = "0";
     public static String rData = "";
-    public static String rFileList = "";
+    public static String[] rFileList = null;
     public static String rFileContent = "";
     
     
@@ -300,7 +301,7 @@ public class EDILoadMaint extends javax.swing.JPanel {
             message[1] = "";
             
             rData = "";
-            rFileList = "";
+            rFileList = null;
             rFileContent = "";
             
             
@@ -319,12 +320,12 @@ public class EDILoadMaint extends javax.swing.JPanel {
                         message = processSingleFile(key[0]); 
                     }
                     break;    
-                case "getFiles":
+                case "getFilesOfDir":
                     mymodel.setNumRows(0);
                     ArrayList<String[]> arr = new ArrayList<String[]>();
                     arr.add(new String[]{"id","getFilesOfDir"});
-                    arr.add(new String[]{"dir", indir});
-                    rFileList = sendServerPost(arr, "", null, "dataServ");
+                    arr.add(new String[]{"param1", indir});
+                    rFileList = jsonToStringArray(sendServerPost(arr, "", null, "dataServEDI")); 
                     break;
                 case "getFileContent":
                     ArrayList<String[]> arrx = new ArrayList<String[]>();
@@ -769,19 +770,11 @@ public class EDILoadMaint extends javax.swing.JPanel {
     }
     
     public String[] processSingleFilePost(String filename) throws IOException {
-        String[] x = new String[2];
-        
         byte[] tac = Files.readAllBytes(FileSystems.getDefault().getPath(filename));
         String postData = new String(tac, StandardCharsets.UTF_8);
-                
         ArrayList<String[]> list = new ArrayList<String[]>();
         list.add(new String[]{"id","runEDIsingle"});
-        
-        rData = sendServerPost(list, postData, null, "dataServ");
-        
-        x[0] = "0";
-        x[1] = "Processing complete";
-       
+        String[] x = jsonToStringArray(sendServerPost(list, postData, null, "dataServEDI"));
         return x;
     }
         
@@ -796,11 +789,10 @@ public class EDILoadMaint extends javax.swing.JPanel {
                 tafile.append(s);
             }
         }
-        if (rFileList != null && ! rFileList.isBlank()) {
+        if (rFileList != null) {
             tafile.setText("");
             mymodel.setNumRows(0);
-            String[] arr = rFileList.split("\n", -1);
-            for (String s : arr) {
+            for (String s : rFileList) {
                 if (! s.isBlank()) 
                 mymodel.addRow(new Object[]{
                 s,
@@ -1168,7 +1160,7 @@ public class EDILoadMaint extends javax.swing.JPanel {
     private void btrefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btrefreshActionPerformed
         tafile.setText("");
         if (bsmf.MainFrame.remoteDB) {
-            executeTask("getFiles", null);
+            executeTask("getFilesOfDir", null);
         } else {
             getFiles();
         }

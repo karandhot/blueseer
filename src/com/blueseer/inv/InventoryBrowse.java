@@ -28,6 +28,7 @@ package com.blueseer.inv;
 
 import com.blueseer.prd.*;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import java.awt.Color;
 import java.awt.Component;
@@ -66,10 +67,22 @@ import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
+import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import static com.blueseer.utl.OVData.getSystemJasperDirectory;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -79,6 +92,13 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
+import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.data.ListOfArrayDataSource;
+import net.sf.jasperreports.view.JasperViewer;
 
 
 
@@ -88,6 +108,12 @@ import javax.swing.JTabbedPane;
  */
 public class InventoryBrowse extends javax.swing.JPanel {
  
+    public String rsData; 
+     Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultsite = "";
+    String defaultcurrency = "";
+    
      MyTableModel mymodel = new InventoryBrowse.MyTableModel(new Object[][]{},
                         new String[]{
                             getGlobalColumnTag("item"),                             
@@ -140,13 +166,83 @@ public class InventoryBrowse extends javax.swing.JPanel {
         return c;
     }
     }
-        
-        
+     
+            
     public InventoryBrowse() {
         initComponents();
         setLanguageTags(this);
     }
 
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getInvBrowseView":
+                    message = getInvBrowseView();
+                    break; 
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getInvBrowseView")) {
+                done_getInvBrowseView();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
+    
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -191,17 +287,25 @@ public class InventoryBrowse extends javax.swing.JPanel {
        }
     }
     
-    public void clearAll() {
-        mymodel.setRowCount(0);
-        ddclass.setSelectedIndex(0);
-        cbzero.setSelected(false);
-        tbserial.setText("");
-        ddfromitem.setSelectedIndex(0);
-        ddtoitem.setSelectedIndex(ddtoitem.getItemCount() - 1);
-        ddfromwh.setSelectedIndex(0);
-        ddfromloc.setSelectedIndex(0);
-    }
-    public void initvars(String[] arg) {
+    public String[] getInitialization() {
+        initDataSets = invData.getInvMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        Calendar calfrom = Calendar.getInstance();
+        Calendar calto = Calendar.getInstance();
+        ddsite.removeAllItems();
+        ddfromitem.removeAllItems();
+        ddtoitem.removeAllItems();
+        ddfromwh.removeAllItems();
+        ddfromloc.removeAllItems();
+        String defaultsite = "";
+        
         mymodel.setRowCount(0);
         
         ddclass.removeAllItems();
@@ -212,43 +316,158 @@ public class InventoryBrowse extends javax.swing.JPanel {
         ddclass.setSelectedIndex(0);
         cbzero.setSelected(false);
         tbserial.setText("");
-        ArrayList<String> sites = new ArrayList();
-        ddsite.removeAllItems();
-        sites = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (String code : sites) {
-            ddsite.addItem(code);
+        
+        for (String[] s : initDataSets) {
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultsite = s[1]; 
+            }
+            if (s[0].equals("currency")) {
+              defaultcurrency = s[1]; 
+            }
+            if (s[0].equals("items")) {
+              ddfromitem.addItem(s[1]); 
+              ddtoitem.addItem(s[1]);
+            }
+            if (s[0].equals("locations")) {
+              ddfromloc.addItem(s[1]); 
+            }
+            if (s[0].equals("warehouses")) {
+              ddfromwh.addItem(s[1]); 
+            }
+        }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
         }
         
-        ddfromitem.removeAllItems();
-        ddtoitem.removeAllItems();
-        ArrayList<String> mycode = invData.getItemMasterAlllist();
-        for (int i = 0; i < mycode.size(); i++) {
-            ddfromitem.addItem(mycode.get(i));
-            ddtoitem.addItem(mycode.get(i));
-        }
-        ddfromitem.insertItemAt("", 0);
-        ddtoitem.insertItemAt("", 0);
-        ddfromitem.setSelectedIndex(0);
-        ddtoitem.setSelectedIndex(ddtoitem.getItemCount() - 1);
-        
-        ddfromwh.removeAllItems();
-        ArrayList<String> whs = OVData.getWareHouseList();
-        for (int i = 0; i < whs.size(); i++) {
-            ddfromwh.addItem(whs.get(i));
-        }
         ddfromwh.insertItemAt("", 0);
         ddfromwh.setSelectedIndex(0);
-        
-        ddfromloc.removeAllItems();
-        ArrayList<String> locations = OVData.getLocationList();
-        for (int i = 0; i < locations.size(); i++) {
-            ddfromloc.addItem(locations.get(i));
-        }
         ddfromloc.insertItemAt("", 0);
         ddfromloc.setSelectedIndex(0);
         
-        
+        mymodel.setRowCount(0);
+           tablereport.setModel(mymodel);
+              Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
+                 while (en.hasMoreElements()) {
+                     TableColumn tc = en.nextElement();
+                     if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+                         continue;
+                     }
+                     tc.setCellRenderer(new InventoryBrowse.SomeRenderer());
+                 }
+                // tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+                // tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+                // tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+                
+       
     }
+    
+    public String[] getInvBrowseView() {
+        String[] x = new String[2];
+        String fromitem = "";
+        String toitem = "";
+        
+        
+        
+        if (ddfromitem.getSelectedItem() == null || ddfromitem.getSelectedItem().toString().isEmpty()) {
+                    fromitem = bsmf.MainFrame.lowchar;
+        } else {
+            fromitem = ddfromitem.getSelectedItem().toString();
+        }
+         if (ddtoitem.getSelectedItem() == null || ddtoitem.getSelectedItem().toString().isEmpty()) {
+            toitem = bsmf.MainFrame.hichar;
+        } else {
+            toitem = ddtoitem.getSelectedItem().toString();
+        }
+        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getItemBrowseView"});
+        list.add(new String[]{"fromitem",fromitem});
+        list.add(new String[]{"toitem",toitem});
+        list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
+        list.add(new String[]{"serial",tbserial.getText()});
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getOrderBrowseView")};
+            }
+        } else {
+            jsonString = invData.getInvBrowseView(new String[]{ddfromitem.getSelectedItem().toString(), 
+                ddtoitem.getSelectedItem().toString(),
+                ddsite.getSelectedItem().toString(),
+                tbserial.getText()
+            });
+        }
+        
+        
+        roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getInvBrowseView() {
+        
+        int i = 0;
+        double qty = 0.0;
+        String wh = "";
+        String loc = "";
+        if (ddfromwh.getSelectedItem() != null) {
+         wh = ddfromwh.getSelectedItem().toString();
+        }
+        if (ddfromloc.getSelectedItem() != null) {
+         loc = ddfromloc.getSelectedItem().toString();
+        }
+        
+        mymodel.setNumRows(0);
+        
+        if (roData != null) {
+        
+        
+        
+        for (Object[] rowData : roData) {
+            
+            if (! rowData[3].toString().equals(wh) && ! wh.isBlank()) {
+                continue;
+            }
+            if (! rowData[4].toString().equals(loc) && ! loc.isBlank()) {
+                continue;
+            }
+            if (cbzero.isSelected() && bsParseDouble(rowData[7].toString()) == 0) {
+                continue;
+            }
+            qty = qty + bsParseDouble(rowData[8].toString());
+            i++;
+            mymodel.addRow(rowData); 
+        }
+        labelcount.setText(String.valueOf(i));
+        labelcount.setText(String.valueOf(i));
+        labelqty.setText(String.valueOf(qty));
+        
+        }          
+        roData = null;
+    }   
+       
+    public void clearAll() {
+        mymodel.setRowCount(0);
+        ddclass.setSelectedIndex(0);
+        cbzero.setSelected(false);
+        tbserial.setText("");
+        ddfromitem.setSelectedIndex(0);
+        ddtoitem.setSelectedIndex(ddtoitem.getItemCount() - 1);
+        ddfromwh.setSelectedIndex(0);
+        ddfromloc.setSelectedIndex(0);
+    }
+    
+    public void initvars(String[] arg) {
+       executeTask("dataInit", null);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -502,135 +721,7 @@ public class InventoryBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
- 
-try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                double qty = 0;
-                int i = 0;
-            
-                mymodel.setNumRows(0);
-                tablereport.setModel(mymodel);
-                Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
-                 while (en.hasMoreElements()) {
-                     TableColumn tc = en.nextElement();
-                     if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
-                         continue;
-                     }
-                     tc.setCellRenderer(new InventoryBrowse.SomeRenderer());
-                 }
-               //  tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-                 
-            
-                String wh = "";
-                String loc = "";
-                if (ddfromwh.getSelectedItem() != null) {
-                 wh = ddfromwh.getSelectedItem().toString();
-                }
-                if (ddfromloc.getSelectedItem() != null) {
-                 loc = ddfromloc.getSelectedItem().toString();
-                }
-                
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                 /*
-                 res = st.executeQuery("select it_item, it_code, it_desc, " + 
-                      " in_serial as serial, in_expire as expire, " +
-                       "case when in_qoh is null then '0' else in_qoh end as qoh, " +
-                       "case when in_loc is null then '0' else in_loc end as loc, " +
-                       "case when in_wh is null then '0' else in_wh end as wh " +
-                      " from item_mstr left outer join in_mstr on in_item = it_item " +
-                       " where it_item >= " + "'" + ddfromitem.getSelectedItem().toString() + "'" +  " AND " 
-                       + " it_item <= " + "'" + ddtoitem.getSelectedItem().toString() + "'" + " AND " 
-                       + " in_wh >= " + "'" + ddfromwh.getSelectedItem().toString() + "'" + " AND "
-                       + " in_wh <= " + "'" + ddtowh.getSelectedItem().toString() + "'" + " AND "
-                       + " in_loc >= " + "'" + ddfromloc.getSelectedItem().toString() + "'" + " AND "
-                       + " in_loc <= " + "'" + ddtoloc.getSelectedItem().toString() + "'"       
-                       + ";" );
-                 */
-                 
-                 if (tbserial.getText().isBlank()) {
-                 res = st.executeQuery("select it_item, it_code, it_desc, " + 
-                      " in_serial as serial, in_expire as expire,  " +
-                      "case when in_qoh is null then '0' else in_qoh end as qoh, " +
-                       "case when in_loc is null then '' else in_loc end as loc, " +
-                       "case when in_wh is null then '' else in_wh end as wh " +   
-                      " from item_mstr left outer join in_mstr on in_item = it_item and " +
-                      " in_site = it_site " +   
-                       " where it_item >= " + "'" + ddfromitem.getSelectedItem().toString() + "'" +  " AND " 
-                       + " it_item <= " + "'" + ddtoitem.getSelectedItem().toString() + "'" +  " AND " 
-                       + " it_site = " + "'" + ddsite.getSelectedItem().toString() + "'"        
-                       + ";" );
-                 } else {
-                   res = st.executeQuery("select it_item, it_code, it_desc, " + 
-                      " in_serial as serial, in_expire as expire,  " +
-                      "case when in_qoh is null then '0' else in_qoh end as qoh, " +
-                       "case when in_loc is null then '' else in_loc end as loc, " +
-                       "case when in_wh is null then '' else in_wh end as wh " +   
-                      " from item_mstr left outer join in_mstr on in_item = it_item and " +
-                      " in_site = it_site " +   
-                       " where it_item >= " + "'" + ddfromitem.getSelectedItem().toString() + "'" +  " AND " 
-                       + " it_item <= " + "'" + ddtoitem.getSelectedItem().toString() + "'" +  " AND " 
-                       + " in_serial = " + "'" + tbserial.getText() + "'" +  " AND "         
-                       + " it_site = " + "'" + ddsite.getSelectedItem().toString() + "'"        
-                       + ";" );  
-                 }
-                 
-                 
-                while (res.next()) {
-                   
-                    if (! ddclass.getSelectedItem().toString().isBlank() && ! res.getString("it_code").equals(ddclass.getSelectedItem().toString())) {
-                        continue;
-                    }
-                    if (! res.getString("wh").equals(wh) && ! wh.isBlank()) {
-                        continue;
-                    }
-                    if (! res.getString("loc").equals(loc) && ! loc.isBlank()) {
-                        continue;
-                    }
-                    if (cbzero.isSelected() && res.getDouble("qoh") == 0) {
-                        continue;
-                    }
-                    
-                    qty = qty + res.getDouble("qoh");
-                    i++;
-                        mymodel.addRow(new Object[]{
-                                res.getString("it_item"),
-                                res.getString("it_desc"),
-                                res.getString("it_code"),
-                                res.getString("wh"),
-                                res.getString("loc"),
-                                res.getString("serial"),
-                                res.getString("expire"),
-                                res.getDouble("qoh")   
-                            });
-                }
-               
-                labelcount.setText(String.valueOf(i));
-                labelqty.setText(String.valueOf(qty));
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
+      executeTask("getInvBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void tbcsvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbcsvActionPerformed
@@ -639,7 +730,48 @@ try {
     }//GEN-LAST:event_tbcsvActionPerformed
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
-        OVData.printJTableToJasper("Quote Report", tablereport, "genericJTableL8B.jasper" );
+        //OVData.printJTableToJasper("Quote Report", tablereport, "genericJTableL8B.jasper" );
+         if (tablereport != null && mymodel.getRowCount() > 0) {
+            String[] rec;
+            String[] columnnames = new String[12];
+            List<Object[]> list = new ArrayList<>();
+            for (int j = 0; j < tablereport.getRowCount(); j++) {
+                 rec = new String[]{tablereport.getValueAt(j, 0).toString(),
+                   tablereport.getValueAt(j, 1).toString(),
+                   tablereport.getValueAt(j, 2).toString(),
+                   tablereport.getValueAt(j, 3).toString(),
+                   tablereport.getValueAt(j, 4).toString(),
+                   tablereport.getValueAt(j, 5).toString(),
+                   tablereport.getValueAt(j, 6).toString(),
+                   tablereport.getValueAt(j, 7).toString()}; 
+                 list.add(rec);
+             }
+            HashMap hm = new HashMap();
+            hm.put("REPORT_TITLE", "Quote Report");
+            hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+            for (int j = 0; j < tablereport.getColumnCount(); j++) {
+               hm.put("d" + j,  tablereport.getColumnName(j));
+               columnnames[j] = "COLUMN_" + (j);
+            }
+            JRDataSource datasource = new ListOfArrayDataSource(list, columnnames);
+            // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
+            // type = "L8C";  ...or type = genericJTableL8.jasper
+            // String jasperfile = (type.length() > 3) ? jasperfile = type  : OVData.getCodeValueByCodeKey("jasper", type)  ;
+            Path template = FileSystems.getDefault().getPath(cleanDirString(getSystemJasperDirectory()) + "genericJTableL8B.jasper");
+            JasperPrint jasperPrint; 
+            try {
+             jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
+             JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+               jasperViewer.setVisible(true);
+                    jasperViewer.setTitle("Viewer");
+                    jasperViewer.setIconImage(null);
+                    jasperViewer.setFitPageZoomRatio();
+               //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
+           } catch (JRException ex) {
+               MainFrame.bslog(ex);
+           }
+        }
+       
     }//GEN-LAST:event_btprintActionPerformed
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed

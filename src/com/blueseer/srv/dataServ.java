@@ -189,11 +189,6 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                 if (id.equals("runEDI")) { // run EDI engine with list of files
                   String[] files = sb.toString().split(",",-1);
                   response.getWriter().println(runEDI(null, files, ""));
-                } else if (id.equals("runEDIsingle")) { 
-                  response.getWriter().println(runEDIsingle(null,sb.toString(),"")); 
-                } else if (id.equals("getFilesOfDir")) { 
-                  String dir = request.getHeader("dir");
-                  response.getWriter().println(getFilesOfDir(dir)); 
                 } else if (id.equals("getFileContent")) { 
                   String filepath = request.getHeader("filepath");
                   response.setContentType("application/octet-stream");

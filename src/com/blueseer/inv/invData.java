@@ -3148,6 +3148,93 @@ public class invData {
         return jsonarray.toString(); 
     }
     
+    public static String getInvBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                if (keys[3].isBlank()) {
+                 res = st.executeQuery("select it_item, it_code, it_desc, " + 
+                      " in_serial as serial, in_expire as expire,  " +
+                      "case when in_qoh is null then '0' else in_qoh end as qoh, " +
+                       "case when in_loc is null then '' else in_loc end as loc, " +
+                       "case when in_wh is null then '' else in_wh end as wh " +   
+                      " from item_mstr left outer join in_mstr on in_item = it_item and " +
+                      " in_site = it_site " +   
+                       " where it_item >= " + "'" + keys[0] + "'" +  " AND " 
+                       + " it_item <= " + "'" + keys[1] + "'" +  " AND " 
+                       + " it_site = " + "'" + keys[2] + "'"        
+                       + ";" );
+                 } else {
+                res = st.executeQuery("select it_item, it_code, it_desc, " + 
+                      " in_serial as serial, in_expire as expire,  " +
+                      "case when in_qoh is null then '0' else in_qoh end as qoh, " +
+                       "case when in_loc is null then '' else in_loc end as loc, " +
+                       "case when in_wh is null then '' else in_wh end as wh " +   
+                      " from item_mstr left outer join in_mstr on in_item = it_item and " +
+                      " in_site = it_site " +   
+                       " where it_item >= " + "'" + keys[0] + "'" +  " AND " 
+                       + " it_item <= " + "'" + keys[1] + "'" +  " AND " 
+                       + " in_serial = " + "'" + keys[3] + "'" +  " AND "         
+                       + " it_site = " + "'" + keys[2] + "'"        
+                       + ";" );  
+                }
+                
+               
+                    while (res.next()) {
+                   
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("it_item"));
+                        rowArray.put(res.getString("it_desc"));
+                        rowArray.put(res.getString("it_code"));
+                        rowArray.put(res.getString("wh"));
+                        rowArray.put(res.getString("loc"));
+                        rowArray.put(res.getString("serial")); 
+                        rowArray.put(res.getString("expire"));
+                        rowArray.put(bsNumber(res.getDouble("qoh")));
+                        jsonarray.put(rowArray);
+                    /*
+                    mymodel.addRow(new Object[]{
+                                res.getString("it_item"),
+                                res.getString("it_desc"),
+                                res.getString("it_code"),
+                                res.getString("wh"),
+                                res.getString("loc"),
+                                res.getString("serial"),
+                                res.getString("expire"),
+                                res.getDouble("qoh")   
+                            });
+                      */ 
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
     
     public static void resetBOMDefault(String item) {
       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {

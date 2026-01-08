@@ -25,65 +25,22 @@ SOFTWARE.
  */
 package com.blueseer.srv;
 
-import bsmf.MainFrame;
-import static bsmf.MainFrame.ConvertStringToBool;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.driver;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.pass;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
-import static com.blueseer.edi.EDI.deleteFile;
-import static com.blueseer.edi.EDI.fileExists;
-import static com.blueseer.edi.EDI.getFileContent;
-import static com.blueseer.edi.EDI.getFileContentBytes;
-import static com.blueseer.edi.EDI.getFilesOfDir;
-import static com.blueseer.edi.EDI.runEDI;
-import static com.blueseer.edi.EDI.runEDIsingle;
-import static com.blueseer.edi.EDI.writeFile;
-import static com.blueseer.edi.apiUtils.createKeyStore;
-import static com.blueseer.edi.apiUtils.createNewKeyPair;
-import static com.blueseer.edi.apiUtils.genereatePGPKeyPair;
-import static com.blueseer.edi.apiUtils.getAsciiDumpPGPKey;
-import static com.blueseer.edi.apiUtils.getPublicKeyAsOPENSSH;
-import static com.blueseer.edi.apiUtils.getPublicKeyAsPEM;
-import static com.blueseer.edi.apiUtils.postAS2;
-import static com.blueseer.edi.apiUtils.runAPIPost;
-import static com.blueseer.fgl.fglData.getAccountActivityYear;
-import static com.blueseer.fgl.fglData.getAccountBalanceReport;
+
 import com.blueseer.utl.BlueSeerUtils;
-import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerSession;
-import static com.blueseer.utl.BlueSeerUtils.createMessageJSON;
 import static com.blueseer.utl.BlueSeerUtils.getSiteFromSessionCookie;
 import static com.blueseer.utl.BlueSeerUtils.killServerSession;
 import com.blueseer.utl.EDData;
 import com.blueseer.utl.OVData;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.transform.TransformerException;
-import org.apache.commons.io.IOUtils;
 import org.bouncycastle.util.encoders.Base64;
 
 

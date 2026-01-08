@@ -922,9 +922,9 @@ public class EDI {
 }
 
     
-    public static String runEDIsingle(String[] args, String filecontent, String site) {
+    public static String[] runEDIsingle(String[] args, String filecontent, String site) {
     
-        StringBuilder sb = new StringBuilder();
+        String[] m = new String[]{"",""};
         try {
      
             boolean isDebug = false;
@@ -949,15 +949,13 @@ public class EDI {
             
               if (Files.exists(FileSystems.getDefault().getPath(inDir + f))) {
                 File file = new File(inDir + f);
-                sb.append("EDILoad:  processing file " + f).append("\n");
                   if(file.length() == 0) { 
                   file.delete();
                   } else { 
-                 String[] m = EDI.processFile(inDir + f,"","","", isDebug, false, 0, 0, site);
+                 m = EDI.processFile(inDir + f,"","","", isDebug, false, 0, 0, site);
                  
                  // show error if exists...usually malformed envelopes
                     if (m[0].equals("1")) {
-                        sb.append(m[1]).append("\n");
                         // now move to error folder
                         Path movefrom = FileSystems.getDefault().getPath(inDir + f);
                         Path errortarget = FileSystems.getDefault().getPath(ErrorDir + f);
@@ -983,14 +981,17 @@ public class EDI {
                 }
              
        } catch (IOException ex) {
-          sb.append("error(runEDIsingle) ").append(ex.getMessage());
+          m[0] = "1";
+          m[1] = "error(runEDIsingle) " + ex.getMessage();
        } catch (ClassNotFoundException ex) {
-          sb.append("error(runEDIsingle) ").append(ex.getMessage());
+          m[0] = "1";
+          m[1] = "error(runEDIsingle) " + ex.getMessage();
        } catch (InterruptedException ex) {
-          sb.append("error(runEDIsingle) ").append(ex.getMessage());
+          m[0] = "1";
+          m[1] = "error(runEDIsingle) " + ex.getMessage();
         }
     
-    return sb.toString();
+    return m;
 }
 
     
@@ -5360,7 +5361,7 @@ public class EDI {
     
     
      // remoteDB tools
-    public static String getFilesOfDir(String dir) {
+    public static String[] getFilesOfDir(String dir) {
         StringBuilder sb = new StringBuilder();
         Set<String> ss = null;
         try (Stream<Path> stream = Files.list(Paths.get(dir))) {
@@ -5370,12 +5371,10 @@ public class EDI {
           .map(Path::toString)
           .collect(Collectors.toSet());
         } catch (IOException ex) {
-            sb.append("IOException in getFilesOfDir: ").append(dir).append("\n");
+            bslog("IOException in getFilesOfDir: " + dir);
         }
-        for (String s : ss) {
-            sb.append(s).append("\n");
-        }
-        return sb.toString();
+        String[] array = ss.toArray(String[]::new);
+        return array;
     }  
     
     public static String getFileContent(String filepath) {

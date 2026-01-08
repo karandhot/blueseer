@@ -170,7 +170,7 @@ public class ItemBrowse extends javax.swing.JPanel {
     }
     }
     
-public void executeTask(String x, String[] y) { 
+    public void executeTask(String x, String[] y) { 
       
         class Task extends SwingWorker<String[], Void> {
          

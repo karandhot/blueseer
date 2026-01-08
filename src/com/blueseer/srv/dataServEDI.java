@@ -26,6 +26,8 @@ SOFTWARE.
 package com.blueseer.srv;
 
 
+import static com.blueseer.edi.EDI.getFilesOfDir;
+import static com.blueseer.edi.EDI.runEDIsingle;
 import com.blueseer.edi.ediData;
 import static com.blueseer.edi.ediData.addAS2Mstr;
 import static com.blueseer.edi.ediData.addEDIXref;
@@ -70,8 +72,12 @@ import static com.blueseer.utl.EDData.addAS2AttributeRecord;
 import static com.blueseer.utl.EDData.addEDIAttributeRecord;
 import static com.blueseer.utl.EDData.deleteEDIAttributeRecord;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -907,7 +913,22 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getEDIMetaValueHeader" :
             response.getWriter().print(ArrayListStringArrayToJson(ediData.getEDIMetaValueHeader(request.getHeader("param1"))));
-            break;     
+            break;
+            
+        case "getFilesOfDir" : 
+        response.getWriter().print(arrayToJson(getFilesOfDir(request.getHeader("param1")))); 
+        break;  
+        
+        case "runEDIsingle" : {
+        InputStream inputStream = request.getInputStream(); // as byte array  
+        BufferedInputStream bis = new BufferedInputStream(inputStream);
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+        for (int result = bis.read(); result != -1; result = bis.read()) {
+            buf.write((byte) result);
+        }
+        response.getWriter().print(arrayToJson(runEDIsingle(null,buf.toString(StandardCharsets.UTF_8.name()),"")));
+        break; 
+        }
             
         default:
         response.getWriter().print("no switch case exists in dataServEDI for id: " + id);
