@@ -32,6 +32,7 @@ import static bsmf.MainFrame.tags;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.EDData;
@@ -108,7 +109,7 @@ public class EDILoadMaint extends javax.swing.JPanel {
     public static String mapdir = "";
     public static String isDelete = "0";
     public static String isArchive = "0";
-    public static String rData = "";
+    public static ArrayList<String> ral = null;
     public static String[] rFileList = null;
     public static String rFileContent = "";
     
@@ -300,7 +301,7 @@ public class EDILoadMaint extends javax.swing.JPanel {
             message[0] = "";
             message[1] = "";
             
-            rData = "";
+            ral = null;
             rFileList = null;
             rFileContent = "";
             
@@ -350,7 +351,7 @@ public class EDILoadMaint extends javax.swing.JPanel {
            
             BlueSeerUtils.endTask(message);
             initvars(null);  
-            updateForm();
+            updateForm(message);
             
             } catch (Exception e) {
                 MainFrame.bslog(e);
@@ -761,7 +762,7 @@ public class EDILoadMaint extends javax.swing.JPanel {
         ArrayList<String[]> list = new ArrayList<String[]>();
         list.add(new String[]{"id","runEDI"});
         
-        rData = sendServerPost(list, postData, null, "dataServ");
+        ral = jsonToArrayListString(sendServerPost(list, postData, null, "dataServEDI"));
         
         x[0] = "0";
         x[1] = "Processing complete";
@@ -772,25 +773,29 @@ public class EDILoadMaint extends javax.swing.JPanel {
     public String[] processSingleFilePost(String filename) throws IOException {
         byte[] tac = Files.readAllBytes(FileSystems.getDefault().getPath(filename));
         String postData = new String(tac, StandardCharsets.UTF_8);
-        ArrayList<String[]> list = new ArrayList<String[]>();
+        ArrayList<String[]> list = new ArrayList<>();
         list.add(new String[]{"id","runEDIsingle"});
         String[] x = jsonToStringArray(sendServerPost(list, postData, null, "dataServEDI"));
         return x;
     }
         
-    public void updateForm() {
+    public void updateForm(String[] message) {
         
         lbcount.setText("0");
+        tafile.setText("");
+        if (message[0].equals("0")) {
+         tafile.append("success: " + message[1]);
+        } else {
+         tafile.append("error: " + message[1]);   
+        }
         
-        if (rData != null && ! rData.isBlank()) {
-            tafile.setText("");
-            String[] arr = rData.split("\n", -1);
-            for (String s : arr) {
+        if (ral != null) {            
+            for (String s : ral) {
                 tafile.append(s);
             }
         }
+        
         if (rFileList != null) {
-            tafile.setText("");
             mymodel.setNumRows(0);
             for (String s : rFileList) {
                 if (! s.isBlank()) 
@@ -803,7 +808,6 @@ public class EDILoadMaint extends javax.swing.JPanel {
         }
         
         if (rFileContent != null && ! rFileContent.isBlank()) {
-            tafile.setText("");
             String[] arr = rFileContent.split("\n", -1);
             for (String s : arr) {
                 tafile.append(s);

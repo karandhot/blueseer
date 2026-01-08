@@ -27,6 +27,7 @@ package com.blueseer.srv;
 
 
 import static com.blueseer.edi.EDI.getFilesOfDir;
+import static com.blueseer.edi.EDI.runEDI;
 import static com.blueseer.edi.EDI.runEDIsingle;
 import com.blueseer.edi.ediData;
 import static com.blueseer.edi.ediData.addAS2Mstr;
@@ -854,7 +855,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(r);
             break;
             
-        case "addupdateEDICtrl" : 
+        case "addupdateEDICtrl" : {
             String line;
             StringBuilder sb = new StringBuilder();  
             BufferedReader reader = request.getReader();  // as string
@@ -865,6 +866,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             edi_ctrl ecvar = omEDICtrl.readValue(sb.toString(), edi_ctrl.class);            
             response.getWriter().print(arrayToJson(addupdateEDICtrl(ecvar)));
             break;
+        }
             
         case "updateEDIASNStatus" :
             EDData.updateEDIASNStatus(request.getHeader("param1"), request.getHeader("param2"));
@@ -927,6 +929,18 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             buf.write((byte) result);
         }
         response.getWriter().print(arrayToJson(runEDIsingle(null,buf.toString(StandardCharsets.UTF_8.name()),"")));
+        break; 
+        }
+        
+        case "runEDI" : {
+        String line; 
+        StringBuilder sb = new StringBuilder();  
+        BufferedReader reader = request.getReader();  // as string
+        while ((line = reader.readLine()) != null) {  
+        sb.append(line);
+        }
+        String[] files = sb.toString().split(",",-1);
+        response.getWriter().print(ArrayListStringToJson(runEDI(null, files, "")));
         break; 
         }
             

@@ -786,9 +786,8 @@ public class EDI {
     return m;
     }
     
-    public static String runEDI(String[] args, String[] files, String site) {
-    
-        StringBuilder sb = new StringBuilder();
+    public static ArrayList<String> runEDI(String[] args, String[] files, String site) {
+        ArrayList<String> r = new ArrayList<>();
         try {
      
             boolean isDebug = false;
@@ -810,8 +809,7 @@ public class EDI {
            
               if (Files.exists(FileSystems.getDefault().getPath(inDir + f))) {
                   File file = new File(inDir + f);
-                  
-                sb.append("EDILoad:  processing file " + f).append("\n");
+                  r.add("EDILoad:  processing file " + f);
                   if(file.length() == 0) { 
                   file.delete();
                   } else { 
@@ -819,7 +817,7 @@ public class EDI {
                  
                  // show error if exists...usually malformed envelopes
                     if (m[0].equals("1")) {
-                        sb.append(m[1]).append("\n");
+                        r.add(m[1]);
                         // now move to error folder
                         Path movefrom = FileSystems.getDefault().getPath(inDir + f);
                         Path errortarget = FileSystems.getDefault().getPath(ErrorDir + f);
@@ -850,12 +848,12 @@ public class EDI {
                 }
               }
        } catch (IOException ex) {
-          ex.printStackTrace();
+          bslog(ex);
        } catch (ClassNotFoundException ex) {
-          ex.printStackTrace();
+          bslog(ex);
        }
     
-    return sb.toString();
+    return r;
 }
 
     public static String runEDIForSite(String[] args, String site, File[] files) {
