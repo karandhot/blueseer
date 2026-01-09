@@ -83,6 +83,7 @@ import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPostByteR;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.vdr.venData;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.io.BufferedReader;
@@ -3220,6 +3221,17 @@ public class OVData {
     }
 
     public static ArrayList getpsmstrcompSerialized(String item) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getpsmstrcompSerialized"});
+            list.add(new String[]{"param1",  item});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServOV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         ArrayList myarray = new ArrayList();
 
         try {
@@ -14881,7 +14893,373 @@ return mystring;
           
           return didLoad;
       }
-      
+    
+    public static boolean loadTranHistByTable(ArrayList<String[]> list, LinkedHashMap<String,String[]> serialkeys) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> xlist = new ArrayList<>();
+            xlist.add(new String[]{"id","loadTranHistByTable"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(list);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(serialkeys);
+                System.out.println("HERE: " + jsonString);
+                return jsonToBoolean(sendServerPost(xlist, jsonString, null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        } 
+          
+          if (list == null || list.isEmpty()) {
+              bslog("ERROR:  ArrayList is empty for loadTranHistByTable");
+              return false;
+          }
+          
+          boolean didLoad = false;
+          String mytrkey = "";
+          boolean islastop = false;
+          String temptype = "";
+       
+          java.util.Date now = new java.util.Date();
+                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+                String today = dfdate.format(now);
+          
+        // set parent GL ref number
+              String gldoc = fglData.setGLRecNbr("IN");
+                
+          // try block for updating tran_mstr
+       try {
+             
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            try {
+                
+                String _part = "";
+                String _type = "";
+                String _op = "";
+                Double _qty = 0.00;
+                String _date = "";
+                String _loc = "";
+                String _wh = "";
+                String _serial = "";
+                String _ref = "";
+                String _site = "";
+                String _userid = "";
+                String _prodline = "";
+                String _assycell = "";
+                String _remarks = "";
+                String _packcell = "";
+                String _packdate = "";
+                String _assydate = "";
+                String _expiredate = null;
+                String _program = "";
+                String _bom = "";
+                
+                // added later
+                Double _baseqty = 0.00;
+                String _uom = "";
+             
+          for (String[] s : list) {
+          
+              _part = s[0];
+              _type = s[1];
+              _op = s[2];
+              _qty = bsParseDouble(s[3]);
+              _date = s[4];
+              _loc = s[5];
+              _wh = s[18];
+              _serial = s[6];
+              _ref = s[7];
+              _site = s[8];
+              _userid = s[9];
+              _prodline = s[10];
+              _assycell = s[11];
+              _remarks = s[12];
+              _packcell = s[13];
+               _packdate = s[14];
+               _assydate = s[15];
+               _expiredate = (s[16] != null && s[16].isBlank()) ? null : "'" + s[16] + "'";
+               _program = s[17];
+               _bom = s[19];
+               // defaults to baseqty
+               _baseqty = _qty;
+               _uom = OVData.getUOMFromItemSite(_part, _site);
+              
+              if (_remarks.length() > 200) {
+                  _remarks = _remarks.substring(1,200);
+              }
+              if (_program.length() > 50) {
+                  _program = _program.substring(1,50);
+              }
+              
+              if (_packdate.isEmpty())
+               _packdate = null;
+           else
+               _packdate = "'" + _packdate + "'";
+              
+              if (_assydate.isEmpty())
+               _assydate = null;
+           else
+               _assydate = "'" + _assydate + "'";
+              
+              islastop = OVData.isLastOperation(_part, _op);
+              double opcost = invData.getItemCostUpToOp(_part, "standard", _site, _op) ;
+              if (invData.getItemCode(_part).toString().equals("P")) {
+                  opcost = invData.getItemCost(_part, "standard", _site);
+              }
+              
+                          
+            if (_bom.isEmpty()) {
+                _bom = OVData.getDefaultBomID(_part);
+            }  
+              /* now lets filter the type and hit the appropriate conditional followup */
+           if (_type == "ISS-WIP") {
+                  /* let's first load the tran_hist */
+                  
+                  
+                  // if lastop convert type to RCT-FG else leave type as iss-wip
+                 if (islastop) {
+                     temptype = "RCT-FG";
+                     _wh = OVData.getWarehouseByItem(_part);
+                     _loc = OVData.getLocationByItem(_part);
+                 } else {
+                     temptype = _type;
+                 }
+                 
+              if (dbtype.equals("sqlite")) {    
+              st.executeUpdate("insert into tran_mstr "
+                        + "(tr_item, tr_type, tr_op, tr_qty, tr_base_qty, tr_uom, tr_cost, tr_eff_date, tr_loc, tr_wh, "
+                        + "tr_serial, tr_lot, tr_ref, tr_site, tr_userid, tr_prodline, tr_export, tr_expire, tr_actcell, tr_rmks, tr_pack, tr_assy_date, tr_pack_date, tr_ent_date, tr_program, tr_bom )"
+                        + " values ( " + "'" + _part + "'" + ","
+                        + "'" + temptype + "'" + ","
+                        + "'" + _op + "'" + ","
+                        + "'" + _qty + "'" + ","
+                        + "'" + _baseqty + "'" + ","
+                        + "'" + _uom + "'" + ","        
+                        + "'" + opcost + "'" + ","
+                        + "'" + _date + "'" + ","
+                        + "'" + _loc + "'" + ","
+                        + "'" + _wh + "'" + ","
+                        + "'" + _serial + "'" + ","
+                        + "'" + _serial + "'" + ","  // tr_lot should be parent serial number...ties in components
+                        + "'" + _ref + "'" + ","
+                        + "'" + _site + "'" + ","
+                        + "'" + _userid + "'" + ","
+                        + "'" + _prodline + "'" + ","
+                        + "'0'" + ","
+                        +  _expiredate +  ","
+                        + "'" + _assycell + "'" + ","
+                        + "'" + _remarks + "'" + ","
+                        + "'" + _packcell + "'" + ","
+                        +  _assydate + ","
+                        +  _packdate + ","
+                        + "'" + today + "'" + ","
+                      + "'" + _program + "'" + ","
+                      + "'" + _bom + "'"        
+                        + ")"
+                        + ";");
+              } else {
+                  st.executeUpdate("insert into tran_mstr "
+                        + "(tr_item, tr_type, tr_op, tr_qty, tr_base_qty, tr_uom, tr_cost, tr_eff_date, tr_loc, tr_wh, "
+                        + "tr_serial, tr_ref, tr_site, tr_userid, tr_prodline, tr_export, tr_expire, tr_actcell, tr_rmks, tr_pack, tr_assy_date, tr_pack_date, tr_ent_date, tr_program, tr_bom )"
+                        + " values ( " + "'" + _part + "'" + ","
+                        + "'" + temptype + "'" + ","
+                        + "'" + _op + "'" + ","
+                        + "'" + _qty + "'" + ","
+                        + "'" + _baseqty + "'" + ","
+                        + "'" + _uom + "'" + ","        
+                        + "'" + opcost + "'" + ","
+                        + "'" + _date + "'" + ","
+                        + "'" + _loc + "'" + ","
+                        + "'" + _wh + "'" + ","
+                        + "'" + _serial + "'" + ","
+                        + "'" + _ref + "'" + ","
+                        + "'" + _site + "'" + ","
+                        + "'" + _userid + "'" + ","
+                        + "'" + _prodline + "'" + ","
+                        + "'0'" + ","
+                        + _expiredate + ","
+                        + "'" + _assycell + "'" + ","         
+                        + "'" + _remarks + "'" + ","
+                        + "'" + _packcell + "'" + ","
+                        +  _assydate + ","
+                        +  _packdate + ","
+                        + "'" + today + "'" + ","
+                        + "'" + _program + "'" + ","
+                        + "'" + _bom + "'"
+                        + ")"
+                        + ";", Statement.RETURN_GENERATED_KEYS);
+              }
+              ResultSet res = st.getGeneratedKeys();
+               while (res.next()) {
+                    mytrkey = String.valueOf(res.getInt(1));
+                }
+              res.close();
+              
+              
+              
+                  /* we need to consume material component inventory
+                   and gl cost of this item through all unreported operations since last 
+                  reported Operation */
+                  wip_iss_mtl_gl(_part, _op, _site, _qty, _date, _ref, _type, mytrkey, _serial, _userid, _program, _bom, gldoc, serialkeys);
+                  
+                  wip_iss_op_cost_gl(_part, _op, _site, _qty, _date, _ref, _type, mytrkey, gldoc);
+                  
+                  /* if this is last op... */
+                  /* adjust inventory for this part FG being produced ...if last OP */
+                  if (islastop) {
+                     OVData.UpdateInventoryDiscrete(_part, _site, _loc, _wh, _serial, _expiredate, _qty);
+                     double cost = (invData.getItemCost(_part, "standard", _site) * _qty);
+                     OVData.wip_to_fg(_part, _site, cost, _date, _ref, "RCT-FG", _remarks, gldoc); 
+                  }
+              }
+                      
+            if (_type == "ISS-SCRAP") {
+                  /* let's first load the tran_hist */
+              if (dbtype.equals("sqlite")) {         
+              st.executeUpdate("insert into tran_mstr "
+                        + "(tr_item, tr_type, tr_op, tr_qty, tr_base_qty, tr_uom, tr_cost, tr_eff_date, tr_loc, "
+                        + "tr_serial, tr_ref, tr_site, tr_userid, tr_prodline, tr_export, tr_actcell, tr_rmks, tr_pack, tr_assy_date, tr_pack_date, tr_ent_date, tr_program, tr_bom )"
+                        + " values ( " + "'" + _part + "'" + ","
+                        + "'" + _type + "'" + ","
+                        + "'" + _op + "'" + ","
+                        + "'" + _qty + "'" + ","
+                        + "'" + _baseqty + "'" + ","
+                        + "'" + _uom + "'" + ","                
+                        + "'" + opcost + "'" + ","
+                        + "'" + _date + "'" + ","
+                        + "'" + _loc + "'" + ","
+                        + "'" + _serial + "'" + ","
+                        + "'" + _ref + "'" + ","
+                        + "'" + _site + "'" + ","
+                        + "'" + _userid + "'" + ","
+                        + "'" + _prodline + "'" + ","
+                        + "'0'" + ","
+                        + "'" + _assycell + "'" + ","
+                        + "'" + _remarks + "'" + ","
+                        + "'" + _packcell + "'" + ","
+                        +  _assydate  + ","
+                        +  _packdate  + ","
+                        + "'" + today + "'" + ","
+                        + "'" + _program + "'" + ","
+                        + "'" + _bom + "'"
+                        + ")"
+                        + ";");
+              } else {
+                 st.executeUpdate("insert into tran_mstr "
+                        + "(tr_item, tr_type, tr_op, tr_qty, tr_base_qty, tr_uom, tr_cost, tr_eff_date, tr_loc, "
+                        + "tr_serial, tr_ref, tr_site, tr_userid, tr_prodline, tr_export, tr_actcell, tr_rmks, tr_pack, tr_assy_date, tr_pack_date, tr_ent_date, tr_program, tr_bom )"
+                        + " values ( " + "'" + _part + "'" + ","
+                        + "'" + _type + "'" + ","
+                        + "'" + _op + "'" + ","
+                        + "'" + _qty + "'" + ","
+                        + "'" + _baseqty + "'" + ","
+                        + "'" + _uom + "'" + ","                
+                        + "'" + opcost + "'" + ","
+                        + "'" + _date + "'" + ","
+                        + "'" + _loc + "'" + ","
+                        + "'" + _serial + "'" + ","
+                        + "'" + _ref + "'" + ","
+                        + "'" + _site + "'" + ","
+                        + "'" + _userid + "'" + ","
+                        + "'" + _prodline + "'" + ","
+                        + "'0'" + ","
+                        + "'" + _assycell + "'" + ","
+                        + "'" + _remarks + "'" + ","
+                        + "'" + _packcell + "'" + ","
+                        +  _assydate  + ","
+                        +  _packdate  + ","
+                        + "'" + today + "'" + ","
+                        + "'" + _program + "'" + ","
+                        + "'" + _bom + "'"
+                        + ")"
+                        + ";", Statement.RETURN_GENERATED_KEYS); 
+              }
+              ResultSet res = st.getGeneratedKeys();
+               while (res.next()) {
+                    mytrkey = String.valueOf(res.getInt(1));
+                }
+                res.close();
+                  /* we need to consume material component inventory
+                   and gl cost of this item through all unreported operations since last 
+                  reported Operation */
+                  wip_iss_mtl_gl(_part, _op, _site, _qty, _date, mytrkey, _type, mytrkey, _serial, _userid, _program, _bom, gldoc, serialkeys);
+                  wip_iss_op_cost_gl(_part, _op, _site, _qty, _date, mytrkey, _type, mytrkey, gldoc);
+                  
+                  
+              }
+            
+            if (_type == "ISS-REWK") {
+                  /* let's first load the tran_hist */
+                  
+              st.executeUpdate("insert into tran_mstr "
+                        + "(tr_item, tr_type, tr_op, tr_qty, tr_base_qty, tr_uom, tr_cost, tr_eff_date, tr_loc, "
+                        + "tr_serial, tr_ref, tr_site, tr_userid, tr_prodline, tr_export, tr_actcell, tr_rmks, tr_pack, tr_assy_date, tr_pack_date, tr_ent_date, tr_program, tr_bom )"
+                        + " values ( " + "'" + _part + "'" + ","
+                        + "'" + _type + "'" + ","
+                        + "'" + _op + "'" + ","
+                        + "'" + opcost + "'" + ","
+                        + "'" + _qty + "'" + ","
+                        + "'" + _baseqty + "'" + ","
+                        + "'" + _uom + "'" + ","                
+                        + "'" + _date + "'" + ","
+                        + "'" + _loc + "'" + ","
+                        + "'" + _serial + "'" + ","
+                        + "'" + _ref + "'" + ","
+                        + "'" + _site + "'" + ","
+                        + "'" + _userid + "'" + ","
+                        + "'" + _prodline + "'" + ","
+                        + "'1'" + ","
+                        + "'" + _assycell + "'" + ","
+                        + "'" + _remarks + "'" + ","
+                        + "'" + _packcell + "'" + ","
+                        +  _assydate  + ","
+                        +  _packdate  + ","
+                        + "'" + today + "'" + ","
+                        + "'" + _program + "'" + ","
+                        + "'" + _bom + "'"
+                        + ")"
+                        + ";", Statement.RETURN_GENERATED_KEYS);
+              ResultSet res = st.getGeneratedKeys();
+               while (res.next()) {
+                    mytrkey = String.valueOf(res.getInt(1));
+                }
+              res.close();
+                  /* we need to consume material component inventory
+                   and gl cost of this item through all unreported operations since last 
+                  reported Operation */
+                  wip_iss_mtl_gl(_part, _op, _site, _qty, _date, mytrkey, _type, mytrkey, _serial, _userid, _program, _bom, gldoc, serialkeys);
+                  wip_iss_op_cost_gl(_part, _op, _site, _qty, _date, mytrkey, _type, mytrkey, gldoc);
+                  
+                  
+              }
+              
+              
+          }
+          didLoad = true;
+          
+             } catch (SQLException s) {
+                // con.rollback();
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+            if (st != null) st.close();
+            con.close();
+        }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }  
+       
+          
+          return didLoad;
+      }
+    
+    
     public static boolean TRHistIssDiscrete(Date effdate, String item, double qty, String op, String type, double price, double cost, String site, 
               String loc, String wh, String expire, String cust, String nbr, String order, int line, String po, String terms, String lot, String rmks, 
               String ref, String acct, String cc, String jobnbr, String serial, String program, String userid) {

@@ -3215,7 +3215,6 @@ public class invData {
                     while (res.next()) {
                    
                     JSONArray rowArray = new JSONArray(); 
-                        rowArray.put("select");
                         rowArray.put(res.getString("it_item"));
                         rowArray.put(res.getString("it_desc"));
                         rowArray.put(res.getString("it_code"));
@@ -3327,6 +3326,18 @@ public class invData {
     
     
     public static String[] getWHLOCfromSerialNumber(String item, String serial) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getWHLOCfromSerialNumber"});
+            list.add(new String[]{"param1", item});
+            list.add(new String[]{"param2", serial});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) { 
+                bslog(ex);
+                return null;
+            }
+        } 
         String[] r = null ;
         try{
     Connection con = null;

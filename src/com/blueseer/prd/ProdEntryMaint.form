@@ -229,7 +229,7 @@
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel4">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Part"/>
+                <Property name="text" type="java.lang.String" value="Item"/>
                 <Property name="name" type="java.lang.String" value="lblitem" noResource="true"/>
               </Properties>
             </Component>

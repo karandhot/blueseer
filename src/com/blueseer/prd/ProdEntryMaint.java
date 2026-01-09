@@ -28,7 +28,9 @@ package com.blueseer.prd;
 import bsmf.MainFrame;
 import static bsmf.MainFrame.tags;
 import com.blueseer.inv.invData;
+import static com.blueseer.inv.invData.getItemMstr;
 import static com.blueseer.inv.invData.getWHLOCfromSerialNumber;
+import com.blueseer.inv.invData.item_mstr;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
@@ -76,6 +78,11 @@ import javax.swing.SwingWorker;
  */
 public class ProdEntryMaint extends javax.swing.JPanel {
 
+    String defaultCurrency = "";
+    String defaultSite = "";
+    item_mstr im = null;
+    boolean isSerialized = false;
+    
     // table model must be 16 fields in length
      javax.swing.table.DefaultTableModel transmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
             new String[]{
@@ -200,14 +207,27 @@ public class ProdEntryMaint extends javax.swing.JPanel {
         tbreference.setText("");
         tbserialno.setText("");
         tbqty.setText("");
-        ddbom.removeAllItems();
-        
-        ArrayList<String> sites = OVData.getSiteList(bsmf.MainFrame.userid);
+        ddbom.removeAllItems();        
         ddsite.removeAllItems();
-        for (String code : sites) {
-            ddsite.addItem(code);
+        
+        ArrayList<String[]> initDataSets = invData.getInvMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+            if (s[0].equals("isSerialized")) {
+              isSerialized = BlueSeerUtils.ConvertStringToBool(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
         }
-        ddsite.setSelectedItem(OVData.getDefaultSite());
+        
+         ddsite.setSelectedItem(defaultSite);
+        
     }
     
     public void setLanguageTags(Object myobj) {
@@ -255,16 +275,18 @@ public class ProdEntryMaint extends javax.swing.JPanel {
     }
     
     public void setItemInfo() {
+        im = getItemMstr(new String[]{tbitem.getText()});
+        
         ddop.removeAllItems();
         dcexpire.setDate(null);
         if (! tbitem.getText().isEmpty()) {
-            if (! OVData.isValidItem(tbitem.getText())) {
+            if (im == null) {
                bsmf.MainFrame.show(getMessageTag(1021,tbitem.getText()));
                tbitem.setForeground(Color.red);
             } else {
             tbitem.setForeground(Color.black);
              Calendar calfrom = Calendar.getInstance();
-             int days = invData.getItemExpireDays(tbitem.getText());
+             int days = im.it_expiredays();
              if (days > 0) {
              calfrom.add(Calendar.DATE, days);
              dcexpire.setDate(calfrom.getTime());
@@ -352,8 +374,8 @@ public class ProdEntryMaint extends javax.swing.JPanel {
         String[] m = null;
         String prodline = "";
         String expire = "";
-        String loc = OVData.getLocationByItem(tbitem.getText());
-        String wh = OVData.getWarehouseByItem(tbitem.getText());
+        String loc = im.it_loc();
+        String wh = im.it_wh();
         
         
         
@@ -362,8 +384,34 @@ public class ProdEntryMaint extends javax.swing.JPanel {
         } 
         
         String op = (ddop.getSelectedItem() == null) ? "0" : ddop.getSelectedItem().toString();
-        transtable.setModel(transmodel);
+        ArrayList<String[]> list = new ArrayList<>();
         
+        String[] s = new String[]{
+          tbitem.getText(), 
+                "ISS-WIP", 
+                op, 
+                tbqty.getText(), 
+                BlueSeerUtils.mysqlDateFormat.format(dcdate.getDate()), 
+                loc, 
+                tbserialno.getText(), 
+                tbreference.getText(),
+                ddsite.getSelectedItem().toString(),
+                tbuser.getText(),
+                prodline,
+                "",  // cell 
+                taremarks.getText(), // remarks
+                "", // packcell
+                "", // packdate
+                "",  // assydate
+                expire, // expiredate
+                "ProdEntryMaint", 
+                wh,
+                ddbom.getSelectedItem().toString()  
+        };
+        list.add(s);
+        
+        /*
+        transtable.setModel(transmodel);
             transmodel.addRow(new Object[]{tbitem.getText(), 
                 "ISS-WIP", 
                 op, 
@@ -385,9 +433,9 @@ public class ProdEntryMaint extends javax.swing.JPanel {
                 wh,
                 ddbom.getSelectedItem().toString()
                 });
-        
+        */
         // now let's load transaction
-        if (! OVData.loadTranHistByTable(transtable, serialkeys)) { 
+        if (! OVData.loadTranHistByTable(list, serialkeys)) { 
             m = new String[]{"1", getMessageTag(1010,"loadTranHist")};
         } else {
             initvars(null);
@@ -463,7 +511,7 @@ public class ProdEntryMaint extends javax.swing.JPanel {
         jLabel5.setText("Operation");
         jLabel5.setName("lblop"); // NOI18N
 
-        jLabel4.setText("Part");
+        jLabel4.setText("Item");
         jLabel4.setName("lblitem"); // NOI18N
 
         jLabel10.setText("EffDate");
@@ -627,7 +675,10 @@ public class ProdEntryMaint extends javax.swing.JPanel {
 
     private void btsubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btsubmitActionPerformed
         
-        boolean isInventorySerialized = (OVData.isInvCtrlSerialize()) ? true : false;
+        if (im == null) {
+            bsmf.MainFrame.show(getMessageTag(1021,tbitem.getText()));
+            return;
+        }
         
         if (! BlueSeerUtils.isParsableToDouble(tbqty.getText()) ) {
             bsmf.MainFrame.show(getMessageTag(1028));
@@ -645,7 +696,7 @@ public class ProdEntryMaint extends javax.swing.JPanel {
                     return;
         }
         
-        if (isInventorySerialized && tbserialno.getText().isBlank()) {
+        if (isSerialized && tbserialno.getText().isBlank()) {
             bsmf.MainFrame.show(getMessageTag(1193));
             tbserialno.requestFocus();
             return;

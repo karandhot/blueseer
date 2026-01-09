@@ -68,6 +68,7 @@ import static com.blueseer.inv.invData.getPLMstr;
 import static com.blueseer.inv.invData.getRecentTransByItem;
 import static com.blueseer.inv.invData.getRoutingMstr;
 import static com.blueseer.inv.invData.getUOMMstr;
+import static com.blueseer.inv.invData.getWHLOCfromSerialNumber;
 import static com.blueseer.inv.invData.getWareHouseMaintInit;
 import static com.blueseer.inv.invData.getWareHouseMstr;
 import static com.blueseer.inv.invData.getWorkCenterMstr;
@@ -479,7 +480,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
           }
         
-        
+        case "getWHLOCfromSerialNumber" : {       
+            response.getWriter().print(arrayToJson(getWHLOCfromSerialNumber(request.getHeader("param1"), request.getHeader("param2"))));
+            break;
+        }
         
         case "getBOMsByItemSite_mg" : {       
             response.getWriter().print(ArrayListStringArrayToJson(getBOMsByItemSite_mg(request.getHeader("param1"))));

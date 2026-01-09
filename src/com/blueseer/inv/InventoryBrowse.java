@@ -370,8 +370,6 @@ public class InventoryBrowse extends javax.swing.JPanel {
         String fromitem = "";
         String toitem = "";
         
-        
-        
         if (ddfromitem.getSelectedItem() == null || ddfromitem.getSelectedItem().toString().isEmpty()) {
                     fromitem = bsmf.MainFrame.lowchar;
         } else {
@@ -398,8 +396,8 @@ public class InventoryBrowse extends javax.swing.JPanel {
                 return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getOrderBrowseView")};
             }
         } else {
-            jsonString = invData.getInvBrowseView(new String[]{ddfromitem.getSelectedItem().toString(), 
-                ddtoitem.getSelectedItem().toString(),
+            jsonString = invData.getInvBrowseView(new String[]{fromitem, 
+                toitem,
                 ddsite.getSelectedItem().toString(),
                 tbserial.getText()
             });
@@ -441,7 +439,7 @@ public class InventoryBrowse extends javax.swing.JPanel {
             if (cbzero.isSelected() && bsParseDouble(rowData[7].toString()) == 0) {
                 continue;
             }
-            qty = qty + bsParseDouble(rowData[8].toString());
+            qty = qty + bsParseDouble(rowData[7].toString());
             i++;
             mymodel.addRow(rowData); 
         }

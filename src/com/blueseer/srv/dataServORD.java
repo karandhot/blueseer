@@ -213,8 +213,9 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             ordData.sos_det[] sosdarray = om.readValue(ca[4], ordData.sos_det[].class);
             ArrayList<ordData.sos_det> sosdlist = new ArrayList<ordData.sos_det>(Arrays.asList(sosdarray)); 
             response.getWriter().print(arrayToJson(ordData.addOrderTransaction(sdlist, sm, stlist, sodtlist, sosdlist))); 
+            break;
             }
-            break; 
+             
             
         case "updateOrderTransaction" : {
             String line;

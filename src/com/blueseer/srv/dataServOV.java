@@ -27,6 +27,7 @@ package com.blueseer.srv;
 
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
+import com.blueseer.ord.ordData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
@@ -51,13 +52,20 @@ import static com.blueseer.utl.OVData.getSystemAttachmentDirectory;
 import static com.blueseer.utl.OVData.getTableInfo;
 import static com.blueseer.utl.OVData.getTaxAmtApplicableByItem;
 import static com.blueseer.utl.OVData.getTaxPercentElementsApplicableByItem;
+import static com.blueseer.utl.OVData.getpsmstrcompSerialized;
 import static com.blueseer.utl.OVData.isAutoPost;
 import static com.blueseer.utl.OVData.isGLPeriodClosed;
 import static com.blueseer.utl.OVData.isValidCustShipTo;
 import static com.blueseer.utl.OVData.isValidItem;
 import static com.blueseer.utl.OVData.isValidPrinter;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.LinkedHashMap;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -197,12 +205,33 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     String id = request.getHeader("id"); 
     
     switch (id) {
+        
+        case "loadTranHistByTable" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            ArrayList<String[]> al = om.readValue(ca[0], new TypeReference<ArrayList<String[]>>() {});
+            LinkedHashMap<String,String[]> lhm = om.readValue(ca[0], new TypeReference<LinkedHashMap<String,String[]>>() {});
+            response.getWriter().print(boolToJson(OVData.loadTranHistByTable(al, lhm))); 
+            break;
+        }
+        
         case "getCodeMstrValueList" :        
             response.getWriter().print(ArrayListStringToJson(getCodeMstrValueList(request.getHeader("code"))));
             break;
             
         case "getTaxPercentElementsApplicableByItem" :        
             response.getWriter().print(ArrayListStringArrayToJson(getTaxPercentElementsApplicableByItem(request.getHeader("param1"))));
+            break;
+            
+        case "getpsmstrcompSerialized" :        
+            response.getWriter().print(ArrayListStringToJson(getpsmstrcompSerialized(request.getHeader("param1"))));
             break;    
             
         case "getSysMetaData" :        
