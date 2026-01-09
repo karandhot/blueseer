@@ -2152,8 +2152,10 @@ public class ediData {
             try {
                 String jsonString = objectMapper.writeValueAsString(x);
                 sendServerPost(list, jsonString, null, "dataServEDI");
+                return;
             } catch (IOException ex) {
                 bslog(ex);
+                return;
             }
         } 
         

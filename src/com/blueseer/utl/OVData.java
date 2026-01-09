@@ -18267,7 +18267,7 @@ return mystring;
             list.add(new String[]{"id", "getLabelMultiPrintData"});
             list.add(new String[]{"param1", shipper});
             try {
-                jsonString = sendServerPost(list, "", null, "dataServLBL"); 
+                jsonString = sendServerPost(list, "", null, "dataServLBL");
             } catch (IOException ex) {
                 bslog(ex);
                 return;

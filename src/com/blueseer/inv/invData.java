@@ -3265,8 +3265,10 @@ public class invData {
             list.add(new String[]{"param1", item});
             try {
                 sendServerPost(list, "", null, "dataServINV");
+                return;
             } catch (IOException ex) {
                 bslog(ex);
+                return;
             }
         } 
      try{
@@ -3384,8 +3386,10 @@ public class invData {
             list.add(new String[]{"param1", item});
             try {
                 sendServerPost(list, "", null, "dataServINV");
+                return;
             } catch (IOException ex) {
                 bslog(ex);
+                return;
             }
         }
         calcCost cur = new calcCost();
@@ -3403,8 +3407,10 @@ public class invData {
             list.add(new String[]{"param4", bsNumber(outcost)});
             try {
                 sendServerPost(list, "", null, "dataServINV");
+                return;
             } catch (IOException ex) {
                 bslog(ex);
+                return;
             }
         }
         calcCost cur = new calcCost();
