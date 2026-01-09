@@ -363,6 +363,7 @@ public class InventoryMaint extends javax.swing.JPanel {
                 if ( column == 0) {
                 ludialog.dispose();
                 tbitem.setText(target.getValueAt(row,1).toString());
+                getiteminfo(target.getValueAt(row,1).toString());
                 }
             }
         };
