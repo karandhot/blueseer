@@ -51,6 +51,7 @@ import static com.blueseer.inv.invData.getInvMaintInit;
 import static com.blueseer.inv.invData.getInvMaintInit_min;
 import static com.blueseer.inv.invData.getInventoryQtyByItem;
 import static com.blueseer.inv.invData.getItemBrowseView;
+import static com.blueseer.inv.invData.getItemCost;
 import static com.blueseer.inv.invData.getItemCostElements;
 import static com.blueseer.inv.invData.getItemDataInit;
 import static com.blueseer.inv.invData.getItemImagesFile;
@@ -505,6 +506,13 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     request.getHeader("param2"),
                     request.getHeader("param3"),
                     request.getHeader("param4"))));  
+            break;
+        }
+        
+        case "getItemCost" : {
+            response.getWriter().print(doubleToJson(getItemCost(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3"))));  
             break;
         }
             

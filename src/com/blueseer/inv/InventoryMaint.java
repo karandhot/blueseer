@@ -88,6 +88,7 @@ public class InventoryMaint extends javax.swing.JPanel {
     String defaultCurrency = "";
     String defaultSite = "";
     item_mstr im = null;
+    boolean isSerialized = false;
     
     public static javax.swing.table.DefaultTableModel lookUpModel = null;
     public static JTable lookUpTable = new JTable();
@@ -243,6 +244,9 @@ public class InventoryMaint extends javax.swing.JPanel {
             }
             if (s[0].equals("currency")) {
               defaultCurrency = s[1]; 
+            }
+            if (s[0].equals("isSerialized")) {
+              isSerialized = BlueSeerUtils.ConvertStringToBool(s[1]); 
             }
             if (s[0].equals("site")) {
               defaultSite = s[1]; 
@@ -878,7 +882,7 @@ public class InventoryMaint extends javax.swing.JPanel {
             return;
         }
         
-        if (tblotserial.getText().isBlank() && OVData.isInvCtrlSerialize()) {
+        if (tblotserial.getText().isBlank() && isSerialized) {
             bsmf.MainFrame.show(getMessageTag(1193));
             tblotserial.requestFocus();
             return;

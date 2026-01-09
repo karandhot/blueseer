@@ -2924,6 +2924,14 @@ public class invData {
                lines.add(new String[]{"edidir", res.getString("ov_edi_directory")});
             }
             
+            res = st.executeQuery("select * from inv_ctrl;" );
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "isSerialized";
+               s[1] = res.getString("serialize");
+               lines.add(s);
+            }
+            
             res = st.executeQuery("select ac_id from ac_mstr order by ac_id;");
             while (res.next()) {
                 String[] s = new String[2];
@@ -5387,7 +5395,20 @@ public class invData {
     }
 
     public static double getItemCost(String item, String set, String site) {
-               double cost = 0;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getItemCost"});
+            list.add(new String[]{"param1",  item});
+            list.add(new String[]{"param2",  set});
+            list.add(new String[]{"param3",  site});
+            try {
+                return jsonToDouble(sendServerPost(list, "", null, "dataServINV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0.00;
+            }
+        }    
+        double cost = 0;
              try{
                 Connection con = null;
                 if (ds != null) {
