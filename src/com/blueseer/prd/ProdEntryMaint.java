@@ -384,6 +384,8 @@ public class ProdEntryMaint extends javax.swing.JPanel {
         } 
         
         String op = (ddop.getSelectedItem() == null) ? "0" : ddop.getSelectedItem().toString();
+        String bom = (ddbom.getSelectedItem() == null) ? "" : ddbom.getSelectedItem().toString();
+        
         ArrayList<String[]> list = new ArrayList<>();
         
         String[] s = new String[]{
@@ -406,7 +408,7 @@ public class ProdEntryMaint extends javax.swing.JPanel {
                 expire, // expiredate
                 "ProdEntryMaint", 
                 wh,
-                ddbom.getSelectedItem().toString()  
+                bom  
         };
         list.add(s);
         
