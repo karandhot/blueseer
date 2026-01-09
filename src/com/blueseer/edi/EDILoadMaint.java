@@ -350,8 +350,13 @@ public class EDILoadMaint extends javax.swing.JPanel {
             String[] message = get();
            
             BlueSeerUtils.endTask(message);
-            initvars(null);  
-            updateForm(message);
+            
+            if (this.action.equals("processSingleFile")) {
+             done_processSingleFile(message); 
+           } else {
+             initvars(null); 
+             updateForm();
+           }
             
             } catch (Exception e) {
                 MainFrame.bslog(e);
@@ -779,19 +784,16 @@ public class EDILoadMaint extends javax.swing.JPanel {
         return x;
     }
         
-    public void updateForm(String[] message) {
+    public void updateForm() {
         
         lbcount.setText("0");
         tafile.setText("");
-        if (message[0].equals("0")) {
-         tafile.append("success: " + message[1]);
-        } else {
-         tafile.append("error: " + message[1]);   
-        }
+       
         
         if (ral != null) {            
             for (String s : ral) {
                 tafile.append(s);
+                tafile.append("\n");
             }
         }
         
@@ -816,6 +818,16 @@ public class EDILoadMaint extends javax.swing.JPanel {
         }
         
         
+    }
+    
+    public void done_processSingleFile(String[] message) {
+       lbcount.setText("0");
+        tafile.setText("");
+        if (message[0].equals("0")) {
+         tafile.append("success: " + message[1]);
+        } else {
+         tafile.append("error: " + message[1]);   
+        } 
     }
     
     public String getFileName() {

@@ -85,6 +85,10 @@ public class InventoryMaint extends javax.swing.JPanel {
 
     // global variable declarations
     boolean isLoad = false;
+    String defaultCurrency = "";
+    String defaultSite = "";
+    item_mstr im = null;
+    
     public static javax.swing.table.DefaultTableModel lookUpModel = null;
     public static JTable lookUpTable = new JTable();
     public static MouseListener mllu = null;
@@ -211,7 +215,7 @@ public class InventoryMaint extends javax.swing.JPanel {
         tbqty.setBackground(Color.white);
         
         ArrayList<String[]> initDataSets = invData.getInvMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
-        String defaultsite = "";
+        
         
         ddtype.requestFocus();
         
@@ -237,9 +241,11 @@ public class InventoryMaint extends javax.swing.JPanel {
             if (s[0].equals("locations")) {
               ddloc.addItem(s[1]); 
             }
-          
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
             if (s[0].equals("site")) {
-              defaultsite = s[1]; 
+              defaultSite = s[1]; 
             }
             if (s[0].equals("sites")) {
               ddsite.addItem(s[1]); 
@@ -247,7 +253,7 @@ public class InventoryMaint extends javax.swing.JPanel {
             
         }
         
-         ddsite.setSelectedItem(defaultsite);
+         ddsite.setSelectedItem(defaultSite);
          
          if (ddacct.getItemCount() > 0) {
           ddacct.setSelectedIndex(0);
@@ -310,7 +316,7 @@ public class InventoryMaint extends javax.swing.JPanel {
     
     public void getiteminfo(String item) {
         
-        item_mstr im = getItemMstr(new String[]{item});
+        im = getItemMstr(new String[]{item});
         ddsite.setSelectedItem(im.it_site());
         ddloc.setSelectedItem(im.it_loc());
         ddwh.setSelectedItem(im.it_wh());
@@ -411,11 +417,9 @@ public class InventoryMaint extends javax.swing.JPanel {
 
     public String[] postProd() {
         String[] m = null;
-        boolean isError = false;
         String type = "";
         String op = "";
         double qty = 0;
-        double totalcost = 0.00;
         
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
         Date today = new Date();
@@ -425,20 +429,25 @@ public class InventoryMaint extends javax.swing.JPanel {
         String cc = "";
         String site = "";
         
-        if (ddloc.getSelectedItem() != null)
+        if (ddloc.getSelectedItem() != null) {
         loc = ddloc.getSelectedItem().toString();
+        }
         
-        if (ddwh.getSelectedItem() != null)
+        if (ddwh.getSelectedItem() != null) {
         wh = ddwh.getSelectedItem().toString();
+        }
         
-        if (ddacct.getSelectedItem() != null)
+        if (ddacct.getSelectedItem() != null) {
         acct = ddacct.getSelectedItem().toString();
+        }
         
-        if (ddcc.getSelectedItem() != null)
+        if (ddcc.getSelectedItem() != null) {
         cc = ddcc.getSelectedItem().toString();
+        }
         
-        if (ddsite.getSelectedItem() != null)
+        if (ddsite.getSelectedItem() != null) {
         site = ddsite.getSelectedItem().toString();
+        }
         
         if (! tbqty.getText().isEmpty()) {
             qty = bsParseDouble(tbqty.getText());
@@ -449,29 +458,25 @@ public class InventoryMaint extends javax.swing.JPanel {
             qty = (-1 * qty);
         } else {
             type = "RCT-MISC";
-            qty = qty;
         }
         
         String gldoc = setGLRecNbr("AJ");
         
         // all inventory transactions performed in base currency
-        String basecurr = OVData.getDefaultCurrency();
+        String basecurr = defaultCurrency;
         
         // get cost
-        String itemtype = invData.getItemCode(tbitem.getText());
+        
         double cost = invData.getItemCost(tbitem.getText(), "standard", site);
-        if (cost == 0 && itemtype.equals("A")) {
-            cost = invData.getItemPurchPrice(tbitem.getText());
+        if (cost == 0 && im.it_code().equals("A")) {
+            cost = im.it_pur_price();
         }
         
-        // lets get the productline of the part being adjusted
-        String prodline = OVData.getProdLineFromItem(tbitem.getText());
-        
-        if ( prodline == null || prodline.isEmpty() ) {
+        if ( im.it_prodline() == null || im.it_prodline().isEmpty() ) {
             return new String[]{"1", getMessageTag(1066)};
         }
         
-        String invacct = OVData.getProdLineInvAcct(prodline);
+        String invacct = OVData.getProdLineInvAcct(im.it_prodline());
         
         if (invacct.isEmpty()) {
             return new String[]{"1", getMessageTag(1067)};
@@ -563,14 +568,14 @@ public class InventoryMaint extends javax.swing.JPanel {
         String cc_dr = "";
         if (ddtype.getSelectedItem().toString().equals("issue")) {
             acct_cr = invacct;
-            cc_cr = prodline;
+            cc_cr = im.it_prodline();
             acct_dr = acct;
             cc_dr = cc;
         } else {
             acct_cr = ddacct.getSelectedItem().toString();
             cc_cr = ddcc.getSelectedItem().toString();
             acct_dr = invacct;
-            cc_dr = prodline;
+            cc_dr = im.it_prodline();
         }
             gl_pair gv = new gl_pair(null,
                     acct_cr, 

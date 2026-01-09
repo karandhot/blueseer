@@ -25,6 +25,7 @@ SOFTWARE.
  */
 package com.blueseer.srv;
 
+import com.blueseer.fgl.fglData;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.inv.invData;
@@ -657,7 +658,23 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;  
         }
         
-        
+        case "inventoryAdjustmentTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper objectMapper = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+          
+            invData.tran_mstr tm = objectMapper.readValue(ca[0], invData.tran_mstr.class); 
+            invData.in_mstr in = objectMapper.readValue(ca[1], invData.in_mstr.class); 
+            fglData.gl_pair gv = objectMapper.readValue(ca[2], fglData.gl_pair.class); 
+            response.getWriter().print(arrayToJson(invData.inventoryAdjustmentTransaction(tm, in, gv)));  
+            break;
+        }
         
         default:
         response.getWriter().print("no switch case exists in dataServINV for id: " + id);

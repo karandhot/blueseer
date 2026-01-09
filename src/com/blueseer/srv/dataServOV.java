@@ -44,13 +44,17 @@ import static com.blueseer.utl.OVData.addSysMetaDataNoUnique;
 import static com.blueseer.utl.OVData.getCodeMstrValueList;
 import static com.blueseer.utl.OVData.getExchangeRate;
 import static com.blueseer.utl.OVData.getNextNbr;
+import static com.blueseer.utl.OVData.getProdLineInvAcct;
 import static com.blueseer.utl.OVData.getSysMetaData;
 import static com.blueseer.utl.OVData.getSysMetaValue;
 import static com.blueseer.utl.OVData.getSystemAttachmentDirectory;
 import static com.blueseer.utl.OVData.getTableInfo;
 import static com.blueseer.utl.OVData.getTaxAmtApplicableByItem;
 import static com.blueseer.utl.OVData.getTaxPercentElementsApplicableByItem;
+import static com.blueseer.utl.OVData.isAutoPost;
+import static com.blueseer.utl.OVData.isGLPeriodClosed;
 import static com.blueseer.utl.OVData.isValidCustShipTo;
+import static com.blueseer.utl.OVData.isValidItem;
 import static com.blueseer.utl.OVData.isValidPrinter;
 import java.io.IOException;
 import java.util.Enumeration;
@@ -250,6 +254,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         break;   
         }
         
+        case "getProdLineInvAcct" : {       
+            response.getWriter().print(getProdLineInvAcct(request.getHeader("param1")));
+            break; 
+        }
+            
         case "addItemCostRec" : {
             response.getWriter().print(arrayToJson(addItemCostRec(
                 request.getHeader("param1"),
@@ -261,6 +270,21 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                 bsParseDouble(request.getHeader("param7"))))); 
             break;
         } 
+        
+        case "isGLPeriodClosed" : {
+        response.getWriter().println(boolToJson(isGLPeriodClosed(request.getHeader("param1")))); 
+        break;
+        }
+        
+        case "isValidItem" : {
+        response.getWriter().println(boolToJson(isValidItem(request.getHeader("param1")))); 
+        break;
+        }
+        
+        case "isAutoPost" : {
+        response.getWriter().println(boolToJson(isAutoPost())); 
+        break;
+        }
         
         default:
         response.getWriter().print("no switch case exists in dataServOV for id: " + id);

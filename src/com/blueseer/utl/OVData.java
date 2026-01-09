@@ -9795,7 +9795,18 @@ return outvalue;
         
     
     public static String getProdLineInvAcct(String prodline) {
-           String myitem = null;
+         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getProdLineInvAcct"});
+            list.add(new String[]{"param1", prodline});
+            try {
+                return sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        } 
+         String myitem = null;
          try{
             
             Connection con = null;
@@ -9808,7 +9819,7 @@ return outvalue;
             ResultSet res = null;
             try {
 
-                res = st.executeQuery("select pl_inventory from pl_mstr where pl_line = " + "'" + prodline.toString() + "';" );
+                res = st.executeQuery("select pl_inventory from pl_mstr where pl_line = " + "'" + prodline + "';" );
                while (res.next()) {
                 myitem = res.getString("pl_inventory");                    
                 }
@@ -11546,7 +11557,16 @@ return autosource;
     }  
        
     public static boolean isAutoPost() {
-             
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isAutoPost"});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }      
        boolean autopost = false;
         try{
         Connection con = null;
@@ -11615,9 +11635,19 @@ return autosource;
         
     }  
         
-    public static boolean isValidItem(String myitem) {
-             
-       boolean isgood = false;
+    public static boolean isValidItem(String item) {
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidItem"});
+            list.add(new String[]{"param1", item});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }       
+       boolean r = false;
         try{
            
             Connection con = null;
@@ -11630,9 +11660,9 @@ return autosource;
             ResultSet res = null;
             try{
 
-                res = st.executeQuery("select it_item from item_mstr where it_item = " + "'" + myitem + "'" + ";");
+                res = st.executeQuery("select it_item from item_mstr where it_item = " + "'" + item + "'" + ";");
                while (res.next()) {
-                    isgood = true;
+                    r = true;
                 }
                
            }
@@ -11647,7 +11677,7 @@ return autosource;
         catch (Exception e){
             MainFrame.bslog(e);
         }
-        return isgood;
+        return r;
         
     }
          
@@ -15212,14 +15242,25 @@ return mystring;
     return myreturn;
 
 }
-   public static boolean isGLPeriodClosed(String EffDate) {
+   
+    public static boolean isGLPeriodClosed(String EffDate) {
           // function returns a 5 items from the gl_cal record where a date matches
           // first element = year  as int
           // second element = period as int
           // third element = startdate as string
           // fourth element = enddate as string
           // fifth element = status as string
-
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isGLPeriodClosed"});
+            list.add(new String[]{"param1", EffDate});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        } 
      boolean isclosed = false;
     try{
 

@@ -2619,6 +2619,21 @@ public class invData {
     
     
     public static String[] inventoryAdjustmentTransaction(tran_mstr tm, in_mstr in, gl_pair gv) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id","inventoryAdjustmentTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(tm);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(in);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(gv);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
