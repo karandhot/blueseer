@@ -15135,7 +15135,7 @@ return mystring;
                   }
               }
                       
-            if (_type.equals("ISS-SCRAP")) { {
+            if (_type.equals("ISS-SCRAP")) {
                   /* let's first load the tran_hist */
               if (dbtype.equals("sqlite")) {         
               st.executeUpdate("insert into tran_mstr "
@@ -15210,7 +15210,7 @@ return mystring;
                   
               }
             
-            if (_type.equals("ISS-REWK")) { {
+            if (_type.equals("ISS-REWK")) {
                   /* let's first load the tran_hist */
                   
               st.executeUpdate("insert into tran_mstr "
