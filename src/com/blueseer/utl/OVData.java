@@ -15033,7 +15033,7 @@ return mystring;
             System.out.println("HERE 0:  " + _part + "/" + _type + "/" + _qty);
             
               /* now lets filter the type and hit the appropriate conditional followup */
-           if (_type == "ISS-WIP") {
+           if (_type.equals("ISS-WIP")) {
                   /* let's first load the tran_hist */
             System.out.println("HERE 1:  " + _part + "/" + _type + "/" + _qty);      
                   
@@ -15135,7 +15135,7 @@ return mystring;
                   }
               }
                       
-            if (_type == "ISS-SCRAP") {
+            if (_type.equals("ISS-SCRAP")) { {
                   /* let's first load the tran_hist */
               if (dbtype.equals("sqlite")) {         
               st.executeUpdate("insert into tran_mstr "
@@ -15210,7 +15210,7 @@ return mystring;
                   
               }
             
-            if (_type == "ISS-REWK") {
+            if (_type.equals("ISS-REWK")) { {
                   /* let's first load the tran_hist */
                   
               st.executeUpdate("insert into tran_mstr "
