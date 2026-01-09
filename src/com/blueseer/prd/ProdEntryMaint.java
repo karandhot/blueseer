@@ -307,10 +307,12 @@ public class ProdEntryMaint extends javax.swing.JPanel {
             ddbom.insertItemAt("", 0);
             String primary = "";
             ArrayList<String[]> boms = invData.getBOMsByItemSite(tbitem.getText());
-            for (String[] wh : boms) {
-                ddbom.addItem(wh[0]);
-                if (wh[1].equals("1")) {
-                    primary = wh[0];
+            if (boms != null) {
+                for (String[] wh : boms) {
+                    ddbom.addItem(wh[0]);
+                    if (wh[1].equals("1")) {
+                        primary = wh[0];
+                    }
                 }
             }
             if (! primary.isEmpty()) {

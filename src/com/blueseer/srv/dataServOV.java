@@ -217,7 +217,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             ObjectMapper om = new ObjectMapper();
             String[] ca = sb.toString().split("=_=", -1);
             ArrayList<String[]> al = om.readValue(ca[0], new TypeReference<ArrayList<String[]>>() {});
-            LinkedHashMap<String,String[]> lhm = om.readValue(ca[0], new TypeReference<LinkedHashMap<String,String[]>>() {});
+            LinkedHashMap<String,String[]> lhm = om.readValue(ca[1], new TypeReference<LinkedHashMap<String,String[]>>() {});
             response.getWriter().print(boolToJson(OVData.loadTranHistByTable(al, lhm))); 
             break;
         }

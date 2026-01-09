@@ -679,7 +679,7 @@ public class ItemBrowse extends javax.swing.JPanel {
             HashMap hm = new HashMap();
             hm.put("REPORT_TITLE", "Item Browse Report");
             hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
-            for (int j = 1; j < tablereport.getColumnCount() - 1; j++) {
+            for (int j = 1; j < tablereport.getColumnCount(); j++) {
                hm.put("d" + (j - 1),  tablereport.getColumnName(j));
                columnnames[j - 1] = "COLUMN_" + (j - 1);
             }
