@@ -12331,6 +12331,18 @@ return myarray;
     /* stop here */
     
     public static ArrayList getOperationsByItem(String item) {
+     if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getOperationsByItem"});
+            list.add(new String[]{"param1",  item});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+           
     ArrayList myarray = new ArrayList();
     try{
         Connection con = null;

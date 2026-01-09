@@ -44,6 +44,7 @@ import static com.blueseer.inv.invData.deleteRoutingMstr;
 import static com.blueseer.inv.invData.deleteUOMMstr;
 import static com.blueseer.inv.invData.deleteWareHouseMstr;
 import static com.blueseer.inv.invData.deleteWorkCenterMstr;
+import static com.blueseer.inv.invData.getBOMsByItemSite;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
 import static com.blueseer.inv.invData.getCurrentCost;
 import static com.blueseer.inv.invData.getInvBrowseView;
@@ -487,6 +488,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         case "getBOMsByItemSite_mg" : {       
             response.getWriter().print(ArrayListStringArrayToJson(getBOMsByItemSite_mg(request.getHeader("param1"))));
+            break;
+        }
+        
+        case "getBOMsByItemSite" : {       
+            response.getWriter().print(ArrayListStringArrayToJson(getBOMsByItemSite(request.getHeader("param1"))));
             break;
         }
             
