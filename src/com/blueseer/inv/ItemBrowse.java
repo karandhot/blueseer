@@ -326,6 +326,12 @@ public class ItemBrowse extends javax.swing.JPanel {
         if (ddsite.getItemCount() > 0) {
             ddsite.setSelectedItem(defaultsite);
         }
+        if (ddtoclass.getItemCount() > 0) {
+            ddtoclass.setSelectedIndex(ddtoclass.getItemCount() - 1);
+        }
+        if (ddtoitem.getItemCount() > 0) {
+            ddtoitem.setSelectedIndex(ddtoitem.getItemCount() - 1);
+        }
         
         mymodel.setRowCount(0);
            tablereport.setModel(mymodel);

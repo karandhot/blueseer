@@ -14924,6 +14924,7 @@ return mystring;
           
           if (list == null || list.isEmpty()) {
               bslog("ERROR:  ArrayList is empty for loadTranHistByTable");
+              System.out.println("ERROR:  list is empty");
               return false;
           }
           
@@ -14978,6 +14979,8 @@ return mystring;
              
           for (String[] s : list) {
           
+              System.out.println("HERE:  hopefully from server: " + bsmf.MainFrame.isSSHConnected);
+              
               _part = s[0];
               _type = s[1];
               _op = s[2];
