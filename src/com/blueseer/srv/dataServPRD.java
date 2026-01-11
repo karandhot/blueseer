@@ -26,6 +26,9 @@ SOFTWARE.
 package com.blueseer.srv;
 
 
+import static com.blueseer.prd.prdData.getSerialBrowseView;
+import static com.blueseer.prd.prdData.getSerialBrowseViewDet;
+import static com.blueseer.prd.prdData.getTransBrowseView;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import java.io.IOException;
 import java.util.Enumeration;
@@ -70,8 +73,36 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     
     switch (id) {
         
-     
-        
+    case "getSerialBrowseView" : {
+        String[] it = new String[]{
+               request.getHeader("fromdate"), 
+               request.getHeader("todate"), 
+               request.getHeader("fromserial"), 
+               request.getHeader("toserial"), 
+               request.getHeader("fromitem"), 
+               request.getHeader("toitem"),
+               request.getHeader("type")
+               };     
+        response.getWriter().print(getSerialBrowseView(it));  
+        break;
+        } 
+       
+    case "getSerialBrowseViewDet" : {
+        response.getWriter().print(getSerialBrowseViewDet(request.getHeader("param1")));  
+        break;
+    } 
+    
+    case "getTransBrowseView" : {
+        String[] it = new String[]{
+               request.getHeader("fromdate"), 
+               request.getHeader("todate"), 
+               request.getHeader("fromitem"), 
+               request.getHeader("toitem"),
+               request.getHeader("type")
+               };     
+        response.getWriter().print(getTransBrowseView(it));  
+        break;
+        } 
         
         default:
         response.getWriter().print("no switch case exists in dataServADM for id: " + id);

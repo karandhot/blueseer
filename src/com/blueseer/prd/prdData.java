@@ -34,6 +34,7 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.pur.purData;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -47,6 +48,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
+import org.json.JSONArray;
 
 /**
  *
@@ -209,6 +211,200 @@ public class prdData {
     }
     
    // miscellaneous methods
+   public static String getSerialBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                if (keys[6].equals("ALL")) {
+                    res = st.executeQuery("SELECT tr_id, tr_op, tr_cost, tr_item, tr_type, tr_wh, tr_loc, tr_qty, tr_base_qty, tr_uom, tr_eff_date, tr_timestamp, tr_ref, tr_serial, tr_program , tr_userid, tr_lot " +
+                        " FROM  tran_mstr  " +
+                        " where tr_eff_date >= " + "'" + keys[0]  + "'" + 
+                        " AND tr_eff_date <= " + "'" + keys[1] + "'" + 
+                        " AND tr_serial >= " + "'" + keys[2] + "'" + 
+                        " AND tr_serial <= " + "'" + keys[3] + "'" + 
+                        " AND tr_item >= " + "'" + keys[4] + "'" + 
+                        " AND tr_item <= " + "'" + keys[5] + "'" + 
+                         " order by tr_ent_date desc ;");   
+                } else {
+                    res = st.executeQuery("SELECT tr_id, tr_op, tr_cost, tr_item, tr_type, tr_wh, tr_loc, tr_qty, tr_base_qty, tr_uom, tr_eff_date, tr_timestamp, tr_ref, tr_serial, tr_program , tr_userid, tr_lot " +
+                        " FROM  tran_mstr  " +
+                        " where tr_eff_date >= " + "'" + keys[0]  + "'" + 
+                        " AND tr_eff_date <= " + "'" + keys[1] + "'" + 
+                        " AND tr_serial >= " + "'" + keys[2] + "'" + 
+                        " AND tr_serial <= " + "'" + keys[3] + "'" + 
+                        " AND tr_item >= " + "'" + keys[4] + "'" + 
+                        " AND tr_item <= " + "'" + keys[5] + "'" +          
+                        " AND tr_type = " + "'" + keys[6] + "'" +
+                               
+                         " order by tr_ent_date desc ;");    
+                }
+                    while (res.next()) {
+                   
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("tr_id"));
+                        rowArray.put(res.getString("tr_serial"));
+                        rowArray.put(res.getString("tr_item"));
+                        rowArray.put(res.getString("tr_type"));
+                        rowArray.put(bsNumber(res.getDouble("tr_qty")));
+                        rowArray.put(res.getString("tr_uom"));
+                        rowArray.put(res.getString("tr_eff_date"));
+                        rowArray.put(res.getString("tr_timestamp"));
+                        rowArray.put(res.getString("tr_lot"));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+   public static String getSerialBrowseViewDet(String key) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                res = st.executeQuery("SELECT tr_id, tr_op, tr_cost,  tr_item, tr_type, tr_wh, tr_loc, tr_qty, tr_base_qty, tr_uom, tr_eff_date, tr_timestamp, tr_ref, tr_serial, tr_program , tr_userid, tr_lot " +
+                        " FROM  tran_mstr  " +
+                        " where tr_lot = " + "'" + key  + "'" + 
+                        " and tr_serial <> " + "'" + key  + "'" + // prevent cyclic grab
+                         " order by tr_id desc ;"); 
+                    while (res.next()) {                  
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("tr_id"));
+                        rowArray.put(res.getString("tr_serial"));
+                        rowArray.put(res.getString("tr_item"));
+                        rowArray.put(res.getString("tr_type"));
+                        rowArray.put(bsNumber(res.getDouble("tr_qty")));
+                        rowArray.put(res.getString("tr_uom"));
+                        rowArray.put(res.getString("tr_eff_date"));
+                        rowArray.put(res.getString("tr_timestamp"));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
+   public static String getTransBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                if (keys[4].equals("ALL")) {
+                   res = st.executeQuery("SELECT tr_id, tr_op, tr_cost,  tr_item, tr_type, tr_wh, tr_loc, tr_qty, tr_base_qty, tr_uom, tr_eff_date, tr_timestamp, tr_ref, tr_serial, tr_program , tr_userid " +
+                        " FROM  tran_mstr  " +
+                        " where tr_eff_date >= " + "'" + keys[0]  + "'" + 
+                        " AND tr_eff_date <= " + "'" + keys[1] + "'" + 
+                        " AND tr_item >= " + "'" + keys[2] + "'" + 
+                        " AND tr_item <= " + "'" + keys[3] + "'" + 
+                         " order by tr_ent_date desc ;");    
+                 } else {
+                    res = st.executeQuery("SELECT tr_id, tr_op, tr_cost,  tr_item, tr_type, tr_wh, tr_loc, tr_qty, tr_base_qty, tr_uom, tr_eff_date, tr_timestamp, tr_ref, tr_serial, tr_program , tr_userid " +
+                        " FROM  tran_mstr  " +
+                        " where tr_eff_date >= " + "'" + keys[0]  + "'" + 
+                        " AND tr_eff_date <= " + "'" + keys[1] + "'" + 
+                        " AND tr_item >= " + "'" + keys[2] + "'" + 
+                        " AND tr_item <= " + "'" + keys[3] + "'" + 
+                        " AND tr_type = " + "'" + keys[4] + "'" +
+                         " order by tr_ent_date desc ;");     
+                 }
+                    while (res.next()) {                  
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("tr_id"));
+                        rowArray.put(res.getString("tr_item"));
+                        rowArray.put(res.getString("tr_type"));
+                        rowArray.put(bsNumber(res.getDouble("tr_qty")));
+                        rowArray.put(res.getString("tr_uom"));
+                        rowArray.put(bsNumber(res.getDouble("tr_base_qty")));
+                        rowArray.put(res.getString("tr_op"));
+                        rowArray.put(res.getString("tr_eff_date"));
+                        rowArray.put(res.getString("tr_timestamp"));
+                        rowArray.put(res.getString("tr_ref"));
+                        rowArray.put(res.getString("tr_serial"));
+                        rowArray.put(res.getString("tr_program"));
+                        rowArray.put(res.getString("tr_userid"));
+                        rowArray.put(res.getString("tr_cost"));
+                        rowArray.put(res.getString("tr_wh"));
+                        rowArray.put(res.getString("tr_loc"));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
    public static String[] getJobClockInTime(int plan, int op, String empnbr) {
            // get billto specific data
             // aracct, arcc, currency, bank, terms, carrier, onhold, site

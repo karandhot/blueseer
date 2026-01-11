@@ -823,7 +823,7 @@ public abstract class EDIMap {  // took out the implements EDIMapi
         }
         
         
-         // concatenate all output strings to string variable 'content' 
+         // concatenate all output strings to static string variable 'content' 
         writeOMD(c, tp);
         
         // create out batch file name

@@ -2290,6 +2290,22 @@ public class invData {
     public static inv_ctrl getINVCtrl(String[] x) {
         inv_ctrl r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getINVCtrl"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServINV");
+                r = objectMapper.readValue(returnstring, inv_ctrl.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new inv_ctrl(m);
+                return r;
+            }
+        }
         String sql = "select * from inv_ctrl;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());   
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -2451,6 +2467,22 @@ public class invData {
     public static tran_mstr getTranMstr(String id) {
         tran_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getTranMstr"});
+            list.add(new String[]{"param1",id});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServINV");
+                r = objectMapper.readValue(returnstring, tran_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new tran_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from tran_mstr where tr_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());   
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -2526,6 +2558,23 @@ public class invData {
     public static tran_mstr getTranMstrBySerial(String serial, String lot) {
         tran_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getTranMstrBySerial"});
+            list.add(new String[]{"param1",serial});
+            list.add(new String[]{"param2",lot});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServINV");
+                r = objectMapper.readValue(returnstring, tran_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new tran_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from tran_mstr where tr_serial = ? and tr_lot = ?;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());   
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -3082,6 +3131,13 @@ public class invData {
                 String[] s = new String[2];
                s[0] = "items";
                s[1] = res.getString("it_item");
+               lines.add(s);
+            }
+            res = st.executeQuery("select code_key from code_mstr where code_code = 'trantype' order by code_key ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "trantype";
+               s[1] = res.getString("code_key");
                lines.add(s);
             }
             
@@ -6618,7 +6674,18 @@ public class invData {
 
     
     public static ArrayList<String[]> getItemWFOPandDESC(String myitem) {
-       ArrayList<String[]> myarray = new ArrayList();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getItemWFOPandDESC"});
+            list.add(new String[]{"param1", myitem});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        ArrayList<String[]> myarray = new ArrayList();
         try{
         Connection con = null;
         if (ds != null) {
@@ -6657,7 +6724,17 @@ public class invData {
 
     
     public static ArrayList getItemMasterSchedlist() {
-       ArrayList myarray = new ArrayList();
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getItemMasterSchedlist"});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        ArrayList myarray = new ArrayList();
         try{
            Connection con = null;
         if (ds != null) {

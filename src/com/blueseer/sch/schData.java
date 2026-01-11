@@ -26,6 +26,7 @@ SOFTWARE.
 package com.blueseer.sch;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.defaultDecimalSeparator;
 import static bsmf.MainFrame.ds;
@@ -35,6 +36,12 @@ import static bsmf.MainFrame.user;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToDouble;
+import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -54,6 +61,28 @@ public class schData {
     public static plan_mstr getPlanMstr(String[] x) {
         plan_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id","getPlanMstr"});
+            list.add(new String[]{"param1",x[0]});
+            if (x.length > 1) {
+             list.add(new String[]{"param2",x[1]});
+            } else {
+             list.add(new String[]{"param2",""});   
+            }
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServSCH");
+                r = objectMapper.readValue(returnstring, plan_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new plan_mstr(m);
+                return r;
+            }
+        }
+        
         String sql = "select * from plan_mstr where plan_nbr = ? ;";
         if (x.length > 1 && ! x[1].isBlank()) {
             sql = "select * from plan_mstr where plan_nbr = ? and plan_type = ? ;";
@@ -89,6 +118,18 @@ public class schData {
     }
     
     public static String[] addPlanMstr(plan_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addPlanMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServSCH"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  plan_mstr where plan_nbr = ?";
         String sqlInsert = "insert into plan_mstr (plan_nbr, plan_item, plan_site, plan_qty_req, plan_qty_comp, "
@@ -179,7 +220,19 @@ public class schData {
     }
     
     public static String[] addPlanOperationTrans(ArrayList<plan_operation> plo) {
-         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addPlanOperationTrans"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(plo);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServSCH"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
         ResultSet res = null;
@@ -471,7 +524,18 @@ public class schData {
   }
 
     public static double getPlanDetTotQtyByOp(String serialno, String op) {
-
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getPlanDetTotQtyByOp"});
+            list.add(new String[]{"param1",  serialno});
+            list.add(new String[]{"param2",  op});
+            try {
+                return jsonToDouble(sendServerPost(list, "", null, "dataServSCH")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0.00;
+            }
+        }
       // From perspective of "has it been scanned...or is there a 1 in lbl_scan which is set when label is scanned
       // assume it's false i.e. hasn't been scanned.
       double x = 0;
@@ -514,6 +578,17 @@ public class schData {
 
       // From perspective of "has it been scanned...or is there a 1 in lbl_scan which is set when label is scanned
       // assume it's false i.e. hasn't been scanned.
+      if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getPlanDetHistory"});
+            list.add(new String[]{"param1",  serialno});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServSCH"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
       ArrayList<String[]> x = new ArrayList<String[]>();
 
       try {

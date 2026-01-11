@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.prd;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import java.awt.Color;
 import java.awt.Component;
@@ -64,8 +65,14 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.inv.invData;
+import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -77,6 +84,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 
 
 
@@ -85,7 +93,11 @@ import javax.swing.JTabbedPane;
  * @author vaughnte
  */
 public class TransBrowse extends javax.swing.JPanel {
- 
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultsite = "";
+    String defaultcurrency = "";
      MyTableModel mymodel = new TransBrowse.MyTableModel(new Object[][]{},
                         new String[]{
                             getGlobalColumnTag("number"), 
@@ -177,6 +189,75 @@ public class TransBrowse extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -222,20 +303,122 @@ public class TransBrowse extends javax.swing.JPanel {
     }
     
     public void initvars(String[] arg) {
-        mymodel.setRowCount(0);
+        executeTask("dataInit", null);
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = invData.getInvMaintInit_min(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        
          java.util.Date now = new java.util.Date();
          dcfrom.setDate(now);
          dcto.setDate(now);
         
-        
+        tablereport.setModel(mymodel);
+        mymodel.setNumRows(0);
         ddtype.removeAllItems();
-        ArrayList mycode = OVData.getCodeMstr("trantype");
-        for (int i = 0; i < mycode.size(); i++) {
-            ddtype.addItem(mycode.get(i));
+       
+        
+        for (String[] s : initDataSets) {
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultsite = s[1]; 
+            }
+            if (s[0].equals("trantype")) {
+              ddtype.addItem(s[1]); 
+            }
+            if (s[0].equals("currency")) {
+              defaultcurrency = s[1]; 
+            }
         }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+       
         ddtype.insertItemAt("ALL", 0);
         ddtype.setSelectedIndex(0);
     }
+    
+    public String[] getBrowseView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String fromitem;
+        String toitem;
+        
+        if (tbfromitem.getText().isEmpty()) {
+            fromitem = bsmf.MainFrame.lowchar;
+        } else {
+            fromitem = tbfromitem.getText();
+        }
+       if (tbtoitem.getText().isEmpty()) {
+            toitem = bsmf.MainFrame.hichar;
+        } else {
+            toitem = tbtoitem.getText();
+        }
+            
+        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(new String[]{"id","getTransBrowseView"});
+        list.add(new String[]{"fromdate",dfdate.format(dcfrom.getDate())});
+        list.add(new String[]{"todate",dfdate.format(dcto.getDate())});
+        list.add(new String[]{"fromitem",fromitem});
+        list.add(new String[]{"toitem",toitem});
+        list.add(new String[]{"type",ddtype.getSelectedItem().toString()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServPRD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getSerialBrowseView")};
+            }
+        } else {
+            jsonString = prdData.getTransBrowseView(new String[]{
+                dfdate.format(dcfrom.getDate()),
+                dfdate.format(dcto.getDate()),
+                fromitem,
+                toitem,
+                ddtype.getSelectedItem().toString()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getSerialBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+       
+        int i = 0;
+        double qty = 0;
+        mymodel.setNumRows(0);
+        if (roData != null) {
+        for (Object[] rowData : roData) {
+            qty = qty + bsParseDouble(roData[i][3].toString());
+            i++;
+            mymodel.addRow(rowData);
+        }
+        }
+        labelcount.setText(String.valueOf(i));
+        labelqty.setText(String.valueOf(qty));
+        roData = null;
+    }   
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -254,15 +437,18 @@ public class TransBrowse extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        tabletrans = new javax.swing.JTable();
+        tablereport = new javax.swing.JTable();
         btexport = new javax.swing.JButton();
         labelcount = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         labelqty = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         ddtype = new javax.swing.JComboBox();
-        tbfrompart = new javax.swing.JTextField();
-        tbtopart = new javax.swing.JTextField();
+        tbfromitem = new javax.swing.JTextField();
+        tbtoitem = new javax.swing.JTextField();
+        ddsite = new javax.swing.JComboBox<>();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -286,14 +472,14 @@ public class TransBrowse extends javax.swing.JPanel {
             }
         });
 
-        jLabel1.setText("From Part");
+        jLabel1.setText("From Item");
         jLabel1.setName("lblfromitem"); // NOI18N
 
-        jLabel4.setText("To Part");
+        jLabel4.setText("To Item");
         jLabel4.setName("lbltoitem"); // NOI18N
 
-        tabletrans.setAutoCreateRowSorter(true);
-        tabletrans.setModel(new javax.swing.table.DefaultTableModel(
+        tablereport.setAutoCreateRowSorter(true);
+        tablereport.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -304,7 +490,7 @@ public class TransBrowse extends javax.swing.JPanel {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane1.setViewportView(tabletrans);
+        jScrollPane1.setViewportView(tablereport);
 
         btexport.setText("Export");
         btexport.setName("btexport"); // NOI18N
@@ -324,6 +510,10 @@ public class TransBrowse extends javax.swing.JPanel {
         jLabel8.setText("Qty");
         jLabel8.setName("lblqty"); // NOI18N
 
+        jLabel5.setText("Site");
+
+        jLabel6.setText("Type");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -342,17 +532,25 @@ public class TransBrowse extends javax.swing.JPanel {
                     .addComponent(jLabel1)
                     .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(tbfromitem, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel5))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(tbtoitem, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel6)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(tbfrompart, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(47, 47, 47)
-                        .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(tbtopart, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btRun)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btexport)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 517, Short.MAX_VALUE)
+                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(52, 52, 52)
+                        .addComponent(btRun)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btexport))
+                    .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 513, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel7)
@@ -374,12 +572,15 @@ public class TransBrowse extends javax.swing.JPanel {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(btRun)
                             .addComponent(btexport)
-                            .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tbfrompart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(tbfromitem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel5))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(tbtopart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel4)))
+                            .addComponent(tbtoitem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel4)
+                            .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel6)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(dcfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -405,7 +606,10 @@ public class TransBrowse extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -414,102 +618,7 @@ public class TransBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
- 
-try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                int qty = 0;
-                double dol = 0;
-                int i = 0;
-                String frompart = "";
-                String topart = "";
-               
-             
-                if (tbfrompart.getText().isEmpty()) {
-                    frompart = bsmf.MainFrame.lowchar;
-                } else {
-                    frompart = tbfrompart.getText();
-                }
-               if (tbtopart.getText().isEmpty()) {
-                    topart = bsmf.MainFrame.hichar;
-                } else {
-                    topart = tbtopart.getText();
-                }
-            
-                mymodel.setNumRows(0);
-                tabletrans.setModel(mymodel);
-            
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-
-                 if (ddtype.getSelectedItem().toString().equals("ALL")) {    
-                 res = st.executeQuery("SELECT tr_id, tr_op, tr_cost,  tr_item, tr_type, tr_wh, tr_loc, tr_qty, tr_base_qty, tr_uom, tr_eff_date, tr_timestamp, tr_ref, tr_serial, tr_program , tr_userid " +
-                        " FROM  tran_mstr  " +
-                        " where tr_eff_date >= " + "'" + dfdate.format(dcfrom.getDate())  + "'" + 
-                        " AND tr_eff_date <= " + "'" + dfdate.format(dcto.getDate()) + "'" + 
-                        " AND tr_item >= " + "'" + frompart + "'" + 
-                        " AND tr_item <= " + "'" + topart + "'" + 
-                         " order by tr_ent_date desc ;");    
-                 } else {
-                    res = st.executeQuery("SELECT tr_id, tr_op, tr_cost,  tr_item, tr_type, tr_wh, tr_loc, tr_qty, tr_base_qty, tr_uom, tr_eff_date, tr_timestamp, tr_ref, tr_serial, tr_program , tr_userid " +
-                        " FROM  tran_mstr  " +
-                        " where tr_eff_date >= " + "'" + dfdate.format(dcfrom.getDate())  + "'" + 
-                        " AND tr_eff_date <= " + "'" + dfdate.format(dcto.getDate()) + "'" + 
-                        " AND tr_item >= " + "'" + frompart + "'" + 
-                        " AND tr_item <= " + "'" + topart + "'" + 
-                        " AND tr_type = " + "'" + ddtype.getSelectedItem().toString() + "'" +
-                         " order by tr_ent_date desc ;");     
-                 }
-                 
-                while (res.next()) {
-                   
-                    qty = qty + res.getInt("tr_qty");
-                    i++;
-                        mymodel.addRow(new Object[]{
-                                res.getString("tr_id"),
-                                res.getString("tr_item"),
-                                res.getString("tr_type"),
-                                res.getDouble("tr_qty"),
-                                res.getString("tr_uom"),
-                                res.getDouble("tr_base_qty"),
-                                res.getString("tr_op"),
-                                res.getString("tr_eff_date"),
-                                res.getString("tr_timestamp"),
-                                res.getString("tr_ref"),
-                                res.getString("tr_serial"),
-                                res.getString("tr_program"),
-                                res.getString("tr_userid"),
-                                res.getString("tr_cost"),
-                                res.getString("tr_wh"),
-                                res.getString("tr_loc")        
-                            });
-                }
-               
-                labelcount.setText(String.valueOf(i));
-                labelqty.setText(String.valueOf(qty));
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
+    executeTask("getBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btexportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btexportActionPerformed
@@ -522,19 +631,22 @@ try {
     private javax.swing.JButton btexport;
     private com.toedter.calendar.JDateChooser dcfrom;
     private com.toedter.calendar.JDateChooser dcto;
+    private javax.swing.JComboBox<String> ddsite;
     private javax.swing.JComboBox ddtype;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel labelcount;
     private javax.swing.JLabel labelqty;
-    private javax.swing.JTable tabletrans;
-    private javax.swing.JTextField tbfrompart;
-    private javax.swing.JTextField tbtopart;
+    private javax.swing.JTable tablereport;
+    private javax.swing.JTextField tbfromitem;
+    private javax.swing.JTextField tbtoitem;
     // End of variables declaration//GEN-END:variables
 }

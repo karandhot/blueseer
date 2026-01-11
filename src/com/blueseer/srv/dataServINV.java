@@ -47,6 +47,7 @@ import static com.blueseer.inv.invData.deleteWorkCenterMstr;
 import static com.blueseer.inv.invData.getBOMsByItemSite;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
 import static com.blueseer.inv.invData.getCurrentCost;
+import static com.blueseer.inv.invData.getINVCtrl;
 import static com.blueseer.inv.invData.getInvBrowseView;
 import static com.blueseer.inv.invData.getInvMaintInit;
 import static com.blueseer.inv.invData.getInvMaintInit_min;
@@ -57,10 +58,12 @@ import static com.blueseer.inv.invData.getItemCostElements;
 import static com.blueseer.inv.invData.getItemDataInit;
 import static com.blueseer.inv.invData.getItemImagesFile;
 import static com.blueseer.inv.invData.getItemMaintInit;
+import static com.blueseer.inv.invData.getItemMasterSchedlist;
 import static com.blueseer.inv.invData.getItemMstr;
 import static com.blueseer.inv.invData.getItemPrice;
 import static com.blueseer.inv.invData.getItemQOHTotal;
 import static com.blueseer.inv.invData.getItemQtyByWarehouseAndLocation;
+import static com.blueseer.inv.invData.getItemWFOPandDESC;
 import static com.blueseer.inv.invData.getLocationListByWarehouse;
 import static com.blueseer.inv.invData.getLocationMaintInit;
 import static com.blueseer.inv.invData.getLocationMstr;
@@ -68,6 +71,8 @@ import static com.blueseer.inv.invData.getOrderMaintDetailEvent;
 import static com.blueseer.inv.invData.getPLMstr;
 import static com.blueseer.inv.invData.getRecentTransByItem;
 import static com.blueseer.inv.invData.getRoutingMstr;
+import static com.blueseer.inv.invData.getTranMstr;
+import static com.blueseer.inv.invData.getTranMstrBySerial;
 import static com.blueseer.inv.invData.getUOMMstr;
 import static com.blueseer.inv.invData.getWHLOCfromSerialNumber;
 import static com.blueseer.inv.invData.getWareHouseMaintInit;
@@ -481,6 +486,31 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
           }
         
+        case "getINVCtrl" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            invData.inv_ctrl x = getINVCtrl(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "getTranMstr" : { 
+            invData.tran_mstr x = getTranMstr(request.getHeader("param1"));
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "getTranMstrBySerial" : { 
+            invData.tran_mstr x = getTranMstrBySerial(request.getHeader("param1"), request.getHeader("param2"));
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
         case "getWHLOCfromSerialNumber" : {       
             response.getWriter().print(arrayToJson(getWHLOCfromSerialNumber(request.getHeader("param1"), request.getHeader("param2"))));
             break;
@@ -498,6 +528,16 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getLocationListByWarehouse" : {       
             response.getWriter().print(ArrayListStringToJson(getLocationListByWarehouse(request.getHeader("param1"))));
+            break;    
+        }
+        
+        case "getItemMasterSchedlist" : {       
+            response.getWriter().print(ArrayListStringToJson(getItemMasterSchedlist()));
+            break;    
+        }
+        
+        case "getItemWFOPandDESC" : {       
+            response.getWriter().print(ArrayListStringArrayToJson(getItemWFOPandDESC(request.getHeader("param1"))));
             break;    
         }
             

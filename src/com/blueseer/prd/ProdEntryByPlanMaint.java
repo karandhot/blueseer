@@ -54,6 +54,7 @@ import static bsmf.MainFrame.user;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.getWHLOCfromSerialNumber;
 import com.blueseer.inv.invData.inv_ctrl;
+import com.blueseer.inv.invData.item_mstr;
 import com.blueseer.sch.schData;
 import static com.blueseer.sch.schData.getPlanDetHistory;
 import com.blueseer.sch.schData.plan_mstr;
@@ -94,6 +95,10 @@ String sitename = "";
 String siteaddr = "";
 String sitephone = "";
 String sitecitystatezip = "";
+
+String defaultCurrency = "";
+String defaultSite = "";
+boolean isSerialized = false;
 
 LinkedHashMap<String,String[]> serialkeys = null; 
 
@@ -316,9 +321,10 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
             return;
         }
         
+        plan_mstr pm = schData.getPlanMstr(new String[]{tbscan.getText()});
         if (schData.isPlan(scan)) {
       // tbqty.setText(String.valueOf(schData.getPlanSchedQty(scan)));
-       partlabel.setText(schData.getPlanItem(scan));
+       partlabel.setText(pm.plan_item());
        partlabel.setForeground(Color.blue);
        ddop.removeAllItems();
        ArrayList<String> mylist = OVData.getOperationsByItem(partlabel.getText());
@@ -339,14 +345,14 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
            partlabel.setForeground(Color.yellow);
        } else {
           double prevscanned = schData.getPlanDetTotQtyByOp(tbscan.getText(), ddop.getSelectedItem().toString());
-          double qtysched = schData.getPlanSchedQty(tbscan.getText());
+          double qtysched = pm.plan_qty_sched();
           double remaining = qtysched - prevscanned;
           tbqty.setText(String.valueOf(remaining));
           qtylabel.setText("qty sched: " + String.valueOf(qtysched) + "     qty scanned: " + String.valueOf(prevscanned));
           qtylabel.setForeground(Color.blue);
-          plan_mstr pm = schData.getPlanMstr(new String[]{tbscan.getText()});
           
-          if (Integer.valueOf(pm.plan_status()) != 0 ) { // check if closed
+          
+          if (pm.plan_status() != 0 ) { // check if closed
             lblmessage.setText(getMessageTag(1071,tbscan.getText()));
             lblmessage.setForeground(Color.red);
             btcommit.setEnabled(false);
@@ -371,7 +377,7 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
        // need to iterate through all components that are serialized
        boolean bomserialerror = false;
         if (checkBOMSerial) { // make sure is not closed or otherwise bad ticket before requesting BOM serial numbers
-        ArrayList<String> comps = getpsmstrcompSerialized(schData.getPlanItem(scan));
+        ArrayList<String> comps = getpsmstrcompSerialized(pm.plan_item());
         
         serialkeys = new LinkedHashMap<String,String[]>();
         for (String c : comps) {
@@ -475,7 +481,7 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
         plan_mstr pm = schData.getPlanMstr(new String[]{tbscan.getText()});
         inv_ctrl ic = invData.getINVCtrl(new String[]{tbscan.getText()});
         double prevscanned = schData.getPlanDetTotQtyByOp(tbscan.getText(), ddop.getSelectedItem().toString());
-        String[] detail = invData.getItemDetail(pm.plan_item());
+        item_mstr im = invData.getItemMstr(pm.plan_item());
         boolean isPlan = true;
         
         if (pm.m()[0].equals("1")) {
@@ -489,12 +495,12 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
             return new String[]{"1", getMessageTag(1011)};
         }
         
-        if (isPlan &&  Integer.valueOf(pm.plan_status()) > 0 ) {
+        if (isPlan &&  pm.plan_status() > 0 ) {
             lblmessage.setText(getMessageTag(1071,tbscan.getText()));
             lblmessage.setForeground(Color.red);
             return new String[]{"1", getMessageTag(1011)};
         }
-        if (isPlan &&  Integer.valueOf(pm.plan_status()) < 0 ) {
+        if (isPlan &&  pm.plan_status() < 0 ) {
             lblmessage.setText(getMessageTag(1072,tbscan.getText()));
             lblmessage.setForeground(Color.red);
             return new String[]{"1", getMessageTag(1011)};
@@ -524,7 +530,7 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
         
         
         
-        if (isPlan &&  Integer.valueOf(pm.plan_status()) == 0 ) {
+        if (isPlan &&  pm.plan_status() == 0 ) {
             boolean isLastOp = OVData.isLastOperation(pm.plan_item(), ddop.getSelectedItem().toString() );
             //OK ...if here..we should be prepared to commit.... Let's commit the transaction with OVData.loadTranHistByTable
             
@@ -535,10 +541,10 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
             });
              // get necessary info from plan_mstr for this scan and store into mytable(mymodel)
              
-              String prodline = detail[3];
-              String loc = detail[8];
-              String wh = detail[9];
-              String expire = detail[10];
+              String prodline = im.it_prodline();
+              String loc = im.it_loc();
+              String wh = im.it_wh();
+              String expire = im.it_expire();
               java.util.Date now = new java.util.Date();
               DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
              mymodel.addRow(new Object[]{

@@ -351,9 +351,9 @@ public class ItemBrowse extends javax.swing.JPanel {
     }
     
     public String[] getItemBrowseView() {
-        String[] x = new String[2];
-        String fromitem = "";
-        String toitem = "";
+        
+        String fromitem;
+        String toitem;
         if (ddfromitem.getSelectedItem() == null || ddfromitem.getSelectedItem().toString().isEmpty()) {
                     fromitem = bsmf.MainFrame.lowchar;
         } else {
@@ -378,19 +378,22 @@ public class ItemBrowse extends javax.swing.JPanel {
                 jsonString = sendServerPost(list, "", null, "dataServINV"); 
             } catch (IOException ex) {
                 bslog(ex);
-                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getOrderBrowseView")};
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getItemBrowseView")};
             }
         } else {
-            jsonString = invData.getItemBrowseView(new String[]{ddfromitem.getSelectedItem().toString(), 
-                ddtoitem.getSelectedItem().toString(), 
+            jsonString = invData.getItemBrowseView(new String[]{fromitem, 
+                toitem, 
                 ddfromclass.getSelectedItem().toString(), 
                 ddtoclass.getSelectedItem().toString(), 
                 ddsite.getSelectedItem().toString()
             });
         }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getItemBrowseView return jsonString is null")};
+      }
         
-        
-        roData = jsonToData(jsonString);
+      roData = jsonToData(jsonString);
        
       return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
     }
@@ -643,7 +646,7 @@ public class ItemBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-       executeTask("getItemBrowseView", null);
+       
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btcsvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcsvActionPerformed

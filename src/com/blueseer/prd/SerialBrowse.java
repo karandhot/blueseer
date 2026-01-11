@@ -71,10 +71,12 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.inv.ItemBrowse;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.getTranMstr;
 import static com.blueseer.inv.invData.getTranMstrBySerial;
 import com.blueseer.inv.invData.tran_mstr;
+import static com.blueseer.prd.prdData.getSerialBrowseViewDet;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
@@ -82,6 +84,8 @@ import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.vdr.venData;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -90,6 +94,7 @@ import java.awt.Insets;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
+import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -102,6 +107,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
@@ -111,7 +117,12 @@ import javax.swing.table.TableColumn;
  * @author vaughnte
  */
 public class SerialBrowse extends javax.swing.JPanel {
- 
+    public String rsData; 
+     Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultsite = "";
+    String defaultcurrency = "";
+    
      public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
      
     javax.swing.table.DefaultTableModel mymodel = new SerialBrowse.MyTableModel(new Object[][]{},
@@ -212,6 +223,83 @@ public class SerialBrowse extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                case "getBrowseViewDet":
+                    message = getBrowseViewDet(key[0]);
+                    break;     
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+            if (this.action.equals("getBrowseViewDet")) {
+                done_getBrowseViewDet();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+     
     public void getdetail(String masterserial) {
       
          modeldetail.setNumRows(0);
@@ -377,7 +465,19 @@ public class SerialBrowse extends javax.swing.JPanel {
     }
     
     public void initvars(String[] arg) {
-     
+     executeTask("dataInit", null);
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = invData.getInvMaintInit_min(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
         java.util.Date now = new java.util.Date();
         dcfrom.setDate(now);
         dcto.setDate(now);
@@ -396,31 +496,164 @@ public class SerialBrowse extends javax.swing.JPanel {
         detailpanel.setVisible(false);
         
         ddsite.removeAllItems();
-        ArrayList sites = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (Object site : sites) {
-            ddsite.addItem(site);
-        }
-        
         ddtype.removeAllItems();
-        ArrayList<String> mycode = OVData.getCodeMstr("trantype");
-        for (int i = 0; i < mycode.size(); i++) {
-            ddtype.addItem(mycode.get(i));
-        }
-        ddtype.insertItemAt("ALL", 0);
-        ddtype.setSelectedIndex(0);
+       
         
-         ddfromitem.removeAllItems();
+        
+        ddfromitem.removeAllItems();
         ddtoitem.removeAllItems();
-        ArrayList<String> items = invData.getItemMasterAlllist();
-        for (int i = 0; i < items.size(); i++) {
-            ddfromitem.addItem(items.get(i));
-            ddtoitem.addItem(items.get(i));
+        
+        
+        for (String[] s : initDataSets) {
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultsite = s[1]; 
+            }
+            if (s[0].equals("trantype")) {
+              ddtype.addItem(s[1]); 
+            }
+            if (s[0].equals("currency")) {
+              defaultcurrency = s[1]; 
+            }
+            if (s[0].equals("items")) {
+              ddfromitem.addItem(s[1]); 
+              ddtoitem.addItem(s[1]);
+            }
+        }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
         }
         ddfromitem.insertItemAt("", 0);
         ddtoitem.insertItemAt("", 0);
         ddfromitem.setSelectedIndex(0);
         ddtoitem.setSelectedIndex(ddtoitem.getItemCount() - 1);
+        ddtype.insertItemAt("ALL", 0);
+        ddtype.setSelectedIndex(0);
+    }
+    
+    public String[] getBrowseView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String fromitem;
+        String toitem;
+        String fromserial = "";
+        String toserial = "";
+         if (! tbserialfrom.getText().isBlank()) {
+             fromserial = tbserialfrom.getText();
+         } else {
+             fromserial = bsmf.MainFrame.lowchar;
+         }
+         if (! tbserialto.getText().isBlank()) {
+             toserial = tbserialto.getText();
+         } else {
+             toserial = bsmf.MainFrame.hichar;
+         }
+        if (ddfromitem.getSelectedItem() == null || ddfromitem.getSelectedItem().toString().isEmpty()) {
+                    fromitem = bsmf.MainFrame.lowchar;
+        } else {
+            fromitem = ddfromitem.getSelectedItem().toString();
+        }
+         if (ddtoitem.getSelectedItem() == null || ddtoitem.getSelectedItem().toString().isEmpty()) {
+            toitem = bsmf.MainFrame.hichar;
+        } else {
+            toitem = ddtoitem.getSelectedItem().toString();
+        }
         
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getSerialBrowseView"});
+        list.add(new String[]{"fromdate",dfdate.format(dcfrom.getDate())});
+        list.add(new String[]{"todate",dfdate.format(dcto.getDate())});
+        list.add(new String[]{"fromserial",fromserial});
+        list.add(new String[]{"toserial",toserial});
+        list.add(new String[]{"fromitem",fromitem});
+        list.add(new String[]{"toitem",toitem});
+        list.add(new String[]{"type",ddtype.getSelectedItem().toString()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServPRD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getSerialBrowseView")};
+            }
+        } else {
+            jsonString = prdData.getSerialBrowseView(new String[]{
+                dfdate.format(dcfrom.getDate()),
+                dfdate.format(dcto.getDate()),
+                fromserial, 
+                toserial, 
+                fromitem,
+                toitem,
+                ddtype.getSelectedItem().toString()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getSerialBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+        
+        int i = 0;
+        mymodel.setNumRows(0);
+        if (roData != null) {
+        for (Object[] rowData : roData) {
+            if (roData[i][3].toString().isBlank()) {
+                        continue;
+            }
+            i++;
+            mymodel.addRow(rowData);
+        }
+        
+        }          
+        roData = null;
+    }   
+    
+    public String[] getBrowseViewDet(String serial) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getSerialBrowseViewDet"});
+            list.add(new String[]{"param1", serial});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServPRD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getSerialBrowseViewDet(serial); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getBrowseViewDet() {
+      modeldetail.setNumRows(0);
+       //  double totalsales = 0;
+      //   double totalqty = 0;
+         
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+               // totalsales = totalsales + (bsParseDouble(rowData[6].toString()) * bsParseDouble(rowData[7].toString()));
+               // totalqty = totalqty + bsParseDouble(rowData[6].toString());
+                modeldetail.addRow(rowData);
+            } 
+        }
+       }
+       roData = null;
     }
     
     
@@ -723,109 +956,7 @@ public class SerialBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-       DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-    
-try {
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            
-            try {
-                int i = 0;
-                 mymodel.setNumRows(0);
-                tablereport.setModel(mymodel);
-                Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
-                 while (en.hasMoreElements()) {
-                     TableColumn tc = en.nextElement();
-                     if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
-                         continue;
-                     }
-                     tc.setCellRenderer(new SerialBrowse.SomeRenderer());
-                 }
-              
-                 String fromserial = "";
-                 String toserial = "";
-                
-                 
-                 if (! tbserialfrom.getText().isBlank()) {
-                     fromserial = tbserialfrom.getText();
-                 } else {
-                     fromserial = bsmf.MainFrame.lowchar;
-                 }
-                 if (! tbserialto.getText().isBlank()) {
-                     toserial = tbserialto.getText();
-                 } else {
-                     toserial = bsmf.MainFrame.hichar;
-                 }
-                 
-                 
-                
-                if (ddtype.getSelectedItem().toString().equals("ALL")) {
-                    res = st.executeQuery("SELECT tr_id, tr_op, tr_cost, tr_item, tr_type, tr_wh, tr_loc, tr_qty, tr_base_qty, tr_uom, tr_eff_date, tr_timestamp, tr_ref, tr_serial, tr_program , tr_userid, tr_lot " +
-                        " FROM  tran_mstr  " +
-                        " where tr_eff_date >= " + "'" + dfdate.format(dcfrom.getDate())  + "'" + 
-                        " AND tr_eff_date <= " + "'" + dfdate.format(dcto.getDate()) + "'" + 
-                        " AND tr_serial >= " + "'" + fromserial + "'" + 
-                        " AND tr_serial <= " + "'" + toserial + "'" + 
-                        " AND tr_item >= " + "'" + ddfromitem.getSelectedItem().toString() + "'" + 
-                        " AND tr_item <= " + "'" + ddtoitem.getSelectedItem().toString() + "'" + 
-                         " order by tr_ent_date desc ;");   
-                } else {
-                    res = st.executeQuery("SELECT tr_id, tr_op, tr_cost, tr_item, tr_type, tr_wh, tr_loc, tr_qty, tr_base_qty, tr_uom, tr_eff_date, tr_timestamp, tr_ref, tr_serial, tr_program , tr_userid, tr_lot " +
-                        " FROM  tran_mstr  " +
-                        " where tr_eff_date >= " + "'" + dfdate.format(dcfrom.getDate())  + "'" + 
-                        " AND tr_eff_date <= " + "'" + dfdate.format(dcto.getDate()) + "'" + 
-                        " AND tr_serial >= " + "'" + fromserial + "'" + 
-                        " AND tr_serial <= " + "'" + toserial + "'" + 
-                        " AND tr_item >= " + "'" + ddfromitem.getSelectedItem().toString() + "'" + 
-                        " AND tr_item <= " + "'" + ddtoitem.getSelectedItem().toString() + "'" +         
-                        " AND tr_type = " + "'" + ddtype.getSelectedItem().toString() + "'" +
-                               
-                         " order by tr_ent_date desc ;");    
-                }
-                
-                while (res.next()) {
-                    i++;
-                   
-                    if (res.getString("tr_serial").isBlank()) {
-                        continue;
-                    }
-                    
-                    mymodel.addRow(new Object[]{
-                                BlueSeerUtils.clickflag, 
-                                BlueSeerUtils.clickbasket,
-                                res.getString("tr_id"),
-                                res.getString("tr_serial"),
-                                res.getString("tr_item"),
-                                res.getString("tr_type"),
-                                res.getDouble("tr_qty"),
-                                res.getString("tr_uom"),
-                                res.getString("tr_eff_date"),
-                                res.getString("tr_timestamp"),
-                                res.getString("tr_lot")
-                            });
-                } 
-                
-            
-               
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
-       
+        executeTask("getBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btdetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdetailActionPerformed
@@ -838,7 +969,8 @@ try {
         int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
         if ( col == 1) {
-                getdetail(tablereport.getValueAt(row, 3).toString()); // serialnumber
+                executeTask("getBrowseViewDet", new String[]{tablereport.getValueAt(row, 3).toString()});
+                //getdetail(tablereport.getValueAt(row, 3).toString()); // serialnumber
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
               

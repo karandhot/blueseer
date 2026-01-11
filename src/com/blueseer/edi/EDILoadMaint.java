@@ -657,7 +657,7 @@ public class EDILoadMaint extends javax.swing.JPanel {
             
             for (int i = 0 ; i < mymodel.getRowCount(); i++) {    
                  if ( (boolean) mymodel.getValueAt(i, 1) ) {
-                    String infile = indir + mymodel.getValueAt(i,0).toString();
+                    String infile = cleanDirString(indir) + mymodel.getValueAt(i,0).toString();
                     tafile.append("FilePath: " + infile  + "\n");
                     String[] m = EDI.processFile(infile,"","","", cbdebug.isSelected(), false, 0, 0, ddsite.getSelectedItem().toString());
                     
@@ -665,8 +665,8 @@ public class EDILoadMaint extends javax.swing.JPanel {
                     if (m[0].equals("1")) {
                        tafile.append(m[1]  + "\n");
                         if (! cbno.isSelected()) {
-                        Path movefrom = FileSystems.getDefault().getPath(indir + mymodel.getValueAt(i,0).toString());
-                        Path target = FileSystems.getDefault().getPath(inarch + mymodel.getValueAt(i,0).toString());
+                        Path movefrom = FileSystems.getDefault().getPath(cleanDirString(indir) + mymodel.getValueAt(i,0).toString());
+                        Path target = FileSystems.getDefault().getPath(cleanDirString(inarch) + mymodel.getValueAt(i,0).toString());
                         Files.move(movefrom, target, StandardCopyOption.REPLACE_EXISTING);
                         }
                         continue;  // bale from here
@@ -675,14 +675,14 @@ public class EDILoadMaint extends javax.swing.JPanel {
                      if (! cbno.isSelected()) {
                          // if delete set in control panel...remove file and continue;
                          if (BlueSeerUtils.ConvertStringToBool(isDelete)) {
-                          Path filetodelete = FileSystems.getDefault().getPath(indir + mymodel.getValueAt(i,0).toString());
+                          Path filetodelete = FileSystems.getDefault().getPath(cleanDirString(indir) + mymodel.getValueAt(i,0).toString());
                           Files.delete(filetodelete);
                          }
                      
                          // now archive file
                          if (! inarch.isEmpty() && ! BlueSeerUtils.ConvertStringToBool(isDelete) && BlueSeerUtils.ConvertStringToBool(isArchive) ) {
-                         Path movefrom = FileSystems.getDefault().getPath(indir + mymodel.getValueAt(i,0).toString());
-                         Path target = FileSystems.getDefault().getPath(inarch + mymodel.getValueAt(i,0).toString());
+                         Path movefrom = FileSystems.getDefault().getPath(cleanDirString(indir) + mymodel.getValueAt(i,0).toString());
+                         Path target = FileSystems.getDefault().getPath(cleanDirString(inarch) + mymodel.getValueAt(i,0).toString());
                         Files.move(movefrom, target, StandardCopyOption.REPLACE_EXISTING);
                           // now remove from list
                          }

@@ -14914,7 +14914,6 @@ return mystring;
             try {
                 String jsonString = objectMapper.writeValueAsString(list);
                 jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(serialkeys);
-                System.out.println("HERE: " + jsonString);
                 return jsonToBoolean(sendServerPost(xlist, jsonString, null, "dataServOV"));
             } catch (IOException ex) {
                 bslog(ex);
@@ -15030,12 +15029,10 @@ return mystring;
                 _bom = OVData.getDefaultBomID(_part);
             } 
             
-            System.out.println("HERE 0:  " + _part + "/" + _type + "/" + _qty);
-            
               /* now lets filter the type and hit the appropriate conditional followup */
            if (_type.equals("ISS-WIP")) {
                   /* let's first load the tran_hist */
-            System.out.println("HERE 1:  " + _part + "/" + _type + "/" + _qty);      
+             
                   
                   // if lastop convert type to RCT-FG else leave type as iss-wip
                  if (islastop) {
@@ -15079,7 +15076,6 @@ return mystring;
                         + ")"
                         + ";");
               } else {
-                  System.out.println("HERE final:  " + _part + "/" + _type + "/" + _qty);
                   st.executeUpdate("insert into tran_mstr "
                         + "(tr_item, tr_type, tr_op, tr_qty, tr_base_qty, tr_uom, tr_cost, tr_eff_date, tr_loc, tr_wh, "
                         + "tr_serial, tr_ref, tr_site, tr_userid, tr_prodline, tr_export, tr_expire, tr_actcell, tr_rmks, tr_pack, tr_assy_date, tr_pack_date, tr_ent_date, tr_program, tr_bom )"

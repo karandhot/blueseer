@@ -35,6 +35,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.adm.admData.getSiteInit;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.getItemWFOPandDESC;
 import static com.blueseer.inv.invData.getItemWFOPs;
@@ -42,6 +43,7 @@ import static com.blueseer.sch.schData.addPlanMstr;
 import static com.blueseer.sch.schData.addPlanOperationTrans;
 import com.blueseer.sch.schData.plan_mstr;
 import com.blueseer.sch.schData.plan_operation;
+import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.checkLength;
@@ -67,6 +69,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 
 
 
@@ -75,7 +78,8 @@ import javax.swing.JTabbedPane;
  * @author vaughnte
  */
 public class PlanMiscMaint extends javax.swing.JPanel {
-
+ ArrayList<String[]> initDataSet = null;
+ String defaultSite = "";
     
     /**
      * Creates new form CarrierMaintPanel
@@ -85,7 +89,62 @@ public class PlanMiscMaint extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
-    
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
+      
+       class Task extends SwingWorker<String[], Void> {
+       
+          String type = "";
+          String[] key = null;
+          
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
+              this.key = key;
+          } 
+           
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+             switch(this.type) {
+                case "init":
+                    message = getInitialization();
+                    break;
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+            
+            BlueSeerUtils.endTask(message);
+           if (this.type.equals("init")) {
+             setComponentDefaultValues(); 
+           } else {
+             initvars(null);  
+           }
+           
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+   
     
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
@@ -131,15 +190,12 @@ public class PlanMiscMaint extends javax.swing.JPanel {
        }
     }
     
-    
-    public void initvars(String[] arg) {
-        
+    public void setComponentDefaultValues() {
         java.util.Date now = new java.util.Date();
         dcduedate.setDate(now);
         tbrmks.setText("");
         tbqty.setText("");
         ddpart.removeAllItems();
-       // ArrayList myparts = OVData.getItemMasterNitridelist();
         ArrayList myparts = invData.getItemMasterSchedlist();
         for (int i = 0; i < myparts.size(); i++) {
             ddpart.addItem(myparts.get(i));
@@ -147,15 +203,41 @@ public class PlanMiscMaint extends javax.swing.JPanel {
         
         btadd.setEnabled(true);
         ddsite.removeAllItems();
-        ArrayList<String> mylist = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (String code : mylist) {
-            ddsite.addItem(code);
+        if (initDataSet != null) {
+        for (String[] s : initDataSet) {
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]);  
+            }
+        }  
+        ddsite.setSelectedItem(defaultSite);
         }
-        ddsite.setSelectedItem(OVData.getDefaultSite());
+    }
+    
+    public void initvars(String[] arg) {
+        
+        if (initDataSet == null) {
+            executeTask(BlueSeerUtils.dbaction.init, null);
+        } else {
+            setComponentDefaultValues(); 
+        }
+        
+        
        
         
          
         
+    }
+    
+    public String[] getInitialization() {
+        initDataSet = getSiteInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSet == null || initDataSet.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
     }
     
     public plan_mstr createRecordPlan(int nbr) {

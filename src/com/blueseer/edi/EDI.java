@@ -1043,7 +1043,7 @@ public class EDI {
          
          /* lets check file type to see if its x12 or edifact or csv or xml */
          // returns filetype, doctype
-         String[] editype = getEDIType(cbuf, infile);
+         String[] editype = getEDIType(cbuf, infile);  // identify file type index 0 = filetype, index 1 = doctype
          String batchfile = "";
          String[] c = initEDIControl();
                     c[0] = ""; // senderid
@@ -1110,7 +1110,7 @@ public class EDI {
              
         
        
-        // if type is FF
+        // if file type is FF
         if (editype[0].equals("FF")) {
             String landmark = EDData.getEDIFFLandmark(editype[1]);
             ArrayList<String[]> ffdata = EDData.getEDIFFDataRules(editype[1]);
@@ -2892,17 +2892,17 @@ public class EDI {
     
     
     
-    // ISAmap is defined as new Integer[] {start, end, (int) s, (int) e, (int) u});
+    // ISAmap is defined as new Integer[] {start, end, (int) s, (int) e, (int) u, mycopy, cnew});
     
     // loop through ISAMap entries
     
              
     int callingidxnbr = idxnbr;         
     for (Map.Entry<Integer, Object[]> isa : ISAmap.entrySet()) {
-        ArrayList<String[]> messages = new ArrayList<String[]>();
+        ArrayList<String[]> messages = new ArrayList<>();
         
-        int start =  Integer.valueOf(isa.getValue()[0].toString());  //starting ISA position in file
-        int end = Integer.valueOf(isa.getValue()[1].toString());  // ending IEA position in file
+        int start =  Integer.parseInt(isa.getValue()[0].toString());  //starting ISA position in file
+        int end = Integer.parseInt(isa.getValue()[1].toString());  // ending IEA position in file
         char segdelim = (char) Integer.valueOf(isa.getValue()[2].toString()).intValue(); // get segment delimiter
         String gs02 = ""; 
         String gs03 = "";       
@@ -2918,14 +2918,14 @@ public class EDI {
         
      //   System.out.println("doc entryset is : " + d.entrySet());
         
-        ArrayList<String> falist = new ArrayList<String>();
+        ArrayList<String> falist = new ArrayList<>();
         
        //for (Object z : d) {
        for (Map.Entry<Integer, ArrayList> z : d.entrySet()) {
          
        //    System.out.println("doc May entry key: " + z.getKey());
            
-         for (Object r : z.getValue()) {
+         for (Object r : z.getValue()) {  // for each ST_SE doc within the ISA within the File
             Object[] x = (Object[]) r;
          
             Integer[] k = (Integer[])x[0];
@@ -2985,9 +2985,9 @@ public class EDI {
               gs03 = gs[3];
           }
           
-          String parentPartner = EDData.getEDIPartnerFromAlias(gs02);
+          String parentPartner = EDData.getEDIPartnerFromAlias(gs02);  // determine EDI Partner from gs02 first
           if (parentPartner == null || parentPartner.isBlank()) {
-             parentPartner = EDData.getEDIPartnerFromAlias(c[0]); 
+             parentPartner = EDData.getEDIPartnerFromAlias(c[0]); // if no Partner found via gs02...then try ISA aka c[0]
           }
           
           if (parentPartner == null || parentPartner.isBlank()) {
@@ -3038,10 +3038,10 @@ public class EDI {
             }
           
            if (map.isEmpty() && c[12].isEmpty()) {
-            if (GlobalDebug)   
-            System.out.println("Searching for Map (X12 in) with GS values type/gs02/gs03: " + c[1] + " / " + gs02 + " / " + gs03);    
-
-              map = EDData.getEDIMap(c[1], gs02, gs03); 
+            if (GlobalDebug)  { 
+                System.out.println("Searching for Map (X12 in) with GS values type/gs02/gs03: " + c[1] + " / " + gs02 + " / " + gs03);    
+            }
+            map = EDData.getEDIMap(c[1], gs02, gs03); 
            } 
 
            if (GlobalDebug)   {
@@ -3127,7 +3127,7 @@ public class EDI {
            } // else
            
            EDData.writeEDILogMulti(c, messages);
-           sendEDITranslationErrorMail(c, messages);
+           sendEDITranslationErrorMail(c, messages); // if any otherwise method will return immediately if messages array is empty
            messages.clear();
             
                
