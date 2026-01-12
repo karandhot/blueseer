@@ -200,7 +200,7 @@ public class UserPermsMaint extends javax.swing.JPanel {
        if (initDataSet == null) {
         executeTask(BlueSeerUtils.dbaction.init,arg);
        } else {
-        setComponentDefaultValues(false);   
+        setComponentDefaultValues(true); // refresh each time...in case of new users or menus added   
        }
     }
     
