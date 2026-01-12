@@ -41,9 +41,15 @@ import static com.blueseer.utl.BlueSeerUtils.doubleToJson;
 import static com.blueseer.utl.BlueSeerUtils.intToJson;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.addItemCostRec;
+import static com.blueseer.utl.OVData.addMenuToAllUsers;
+import static com.blueseer.utl.OVData.addMenuToUser;
 import static com.blueseer.utl.OVData.addSysMetaDataNoUnique;
+import static com.blueseer.utl.OVData.copyUserPerms;
+import static com.blueseer.utl.OVData.deleteMenuToAllUsers;
+import static com.blueseer.utl.OVData.deleteMenuToUser;
 import static com.blueseer.utl.OVData.getCodeMstrValueList;
 import static com.blueseer.utl.OVData.getExchangeRate;
+import static com.blueseer.utl.OVData.getMenusOfUsersListArray;
 import static com.blueseer.utl.OVData.getNextNbr;
 import static com.blueseer.utl.OVData.getOperationsByItem;
 import static com.blueseer.utl.OVData.getProdLineInvAcct;
@@ -53,6 +59,7 @@ import static com.blueseer.utl.OVData.getSystemAttachmentDirectory;
 import static com.blueseer.utl.OVData.getTableInfo;
 import static com.blueseer.utl.OVData.getTaxAmtApplicableByItem;
 import static com.blueseer.utl.OVData.getTaxPercentElementsApplicableByItem;
+import static com.blueseer.utl.OVData.getUsersOfMenusList;
 import static com.blueseer.utl.OVData.getpsmstrcompSerialized;
 import static com.blueseer.utl.OVData.isAutoPost;
 import static com.blueseer.utl.OVData.isGLPeriodClosed;
@@ -319,6 +326,41 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "isAutoPost" : {
         response.getWriter().println(boolToJson(isAutoPost())); 
         break;
+        }
+        
+        case "getMenusOfUsersListArray" : { 
+            response.getWriter().print(ArrayListStringArrayToJson(getMenusOfUsersListArray(request.getHeader("param1"))));
+            break;  
+        }
+        
+        case "getUsersOfMenusList" : { 
+            response.getWriter().print(ArrayListStringToJson(getUsersOfMenusList(request.getHeader("param1"))));
+            break;  
+        }
+        
+        case "copyUserPerms" : { 
+            copyUserPerms(request.getHeader("param1"), request.getHeader("param2"));
+            break;  
+        }
+        
+        case "addMenuToAllUsers" : { 
+            addMenuToAllUsers(request.getHeader("param1"), BlueSeerUtils.ConvertStringToBool(request.getHeader("param2")));
+            break;  
+        }
+        
+        case "addMenuToUser" : { 
+            response.getWriter().print(addMenuToUser(request.getHeader("param1"), request.getHeader("param2"), BlueSeerUtils.ConvertStringToBool(request.getHeader("param3"))));
+            break;  
+        }
+        
+        case "deleteMenuToUser" : { 
+            response.getWriter().print(deleteMenuToUser(request.getHeader("param1"), request.getHeader("param2")));
+            break;  
+        }
+        
+        case "deleteMenuToAllUsers" : { 
+            deleteMenuToAllUsers(request.getHeader("param1"));
+            break;  
         }
         
         default:

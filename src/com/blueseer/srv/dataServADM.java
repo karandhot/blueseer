@@ -273,40 +273,6 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;  
         }
         
-        case "getMenusOfUsersListArray" : { 
-            response.getWriter().print(ArrayListStringArrayToJson(getMenusOfUsersListArray(request.getHeader("param1"))));
-            break;  
-        }
-        
-        case "getUsersOfMenusList" : { 
-            response.getWriter().print(ArrayListStringToJson(getUsersOfMenusList(request.getHeader("param1"))));
-            break;  
-        }
-        
-        case "copyUserPerms" : { 
-            copyUserPerms(request.getHeader("param1"), request.getHeader("param2"));
-            break;  
-        }
-        
-        case "addMenuToAllUsers" : { 
-            addMenuToAllUsers(request.getHeader("param1"), BlueSeerUtils.ConvertStringToBool(request.getHeader("param2")));
-            break;  
-        }
-        
-        case "addMenuToUser" : { 
-            response.getWriter().print(addMenuToUser(request.getHeader("param1"), request.getHeader("param2"), BlueSeerUtils.ConvertStringToBool(request.getHeader("param3"))));
-            break;  
-        }
-        
-        case "deleteMenuToUser" : { 
-            response.getWriter().print(deleteMenuToUser(request.getHeader("param1"), request.getHeader("param2")));
-            break;  
-        }
-        
-        case "deleteMenuToAllUsers" : { 
-            deleteMenuToAllUsers(request.getHeader("param1"));
-            break;  
-        }
         
         case "addFTPMstr" : { 
             String line;
