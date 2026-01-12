@@ -270,7 +270,7 @@ public class DefaultMaint extends javax.swing.JPanel implements IBlueSeerc {
     
     public void initvars(String[] arg) {
             setComponentDefaultValues();
-            executeTask(dbaction.get, null);
+            executeTask(dbaction.get, new String[]{""}); // blank key passed as table is single rec control
     }
     
     public String[] updateRecord(String[] x) {

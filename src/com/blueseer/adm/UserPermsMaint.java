@@ -26,9 +26,12 @@ SOFTWARE.
 
 package com.blueseer.adm;
 
+import bsmf.MainFrame;
 import static bsmf.MainFrame.tags;
+import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import com.blueseer.utl.OVData;
+import java.awt.Color;
 import java.awt.Component;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
@@ -40,13 +43,15 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 
 /**
  *
  * @author vaughnte
  */
 public class UserPermsMaint extends javax.swing.JPanel {
-
+    boolean isLoad = false;
+    ArrayList<String[]> initDataSet = null;
     DefaultListModel listmodel = new DefaultListModel();
     
     /**
@@ -57,6 +62,54 @@ public class UserPermsMaint extends javax.swing.JPanel {
         setLanguageTags(this);  
     }
 
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+       
+          String type = "";
+          String[] key = null;
+          
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
+              this.key = key;
+          } 
+           
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+             switch(this.type) {
+                case "init":
+                    setComponentDefaultValues(true);
+                    break;
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+            BlueSeerUtils.endTask(message);
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+   
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -101,49 +154,54 @@ public class UserPermsMaint extends javax.swing.JPanel {
        }
     }
     
-    public void initvars(String[] arg) {
+    public void setComponentDefaultValues(boolean init) {
+       isLoad = true;
+       if (init) {
+       initDataSet = admData.getUserMenuInit(this.getClass().getName(), bsmf.MainFrame.userid);
+       }
+        
         tausers.setText("");
         
         listmodel.removeAllElements();
         menulist.setModel(listmodel);
         
-         fromuser.removeAllItems();
+        fromuser.removeAllItems();
         touser.removeAllItems();
-        ArrayList users = OVData.getusermstrlist();
-        for (int i = 0 ; i < users.size(); i++) {
-            
-            fromuser.addItem(users.get(i));
-            if (users.get(i).toString().compareTo("admin") != 0) {
-            touser.addItem(users.get(i));
+        dduserapplied.removeAllItems();
+        ddzuser.removeAllItems();
+        ddmenucheck.removeAllItems();
+        ddmenuuser.removeAllItems();
+        
+        for (String[] s : initDataSet) {
+            if (s[0].equals("users")) {
+              fromuser.addItem(s[1]);
+              dduserapplied.addItem(s[1]);
+              ddzuser.addItem(s[1]);
+              if (! s[1].equals("admin")) {
+              touser.addItem(s[1]);
+              }
+            }
+            if (s[0].equals("menus")) {
+              ddmenuuser.addItem(s[1]); 
+              ddmenucheck.addItem(s[1]);
             }
         }
         
-        dduserapplied.removeAllItems();
-        users = OVData.getusermstrlist();
-        for (int i = 0 ; i < users.size(); i++) {
-            dduserapplied.addItem(users.get(i));
-        }
         dduserapplied.insertItemAt("ALL", 0);
         
-        ddzuser.removeAllItems();
-        users = OVData.getusermstrlist();
-        for (int i = 0 ; i < users.size(); i++) {
-            ddzuser.addItem(users.get(i));
-        }
-       
        
         
-        ddmenucheck.removeAllItems();
-        ArrayList menus = OVData.getmenulist();
-        for (int i = 0 ; i < menus.size(); i++) {
-            ddmenucheck.addItem(menus.get(i));
-        }
-        
-        ddmenuuser.removeAllItems();
-        menus = OVData.getmenulist();
-        for (int i = 0 ; i < menus.size(); i++) {
-            ddmenuuser.addItem(menus.get(i));
-        }
+       isLoad = false;
+    }
+    
+    
+    public void initvars(String[] arg) {
+       
+       if (initDataSet == null) {
+        executeTask(BlueSeerUtils.dbaction.init,arg);
+       } else {
+        setComponentDefaultValues(false);   
+       }
     }
     
     public void getMenuOfUser(String user) {

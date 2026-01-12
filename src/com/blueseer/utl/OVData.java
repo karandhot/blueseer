@@ -500,7 +500,22 @@ public class OVData {
     
     
     public static void copyUserPerms(String fromuser, String touser) {
-         try {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "copyUserPerms"});
+            list.add(new String[]{"param1", fromuser});
+            list.add(new String[]{"param2", touser});
+            try {
+                sendServerPost(list, "", null, "dataServOV");
+                return; 
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        } 
+        
+        
+        try {
 
             
             Connection con = null;
@@ -683,7 +698,20 @@ public class OVData {
 
     
     public static String addMenuToUser(String menu, String thisuser, boolean isReadOnly) {
-            String mystring = "";  // 0 = assigned; 1 = already assigned; 2 = error
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "addMenuToUser"});
+            list.add(new String[]{"param1", menu});
+            list.add(new String[]{"param2", thisuser});
+            list.add(new String[]{"param3", String.valueOf(isReadOnly)});
+            try {
+                return sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return "2"; // triggering record not updated message 1012
+            }
+        }  
+        String mystring = "";  // 0 = assigned; 1 = already assigned; 2 = error
          try {
             
             Connection con = null;
@@ -807,6 +835,18 @@ public class OVData {
     }
 
     public static String deleteMenuToUser(String menu, String thisuser) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "deleteMenuToUser"});
+            list.add(new String[]{"param1", menu});
+            list.add(new String[]{"param2", thisuser});
+            try {
+                return sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return "2"; // triggering record not updated message 1012
+            }
+        }
         String mystring = "";  // 0 = unassigned; 1 = already unassigned; 2 = error
         try {
             
@@ -868,6 +908,18 @@ public class OVData {
     }
 
     public static void deleteMenuToAllUsers(String menu) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "deleteMenuToAllUsers"});
+            list.add(new String[]{"param1", menu});
+            try {
+                sendServerPost(list, "", null, "dataServOV");
+                return; 
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        } 
         try {
             
             Connection con = null;
@@ -910,6 +962,20 @@ public class OVData {
     }
 
     public static void addMenuToAllUsers(String menu, boolean isReadOnly) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "addMenuToAllUsers"});
+            list.add(new String[]{"param1", menu});
+            list.add(new String[]{"param2", String.valueOf(isReadOnly)});
+            try {
+                sendServerPost(list, "", null, "dataServOV");
+                return; 
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        } 
+        
         try {
             
             Connection con = null;
@@ -1703,6 +1769,17 @@ public class OVData {
     }
 
     public static ArrayList getUsersOfMenusList(String menu) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getUsersOfMenusList"});
+            list.add(new String[]{"param1", menu});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         ArrayList myarray = new ArrayList();
         try {
             
@@ -1789,6 +1866,17 @@ public class OVData {
     }
     
     public static ArrayList<String[]> getMenusOfUsersListArray(String myuser) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getMenusOfUsersListArray"});
+            list.add(new String[]{"param1", myuser});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         ArrayList<String[]> myarray = new ArrayList<String[]>();
         try {
             

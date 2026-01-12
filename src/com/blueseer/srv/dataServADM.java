@@ -68,6 +68,7 @@ import static com.blueseer.adm.admData.getPksMstr;
 import static com.blueseer.adm.admData.getPrtMstr;
 import static com.blueseer.adm.admData.getSiteInit;
 import static com.blueseer.adm.admData.getSiteMstr;
+import static com.blueseer.adm.admData.getUserMenuInit;
 import static com.blueseer.adm.admData.getUserMstr;
 import static com.blueseer.adm.admData.updateCodeMstr;
 import static com.blueseer.adm.admData.updateCounter;
@@ -81,10 +82,18 @@ import static com.blueseer.adm.admData.updatePrtMstr;
 import static com.blueseer.adm.admData.updateSiteMstr;
 import static com.blueseer.adm.admData.updateUserMstr;
 import com.blueseer.edi.FTPMaint;
+import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import static com.blueseer.utl.OVData.addMenuToAllUsers;
+import static com.blueseer.utl.OVData.addMenuToUser;
+import static com.blueseer.utl.OVData.copyUserPerms;
+import static com.blueseer.utl.OVData.deleteMenuToAllUsers;
+import static com.blueseer.utl.OVData.deleteMenuToUser;
+import static com.blueseer.utl.OVData.getMenusOfUsersListArray;
+import static com.blueseer.utl.OVData.getUsersOfMenusList;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
@@ -257,7 +266,47 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "getPKSInit" : { 
             response.getWriter().print(ArrayListStringArrayToJson(getPKSInit(request.getHeader("param1"), request.getHeader("param2"))));
             break;  
-        }    
+        } 
+        
+        case "getUserMenuInit" : { 
+            response.getWriter().print(ArrayListStringArrayToJson(getUserMenuInit(request.getHeader("param1"), request.getHeader("param2"))));
+            break;  
+        }
+        
+        case "getMenusOfUsersListArray" : { 
+            response.getWriter().print(ArrayListStringArrayToJson(getMenusOfUsersListArray(request.getHeader("param1"))));
+            break;  
+        }
+        
+        case "getUsersOfMenusList" : { 
+            response.getWriter().print(ArrayListStringToJson(getUsersOfMenusList(request.getHeader("param1"))));
+            break;  
+        }
+        
+        case "copyUserPerms" : { 
+            copyUserPerms(request.getHeader("param1"), request.getHeader("param2"));
+            break;  
+        }
+        
+        case "addMenuToAllUsers" : { 
+            addMenuToAllUsers(request.getHeader("param1"), BlueSeerUtils.ConvertStringToBool(request.getHeader("param2")));
+            break;  
+        }
+        
+        case "addMenuToUser" : { 
+            response.getWriter().print(addMenuToUser(request.getHeader("param1"), request.getHeader("param2"), BlueSeerUtils.ConvertStringToBool(request.getHeader("param3"))));
+            break;  
+        }
+        
+        case "deleteMenuToUser" : { 
+            response.getWriter().print(deleteMenuToUser(request.getHeader("param1"), request.getHeader("param2")));
+            break;  
+        }
+        
+        case "deleteMenuToAllUsers" : { 
+            deleteMenuToAllUsers(request.getHeader("param1"));
+            break;  
+        }
         
         case "addFTPMstr" : { 
             String line;
