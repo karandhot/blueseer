@@ -1342,6 +1342,18 @@ public class invData {
     }
     
     public static String[] addRoutingMstr(ArrayList<wf_mstr> wfd) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addRoutingMstrByArray"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(wfd);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
          String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;

@@ -549,6 +549,22 @@ public class admData {
     public static ov_mstr getOVMstr(String[] x) {
         ov_mstr r = null;
         String[] m ;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getOVMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServADM");
+                r = objectMapper.readValue(returnstring, ov_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new ov_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from ov_mstr ;";  // will always be only 0 or 1 records
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {

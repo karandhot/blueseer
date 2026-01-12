@@ -61,6 +61,7 @@ import static com.blueseer.adm.admData.getFTPAttrHash;
 import static com.blueseer.adm.admData.getFTPMstr;
 import static com.blueseer.adm.admData.getJaspMstr;
 import static com.blueseer.adm.admData.getMenuMstr;
+import static com.blueseer.adm.admData.getOVMstr;
 import static com.blueseer.adm.admData.getPKSInit;
 import static com.blueseer.adm.admData.getPanelMstr;
 import static com.blueseer.adm.admData.getPksMstr;
@@ -132,6 +133,15 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     String id = request.getHeader("id");
     
     switch (id) {
+        case "getOVMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            admData.ov_mstr x = getOVMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
         case "getAllPKSKeysExceptStore" : 
             response.getWriter().print(ArrayListStringToJson(admData.getAllPKSKeysExceptStore()));
             break;

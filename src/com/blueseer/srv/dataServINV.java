@@ -107,6 +107,8 @@ import static com.blueseer.utl.OVData.getTableInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -400,6 +402,21 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             ObjectMapper objectMapper = new ObjectMapper();
             invData.wf_mstr x = objectMapper.readValue(sb.toString(), invData.wf_mstr.class);            
             response.getWriter().print(arrayToJson(addRoutingMstr(x)));
+            break;
+          }
+        
+        case "addRoutingMstrByArray" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.wf_mstr[] sdarray = objectMapper.readValue(sb.toString(), invData.wf_mstr[].class);
+            ArrayList<invData.wf_mstr> sdlist = new ArrayList<invData.wf_mstr>(Arrays.asList(sdarray)); 
+            invData.wf_mstr x = objectMapper.readValue(sb.toString(), invData.wf_mstr.class);            
+            response.getWriter().print(arrayToJson(addRoutingMstr(sdlist)));
             break;
           }
         
