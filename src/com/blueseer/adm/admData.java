@@ -1577,6 +1577,7 @@ public class admData {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id","getMenuTree"});
             list.add(new String[]{"param1",x[0]});
+            list.add(new String[]{"param2",x[1]});
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 String returnstring = sendServerPost(list, "", null, "dataServADM");
