@@ -591,7 +591,7 @@ public class admData {
             psi.setString(16, x.ov_email_server);
             psi.setString(17, x.ov_email_from);
             psi.setString(18, x.ov_smtpauthuser);
-            psi.setString(19, x.ov_smtpauthpass);
+            psi.setString(19, bsmf.MainFrame.PassWord("0", x.ov_smtpauthpass().toCharArray())); 
             psi.setString(20, x.ov_varchar);
              rows = psi.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
@@ -614,7 +614,7 @@ public class admData {
             psu.setString(16, x.ov_email_server);
             psu.setString(17, x.ov_email_from);
             psu.setString(18, x.ov_smtpauthuser);
-            psu.setString(19, x.ov_smtpauthpass);
+            psu.setString(19, bsmf.MainFrame.PassWord("0", x.ov_smtpauthpass().toCharArray())); 
             psu.setString(20, x.ov_varchar); 
             rows = psu.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};    

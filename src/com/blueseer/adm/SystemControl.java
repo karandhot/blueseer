@@ -34,6 +34,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.adm.admData.addUpdateOVCtrl;
 import static com.blueseer.adm.admData.getOVCtrl;
 import static com.blueseer.adm.admData.getOVMstr;
 import com.blueseer.adm.admData.ov_ctrl;
@@ -333,125 +334,9 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
     
     public String[] updateRecord(String[] x) {
      String[] m = new String[2];
-     
-     String passwd = bsmf.MainFrame.PassWord("0", tbsmtppass.getPassword());
-     
-     try {
-           
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                String serverfiletype = "";
-                int i = 0;
-                String login = "";
-                
-                if ( cblogin.isSelected() ) {
-                login = "1";    
-                } else {
-                    login = "0";
-                }
-                
-                if (rbsamba.isSelected()) {
-                    serverfiletype = "S";
-                }
-                if (rbwin.isSelected()) {
-                    serverfiletype = "W";
-                }
-                if (rblocal.isSelected()) {
-                    serverfiletype = "L";
-                }
-                
-                   
-                    res = st.executeQuery("SELECT *  FROM  ov_mstr;");
-                    while (res.next()) {
-                        i++;
-                    }
-                    if (i == 0) {
-                    st.executeUpdate("insert into ov_ctrl values (" + 
-                            "'" + "0.0.0" + "'" + "," +
-                            "'" + "" + "'" + "," +
-                            "'" + "" + "'" + "," +
-                            "'" + login + "'" +  "," +
-                            "'" + "0" + "'" + "," +
-                            "'" + "" + "'" + "," +
-                            "'0'" + "," + "'102'" + "," + "'204'" + "," +
-                            "'" + serverfiletype + "'" +  "," + "," +
-                            "'" + tbimagedir.getText() + "'" +  "," + "," +
-                            "'" + tbtempdir.getText() + "'" +  "," + "," +
-                            "'" + tblabeldir.getText() + "'" +  "," + "," +
-                            "'" + tbjasperdir.getText() + "'" +  "," + "," +
-                            "'" + tbedidir.getText() + "'" +  "," + "," +
-                            "'" + tbemailserver.getText() + "'" +  "," + "," +
-                            "'" + tbemailfrom.getText() + "'" +  "," + 
-                            "'" + tbsmtpuser.getText() + "'" +  "," + 
-                            "'" + passwd + "'" +        
-                            ")" + ";");                  
-                          m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
-                    } else {
-                    st.executeUpdate("update ov_ctrl set " 
-                            + " ov_login = " + "'" + login + "'" + "," +
-                              " ov_custom = " + "'" + BlueSeerUtils.boolToInt(cbcustom.isSelected()) + "'" + "," +
-                            " ov_version = " + "'" + tbversion.getText() + "'" +  "," +
-                            " ov_bgimage = " + "'" + tbbgimage.getText() + "'" + "," +
-                            " ov_rcolor = " + "'" + tbrcolor.getText() + "'" + "," +
-                            " ov_gcolor = " + "'" + tbgcolor.getText() + "'" + "," +
-                            " ov_bcolor = " + "'" + tbbcolor.getText() + "'" + "," +
-                            " ov_fileservertype = " + "'" + serverfiletype + "'" + "," +
-                            " ov_image_directory = " + "'" + tbimagedir.getText() + "'" + "," +
-                            " ov_temp_directory = " + "'" + tbtempdir.getText() + "'" + "," +
-                            " ov_label_directory = " + "'" + tblabeldir.getText() + "'" + "," +
-                            " ov_jasper_directory = " + "'" + tbjasperdir.getText() + "'" + "," +
-                            " ov_edi_directory = " + "'" + tbedidir.getText() + "'" + "," +
-                            " ov_email_server = " + "'" + tbemailserver.getText() + "'" + "," +
-                            " ov_email_from = " + "'" + tbemailfrom.getText() + "'" + "," +
-                            " ov_smtpauthuser = " + "'" + tbsmtpuser.getText() + "'" + "," +
-                            " ov_smtpauthpass = " + "'" + passwd + "'" +        
-                            ";");   
-                    }
-                    OVData.addUpdateSysMeta("system","administration","autopatch",String.valueOf(BlueSeerUtils.boolToInt(cbautopatch.isSelected())));
-                    // now do portion of sys_meta for attachments
-                    // this needs to be modified for next major release to incorporate all directory assignments into sys_meta
-                    // NEWRELEASEMARK
-                    int j = 0;
-                    res = st.executeQuery("SELECT *  FROM  sys_meta where sysm_id = 'system' and " +
-                            " sysm_type = 'sysdir' AND sysm_key = 'attachment_directory';");
-                    while (res.next()) {
-                        j++;
-                    }
-                    if (j == 0) {
-                      st.executeUpdate("insert into sys_meta values ( " +
-                              " 'system', 'sysdir', 'attachment_directory', " + 
-                              "'" + tbattachdir.getText() + "'" + " );");
-                    } else {
-                       st.executeUpdate("update sys_meta set sysm_value = " +
-                              "'" + tbattachdir.getText() + "'" +
-                              " where sysm_id = 'system' and sysm_type = 'sysdir' and sysm_key = 'attachment_directory' ; "); 
-                    }
-                    m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
-                    
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordSQLError};  
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordConnError};
-        }
-     
+     m = addUpdateOVCtrl(createRecord());
+     OVData.addUpdateSysMeta("system","administration","autopatch",String.valueOf(BlueSeerUtils.boolToInt(cbautopatch.isSelected())));
+     OVData.addUpdateSysMeta("system","sysdir","attachment_directory",tbattachdir.getText());
      return m;
      }
       
@@ -491,6 +376,45 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
         }
     }
 
+    public ov_ctrl createRecord() {
+        int login = 0;
+        String serverfiletype = "";
+                if ( cblogin.isSelected() ) {
+                login = 1;    
+                } 
+                if (rbsamba.isSelected()) {
+                    serverfiletype = "S";
+                }
+                if (rbwin.isSelected()) {
+                    serverfiletype = "W";
+                }
+                if (rblocal.isSelected()) {
+                    serverfiletype = "L";
+                }
+      
+        ov_ctrl ovc = new ov_ctrl(null, 
+                tbversion.getText(),
+                "",
+                "",
+                login,
+                BlueSeerUtils.boolToInt(cbcustom.isSelected()),
+                tbbgimage.getText(),
+                Integer.parseInt(tbrcolor.getText()),
+                Integer.parseInt(tbgcolor.getText()),
+                Integer.parseInt(tbbcolor.getText()),
+                serverfiletype,
+                tbimagedir.getText(),
+                tbtempdir.getText(),
+                tblabeldir.getText(),
+                tbjasperdir.getText(),
+                tbedidir.getText(),
+                tbemailserver.getText(),
+                tbemailfrom.getText(),
+                tbsmtpuser.getText(),
+                new String(tbsmtppass.getPassword()), // String passwd = bsmf.MainFrame.PassWord("0", tbsmtppass.getPassword());,
+                "");
+        return ovc;
+    }
 
     public void setColors(String r, String g, String b) {
        // exhibits inconsistent behaviour for menu backgrounds...dont use
