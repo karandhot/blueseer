@@ -51,6 +51,7 @@ import static com.blueseer.utl.OVData.deleteMenuToUser;
 import static com.blueseer.utl.OVData.deleteSysMeta;
 import static com.blueseer.utl.OVData.getCodeMstrValueList;
 import static com.blueseer.utl.OVData.getExchangeRate;
+import static com.blueseer.utl.OVData.getMenuRecs;
 import static com.blueseer.utl.OVData.getMenusAsTree;
 import static com.blueseer.utl.OVData.getMenusOfUsersListArray;
 import static com.blueseer.utl.OVData.getNextNbr;
@@ -297,7 +298,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getSysMetaDataArray" :        
             response.getWriter().print(ArrayListStringArrayToJson(getSysMetaData(request.getHeader("param1"))));
-            break;     
+            break; 
+            
+        case "getMenuRecs" :        
+            response.getWriter().print(ArrayListStringArrayToJson(getMenuRecs()));
+            break;    
             
         case "getSysMetaValue" :        
             response.getWriter().print(getSysMetaValue(request.getHeader("param1"),request.getHeader("param2"),request.getHeader("param3")));

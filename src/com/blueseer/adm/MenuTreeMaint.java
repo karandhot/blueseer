@@ -248,8 +248,8 @@ public class MenuTreeMaint extends javax.swing.JPanel {
     
       public void bind_tree(String parentmenu) {
       //  jTree1.setModel(null);
-       
-        DefaultMutableTreeNode mynode = OVData.getMenusAsTree(parentmenu, "1");
+        ArrayList<String[]> recs = OVData.getMenuRecs();
+        DefaultMutableTreeNode mynode = OVData.getMenuTreeFromRecs(parentmenu, "1", recs);
        
         DefaultTreeModel model = (DefaultTreeModel)jTree1.getModel();
         model.setRoot(mynode);

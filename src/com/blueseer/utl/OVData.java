@@ -1735,6 +1735,67 @@ public class OVData {
 
     }
 
+    public static ArrayList<String[]> getMenuRecs() {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getMenuRecs"});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        ArrayList<String[]> myarray = new ArrayList();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+                res = st.executeQuery("select mt_par, mt_child, mt_type, mt_label, mt_icon, mt_initvar, mt_func, mt_visible, mt_enable from menu_tree "
+                        + " order by mt_par ;");
+                while (res.next()) {
+                    myarray.add(new String[]{
+                        res.getString("mt_par"),
+                        res.getString("mt_child"),
+                        res.getString("mt_type"),
+                        res.getString("mt_label"),
+                        res.getString("mt_icon"),
+                        res.getString("mt_initvar"),
+                        res.getString("mt_func"),
+                        res.getString("mt_visible"),
+                        res.getString("mt_enable")}
+                    );
+
+                }
+
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return myarray;
+
+    }
+
     public static ArrayList getpanellist() {
         ArrayList myarray = new ArrayList();
         try {
@@ -3750,12 +3811,12 @@ public class OVData {
         }
       MenuInfo parent = new MenuInfo(mymenu,myvisible);
       DefaultMutableTreeNode mynode = new DefaultMutableTreeNode(parent);
-      ArrayList<String> mychildren = new ArrayList<String>();
+      ArrayList<String> mychildren = new ArrayList<>();
         mychildren = OVData.getMenuTreeAll(mymenu);
         
         for ( String myvalue : mychildren) {
              String[] recs = myvalue.split(",",-1);
-             MenuInfo leaf = new MenuInfo(recs[0].toString(), recs[6].toString());
+             MenuInfo leaf = new MenuInfo(recs[0], recs[6]);
                 //     if (recs[6].toString().compareTo("0") == 0) {
                //       leaf = recs[0] + "-";
                 //    }  else {
@@ -3766,6 +3827,35 @@ public class OVData {
                 mynode.add(childnode);
              } else {
                   DefaultMutableTreeNode menunode = getMenusAsTree(leaf.toString(), leaf.menuvisible); 
+                  mynode.add(menunode);
+             }
+          
+        }
+       return mynode;
+      }
+    
+    public static DefaultMutableTreeNode getMenuTreeFromRecs(String mymenu, String myvisible, ArrayList<String[]> datarecs)  {  
+      
+      MenuInfo parent = new MenuInfo(mymenu,myvisible);
+      DefaultMutableTreeNode mynode = new DefaultMutableTreeNode(parent);
+      ArrayList<String[]> mychildren = new ArrayList<>();
+      for (String[] s : datarecs) {
+          if (s[0].equals(mymenu)) {
+           mychildren.add(s);
+          }
+      }        
+        for ( String[] recs : mychildren) {
+             MenuInfo leaf = new MenuInfo(recs[1], recs[7]);
+                //     if (recs[6].toString().compareTo("0") == 0) {
+               //       leaf = recs[0] + "-";
+                //    }  else {
+                //         leaf = recs[0];
+                //     }
+             if (recs[2].compareTo("JMenuItem") == 0) {
+                DefaultMutableTreeNode childnode = new DefaultMutableTreeNode(leaf); 
+                mynode.add(childnode);
+             } else {
+                  DefaultMutableTreeNode menunode = getMenuTreeFromRecs(leaf.toString(), leaf.menuvisible, datarecs); 
                   mynode.add(menunode);
              }
           
