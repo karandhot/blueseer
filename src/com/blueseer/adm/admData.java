@@ -38,6 +38,7 @@ import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToInt;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.log;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
@@ -1471,6 +1472,176 @@ public class admData {
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql)) {
         ps.setString(1, x.menu_id);
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
+    public static String[] addMenuTree(menu_tree x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addMenuTree"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m ;
+        String sqlSelect = "SELECT * FROM  menu_tree where mt_par = ? and mt_child = ?";
+        String sqlInsert = "insert into menu_tree (mt_par, mt_child, mt_index, mt_type, " +
+"        mt_label, mt_icon, mt_initvar, mt_func, mt_visible, mt_enable) "
+                        + " values (?,?,?,?,?,?,?,?,?,?); "; 
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+             PreparedStatement ps = con.prepareStatement(sqlSelect);) {
+             ps.setString(1, x.mt_par);
+             ps.setString(2, x.mt_child);
+          try (ResultSet res = ps.executeQuery();
+               PreparedStatement psi = con.prepareStatement(sqlInsert);) {  
+            if (! res.isBeforeFirst()) {
+            psi.setString(1, x.mt_par);
+            psi.setString(2, x.mt_child);
+            psi.setString(3, x.mt_index);
+            psi.setString(4, x.mt_type);
+            psi.setString(5, x.mt_label);
+            psi.setString(6, x.mt_icon);
+            psi.setString(7, x.mt_initvar);
+            psi.setString(8, x.mt_func);
+            psi.setInt(9, x.mt_visible);
+            psi.setInt(10, x.mt_enable);
+            int rows = psi.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+            } else {
+            m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordAlreadyExists};    
+            }
+          } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+          }
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+
+    public static String[] updateMenuTree(menu_tree x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateMenuTree"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m ;
+        String sql = "update menu_tree set mt_index = ?, mt_type = ?, " +
+"        mt_label = ?, mt_icon = ?, mt_initvar = ?, mt_func = ?, mt_visible = ?, mt_enable = ? " +   
+                          " where mt_par = ? and mt_child = ? ; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, x.mt_index);
+        ps.setString(2, x.mt_type);
+        ps.setString(3, x.mt_label);
+        ps.setString(4, x.mt_icon);
+        ps.setString(5, x.mt_initvar);
+        ps.setString(6, x.mt_func);
+        ps.setInt(7, x.mt_visible);
+        ps.setInt(8, x.mt_enable);
+        ps.setString(9, x.mt_par);
+        ps.setString(10, x.mt_child);
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
+    public static menu_tree getMenuTree(String[] x) {
+        menu_tree r = null;
+        String[] m ;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getMenuTree"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServADM");
+                r = objectMapper.readValue(returnstring, menu_tree.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new menu_tree(m);
+                return r;
+            }
+        }
+        String sql = "select * from menu_tree where mt_par = ? and mt_child = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, x[0]);
+        ps.setString(2, x[1]);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new menu_tree(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new menu_tree(m, res.getString("mt_par"), 
+                            res.getString("mt_child"),
+                            res.getString("mt_index"),    
+                            res.getString("mt_type"),
+                            res.getString("mt_label"),
+                            res.getString("mt_icon"),
+                            res.getString("mt_initvar"),
+                            res.getString("mt_func"),
+                            res.getInt("mt_visible"),
+                            res.getInt("mt_enable")
+                        );
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new menu_tree(m);
+        }
+        return r;
+    }
+    
+    public static String[] deleteMenuTree(menu_tree x) { 
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteMenuTree"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m ;
+        String sql = "delete from menu_tree where mt_par = ? and mt_child = ?; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, x.mt_par);
+        ps.setString(2, x.mt_child);
         int rows = ps.executeUpdate();
         m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
         } catch (SQLException s) {
@@ -3075,7 +3246,51 @@ public class admData {
         return lines;
     }
     
-    
+    public static int getMenuCount(String parent) {
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getMenuCount"});
+            list.add(new String[]{"param1", parent});
+            try {
+                return jsonToInt(sendServerPost(list, "", null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0;
+            }
+        } 
+       int count = 0; 
+     try{
+
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+            res = st.executeQuery("SELECT mt_child FROM  menu_tree where mt_par = " + "'" + parent + "'" + ";");
+           while (res.next()) {
+               count++;
+            }
+
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    return count;
+
+}
+
     public static String getSiteEmail(String site) {
        String myitem = "";
      try{
@@ -4330,6 +4545,13 @@ public class admData {
         String menu_panel, String menu_navcode ) {
         public menu_mstr(String[] m) {
             this(m, "", "", "", "", "");
+        }
+    }
+    
+    public record menu_tree(String[] m, String mt_par, String mt_child, String mt_index, String mt_type, 
+        String mt_label, String mt_icon, String mt_initvar, String mt_func, int mt_visible, int mt_enable ) {
+        public menu_tree(String[] m) {
+            this(m, "", "", "", "", "", "", "", "", 0, 0);
         }
     }
     

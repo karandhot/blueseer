@@ -3690,6 +3690,20 @@ public class ordData {
     }
 
     public static boolean deleteSOMeta(String id, String type, String key, String value) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "deleteSOMeta"});
+            list.add(new String[]{"param1", id});
+            list.add(new String[]{"param2", type});
+            list.add(new String[]{"param3", key});
+            list.add(new String[]{"param4", value});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
         boolean x = false;
         try {
             
@@ -4013,7 +4027,18 @@ public class ordData {
     }   
     
     public static ArrayList<String[]> getSOMetaData(String id) {
-         ArrayList<String[]> x = new ArrayList<String[]>();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getSOMetaData"});
+            list.add(new String[]{"param1",  id});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        ArrayList<String[]> x = new ArrayList<String[]>();
          try{
             
             Connection con = null;

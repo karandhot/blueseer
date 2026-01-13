@@ -33,6 +33,7 @@ import static com.blueseer.adm.admData.addCronMstr;
 import static com.blueseer.adm.admData.addFTPMstr;
 import static com.blueseer.adm.admData.addJaspMstr;
 import static com.blueseer.adm.admData.addMenuMstr;
+import static com.blueseer.adm.admData.addMenuTree;
 import static com.blueseer.adm.admData.addOrUpdateCodeMstr;
 import static com.blueseer.adm.admData.addPanelMstr;
 import static com.blueseer.adm.admData.addPksMstr;
@@ -47,6 +48,7 @@ import static com.blueseer.adm.admData.deleteFTPAttrMstr;
 import static com.blueseer.adm.admData.deleteFTPMstr;
 import static com.blueseer.adm.admData.deleteJaspMstr;
 import static com.blueseer.adm.admData.deleteMenuMstr;
+import static com.blueseer.adm.admData.deleteMenuTree;
 import static com.blueseer.adm.admData.deletePanelMstr;
 import static com.blueseer.adm.admData.deletePksMstr;
 import static com.blueseer.adm.admData.deletePrtMstr;
@@ -60,7 +62,9 @@ import static com.blueseer.adm.admData.getFTPAttr;
 import static com.blueseer.adm.admData.getFTPAttrHash;
 import static com.blueseer.adm.admData.getFTPMstr;
 import static com.blueseer.adm.admData.getJaspMstr;
+import static com.blueseer.adm.admData.getMenuCount;
 import static com.blueseer.adm.admData.getMenuMstr;
+import static com.blueseer.adm.admData.getMenuTree;
 import static com.blueseer.adm.admData.getOVMstr;
 import static com.blueseer.adm.admData.getPKSInit;
 import static com.blueseer.adm.admData.getPanelMstr;
@@ -76,6 +80,7 @@ import static com.blueseer.adm.admData.updateCronMstr;
 import static com.blueseer.adm.admData.updateFTPMstr;
 import static com.blueseer.adm.admData.updateJaspMstr;
 import static com.blueseer.adm.admData.updateMenuMstr;
+import static com.blueseer.adm.admData.updateMenuTree;
 import static com.blueseer.adm.admData.updatePanelMstr;
 import static com.blueseer.adm.admData.updatePksMstr;
 import static com.blueseer.adm.admData.updatePrtMstr;
@@ -87,6 +92,7 @@ import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import static com.blueseer.utl.BlueSeerUtils.intToJson;
 import static com.blueseer.utl.OVData.addMenuToAllUsers;
 import static com.blueseer.utl.OVData.addMenuToUser;
 import static com.blueseer.utl.OVData.copyUserPerms;
@@ -273,6 +279,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;  
         }
         
+        case "getMenuCount" : { 
+            response.getWriter().print(intToJson(getMenuCount(request.getHeader("param1"))));
+            break;  
+        }
         
         case "addFTPMstr" : { 
             String line;
@@ -475,6 +485,54 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
           }
            
+        case "addMenuTree" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.menu_tree x = objectMapper.readValue(sb.toString(), admData.menu_tree.class);            
+            response.getWriter().print(arrayToJson(addMenuTree(x)));
+            break;
+          }
+           
+        case "updateMenuTree" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.menu_tree x = objectMapper.readValue(sb.toString(), admData.menu_tree.class);            
+            response.getWriter().print(arrayToJson(updateMenuTree(x)));
+            break;
+          }
+        
+        case "deleteMenuTree" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.menu_tree x = objectMapper.readValue(sb.toString(), admData.menu_tree.class);            
+            response.getWriter().print(arrayToJson(deleteMenuTree(x)));
+            break;
+          }
+        
+        case "getMenuTree" : { 
+            String[] key = new String[]{request.getHeader("param1"), request.getHeader("param2")}; 
+            admData.menu_tree x = getMenuTree(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+         
         case "addPanelMstr" : { 
             String line;
             StringBuilder sb = new StringBuilder();  

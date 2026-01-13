@@ -34,11 +34,13 @@ import static com.blueseer.edi.ediData.addAS2Mstr;
 import static com.blueseer.edi.ediData.addEDIXref;
 import static com.blueseer.edi.ediData.addEdiMstr;
 import static com.blueseer.edi.ediData.addMapMstr;
+import static com.blueseer.edi.ediData.addUpdateEDIMeta;
 import com.blueseer.edi.ediData.edi_ctrl;
 import static com.blueseer.edi.ediData.getEDICtrl;
 import static com.blueseer.edi.ediData.addupdateEDICtrl;
 import static com.blueseer.edi.ediData.deleteAPIMstr;
 import static com.blueseer.edi.ediData.deleteAS2Mstr;
+import static com.blueseer.edi.ediData.deleteEDIMeta;
 import static com.blueseer.edi.ediData.deleteEDIXref;
 import static com.blueseer.edi.ediData.deleteEdiMstr;
 import static com.blueseer.edi.ediData.deleteMapMstr;
@@ -931,6 +933,20 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         response.getWriter().print(arrayToJson(runEDIsingle(null,buf.toString(StandardCharsets.UTF_8.name()),"")));
         break; 
         }
+        
+        case "addUpdateEDIMeta" : 
+        response.getWriter().println(boolToJson(addUpdateEDIMeta(request.getHeader("param1"), 
+                request.getHeader("param2"), 
+                request.getHeader("param3"), 
+                request.getHeader("param4")))); 
+        break;
+        
+        case "deleteEDIMeta" : 
+        response.getWriter().println(boolToJson(deleteEDIMeta(request.getHeader("param1"), 
+                request.getHeader("param2"), 
+                request.getHeader("param3"), 
+                request.getHeader("param4")))); 
+        break;
         
         case "runEDI" : {
         String line; 

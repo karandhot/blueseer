@@ -44,11 +44,14 @@ import static com.blueseer.utl.OVData.addItemCostRec;
 import static com.blueseer.utl.OVData.addMenuToAllUsers;
 import static com.blueseer.utl.OVData.addMenuToUser;
 import static com.blueseer.utl.OVData.addSysMetaDataNoUnique;
+import static com.blueseer.utl.OVData.addUpdateSysMeta;
 import static com.blueseer.utl.OVData.copyUserPerms;
 import static com.blueseer.utl.OVData.deleteMenuToAllUsers;
 import static com.blueseer.utl.OVData.deleteMenuToUser;
+import static com.blueseer.utl.OVData.deleteSysMeta;
 import static com.blueseer.utl.OVData.getCodeMstrValueList;
 import static com.blueseer.utl.OVData.getExchangeRate;
+import static com.blueseer.utl.OVData.getMenusAsTree;
 import static com.blueseer.utl.OVData.getMenusOfUsersListArray;
 import static com.blueseer.utl.OVData.getNextNbr;
 import static com.blueseer.utl.OVData.getOperationsByItem;
@@ -60,12 +63,36 @@ import static com.blueseer.utl.OVData.getTableInfo;
 import static com.blueseer.utl.OVData.getTaxAmtApplicableByItem;
 import static com.blueseer.utl.OVData.getTaxPercentElementsApplicableByItem;
 import static com.blueseer.utl.OVData.getUsersOfMenusList;
+import static com.blueseer.utl.OVData.getmenutree;
 import static com.blueseer.utl.OVData.getpsmstrcompSerialized;
 import static com.blueseer.utl.OVData.isAutoPost;
 import static com.blueseer.utl.OVData.isGLPeriodClosed;
+import static com.blueseer.utl.OVData.isValidBank;
+import static com.blueseer.utl.OVData.isValidCurrency;
+import static com.blueseer.utl.OVData.isValidCustPriceRecordExists;
 import static com.blueseer.utl.OVData.isValidCustShipTo;
+import static com.blueseer.utl.OVData.isValidCustomer;
+import static com.blueseer.utl.OVData.isValidFreightOrderNbr;
+import static com.blueseer.utl.OVData.isValidGLAcct;
+import static com.blueseer.utl.OVData.isValidGLcc;
 import static com.blueseer.utl.OVData.isValidItem;
+import static com.blueseer.utl.OVData.isValidLocation;
+import static com.blueseer.utl.OVData.isValidOperation;
+import static com.blueseer.utl.OVData.isValidPanel;
 import static com.blueseer.utl.OVData.isValidPrinter;
+import static com.blueseer.utl.OVData.isValidProdLine;
+import static com.blueseer.utl.OVData.isValidProfile;
+import static com.blueseer.utl.OVData.isValidRouting;
+import static com.blueseer.utl.OVData.isValidShift;
+import static com.blueseer.utl.OVData.isValidShipper;
+import static com.blueseer.utl.OVData.isValidSite;
+import static com.blueseer.utl.OVData.isValidTerms;
+import static com.blueseer.utl.OVData.isValidUOMConversion;
+import static com.blueseer.utl.OVData.isValidVendAddr;
+import static com.blueseer.utl.OVData.isValidVendPriceRecordExists;
+import static com.blueseer.utl.OVData.isValidVendor;
+import static com.blueseer.utl.OVData.isValidWarehouse;
+import static com.blueseer.utl.OVData.isValidWorkCenter;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
@@ -78,6 +105,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 
 /**
@@ -214,6 +242,17 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     
     switch (id) {
         
+        case "getMenusAsTree" : { 
+            DefaultMutableTreeNode x = getMenusAsTree(request.getHeader("param1"), request.getHeader("param2"));
+            ObjectMapper objectMapper = new ObjectMapper(); 
+            String r = "";
+            if (x != null && x.getChildCount() > 0) {
+            r = objectMapper.writeValueAsString(x);
+            } 
+            response.getWriter().print(r);
+            break;
+          }
+        
         case "loadTranHistByTable" : {
             String line;
             StringBuilder sb = new StringBuilder();  
@@ -247,9 +286,17 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(ArrayListStringToJson(getpsmstrcompSerialized(request.getHeader("param1"))));
             break;    
             
+        case "getmenutree" :        
+            response.getWriter().print(ArrayListStringToJson(getmenutree(request.getHeader("param1"))));
+            break;
+            
         case "getSysMetaData" :        
             response.getWriter().print(ArrayListStringToJson(getSysMetaData(request.getHeader("param1"),request.getHeader("param2"),request.getHeader("param3"))));
             break; 
+            
+        case "getSysMetaDataArray" :        
+            response.getWriter().print(ArrayListStringArrayToJson(getSysMetaData(request.getHeader("param1"))));
+            break;     
             
         case "getSysMetaValue" :        
             response.getWriter().print(getSysMetaValue(request.getHeader("param1"),request.getHeader("param2"),request.getHeader("param3")));
@@ -266,15 +313,164 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "getNextNbr" : 
             response.getWriter().print(intToJson(getNextNbr(request.getHeader("param1")))); 
             break;
-            
-        case "isValidCustShipTo" : 
+        
+        case "addUpdateSysMeta" : {
+        response.getWriter().println(boolToJson(addUpdateSysMeta(request.getHeader("param1"), 
+                request.getHeader("param2"), 
+                request.getHeader("param3"), 
+                request.getHeader("param4")))); 
+        break;
+        }
+        
+        case "deleteSysMeta" : {
+        response.getWriter().println(boolToJson(deleteSysMeta(request.getHeader("param1"), 
+                request.getHeader("param2"), 
+                request.getHeader("param3"), 
+                request.getHeader("param4")))); 
+        break;
+        }
+        
+        case "isAutoPost" : {
+        response.getWriter().println(boolToJson(isAutoPost())); 
+        break;
+        }    
+        
+        case "isValidItem" : {
+        response.getWriter().println(boolToJson(isValidItem(request.getHeader("param1")))); 
+        break;
+        }
+          
+        case "isValidGLAcct" : {
+        response.getWriter().println(boolToJson(isValidGLAcct(request.getHeader("param1")))); 
+        break;
+        }
+        
+        case "isValidGLcc" : {
+        response.getWriter().println(boolToJson(isValidGLcc(request.getHeader("param1")))); 
+        break;
+        }
+        
+        case "isValidCurrency" : {
+        response.getWriter().println(boolToJson(isValidCurrency(request.getHeader("param1")))); 
+        break;
+        }
+        
+        case "isValidBank" : {
+        response.getWriter().println(boolToJson(isValidBank(request.getHeader("param1")))); 
+        break;
+        }
+        
+        case "isValidProfile" : {
+        response.getWriter().println(boolToJson(isValidProfile(request.getHeader("param1")))); 
+        break;
+        }
+        
+        case "isValidTerms" : {
+        response.getWriter().println(boolToJson(isValidTerms(request.getHeader("param1")))); 
+        break;
+        }
+        
+        case "isValidCustShipTo" : {
             response.getWriter().print(boolToJson(isValidCustShipTo(request.getHeader("param1"), request.getHeader("param2")))); 
             break; 
+        }
             
-        case "isValidPrinter" : 
+        case "isValidPrinter" : {
             response.getWriter().print(boolToJson(isValidPrinter(request.getHeader("param1")))); 
-            break;     
+            break; 
+        }
             
+        case "isValidPanel" : {
+            response.getWriter().print(boolToJson(isValidPanel(request.getHeader("param1")))); 
+            break;  
+        }
+            
+        case "isValidShipper" : {
+            response.getWriter().print(boolToJson(isValidShipper(request.getHeader("param1")))); 
+            break;    
+        }
+        
+        case "isValidFreightOrderNbr" : {
+            response.getWriter().print(boolToJson(isValidFreightOrderNbr(request.getHeader("param1")))); 
+            break;    
+        }
+        
+        case "isValidSite" : {
+            response.getWriter().print(boolToJson(isValidSite(request.getHeader("param1")))); 
+            break;    
+        }
+        
+        case "isValidCustomer" : {
+            response.getWriter().print(boolToJson(isValidCustomer(request.getHeader("param1")))); 
+            break;    
+        }
+          
+        case "isValidVendor" : {
+            response.getWriter().print(boolToJson(isValidVendor(request.getHeader("param1")))); 
+            break;    
+        }
+        
+        case "isValidVendAddr" : {
+            response.getWriter().print(boolToJson(isValidVendAddr(request.getHeader("param1"), request.getHeader("param2")))); 
+            break; 
+        }
+        
+        case "isValidLocation" : {
+            response.getWriter().print(boolToJson(isValidLocation(request.getHeader("param1")))); 
+            break;    
+        }
+        
+        case "isValidWarehouse" : {
+            response.getWriter().print(boolToJson(isValidWarehouse(request.getHeader("param1")))); 
+            break;    
+        }
+        
+        case "isValidProdLine" : {
+            response.getWriter().print(boolToJson(isValidProdLine(request.getHeader("param1")))); 
+            break;    
+        }
+        
+        case "isValidRouting" : {
+            response.getWriter().print(boolToJson(isValidRouting(request.getHeader("param1")))); 
+            break;    
+        }
+        
+        case "isValidWorkCenter" : {
+            response.getWriter().print(boolToJson(isValidWorkCenter(request.getHeader("param1")))); 
+            break;    
+        }
+        
+        case "isValidShift" : {
+            response.getWriter().print(boolToJson(isValidShift(request.getHeader("param1")))); 
+            break;    
+        }
+        
+        case "isValidOperation" : {
+            response.getWriter().print(boolToJson(isValidOperation(request.getHeader("param1"), request.getHeader("param2")))); 
+            break;    
+        }
+        
+        case "isValidUOMConversion" : {
+            response.getWriter().print(boolToJson(isValidUOMConversion(request.getHeader("param1"), request.getHeader("param2"), request.getHeader("param3")))); 
+            break;    
+        }
+        
+        case "isValidVendPriceRecordExists" : {
+            response.getWriter().print(boolToJson(isValidVendPriceRecordExists(request.getHeader("param1"), 
+                    request.getHeader("param2"), 
+                    request.getHeader("param3"),
+                    request.getHeader("param4")))); 
+            break;    
+        }
+        
+        case "isValidCustPriceRecordExists" : {
+            response.getWriter().print(boolToJson(isValidCustPriceRecordExists(request.getHeader("param1"), 
+                    request.getHeader("param2"), 
+                    request.getHeader("param3"),
+                    request.getHeader("param4")))); 
+            break;    
+        }
+        
         case "getTaxAmtApplicableByItem" : 
             response.getWriter().print(doubleToJson(getTaxAmtApplicableByItem(request.getHeader("param1"),
                     bsParseDouble(request.getHeader("param2")))));   
@@ -318,15 +514,6 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         break;
         }
         
-        case "isValidItem" : {
-        response.getWriter().println(boolToJson(isValidItem(request.getHeader("param1")))); 
-        break;
-        }
-        
-        case "isAutoPost" : {
-        response.getWriter().println(boolToJson(isAutoPost())); 
-        break;
-        }
         
         case "getMenusOfUsersListArray" : { 
             response.getWriter().print(ArrayListStringArrayToJson(getMenusOfUsersListArray(request.getHeader("param1"))));

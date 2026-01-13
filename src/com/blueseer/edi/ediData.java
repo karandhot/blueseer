@@ -5343,6 +5343,20 @@ public class ediData {
     
     
     public static boolean addUpdateEDIMeta(String id, String type, String key, String value) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "addUpdateEDIMeta"});
+            list.add(new String[]{"param1", id});
+            list.add(new String[]{"param2", type});
+            list.add(new String[]{"param3", key});
+            list.add(new String[]{"param4", value});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
         boolean x = false;
         try {
             
@@ -5401,6 +5415,20 @@ public class ediData {
     }
 
     public static boolean deleteEDIMeta(String id, String type, String key, String value) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "deleteEDIMeta"});
+            list.add(new String[]{"param1", id});
+            list.add(new String[]{"param2", type});
+            list.add(new String[]{"param3", key});
+            list.add(new String[]{"param4", value});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServEDI"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
         boolean x = false;
         try {
             

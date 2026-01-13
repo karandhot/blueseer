@@ -31,6 +31,7 @@ import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.ord.ordData;
 import static com.blueseer.ord.ordData.addUpdateSOMeta;
 import static com.blueseer.ord.ordData.applyOrderChange;
+import static com.blueseer.ord.ordData.deleteSOMeta;
 import static com.blueseer.ord.ordData.getOrderBrowseView;
 import static com.blueseer.ord.ordData.getOrderChangeBrowseDetail;
 import static com.blueseer.ord.ordData.getOrderChangeBrowseView;
@@ -42,6 +43,7 @@ import static com.blueseer.ord.ordData.getOrderDetailExportNew;
 import static com.blueseer.ord.ordData.getOrderMstr;
 import static com.blueseer.ord.ordData.getOrderMstrSet;
 import static com.blueseer.ord.ordData.getOrderReportData;
+import static com.blueseer.ord.ordData.getSOMetaData;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
@@ -390,9 +392,20 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                 request.getHeader("param4")))); 
         break; 
         
+        case "deleteSOMeta" : 
+        response.getWriter().println(boolToJson(deleteSOMeta(request.getHeader("param1"), 
+                request.getHeader("param2"), 
+                request.getHeader("param3"), 
+                request.getHeader("param4")))); 
+        break;
+        
         case "getOrderPrintData" :
             response.getWriter().print(ordData.getOrderPrintData(request.getHeader("param1")));    
             break;
+            
+        case "getSOMetaData" :        
+            response.getWriter().print(ArrayListStringArrayToJson(getSOMetaData(request.getHeader("param1"))));
+            break;     
             
         default:
         response.getWriter().print("no switch case exists in dataServORD for id: " + id);

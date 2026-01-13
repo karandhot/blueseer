@@ -186,12 +186,9 @@ public class MetaMaint extends javax.swing.JPanel {
     
     public void setComponentDefaultValues() {
        isLoad = true;
-       
        lbcount.setText("0");
-       
        tbkeysearch.setText("");
-        ddtable.setSelectedIndex(0);
-        
+       ddtable.setSelectedIndex(0);
        tablemodel.setRowCount(0);
        tablereport.setModel(tablemodel);
        tablereport.getTableHeader().setReorderingAllowed(false);

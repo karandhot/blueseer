@@ -1627,6 +1627,17 @@ public class OVData {
     }
 
     public static ArrayList getmenutree(String parent) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getmenutree"});
+            list.add(new String[]{"param1", parent});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         ArrayList myarray = new ArrayList();
         try {
             
@@ -3719,6 +3730,24 @@ public class OVData {
     }
         
     public static DefaultMutableTreeNode getMenusAsTree(String mymenu, String myvisible)  {  
+      if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getMenusAsTree"});
+            list.add(new String[]{"param1",mymenu});
+            list.add(new String[]{"param2",myvisible});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServOV");
+                DefaultMutableTreeNode r = new DefaultMutableTreeNode();
+                if (returnstring != null && ! returnstring.isBlank()) {
+                 r = objectMapper.readValue(returnstring, DefaultMutableTreeNode.class); 
+                }
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
       MenuInfo parent = new MenuInfo(mymenu,myvisible);
       DefaultMutableTreeNode mynode = new DefaultMutableTreeNode(parent);
       ArrayList<String> mychildren = new ArrayList<String>();
@@ -7534,7 +7563,20 @@ public class OVData {
     public static Boolean isValidCustPriceRecordExists(String entity, String item, String uom, String curr) {
        
        // type is either 'c' for customer price or 'v' for vendor price      
-             
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidCustPriceRecordExists"});
+            list.add(new String[]{"param1", entity});
+            list.add(new String[]{"param2", item});
+            list.add(new String[]{"param3", uom});
+            list.add(new String[]{"param4", curr});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }       
        boolean isValid = false;
        String pricecode = "";
       
@@ -7587,7 +7629,20 @@ public class OVData {
     public static Boolean isValidVendPriceRecordExists(String entity, String item, String uom, String curr) {
        
        // type is either 'c' for customer price or 'v' for vendor price      
-             
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidVendPriceRecordExists"});
+            list.add(new String[]{"param1", entity});
+            list.add(new String[]{"param2", item});
+            list.add(new String[]{"param3", uom});
+            list.add(new String[]{"param4", curr});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }        
        boolean isValid = false;
        String pricecode = "";
       
@@ -9771,7 +9826,20 @@ return outvalue;
 }  
       
     public static Boolean isValidUOMConversion(String item, String site, String order_uom) {
-           boolean isValid = false;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidUOMConversion"});
+            list.add(new String[]{"param1", item});
+            list.add(new String[]{"param2", site});
+            list.add(new String[]{"param3", order_uom});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }    
+        boolean isValid = false;
            String baseuom = "";
          try{
             
@@ -11105,7 +11173,19 @@ return mycount;
     }     
              
     public static boolean isValidOperation(String item, String op) {
-       boolean isGood = false;
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidOperation"});
+            list.add(new String[]{"param1", item});
+            list.add(new String[]{"param2", op});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        } 
+        boolean isGood = false;
         try{
             
             Connection con = null;
@@ -11819,7 +11899,17 @@ return autosource;
     }
     
     public static boolean isValidShipper(String nbr) {
-             
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidShipper"});
+            list.add(new String[]{"param1", nbr});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }      
        boolean isValid = false;
         try{
            
@@ -11856,7 +11946,17 @@ return autosource;
     
     
     public static boolean isValidFreightOrderNbr(String nbr) {
-             
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidFreightOrderNbr"});
+            list.add(new String[]{"param1", nbr});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }      
        boolean isgood = false;
         try{
            
@@ -11893,8 +11993,18 @@ return autosource;
     }  
       
     public static boolean isValidSite(String key) {
-
-   boolean isgood = false;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidSite"});
+            list.add(new String[]{"param1", key});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }  
+    boolean isgood = false;
     try{
 
         Connection con = null;
@@ -11929,12 +12039,19 @@ return autosource;
 }
 
     
-    
-    
-    
     public static boolean isValidCustomer(String key) {
-
-   boolean isgood = false;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidCustomer"});
+            list.add(new String[]{"param1", key});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        } 
+    boolean isgood = false;
     try{
 
             Connection con = null;
@@ -12020,8 +12137,18 @@ return autosource;
 }
 
     public static boolean isValidVendor(String key) {
-
-   boolean isgood = false;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidVendor"});
+            list.add(new String[]{"param1", key});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        } 
+    boolean isgood = false;
     try{
 
             Connection con = null;
@@ -12056,8 +12183,19 @@ return autosource;
 }
 
     public static boolean isValidVendAddr(String code, String addr) {
-
-   boolean isgood = false;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidVendAddr"});
+            list.add(new String[]{"param1", code});
+            list.add(new String[]{"param2", addr});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+    boolean isgood = false;
     try{
 
             Connection con = null;
@@ -12095,8 +12233,18 @@ return autosource;
 
     
     public static boolean isValidLocation(String key) {
-
-   boolean isgood = false;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidLocation"});
+            list.add(new String[]{"param1", key});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+    boolean isgood = false;
     try{
 
         Connection con = null;
@@ -12131,8 +12279,18 @@ return autosource;
 }
 
     public static boolean isValidWarehouse(String key) {
-
-   boolean isgood = false;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidWarehouse"});
+            list.add(new String[]{"param1", key});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+    boolean isgood = false;
     try{
 
         Connection con = null;
@@ -12167,8 +12325,18 @@ return autosource;
 }
 
     public static boolean isValidProdLine(String key) {
-
-   boolean isgood = false;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidProdLine"});
+            list.add(new String[]{"param1", key});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+    boolean isgood = false;
     try{
 
         Connection con = null;
@@ -12203,8 +12371,18 @@ return autosource;
 }
 
     public static boolean isValidPanel(String panel) {
-
-   boolean isgood = false;
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidPanel"});
+            list.add(new String[]{"param1", panel});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+    } 
+    boolean isgood = false;
     try{
 
         Connection con = null;
@@ -12239,7 +12417,18 @@ return autosource;
 }
 
     public static boolean isValidRouting(String key) {
-   boolean isGood = false;
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidRouting"});
+            list.add(new String[]{"param1", key});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+        boolean isGood = false;
     try{
 
         Connection con = null;
@@ -12277,7 +12466,18 @@ return autosource;
 }  
 
     public static boolean isValidWorkCenter(String key) {
-       boolean isGood = false;
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidWorkCenter"});
+            list.add(new String[]{"param1", key});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+        boolean isGood = false;
         try{
             
         Connection con = null;
@@ -12315,9 +12515,19 @@ return autosource;
     }  
           
     public static boolean isValidShift(String code) {
-
-boolean isgood = false;
-try{
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidShift"});
+            list.add(new String[]{"param1", code});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+    boolean isgood = false;
+    try{
 
     Connection con = null;
             if (ds != null) {
@@ -15447,7 +15657,18 @@ return mystring;
       /* start gl related functions */
    
     public static boolean isValidTerms(String code) {
-       boolean myreturn = false;
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidTerms"});
+            list.add(new String[]{"param1", code});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+        boolean myreturn = false;
         try{
            
             Connection con = null;
@@ -15516,7 +15737,18 @@ return mystring;
 }
 
     public static boolean isValidProfile(String code) {
-   boolean myreturn = false;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidProfile"});
+            list.add(new String[]{"param1", code});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+        boolean myreturn = false;
     try{
 
         Connection con = null;
@@ -15586,7 +15818,18 @@ return mystring;
 }
 
     public static boolean isValidBank(String code) {
-   boolean myreturn = false;
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidBank"});
+            list.add(new String[]{"param1", code});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+    }
+        boolean myreturn = false;
     try{
 
         Connection con = null;
@@ -15620,7 +15863,18 @@ return mystring;
 }
 
     public static boolean isValidCurrency(String code) {
-   boolean myreturn = false;
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidCurrency"});
+            list.add(new String[]{"param1", code});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+    }
+        boolean myreturn = false;
     try{
 
         Connection con = null;
@@ -15654,7 +15908,18 @@ return mystring;
 }
 
     public static boolean isValidGLAcct(String acct) {
-   boolean myreturn = false;
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidGLAcct"});
+            list.add(new String[]{"param1", acct});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+    } 
+        boolean myreturn = false;
     try{
 
         Connection con = null;
@@ -15688,7 +15953,18 @@ return mystring;
 }
 
     public static boolean isValidGLcc(String cc) {
-   boolean myreturn = false;
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidGLcc"});
+            list.add(new String[]{"param1", cc});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+    } 
+        boolean myreturn = false;
     try{
 
         Connection con = null;
@@ -22660,7 +22936,18 @@ return mylist;
     }   
 
     public static ArrayList<String[]> getSysMetaData(String id) {
-           ArrayList<String[]> myarray = new ArrayList<String[]>();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getSysMetaDataArray"});
+            list.add(new String[]{"param1",  id});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        ArrayList<String[]> myarray = new ArrayList<String[]>();
          try{
             
             Connection con = null;
@@ -22819,6 +23106,20 @@ return mylist;
     }
 
     public static boolean addUpdateSysMeta(String id, String type, String key, String value) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "addUpdateSysMeta"});
+            list.add(new String[]{"param1", id});
+            list.add(new String[]{"param2", type});
+            list.add(new String[]{"param3", key});
+            list.add(new String[]{"param4", value});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
         boolean x = false;
         try {
             
@@ -22877,6 +23178,20 @@ return mylist;
     }
 
     public static boolean deleteSysMeta(String id, String type, String key, String value) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "deleteSysMeta"});
+            list.add(new String[]{"param1", id});
+            list.add(new String[]{"param2", type});
+            list.add(new String[]{"param3", key});
+            list.add(new String[]{"param4", value});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
         boolean x = false;
         try {
             

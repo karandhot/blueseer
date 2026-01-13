@@ -33,6 +33,11 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.adm.admData.addMenuTree;
+import static com.blueseer.adm.admData.getMenuCount;
+import static com.blueseer.adm.admData.getMenuTree;
+import com.blueseer.adm.admData.menu_tree;
+import static com.blueseer.adm.admData.updateMenuTree;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
@@ -63,6 +68,9 @@ import javax.swing.tree.DefaultTreeModel;
  */
 public class MenuTreeMaint extends javax.swing.JPanel {
 
+    menu_tree mt = null;
+    
+    
     /**
      * Creates new form BOMMaintPanel
      */
@@ -183,6 +191,22 @@ public class MenuTreeMaint extends javax.swing.JPanel {
     
    
     
+    public menu_tree createRecord() {
+        int index = getMenuCount(tbpar.getText());
+        menu_tree x = new menu_tree(null, 
+           tbpar.getText(),
+           ddcomp.getSelectedItem().toString(),
+           String.valueOf(index),
+           ddtype.getSelectedItem().toString(),
+           tbname.getText(),
+           tbicon.getText(),
+           tbinitvar.getText(),
+           tbfunc.getText(),     
+           BlueSeerUtils.boolToInt(cbvisible.isSelected()),
+           BlueSeerUtils.boolToInt(cbenable.isSelected())
+        );
+        return x;
+    }
     
     public void setcomponentlist() {
         
@@ -200,7 +224,7 @@ public class MenuTreeMaint extends javax.swing.JPanel {
     }
     
     public void setcomponentattributes(String component) {
-         tbinitvar.setText("");
+          tbinitvar.setText("");
           tbicon.setText("");
           tbname.setText("");
           tbfunc.setText("");
@@ -209,69 +233,16 @@ public class MenuTreeMaint extends javax.swing.JPanel {
           cbvisible.setSelected(false);
           cbenable.setSelected(false);
       
+        mt = getMenuTree(new String[]{tbpar.getText(), component});
         
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                boolean proceed = true;
-                int i = 0;
-                String type = "";
-           res = st.executeQuery("SELECT * FROM  menu_tree " +
-                   " where mt_par = " + "'" + tbpar.getText().toString() + "'" + 
-                                          " AND mt_child = " + "'" + component + "'" + ";");
-                    i = 0;
-                    while (res.next()) {
-                        i++;
-                        tbinitvar.setText(res.getString("mt_initvar"));
-                        tbicon.setText(res.getString("mt_icon"));
-                        tbname.setText(res.getString("mt_label"));
-                        tbfunc.setText(res.getString("mt_func"));
-                        tbindex.setText(res.getString("mt_index"));
-                        cbvisible.setSelected(res.getBoolean("mt_visible"));
-                        cbenable.setSelected(res.getBoolean("mt_enable"));
-                        tbindex.setText(res.getString("mt_index"));
-                        ddtype.setSelectedItem(res.getString("mt_type"));
-                     
-                        
-                        // set update button and disable add button
-                        
-                    }
-                    if (i == 0) {
-                       btadd.setEnabled(true);
-                       tbindex.setText("-1");
-                       tbindex.setEnabled(false);
-                        btupdate.setEnabled(false);
-                        btdelete.setEnabled(false); 
-                    } else {
-                       tbindex.setEnabled(true);
-                      btadd.setEnabled(false);
-                        btupdate.setEnabled(true);
-                        btdelete.setEnabled(true);  
-                    }
-             } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-        
+        tbinitvar.setText(mt.mt_initvar());
+        tbicon.setText(mt.mt_icon());
+        tbname.setText(mt.mt_label());
+        tbfunc.setText(mt.mt_func());
+        tbindex.setText(mt.mt_index());
+        cbvisible.setSelected(BlueSeerUtils.ConvertIntegerToBool(mt.mt_visible()));
+        cbenable.setSelected(BlueSeerUtils.ConvertIntegerToBool(mt.mt_enable()));
+        ddtype.setSelectedItem(mt.mt_type());
         
     }
     
@@ -553,6 +524,10 @@ public class MenuTreeMaint extends javax.swing.JPanel {
     }//GEN-LAST:event_btGetTreeActionPerformed
 
     private void btaddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddActionPerformed
+        
+        addMenuTree(createRecord());
+        
+        /*
         try {
 
             Connection con = null;
@@ -653,6 +628,7 @@ public class MenuTreeMaint extends javax.swing.JPanel {
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
+        */
     }//GEN-LAST:event_btaddActionPerformed
 
     private void btdeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteActionPerformed
@@ -729,6 +705,10 @@ public class MenuTreeMaint extends javax.swing.JPanel {
     }//GEN-LAST:event_btdeleteActionPerformed
 
     private void btupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateActionPerformed
+        updateMenuTree(createRecord());
+        OVData.indexMenuChildren(tbpar.getText(), ddcomp.getSelectedItem().toString(), Integer.parseInt(tbindex.getText()), Integer.parseInt(mt.mt_index()));
+        
+        /*
         try {
             boolean proceed = true;
             int oldindex = 0;
@@ -799,6 +779,7 @@ public class MenuTreeMaint extends javax.swing.JPanel {
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
+        */
     }//GEN-LAST:event_btupdateActionPerformed
 
     private void tbparFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbparFocusLost
