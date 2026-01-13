@@ -492,6 +492,144 @@ public class admData {
         ps.close();
     }
         
+   
+    public static ov_ctrl getOVCtrl() {
+        ov_ctrl r = null;
+        String[] m ;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getOVCtrl"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServADM");
+                r = objectMapper.readValue(returnstring, ov_ctrl.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new ov_ctrl(m);
+                return r;
+            }
+        }
+        String sql = "select * from ov_ctrl ;";  // will always be only 0 or 1 records
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new ov_ctrl(m);  // minimum return
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                     
+                        r = new ov_ctrl(m, res.getString("ov_version"), res.getString("ov_dist_dir"),
+                        res.getString("ov_source_dir"), res.getInt("ov_login"), res.getInt("ov_custom"),
+                        res.getString("ov_bgimage"), res.getInt("ov_rcolor"), res.getInt("ov_gcolor"), res.getInt("ov_bcolor"),
+                        res.getString("ov_fileservertype"), res.getString("ov_image_directory"), res.getString("ov_temp_directory"), res.getString("ov_label_directory"),
+                        res.getString("ov_jasper_directory"),res.getString("ov_edi_directory"),res.getString("ov_email_server"),res.getString("ov_email_from"),
+                        res.getString("ov_smtpauthuser"), res.getString("ov_smtpauthpass"), res.getString("ov_varchar"));
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getClassName() + "." + Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new ov_ctrl(m);
+        }
+        return r;
+    }
+  
+    public static String[] addUpdateOVCtrl(ov_ctrl x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id","addUpdateOVCtrl"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
+        int rows = 0;
+        String[] m ;
+        String sqlSelect = "SELECT * FROM  ov_ctrl"; // there should always be only 1 or 0 records in ov_mstr
+        String sqlInsert = "insert into ov_ctrl (ov_version, ov_dist_dir, ov_source_dir, " +
+        "ov_login, ov_custom, ov_bgimage, ov_rcolor, ov_gcolor, ov_bcolor," +
+        "ov_fileservertype, ov_image_directory, ov_temp_directory, ov_label_directory," +
+        "ov_jasper_directory, ov_edi_directory, ov_email_server," +
+        "ov_email_from, ov_smtpauthuser, ov_smtpauthpass, ov_varchar) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+        String sqlUpdate = "update ov_ctrl set ov_version = ?, ov_dist_dir = ?, ov_source_dir = ?, " +
+        "ov_login = ?, ov_custom = ?, ov_bgimage = ?, ov_rcolor = ?, ov_gcolor = ?, ov_bcolor = ?," +
+        "ov_fileservertype = ?, ov_image_directory = ?, ov_temp_directory = ?, ov_label_directory = ?," +
+        "ov_jasper_directory = ?, ov_edi_directory = ?, ov_email_server = ?," +
+        "ov_email_from = ?, ov_smtpauthuser = ?, ov_smtpauthpass = ?, ov_varchar = ?; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+             PreparedStatement ps = con.prepareStatement(sqlSelect);) {
+          try (ResultSet res = ps.executeQuery();
+               PreparedStatement psi = con.prepareStatement(sqlInsert);
+               PreparedStatement psu = con.prepareStatement(sqlUpdate);) {  
+            if (! res.isBeforeFirst()) {
+            psi.setString(1, x.ov_version);
+            psi.setString(2, x.ov_dist_dir);
+            psi.setString(3, x.ov_source_dir);
+            psi.setInt(4, x.ov_login);
+            psi.setInt(5, x.ov_custom);
+            psi.setString(6, x.ov_bgimage);
+            psi.setInt(7, x.ov_rcolor);
+            psi.setInt(8, x.ov_gcolor);
+            psi.setInt(9, x.ov_bcolor);
+            psi.setString(10, x.ov_fileservertype);
+            psi.setString(11, x.ov_image_directory);
+            psi.setString(12, x.ov_temp_directory);
+            psi.setString(13, x.ov_label_directory);
+            psi.setString(14, x.ov_jasper_directory);
+            psi.setString(15, x.ov_edi_directory);
+            psi.setString(16, x.ov_email_server);
+            psi.setString(17, x.ov_email_from);
+            psi.setString(18, x.ov_smtpauthuser);
+            psi.setString(19, x.ov_smtpauthpass);
+            psi.setString(20, x.ov_varchar);
+             rows = psi.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+            } else {
+            psu.setString(1, x.ov_version);
+            psu.setString(2, x.ov_dist_dir);
+            psu.setString(3, x.ov_source_dir);
+            psu.setInt(4, x.ov_login);
+            psu.setInt(5, x.ov_custom);
+            psu.setString(6, x.ov_bgimage);
+            psu.setInt(7, x.ov_rcolor);
+            psu.setInt(8, x.ov_gcolor);
+            psu.setInt(9, x.ov_bcolor);
+            psu.setString(10, x.ov_fileservertype);
+            psu.setString(11, x.ov_image_directory);
+            psu.setString(12, x.ov_temp_directory);
+            psu.setString(13, x.ov_label_directory);
+            psu.setString(14, x.ov_jasper_directory);
+            psu.setString(15, x.ov_edi_directory);
+            psu.setString(16, x.ov_email_server);
+            psu.setString(17, x.ov_email_from);
+            psu.setString(18, x.ov_smtpauthuser);
+            psu.setString(19, x.ov_smtpauthpass);
+            psu.setString(20, x.ov_varchar); 
+            rows = psu.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};    
+            }
+          } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+          }
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
     
     public static String[] addUpdateOVMstr(ov_mstr x) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
@@ -546,7 +684,7 @@ public class admData {
         }
         return m;
     }
-   
+       
     public static ov_mstr getOVMstr(String[] x) {
         ov_mstr r = null;
         String[] m ;
@@ -4500,6 +4638,17 @@ public class admData {
         String ov_currency, String ov_labelprinter) {
         public ov_mstr(String[] m) {
             this(m, "", "", "", "", "");
+        }
+    }
+
+    public record ov_ctrl(String[] m, String ov_version, String ov_dist_dir, String ov_source_dir, 
+        int ov_login, int ov_custom, String ov_bgimage, int ov_rcolor, int ov_gcolor, int ov_bcolor,
+        String ov_fileservertype, String ov_image_directory, String ov_temp_directory, String ov_label_directory, 
+        String ov_jasper_directory, String ov_edi_directory, String ov_email_server,
+        String ov_email_from, String ov_smtpauthuser, String ov_smtpauthpass, String ov_varchar) {
+        public ov_ctrl(String[] m) {
+            this(m, "", "", "", 0, 0, "", 0, 0, 0, "",
+                    "", "", "", "", "", "", "", "", "", "");
         }
     }
 

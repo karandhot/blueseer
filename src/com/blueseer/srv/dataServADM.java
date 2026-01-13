@@ -39,6 +39,7 @@ import static com.blueseer.adm.admData.addPanelMstr;
 import static com.blueseer.adm.admData.addPksMstr;
 import static com.blueseer.adm.admData.addPrtMstr;
 import static com.blueseer.adm.admData.addSiteMstr;
+import static com.blueseer.adm.admData.addUpdateOVCtrl;
 import static com.blueseer.adm.admData.addUpdateOVMstr;
 import static com.blueseer.adm.admData.addUserMstr;
 import static com.blueseer.adm.admData.deleteCodeMstr;
@@ -65,6 +66,7 @@ import static com.blueseer.adm.admData.getJaspMstr;
 import static com.blueseer.adm.admData.getMenuCount;
 import static com.blueseer.adm.admData.getMenuMstr;
 import static com.blueseer.adm.admData.getMenuTree;
+import static com.blueseer.adm.admData.getOVCtrl;
 import static com.blueseer.adm.admData.getOVMstr;
 import static com.blueseer.adm.admData.getPKSInit;
 import static com.blueseer.adm.admData.getPanelMstr;
@@ -151,6 +153,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "getOVMstr" : { 
             String[] key = new String[]{request.getHeader("param1")}; 
             admData.ov_mstr x = getOVMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "getOVCtrl" : { 
+            admData.ov_ctrl x = getOVCtrl();
             ObjectMapper objectMapper = new ObjectMapper();
             String r = objectMapper.writeValueAsString(x);
             response.getWriter().print(r);
@@ -358,6 +368,19 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             ObjectMapper objectMapper = new ObjectMapper();
             admData.ov_mstr x = objectMapper.readValue(sb.toString(), admData.ov_mstr.class);            
             response.getWriter().print(arrayToJson(addUpdateOVMstr(x)));
+            break;
+          }
+        
+        case "addUpdateOVCtrl" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            admData.ov_ctrl x = objectMapper.readValue(sb.toString(), admData.ov_ctrl.class);            
+            response.getWriter().print(arrayToJson(addUpdateOVCtrl(x)));
             break;
           }
         
