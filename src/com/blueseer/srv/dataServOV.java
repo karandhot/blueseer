@@ -249,6 +249,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             if (x != null && x.getChildCount() > 0) {
             r = objectMapper.writeValueAsString(x);
             } 
+            System.out.println(r);
             response.getWriter().print(r);
             break;
           }
