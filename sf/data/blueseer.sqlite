@@ -775,7 +775,9 @@ CREATE TABLE "dfs_mstr" (
   "dfs_delimiter" varchar(1) NOT NULL COLLATE NOCASE DEFAULT '',
   "dfs_misc" varchar(50) NOT NULL COLLATE NOCASE DEFAULT '',
   "dfs_suppressemptytag" tinyint(1) NOT NULL COLLATE NOCASE DEFAULT '0',
-  "dfs_site" varchar(10) NOT NULL COLLATE NOCASE DEFAULT ''
+  "dfs_site" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
+  "dfs_suppressroot" tinyint(1) NOT NULL COLLATE NOCASE DEFAULT '0',
+  "dfs_wraparray" tinyint(1) NOT NULL COLLATE NOCASE DEFAULT '0'
 );
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -813,7 +815,7 @@ CREATE TABLE "ftp_log" (
   "ftpl_ts" timestamp NOT NULL DEFAULT (datetime('now','localtime')),
   "ftpl_site" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
   "ftpl_mflag" tinyint(1) NOT NULL COLLATE NOCASE DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;

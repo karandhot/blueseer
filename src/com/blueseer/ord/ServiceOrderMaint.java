@@ -37,8 +37,12 @@ import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
+import com.blueseer.ctr.cusData.cm_mstr;
+import com.blueseer.ctr.cusData.cms_det;
 import com.blueseer.fgl.fglData;
 import com.blueseer.inv.invData;
+import com.blueseer.inv.invData.item_mstr;
+import static com.blueseer.ord.OrderMaint.so;
 import static com.blueseer.ord.ordData.addServiceOrderTransaction;
 import static com.blueseer.ord.ordData.deleteServiceOrderMstr;
 import static com.blueseer.ord.ordData.getServiceOrderDet;
@@ -50,6 +54,7 @@ import com.blueseer.ord.ordData.svd_det;
 import static com.blueseer.ord.ordData.updateServiceOrderTransaction;
 import com.blueseer.shp.shpData;
 import static com.blueseer.shp.shpData.confirmShipperTransaction;
+import com.blueseer.shp.shpData.ship_mstr;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
@@ -74,6 +79,7 @@ import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import static com.blueseer.utl.BlueSeerUtils.xZero;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeer;
+import com.blueseer.utl.IBlueSeerT;
 import static com.blueseer.utl.OVData.canUpdate;
 import static com.blueseer.utl.OVData.createPlanFromServiceOrder;
 import java.awt.Color;
@@ -109,7 +115,7 @@ import javax.swing.event.TableModelEvent;
  *
  * @author vaughnte
  */
-public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
+public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeerT {
 
      // global variable declarations
                 boolean isLoad = false;
@@ -120,6 +126,7 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
     boolean canupdate = false;
     boolean autoinvoice = false;
     public static sv_mstr sv = null;
+    public static cm_mstr cm = null;
     public static ArrayList<svd_det> svdlist = null;
     public static ArrayList<sos_det> soslist = null;
     
@@ -164,17 +171,17 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
   
     
       // interface functions implemented
-    public void executeTask(String x, String[] y) { 
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
       
         class Task extends SwingWorker<String[], Void> {
        
           String type = "";
           String[] key = null;
           
-          public Task(String type, String[] key) { 
-              this.type = type;
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
               this.key = key;
-          } 
+          }  
            
         @Override
         public String[] doInBackground() throws Exception {
@@ -211,9 +218,8 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
             BlueSeerUtils.endTask(message);
            if (this.type.equals("delete")) {
              initvars(null);  
-           } else if (this.type.equals("get") && message[0].equals("1")) {
-             tbkey.requestFocus();
-           } else if (this.type.equals("get") && message[0].equals("0")) {
+           } else if (this.type.equals("get")) {
+             updateForm();
              tbkey.requestFocus();
            } else if (this.type.equals("add") && message[0].equals("0")) {
              initvars(key);
@@ -467,10 +473,9 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
         
     }
     
-    public String[] setAction(int i) {
-        String[] m = new String[2];
-        if (i > 0) {
-            m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};  
+    public void setAction(String[] x) {
+        
+        if (x[0].equals("0")) {
                    setPanelComponentState(this, true);
                    btadd.setEnabled(false);
                    tbkey.setEditable(false);
@@ -485,8 +490,7 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
                              btnew.setEnabled(true);
                              btlookup.setEnabled(true);
                              btclear.setEnabled(true);
-                             btprint.setEnabled(true);
-                             m = new String[]{BlueSeerUtils.SuccessBit, getMessageTag(1097)};  
+                             btprint.setEnabled(true); 
                          } else {
                              setPanelComponentState(this, true);
                               btadd.setEnabled(false);
@@ -503,17 +507,20 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
                  rbservice.setSelected(true); // set this to toggle item versus service
                          
         } else {
-           m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};  
-                   tbkey.setForeground(Color.red); 
+            tbkey.setForeground(Color.red); 
         }
-        return m;
+        
     }
     
-    public boolean validateInput(String key) {
+    public boolean validateInput(BlueSeerUtils.dbaction x) {
         
         if (! canUpdate(this.getClass().getName())) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
+        }
+        
+        if (x == BlueSeerUtils.dbaction.delete) {  // maintain order after canupdate check
+           return true;
         }
         
         Map<String,Integer> f = OVData.getTableInfo(new String[]{"sv_mstr"});
@@ -554,7 +561,7 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
         btlookup.setEnabled(true);
         
         if (arg != null && arg.length > 0) {
-            executeTask("get",arg);
+            executeTask(BlueSeerUtils.dbaction.get,arg);
         } else {
             tbkey.setEnabled(true);
             tbkey.setEditable(true);
@@ -567,7 +574,7 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
         myorddetmodel.setRowCount(0);
         sv = getServiceOrderMstr(x);
         svdlist = getServiceOrderDet(x);
-      return m;
+      return sv.m();
 
     }
     
@@ -644,7 +651,7 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
             }
         }
         
-        
+        setAction(sv.m());
     }
 
     public sv_mstr createRecord() {
@@ -734,6 +741,78 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
         return list;
     }
     
+    public ship_mstr createShipRecord(String shipperid) {
+        ship_mstr x = new ship_mstr(null, 
+                shipperid,
+                ddcust.getSelectedItem().toString(),
+                ddship.getSelectedItem().toString(),
+                0, // pallets
+                0, // boxes
+                "", // shipvia  
+                setDateDB(new java.util.Date()),
+                setDateDB(new java.util.Date()), // po date
+                tbpo.getText(), // ref
+                tbpo.getText(), // po number
+                remarks.getText(),
+                bsmf.MainFrame.userid,
+                defaultSite,
+                defaultCurrency,
+                "", // wh
+                cm.cm_terms(), // terms
+                "", // taxcode
+                cm.cm_ar_acct(), // aracct
+                cm.cm_ar_cc(), // arcc
+                "S", // type
+                tbkey.getText(), // sh_so 
+                defaultSite,
+                "", // tracking number
+                "", // status
+                "", // sh_char1
+                "", // sh_char2 
+                "" // sh_char3
+                );
+        return x;
+    }
+    
+    public ArrayList<shpData.ship_det> createShipDetRecord(String shipperid) {
+        ArrayList<shpData.ship_det> list = new ArrayList<shpData.ship_det>();
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        
+        // line, item, type, desc, order, qty, price, uom
+        
+        for (int j = 0; j < orddet.getRowCount(); j++) { 
+            shpData.ship_det x = new shpData.ship_det(null, 
+                shipperid, // shipper
+                j + 1, //shline
+                orddet.getModel().getValueAt(j, 1).toString(), // item
+                orddet.getModel().getValueAt(j, 1).toString(), // custimtem
+                orddet.getModel().getValueAt(j, 4).toString(),  // order
+                bsParseInt(orddet.getModel().getValueAt(j, 0).toString()), //soline    
+                setDateDB(new java.util.Date()),
+                tbpo.getText(), // po
+                bsParseDouble(orddet.getModel().getValueAt(j, 5).toString().replace(defaultDecimalSeparator, '.')), // qty
+                orddet.getModel().getValueAt(j, 7).toString(), //uom
+                defaultCurrency, //currency 
+                bsParseDouble(orddet.getModel().getValueAt(j, 6).toString().replace(defaultDecimalSeparator, '.')), // net price
+                0, // disc
+                bsParseDouble(orddet.getModel().getValueAt(j, 6).toString().replace(defaultDecimalSeparator, '.')), // list price
+                orddet.getModel().getValueAt(j, 3).toString(), // desc
+                "", // wh
+                "", // loc
+                0, // taxamt
+                "0", // cont
+                "", // ref
+                "", // serial   
+                defaultSite,
+                "", // bom
+                1,  // packqty
+                "" // kvpair    
+                );
+        list.add(x);
+        }      
+        return list;        
+    }
+    
     
     public void lookUpFrame() {
         
@@ -779,25 +858,22 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
 
     // custom functions
     public void itemChangeEvent(String myitem) {
-          
-         lbdesc.setText(invData.getItemDesc(dditem.getSelectedItem().toString()));
-         tbprice.setText(BlueSeerUtils.bsformat("",String.valueOf(invData.getItemPrice(dditem.getSelectedItem().toString())).replace('.', defaultDecimalSeparator),"2"));
-         dduom.setSelectedItem(OVData.getUOMFromItemSite(myitem, ddsite.getSelectedItem().toString()));
+         item_mstr it = invData.getItemMstr(myitem);
+         lbdesc.setText(it.it_desc());
+         tbprice.setText(BlueSeerUtils.bsformat("",String.valueOf(it.it_sell_price()).replace('.', defaultDecimalSeparator),"2"));
+         dduom.setSelectedItem(it.it_uom());
      }
      
     public void custChangeEvent(String mykey) {
            
-            ddship.removeAllItems();
-            
-            
+           ddship.removeAllItems();
            if (ddcust.getSelectedItem() == null || ddcust.getSelectedItem().toString().isEmpty() ) {
                ddcust.setBackground(Color.red);
+               return;
            } else {
                ddcust.setBackground(null);
            }
-            
-           
-            
+            cm = cusData.getCustMstr(new String[]{ddcust.getSelectedItem().toString()});
             ArrayList mycusts = cusData.getcustshipmstrlist(ddcust.getSelectedItem().toString());
             for (int i = 0; i < mycusts.size(); i++) {
                 ddship.addItem(mycusts.get(i));
@@ -806,93 +882,25 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
             
             if (ddship.getItemCount() == 1) {
               ddship.setBackground(Color.red); 
-           }
-            
-            
-            
-            
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-                res = st.executeQuery("select cm_name, cm_carrier, cm_tax_code, cm_curr from cm_mstr where cm_code = " + "'" + mykey + "'" + ";");
-                while (res.next()) {
-                    lblcustname.setText(res.getString("cm_name"));
-                    ddtax.setSelectedItem((res.getString("cm_tax_code")));
-                   
-                }
-                
-             
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+            
+            lblcustname.setText(cm.cm_name() );
+            ddtax.setSelectedItem(cm.cm_tax_code());
+        
     }
   
     public void jobsiteChangeEvent(String mycust, String myship) {
-           
-            
-            
            if (ddship.getSelectedItem() == null || ddship.getSelectedItem().toString().isEmpty() ) {
                ddship.setBackground(Color.red);
+               return;
            } else {
                ddship.setBackground(null);
            }
+           cms_det cms = cusData.getCMSDet(mycust, myship);
+           String namestring = cms.cms_name() + " " + cms.cms_line1() + " " + cms.cms_city() + "," + cms.cms_state() + " " + cms.cms_zip();
+           lblshipname.setText(namestring);
             
-            
-        try {
-
-           Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                String namestring = "";
-                res = st.executeQuery("select cms_name, cms_line1, cms_city, cms_state, cms_zip from cms_det where cms_code = " + "'" + mycust + "'" + " and cms_shipto = " + "'" + myship + "'"  + ";");
-                while (res.next()) {
-                    namestring = res.getString("cms_name") + " " + res.getString("cms_line1") + " " + res.getString("cms_city") + "," + res.getString("cms_state") + " " + res.getString("cms_zip");
-                    lblshipname.setText(namestring);
-                }
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+       
     }
   
     public String[] autoInvoiceOrder() {
@@ -900,25 +908,8 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
          java.util.Date now = new java.util.Date();
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
         int shipperid = OVData.getNextNbr("shipper");   
-        
-        shpData.ship_mstr sh = shpData.createShipMstrJRT(String.valueOf(shipperid), ddsite.getSelectedItem().toString(),
-                             String.valueOf(shipperid), 
-                              ddcust.getSelectedItem().toString(),
-                              ddship.getSelectedItem().toString(),
-                              bsNumberToUS(tbkey.getText()),
-                              tbpo.getText(),  // po
-                              tbpo.getText(),  // ref
-                              dfdate.format(duedate.getDate()).toString(),
-                              dfdate.format(createdate.getDate()).toString(),
-                              remarks.getText().replace("'", ""),
-                              "",
-                              "S", 
-                              ddtax.getSelectedItem().toString(), 
-                              ddsite.getSelectedItem().toString(),
-                              "" // tracking
-                              ); 
-        ArrayList<String[]> detail = tableToArrayList();
-        ArrayList<shpData.ship_det> shd = shpData.createShipDetJRTmin(detail, String.valueOf(shipperid), dfdate.format(createdate.getDate()).toString(), ddsite.getSelectedItem().toString());
+        shpData.ship_mstr sh = createShipRecord(String.valueOf(shipperid));
+        ArrayList<shpData.ship_det> shd = createShipDetRecord(String.valueOf(shipperid));
         shpData.addShipperTransaction(shd, sh, null);
         shpData.updateShipperSAC(String.valueOf(shipperid));
         // now confirm shipment
@@ -968,30 +959,6 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
          }
         return max;
     }
-   
-    public ArrayList<String[]> tableToArrayList() {
-        ArrayList<String[]> list = new ArrayList<String[]>();
-         for (int j = 0; j < orddet.getRowCount(); j++) {
-             String[] s = new String[]{
-                 orddet.getValueAt(j, 0).toString(),
-                 orddet.getValueAt(j, 1).toString(),
-                 orddet.getValueAt(j, 2).toString(),
-                 orddet.getValueAt(j, 3).toString(),
-                 orddet.getValueAt(j, 4).toString(),
-                 orddet.getValueAt(j, 5).toString(),
-                 orddet.getValueAt(j, 6).toString(),
-                 orddet.getValueAt(j, 7).toString()
-             };
-             list.add(s);
-         }
-        
-        return list;
-    }
-   
-    
-    
-   
- 
    
   
     /**
@@ -1865,11 +1832,11 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
     }//GEN-LAST:event_btadditemActionPerformed
 
     private void btaddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddActionPerformed
-      if (! validateInput("addRecord")) {
+      if (! validateInput(BlueSeerUtils.dbaction.add)) {
            return;
        }
         setPanelComponentState(this, false);
-        executeTask("add", new String[]{tbkey.getText()});   
+        executeTask(BlueSeerUtils.dbaction.add, new String[]{tbkey.getText()});   
        
     }//GEN-LAST:event_btaddActionPerformed
 
@@ -1909,11 +1876,11 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
     }//GEN-LAST:event_btdelitemActionPerformed
 
     private void btupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateActionPerformed
-        if (! validateInput("updateRecord")) {
+        if (! validateInput(BlueSeerUtils.dbaction.update)) {
            return;
        }
         setPanelComponentState(this, false);
-        executeTask("update", new String[]{tbkey.getText()});
+        executeTask(BlueSeerUtils.dbaction.update, new String[]{tbkey.getText()});
     }//GEN-LAST:event_btupdateActionPerformed
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
@@ -1922,18 +1889,16 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
 
     private void ddcustActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddcustActionPerformed
 
-        if (ddcust.getItemCount() > 0) {
+        if (! isLoad && ddcust.getItemCount() > 0) {
             custChangeEvent(ddcust.getSelectedItem().toString());
-
-        } // if ddcust has a list
+        } 
 
     }//GEN-LAST:event_ddcustActionPerformed
 
     private void ddshipActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddshipActionPerformed
-        if (ddship.getItemCount() > 0) {
+        if (! isLoad && ddcust.getItemCount() > 0 && ddship.getItemCount() > 0) {
             jobsiteChangeEvent(ddcust.getSelectedItem().toString(), ddship.getSelectedItem().toString());
-
-        } // if ddcust has a list
+        } 
     }//GEN-LAST:event_ddshipActionPerformed
 
     private void btnewcustActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnewcustActionPerformed
@@ -2024,7 +1989,7 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
          if (message[0].equals("1")) { // if error
            bsmf.MainFrame.show(message[1]);
          } else {
-           executeTask("get", new String[]{tbkey.getText()});
+           executeTask(BlueSeerUtils.dbaction.get, new String[]{tbkey.getText()});
          }
     }//GEN-LAST:event_btinvoiceActionPerformed
 
@@ -2039,16 +2004,16 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeer {
     }//GEN-LAST:event_tbqtyFocusLost
 
     private void dditemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dditemActionPerformed
-        if (dditem.getSelectedItem() != null && ! isLoad)
+        if (! isLoad && dditem.getSelectedItem() != null)
         itemChangeEvent(dditem.getSelectedItem().toString());
     }//GEN-LAST:event_dditemActionPerformed
 
     private void tbkeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbkeyActionPerformed
-        executeTask("get", new String[]{tbkey.getText()});
+        executeTask(BlueSeerUtils.dbaction.get, new String[]{tbkey.getText()});
     }//GEN-LAST:event_tbkeyActionPerformed
 
     private void btdeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteActionPerformed
-        executeTask("delete", new String[]{tbkey.getText()});
+        executeTask(BlueSeerUtils.dbaction.delete, new String[]{tbkey.getText()});
       
     }//GEN-LAST:event_btdeleteActionPerformed
 

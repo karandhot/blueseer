@@ -409,6 +409,7 @@ public class shpData {
             if (type.equals("order")) {
             _updateOrderFromShipper(shipper, bscon); 
             }
+            
             if (type.equals("serviceorder")) {
             _updateServiceOrderFromShipper(shipper, bscon); 
             _glEntryFromSrvJobScan(shipper, bscon);
@@ -2463,6 +2464,7 @@ public class shpData {
    }
 
     public static void _updateServiceOrderFromShipper(String shipper, Connection bscon) throws SQLException {
+        
         Statement st = bscon.createStatement();
         ResultSet res = null;
             String ordernbr = "";

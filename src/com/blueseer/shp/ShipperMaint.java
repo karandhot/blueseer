@@ -175,7 +175,8 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                 getGlobalColumnTag("cont"),
                 getGlobalColumnTag("bom"),
                 getGlobalColumnTag("contqty"),
-                getGlobalColumnTag("uom")
+                getGlobalColumnTag("uom"),
+                getGlobalColumnTag("custitem")
             });
     javax.swing.table.DefaultTableModel attachmentmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("select"), 
@@ -626,7 +627,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbqty.setText("");
         tbdesc.setText("");
         tbprice.setText("");
-       
+        tbcustitem.setText("");
          btlookup.setEnabled(true);
          btnew.setEnabled(true);
          btupdate.setEnabled(true);
@@ -895,7 +896,8 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                       shd.shd_cont(),
                       shd.shd_bom(),
                       bsNumber(shd.shd_qty()), // cont qty
-                      shd.shd_uom()
+                      shd.shd_uom(),
+                      shd.shd_custitem()
                       
                   });
                 }
@@ -1042,7 +1044,8 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                      "",  // serialno
                      sod.sod_bom(),
                      String.valueOf(qtyavailable), // cont qty
-                     sod.sod_uom()
+                     sod.sod_uom(),
+                     sod.sod_custitem()
                      }); 
         }
         tabledetail.setModel(myshipdetmodel);
@@ -1207,7 +1210,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                 tbkey.getText(), // shipper
                 bsParseInt(tabledetail.getValueAt(j, 0).toString()), //shline
                 tabledetail.getValueAt(j, 1).toString(), // item
-                tabledetail.getValueAt(j, 1).toString(), // custimtem
+                tabledetail.getValueAt(j, 18).toString(), // custimtem
                 tabledetail.getValueAt(j, 2).toString(),  // order
                 bsParseInt(tabledetail.getValueAt(j, 3).toString()), //soline    
                 setDateDB(dcshipdate.getDate()),
@@ -1410,6 +1413,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         tbqty.setText("");
         tbdesc.setText("");
+        tbcustitem.setText("");
         tbref.setText("");
         tbboxes.setText("");
         tbpallets.setText("");
@@ -1466,6 +1470,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbpo.setText("");
         tbserial.setText("");
         tbdesc.setText("");
+        tbcustitem.setText("");
         tbqty.setText("");
         tbprice.setText("");
         dduom.setSelectedIndex(0);
@@ -1480,13 +1485,14 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbitem.setText(sod.sod_item());
         tbpo.setText(sod.sod_po());
         tbdesc.setText(sod.sod_desc());
+        tbcustitem.setText(sod.sod_custitem());
         tbqty.setText(String.valueOf(sod.sod_ord_qty() - sod.sod_shipped_qty()));
         tbprice.setText(bsNumber(sod.sod_netprice()));
         dduom.setSelectedItem(sod.sod_uom());
         ddcont.setSelectedItem(it.it_cont());
         tbcontqty.setText(bsNumber(it.it_contqty()));
         podate = sod.sod_ord_date();
-        
+        tbcustitem.setText(sod.sod_custitem());
         ddbom.insertItemAt("", 0);
         ddbom.setSelectedIndex(0);
         ArrayList<String[]> boms = invData.getBOMsByItemSite_mg(sod.sod_item());
@@ -1621,6 +1627,8 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbordernbr = new javax.swing.JTextField();
         tborderline = new javax.swing.JTextField();
         btlookupOrderLine = new javax.swing.JButton();
+        tbcustitem = new javax.swing.JTextField();
+        jLabel14 = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
         jLabel47 = new javax.swing.JLabel();
         jLabel44 = new javax.swing.JLabel();
@@ -2108,32 +2116,40 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
+        jLabel14.setText("CustItem");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel48, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel30, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel38, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel42, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel11, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addGap(4, 4, 4)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(tbordernbr, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel14)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btlookupOrderLine, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(tborderline, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbitem, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbdesc, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbpo, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(ddcont, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbcontqty, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(tbcustitem, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel48, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel30, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel38, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel42, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel11, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addGap(4, 4, 4)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(tbordernbr, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btlookupOrderLine, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(tborderline, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbitem, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbdesc, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbpo, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(ddcont, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbcontqty, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(31, 31, 31))
         );
         jPanel1Layout.setVerticalGroup(
@@ -2160,6 +2176,10 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbdesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel38))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbcustitem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel14))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel42)
@@ -2577,7 +2597,8 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                 ddcont.getSelectedItem().toString(),
                 ddbom.getSelectedItem().toString(),
                 "0", // cont
-                dduom.getSelectedItem().toString()
+                dduom.getSelectedItem().toString(),
+                tbcustitem.getText()
             });
             } else {
                    for (int x = 0; x < nbrOfContainers; x++) {
@@ -2598,7 +2619,8 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                     tbserial.getText(),
                     ddbom.getSelectedItem().toString(),
                     tbcontqty.getText(), // cont
-                    dduom.getSelectedItem().toString()
+                    dduom.getSelectedItem().toString(),
+                    tbcustitem.getText()
                 }); 
                 }
                    // now add extra if remainder greater than zero
@@ -2620,7 +2642,8 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                     tbserial.getText(),
                     ddbom.getSelectedItem().toString(),
                     remainder, // cont
-                    dduom.getSelectedItem().toString()
+                    dduom.getSelectedItem().toString(),
+                    tbcustitem.getText()
                 });    
                    }
             }
@@ -2814,6 +2837,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbserial.setText(tabledetail.getValueAt(row, 13).toString());
         ddbom.setSelectedItem(tabledetail.getValueAt(row, 15).toString());
         dduom.setSelectedItem(tabledetail.getValueAt(row, 17).toString());
+        tbcustitem.setText(tabledetail.getValueAt(row, 18).toString());
        
         isLoad = false;
     }//GEN-LAST:event_tabledetailMouseClicked
@@ -2855,6 +2879,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                 tabledetail.setValueAt(cont, i, 14);
                 tabledetail.setValueAt(tbprice.getText(), i, 6);
                 tabledetail.setValueAt(tbdesc.getText(), i, 7);
+                tabledetail.setValueAt(tbcustitem.getText(), i, 18);
                 tabledetail.setValueAt(ddwh.getSelectedItem().toString(), i, 8);
                 tabledetail.setValueAt(ddloc.getSelectedItem().toString(), i, 9);
                 tabledetail.setValueAt(bom, i, 15);
@@ -2957,6 +2982,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
@@ -3008,6 +3034,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JTable tabledetail;
     private javax.swing.JTextField tbboxes;
     private javax.swing.JTextField tbcontqty;
+    private javax.swing.JTextField tbcustitem;
     private javax.swing.JTextField tbdesc;
     private javax.swing.JTextField tbitem;
     private javax.swing.JTextField tbkey;
