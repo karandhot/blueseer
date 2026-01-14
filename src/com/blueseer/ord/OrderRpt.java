@@ -63,6 +63,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
+import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
@@ -112,10 +113,10 @@ import net.sf.jasperreports.view.JasperViewer;
  */
 public class OrderRpt extends javax.swing.JPanel {
  
-     public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
+    public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
      
-     public String rsData; 
-     Object[][] roData;
+    public String rsData; 
+    Object[][] roData;
     ArrayList<String[]> initDataSets = new ArrayList<>();
     String defaultcurrency = "";
      
@@ -505,6 +506,8 @@ public class OrderRpt extends javax.swing.JPanel {
        if (roData != null) {
         if (roData.length > 0) {
             for (Object[] rowData : roData) {
+                rowData[2] = bsParseDouble(currformat(rowData[2].toString()));
+                rowData[3] = bsParseDouble(currformat(rowData[3].toString()));
                 dols += (bsParseDouble(rowData[2].toString()) * bsParseDouble(rowData[3].toString()));
                 modeldetail.addRow(rowData);
             } 
@@ -751,6 +754,8 @@ public class OrderRpt extends javax.swing.JPanel {
                 continue; 
 
 
+            rowData[8] = bsParseDouble(currformat(rowData[8].toString()));
+            rowData[9] = bsParseDouble(currformat(rowData[9].toString()));
             dol = dol + BlueSeerUtils.bsParseDouble(rowData[9].toString());
             qty = qty + BlueSeerUtils.bsParseDouble(rowData[8].toString());
             i++;

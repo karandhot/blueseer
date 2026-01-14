@@ -46,9 +46,11 @@ import static com.blueseer.utl.OVData.addMenuToUser;
 import static com.blueseer.utl.OVData.addSysMetaDataNoUnique;
 import static com.blueseer.utl.OVData.addUpdateSysMeta;
 import static com.blueseer.utl.OVData.copyUserPerms;
+import static com.blueseer.utl.OVData.createPlanFromServiceOrder;
 import static com.blueseer.utl.OVData.deleteMenuToAllUsers;
 import static com.blueseer.utl.OVData.deleteMenuToUser;
 import static com.blueseer.utl.OVData.deleteSysMeta;
+import static com.blueseer.utl.OVData.getCodeMstrKeyList;
 import static com.blueseer.utl.OVData.getCodeMstrValueList;
 import static com.blueseer.utl.OVData.getExchangeRate;
 import static com.blueseer.utl.OVData.getMenuRecs;
@@ -275,6 +277,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(ArrayListStringToJson(getCodeMstrValueList(request.getHeader("code"))));
             break;
             
+        case "getCodeMstrKeyList" :        
+            response.getWriter().print(ArrayListStringToJson(getCodeMstrKeyList(request.getHeader("code"))));
+            break;    
+            
         case "getOperationsByItem" :        
             response.getWriter().print(ArrayListStringToJson(getOperationsByItem(request.getHeader("param1"))));
             break; 
@@ -477,10 +483,19 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;    
         }
         
-        case "getTaxAmtApplicableByItem" : 
+        case "getTaxAmtApplicableByItem" : {
             response.getWriter().print(doubleToJson(getTaxAmtApplicableByItem(request.getHeader("param1"),
                     bsParseDouble(request.getHeader("param2")))));   
+            break;
+        }
+            
+        case "createPlanFromServiceOrder" : {
+            response.getWriter().print(doubleToJson(createPlanFromServiceOrder(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    BlueSeerUtils.ConvertStringToBool(request.getHeader("param4")))));   
             break;    
+        }
             
         case "getTableInfo" : 
             response.getWriter().print(HashMapStringIntegerToJson(getTableInfo(new String[]{request.getHeader("param1")})));

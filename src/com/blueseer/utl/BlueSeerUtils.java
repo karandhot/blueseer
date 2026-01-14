@@ -1161,7 +1161,7 @@ public class BlueSeerUtils {
             return "0";
         }
         
-        String x = "0";
+        String x = "0.00";
         String pattern = "#0.00";
         String adjvalue = String.valueOf(invalue);
       

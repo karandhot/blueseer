@@ -424,7 +424,7 @@ public class admData {
                             res.getString("user_phone"),
                             res.getString("user_cell"),
                             res.getString("user_rmks"),
-                            res.getString("user_passwd"),
+                            bsmf.MainFrame.PassWord("1", res.getString("user_passwd").toCharArray()),
                             res.getString("user_allowedsites")
                         );
                     }
@@ -527,7 +527,7 @@ public class admData {
                         res.getString("ov_bgimage"), res.getInt("ov_rcolor"), res.getInt("ov_gcolor"), res.getInt("ov_bcolor"),
                         res.getString("ov_fileservertype"), res.getString("ov_image_directory"), res.getString("ov_temp_directory"), res.getString("ov_label_directory"),
                         res.getString("ov_jasper_directory"),res.getString("ov_edi_directory"),res.getString("ov_email_server"),res.getString("ov_email_from"),
-                        res.getString("ov_smtpauthuser"), res.getString("ov_smtpauthpass"), res.getString("ov_varchar"));
+                        res.getString("ov_smtpauthuser"), bsmf.MainFrame.PassWord("1", res.getString("ov_image_directory").toCharArray()), res.getString("ov_varchar"));
                     }
                 }
             }

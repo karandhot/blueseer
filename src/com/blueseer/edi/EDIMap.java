@@ -30,6 +30,8 @@ import static com.blueseer.edi.EDI.edilog;
 import static com.blueseer.edi.EDI.hanoi;
 import static com.blueseer.edi.EDI.trimSegment;
 import static com.blueseer.edi.ediData.addUpdateEDIMetaMulti;
+import com.blueseer.edi.ediData.dfs_mstr;
+import static com.blueseer.edi.ediData.getDFSMstr;
 import static com.blueseer.edi.ediData.getDFSMstrasArray;
 import static com.blueseer.edi.ediData.getDSFasString;
 import static com.blueseer.edi.ediData.getDSFasStringBase0;
@@ -2823,8 +2825,13 @@ public abstract class EDIMap {  // took out the implements EDIMapi
             tree.setRootElement(rootNode);
           //  root.set(rootname, generateJSONx(tree.getRootElement(), mapper.createArrayNode(), mapper.createObjectNode(), OSF, MD).on());
             
-            root.set(rootname, generateJSONy(tree.getRootElement(), rootname, null, 0, OSF, MD).on()); 
-           
+           dfs_mstr dfs = getDFSMstr(new String[]{ofsfile});
+           if (dfs.dfs_suppressroot().equals("1")) {
+               root = generateJSONy(tree.getRootElement(), rootname, null, 0, OSF, MD).on();
+           } else {
+              root.set(rootname, generateJSONy(tree.getRootElement(), rootname, null, 0, OSF, MD).on()); 
+           }
+          
             
             
             if (GlobalDebug) {
@@ -2832,6 +2839,9 @@ public abstract class EDIMap {  // took out the implements EDIMapi
             }
             try { 
                  content = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(root);
+                 if (dfs.dfs_wraparray().equals("1")) {
+                     content = "[ " + content + " ]";
+                 }
                 //  content = mapper.writeValueAsString(root);
                 if (GlobalDebug) {
                    System.out.println("prettyprint: " + "\n" + content);  
@@ -3112,28 +3122,28 @@ public abstract class EDIMap {  // took out the implements EDIMapi
         } else {
             ObjectNode elementNode = new ObjectMapper().createObjectNode();
             for (int i = 0; i < fields.size(); i++) {
-                        
-                                    String[] x = fields.get(i);
-                                    if (x[4].toLowerCase().equals("yes")) {
-                                            parent = x[1];
-                                            continue;
-                                    }
-                                    
-                                    
-                                    if (! parent.isEmpty()) {
-                                        parentChildKey = parent + ":";
-                                    } else {
-                                        parentChildKey = "";
-                                    }
-                                    HashMap<String,String> mapValues = MD.get(parentChildKey + tag + ":" + "1");
-                                    if (mapValues != null && mapValues.containsKey(x[5])) {
-                                      v = mapValues.get(x[5]);
-                                    } else {
-                                        v = "";
-                                    }
-                                    elementNode.put(x[5], v);
-                                     
-                            }
+
+                    String[] x = fields.get(i);
+                    if (x[4].toLowerCase().equals("yes")) {
+                            parent = x[1];
+                            continue;
+                    }
+
+
+                    if (! parent.isEmpty()) {
+                        parentChildKey = parent + ":";
+                    } else {
+                        parentChildKey = "";
+                    }
+                    HashMap<String,String> mapValues = MD.get(parentChildKey + tag + ":" + "1");
+                    if (mapValues != null && mapValues.containsKey(x[5])) {
+                      v = mapValues.get(x[5]);
+                    } else {
+                        v = "";
+                    }
+                    elementNode.put(x[5], v);
+
+            }
             if (elementNode.size() > 0) {
             arN.add(elementNode);
            // System.out.println("here limit <= 1: " + node.getData() + "/" +  elementNode.toString());

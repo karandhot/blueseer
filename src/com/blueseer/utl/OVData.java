@@ -7276,7 +7276,18 @@ public class OVData {
     }
      
     public static ArrayList<String> getCodeMstrKeyList(String code) {
-       ArrayList myarray = new ArrayList();
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getCodeMstrKeyList"});
+            list.add(new String[]{"code",  code});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        ArrayList myarray = new ArrayList();
         try{
             
             Connection con = null;
@@ -22145,7 +22156,20 @@ MainFrame.bslog(e);
    }
   
     public static int createPlanFromServiceOrder(String site, String serviceorder, String optype, boolean isMulti) {
-    
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "createPlanFromServiceOrder"});
+            list.add(new String[]{"param1", site});
+            list.add(new String[]{"param2", serviceorder});
+            list.add(new String[]{"param3", optype});
+            list.add(new String[]{"param4", String.valueOf(isMulti)});
+            try {
+                return jsonToInt(sendServerPost(list, "", null, "dataServOV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0;
+            }
+        }
     String schedstatus = "1";
     String qtysched = "1";
   

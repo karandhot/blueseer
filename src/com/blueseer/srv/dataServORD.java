@@ -40,6 +40,7 @@ import static com.blueseer.ord.ordData.getOrderChangeReportData;
 import static com.blueseer.ord.ordData.getOrderDet;
 import static com.blueseer.ord.ordData.getOrderDetailExport;
 import static com.blueseer.ord.ordData.getOrderDetailExportNew;
+import static com.blueseer.ord.ordData.getOrderItemBrowseView;
 import static com.blueseer.ord.ordData.getOrderMstr;
 import static com.blueseer.ord.ordData.getOrderMstrSet;
 import static com.blueseer.ord.ordData.getOrderReportData;
@@ -247,7 +248,53 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         case "deleteOrderMstr" :
             response.getWriter().print(arrayToJson(ordData.deleteOrderMstr(request.getHeader("param1")
                     )));  
-            break;    
+            break; 
+        
+        case "deleteServiceOrderMstr" :
+            response.getWriter().print(arrayToJson(ordData.deleteServiceOrderMstr(request.getHeader("param1")
+                    )));  
+            break;     
+        
+        
+        case "addServiceOrderTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            ordData.svd_det[] sdarray = om.readValue(ca[0], ordData.svd_det[].class);
+            ArrayList<ordData.svd_det> svlist = new ArrayList<ordData.svd_det>(Arrays.asList(sdarray));  
+            ordData.sv_mstr sv = om.readValue(ca[1], ordData.sv_mstr.class); 
+            ordData.sos_det[] sosdarray = om.readValue(ca[2], ordData.sos_det[].class);
+            ArrayList<ordData.sos_det> sosdlist = new ArrayList<ordData.sos_det>(Arrays.asList(sosdarray)); 
+            response.getWriter().print(arrayToJson(ordData.addServiceOrderTransaction(svlist, sv, sosdlist))); 
+            break;
+            }
+         
+        case "updateServiceOrderTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            String key = ca[0];
+            ArrayList<String> badlist = om.readValue(ca[1], ArrayList.class);
+            ordData.svd_det[] sdarray = om.readValue(ca[2], ordData.svd_det[].class);
+            ArrayList<ordData.svd_det> svlist = new ArrayList<ordData.svd_det>(Arrays.asList(sdarray));   
+            ordData.sv_mstr sv = om.readValue(ca[3], ordData.sv_mstr.class); 
+            ordData.sos_det[] sosdarray = om.readValue(ca[4], ordData.sos_det[].class);
+            ArrayList<ordData.sos_det> sosdlist = new ArrayList<ordData.sos_det>(Arrays.asList(sosdarray)); 
+            response.getWriter().print(arrayToJson(ordData.updateServiceOrderTransaction(key, badlist, svlist, sv, sosdlist))); 
+            }
+            break;  
             
         case "getOrderBrowseInit" :
             response.getWriter().print(ArrayListStringArrayToJson(ordData.getOrderBrowseInit(request.getHeader("param1"), request.getHeader("param2"))));
@@ -255,7 +302,11 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             
         case "getSalesOrderInit" :
             response.getWriter().print(ArrayListStringArrayToJson(ordData.getSalesOrderInit(request.getHeader("param1"), request.getHeader("param2"))));
-            break;    
+            break; 
+            
+        case "getServiceOrderInit" :
+            response.getWriter().print(ArrayListStringArrayToJson(ordData.getServiceOrderInit(request.getHeader("param1"), request.getHeader("param2"))));
+            break;     
             
         case "exportOrderDetail" : 
         response.getWriter().print(getOrderDetailExportNew(request.getHeader("fromdate"), 
@@ -273,8 +324,8 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                 request.getHeader("site"))); 
         break;
 
-        case "getOrderBrowseView" :
-        String[] or = new String[]{
+        case "getOrderBrowseView" : {
+        String[] x = new String[]{
                request.getHeader("fromdate"), 
                request.getHeader("todate"), 
                request.getHeader("fromcust"), 
@@ -282,8 +333,25 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                request.getHeader("site"), 
                request.getHeader("datetype")
                };     
-        response.getWriter().print(getOrderBrowseView(or));  
+        response.getWriter().print(getOrderBrowseView(x));  
         break;
+        }
+        
+        case "getOrderItemBrowseView" : {
+        String[] x = new String[]{
+               request.getHeader("fromdate"), 
+               request.getHeader("todate"), 
+               request.getHeader("fromcust"), 
+               request.getHeader("tocust"), 
+               request.getHeader("fromnbr"), 
+               request.getHeader("tonbr"),
+               request.getHeader("fromitem"), 
+               request.getHeader("toitem"),
+               request.getHeader("site")
+               };     
+        response.getWriter().print(getOrderItemBrowseView(x));  
+        break;
+        }
         
         case "validateOrderDetail" :
             response.getWriter().print(arrayToJson(ordData.validateOrderDetail(request.getHeader("param1"),

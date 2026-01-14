@@ -56,26 +56,34 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="btclear" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="dddoctype" alignment="0" min="-2" pref="157" max="-2" attributes="0"/>
                               <Component id="ddfiletype" alignment="0" min="-2" pref="88" max="-2" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
-                                  <Group type="103" groupAlignment="1" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" alignment="0" attributes="0">
-                                          <Component id="tbversion" min="-2" pref="132" max="-2" attributes="0"/>
-                                          <EmptySpace min="-2" pref="64" max="-2" attributes="0"/>
-                                          <Component id="jLabel14" min="-2" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="1" attributes="0">
+                                              <Group type="102" alignment="0" attributes="0">
+                                                  <Component id="tbversion" min="-2" pref="132" max="-2" attributes="0"/>
+                                                  <EmptySpace min="-2" pref="64" max="-2" attributes="0"/>
+                                                  <Component id="jLabel14" min="-2" max="-2" attributes="0"/>
+                                                  <EmptySpace max="-2" attributes="0"/>
+                                                  <Component id="tbdelimiter" min="-2" pref="36" max="-2" attributes="0"/>
+                                              </Group>
+                                              <Component id="tbdesc" alignment="0" min="-2" pref="269" max="-2" attributes="0"/>
+                                          </Group>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="tbdelimiter" min="-2" pref="36" max="-2" attributes="0"/>
+                                          <Component id="btlookupele" min="-2" pref="25" max="-2" attributes="0"/>
                                       </Group>
-                                      <Component id="tbdesc" alignment="0" min="-2" pref="269" max="-2" attributes="0"/>
+                                      <Component id="dddoctype" alignment="0" min="-2" pref="157" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="btlookupele" min="-2" pref="25" max="-2" attributes="0"/>
                                   <EmptySpace min="-2" pref="74" max="-2" attributes="0"/>
-                                  <Component id="cbsuppress" min="-2" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="cbsuppressroot" min="-2" max="-2" attributes="0"/>
+                                      <Component id="cbwraparray" min="-2" max="-2" attributes="0"/>
+                                      <Component id="cbsuppress" min="-2" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
                           </Group>
-                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                          <EmptySpace min="0" pref="140" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -90,8 +98,8 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jPanel1" max="32767" attributes="0"/>
                               <Component id="jScrollPane1" max="32767" attributes="0"/>
+                              <Component id="jPanel1" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -123,11 +131,13 @@
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="dddoctype" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="cbsuppressroot" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="ddfiletype" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="cbsuppress" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
@@ -139,9 +149,9 @@
                                   <Component id="tbdelimiter" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="jLabel14" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="cbsuppress" alignment="1" min="-2" max="-2" attributes="0"/>
+                              <Component id="cbwraparray" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
                           <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
                           <Component id="jScrollPane1" min="-2" pref="178" max="-2" attributes="0"/>
@@ -371,7 +381,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="btdownload" min="-2" pref="28" max="-2" attributes="0"/>
-                      <EmptySpace pref="102" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -734,6 +744,16 @@
         <Component class="javax.swing.JCheckBox" name="cbsuppress">
           <Properties>
             <Property name="text" type="java.lang.String" value="Suppress Empty Tag"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JCheckBox" name="cbwraparray">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Wrap Array"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JCheckBox" name="cbsuppressroot">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Suppress Root"/>
           </Properties>
         </Component>
       </SubComponents>

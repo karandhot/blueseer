@@ -57,6 +57,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
+import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
@@ -1557,6 +1558,21 @@ public class ordData {
     }
     
     public static String[] addServiceOrderTransaction(ArrayList<svd_det> svd, sv_mstr sv, ArrayList<sos_det> sos) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addServiceOrderTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(svd);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(sv);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(sos);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -1718,7 +1734,82 @@ public class ordData {
         return rows;
     }
     
-
+    public static String[] deleteServiceOrderMstr(String order) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "deleteServiceOrderMstr"});
+            list.add(new String[]{"param1", order});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        } 
+        
+        String[] m = new String[2];
+        if (order == null || order.isBlank()) {
+            return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
+        }
+        Connection con = null;
+        try { 
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            _deleteServiceOrderMstr(order, con);  
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
+        } finally {
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+    
+    private static void _deleteServiceOrderMstr(String x, Connection con) throws SQLException { 
+        PreparedStatement ps = null; 
+        
+        String po = "";
+        String sqlSelect = "select * from sv_mstr where sv_nbr = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x);
+          ResultSet res = ps.executeQuery();
+            while(res.next()) {
+                po = res.getString("sv_po");
+            }
+          res.close();
+            
+        
+        String sql = "delete from sv_mstr where sv_nbr = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        sql = "delete from svd_det where svd_nbr = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        sql = "delete from sod_tax where sodt_nbr = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        sql = "delete from sos_det where sos_nbr = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+       
+        ps.close();
+        
+    }
+    
     private static void _deleteServiceOrderLines(String x, String line, Connection con, PreparedStatement ps) throws SQLException { 
         
         String sql = "delete from svd_det where svd_nbr = ? and svd_line = ?; ";
@@ -1730,6 +1821,22 @@ public class ordData {
         
      // update order master.... multiple table transaction function
     public static String[] updateServiceOrderTransaction(String x, ArrayList<String> lines, ArrayList<svd_det> svd, sv_mstr sv, ArrayList<sos_det> sos) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateServiceOrderTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(lines);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(svd);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(sv);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(sos);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -4485,6 +4592,169 @@ public class ordData {
         return lines;
     }
     
+    public static ArrayList<String[]> getServiceOrderInit(String panelClassName, String userid) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getServiceOrderInit"});
+            list.add(new String[]{"param1", panelClassName});
+            list.add(new String[]{"param2", userid});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        
+        String defaultsite = "";
+        ArrayList<String[]> lines = new ArrayList<String[]>();
+        try{
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+        // allocate, custitemonly, site, currency, sites, currencies, uoms, 
+        // states, warehouses, locations, customers, taxcodes, carriers, statuses   
+         String[] sites = null;
+            boolean allsites = false;
+            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + userid + "'" + ";");
+            while (res.next()) {
+              if (res.getString("user_allowedsites").equals("*")) {
+                  allsites = true;
+              } else {
+                  sites = res.getString("user_allowedsites").split(",");
+              }
+            }
+            res = st.executeQuery("select site_site from site_mstr;");
+            while (res.next()) {
+               if (allsites || Arrays.stream(sites).anyMatch(res.getString("site_site")::equals)) {
+                 String[] s = new String[2];
+                 s[0] = "sites";
+                 s[1] = res.getString("site_site");
+                 lines.add(s);
+               }
+            }
+            
+            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + userid + "'" + 
+                    " AND menu_panel = " + "'" + panelClassName + "'" +
+                    ";");
+            while (res.next()) {
+               if (res.getString("perm_readonly").equals("0")) {
+                String[] s = new String[2];
+                s[0] = "canupdate";
+                s[1] = "true";
+                lines.add(s);
+               } else {
+                String[] s = new String[2];
+                s[0] = "canupdate";
+                s[1] = "false";
+                lines.add(s);   
+               }
+           }
+           
+            res = st.executeQuery("select ov_site, ov_currency from ov_mstr;" );
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "currency";
+               s[1] = res.getString("ov_currency");
+               lines.add(s);
+               s = new String[2];
+               s[0] = "site";
+               s[1] = res.getString("ov_site");
+               lines.add(s);
+               defaultsite = s[1];
+            }
+            
+            res = st.executeQuery("select * from ov_ctrl;" );
+            while (res.next()) {
+               lines.add(new String[]{"jasperdir", res.getString("ov_jasper_directory")});
+               lines.add(new String[]{"imagedir", res.getString("ov_image_directory")});
+               lines.add(new String[]{"tempdir", res.getString("ov_temp_directory")});
+               lines.add(new String[]{"labeldir", res.getString("ov_label_directory")});
+               lines.add(new String[]{"edidir", res.getString("ov_edi_directory")});
+            }
+           
+            
+            res = st.executeQuery("select cur_id from cur_mstr ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "currencies";
+               s[1] = res.getString("cur_id");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select uom_id from uom_mstr order by uom_id;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "uoms";
+               s[1] = res.getString("uom_id");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select cm_code from cm_mstr order by cm_code ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "customers";
+               s[1] = res.getString("cm_code");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select tax_code from tax_mstr order by tax_code  ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "taxcodes";
+               s[1] = res.getString("tax_code");
+               lines.add(s);
+            }
+            
+             res = st.executeQuery("select distinct wf_id from wf_mstr;" );
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "routings";
+               s[1] = res.getString("wf_id");
+               lines.add(s);
+            }
+            
+           
+            
+            res = st.executeQuery("select code_key from code_mstr where code_code = 'orderstatus' order by code_key ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "statuses";
+               s[1] = res.getString("code_key");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select it_item from item_mstr where it_site = " + "'" + defaultsite + "'" + " order by it_item ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "items";
+               s[1] = res.getString("it_item");
+               lines.add(s);
+            }
+           
+            
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+        return lines;
+    }
+    
     public static ArrayList<String[]> getOrderBrowseInit(String panelClassName, String userid) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<>();
@@ -6171,6 +6441,78 @@ public class ordData {
                     sb.append(res.getString("so_curr")).append(",");
                     sb.append(res.getString("so_status")).append(",");
                     sb.append(res.getString("so_mod_date")).append("\n");
+                      */ 
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getOrderItemBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+             
+                 res = st.executeQuery("select sod_item, sod_nbr, sod_ord_date, sod_ord_qty, sod_shipped_qty, sod_netprice, so_cust, cm_name from sod_det " +
+                        " inner join so_mstr on so_nbr = sod_nbr " +
+                        " inner join cm_mstr on cm_code = so_cust where " +
+                        " so_site = " + "'" + keys[8] + "'" + " AND " + 
+                        " sod_nbr >= " + "'" + keys[4] + "'" + " AND " +
+                        " sod_nbr <= " + "'" + keys[5] + "'" + " AND " +
+                        " sod_item >= " + "'" + keys[6] + "'" + " AND " +
+                        " sod_item <= " + "'" + keys[7] + "'" + " AND " +        
+                        " sod_ord_date >= " + "'" + keys[0] + "'" + " AND " +
+                        " sod_ord_date <= " + "'" + keys[1] + "'" + " AND " +
+                        " so_cust >= " + "'" + keys[2] + "'" + " AND " +
+                        " so_cust <= " + "'" + keys[3] + "'" + 
+                        " order by sod_nbr desc;");
+                
+                    while (res.next()) {
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("sod_nbr"));
+                        rowArray.put(res.getString("so_cust"));
+                        rowArray.put(res.getString("cm_name"));
+                        rowArray.put(res.getString("sod_ord_date"));
+                        rowArray.put(res.getString("sod_item"));
+                        rowArray.put(res.getDouble("sod_ord_qty"));
+                        rowArray.put(res.getDouble("sod_shipped_qty")); 
+                        rowArray.put(res.getDouble("sod_netprice")); 
+                        jsonarray.put(rowArray);
+                    /*
+                    modeltable.addRow(new Object[]{BlueSeerUtils.clickflag, 
+                                bsNumber(res.getString("sod_nbr")),
+                                res.getString("so_cust"),
+                                res.getString("cm_name"),
+                                getDateDB(res.getString("sod_ord_date")),
+                                res.getString("sod_item"),
+                                bsNumber(res.getDouble("sod_ord_qty")),
+                                bsNumber(res.getDouble("sod_shipped_qty")),
+                                bsParseDouble(currformatDouble(res.getDouble("sod_netprice")))
+                            });
                       */ 
                 }
                

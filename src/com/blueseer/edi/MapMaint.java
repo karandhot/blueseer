@@ -2282,7 +2282,9 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
                     v[4],
                     v[5],
                     "", // misc
-                    "0" // default no suppression
+                    "0", // default no suppression
+                    "0", // default no suppress root (json)
+                    "0"  // default no wrap array (json)    
                     );
             }
             ArrayList<dfs_det> detlist = new ArrayList<dfs_det>();
@@ -2342,7 +2344,9 @@ public class MapMaint extends javax.swing.JPanel implements IBlueSeerT  {
                     v[4],
                     v[5],
                     "", // misc
-                    "0" // default no suppression
+                    "0", // default no suppression
+                    "0", // default no suppress root (json)
+                    "0"  // default no wrap array (json)     
                     );
             }
             ArrayList<dfs_det> detlist = new ArrayList<dfs_det>();

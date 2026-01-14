@@ -32,6 +32,7 @@ import com.blueseer.shp.*;
 import com.blueseer.far.*;
 import com.blueseer.shp.*;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static bsmf.MainFrame.checkperms;
@@ -77,18 +78,23 @@ import static com.blueseer.utl.BlueSeerUtils.bsFormatDoubleZ;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
+import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import static com.blueseer.utl.BlueSeerUtils.setDateFormat;
 import static com.blueseer.utl.BlueSeerUtils.setDateFormatNull;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
 import java.util.Calendar;
+import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Locale;
@@ -101,6 +107,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -111,10 +118,13 @@ import net.sf.jasperreports.view.JasperViewer;
  * @author vaughnte
  */
 public class OrderItemBrowse extends javax.swing.JPanel {
- 
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultcurrency = "";
     boolean sending = false;
     
-    javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+    javax.swing.table.DefaultTableModel modeltable = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("select"), 
                             getGlobalColumnTag("order"),
                             getGlobalColumnTag("customer"), 
@@ -129,6 +139,8 @@ public class OrderItemBrowse extends javax.swing.JPanel {
                       public Class getColumnClass(int col) {  
                         if (col == 0)       
                             return ImageIcon.class;  
+                        else if (col == 6 || col == 7 || col == 8) 
+                            return Double.class;
                         else return String.class;  //other columns accept String values  
                       }
                       
@@ -142,7 +154,7 @@ public class OrderItemBrowse extends javax.swing.JPanel {
                 
   
     
-     class ButtonRenderer extends JButton implements TableCellRenderer {
+    class ButtonRenderer extends JButton implements TableCellRenderer {
 
         public ButtonRenderer() {
             setOpaque(true);
@@ -163,7 +175,7 @@ public class OrderItemBrowse extends javax.swing.JPanel {
     }
     
    
- class SomeRenderer extends DefaultTableCellRenderer {
+    class SomeRenderer extends DefaultTableCellRenderer {
          
     public Component getTableCellRendererComponent(JTable table,
             Object value, boolean isSelected, boolean hasFocus, int row,
@@ -171,16 +183,9 @@ public class OrderItemBrowse extends javax.swing.JPanel {
 
         Component c = super.getTableCellRendererComponent(table,
                 value, isSelected, hasFocus, row, column);
-        
-            boolean issched = (Boolean) tablereport.getModel().getValueAt(table.convertRowIndexToModel(row), 4);
-            if (( column == 5 || column == 6) && ! issched ) {
-            c.setBackground(Color.green);
-            c.setForeground(Color.BLACK);
-            
-            }
-            else {
                 c.setBackground(table.getBackground());
-            }
+           // table.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+       
             return c;
     }
     }
@@ -197,24 +202,43 @@ public class OrderItemBrowse extends javax.swing.JPanel {
     }
 
     
-    public void executeTask(String x, int y, String w) { 
+    public void executeTask(String x, String[] y) { 
       
         class Task extends SwingWorker<String[], Void> {
-       
-          String key = "";
-          int row = 0;
-          String site = "";
+         
+          String action = "";
+          String[] key = null;
           
-          public Task(String key, int row, String site) { 
+          public Task(String action, String[] key) { 
+              this.action = action;
               this.key = key;
-              this.row = row;
-              this.site = site;
-          } 
-           
+          }     
+            
         @Override
         public String[] doInBackground() throws Exception {
             String[] message = new String[2];
-            message = OVData.sendInvoice(key, site); 
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                    
+                case "getOrderItemBrowseView":
+                    message = getOrderItemBrowseView();
+                    break; 
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
             return message;
         }
  
@@ -223,8 +247,12 @@ public class OrderItemBrowse extends javax.swing.JPanel {
             try {
             String[] message = get();
             BlueSeerUtils.endTask(message);
-            sending = false;
-            tablereport.getModel().setValueAt(BlueSeerUtils.clickmail,row,11);
+                if (this.action.equals("dataInit")) {
+                        done_Initialization();
+                }
+                if (this.action.equals("getOrderItemBrowseView")) {
+                    done_getOrderItemBrowseView();
+                }
             } catch (Exception e) {
                 MainFrame.bslog(e);
             } 
@@ -233,11 +261,11 @@ public class OrderItemBrowse extends javax.swing.JPanel {
     }  
       
        BlueSeerUtils.startTask(new String[]{"","Running..."});
-       Task z = new Task(x, y, w); 
+       Task z = new Task(x, y); 
        z.execute(); 
        
     }
-    
+   
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -299,27 +327,199 @@ public class OrderItemBrowse extends javax.swing.JPanel {
         cal.set(Calendar.DAY_OF_YEAR, 1);
         java.util.Date firstday = cal.getTime();
         
-        dcfrom.setDate(firstday);
-        dcto.setDate(now);
+        dcFrom.setDate(firstday);
+        dcTo.setDate(now);
                
-        mymodel.setNumRows(0);
+        modeltable.setNumRows(0);
     }
     
     public void initvars(String[] arg) {
         
         detailpanel.setVisible(false);
-       
         clearAll();
-        
-               
-        tablereport.setModel(mymodel);
-        tablereport.getTableHeader().setReorderingAllowed(false);
-        tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        
-        tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
+        executeTask("dataInit", null);
     }
+    
+    public String[] getInitialization() {
+        initDataSets = ordData.getOrderBrowseInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        Calendar calfrom = Calendar.getInstance();
+        Calendar calto = Calendar.getInstance();
+        ddsite.removeAllItems();
+        
+        String defaultsite = "";
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultcurrency = s[1];  
+            }
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultsite = s[1]; 
+            }
+           
+            
+            if (s[0].equals("system")) {
+              String[] t = s[1].split(",",-1);
+              if (t[0].equals("browse_start_date")) {
+               if (! t[1].isBlank() && BlueSeerUtils.isParsableToInt(t[1]) && t[1].length() < 8) {
+               calfrom.add(Calendar.DATE, Integer.parseInt(t[1]));
+               dcFrom.setDate(calfrom.getTime()); 
+               }
+               if (! t[1].isBlank() && BlueSeerUtils.isParsableToInt(t[1]) && t[1].length() == 8) {
+               dcFrom.setDate(BlueSeerUtils.parseDate(BlueSeerUtils.convertDateFormat("yyyyMMdd", t[1]))); 
+               }
+            }
+            if (t[0].equals("browse_end_date")) {
+               if (! t[1].isBlank() && BlueSeerUtils.isParsableToInt(t[1]) && t[1].length() < 8) {
+               calto.add(Calendar.DATE, Integer.valueOf(t[1]));
+               dcTo.setDate(calto.getTime()); 
+               }
+               if (! t[1].isBlank() && BlueSeerUtils.isParsableToInt(t[1]) && t[1].length() == 8) {
+               dcTo.setDate(BlueSeerUtils.parseDate(BlueSeerUtils.convertDateFormat("yyyyMMdd", t[1]))); 
+               }
+            }
+            }
+            
+        }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+       
+        
+        modeltable.setNumRows(0);
+        tablereport.setModel(modeltable);
+        tablereport.getTableHeader().setReorderingAllowed(false);        
+        tablereport.getColumnModel().getColumn(0).setMaxWidth(100); 
+        tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency))); 
+
+        /*
+        Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
+         while (en.hasMoreElements()) {
+             TableColumn tc = en.nextElement();
+             if (modeltable.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+                 continue;
+             }
+            tc.setCellRenderer(new OrderItemBrowse.SomeRenderer());
+         }
+        */
+       
+    }
+    
+    public String[] getOrderItemBrowseView() {
+        String[] x = new String[2];
+      
+        String fromcust = "";
+        String tocust = "";
+        String fromnbr = "";
+        String tonbr = "";
+        String fromitem = "";
+        String toitem = "";
+        
+        if (tbfromcust.getText().isBlank()) {
+            fromcust = bsmf.MainFrame.lowchar;
+        } else {
+            fromcust = tbfromcust.getText();
+        }
+         if (tbtocust.getText().isBlank()) {
+            tocust = bsmf.MainFrame.hichar;
+        } else {
+            tocust = tbtocust.getText();
+        }
+        if (tbfromnbr.getText().isBlank()) {
+            fromnbr = bsmf.MainFrame.lowchar;
+        } else {
+            fromnbr = tbfromnbr.getText();
+        }
+        if (tbtonbr.getText().isBlank()) {
+            tonbr = bsmf.MainFrame.hichar;
+        } else {
+            tonbr = tbtonbr.getText();
+        }
+        if (tbfromitem.getText().isBlank()) {
+            fromitem = bsmf.MainFrame.lowchar;
+        } else {
+            fromitem = tbfromitem.getText();
+        }
+        if (tbtoitem.getText().isBlank()) {
+            toitem = bsmf.MainFrame.hichar;
+        } else {
+            toitem = tbtoitem.getText();
+        }
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getOrderItemBrowseView"});
+        list.add(new String[]{"fromdate",setDateDB(dcFrom.getDate())});
+        list.add(new String[]{"todate",setDateDB(dcTo.getDate())});
+        list.add(new String[]{"fromcust", fromcust});
+        list.add(new String[]{"tocust",tocust});
+        list.add(new String[]{"fromnbr", fromnbr});
+        list.add(new String[]{"tonbr",tonbr});
+        list.add(new String[]{"fromitem", fromitem});
+        list.add(new String[]{"toitem",toitem});
+        list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getOrderItemBrowseView")};
+            }
+        } else {
+            jsonString = ordData.getOrderItemBrowseView(new String[]{setDateDB(dcFrom.getDate()), 
+                setDateDB(dcTo.getDate()), 
+                fromcust, 
+                tocust, 
+                fromnbr, 
+                tonbr, 
+                fromitem, 
+                toitem,
+                ddsite.getSelectedItem().toString()
+            });
+        }
+        
+        
+        roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getOrderItemBrowseView() {
+        double totqty = 0;
+        double totshpqty = 0;
+        int i = 0;
+        
+        modeltable.setNumRows(0);
+        
+        if (roData != null) {
+       
+        for (Object[] rowData : roData) {
+
+            i++; 
+          
+            rowData[6] = bsParseDouble(rowData[6].toString());
+            rowData[7] = bsParseDouble(rowData[7].toString());
+            rowData[8] = bsParseDouble(currformat(rowData[8].toString()));
+            totqty = totqty + BlueSeerUtils.bsParseDouble(rowData[6].toString());
+            totshpqty = totshpqty + BlueSeerUtils.bsParseDouble(rowData[7].toString());
+            i++;
+            modeltable.addRow(rowData); 
+        }
+        tbtotordqty.setText(currformatDouble(totqty));
+        tbtotshpqty.setText(currformatDouble(totshpqty));
+        tbtotlines.setText(String.valueOf(i));
+        
+        }          
+        roData = null;
+    }   
     
     
     /**
@@ -352,8 +552,8 @@ public class OrderItemBrowse extends javax.swing.JPanel {
         tbtocust = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
-        dcfrom = new com.toedter.calendar.JDateChooser();
-        dcto = new com.toedter.calendar.JDateChooser();
+        dcFrom = new com.toedter.calendar.JDateChooser();
+        dcTo = new com.toedter.calendar.JDateChooser();
         tbcsv = new javax.swing.JButton();
         btprint = new javax.swing.JButton();
         tbfromitem = new javax.swing.JTextField();
@@ -361,6 +561,8 @@ public class OrderItemBrowse extends javax.swing.JPanel {
         tbtoitem = new javax.swing.JTextField();
         jLabel11 = new javax.swing.JLabel();
         btclear = new javax.swing.JButton();
+        ddsite = new javax.swing.JComboBox<>();
+        jLabel13 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         tbtotlines = new javax.swing.JLabel();
@@ -448,9 +650,9 @@ public class OrderItemBrowse extends javax.swing.JPanel {
         jLabel6.setText("To Date:");
         jLabel6.setName("lbltodate"); // NOI18N
 
-        dcfrom.setDateFormatString("yyyy-MM-dd");
+        dcFrom.setDateFormatString("yyyy-MM-dd");
 
-        dcto.setDateFormatString("yyyy-MM-dd");
+        dcTo.setDateFormatString("yyyy-MM-dd");
 
         tbcsv.setText("CSV");
         tbcsv.setName("btcsv"); // NOI18N
@@ -478,45 +680,53 @@ public class OrderItemBrowse extends javax.swing.JPanel {
             }
         });
 
+        jLabel13.setText("Site:");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel5)
-                    .addComponent(jLabel6))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(dcfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel2))
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel6))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(dcFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel2))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(dcTo, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel3)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(tbtonbr, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbfromnbr, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(21, 21, 21)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel10)
+                            .addComponent(jLabel11))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(tbtoitem, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbfromitem, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel4)))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel3)))
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jLabel13)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(tbtonbr, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbfromnbr, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(21, 21, 21)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel10)
-                    .addComponent(jLabel11))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tbtoitem, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbfromitem, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel4))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tbfromcust, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbtocust, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(ddsite, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(tbfromcust, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
+                    .addComponent(tbtocust, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
@@ -546,7 +756,7 @@ public class OrderItemBrowse extends javax.swing.JPanel {
                         .addComponent(btprint)
                         .addComponent(tbfromitem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel10))
-                    .addComponent(dcfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(dcFrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -556,12 +766,16 @@ public class OrderItemBrowse extends javax.swing.JPanel {
                             .addComponent(tbtocust, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel4)
                             .addComponent(btclear))
-                        .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(dcTo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel6)
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(tbtoitem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel11)))
-                .addGap(43, 43, 43))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel13))
+                .addContainerGap())
         );
 
         jLabel8.setText("Total Lines:");
@@ -652,6 +866,8 @@ public class OrderItemBrowse extends javax.swing.JPanel {
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
 
+        executeTask("getOrderItemBrowseView", null);
+        /*
         try {
             Connection con = null;
             if (ds != null) {
@@ -709,8 +925,8 @@ public class OrderItemBrowse extends javax.swing.JPanel {
                         " sod_nbr <= " + "'" + nbrto + "'" + " AND " +
                         " sod_item >= " + "'" + itemfrom + "'" + " AND " +
                         " sod_item <= " + "'" + itemto + "'" + " AND " +        
-                        " sod_ord_date >= " + "'" + setDateDB(dcfrom.getDate()) + "'" + " AND " +
-                        " sod_ord_date <= " + "'" + setDateDB(dcto.getDate()) + "'" + " AND " +
+                        " sod_ord_date >= " + "'" + setDateDB(dcFrom.getDate()) + "'" + " AND " +
+                        " sod_ord_date <= " + "'" + setDateDB(dcTo.getDate()) + "'" + " AND " +
                         " so_cust >= " + "'" + custfrom + "'" + " AND " +
                         " so_cust <= " + "'" + custto + "'" + 
                         " order by sod_nbr desc;");
@@ -721,7 +937,7 @@ public class OrderItemBrowse extends javax.swing.JPanel {
                          totqty = totqty + res.getDouble("sod_ord_qty");
                          totshpqty = totshpqty + res.getDouble("sod_shipped_qty");
                         
-                         mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, 
+                         modeltable.addRow(new Object[]{BlueSeerUtils.clickflag, 
                                 bsNumber(res.getString("sod_nbr")),
                                 res.getString("so_cust"),
                                 res.getString("cm_name"),
@@ -753,6 +969,7 @@ public class OrderItemBrowse extends javax.swing.JPanel {
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
+        */
        
     }//GEN-LAST:event_btRunActionPerformed
 
@@ -787,13 +1004,15 @@ public class OrderItemBrowse extends javax.swing.JPanel {
     private javax.swing.JButton btRun;
     private javax.swing.JButton btclear;
     private javax.swing.JButton btprint;
-    private com.toedter.calendar.JDateChooser dcfrom;
-    private com.toedter.calendar.JDateChooser dcto;
+    private com.toedter.calendar.JDateChooser dcFrom;
+    private com.toedter.calendar.JDateChooser dcTo;
+    private javax.swing.JComboBox<String> ddsite;
     private javax.swing.JPanel detailpanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
