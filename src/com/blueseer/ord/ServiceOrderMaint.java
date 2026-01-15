@@ -523,7 +523,7 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeerT 
     
     public boolean validateInput(BlueSeerUtils.dbaction x) {
         
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canupdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
