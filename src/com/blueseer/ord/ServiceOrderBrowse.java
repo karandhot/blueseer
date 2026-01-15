@@ -492,7 +492,7 @@ public class ServiceOrderBrowse extends javax.swing.JPanel {
         list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
         
         try {
-                jsonString = sendServerPost(list, "", null, "dataServPRD"); 
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
             } catch (IOException ex) {
                 bslog(ex);
                 return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getSerialBrowseView")};
