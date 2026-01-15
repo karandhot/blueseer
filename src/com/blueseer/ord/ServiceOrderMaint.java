@@ -460,6 +460,7 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeerT 
         btadd.setEnabled(false); // set disabled until line item in detail
         ddstatus.setSelectedItem("open");
         ddstatus.setEnabled(false);
+        
         if (isSRVMQuoteType) {
             ddtype.setSelectedItem("quote");
         } else {
