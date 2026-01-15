@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.ord;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.fgl.*;
 import com.blueseer.shp.*;
 import com.blueseer.utl.OVData;
@@ -69,14 +70,19 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.ord.ordData.getServiceOrderBrowseDetail;
+import static com.blueseer.ord.ordData.getServiceOrderChartData;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -94,6 +100,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import org.jfree.chart.ChartFactory;
@@ -114,6 +121,11 @@ public class ServiceOrderBrowse extends javax.swing.JPanel {
     String ordersfilepath = OVData.getSystemTempDirectory() + "/" + "chartorders.jpg";
     double quotes = 0;
     double orders = 0;
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultcurrency = "";
+    String defaultsite = "";
     
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{
@@ -157,7 +169,7 @@ public class ServiceOrderBrowse extends javax.swing.JPanel {
    
     
     
-     class ButtonRenderer extends JButton implements TableCellRenderer {
+    class ButtonRenderer extends JButton implements TableCellRenderer {
 
         public ButtonRenderer() {
             setOpaque(true);
@@ -178,7 +190,7 @@ public class ServiceOrderBrowse extends javax.swing.JPanel {
     }
     
      
-     class SomeRenderer extends DefaultTableCellRenderer {
+    class SomeRenderer extends DefaultTableCellRenderer {
          
        public Component getTableCellRendererComponent(JTable table,
             Object value, boolean isSelected, boolean hasFocus, int row,
@@ -215,167 +227,46 @@ public class ServiceOrderBrowse extends javax.swing.JPanel {
             return c;
     }
     }
-    
-      public void chartQuotes() {
-          
-          quotes = 0;
-          
-         try {
-          
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");       
-                 
-                  
-                res = st.executeQuery("select sv_cust, cm_name, sum(svd_netprice * svd_qty) as 'sum' from svd_det " +
-                        " inner join sv_mstr on sv_nbr = svd_nbr  " +
-                        " inner join cm_mstr on cm_code = sv_cust  " +
-                        " where sv_create_date >= " + "'" + dfdate.format(dcfrom.getDate()) + "'" +
-                        " AND sv_create_date <= " + "'" + dfdate.format(dcto.getDate()) + "'" +
-                        " AND sv_type = 'quote' AND sv_status <> 'void' " +
-                        " group by sv_cust, cm_name order by sv_cust desc   ;");
-             
-                DefaultPieDataset dataset = new DefaultPieDataset();
-               
-                String acct = "";
-                while (res.next()) {
-                      acct = res.getString("cm_name");  
-                    Double amt = res.getDouble("sum");
-                    if (amt < 0) {amt = amt * -1;}
-                    
-                    quotes += amt;
-                    
-                    if (amt > 0) {
-                       dataset.setValue(acct, amt);
-                    }
+        
+    public void charts() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        ArrayList<String[]> data = getServiceOrderChartData(dfdate.format(dcfrom.getDate()), dfdate.format(dcto.getDate()));        
+        DefaultPieDataset datasetorder = new DefaultPieDataset();
+        DefaultPieDataset datasetquote = new DefaultPieDataset();
+        for (String[] s : data) {
+            double amt = bsParseDouble(s[1]);
+            if (amt < 0) {amt = amt * -1;}
+                if (s[2].equals("order")) {
+                  datasetorder.setValue(s[0], amt);
+                } else {
+                  datasetquote.setValue(s[0], amt);  
                 }
-        JFreeChart chart = ChartFactory.createPieChart("Total Quotes For Date Range", dataset, true, true, false);
-        PiePlot plot = (PiePlot) chart.getPlot();
-      //  plot.setSectionPaint(KEY1, Color.green);
-      //  plot.setSectionPaint(KEY2, Color.red);
-     //   plot.setExplodePercent(KEY1, 0.10);
-        //plot.setSimpleLabels(true);
-
+        }
+        JFreeChart chartorder = ChartFactory.createPieChart("Total Orders For Date Range", datasetorder, true, true, false);
+        JFreeChart chartquote = ChartFactory.createPieChart("Total Quotes For Date Range", datasetquote, true, true, false);
+        PiePlot plot = (PiePlot) chartorder.getPlot();
+        PiePlot plotquote = (PiePlot) chartquote.getPlot();
         PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(
             "{0}: {1} ({2})", new DecimalFormat("$ #,##0.00", new DecimalFormatSymbols(Locale.US)), new DecimalFormat("0%", new DecimalFormatSymbols(Locale.US)));
         plot.setLabelGenerator(gen);
+        plotquote.setLabelGenerator(gen);
 
         try {
-        
-        ChartUtilities.saveChartAsJPEG(new File(quotesfilepath), chart, (int) (this.getWidth()/2.5), (int) (this.getHeight()/2.7));
-       // ChartUtilities.saveChartAsJPEG(new File(exoincfilepath), chart, 400, 200);
-        } catch (IOException e) {
-            MainFrame.bslog(e);
-        }
-        ImageIcon myicon = new ImageIcon(quotesfilepath);
-        myicon.getImage().flush();  
-      //  myicon.getImage().getScaledInstance(400, 200, Image.SCALE_SMOOTH);
-        this.chartlabel.setIcon(myicon);
-        this.repaint();
-            
-              } catch (SQLException s) {
-                  MainFrame.bslog(s);
-                  bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }
-       
-       public void chartOrders() {
-         try {
-          
-           Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");       
-                 
-                  
-                res = st.executeQuery("select sv_cust, cm_name, sum(svd_netprice * svd_qty) as 'sum' from svd_det " +
-                        " inner join sv_mstr on sv_nbr = svd_nbr  " +
-                        " inner join cm_mstr on cm_code = sv_cust  " +
-                        " where sv_create_date >= " + "'" + dfdate.format(dcfrom.getDate()) + "'" +
-                        " AND sv_create_date <= " + "'" + dfdate.format(dcto.getDate()) + "'" +
-                        " AND sv_type = 'order' AND sv_status <> 'void' " +
-                        " group by sv_cust, cm_name order by sv_cust desc   ;");
-             
-                DefaultPieDataset dataset = new DefaultPieDataset();
-               
-                String acct = "";
-                while (res.next()) {
-                      acct = res.getString("cm_name");  
-                    Double amt = res.getDouble("sum");
-                    if (amt < 0) {amt = amt * -1;}
-                    
-                    quotes += amt;
-                    
-                    if (amt > 0) {
-                       dataset.setValue(acct, amt);
-                    }
-                }
-        JFreeChart chart = ChartFactory.createPieChart("Total Orders For Date Range", dataset, true, true, false);
-        PiePlot plot = (PiePlot) chart.getPlot();
-      //  plot.setSectionPaint(KEY1, Color.green);
-      //  plot.setSectionPaint(KEY2, Color.red);
-     //   plot.setExplodePercent(KEY1, 0.10);
-        //plot.setSimpleLabels(true);
-
-        PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(
-            "{0}: {1} ({2})", new DecimalFormat("$ #,##0.00", new DecimalFormatSymbols(Locale.US)), new DecimalFormat("0%", new DecimalFormatSymbols(Locale.US)));
-        plot.setLabelGenerator(gen);
-
-        try {
-        
-        ChartUtilities.saveChartAsJPEG(new File(ordersfilepath), chart, (int) (this.getWidth()/2.5), (int) (this.getHeight()/2.7));
+        ChartUtilities.saveChartAsJPEG(new File(ordersfilepath), chartorder, (int) (this.getWidth()/2.5), (int) (this.getHeight()/2.7));
+        ChartUtilities.saveChartAsJPEG(new File(quotesfilepath), chartquote, (int) (this.getWidth()/2.5), (int) (this.getHeight()/2.7));
         } catch (IOException e) {
             MainFrame.bslog(e);
         }
         ImageIcon myicon = new ImageIcon(ordersfilepath);
         myicon.getImage().flush();   
         this.pielabel.setIcon(myicon);
+        
+        ImageIcon myiconquote = new ImageIcon(quotesfilepath);
+        myiconquote.getImage().flush(); 
+        this.chartlabel.setIcon(myiconquote);
+        
         this.repaint();
-       
-      
-                
-              } catch (SQLException s) {
-                  MainFrame.bslog(s);
-                  bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
     }
-       
      
      
    
@@ -387,56 +278,81 @@ public class ServiceOrderBrowse extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
-    public void getdetail(String order) {
+    public void executeTask(String x, String[] y) { 
       
-         modeldetail.setNumRows(0);
-         double totalsales = 0;
-         double totalqty = 0;
-        
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                case "getDetail":
+                    message = getDetail(key[0]);
+                    break;    
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                String blanket = "";
-                res = st.executeQuery("select svd_nbr, svd_item, svd_qty, svd_netprice from svd_det " +
-                        " where svd_nbr = " + "'" + order + "'" +  ";");
-                while (res.next()) {
-                   modeldetail.addRow(new Object[]{ 
-                      bsNumber(res.getString("svd_nbr")), 
-                      res.getString("svd_item"),
-                      bsNumber(res.getString("svd_qty")),
-                      bsParseDouble(currformatDouble(res.getDouble("svd_netprice")))});
-                }
-               
-             
-               
-                tabledetail.setModel(modeldetail);
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+            
+            
+            
+            
+            return message;
         }
-
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+            if (this.action.equals("getDetail")) {
+                done_getDetail();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
     }
     
     public void setLanguageTags(Object myobj) {
@@ -484,7 +400,20 @@ public class ServiceOrderBrowse extends javax.swing.JPanel {
     }
     
     public void initvars(String[] arg) {
-       
+       executeTask("dataInit", null);
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = ordData.getOrderBrowseInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        
         tbtotorders.setText("0");
         tbtotquotes.setText("0");
        
@@ -512,19 +441,143 @@ public class ServiceOrderBrowse extends javax.swing.JPanel {
          tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
          tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
       
-        
-       
-      
-                    
-                    
-                    
-       
-        
         btdetail.setEnabled(false);
         detailpanel.setVisible(false);
         chartpanel.setVisible(false);
-          
+       
+        
+        for (String[] s : initDataSets) {
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultsite = s[1]; 
+            }
+            if (s[0].equals("currency")) {
+              defaultcurrency = s[1]; 
+            }
+        }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+       
     }
+    
+    public String[] getBrowseView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String fromcust;
+        String tocust;
+        
+        if (ddfromcust.getSelectedItem() == null || ddfromcust.getSelectedItem().toString().isEmpty()) {
+                    fromcust = bsmf.MainFrame.lowchar;
+        } else {
+            fromcust = ddfromcust.getSelectedItem().toString();
+        }
+         if (ddtocust.getSelectedItem() == null || ddtocust.getSelectedItem().toString().isEmpty()) {
+            tocust = bsmf.MainFrame.hichar;
+        } else {
+            tocust = ddtocust.getSelectedItem().toString();
+        }
+            
+        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(new String[]{"id","getServiceOrderBrowseView"});
+        list.add(new String[]{"fromdate",dfdate.format(dcfrom.getDate())});
+        list.add(new String[]{"todate",dfdate.format(dcto.getDate())});
+        list.add(new String[]{"fromcust",fromcust});
+        list.add(new String[]{"tocust",tocust});
+        list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServPRD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getSerialBrowseView")};
+            }
+        } else {
+            jsonString = ordData.getServiceOrderBrowseView(new String[]{
+                dfdate.format(dcfrom.getDate()),
+                dfdate.format(dcto.getDate()),
+                fromcust,
+                tocust,
+                ddsite.getSelectedItem().toString()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getSerialBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+       
+        int i = 0;
+        double totsales = 0.00;
+        double totquotes = 0.00;
+        
+        mymodel.setNumRows(0);
+        if (roData != null) {
+        for (Object[] rowData : roData) {
+            totsales = totsales + bsParseDouble(roData[i][9].toString());
+            i++;
+            mymodel.addRow(rowData);
+        }
+        }
+               // chartQuotes();
+               charts();       
+                       
+                tbtotorders.setText(currformatDouble(totsales));
+                tbtotquotes.setText(currformatDouble(totquotes));
+        roData = null;
+    }   
+    
+    public String[] getDetail(String order) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getServiceOrderBrowseDetail"});
+            list.add(new String[]{"param1", order});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getServiceOrderBrowseDetail(order); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getDetail() {
+      modeldetail.setNumRows(0);
+        // double dols = 0;
+         
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+                rowData[3] = bsParseDouble(currformat(rowData[3].toString()));
+               // dols += (bsParseDouble(rowData[2].toString()) * bsParseDouble(rowData[3].toString()));
+                modeldetail.addRow(rowData);
+            } 
+        }
+        
+       }
+       roData = null;
+    }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -554,10 +607,12 @@ public class ServiceOrderBrowse extends javax.swing.JPanel {
         dcto = new com.toedter.calendar.JDateChooser();
         tbcsv = new javax.swing.JButton();
         cbchart = new javax.swing.JCheckBox();
-        ddcustfrom = new javax.swing.JComboBox<>();
+        ddfromcust = new javax.swing.JComboBox<>();
         jLabel7 = new javax.swing.JLabel();
-        ddcustto = new javax.swing.JComboBox<>();
+        ddtocust = new javax.swing.JComboBox<>();
         jLabel9 = new javax.swing.JLabel();
+        ddsite = new javax.swing.JComboBox<>();
+        jLabel1 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         tbtotorders = new javax.swing.JLabel();
@@ -678,6 +733,8 @@ public class ServiceOrderBrowse extends javax.swing.JPanel {
         jLabel9.setText("To Cust:");
         jLabel9.setName("lbltocust"); // NOI18N
 
+        jLabel1.setText("Site:");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -700,11 +757,15 @@ public class ServiceOrderBrowse extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(ddcustto, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(ddtocust, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(ddcustfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 50, Short.MAX_VALUE)
+                        .addComponent(ddfromcust, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btRun)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btdetail)
@@ -726,13 +787,15 @@ public class ServiceOrderBrowse extends javax.swing.JPanel {
                         .addComponent(btdetail)
                         .addComponent(tbcsv)
                         .addComponent(cbchart)
-                        .addComponent(ddcustfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel7)))
+                        .addComponent(ddfromcust, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel7)
+                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel1)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(ddcustto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(ddtocust, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel9))
                     .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.LEADING))
                 .addGap(40, 40, 40))
@@ -816,7 +879,8 @@ public class ServiceOrderBrowse extends javax.swing.JPanel {
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
 
-    
+        executeTask("getBrowseView", null);
+    /*
 try {
             Connection con = null;
             if (ds != null) {
@@ -928,7 +992,7 @@ try {
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
-       
+       */
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btdetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdetailActionPerformed
@@ -944,7 +1008,7 @@ try {
             reinitpanels("ServiceOrderMaint", true, new String[]{bsNumberToUS(tablereport.getValueAt(row, 2).toString())});
         }
         if ( col == 1) {
-                getdetail(bsNumberToUS(tablereport.getValueAt(row, 2).toString()));
+                executeTask("getDetail", new String[]{tablereport.getValueAt(row, 2).toString()});
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
         }
@@ -966,7 +1030,8 @@ try {
         }
 */
         if ( col == 10 ) {
-              OVData.printServiceOrder(tablereport.getValueAt(row, 2).toString());
+           //   OVData.printServiceOrder(tablereport.getValueAt(row, 2).toString());
+              OVData.printServiceOrderRemote(tablereport.getValueAt(row, 2).toString());
         }
     }//GEN-LAST:event_tablereportMouseClicked
 
@@ -992,9 +1057,11 @@ try {
     private javax.swing.JPanel chartpanel;
     private com.toedter.calendar.JDateChooser dcfrom;
     private com.toedter.calendar.JDateChooser dcto;
-    private javax.swing.JComboBox<String> ddcustfrom;
-    private javax.swing.JComboBox<String> ddcustto;
+    private javax.swing.JComboBox<String> ddfromcust;
+    private javax.swing.JComboBox<String> ddsite;
+    private javax.swing.JComboBox<String> ddtocust;
     private javax.swing.JPanel detailpanel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;

@@ -1984,6 +1984,7 @@ CREATE TABLE IF NOT EXISTS `svd_det` (
   `svd_item` varchar(200) NOT NULL  DEFAULT '',
   `svd_desc` varchar(50) NOT NULL  DEFAULT '',
   `svd_type` varchar(10) NOT NULL  DEFAULT '',
+  `svd_custitem` varchar(50) NOT NULL  DEFAULT '',
   `svd_qty` decimal(18,8)  NOT NULL DEFAULT '0',
   `svd_completed_hrs` int(8)  NOT NULL DEFAULT '0',
   `svd_po` varchar(30)  NOT NULL DEFAULT '',

@@ -3630,33 +3630,23 @@ public class ordData {
             
             try{
                 
-                res = st.executeQuery("select " +
-                        " (select case when sum(shs_amt) is null then 0 else sum(shs_amt) end from shs_det " +
-                        " where shs_nbr = shd_id and shs_amttype = 'amount' and shs_type <> 'tax' and shs_type <> 'passive' " +
-                        " and shs_type <> 'shipping Bil' and shs_type <> 'shipping PPD' ) as charges, " +
-                        " (select case when sum(shs_amt) is null then 0 else sum(shs_amt) end from shs_det " +
-                        " where shs_nbr = shd_id and shs_amttype = 'amount' and shs_type = 'tax' ) as taxes, " +
-                        " shd_id, it_desc, sh_cust, sh_cust, sh_rmks, shd_po, " +
-                        " shd_item, shd_custitem, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, " +
-                        " cms_name, cms_line1, site_desc, site_line1, sh_boxes, sh_pallets, sh_shipvia, " +
-                        " cm_terms, sh_ref, sh_bol, shd_serial, shd_cont, sh_trailer, " +
-                        " cm_city, cm_state, cm_zip, cm_country, cms_city, cms_state, cms_zip, cms_country, " +
-                        " site_city, site_state, site_zip, site_country, site_site, " +
-                        " cm_logo, site_logo, ov_image_directory, cm_iv_jasper, site_iv_jasper, ov_jasper_directory, " +
-                        " sh_type, ifNull(cfod_date,'') as cfod_date, ifNull(cfo_mileage, '0') as cfo_mileage, ifNull(cfo_weight, '0') as cfo_weight, sh_so, sh_curr, " +
-                        " shd_taxamt, shd_taxpercent, shd_uom, sh_confdate, ar_duedate, shd_listprice, cms_line2 " +
-                        " from ship_det " +
-                        " left outer join item_mstr on it_item = shd_item " + 
-                        " inner join ship_mstr on sh_id = shd_id " +
-                        " inner join ar_mstr on ar_nbr = sh_id " + 
-                        " left outer join cfo_det on cfod_nbr = sh_so and cfod_type = 'Unload Complete' and sh_type = 'F' " +
-                        " left outer join cfo_mstr on cfo_nbr = sh_so and sh_type = 'F' " +
-                        " inner join cm_mstr on cm_code = sh_cust " +
-                        " left outer join cms_det on cms_code = sh_cust and cms_shipto = sh_ship " +
-                        " inner join site_mstr on site_site = sh_site " +
-                        " inner join ov_ctrl " +
-                        " where shd_so = " + "'" + order + "'"  +
-                                ";");
+                res = st.executeQuery("select so_nbr, sod_nbr, so_curr, sod_desc, so_shipvia, cm_terms,  " + 
+                " (select case when sum(sos_amt) is null then 0 else sum(sos_amt) end from sos_det " +
+                " where sos_nbr = " + "'" + order + "'" + " and sos_amttype = 'amount' and sos_type <> 'tax' and sos_type <> 'passive' and sos_type <> 'shipping BIL' and sos_type <> 'shipping PPD' " +
+                " ) as charges, " + 
+                " so_cust, so_rmks, sod_po, sod_item, sod_custitem, sod_ord_qty, " +
+                " sod_netprice, sod_listprice, sod_taxamt, cm_code, cm_name, cm_line1, cm_line2,  " +
+                " cm_city, cm_state, cm_zip, cm_country, cms_city, cms_state, cms_zip, cms_country, " +
+                " site_site, site_desc, site_line1, site_city, site_state, site_zip, site_country, " +                        
+                " cms_name, cms_line1, cms_line2, so_create_date, so_due_date, cm_logo, site_logo, " +
+                " cm_iv_jasper, site_or_jasper, ov_image_directory, ov_jasper_directory, sod_taxamt " +
+                " from sod_det  " +
+                " inner join so_mstr on so_nbr = sod_nbr " +
+                " inner join cm_mstr on cm_code = so_cust " +
+                " left outer join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
+                " inner join site_mstr on site_site = so_site " +
+                " inner join ov_ctrl " +         
+                " where sod_nbr = " + "'" + order + "'");
                 
                     
                     String shipper = "";
@@ -3664,13 +3654,13 @@ public class ordData {
                     while (res.next()) {
                         JSONArray rowArray = new JSONArray(); 
                         rowArray.put(res.getString("sod_nbr")); 
-                        rowArray.put(res.getString("it_desc"));
+                        rowArray.put(res.getString("sod_desc"));
                         rowArray.put(res.getString("so_cust"));
                         rowArray.put(res.getString("so_rmks"));
                         rowArray.put(res.getString("sod_po"));
                         rowArray.put(res.getString("sod_item"));
                         rowArray.put(res.getString("sod_custitem"));
-                        rowArray.put(res.getString("sod_ord_qty"));
+                        rowArray.put(res.getDouble("sod_ord_qty"));
                         rowArray.put(res.getDouble("sod_netprice")); 
                         rowArray.put(res.getString("cm_code"));
                         rowArray.put(res.getString("cm_name")); // 10 zero base
@@ -3681,39 +3671,157 @@ public class ordData {
                         rowArray.put(res.getString("site_desc"));
                         rowArray.put(res.getString("site_line1"));
                         rowArray.put(res.getString("so_shipvia"));
-                        rowArray.put(res.getString("cm_terms")); // 20 zero base
-                        rowArray.put(res.getString("so_ref"));
-                        rowArray.put(res.getString("so_trackingnumber"));
+                        rowArray.put(res.getString("cm_terms")); 
+                        rowArray.put(res.getString("so_create_date"));
+                        rowArray.put(res.getString("so_due_date")); // 20 zero base
                         rowArray.put(res.getString("cm_city"));
                         rowArray.put(res.getString("cm_state"));
                         rowArray.put(res.getString("cm_zip"));
                         rowArray.put(res.getString("cm_country"));
-                        rowArray.put(res.getString("cms_city"));  // 30 zero base
+                        rowArray.put(res.getString("cms_city"));  
                         rowArray.put(res.getString("cms_state"));
                         rowArray.put(res.getString("cms_zip"));
                         rowArray.put(res.getString("cms_country"));
                         rowArray.put(res.getString("site_city"));
-                        rowArray.put(res.getString("site_state"));
+                        rowArray.put(res.getString("site_state"));  // 30 zero base
                         rowArray.put(res.getString("site_zip"));
                         rowArray.put(res.getString("site_country"));
                         rowArray.put(res.getString("site_site"));
                         rowArray.put(res.getString("cm_logo"));
-                        rowArray.put(res.getString("site_logo")); // 40 zero base
+                        rowArray.put(res.getString("site_logo")); 
                         rowArray.put(res.getString("ov_image_directory"));
                         rowArray.put(res.getString("cm_iv_jasper"));
-                        rowArray.put(res.getString("site_iv_jasper"));
+                        rowArray.put(res.getString("site_or_jasper"));
                         rowArray.put(res.getString("ov_jasper_directory"));
-                        rowArray.put(res.getString("sh_type"));
-                        rowArray.put(res.getString("so_nbr"));
-                        rowArray.put(res.getString("so_curr")); // 50 zero base
-                        rowArray.put(res.getDouble("shd_taxamt"));
-                        rowArray.put(res.getDouble("shd_taxpercent"));
-                        rowArray.put(res.getString("shd_uom"));
-                        rowArray.put(res.getString("sh_orddate"));
+                        rowArray.put(res.getString("so_nbr")); // 40 zero base
+                        rowArray.put(res.getString("so_curr")); 
                         rowArray.put(res.getDouble("charges"));
-                        rowArray.put(res.getDouble("taxes"));
                         rowArray.put(res.getDouble("sod_listprice"));
                         rowArray.put(res.getString("cms_line2"));
+                        rowArray.put(res.getDouble("sod_taxamt"));
+                        jsonarray.put(rowArray);
+                        i++;
+                    }
+                
+              // get SAC
+              if (i > 0) {
+              res = st.executeQuery("select sos_desc, " +
+                      " case when sos_amttype = 'percent' and sos_type <> 'tax' then (myamt * -1 * (sos_amt / 100.0)) " +
+                      " when sos_amttype = 'percent' and sos_type = 'tax' then (myamt * (sos_amt / 100.0)) " +
+                      " else sos_amt end as 'amt' " +
+                      " from sos_det, (select sod_nbr, sum(sod_ord_qty * sod_listprice) as 'myamt' from sod_det group by sod_nbr) sub " +
+                      " where sub.sod_nbr = sos_nbr and sos_nbr = " + "'" + order + "'");
+              while (res.next()) {
+                  JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("sacarray");
+                        rowArray.put(res.getString("sos_desc")); 
+                        rowArray.put(res.getString("amt"));
+                        jsonarray.put(rowArray);
+              }
+              
+              
+              }
+                    
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    public static String getServiceOrderPrintData(String order) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                
+                res = st.executeQuery("select sv_nbr, sv_po, svd_nbr, sv_curr, svd_desc, cm_terms,  " + 
+                " (select case when sum(sos_amt) is null then 0 else sum(sos_amt) end from sos_det " +
+                " where sos_nbr = " + "'" + order + "'" + " and sos_amttype = 'amount' and sos_type <> 'tax' and sos_type <> 'passive' and sos_type <> 'shipping BIL' and sos_type <> 'shipping PPD' " +
+                " ) as charges, " + 
+                " sv_cust, sv_rmks, svd_po, svd_item, svd_qty, " +
+                " svd_netprice, svd_listprice, svd_taxamt, cm_code, cm_name, cm_line1, cm_line2,  " +
+                " cm_city, cm_state, cm_zip, cm_country, cms_city, cms_state, cms_zip, cms_country, " +
+                " site_site, site_desc, site_line1, site_city, site_state, site_zip, site_country, " +                        
+                " cms_name, cms_line1, cms_line2, sv_create_date, sv_due_date, cm_logo, site_logo, " +
+                " cm_iv_jasper, site_or_jasper, ov_image_directory, ov_jasper_directory, cm_phone, cm_email " +
+                " from svd_det  " +
+                " inner join sv_mstr on sv_nbr = svd_nbr " +
+                " inner join cm_mstr on cm_code = sv_cust " +
+                " left outer join cms_det on cms_code = sv_cust and cms_shipto = sv_ship " +
+                " inner join site_mstr on site_site = sv_site " +
+                " inner join ov_ctrl " +         
+                " where svd_nbr = " + "'" + order + "'");
+                
+                    
+                    String shipper = "";
+                    int i = 0;
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("svd_nbr")); 
+                        rowArray.put(res.getString("svd_desc"));
+                        rowArray.put(res.getString("sv_cust"));
+                        rowArray.put(res.getString("sv_rmks"));
+                        rowArray.put(res.getString("svd_po"));
+                        rowArray.put(res.getString("svd_item"));
+                        rowArray.put(res.getDouble("svd_qty"));
+                        rowArray.put(res.getDouble("svd_netprice")); 
+                        rowArray.put(res.getString("cm_code"));
+                        rowArray.put(res.getString("cm_name")); 
+                        rowArray.put(res.getString("cm_line1"));  // 10 zero base
+                        rowArray.put(res.getString("cm_line2"));
+                        rowArray.put(res.getString("cms_name"));
+                        rowArray.put(res.getString("cms_line1"));
+                        rowArray.put(res.getString("site_desc"));
+                        rowArray.put(res.getString("site_line1"));
+                        rowArray.put(res.getString("cm_terms")); 
+                        rowArray.put(res.getString("sv_create_date"));
+                        rowArray.put(res.getString("sv_due_date")); 
+                        rowArray.put(res.getString("cm_city")); 
+                        rowArray.put(res.getString("cm_state")); // 20 zero base
+                        rowArray.put(res.getString("cm_zip"));
+                        rowArray.put(res.getString("cm_country"));
+                        rowArray.put(res.getString("cms_city"));  
+                        rowArray.put(res.getString("cms_state"));
+                        rowArray.put(res.getString("cms_zip"));
+                        rowArray.put(res.getString("cms_country"));
+                        rowArray.put(res.getString("site_city"));
+                        rowArray.put(res.getString("site_state"));  
+                        rowArray.put(res.getString("site_zip"));  
+                        rowArray.put(res.getString("site_country")); // 30 zero base
+                        rowArray.put(res.getString("site_site"));
+                        rowArray.put(res.getString("cm_logo"));
+                        rowArray.put(res.getString("site_logo")); 
+                        rowArray.put(res.getString("ov_image_directory"));
+                        rowArray.put(res.getString("cm_iv_jasper"));
+                        rowArray.put(res.getString("site_or_jasper"));
+                        rowArray.put(res.getString("ov_jasper_directory"));
+                        rowArray.put(res.getString("sv_nbr")); 
+                        rowArray.put(res.getString("sv_curr")); 
+                        rowArray.put(res.getDouble("charges")); // 40 zero base
+                        rowArray.put(res.getDouble("svd_listprice"));
+                        rowArray.put(res.getString("cms_line2"));
+                        rowArray.put(res.getString("sv_po"));
+                        rowArray.put(res.getString("cm_phone"));
+                        rowArray.put(res.getString("cm_email"));
                         jsonarray.put(rowArray);
                         i++;
                     }
@@ -4927,6 +5035,67 @@ public class ordData {
         return new String[]{"1", "0"}; // true
     }
     
+    public static ArrayList<String[]> getServiceOrderChartData(String fromdate, String todate) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getServiceOrderChartData"});
+            list.add(new String[]{"param1", fromdate});
+            list.add(new String[]{"param2", todate});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        String defaultsite = "";
+        ArrayList<String[]> lines = new ArrayList<String[]>();
+        try{
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+        // allocate, custitemonly, site, currency, sites, currencies, uoms, 
+        // states, warehouses, locations, customers, taxcodes, carriers, statuses    
+           
+            res = st.executeQuery("select sv_cust, cm_name, sv_type, sum(svd_netprice * svd_qty) as 'sum' from svd_det " +
+                        " inner join sv_mstr on sv_nbr = svd_nbr  " +
+                        " inner join cm_mstr on cm_code = sv_cust  " +
+                        " where sv_create_date >= " + "'" + fromdate + "'" +
+                        " AND sv_create_date <= " + "'" + todate + "'" +
+                        " AND sv_status <> 'void' " +
+                        " group by sv_cust, cm_name, sv_type order by sv_cust desc   ;");
+
+               while (res.next()) {
+                String[] s = new String[3];
+                s[0] = res.getString("cm_name");
+                s[1] = res.getString("sum");  
+                s[2] = res.getString("sv_type"); 
+                lines.add(s);
+                }
+            
+            
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+        return lines;
+    }
+    
     
     public static edi855 init_edi855_object(String order) {
         edi855 e = null;
@@ -5346,7 +5515,18 @@ public class ordData {
     }
     
     public static double getSVOrderTotalTax(String nbr) {
-       double tax = 0;
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getSVOrderTotalTax"});
+            list.add(new String[]{"param1",  nbr});
+            try {
+                return jsonToDouble(sendServerPost(list, "", null, "dataServORD")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0.00;
+            }
+     } 
+    double tax = 0;
      try{
         Connection con = null;
         if (ds != null) {
@@ -5956,6 +6136,48 @@ public class ordData {
     }
     }
     
+    public static void updateServiceOrderType(String order, String ordtype) {
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "updateServiceOrderType"});
+            list.add(new String[]{"param1",  order});
+            list.add(new String[]{"param2",  ordtype});
+            try {
+                sendServerPost(list, "", null, "dataServORD");
+                return;
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        }
+       
+        try{
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        try{
+           st.executeUpdate(
+                 " update sv_mstr set sv_type = " + "'" + ordtype + "'" + 
+                 " where sv_nbr = " + "'" + order + "'" + ";" );
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+            if (st != null) {
+                st.close();
+            }
+            con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    }
+    
     public static void updateOrderStatusByPO(String po, String status) {
        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<>();
@@ -6504,6 +6726,111 @@ public class ordData {
         return jsonarray.toString(); 
     }
     
+    public static String getServiceOrderBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+             
+                double qty = 0;
+                double dol = 0;
+                double total = 0;
+                double tax = 0;
+                double disc = 0;
+                double charge = 0;
+                int i = 0;
+                String fromcust = "";
+                String tocust = "";
+                String fromcode = "";
+                String tocode = "";
+                String planstatus = "";
+                
+                // keys :   fromdate, todate, fromcust, tocust, site, datetype
+             
+                 res = st.executeQuery("select sv_nbr, sv_cust, sv_ship, sv_type, sv_status, sv_create_date, sv_due_date, sv_issched, sum(svd_qty * svd_netprice) as 'price', " +
+                          " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = sv_nbr)as 'taxpercent', " +
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = sv_nbr) as 'taxcharge' " +
+                          " from sv_mstr " +
+                        " inner join svd_det on svd_nbr = sv_nbr " +
+                        " where sv_create_date >= " + "'" + keys[0] + "'" + 
+                        " and sv_create_date <= " + "'" + keys[1] + "'" +
+                        " and sv_cust >= " + "'" + keys[2] + "'" +
+                        " and sv_cust <= " + "'" + keys[3] + "'" +
+                        " and sv_site = " + "'" + keys[4] + "'" +        
+                        " group by sv_nbr, sv_cust, sv_ship, sv_type, sv_status, sv_create_date, sv_due_date, sv_issched " +
+                        " order by sv_nbr desc;");
+                
+                  
+                
+                    while (res.next()) {
+                    total = 0;
+                    tax = 0;
+                    
+                     if (res.getDouble("taxpercent") != 0) {
+                          tax = res.getDouble("price") * (res.getDouble("taxpercent") / 100.0);
+                         } else {
+                           tax = 0;  
+                         }
+                        tax += res.getDouble("taxcharge");
+                                        
+                        total = res.getDouble("price") + tax;
+                    
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("sv_nbr"));
+                        rowArray.put(res.getString("sv_cust"));
+                        rowArray.put(res.getString("sv_ship"));
+                        rowArray.put(res.getString("sv_type"));
+                        rowArray.put(res.getString("sv_status"));
+                        rowArray.put(res.getString("sv_create_date"));
+                        rowArray.put(res.getString("sv_due_date"));
+                        rowArray.put(total); 
+                        rowArray.put("print");
+                        jsonarray.put(rowArray);
+                    /*
+                    mymodel.addRow(new Object[]{
+                             BlueSeerUtils.clickflag, 
+                             BlueSeerUtils.clickbasket, 
+                               bsNumber(res.getInt("sv_nbr")),
+                                res.getString("sv_cust"),
+                                res.getString("sv_ship"),
+                                res.getString("sv_type"),
+                                res.getString("sv_status"),
+                                getDateDB(res.getString("sv_create_date")),
+                                getDateDB(res.getString("sv_due_date")),
+                                bsParseDouble(currformatDouble(total)),
+                                BlueSeerUtils.clickprint 
+                            });
+                      */ 
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
     public static String getOrderItemBrowseView(String[] keys) {
         JSONArray jsonarray = new JSONArray();
         try {
@@ -6619,6 +6946,49 @@ public class ordData {
         }
        return jsonarray.toString(); 
     }
+    
+    public static String getServiceOrderBrowseDetail(String order) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                res = st.executeQuery("select svd_nbr, svd_item, svd_qty, svd_netprice from svd_det " +
+                        " where svd_nbr = " + "'" + order + "'" +  ";");
+                    
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("svd_nbr"));
+                        rowArray.put(res.getString("svd_item"));
+                        rowArray.put(res.getDouble("svd_qty"));
+                        rowArray.put(res.getDouble("svd_netprice"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
     
     public static String getOrderChangeBrowseView(String[] keys) {
         JSONArray jsonarray = new JSONArray();

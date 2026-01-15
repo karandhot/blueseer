@@ -51,8 +51,10 @@ import com.blueseer.inv.calcCost;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData._updateInventoryBalance;
 import static com.blueseer.lbl.lblData.getLabelMultiPrintData;
+import static com.blueseer.ord.ordData.getOrderPrintData;
 import static com.blueseer.ord.ordData.getOrderTotalTax;
 import static com.blueseer.ord.ordData.getSVOrderTotalTax;
+import static com.blueseer.ord.ordData.getServiceOrderPrintData;
 import static com.blueseer.pur.purData.getPOTotalTax;
 import com.blueseer.sch.schData;
 import com.blueseer.shp.shpData;
@@ -18325,6 +18327,323 @@ return mystring;
        }
     }    
     
+    public static void printShipperRemote(String shipper, String keytype) {
+        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getShipperPrintData"});
+            list.add(new String[]{"param1", shipper});
+            list.add(new String[]{"param2", keytype});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServSHP"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        } else {
+            jsonString = getShipperPrintData(shipper, keytype); 
+        }        
+        Object[][] rData = jsonToData(jsonString);
+        
+        List<Object[]> list = new ArrayList<>();
+        String site_csz = "";
+        String bill_csz = "";
+        String ship_csz = "";
+        String cust = "";
+        String site = "";
+        String logo = "";
+        String imagedir = "";
+        String jasperfile = "";
+        String jasperdir = "";
+        int k = 0;
+        for (Object[] rowData : rData) {
+            if (k == 0) {
+                cust = rowData[2].toString();
+                site = rowData[2].toString();
+                logo = (rowData[39].toString().isBlank()) ? rowData[40].toString() : rowData[39].toString(); // if cm_logo = "" then site_logo
+                jasperfile = (rowData[42].toString().isBlank()) ? rowData[43].toString() : rowData[42].toString(); // if cm_ps_jasper = "" then site_sh_jasper
+                jasperdir = rowData[44].toString();
+                imagedir = rowData[41].toString();
+                bill_csz = rowData[26].toString() + " " + rowData[27].toString() + " " + rowData[28].toString() + " " + rowData[29].toString();
+                ship_csz = rowData[30].toString() + " " + rowData[31].toString() + " " + rowData[32].toString() + " " + rowData[33].toString();
+                site_csz = rowData[34].toString() + " " + rowData[35].toString() + " " + rowData[36].toString() + " " + rowData[37].toString();
+            }
+              //  totalsales = totalsales + (bsParseDouble(rowData[6].toString()) * bsParseDouble(rowData[7].toString()));
+             //   totalqty = totalqty + bsParseDouble(rowData[6].toString());
+                list.add(rowData);
+                k++;
+        }
+        
+        
+        String[] rec;
+        String columnnames = "shd_id,it_desc,sh_cust,sh_rmks,shd_po," +
+                        "shd_item,shd_custitem,shd_qty,shd_netprice,cm_code,cm_name,cm_line1,cm_line2," +
+                        "cms_name,cms_line1,site_desc,site_line1,sh_boxes,sh_pallets,sh_shipvia," +
+                        "cm_terms,sh_ref,sh_bol,shd_serial,shd_cont,sh_trailer," +
+                        "cm_city,cm_state,cm_zip,cm_country,cms_city,cms_state,cms_zip,cms_country," +
+                        "site_city,site_state,site_zip,site_country,site_site,cm_logo,site_logo,ov_image_directory,cm_ps_jasper,site_sh_jasper,ov_jasper_directory";
+        String[] columnnamesarray = columnnames.split(",", -1);
+               
+                
+               Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
+        HashMap hm = new HashMap();
+        hm.put("REPORT_TITLE", "SHIPPER");
+                hm.put("myid",  shipper);
+                hm.put("site_csz", site_csz);
+                hm.put("bill_csz", bill_csz);
+                hm.put("ship_csz", ship_csz);
+                hm.put("imagepath", imagepath.toString());
+                hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+       
+        JRDataSource datasource = new ListOfArrayDataSource(list, columnnamesarray);
+        // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
+        // type = "L8C";  ...or type = genericJTableL8.jasper
+        // String jasperfile = (type.length() > 3) ? jasperfile = type  : OVData.getCodeValueByCodeKey("jasper", type)  ;
+        Path template = checkForCustomPath(jasperdir, jasperfile);
+        JasperPrint jasperPrint; 
+        try {
+         jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
+         JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+           jasperViewer.setVisible(true);
+                jasperViewer.setTitle("Viewer");
+                jasperViewer.setIconImage(null);
+                jasperViewer.setFitPageZoomRatio();
+           //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
+       } catch (JRException ex) {
+           MainFrame.bslog(ex);
+       }
+    }
+    
+    public static void printOrderRemote(String order, boolean isMultiShip) {
+        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getOrderPrintData"});
+            list.add(new String[]{"param1", order});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        } else {
+            jsonString = getOrderPrintData(order); 
+        }        
+        Object[][] rData = jsonToData(jsonString);
+        
+        List<Object[]> list = new ArrayList<>();
+        String site_csz = "";
+        String bill_csz = "";
+        String ship_csz = "";
+        String cust = "";
+        String site = "";
+        String logo = "";
+        String imagedir = "";
+        String jasperfile = "";
+        String jasperdir = "";
+        ArrayList<Object[]> saclist = new ArrayList<>();
+        int k = 0;
+        for (Object[] rowData : rData) {
+            if (rowData[0].toString().equals("sacarray")) {
+                saclist.add(new Object[]{rowData[1], bsParseDouble(rowData[2].toString())});
+                continue;
+            }
+            if (k == 0) {
+                cust = rowData[2].toString();
+                site = rowData[33].toString();
+                logo = (rowData[34].toString().isBlank()) ? rowData[35].toString() : rowData[34].toString(); // if cm_logo = "" then site_logo
+                jasperfile = rowData[38].toString();
+                jasperdir = rowData[39].toString();
+                imagedir = rowData[36].toString();
+                bill_csz = rowData[21].toString() + " " + rowData[22].toString() + " " + rowData[23].toString() + " " + rowData[24].toString();
+                ship_csz = rowData[25].toString() + " " + rowData[26].toString() + " " + rowData[27].toString() + " " + rowData[28].toString();
+                site_csz = rowData[29].toString() + " " + rowData[30].toString() + " " + rowData[31].toString() + " " + rowData[32].toString();
+            }
+              //  totalsales = totalsales + (bsParseDouble(rowData[6].toString()) * bsParseDouble(rowData[7].toString()));
+             //   totalqty = totalqty + bsParseDouble(rowData[6].toString());
+                rowData[7] = bsParseDouble(rowData[7].toString());
+                rowData[8] = bsParseDouble(rowData[8].toString());
+                rowData[40] = bsParseInt(rowData[40].toString());
+                rowData[42] = bsParseDouble(rowData[42].toString());
+                rowData[43] = bsParseDouble(rowData[43].toString());
+                rowData[45] = bsParseDouble(rowData[45].toString());
+                list.add(rowData);
+                k++;
+        }
+            
+        if (isMultiShip) {
+          jasperfile = "ord_generic_multidest.jasper";
+        }
+        
+        String[] rec;
+        String columnnames = "sod_nbr,sod_desc,so_cust,so_rmks,sod_po," +
+                        "sod_item,sod_custitem,sod_ord_qty,sod_netprice,cm_code,cm_name,cm_line1,cm_line2," +
+                        "cms_name,cms_line1,site_desc,site_line1,so_shipvia," +
+                        "cm_terms,so_create_date,so_due_date," +
+                        "cm_city,cm_state,cm_zip,cm_country,cms_city,cms_state,cms_zip,cms_country," +
+                        "site_city,site_state,site_zip,site_country,site_site,cm_logo,site_logo," +
+                        "ov_image_directory,cm_iv_jasper,site_or_jasper,ov_jasper_directory," +
+                        "so_nbr,so_curr," +
+                        "charges,sod_listprice,cms_line2,sod_taxamt";
+        String[] columnnamesarray = columnnames.split(",", -1);
+               
+        JRDataSource datasource = new ListOfArrayDataSource(list, columnnamesarray);
+        JRDataSource sacds = new ListOfArrayDataSource(saclist, new String[]{"sos_desc", "amt"});
+        
+        Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
+        HashMap hm = new HashMap();
+        hm.put("REPORT_TITLE", "Sales Order");
+                hm.put("myid",  order);
+                hm.put("site_csz", site_csz);
+                hm.put("bill_csz", bill_csz);
+                hm.put("ship_csz", ship_csz);
+                hm.put("imagepath", imagepath.toString());
+                hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+                hm.put("sacdatasource", sacds);
+       
+        
+        // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
+        // type = "L8C";  ...or type = genericJTableL8.jasper
+        // String jasperfile = (type.length() > 3) ? jasperfile = type  : OVData.getCodeValueByCodeKey("jasper", type)  ;
+        Path template = checkForCustomPath(jasperdir, jasperfile);
+        JasperPrint jasperPrint; 
+        try {
+         jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
+         JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+           jasperViewer.setVisible(true);
+                jasperViewer.setTitle("Viewer");
+                jasperViewer.setIconImage(null);
+                jasperViewer.setFitPageZoomRatio();
+           //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
+       } catch (JRException ex) {
+           MainFrame.bslog(ex);
+       }
+    }
+    
+    public static void printServiceOrderRemote(String order) {
+        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getServiceOrderPrintData"});
+            list.add(new String[]{"param1", order});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        } else {
+            jsonString = getServiceOrderPrintData(order);  
+        }        
+        Object[][] rData = jsonToData(jsonString);
+        
+        double taxes = getSVOrderTotalTax(order);
+        
+        
+        List<Object[]> list = new ArrayList<>();
+        String site_csz = "";
+        String bill_csz = "";
+        String ship_csz = "";
+        String cust = "";
+        String site = "";
+        String logo = "";
+        String imagedir = "";
+        String jasperfile = "";
+        String jasperdir = "";
+        ArrayList<Object[]> saclist = new ArrayList<>();
+        int k = 0;
+        for (Object[] rowData : rData) {
+            if (rowData[0].toString().equals("sacarray")) {
+                saclist.add(new Object[]{rowData[1], bsParseDouble(rowData[2].toString())});
+                continue;
+            }
+            if (k == 0) {
+                cust = rowData[2].toString();
+                site = rowData[31].toString();
+                logo = (rowData[32].toString().isBlank()) ? rowData[33].toString() : rowData[32].toString(); // if cm_logo = "" then site_logo
+                jasperdir = rowData[37].toString();
+                imagedir = rowData[34].toString();
+                bill_csz = rowData[19].toString() + " " + rowData[20].toString() + " " + rowData[21].toString() + " " + rowData[22].toString();
+                ship_csz = rowData[23].toString() + " " + rowData[24].toString() + " " + rowData[25].toString() + " " + rowData[26].toString();
+                site_csz = rowData[27].toString() + " " + rowData[28].toString() + " " + rowData[29].toString() + " " + rowData[30].toString();
+            }
+              //  totalsales = totalsales + (bsParseDouble(rowData[6].toString()) * bsParseDouble(rowData[7].toString()));
+             //   totalqty = totalqty + bsParseDouble(rowData[6].toString());
+                rowData[6] = bsParseDouble(rowData[6].toString());
+                rowData[7] = bsParseDouble(rowData[7].toString());
+                rowData[38] = bsParseInt(rowData[38].toString());
+                rowData[40] = bsParseDouble(rowData[40].toString());
+                rowData[41] = bsParseDouble(rowData[41].toString());
+                list.add(rowData);
+                k++;
+        }
+            
+        // terms and conditions file
+        String tac_str = "";
+        if (Files.exists(FileSystems.getDefault().getPath("conf/tac.txt"))) {
+          byte[] tac;
+            try {
+                tac = Files.readAllBytes(FileSystems.getDefault().getPath("conf/tac.txt"));
+                tac_str = new String(tac, StandardCharsets.UTF_8);
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+          
+        }
+         
+        jasperfile = "serviceorder.jasper";
+        
+        
+        String[] rec;
+        String columnnames = "svd_nbr,svd_desc,sv_cust,sv_rmks,svd_po," +
+                        "svd_item,svd_qty,svd_netprice,cm_code,cm_name,cm_line1,cm_line2," +
+                        "cms_name,cms_line1,site_desc,site_line1," +
+                        "cm_terms,sv_create_date,sv_due_date," +
+                        "cm_city,cm_state,cm_zip,cm_country,cms_city,cms_state,cms_zip,cms_country," +
+                        "site_city,site_state,site_zip,site_country,site_site,cm_logo,site_logo," +
+                        "ov_image_directory,cm_iv_jasper,site_or_jasper,ov_jasper_directory," +
+                        "sv_nbr,sv_curr," +
+                        "charges,svd_listprice,cms_line2,sv_po,cm_phone,cm_email";
+        String[] columnnamesarray = columnnames.split(",", -1);
+               
+        JRDataSource datasource = new ListOfArrayDataSource(list, columnnamesarray);
+        JRDataSource sacds = new ListOfArrayDataSource(saclist, new String[]{"sos_desc", "amt"});
+        
+        Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
+        HashMap hm = new HashMap();
+        hm.put("REPORT_TITLE", "Service Order");
+                hm.put("myid",  order);
+                hm.put("site_csz", site_csz);
+                hm.put("bill_csz", bill_csz);
+                hm.put("ship_csz", ship_csz);
+                hm.put("imagepath", imagepath.toString());
+                hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+                hm.put("sacdatasource", sacds);
+                hm.put("tac", tac_str);
+                hm.put("taxes", taxes);
+       
+        
+        // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
+        // type = "L8C";  ...or type = genericJTableL8.jasper
+        // String jasperfile = (type.length() > 3) ? jasperfile = type  : OVData.getCodeValueByCodeKey("jasper", type)  ;
+        Path template = checkForCustomPath(jasperdir, jasperfile);
+        JasperPrint jasperPrint; 
+        try {
+         jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
+         JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+           jasperViewer.setVisible(true);
+                jasperViewer.setTitle("Viewer");
+                jasperViewer.setIconImage(null);
+                jasperViewer.setFitPageZoomRatio();
+           //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
+       } catch (JRException ex) {
+           MainFrame.bslog(ex);
+       }
+    }
+    
     public static void printInvoiceByOrder(String order) {
         try{
              
@@ -19161,93 +19480,6 @@ return mystring;
         }
     }    
      
-    public static void printShipperRemote(String shipper, String keytype) {
-        
-        String jsonString = null;
-        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
-            ArrayList<String[]> list = new ArrayList<>();
-            list.add(new String[]{"id", "getShipperPrintData"});
-            list.add(new String[]{"param1", shipper});
-            list.add(new String[]{"param2", keytype});
-            try {
-                jsonString = sendServerPost(list, "", null, "dataServSHP"); 
-            } catch (IOException ex) {
-                bslog(ex);
-                return;
-            }
-        } else {
-            jsonString = getShipperPrintData(shipper, keytype); 
-        }        
-        Object[][] rData = jsonToData(jsonString);
-        
-        List<Object[]> list = new ArrayList<>();
-        String site_csz = "";
-        String bill_csz = "";
-        String ship_csz = "";
-        String cust = "";
-        String site = "";
-        String logo = "";
-        String imagedir = "";
-        String jasperfile = "";
-        String jasperdir = "";
-        int k = 0;
-        for (Object[] rowData : rData) {
-            if (k == 0) {
-                cust = rowData[2].toString();
-                site = rowData[2].toString();
-                logo = (rowData[39].toString().isBlank()) ? rowData[40].toString() : rowData[39].toString(); // if cm_logo = "" then site_logo
-                jasperfile = (rowData[42].toString().isBlank()) ? rowData[43].toString() : rowData[42].toString(); // if cm_ps_jasper = "" then site_sh_jasper
-                jasperdir = rowData[44].toString();
-                imagedir = rowData[41].toString();
-                bill_csz = rowData[26].toString() + " " + rowData[27].toString() + " " + rowData[28].toString() + " " + rowData[29].toString();
-                ship_csz = rowData[30].toString() + " " + rowData[31].toString() + " " + rowData[32].toString() + " " + rowData[33].toString();
-                site_csz = rowData[34].toString() + " " + rowData[35].toString() + " " + rowData[36].toString() + " " + rowData[37].toString();
-            }
-              //  totalsales = totalsales + (bsParseDouble(rowData[6].toString()) * bsParseDouble(rowData[7].toString()));
-             //   totalqty = totalqty + bsParseDouble(rowData[6].toString());
-                list.add(rowData);
-                k++;
-        }
-        
-        
-        String[] rec;
-        String columnnames = "shd_id,it_desc,sh_cust,sh_rmks,shd_po," +
-                        "shd_item,shd_custitem,shd_qty,shd_netprice,cm_code,cm_name,cm_line1,cm_line2," +
-                        "cms_name,cms_line1,site_desc,site_line1,sh_boxes,sh_pallets,sh_shipvia," +
-                        "cm_terms,sh_ref,sh_bol,shd_serial,shd_cont,sh_trailer," +
-                        "cm_city,cm_state,cm_zip,cm_country,cms_city,cms_state,cms_zip,cms_country," +
-                        "site_city,site_state,site_zip,site_country,site_site,cm_logo,site_logo,ov_image_directory,cm_ps_jasper,site_sh_jasper,ov_jasper_directory";
-        String[] columnnamesarray = columnnames.split(",", -1);
-               
-                
-               Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
-        HashMap hm = new HashMap();
-        hm.put("REPORT_TITLE", "SHIPPER");
-                hm.put("myid",  shipper);
-                hm.put("site_csz", site_csz);
-                hm.put("bill_csz", bill_csz);
-                hm.put("ship_csz", ship_csz);
-                hm.put("imagepath", imagepath.toString());
-                hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
-       
-        JRDataSource datasource = new ListOfArrayDataSource(list, columnnamesarray);
-        // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
-        // type = "L8C";  ...or type = genericJTableL8.jasper
-        // String jasperfile = (type.length() > 3) ? jasperfile = type  : OVData.getCodeValueByCodeKey("jasper", type)  ;
-        Path template = checkForCustomPath(jasperdir, jasperfile);
-        JasperPrint jasperPrint; 
-        try {
-         jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
-         JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
-           jasperViewer.setVisible(true);
-                jasperViewer.setTitle("Viewer");
-                jasperViewer.setIconImage(null);
-                jasperViewer.setFitPageZoomRatio();
-           //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
-       } catch (JRException ex) {
-           MainFrame.bslog(ex);
-       }
-    }
     
     public static void printShipperByOrder(String order) {
         try{

@@ -45,14 +45,18 @@ import static com.blueseer.ord.ordData.getOrderMstr;
 import static com.blueseer.ord.ordData.getOrderMstrSet;
 import static com.blueseer.ord.ordData.getOrderReportData;
 import static com.blueseer.ord.ordData.getSOMetaData;
+import static com.blueseer.ord.ordData.getSVOrderTotalTax;
+import static com.blueseer.ord.ordData.getServiceOrderBrowseView;
 import static com.blueseer.ord.ordData.getServiceOrderDet;
 import static com.blueseer.ord.ordData.getServiceOrderMstr;
+import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.boolToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import static com.blueseer.utl.BlueSeerUtils.doubleToJson;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -339,6 +343,18 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         break;
         }
         
+        case "getServiceOrderBrowseView" : {
+        String[] x = new String[]{
+               request.getHeader("fromdate"), 
+               request.getHeader("todate"), 
+               request.getHeader("fromcust"), 
+               request.getHeader("tocust"), 
+               request.getHeader("site")
+               };     
+        response.getWriter().print(getServiceOrderBrowseView(x));  
+        break;
+        }
+        
         case "getOrderItemBrowseView" : {
         String[] x = new String[]{
                request.getHeader("fromdate"), 
@@ -376,6 +392,10 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         case "getOrderBrowseDetail" :
             response.getWriter().print(ordData.getOrderBrowseDetail(request.getHeader("param1")));  
             break;
+            
+        case "getServiceOrderBrowseDetail" :
+            response.getWriter().print(ordData.getServiceOrderBrowseDetail(request.getHeader("param1")));  
+            break;    
             
         case "getOrderChangeBrowseDetail" :
             response.getWriter().print(ordData.getOrderChangeBrowseDetail(request.getHeader("param1"),
@@ -455,6 +475,11 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             break;
           }
         
+        case "getSVOrderTotalTax" : {
+            response.getWriter().print(doubleToJson(getSVOrderTotalTax(request.getHeader("param1"))));  
+            break;
+        }
+        
         case "applyOrderChange" :
             ordData.applyOrderChange(request.getHeader("param1"), request.getHeader("param2"));
             break;
@@ -466,6 +491,10 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         case "updateOrderStatus" :
             ordData.updateOrderStatus(request.getHeader("param1"), request.getHeader("param2"));
             break;  
+            
+        case "updateServiceOrderType" :
+            ordData.updateServiceOrderType(request.getHeader("param1"), request.getHeader("param2"));
+            break;    
             
         case "updateOrderStatusByPO" :
             ordData.updateOrderStatusByPO(request.getHeader("param1"), request.getHeader("param2"));
@@ -487,7 +516,11 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         
         case "getOrderPrintData" :
             response.getWriter().print(ordData.getOrderPrintData(request.getHeader("param1")));    
-            break;
+            break; 
+            
+        case "getServiceOrderPrintData" :
+            response.getWriter().print(ordData.getServiceOrderPrintData(request.getHeader("param1")));    
+            break;    
             
         case "getSOMetaData" :        
             response.getWriter().print(ArrayListStringArrayToJson(getSOMetaData(request.getHeader("param1"))));

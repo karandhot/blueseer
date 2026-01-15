@@ -52,6 +52,7 @@ import com.blueseer.ord.ordData.sos_det;
 import com.blueseer.ord.ordData.sv_mstr;
 import com.blueseer.ord.ordData.svd_det;
 import static com.blueseer.ord.ordData.updateServiceOrderTransaction;
+import static com.blueseer.ord.ordData.updateServiceOrderType;
 import com.blueseer.shp.shpData;
 import static com.blueseer.shp.shpData.confirmShipperTransaction;
 import com.blueseer.shp.shpData.ship_mstr;
@@ -580,7 +581,6 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeerT 
     
     public String[] getRecord(String[] x) {
         String[] m = new String[2];
-        myorddetmodel.setRowCount(0);
         sv = getServiceOrderMstr(x);
         svdlist = getServiceOrderDet(x);
       return sv.m();
@@ -647,6 +647,7 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeerT 
         ddtax.setSelectedItem(sv.sv_taxcode());
         }
         
+        myorddetmodel.setRowCount(0);
         if (svdlist != null) {
             for (svd_det svd : svdlist) {
               myorddetmodel.addRow(new Object[]{svd.svd_line(), 
@@ -1893,7 +1894,7 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeerT 
     }//GEN-LAST:event_btupdateActionPerformed
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
-       OVData.printServiceOrder(tbkey.getText());
+       OVData.printServiceOrderRemote(tbkey.getText());
     }//GEN-LAST:event_btprintActionPerformed
 
     private void ddcustActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddcustActionPerformed
@@ -1964,33 +1965,7 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeerT 
     }//GEN-LAST:event_tbhoursFocusLost
 
     private void btquotetoorderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btquotetoorderActionPerformed
-        try {
-
-           Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            try {
-                    st.executeUpdate("update sv_mstr set sv_type = 'order' where sv_nbr = " + "'" + bsNumberToUS(tbkey.getText()) + "'" );
-                    bsmf.MainFrame.show(getMessageTag(1101));
-                   initvars(new String[]{tbkey.getText()});
-                    // btQualProbAdd.setEnabled(false);
-               
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        updateServiceOrderType(bsNumberToUS(tbkey.getText()), "order");
     }//GEN-LAST:event_btquotetoorderActionPerformed
 
     private void btinvoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btinvoiceActionPerformed
