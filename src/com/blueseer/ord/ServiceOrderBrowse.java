@@ -439,7 +439,7 @@ public class ServiceOrderBrowse extends javax.swing.JPanel {
         
         // tablereport.getColumnModel().getColumn(0).setCellRenderer(new ButtonRenderer());
          tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-         tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+         tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
       
         btdetail.setEnabled(false);
         detailpanel.setVisible(false);
