@@ -125,6 +125,8 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeerT 
     String defaultCurrency = "";
     boolean canupdate = false;
     boolean autoinvoice = false;
+    boolean isSRVMItemType = false;
+    boolean isSRVMQuoteType = false;
     public static sv_mstr sv = null;
     public static cm_mstr cm = null;
     public static ArrayList<svd_det> svdlist = null;
@@ -422,6 +424,12 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeerT 
             if (s[0].equals("statuses")) {
               ddstatus.addItem(s[1]); 
             }
+            if (s[0].equals("orc_srvm_type")) {
+              isSRVMQuoteType = bsmf.MainFrame.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("orc_srvm_item_default")) {
+              isSRVMItemType = bsmf.MainFrame.ConvertStringToBool(s[1]);  
+            }
         }
        
         dduom.insertItemAt("", 0);
@@ -452,12 +460,12 @@ public class ServiceOrderMaint extends javax.swing.JPanel implements IBlueSeerT 
         btadd.setEnabled(false); // set disabled until line item in detail
         ddstatus.setSelectedItem("open");
         ddstatus.setEnabled(false);
-        if (OVData.isSRVMQuoteType()) {
+        if (isSRVMQuoteType) {
             ddtype.setSelectedItem("quote");
         } else {
             ddtype.setSelectedItem("order");
         }
-        if (OVData.isSRVMItemType()) {
+        if (isSRVMItemType) {
             rbservice.setSelected(true);
              rbinventory.setSelected(false);
         } else {

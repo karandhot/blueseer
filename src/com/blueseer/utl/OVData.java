@@ -11432,78 +11432,7 @@ return mycount;
     return custitemonly;
 
 }   
-
-    public static boolean isSRVMQuoteType() {
-
-   boolean srvmtype = false;
-    try{
-
-        Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-        Statement st = con.createStatement();
-        ResultSet res = null;
-        try{
-
-            res = st.executeQuery("select orc_srvm_type from order_ctrl;");
-           while (res.next()) {
-                srvmtype = res.getBoolean("orc_srvm_type");
-            }
-
-       }
-        catch (SQLException s){
-            MainFrame.bslog(s);
-        } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               con.close();
-        }
-    }
-    catch (Exception e){
-        MainFrame.bslog(e);
-    }
-    return srvmtype;
-
-}   
-
-    public static boolean isSRVMItemType() {
-
-   boolean srvmtype = false;
-    try{
-
-        Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-        Statement st = con.createStatement();
-        ResultSet res = null;
-        try{
-            res = st.executeQuery("select orc_srvm_item_default from order_ctrl;");
-           while (res.next()) {
-                srvmtype = res.getBoolean("orc_srvm_item_default");
-            }
-
-       }
-        catch (SQLException s){
-            MainFrame.bslog(s);
-        } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               con.close();
-        }
-    }
-    catch (Exception e){
-        MainFrame.bslog(e);
-    }
-    return srvmtype;
-
-}   
-
+   
     public static boolean isCustItemOnlySHIP() {
 
    boolean custitemonly = false;

@@ -4680,6 +4680,17 @@ public class ordData {
                lines.add(new String[]{"edidir", res.getString("ov_edi_directory")});
             }
            
+            res = st.executeQuery("select orc_srvm_type, orc_srvm_item_default from order_ctrl;");
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "orc_srvm_type";
+               s[1] = res.getString("orc_srvm_type");
+               lines.add(s);
+               s = new String[2];
+               s[0] = "orc_srvm_item_default";
+               s[1] = res.getString("orc_srvm_item_default");
+               lines.add(s);
+            }
             
             res = st.executeQuery("select cur_id from cur_mstr ;");
             while (res.next()) {
@@ -4713,7 +4724,7 @@ public class ordData {
                lines.add(s);
             }
             
-             res = st.executeQuery("select distinct wf_id from wf_mstr;" );
+            res = st.executeQuery("select distinct wf_id from wf_mstr;" );
             while (res.next()) {
                 String[] s = new String[2];
                s[0] = "routings";
