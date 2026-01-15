@@ -45,6 +45,8 @@ import static com.blueseer.ord.ordData.getOrderMstr;
 import static com.blueseer.ord.ordData.getOrderMstrSet;
 import static com.blueseer.ord.ordData.getOrderReportData;
 import static com.blueseer.ord.ordData.getSOMetaData;
+import static com.blueseer.ord.ordData.getServiceOrderDet;
+import static com.blueseer.ord.ordData.getServiceOrderMstr;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
@@ -436,6 +438,22 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         response.getWriter().print(rsd);
         }
         break; 
+        
+        case "getServiceOrderMstr" : {       
+        ordData.sv_mstr sv = getServiceOrderMstr(new String[]{request.getHeader("param1")});
+        ObjectMapper objectMapper = new ObjectMapper();
+        String r = objectMapper.writeValueAsString(sv);
+        response.getWriter().print(r);
+        }
+        break;
+        
+        case "getServiceOrderDet" : { 
+            ArrayList<ordData.svd_det> x = getServiceOrderDet(new String[]{request.getHeader("param1")}); 
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
         
         case "applyOrderChange" :
             ordData.applyOrderChange(request.getHeader("param1"), request.getHeader("param2"));
