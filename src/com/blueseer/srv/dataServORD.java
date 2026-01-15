@@ -524,7 +524,11 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             
         case "getSOMetaData" :        
             response.getWriter().print(ArrayListStringArrayToJson(getSOMetaData(request.getHeader("param1"))));
-            break;     
+            break;  
+            
+        case "getServiceOrderChartData" :
+        response.getWriter().print(ArrayListStringArrayToJson(ordData.getServiceOrderChartData(request.getHeader("param1"), request.getHeader("param2"))));
+        break;
             
         default:
         response.getWriter().print("no switch case exists in dataServORD for id: " + id);
