@@ -376,6 +376,7 @@ public class ShipOrderLine extends javax.swing.JPanel {
         tbline.setText("");
         tbpackqty.setText("");
         tbkey.setText("");
+        tbkey.setEditable(false);
         cbcomplete.setSelected(false);
        assignedlabels.clear();
         
@@ -471,7 +472,9 @@ public class ShipOrderLine extends javax.swing.JPanel {
         if (! x.isEmpty()) {
           tbkey.setText(String.valueOf(OVData.getNextNbr(x)));  
           tbkey.setEditable(false);
-        } 
+        } else {
+          tbkey.setEditable(true);  
+        }
     }
     
     public String[] addRecord(String[] x) {

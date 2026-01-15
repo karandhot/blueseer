@@ -2157,7 +2157,7 @@ public class ediData {
     public static void updateEdiMstrMM(map_mstr x) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<>();
-            list.add(new String[]{"id","updateEDIMstr"});
+            list.add(new String[]{"id","updateEdiMstrMM"});
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 String jsonString = objectMapper.writeValueAsString(x);
