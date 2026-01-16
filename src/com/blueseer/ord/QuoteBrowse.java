@@ -849,7 +849,8 @@ public class QuoteBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
+        executeTask("getBrowseView", null);
+        /*
         try {
             Connection con = null;
             if (ds != null) {
@@ -953,7 +954,7 @@ public class QuoteBrowse extends javax.swing.JPanel {
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
-       
+       */
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btdetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdetailActionPerformed
