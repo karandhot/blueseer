@@ -26,6 +26,7 @@ SOFTWARE.
 package com.blueseer.ord;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static bsmf.MainFrame.checkperms;
@@ -49,18 +50,24 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.ord.ordData.getServiceOrderBrowseDetail;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDoubleZ;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
+import java.io.IOException;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import javax.swing.BorderFactory;
@@ -80,6 +87,11 @@ import javax.swing.table.DefaultTableCellRenderer;
 public class QuoteBrowse extends javax.swing.JPanel {
  
     boolean sending = false;
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultcurrency = "";
+    String defaultsite = "";
     
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("select"), 
@@ -171,24 +183,47 @@ public class QuoteBrowse extends javax.swing.JPanel {
     }
 
     
-    public void executeTask(String x, int y, String w) { 
+    public void executeTask(String x, String[] y) { 
       
         class Task extends SwingWorker<String[], Void> {
-       
-          String key = "";
-          int row = 0;
-          String site = "";
+         
+          String action = "";
+          String[] key = null;
           
-          public Task(String key, int row, String site) { 
+          public Task(String action, String[] key) { 
+              this.action = action;
               this.key = key;
-              this.row = row;
-              this.site = site;
-          } 
-           
+          }     
+            
         @Override
         public String[] doInBackground() throws Exception {
             String[] message = new String[2];
-            message = OVData.sendInvoice(key, site); 
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                case "getDetail":
+                    message = getDetail(key[0]);
+                    break;    
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
             return message;
         }
  
@@ -196,9 +231,22 @@ public class QuoteBrowse extends javax.swing.JPanel {
        public void done() {
             try {
             String[] message = get();
+           
             BlueSeerUtils.endTask(message);
-            sending = false;
-            tablereport.getModel().setValueAt(BlueSeerUtils.clickmail,row,11);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+            if (this.action.equals("getDetail")) {
+                done_getDetail();
+            }
+            
             } catch (Exception e) {
                 MainFrame.bslog(e);
             } 
@@ -207,7 +255,7 @@ public class QuoteBrowse extends javax.swing.JPanel {
     }  
       
        BlueSeerUtils.startTask(new String[]{"","Running..."});
-       Task z = new Task(x, y, w); 
+       Task z = new Task(x, y); 
        z.execute(); 
        
     }
@@ -256,60 +304,21 @@ public class QuoteBrowse extends javax.swing.JPanel {
        }
     }
     
-    public void getdetail(String nbr) {
-      
-         modeldetail.setNumRows(0);
-         double totalsales = 0;
-         double totalqty = 0;
-         
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null; try {
-                
-                int i = 0;
-                String blanket = "";
-                res = st.executeQuery("select quod_nbr, quod_line, quod_item, quod_listprice, quod_disc, quod_netprice, quod_qty from quo_det " +
-                        " where quod_nbr = " + "'" + nbr + "'" +  ";");
-                while (res.next()) {
-                    totalsales = totalsales + (res.getDouble("quod_qty") * res.getDouble("quod_netprice"));
-                    totalqty = totalqty + res.getDouble("quod_qty");
-                   modeldetail.addRow(new Object[]{ 
-                      res.getString("quod_nbr"), 
-                      res.getString("quod_line"),
-                      res.getString("quod_item"),
-                      bsFormatDouble(res.getDouble("quod_listprice")),
-                      bsFormatDouble(res.getDouble("quod_disc")), 
-                      bsFormatDouble(res.getDouble("quod_netprice")),
-                      bsFormatDoubleZ(res.getDouble("quod_qty"))
-                   });
-                }
-               
-               tbdetsales.setText(currformatDouble(totalsales));
-               tbdetqty.setText(currformatDouble(totalqty));
-               
-                tabledetail.setModel(modeldetail);
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            }
-            bsmf.MainFrame.con.close();
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
-    }
-   
-    
     public void initvars(String[] arg) {
+        executeTask("dataInit", null);
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = ordData.getOrderBrowseInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        
         tbdetqty.setText("0");
         tbtotqty.setText("0");
         tbtotsales.setText("0");
@@ -329,24 +338,165 @@ public class QuoteBrowse extends javax.swing.JPanel {
         
         tabledetail.setModel(modeldetail);
         tabledetail.getTableHeader().setReorderingAllowed(false);
-        tabledetail.getColumnModel().getColumn(3).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        tabledetail.getColumnModel().getColumn(5).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+        tabledetail.getColumnModel().getColumn(3).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+        tabledetail.getColumnModel().getColumn(5).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
            
         
         tablereport.setModel(mymodel);
         tablereport.getTableHeader().setReorderingAllowed(false);
-        tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-      
+        tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+        
         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
         tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
                 //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
                     //       new ButtonEditor(new JCheckBox()));
                 
         btdetail.setEnabled(false);
-        detailpanel.setVisible(false);
-          
+        detailpanel.setVisible(false); 
+       
+        
+        for (String[] s : initDataSets) {
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultsite = s[1]; 
+            }
+            if (s[0].equals("currency")) {
+              defaultcurrency = s[1]; 
+            }
+        }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+       
     }
+    
+    public String[] getBrowseView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String fromcust;
+        String tocust;
+        String fromnbr;
+        String tonbr;
+        
+        
+        fromcust = (tbfromcust.getText().isEmpty()) ? bsmf.MainFrame.lowchar :  tbfromcust.getText();  
+        tocust = (tbtocust.getText().isEmpty()) ? bsmf.MainFrame.lowchar :  tbtocust.getText();
+        fromnbr = (tbfromnbr.getText().isEmpty()) ? bsmf.MainFrame.lowchar :  tbfromnbr.getText();  
+        tonbr = (tbtonbr.getText().isEmpty()) ? bsmf.MainFrame.lowchar :  tbtonbr.getText();
+        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(new String[]{"id","getQuoteBrowseView"});
+        list.add(new String[]{"fromdate",dfdate.format(dcfrom.getDate())});
+        list.add(new String[]{"todate",dfdate.format(dcto.getDate())});
+        list.add(new String[]{"fromcust",fromcust});
+        list.add(new String[]{"tocust",tocust});
+        list.add(new String[]{"fromnbr",fromnbr});
+        list.add(new String[]{"tonbr",tonbr});
+        list.add(new String[]{"active",String.valueOf(cbactive.isSelected())});
+        list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getSerialBrowseView")};
+            }
+        } else {
+            jsonString = ordData.getQuoteBrowseView(new String[]{
+                dfdate.format(dcfrom.getDate()),
+                dfdate.format(dcto.getDate()),
+                fromcust,
+                tocust,
+                fromnbr,
+                tonbr,
+                String.valueOf(cbactive.isSelected()),
+                ddsite.getSelectedItem().toString()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getSerialBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+       
+        int i = 0;
+        double totsales = 0.00;
+        double totqty = 0.00;
+        
+        mymodel.setNumRows(0);
+        if (roData != null) {
+        for (Object[] rowData : roData) {
+            totqty = totqty + bsParseDouble(roData[i][5].toString());
+            totsales = totsales + bsParseDouble(roData[i][6].toString());
+            rowData[7] = bsParseDouble(rowData[7].toString());
+            rowData[8] = bsParseDouble(currformat(rowData[8].toString()));
+            i++;
+            mymodel.addRow(rowData);
+        }
+        }              
+        tbtotqty.setText(currformatDouble(totqty));
+        tbtotsales.setText(currformatDouble(totsales));
+        roData = null;
+    }   
+    
+    public String[] getDetail(String order) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getQuoteBrowseDetail"});
+            list.add(new String[]{"param1", order});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getServiceOrderBrowseDetail(order); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getDetail() {
+      modeldetail.setNumRows(0);
+        double totsales = 0.00;
+        double totqty = 0.00;
+         
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+                totqty = totqty + bsParseDouble(rowData[6].toString());
+                totsales = totsales + (bsParseDouble(rowData[5].toString()) * bsParseDouble(rowData[6].toString()));
+                rowData[3] = bsParseDouble(currformat(rowData[3].toString()));
+                rowData[4] = bsParseDouble(rowData[4].toString());
+                rowData[5] = bsParseDouble(currformat(rowData[5].toString()));
+                rowData[6] = bsParseDouble(rowData[6].toString());
+               // dols += (bsParseDouble(rowData[2].toString()) * bsParseDouble(rowData[3].toString()));
+                modeldetail.addRow(rowData);
+            } 
+            tbdetsales.setText(currformatDouble(totsales));
+            tbdetqty.setText(currformatDouble(totqty));
+        }
+        
+       }
+       roData = null;
+    }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -383,6 +533,8 @@ public class QuoteBrowse extends javax.swing.JPanel {
         tbcsv = new javax.swing.JButton();
         cbactive = new javax.swing.JCheckBox();
         btprint = new javax.swing.JButton();
+        ddsite = new javax.swing.JComboBox<>();
+        jLabel9 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         tbtotsales = new javax.swing.JLabel();
@@ -500,6 +652,8 @@ public class QuoteBrowse extends javax.swing.JPanel {
             }
         });
 
+        jLabel9.setText("Site:");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -507,10 +661,6 @@ public class QuoteBrowse extends javax.swing.JPanel {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(114, 114, 114)
-                        .addComponent(datelabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(267, 267, 267))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel5)
@@ -535,12 +685,18 @@ public class QuoteBrowse extends javax.swing.JPanel {
                                 .addComponent(jLabel1))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addGap(27, 27, 27)
-                                .addComponent(jLabel4)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(tbfromcust, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tbtocust, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)))
+                                .addComponent(jLabel4))))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(114, 114, 114)
+                        .addComponent(datelabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(95, 95, 95)
+                        .addComponent(jLabel9)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(tbfromcust, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
+                    .addComponent(tbtocust, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
+                    .addComponent(ddsite, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(cbactive)
@@ -583,7 +739,11 @@ public class QuoteBrowse extends javax.swing.JPanel {
                         .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel6))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(datelabel, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(datelabel, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel9)))
                 .addGap(13, 13, 13))
         );
 
@@ -808,7 +968,7 @@ public class QuoteBrowse extends javax.swing.JPanel {
         int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
         if ( col == 1) {
-                getdetail(bsNumberToUS(tablereport.getValueAt(row, 2).toString()));
+                executeTask("getDetail", new String[]{tablereport.getValueAt(row, 2).toString()});
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
         }
@@ -844,6 +1004,7 @@ public class QuoteBrowse extends javax.swing.JPanel {
     private javax.swing.JLabel datelabel;
     private com.toedter.calendar.JDateChooser dcfrom;
     private com.toedter.calendar.JDateChooser dcto;
+    private javax.swing.JComboBox<String> ddsite;
     private javax.swing.JPanel detailpanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -853,6 +1014,7 @@ public class QuoteBrowse extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

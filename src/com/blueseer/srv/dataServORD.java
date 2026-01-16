@@ -44,6 +44,7 @@ import static com.blueseer.ord.ordData.getOrderItemBrowseView;
 import static com.blueseer.ord.ordData.getOrderMstr;
 import static com.blueseer.ord.ordData.getOrderMstrSet;
 import static com.blueseer.ord.ordData.getOrderReportData;
+import static com.blueseer.ord.ordData.getQuoteBrowseView;
 import static com.blueseer.ord.ordData.getSOMetaData;
 import static com.blueseer.ord.ordData.getSVOrderTotalTax;
 import static com.blueseer.ord.ordData.getServiceOrderBrowseView;
@@ -371,6 +372,21 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         break;
         }
         
+        case "getQuoteBrowseView" : {
+        String[] x = new String[]{
+               request.getHeader("fromdate"), 
+               request.getHeader("todate"), 
+               request.getHeader("fromcust"), 
+               request.getHeader("tocust"), 
+               request.getHeader("fromnbr"), 
+               request.getHeader("tonbr"),
+               request.getHeader("active"), 
+               request.getHeader("site")
+               };     
+        response.getWriter().print(getQuoteBrowseView(x));  
+        break;
+        }
+        
         case "validateOrderDetail" :
             response.getWriter().print(arrayToJson(ordData.validateOrderDetail(request.getHeader("param1"),
                     request.getHeader("param2"),
@@ -396,6 +412,10 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         case "getServiceOrderBrowseDetail" :
             response.getWriter().print(ordData.getServiceOrderBrowseDetail(request.getHeader("param1")));  
             break;    
+        
+        case "getQuoteBrowseDetail" :
+            response.getWriter().print(ordData.getQuoteBrowseDetail(request.getHeader("param1")));  
+            break;        
             
         case "getOrderChangeBrowseDetail" :
             response.getWriter().print(ordData.getOrderChangeBrowseDetail(request.getHeader("param1"),

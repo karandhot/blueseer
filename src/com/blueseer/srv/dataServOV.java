@@ -35,6 +35,7 @@ import static com.blueseer.utl.BlueSeerUtils.HashMapStringIntegerToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.boolToJson;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.doubleToJson;
@@ -96,6 +97,7 @@ import static com.blueseer.utl.OVData.isValidVendPriceRecordExists;
 import static com.blueseer.utl.OVData.isValidVendor;
 import static com.blueseer.utl.OVData.isValidWarehouse;
 import static com.blueseer.utl.OVData.isValidWorkCenter;
+import static com.blueseer.utl.OVData.sourceOrder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
@@ -342,6 +344,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         break;
         }
         
+        case "sourceOrder" :
+            response.getWriter().print(arrayToJson(sourceOrder(bsParseInt(request.getHeader("param1")))));
+        break;  
+            
+            
         case "isAutoPost" : {
         response.getWriter().println(boolToJson(isAutoPost())); 
         break;

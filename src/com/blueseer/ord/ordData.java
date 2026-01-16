@@ -6831,6 +6831,93 @@ public class ordData {
         return jsonarray.toString(); 
     }
     
+    public static String getQuoteBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+             
+                int i = 0;
+                
+            boolean isactive = BlueSeerUtils.ConvertStringToBool(keys[6]);
+                // keys :   fromdate, todate, fromcust, tocust, site, datetype
+             if (isactive) {
+                  res = st.executeQuery("select quo_nbr, quo_status, quo_cust, quo_date, quo_expire, sum(quod_qty) as 'qty', sum(quod_qty * quod_netprice) as 'price' from quo_mstr " +
+                        " inner join quo_det on quod_nbr = quo_nbr where " +
+                        " quo_nbr >= " + "'" + keys[4] + "'" + " AND " +
+                        " quo_nbr <= " + "'" + keys[5] + "'" + " AND " +
+                        " quo_date >= " + "'" + keys[0] + "'" + " AND " +
+                        " quo_date <= " + "'" + keys[1] + "'" + " AND " +
+                        " quo_cust >= " + "'" + keys[2] + "'" + " AND " +
+                        " quo_cust <= " + "'" + keys[3] + "'" + " AND " +
+                        " quo_status = " + "'" + getGlobalProgTag("open") + "'" +
+                        " group by quo_nbr, quo_status, quo_cust, quo_date, quo_expire;");
+                 } else {
+                    res = st.executeQuery("select quo_nbr, quo_status, quo_cust, quo_date, quo_expire, sum(quod_qty) as 'qty', sum(quod_qty * quod_netprice) as 'price' from quo_mstr " +
+                        " inner join quo_det on quod_nbr = quo_nbr where " +
+                        " quo_nbr >= " + "'" + keys[4] + "'" + " AND " +
+                        " quo_nbr <= " + "'" + keys[5] + "'" + " AND " +
+                        " quo_date >= " + "'" + keys[0] + "'" + " AND " +
+                        " quo_date <= " + "'" + keys[1] + "'" + " AND " +
+                        " quo_cust >= " + "'" + keys[2] + "'" + " AND " +
+                        " quo_cust <= " + "'" + keys[3] + "'" + 
+                        " group by quo_nbr, quo_status, quo_cust, quo_date, quo_expire;"); 
+                 }
+                
+                  
+                
+                    while (res.next()) {
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("quo_nbr"));
+                        rowArray.put(res.getString("quo_cust"));
+                        rowArray.put(res.getString("quo_date"));
+                        rowArray.put(res.getString("quo_expire"));
+                        rowArray.put(res.getString("quo_status"));
+                        rowArray.put(res.getString("qty"));
+                        rowArray.put(res.getString("price"));
+                        jsonarray.put(rowArray);
+                    /*
+                    mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, BlueSeerUtils.clickbasket, 
+                               bsNumber(res.getString("quo_nbr")),
+                                res.getString("quo_cust"),
+                                getDateDB(res.getString("quo_date")),
+                                getDateDB(res.getString("quo_expire")),
+                                res.getString("quo_status"),
+                                bsNumber(res.getDouble("qty")),
+                                bsParseDouble(currformatDouble(res.getDouble("price")))
+                            });
+                      */ 
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    
     public static String getOrderItemBrowseView(String[] keys) {
         JSONArray jsonarray = new JSONArray();
         try {
@@ -6973,6 +7060,64 @@ public class ordData {
                         rowArray.put(res.getDouble("svd_netprice"));
                         jsonarray.put(rowArray);
                     }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    public static String getQuoteBrowseDetail(String order) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                res = st.executeQuery("select quod_nbr, quod_line, quod_item, quod_listprice, quod_disc, quod_netprice, quod_qty from quo_det " +
+                        " where quod_nbr = " + "'" + order + "'" +  ";");
+                    
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("quod_nbr"));
+                        rowArray.put(res.getString("quod_line"));  
+                        rowArray.put(res.getString("quod_item"));
+                        rowArray.put(res.getDouble("quod_listprice"));
+                        rowArray.put(res.getDouble("quod_disc"));
+                        rowArray.put(res.getDouble("quod_netprice"));
+                        rowArray.put(res.getDouble("quod_qty"));
+                        jsonarray.put(rowArray);
+                        /*
+                        modeldetail.addRow(new Object[]{ 
+                      res.getString("quod_nbr"), 
+                      res.getString("quod_line"),
+                      res.getString("quod_item"),
+                      bsFormatDouble(res.getDouble("quod_listprice")),
+                      bsFormatDouble(res.getDouble("quod_disc")), 
+                      bsFormatDouble(res.getDouble("quod_netprice")),
+                      bsFormatDoubleZ(res.getDouble("quod_qty"))
+                   });
+                        */
+                    }
+                    
+                    
            }
             catch (SQLException s){
                  MainFrame.bslog(s);

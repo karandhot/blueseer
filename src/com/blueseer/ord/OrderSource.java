@@ -113,6 +113,7 @@ public class OrderSource extends javax.swing.JPanel {
         java.util.Date now = new java.util.Date();
                 tborder.setText("");
     }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

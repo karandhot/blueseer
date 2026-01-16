@@ -17005,8 +17005,19 @@ return mystring;
          return myreturn;
      }
         
-    public static void sourceOrder(int order) {
-           try {
+    public static String[] sourceOrder(int order) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "sourceOrder"});
+            list.add(new String[]{"param1",  String.valueOf(order)});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        try {
             Connection con = null;
             if (ds != null) {
               con = ds.getConnection();
@@ -17028,28 +17039,26 @@ return mystring;
                  }
                  
                  if (isSourced == 1) {
-                     bsmf.MainFrame.show("Order is already sourced");
-                     return;
+                     return new String[]{"0", "Order is already sourced"};
                  }
                  
                  if (i > 0 && ! status.isEmpty() && isSourced == 0) {
                        int error = EDI.Create940(String.valueOf(order));
                        if (error == 0) {
-                          bsmf.MainFrame.show(getMessageTag(1125));
-                          updateOrderSourceFlag(order); 
+                           updateOrderSourceFlag(order); 
+                          return new String[]{"1", getMessageTag(1125)};
                        }
                        if (error == 1)
-                           bsmf.MainFrame.show("Missing WH/Doctype/Dir Record in cmedi_mstr");
+                           return new String[]{"1", "Missing WH/Doctype/Dir Record in cmedi_mstr"};
 
                        if (error == 2)
-                           bsmf.MainFrame.show(getMessageTag(1016));
+                           return new String[]{"1", getMessageTag(1016)};
 
                        if (error == 3)
-                           bsmf.MainFrame.show(getMessageTag(1106));
+                           return new String[]{"1", getMessageTag(1106)};
                       
                  } else {
-                     bsmf.MainFrame.show(getMessageTag(1034, String.valueOf(order)));
-                     return;
+                     return new String[]{"0", getMessageTag(1034, String.valueOf(order))};
                  }
               
              
@@ -17067,6 +17076,7 @@ return mystring;
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
+        return new String[]{"0", getMessageTag(1034, String.valueOf(order))};
        }  
     
     public static void unconfirmShipment(String shipper, Date effdate) {
