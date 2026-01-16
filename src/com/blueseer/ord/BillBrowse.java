@@ -29,6 +29,7 @@ import com.blueseer.shp.*;
 import com.blueseer.far.*;
 import com.blueseer.shp.*;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static bsmf.MainFrame.checkperms;
@@ -69,17 +70,22 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.ord.ordData.getBillBrowseDetail;
+import static com.blueseer.ord.ordData.getServiceOrderBrowseDetail;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDoubleZ;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import static com.blueseer.utl.BlueSeerUtils.setDateFormat;
 import static com.blueseer.utl.BlueSeerUtils.setDateFormatNull;
@@ -110,6 +116,11 @@ import net.sf.jasperreports.view.JasperViewer;
 public class BillBrowse extends javax.swing.JPanel {
  
     boolean sending = false;
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultcurrency = "";
+    String defaultsite = "";
     
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("select"), 
@@ -211,24 +222,47 @@ public class BillBrowse extends javax.swing.JPanel {
     }
 
     
-    public void executeTask(String x, int y, String w) { 
+    public void executeTask(String x, String[] y) { 
       
         class Task extends SwingWorker<String[], Void> {
-       
-          String key = "";
-          int row = 0;
-          String site = "";
+         
+          String action = "";
+          String[] key = null;
           
-          public Task(String key, int row, String site) { 
+          public Task(String action, String[] key) { 
+              this.action = action;
               this.key = key;
-              this.row = row;
-              this.site = site;
-          } 
-           
+          }     
+            
         @Override
         public String[] doInBackground() throws Exception {
             String[] message = new String[2];
-            message = OVData.sendInvoice(key, site); 
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                case "getDetail":
+                    message = getDetail(key[0]);
+                    break;    
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
             return message;
         }
  
@@ -236,9 +270,26 @@ public class BillBrowse extends javax.swing.JPanel {
        public void done() {
             try {
             String[] message = get();
+           
             BlueSeerUtils.endTask(message);
-            sending = false;
-            tablereport.getModel().setValueAt(BlueSeerUtils.clickmail,row,11);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+            if (this.action.equals("getDetail")) {
+                if (cbtrans.isSelected()) {
+                  done_getDetail("trans");
+                } else {
+                  done_getDetail("");  
+                }
+            }
+            
             } catch (Exception e) {
                 MainFrame.bslog(e);
             } 
@@ -247,7 +298,7 @@ public class BillBrowse extends javax.swing.JPanel {
     }  
       
        BlueSeerUtils.startTask(new String[]{"","Running..."});
-       Task z = new Task(x, y, w); 
+       Task z = new Task(x, y); 
        z.execute(); 
        
     }
@@ -295,112 +346,22 @@ public class BillBrowse extends javax.swing.JPanel {
                 }
        }
     }
-    
-    public void getdetail(String nbr) {
-      
-         modeldetail.setNumRows(0);
-         double totalsales = 0;
-         double totalqty = 0;
-         
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null; try {
-                
-                int i = 0;
-                String blanket = "";
-                res = st.executeQuery("select billd_nbr, billd_line, billd_item, billd_listprice, billd_disc, billd_netprice, billd_qty from bill_det " +
-                        " where billd_nbr = " + "'" + nbr + "'" +  ";");
-                while (res.next()) {
-                    totalsales = totalsales + (res.getDouble("billd_qty") * res.getDouble("billd_netprice"));
-                    totalqty = totalqty + res.getDouble("billd_qty");
-                   modeldetail.addRow(new Object[]{ 
-                      res.getString("billd_nbr"), 
-                      res.getString("billd_line"),
-                      res.getString("billd_item"),
-                      bsFormatDouble(res.getDouble("billd_listprice")),
-                      bsFormatDouble(res.getDouble("billd_disc")), 
-                      bsFormatDouble(res.getDouble("billd_netprice")),
-                      bsFormatDoubleZ(res.getDouble("billd_qty"))
-                   });
-                }
-               
-               tbdetsales.setText(currformatDouble(totalsales));
-               tbdetqty.setText(currformatDouble(totalqty));
-               
-                tabledetail.setModel(modeldetail);
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            }
-            bsmf.MainFrame.con.close();
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
-    }
-   
-    public void gettrans(String nbr) {
-      
-         modeltrans.setNumRows(0);
-         double totalsales = 0;
-         double totalqty = 0;
-         
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null; try {
-                
-                int i = 0;
-                String blanket = "";
-                res = st.executeQuery("select billt_id, billt_nbr, billt_invoice, billt_invdate, billt_amt, billt_status from bill_tran " +
-                        " where billt_nbr = " + "'" + nbr + "'" +  " order by billt_nbr desc;");
-                while (res.next()) {                    
-                    totalsales = totalsales + (res.getDouble("billt_amt"));
-                    totalqty++;
-                   modeltrans.addRow(new Object[]{ 
-                      res.getString("billt_id"),
-                      res.getString("billt_nbr"), 
-                      res.getString("billt_invoice"),
-                      res.getString("billt_invdate"),
-                      bsFormatDouble(res.getDouble("billt_amt")),
-                      res.getString("billt_status")
-                   });
-                }
-               
-               tbdetsales.setText(currformatDouble(totalsales));
-               tbdetqty.setText(currformatDouble(totalqty));
-               
-                tabledetail.setModel(modeltrans);
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            }
-            bsmf.MainFrame.con.close();
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
-    }
-   
-    
+       
     public void initvars(String[] arg) {
+        executeTask("dataInit", null);
+    }
+    
+     public String[] getInitialization() {
+        initDataSets = ordData.getOrderBrowseInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        
         tbdetqty.setText("0");
         tbtotqty.setText("0");
         tbtotsales.setText("0");
@@ -420,30 +381,181 @@ public class BillBrowse extends javax.swing.JPanel {
         
         tabledetail.setModel(modeldetail);
         tabledetail.getTableHeader().setReorderingAllowed(false);
-        tabledetail.getColumnModel().getColumn(3).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        tabledetail.getColumnModel().getColumn(5).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+        tabledetail.getColumnModel().getColumn(3).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+        tabledetail.getColumnModel().getColumn(5).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
            
         
         tablereport.setModel(mymodel);
         tablereport.getTableHeader().setReorderingAllowed(false);
-        tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-      
+        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+       
         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
         tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
-                
+        
         btdetail.setEnabled(false);
         detailpanel.setVisible(false);
         
         ddsite.removeAllItems();
-        ArrayList<String> mylist = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (int i = 0; i < mylist.size(); i++) {
-            ddsite.addItem(mylist.get(i));
+       
+        
+        for (String[] s : initDataSets) {
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultsite = s[1]; 
+            }
+            if (s[0].equals("currency")) {
+              defaultcurrency = s[1]; 
+            }
         }
-        ddsite.setSelectedItem(OVData.getDefaultSiteForUserid(bsmf.MainFrame.userid));
-          
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+       
+    }
+    
+    public String[] getBrowseView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String fromcust;
+        String tocust;
+        String fromnbr;
+        String tonbr;
+        
+        
+        fromcust = (tbfromcust.getText().isEmpty()) ? bsmf.MainFrame.lowchar :  tbfromcust.getText();  
+        tocust = (tbtocust.getText().isEmpty()) ? bsmf.MainFrame.hichar :  tbtocust.getText();
+        fromnbr = (tbfromnbr.getText().isEmpty()) ? bsmf.MainFrame.lowchar :  tbfromnbr.getText();  
+        tonbr = (tbtonbr.getText().isEmpty()) ? bsmf.MainFrame.hichar :  tbtonbr.getText();
+        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(new String[]{"id","getBillBrowseView"});
+        list.add(new String[]{"fromdate",dfdate.format(dcfrom.getDate())});
+        list.add(new String[]{"todate",dfdate.format(dcto.getDate())});
+        list.add(new String[]{"fromcust",fromcust});
+        list.add(new String[]{"tocust",tocust});
+        list.add(new String[]{"fromnbr",fromnbr});
+        list.add(new String[]{"tonbr",tonbr});
+        list.add(new String[]{"active",String.valueOf(cbactive.isSelected())});
+        list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getSerialBrowseView")};
+            }
+        } else {
+            jsonString = ordData.getBillBrowseView(new String[]{
+                dfdate.format(dcfrom.getDate()),
+                dfdate.format(dcto.getDate()),
+                fromcust,
+                tocust,
+                fromnbr,
+                tonbr,
+                String.valueOf(cbactive.isSelected()),
+                ddsite.getSelectedItem().toString()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getSerialBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+       
+        int i = 0;
+        double totsales = 0.00;
+        double totqty = 0.00;
+        
+        mymodel.setNumRows(0);
+        if (roData != null) {
+        for (Object[] rowData : roData) {
+            totqty = totqty + bsParseDouble(roData[i][8].toString());
+            totsales = totsales + (bsParseDouble(roData[i][8].toString()) * bsParseDouble(roData[i][9].toString()));
+            rowData[8] = bsParseDouble(rowData[8].toString());
+            rowData[9] = bsParseDouble(currformat(rowData[9].toString()));
+            i++;
+            mymodel.addRow(rowData);
+        }
+        }              
+        tbtotqty.setText(currformatDouble(totqty));
+        tbtotsales.setText(currformatDouble(totsales));
+        roData = null;
+    }   
+    
+    public String[] getDetail(String order) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getBillBrowseDetail"});
+            list.add(new String[]{"param1", order});
+            list.add(new String[]{"param2", String.valueOf(cbtrans.isSelected())});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            if (cbtrans.isSelected()) {
+              jsonString = getBillBrowseDetail(order, "trans");
+            } else {
+              jsonString = getBillBrowseDetail(order, "");  
+            }
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getDetail(String detailtype) {
+      modeldetail.setNumRows(0);
+      if (detailtype.equals("trans")) {
+          tabledetail.setModel(modeltrans);
+      } else {
+          tabledetail.setModel(modeldetail);
+      }
+        double totsales = 0.00;
+        double totqty = 0.00;
+         
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+                if (detailtype.equals("trans")) {
+                //totqty = totqty + bsParseDouble(rowData[6].toString());
+                totsales = totsales + bsParseDouble(rowData[4].toString());
+                rowData[4] = bsParseDouble(rowData[4].toString());
+               // dols += (bsParseDouble(rowData[2].toString()) * bsParseDouble(rowData[3].toString()));
+                modeltrans.addRow(rowData);
+                } else {
+                totqty = totqty + bsParseDouble(rowData[6].toString());
+                totsales = totsales + (bsParseDouble(rowData[5].toString()) * bsParseDouble(rowData[6].toString()));
+                rowData[3] = bsParseDouble(currformat(rowData[3].toString()));
+                rowData[4] = bsParseDouble(rowData[4].toString());
+                rowData[5] = bsParseDouble(currformat(rowData[5].toString()));
+                rowData[6] = bsParseDouble(rowData[6].toString());
+               // dols += (bsParseDouble(rowData[2].toString()) * bsParseDouble(rowData[3].toString()));
+                modeldetail.addRow(rowData);
+   
+                }
+            } 
+            tbdetsales.setText(currformatDouble(totsales));
+            tbdetqty.setText(currformatDouble(totqty));
+        }
+        
+       }
+       roData = null;
     }
     
     
@@ -809,6 +921,8 @@ public class BillBrowse extends javax.swing.JPanel {
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
 
+        executeTask("getBrowseView", null);
+        /*
         try {
             Connection con = null;
             if (ds != null) {
@@ -915,7 +1029,7 @@ public class BillBrowse extends javax.swing.JPanel {
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
-       
+       */
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btdetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdetailActionPerformed
@@ -930,11 +1044,7 @@ public class BillBrowse extends javax.swing.JPanel {
         int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
         if ( col == 1) {
-                if (cbtrans.isSelected()) {
-                gettrans(bsNumberToUS(tablereport.getValueAt(row, 2).toString()));
-                } else {
-                getdetail(bsNumberToUS(tablereport.getValueAt(row, 2).toString()));    
-                }
+                executeTask("getDetail", new String[]{tablereport.getValueAt(row, 2).toString()});
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
         }

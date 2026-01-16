@@ -6917,6 +6917,164 @@ public class ordData {
         return jsonarray.toString(); 
     }
     
+    public static String getBillBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+             
+                int i = 0;
+                
+            boolean isactive = BlueSeerUtils.ConvertStringToBool(keys[6]);
+                // keys :   fromdate, todate, fromcust, tocust, site, datetype
+             if (isactive) {
+                  res = st.executeQuery("select bill_nbr, bill_acctstatus, bill_cust, cm_name, bill_servicedate, bill_nextbilldate, sum(billd_qty) as 'qty', sum(billd_qty * billd_netprice) as 'price' from bill_mstr " +
+                        " inner join cm_mstr on cm_code = bill_cust " +
+                        " inner join bill_det on billd_nbr = bill_nbr where " +
+                        " bill_nbr >= " + "'" + keys[4] + "'" + " AND " +
+                        " bill_nbr <= " + "'" + keys[5] + "'" + " AND " +
+                        " bill_servicedate >= " + "'" + keys[0] + "'" + " AND " +
+                        " bill_servicedate <= " + "'" + keys[1] + "'" + " AND " +
+                        " bill_cust >= " + "'" + keys[2] + "'" + " AND " +
+                        " bill_cust <= " + "'" + keys[3] + "'" + " AND " +
+                        " bill_site = " + "'" + keys[7] + "'" + " AND " +        
+                        " bill_acctstatus = " + "'" + getGlobalProgTag("open") + "'" +
+                        " group by bill_nbr, bill_acctstatus, bill_cust, bill_servicedate, bill_nextbilldate;");
+                 } else {
+                    res = st.executeQuery("select bill_nbr, bill_acctstatus, bill_cust, cm_name, bill_servicedate, bill_nextbilldate, sum(billd_qty) as 'qty', sum(billd_qty * billd_netprice) as 'price' from bill_mstr " +
+                        " inner join cm_mstr on cm_code = bill_cust " +
+                        " inner join bill_det on billd_nbr = bill_nbr where " +
+                        " bill_site = " + "'" + keys[7] + "'" + " AND " +         
+                        " bill_nbr >= " + "'" + keys[4] + "'" + " AND " +
+                        " bill_nbr <= " + "'" + keys[5] + "'" + " AND " +
+                        " bill_servicedate >= " + "'" + keys[0]  + "'" + " AND " +
+                        " bill_servicedate <= " + "'" + keys[1] + "'" + " AND " +
+                        " bill_cust >= " + "'" + keys[2] + "'" + " AND " +
+                        " bill_cust <= " + "'" + keys[3] + "'" + 
+                        " group by bill_nbr, bill_acctstatus, bill_cust, bill_servicedate, bill_nextbilldate;"); 
+                 }
+
+                
+                  
+                
+                    while (res.next()) {
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("bill_nbr"));
+                        rowArray.put(res.getString("bill_cust"));
+                        rowArray.put(res.getString("cm_name"));
+                        rowArray.put(res.getString("bill_servicedate"));
+                        rowArray.put(res.getString("bill_nextbilldate"));
+                        rowArray.put(res.getString("bill_acctstatus"));
+                        rowArray.put(res.getString("qty"));
+                        rowArray.put(res.getString("price"));
+                        jsonarray.put(rowArray);
+                    /*
+                   mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, BlueSeerUtils.clickbasket, 
+                               bsNumber(res.getString("bill_nbr")),
+                                res.getString("bill_cust"),
+                                res.getString("cm_name"),
+                                getDateDB(res.getString("bill_servicedate")),
+                                getDateDB(res.getString("bill_nextbilldate")),
+                                res.getString("bill_acctstatus"),
+                                bsNumber(res.getDouble("qty")),
+                                bsParseDouble(currformatDouble(res.getDouble("price")))
+                            });
+                      */ 
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getBillBrowseDetail(String order, String detailtype) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                if (detailtype.equals("trans")) {
+                res = st.executeQuery("select billt_id, billt_nbr, billt_invoice, billt_invdate, billt_amt, billt_status from bill_tran " +
+                        " where billt_nbr = " + "'" + order + "'" +  " order by billt_nbr desc;");
+                    
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("billt_id"));
+                        rowArray.put(res.getString("billt_nbr"));  
+                        rowArray.put(res.getString("billt_invoice"));
+                        rowArray.put(res.getString("billt_invdate"));
+                        rowArray.put(res.getDouble("billt_amt"));
+                        rowArray.put(res.getString("billt_status")); 
+                        jsonarray.put(rowArray);
+                       
+                    }
+                } else {
+                    res = st.executeQuery("select billd_nbr, billd_line, billd_item, billd_listprice, billd_disc, billd_netprice, billd_qty from bill_det " +
+                        " where billd_nbr = " + "'" + order + "'" +  ";");
+                    
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("billd_nbr"));
+                        rowArray.put(res.getString("billd_line"));  
+                        rowArray.put(res.getString("billd_item"));
+                        rowArray.put(res.getDouble("billd_listprice"));
+                        rowArray.put(res.getDouble("billd_disc"));
+                        rowArray.put(res.getDouble("billd_netprice"));
+                        rowArray.put(res.getDouble("billd_qty"));
+                        jsonarray.put(rowArray);
+                    }
+                    
+                }
+                    
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
     
     public static String getOrderItemBrowseView(String[] keys) {
         JSONArray jsonarray = new JSONArray();

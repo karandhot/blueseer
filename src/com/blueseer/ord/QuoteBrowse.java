@@ -354,6 +354,7 @@ public class QuoteBrowse extends javax.swing.JPanel {
         btdetail.setEnabled(false);
         detailpanel.setVisible(false); 
        
+        ddsite.removeAllItems();
         
         for (String[] s : initDataSets) {
             
