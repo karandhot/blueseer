@@ -29,6 +29,7 @@ import com.blueseer.fgl.fglData;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.inv.invData;
+import static com.blueseer.inv.invData.addItemMasterMass;
 import static com.blueseer.inv.invData.addItemMstr;
 import static com.blueseer.inv.invData.addLocationMstr;
 import static com.blueseer.inv.invData.addPLMstr;
@@ -750,6 +751,21 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(arrayToJson(invData.inventoryAdjustmentTransaction(tm, in, gv)));  
             break;
         }
+        
+        case "addItemMasterMass" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            ArrayList<String> sdarray = objectMapper.readValue(ca[0], ArrayList.class);
+            String delim = ca[1];
+            response.getWriter().print(arrayToJson(addItemMasterMass(sdarray, delim)));
+            break;
+          }
         
         default:
         response.getWriter().print("no switch case exists in dataServINV for id: " + id);

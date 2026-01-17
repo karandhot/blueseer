@@ -422,10 +422,12 @@ public class MassLoad extends javax.swing.JPanel {
                     i--; // reduce line count by 1 if ignore header
                    } 
                    ArrayList<String> newlist = cleanList(list, checklist, tbdelimiter.getText().trim());
-                   if(! addItemMasterMass(newlist, tbdelimiter.getText().trim())) {
-                       m = new String[] {BlueSeerUtils.SuccessBit, getMessageTag(1151, String.valueOf(i))};
+                   m = addItemMasterMass(newlist, tbdelimiter.getText().trim());  
+                   if(! m[0].equals("0")) {
+                     tacomments.append(m[1]); // error message
+                     m = new String[] {BlueSeerUtils.ErrorBit, getMessageTag(1150)};
                    } else {
-                       m = new String[] {BlueSeerUtils.ErrorBit, getMessageTag(1150)}; 
+                     m = new String[] {BlueSeerUtils.SuccessBit, getMessageTag(1151, String.valueOf(i))};  
                    }
              }
              return m;
@@ -1715,10 +1717,12 @@ public class MassLoad extends javax.swing.JPanel {
                  if (cbignoreheader.isSelected()) {
                     i--; // reduce line count by 1 if ignore header
                    } 
-                   if(! OVData.addVendPriceList(list, tbdelimiter.getText().trim()))
+                   if(! OVData.addVendPriceList(list, tbdelimiter.getText().trim())) {
                        m = new String[] {BlueSeerUtils.SuccessBit, getMessageTag(1151,String.valueOf(i))};
                    } else {
-                  m = new String[] {BlueSeerUtils.ErrorBit, getMessageTag(1150)}; 
+                       m = new String[] {BlueSeerUtils.ErrorBit, getMessageTag(1150)}; 
+                  
+                   }
             }
              return m;
             
@@ -1850,23 +1854,28 @@ public class MassLoad extends javax.swing.JPanel {
                i++;
             }
             fsr.close();
-             if (proceed) {
+             if (proceed) { 
                  if (cbignoreheader.isSelected()) {
                     i--; // reduce line count by 1 if ignore header
                    } 
                    ArrayList<String> newlist = cleanList(list, checklist, tbdelimiter.getText().trim());
-                   if(! venData.addVendMstrMass(newlist))
-                       m = new String[] {BlueSeerUtils.SuccessBit, getMessageTag(1151,String.valueOf(i))};
+                   m = venData.addVendMstrMass(newlist, tbdelimiter.getText().trim());  
+                   if(! m[0].equals("0")) {
+                     tacomments.append(m[1]); // error message
+                     m = new String[] {BlueSeerUtils.ErrorBit, getMessageTag(1150)};
                    } else {
-                  m = new String[] {BlueSeerUtils.ErrorBit, getMessageTag(1150)}; 
-            }
+                     m = new String[] {BlueSeerUtils.SuccessBit, getMessageTag(1151, String.valueOf(i))};  
+                   }
+             }
              return m;
             
     }
     
         // customer Master
+    
+
     public ArrayList<String> defineCustMstr() {
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<String>(); 
         list.add("cm_code,s,10,mandatory,unvalidated");
         list.add("cm_name,s,50,mandatory,unvalidated");
         list.add("cm_line1,s,50,mandatory,unvalidated");
@@ -2008,11 +2017,13 @@ public class MassLoad extends javax.swing.JPanel {
                     i--; // reduce line count by 1 if ignore header
                    } 
                  ArrayList<String> newlist = cleanList(list, checklist, tbdelimiter.getText().trim());
-                   if(! addCustMstrMass(newlist, tbdelimiter.getText().trim())) {
-                       m = new String[] {BlueSeerUtils.SuccessBit, getMessageTag(1151, String.valueOf(i))};
-                   } else {
-                       m = new String[] {BlueSeerUtils.ErrorBit, getMessageTag(1150)}; 
-                   }
+                 m = addCustMstrMass(newlist, tbdelimiter.getText().trim());  
+                 if(! m[0].equals("0")) {
+                     tacomments.append(m[1]); // error message
+                       m = new String[] {BlueSeerUtils.ErrorBit, getMessageTag(1150)};
+                 } else {
+                      m = new String[] {BlueSeerUtils.SuccessBit, getMessageTag(1151, String.valueOf(i))};  
+                 }
             }
              return m;
             

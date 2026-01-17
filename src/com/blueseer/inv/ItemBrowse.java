@@ -646,7 +646,7 @@ public class ItemBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-       
+       executeTask("getItemBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btcsvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcsvActionPerformed

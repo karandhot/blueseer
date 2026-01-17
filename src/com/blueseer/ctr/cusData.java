@@ -190,8 +190,22 @@ public class cusData {
     return m;
     }
      
-     public static boolean addCustMstrMass(ArrayList<String> list, String delim) {
-        boolean r = false;
+     public static String[] addCustMstrMass(ArrayList<String> custlist, String delim) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addCustMstrMass"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(custlist);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(delim);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServCUS"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[]{"0",""};
         String[] ld = null;
         Connection con = null;
         PreparedStatement ps = null;
@@ -203,7 +217,7 @@ public class cusData {
               con = DriverManager.getConnection(url + db, user, pass);  
             }
    
-            for (String rec : list) {
+            for (String rec : custlist) {
                 ld = rec.split(delim, -1);
                 cm_mstr x = new cm_mstr(null, 
                 ld[0], ld[1], ld[2], ld[3],
@@ -231,7 +245,8 @@ public class cusData {
                 _addCMSDet(y,  con, ps, res, true);
             }
         } catch (SQLException s) {
-             MainFrame.bslog(s);
+            MainFrame.bslog(s);
+            m = new String[]{"1", s.getMessage()};
         } finally {
             if (res != null) {
                 try {
@@ -256,7 +271,7 @@ public class cusData {
             }
             
         }
-    return r;
+    return m;
     }
     
     

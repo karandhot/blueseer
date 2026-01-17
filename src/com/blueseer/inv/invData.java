@@ -88,8 +88,22 @@ import org.threeten.bp.LocalDate;
  */
 public class invData {
     
-    public static boolean addItemMasterMass(ArrayList<String> list, String delim) {
-        boolean r = false;
+    public static String[] addItemMasterMass(ArrayList<String> itemlist, String delim) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addItemMasterMass"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(itemlist);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(delim);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[]{"0",""};
         String[] ld = new String[29];
         Connection con = null;
         try { 
@@ -99,7 +113,7 @@ public class invData {
               con = DriverManager.getConnection(url + db, user, pass);  
             }
             
-            for (String rec : list) {
+            for (String rec : itemlist) {
                 ld = rec.split(delim, -1);
                 item_mstr x = new item_mstr(null, 
                 ld[0], // item
@@ -157,6 +171,7 @@ public class invData {
             }
         } catch (SQLException s) {
              MainFrame.bslog(s);
+            m = new String[]{"1", s.getMessage()};
         } finally {
             if (con != null) {
                 try {
@@ -166,7 +181,7 @@ public class invData {
                 }
             }
         }
-    return r;
+    return m;
     }
         
     public static String[] addItemMstr(item_mstr x) {
@@ -3205,19 +3220,6 @@ public class invData {
                         rowArray.put(bsNumber(res.getDouble("it_sell_price")));
                         rowArray.put(bsNumber(res.getDouble("qty")));
                         jsonarray.put(rowArray);
-                    /*
-                    mymodel.addRow(new Object[]{
-                                BlueSeerUtils.clickflag,
-                                res.getString("it_item"),
-                                res.getString("it_desc"),
-                                res.getString("it_code"),
-                                res.getString("it_type"),
-                                res.getString("it_uom"),
-                                bsFormatDouble(res.getDouble("it_mtl_cost")),
-                                bsFormatDouble(res.getDouble("it_sell_price")),
-                                bsFormatDouble(res.getDouble("qty"))
-                            });
-                      */ 
                 }
                
                 

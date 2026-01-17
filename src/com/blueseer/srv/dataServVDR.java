@@ -34,9 +34,11 @@ import static com.blueseer.adm.admData.updateSiteMstr;
 
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import static com.blueseer.vdr.venData.addVendMstrMass;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -80,6 +82,21 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     switch (id) {
         
      
+        case "addVendMstrMass" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            ArrayList<String> sdarray = objectMapper.readValue(ca[0], ArrayList.class);
+            String delim = ca[1];
+            response.getWriter().print(arrayToJson(addVendMstrMass(sdarray, delim)));
+            break;
+          }
+        
         case "addSiteMstr" : { 
             String line;
             StringBuilder sb = new StringBuilder();  

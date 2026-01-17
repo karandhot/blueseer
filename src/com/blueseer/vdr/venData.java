@@ -26,6 +26,7 @@ SOFTWARE.
 package com.blueseer.vdr;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
@@ -33,6 +34,10 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -98,8 +103,22 @@ public class venData {
     }
     
    
-    public static boolean addVendMstrMass(ArrayList<String> list) {
-        boolean r = false;
+    public static String[] addVendMstrMass(ArrayList<String> vendlist, String delim) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addVendMstrMass"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(vendlist);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(delim);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServVDR"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[]{"0",""};
         String[] ld = null;
         Connection con = null;
         PreparedStatement ps = null;
@@ -110,8 +129,8 @@ public class venData {
             } else {
               con = DriverManager.getConnection(url + db, user, pass);  
             }
-               for (String rec : list) {
-                ld = rec.split(":", -1);
+               for (String rec : vendlist) {
+                ld = rec.split(delim, -1);
                 vd_mstr x = new vd_mstr(null, 
                 ld[0], ld[1], ld[2], ld[3], ld[4],
                     ld[5], ld[6], ld[7], ld[8], ld[9],
@@ -126,6 +145,7 @@ public class venData {
             }
         } catch (SQLException s) {
              MainFrame.bslog(s);
+             m = new String[]{"1", s.getMessage()};
         } finally {
             if (res != null) {
                 try {
@@ -149,7 +169,7 @@ public class venData {
                 }
             }
         }
-    return r;
+    return m;
     }
     
     

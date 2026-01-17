@@ -29,6 +29,7 @@ import com.blueseer.ctr.cusData;
 import static com.blueseer.ctr.cusData.addCMCDet;
 import static com.blueseer.ctr.cusData.addCMSDet;
 import static com.blueseer.ctr.cusData.addCprMstr;
+import static com.blueseer.ctr.cusData.addCustMstrMass;
 import static com.blueseer.ctr.cusData.deleteCMCDet;
 import static com.blueseer.ctr.cusData.deleteCMSDet;
 import static com.blueseer.ctr.cusData.deleteCprMstr;
@@ -104,6 +105,21 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     String id = request.getHeader("id"); 
     
     switch (id) {
+        
+        case "addCustMstrMass" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            ArrayList<String> sdarray = objectMapper.readValue(ca[0], ArrayList.class);
+            String delim = ca[1];
+            response.getWriter().print(arrayToJson(addCustMstrMass(sdarray, delim)));
+            break;
+          }
         
         case "addCustomerTransaction" : {
             String line;
