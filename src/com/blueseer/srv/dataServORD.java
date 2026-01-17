@@ -33,6 +33,7 @@ import static com.blueseer.ord.ordData.addUpdateSOMeta;
 import static com.blueseer.ord.ordData.applyOrderChange;
 import static com.blueseer.ord.ordData.deleteSOMeta;
 import static com.blueseer.ord.ordData.getBillBrowseView;
+import static com.blueseer.ord.ordData.getBillMstr;
 import static com.blueseer.ord.ordData.getOrderBrowseView;
 import static com.blueseer.ord.ordData.getOrderChangeBrowseDetail;
 import static com.blueseer.ord.ordData.getOrderChangeBrowseView;
@@ -46,6 +47,9 @@ import static com.blueseer.ord.ordData.getOrderMstr;
 import static com.blueseer.ord.ordData.getOrderMstrSet;
 import static com.blueseer.ord.ordData.getOrderReportData;
 import static com.blueseer.ord.ordData.getQuoteBrowseView;
+import static com.blueseer.ord.ordData.getQuoteDet;
+import static com.blueseer.ord.ordData.getQuoteMstr;
+import static com.blueseer.ord.ordData.getQuoteSAC;
 import static com.blueseer.ord.ordData.getSOMetaData;
 import static com.blueseer.ord.ordData.getSVOrderTotalTax;
 import static com.blueseer.ord.ordData.getServiceOrderBrowseView;
@@ -252,11 +256,102 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(arrayToJson(ordData.updateOrderTransaction(key, badlist, sdlist, sm, stlist, sodtlist, sosdlist))); 
             }
             break;  
+          
+        case "addBillingTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            ordData.bill_det[] sdarray = om.readValue(ca[0], ordData.bill_det[].class);
+            ArrayList<ordData.bill_det> sdlist = new ArrayList<ordData.bill_det>(Arrays.asList(sdarray)); 
+            ordData.bill_mstr sm = om.readValue(ca[1], ordData.bill_mstr.class); 
+            ordData.bill_sac[] sosdarray = om.readValue(ca[2], ordData.bill_sac[].class);
+            ArrayList<ordData.bill_sac> sosdlist = new ArrayList<ordData.bill_sac>(Arrays.asList(sosdarray)); 
+            response.getWriter().print(arrayToJson(ordData.addBillingTransaction(sdlist, sm, sosdlist))); 
+            break;
+            }
+        
+        case "updateBillingTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            String key = ca[0];
+            ArrayList<String> badlist = om.readValue(ca[1], ArrayList.class);
+            ordData.bill_det[] detarray = om.readValue(ca[2], ordData.bill_det[].class);
+            ArrayList<ordData.bill_det> detlist = new ArrayList<ordData.bill_det>(Arrays.asList(detarray)); 
+            ordData.bill_mstr x = om.readValue(ca[3], ordData.bill_mstr.class); 
+            ordData.bill_sac[] sosdarray = om.readValue(ca[4], ordData.bill_sac[].class);
+            ArrayList<ordData.bill_sac> sosdlist = new ArrayList<ordData.bill_sac>(Arrays.asList(sosdarray)); 
+            response.getWriter().print(arrayToJson(ordData.updateBillingTransaction(key, badlist, detlist, x, sosdlist))); 
+        break;    
+        }
+         
+         case "addQuoteTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            ordData.quo_det[] sdarray = om.readValue(ca[0], ordData.quo_det[].class);
+            ArrayList<ordData.quo_det> sdlist = new ArrayList<ordData.quo_det>(Arrays.asList(sdarray)); 
+            ordData.quo_mstr sm = om.readValue(ca[1], ordData.quo_mstr.class); 
+            ordData.quo_sac[] sosdarray = om.readValue(ca[2], ordData.quo_sac[].class);
+            ArrayList<ordData.quo_sac> sosdlist = new ArrayList<ordData.quo_sac>(Arrays.asList(sosdarray)); 
+            response.getWriter().print(arrayToJson(ordData.addQuoteTransaction(sdlist, sm, sosdlist))); 
+            break;
+            }
+        
+        case "updateQuoteTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            String key = ca[0];
+            ArrayList<String> badlist = om.readValue(ca[1], ArrayList.class);
+            ordData.quo_det[] detarray = om.readValue(ca[2], ordData.quo_det[].class);
+            ArrayList<ordData.quo_det> detlist = new ArrayList<ordData.quo_det>(Arrays.asList(detarray)); 
+            ordData.quo_mstr x = om.readValue(ca[3], ordData.quo_mstr.class); 
+            ordData.quo_sac[] sosdarray = om.readValue(ca[4], ordData.quo_sac[].class);
+            ArrayList<ordData.quo_sac> sosdlist = new ArrayList<ordData.quo_sac>(Arrays.asList(sosdarray)); 
+            response.getWriter().print(arrayToJson(ordData.updateQuoteTransaction(key, badlist, detlist, x, sosdlist)));  
+        break;    
+        }
+         
             
         case "deleteOrderMstr" :
             response.getWriter().print(arrayToJson(ordData.deleteOrderMstr(request.getHeader("param1")
                     )));  
             break; 
+            
+        case "deleteBillMstr" :
+            response.getWriter().print(arrayToJson(ordData.deleteBillMstr(request.getHeader("param1")
+                    )));  
+            break;
+            
+        case "deleteQuoteMstr" :
+            response.getWriter().print(arrayToJson(ordData.deleteQuoteMstr(request.getHeader("param1")
+                    )));  
+            break;    
         
         case "deleteServiceOrderMstr" :
             response.getWriter().print(arrayToJson(ordData.deleteServiceOrderMstr(request.getHeader("param1")
@@ -314,6 +409,14 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             
         case "getServiceOrderInit" :
             response.getWriter().print(ArrayListStringArrayToJson(ordData.getServiceOrderInit(request.getHeader("param1"), request.getHeader("param2"))));
+            break;  
+            
+        case "getBillingInit" :
+            response.getWriter().print(ArrayListStringArrayToJson(ordData.getBillingInit(request.getHeader("param1"), request.getHeader("param2"))));
+            break; 
+            
+        case "getQuoteInit" :
+            response.getWriter().print(ArrayListStringArrayToJson(ordData.getQuoteInit(request.getHeader("param1"), request.getHeader("param2"))));
             break;     
             
         case "exportOrderDetail" : 
@@ -425,6 +528,14 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(ordData.getOrderBrowseDetail(request.getHeader("param1")));  
             break;
             
+        case "getBillDet" :
+            response.getWriter().print(ordData.getBillDet(request.getHeader("param1")));  
+            break; 
+            
+        case "getBillSAC" :
+            response.getWriter().print(ordData.getBillSAC(request.getHeader("param1")));  
+            break;    
+            
         case "getServiceOrderBrowseDetail" :
             response.getWriter().print(ordData.getServiceOrderBrowseDetail(request.getHeader("param1")));  
             break;    
@@ -488,16 +599,48 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         ObjectMapper objectMapper = new ObjectMapper();
         String r = objectMapper.writeValueAsString(so);
         response.getWriter().print(r);
-        }
         break;
-        
+        }
+                
         case "getOrderDet" : {       
         ordData.sod_det sd = getOrderDet(request.getHeader("param1"), request.getHeader("param2"));
         ObjectMapper omsd = new ObjectMapper(); 
         String rsd = omsd.writeValueAsString(sd);
         response.getWriter().print(rsd);
+        break;
         }
-        break; 
+        
+        case "getQuoteMstr" : {       
+        ordData.quo_mstr x = getQuoteMstr(new String[]{request.getHeader("param1")});
+        ObjectMapper objectMapper = new ObjectMapper();
+        String r = objectMapper.writeValueAsString(x);
+        response.getWriter().print(r);
+        break;
+        }
+                
+        case "getQuoteDet" : {       
+        ArrayList<ordData.quo_det> xd = getQuoteDet(request.getHeader("param1"));
+        ObjectMapper omsd = new ObjectMapper(); 
+        String rsd = omsd.writeValueAsString(xd);
+        response.getWriter().print(rsd);
+        break;
+        }
+        
+        case "getQuoteSAC" : {       
+        ArrayList<ordData.quo_sac> xd = getQuoteSAC(request.getHeader("param1"));
+        ObjectMapper omsd = new ObjectMapper(); 
+        String rsd = omsd.writeValueAsString(xd);
+        response.getWriter().print(rsd);
+        break;
+        }
+        
+        case "getBillMstr" : {       
+        ordData.bill_mstr x = getBillMstr(new String[]{request.getHeader("param1")});
+        ObjectMapper objectMapper = new ObjectMapper();
+        String r = objectMapper.writeValueAsString(x);
+        response.getWriter().print(r);
+        }
+        break;
         
         case "getServiceOrderMstr" : {       
         ordData.sv_mstr sv = getServiceOrderMstr(new String[]{request.getHeader("param1")});

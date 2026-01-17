@@ -62,6 +62,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import com.blueseer.ctr.cusData;
+import com.blueseer.ctr.cusData.cm_mstr;
+import static com.blueseer.ctr.cusData.getCustMstr;
 import com.blueseer.inv.invData;
 import static com.blueseer.ord.ordData.addBillingTransaction;
 import com.blueseer.ord.ordData.bill_det;
@@ -121,6 +123,10 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
                 public static bill_mstr x = null;
                 public static ArrayList<bill_det> billdetlist = null;
                 public static ArrayList<bill_sac> saclist = null;
+                ArrayList<String[]> initDataSets = new ArrayList<>();
+                String defaultSite = "";
+                String defaultCurrency = "";
+                boolean canupdate = false;
                 
                
     
@@ -374,6 +380,9 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void setComponentDefaultValues() {
         isLoad = true;
+        
+        initDataSets = ordData.getBillingInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        
         tbkey.setText("");
       
        jTabbedPane1.removeAll();
@@ -423,33 +432,47 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         
         ddcust.removeAllItems();
-        ArrayList c = cusData.getcustmstrlist();
-        for (int i = 0; i < c.size(); i++) {
-            ddcust.addItem(c.get(i));
+        ddsite.removeAllItems();
+        dduom.removeAllItems();
+        ddterms.removeAllItems();
+        ddtype.removeAllItems();
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canupdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            if (s[0].equals("uoms")) {
+              dduom.addItem(s[1]); 
+            }
+            if (s[0].equals("terms")) {
+              ddterms.addItem(s[1]); 
+            }
+            if (s[0].equals("customers")) {
+              ddcust.addItem(s[1]); 
+            }
+            if (s[0].equals("billingtype")) {
+              ddtype.addItem(s[1]);
+            }
         }
+       
+        
+      
         ddcust.insertItemAt("", 0);
         ddcust.setSelectedIndex(0);
-          
-        ddsite.removeAllItems();
-        ArrayList mylist = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (int i = 0; i < mylist.size(); i++) {
-            ddsite.addItem(mylist.get(i));
-        }
-        ddsite.setSelectedItem(OVData.getDefaultSite());
+        ddsite.setSelectedItem(defaultSite);
       
-        dduom.removeAllItems();
-        ArrayList<String> u = OVData.getUOMList();
-        for (int i = 0; i < u.size(); i++) {
-            dduom.addItem(u.get(i));
-        }
+        
         dduom.insertItemAt("", 0);
         dduom.setSelectedIndex(0);
-        
-        ddterms.removeAllItems();
-        ArrayList<String> terms = cusData.gettermsmstrlist();
-        for (int i = 0; i < terms.size(); i++) {
-            ddterms.addItem(terms.get(i));
-        }
         ddterms.insertItemAt("", 0);
         ddterms.setSelectedIndex(0);
         
@@ -469,11 +492,6 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddacctstatus.addItem(getGlobalProgTag("open"));
         ddacctstatus.addItem(getGlobalProgTag("delinquent"));
         
-        ddtype.removeAllItems();
-        ArrayList<String> types = OVData.getCodeMstr("billingtype");
-        for (int i = 0; i < types.size(); i++) {
-            ddtype.addItem(types.get(i));
-        }
         ddtype.setSelectedIndex(0);
         
        isLoad = false;
@@ -660,7 +678,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
      String[] m = new String[2];
         boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
         if (proceed) {
-         m = deleteBillMstr(createRecord()); 
+         m = deleteBillMstr(x[0]); 
          initvars(null);
         } else {
            m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordCanceled}; 
@@ -904,43 +922,9 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     // additional functions
     public void setcustomervariables(String cust) {
-        
-        try {
-     
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;int i = 0;
-            int d = 0;
-            String uniqpo = null;
-            try {
-                res = st.executeQuery("select cm_name, cm_curr, cm_ar_acct, cm_ar_cc, cm_terms, cm_bank from cm_mstr where cm_code = " + "'" + cust + "'" + ";");
-                while (res.next()) {
-                    i++;
-                   lbcustomer.setText(res.getString("cm_name"));
-                   ddterms.setSelectedItem(res.getString("cm_terms"));
-                   
-                }
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        cm_mstr cm = getCustMstr(new String[]{cust});
+        lbcustomer.setText(cm.cm_name());
+        ddterms.setSelectedItem(cm.cm_terms());
     }
       
     public void summarize() {

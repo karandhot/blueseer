@@ -2172,6 +2172,21 @@ public class ordData {
     // Quote Master
     
     public static String[] addQuoteTransaction(ArrayList<quo_det> qod, quo_mstr qo, ArrayList<quo_sac> qsac) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addQuoteTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(qod);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(qo);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(qsac);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -2231,6 +2246,23 @@ public class ordData {
     }
     
     public static String[] updateQuoteTransaction(String x, ArrayList<String> lines, ArrayList<quo_det> qod, quo_mstr qo, ArrayList<quo_sac> qsac) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateQuoteTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(lines);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(qod);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(qo);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(qsac);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -2531,7 +2563,18 @@ public class ordData {
         ps.executeUpdate();
     }
     
-    public static String[] deleteQuoteMstr(quo_mstr x) {
+    public static String[] deleteQuoteMstr(String x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "deleteQuoteMstr"});
+            list.add(new String[]{"param1", x});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        } 
         String[] m = new String[2];
         if (x == null) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
@@ -2560,19 +2603,19 @@ public class ordData {
     return m;
     }
     
-    private static void _deleteQuoteMstr(quo_mstr x, Connection con) throws SQLException { 
+    private static void _deleteQuoteMstr(String x, Connection con) throws SQLException { 
         PreparedStatement ps = null; 
         String sql = "delete from quo_mstr where quo_nbr = ?; ";
         ps = con.prepareStatement(sql);
-        ps.setString(1, x.quo_nbr);
+        ps.setString(1, x);
         ps.executeUpdate();
         sql = "delete from quo_det where quod_nbr = ?; ";
         ps = con.prepareStatement(sql);
-        ps.setString(1, x.quo_nbr);
+        ps.setString(1, x);
         ps.executeUpdate();
         sql = "delete from quo_sac where quos_nbr = ?; ";
         ps = con.prepareStatement(sql);
-        ps.setString(1, x.quo_nbr);
+        ps.setString(1, x);
         ps.executeUpdate();
         ps.close();
     }
@@ -2729,6 +2772,21 @@ public class ordData {
     // Billing Recurrable
     
     public static String[] addBillingTransaction(ArrayList<bill_det> bd, bill_mstr bm, ArrayList<bill_sac> bsac) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addBillingTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(bd);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(bm);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(bsac);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -2791,6 +2849,23 @@ public class ordData {
     }
     
     public static String[] updateBillingTransaction(String x, ArrayList<String> lines, ArrayList<bill_det> bd, bill_mstr bm, ArrayList<bill_sac> bsac) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateBillingTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(lines);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(bd);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(bm);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(bsac);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -3095,7 +3170,18 @@ public class ordData {
         ps.executeUpdate();
     }
     
-    public static String[] deleteBillMstr(bill_mstr x) {
+    public static String[] deleteBillMstr(String x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "deleteBillMstr"});
+            list.add(new String[]{"param1", x});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        } 
         String[] m = new String[2];
         if (x == null) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
@@ -3124,19 +3210,19 @@ public class ordData {
     return m;
     }
     
-    private static void _deleteBillMstr(bill_mstr x, Connection con) throws SQLException { 
+    private static void _deleteBillMstr(String x, Connection con) throws SQLException { 
         PreparedStatement ps = null; 
         String sql = "delete from bill_mstr where bill_nbr = ?; ";
         ps = con.prepareStatement(sql);
-        ps.setString(1, x.bill_nbr);
+        ps.setString(1, x);
         ps.executeUpdate();
         sql = "delete from bill_det where billd_nbr = ?; ";
         ps = con.prepareStatement(sql);
-        ps.setString(1, x.bill_nbr);
+        ps.setString(1, x);
         ps.executeUpdate();
         sql = "delete from bill_sac where bills_nbr = ?; ";
         ps = con.prepareStatement(sql);
-        ps.setString(1, x.bill_nbr);
+        ps.setString(1, x);
         ps.executeUpdate();
         ps.close();
     }
@@ -3144,6 +3230,20 @@ public class ordData {
     public static bill_mstr getBillMstr(String[] x) {
         bill_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getBillMstr"});
+            list.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServORD");
+                r = objectMapper.readValue(returnstring, bill_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         String sql = "select * from bill_mstr where bill_nbr = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -3229,9 +3329,25 @@ public class ordData {
     }
     
     public static ArrayList<bill_det> getBillDet(String code) {
-        bill_det r = null;
-        String[] m = new String[2];
+        
         ArrayList<bill_det> list = new ArrayList<bill_det>();
+        String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<>();
+            paramlist.add(new String[]{"id","getBillDet"});
+            paramlist.add(new String[]{"param1",code});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServORD");
+                list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<bill_det>>() {});
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+                return list;
+            }
+        }
+        
+        bill_det r;
         String sql = "select * from bill_det where billd_nbr = ? order by billd_line ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -3302,6 +3418,20 @@ public class ordData {
         bill_sac r = null;
         String[] m = new String[2];
         ArrayList<bill_sac> list = new ArrayList<bill_sac>();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<>();
+            paramlist.add(new String[]{"id","getBillSAC"});
+            paramlist.add(new String[]{"param1",code});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServORD");
+                list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<bill_sac>>() {});
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+                return list;
+            }
+        }
         String sql = "select * from bill_sac where bills_nbr = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -3359,6 +3489,17 @@ public class ordData {
     }
     
     public static ArrayList<String> getBillLines(String nbr) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getBillLines"});
+            list.add(new String[]{"param1", nbr});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
         ArrayList<String> lines = new ArrayList<String>();
         try{
         Connection con = null;
@@ -4904,6 +5045,320 @@ public class ordData {
         return lines;
     }
     
+    public static ArrayList<String[]> getBillingInit(String panelClassName, String userid) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getBillingInit"});
+            list.add(new String[]{"param1", panelClassName});
+            list.add(new String[]{"param2", userid});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        
+        String defaultsite = "";
+        ArrayList<String[]> lines = new ArrayList<String[]>();
+        try{
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+        // allocate, custitemonly, site, currency, sites, currencies, uoms, 
+        // states, warehouses, locations, customers, taxcodes, carriers, statuses   
+         String[] sites = null;
+            boolean allsites = false;
+            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + userid + "'" + ";");
+            while (res.next()) {
+              if (res.getString("user_allowedsites").equals("*")) {
+                  allsites = true;
+              } else {
+                  sites = res.getString("user_allowedsites").split(",");
+              }
+            }
+            res = st.executeQuery("select site_site from site_mstr;");
+            while (res.next()) {
+               if (allsites || Arrays.stream(sites).anyMatch(res.getString("site_site")::equals)) {
+                 String[] s = new String[2];
+                 s[0] = "sites";
+                 s[1] = res.getString("site_site");
+                 lines.add(s);
+               }
+            }
+            
+            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + userid + "'" + 
+                    " AND menu_panel = " + "'" + panelClassName + "'" +
+                    ";");
+            while (res.next()) {
+               if (res.getString("perm_readonly").equals("0")) {
+                String[] s = new String[2];
+                s[0] = "canupdate";
+                s[1] = "true";
+                lines.add(s);
+               } else {
+                String[] s = new String[2];
+                s[0] = "canupdate";
+                s[1] = "false";
+                lines.add(s);   
+               }
+           }
+           
+            res = st.executeQuery("select ov_site, ov_currency from ov_mstr;" );
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "currency";
+               s[1] = res.getString("ov_currency");
+               lines.add(s);
+               s = new String[2];
+               s[0] = "site";
+               s[1] = res.getString("ov_site");
+               lines.add(s);
+               defaultsite = s[1];
+            }
+            
+            res = st.executeQuery("select * from ov_ctrl;" );
+            while (res.next()) {
+               lines.add(new String[]{"jasperdir", res.getString("ov_jasper_directory")});
+               lines.add(new String[]{"imagedir", res.getString("ov_image_directory")});
+               lines.add(new String[]{"tempdir", res.getString("ov_temp_directory")});
+               lines.add(new String[]{"labeldir", res.getString("ov_label_directory")});
+               lines.add(new String[]{"edidir", res.getString("ov_edi_directory")});
+            }
+           
+            
+            res = st.executeQuery("select cur_id from cur_mstr ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "currencies";
+               s[1] = res.getString("cur_id");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select uom_id from uom_mstr order by uom_id;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "uoms";
+               s[1] = res.getString("uom_id");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select cm_code from cm_mstr order by cm_code ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "customers";
+               s[1] = res.getString("cm_code");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select cut_code from cust_term order by cut_code ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "terms";
+               s[1] = res.getString("cut_code");
+               lines.add(s);
+            }
+            
+           
+            
+            res = st.executeQuery("select code_key from code_mstr where code_code = 'billingtype' order by code_key ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "billingtype";
+               s[1] = res.getString("code_key");
+               lines.add(s);
+            }
+           
+           
+            
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+        return lines;
+    }
+    
+    public static ArrayList<String[]> getQuoteInit(String panelClassName, String userid) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getQuoteInit"});
+            list.add(new String[]{"param1", panelClassName});
+            list.add(new String[]{"param2", userid});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        
+        String defaultsite = "";
+        ArrayList<String[]> lines = new ArrayList<String[]>();
+        try{
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+        // allocate, custitemonly, site, currency, sites, currencies, uoms, 
+        // states, warehouses, locations, customers, taxcodes, carriers, statuses   
+         String[] sites = null;
+            boolean allsites = false;
+            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + userid + "'" + ";");
+            while (res.next()) {
+              if (res.getString("user_allowedsites").equals("*")) {
+                  allsites = true;
+              } else {
+                  sites = res.getString("user_allowedsites").split(",");
+              }
+            }
+            res = st.executeQuery("select site_site from site_mstr;");
+            while (res.next()) {
+               if (allsites || Arrays.stream(sites).anyMatch(res.getString("site_site")::equals)) {
+                 String[] s = new String[2];
+                 s[0] = "sites";
+                 s[1] = res.getString("site_site");
+                 lines.add(s);
+               }
+            }
+            
+            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + userid + "'" + 
+                    " AND menu_panel = " + "'" + panelClassName + "'" +
+                    ";");
+            while (res.next()) {
+               if (res.getString("perm_readonly").equals("0")) {
+                String[] s = new String[2];
+                s[0] = "canupdate";
+                s[1] = "true";
+                lines.add(s);
+               } else {
+                String[] s = new String[2];
+                s[0] = "canupdate";
+                s[1] = "false";
+                lines.add(s);   
+               }
+           }
+           
+            res = st.executeQuery("select ov_site, ov_currency from ov_mstr;" );
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "currency";
+               s[1] = res.getString("ov_currency");
+               lines.add(s);
+               s = new String[2];
+               s[0] = "site";
+               s[1] = res.getString("ov_site");
+               lines.add(s);
+               defaultsite = s[1];
+            }
+            
+            res = st.executeQuery("select * from ov_ctrl;" );
+            while (res.next()) {
+               lines.add(new String[]{"jasperdir", res.getString("ov_jasper_directory")});
+               lines.add(new String[]{"imagedir", res.getString("ov_image_directory")});
+               lines.add(new String[]{"tempdir", res.getString("ov_temp_directory")});
+               lines.add(new String[]{"labeldir", res.getString("ov_label_directory")});
+               lines.add(new String[]{"edidir", res.getString("ov_edi_directory")});
+            }
+           
+            
+            res = st.executeQuery("select cur_id from cur_mstr ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "currencies";
+               s[1] = res.getString("cur_id");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select uom_id from uom_mstr order by uom_id;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "uoms";
+               s[1] = res.getString("uom_id");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select cm_code from cm_mstr order by cm_code ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "customers";
+               s[1] = res.getString("cm_code");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select cut_code from cust_term order by cut_code ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "terms";
+               s[1] = res.getString("cut_code");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select code_key from code_mstr where code_code = " + "'PRICEGROUP'" + " order by code_key ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "pricegroups";
+               s[1] = res.getString("code_key");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select tax_code from tax_mstr order by tax_code  ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "taxcodes";
+               s[1] = res.getString("tax_code");
+               lines.add(s);
+            }
+            
+            java.util.Date now = new java.util.Date();
+                res = st.executeQuery("select cpr_item from cpr_mstr " +
+                      " where cpr_type = 'DISCOUNT' " + 
+                      " AND (cpr_expire = null OR cpr_expire >= " + "'" + BlueSeerUtils.setDateFormat(now) + "'" + ") " +
+                      ";");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "discs";
+               s[1] = res.getString("cpr_item");
+               lines.add(s);
+            }
+           
+            
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+        return lines;
+    }
+    
+
     public static ArrayList<String[]> getOrderBrowseInit(String panelClassName, String userid) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<>();
