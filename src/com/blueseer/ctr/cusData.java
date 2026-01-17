@@ -194,10 +194,10 @@ public class cusData {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id","addCustMstrMass"});
+            list.add(new String[]{"param1",delim});
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 String jsonString = objectMapper.writeValueAsString(custlist);
-                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(delim);
                 System.out.println("HERE: " + jsonString);
                 return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServCUS"));
             } catch (IOException ex) {

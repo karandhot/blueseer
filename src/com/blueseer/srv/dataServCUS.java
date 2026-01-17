@@ -114,10 +114,8 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             sb.append(line);
             } 
             ObjectMapper objectMapper = new ObjectMapper();
-            String[] ca = sb.toString().split("=_=", -1);
-            ArrayList<String> sdarray = objectMapper.readValue(ca[0], ArrayList.class);
-            String delim = ca[1];
-            response.getWriter().print(arrayToJson(addCustMstrMass(sdarray, delim)));
+            ArrayList<String> sdarray = objectMapper.readValue(sb.toString(), ArrayList.class);
+            response.getWriter().print(arrayToJson(addCustMstrMass(sdarray, request.getHeader("param1"))));
             break;
           }
         

@@ -7401,7 +7401,7 @@ public class ordData {
                         " bill_cust <= " + "'" + keys[3] + "'" + " AND " +
                         " bill_site = " + "'" + keys[7] + "'" + " AND " +        
                         " bill_acctstatus = " + "'" + getGlobalProgTag("open") + "'" +
-                        " group by bill_nbr, bill_acctstatus, bill_cust, bill_servicedate, bill_nextbilldate;");
+                        " group by bill_nbr, bill_acctstatus, bill_cust, cm_name, bill_servicedate, bill_nextbilldate;");
                  } else {
                     res = st.executeQuery("select bill_nbr, bill_acctstatus, bill_cust, cm_name, bill_servicedate, bill_nextbilldate, sum(billd_qty) as 'qty', sum(billd_qty * billd_netprice) as 'price' from bill_mstr " +
                         " inner join cm_mstr on cm_code = bill_cust " +
@@ -7413,7 +7413,7 @@ public class ordData {
                         " bill_servicedate <= " + "'" + keys[1] + "'" + " AND " +
                         " bill_cust >= " + "'" + keys[2] + "'" + " AND " +
                         " bill_cust <= " + "'" + keys[3] + "'" + 
-                        " group by bill_nbr, bill_acctstatus, bill_cust, bill_servicedate, bill_nextbilldate;"); 
+                        " group by bill_nbr, bill_acctstatus, bill_cust, cm_name, bill_servicedate, bill_nextbilldate;"); 
                  }
 
                 
