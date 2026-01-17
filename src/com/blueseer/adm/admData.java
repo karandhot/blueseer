@@ -3003,6 +3003,122 @@ public class admData {
         return lines;
     }
     
+    public static ArrayList<String[]> getInitMinimum(String panelClassName, String userid) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getInitMinimum"});
+            list.add(new String[]{"param1", panelClassName});
+             list.add(new String[]{"param2", userid});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        
+        String[] sites = null;
+        boolean allsites = false;
+        ArrayList<String[]> lines = new ArrayList<String[]>();
+        try{
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+        // allocate, custitemonly, site, currency, sites, currencies, uoms, 
+        // states, warehouses, locations, customers, taxcodes, carriers, statuses   
+                    
+            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + userid + "'" + ";");
+            while (res.next()) {
+              if (res.getString("user_allowedsites").equals("*")) {
+                  allsites = true;
+              } else {
+                  sites = res.getString("user_allowedsites").split(",");
+              }
+            }
+            
+            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + userid + "'" + 
+                    " AND menu_panel = " + "'" + panelClassName + "'" +
+                    ";");
+           while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "canupdate";
+               s[1] = "0";
+               if (res.getString("perm_readonly").equals("0")) {
+                 s[1] = "1";
+               }
+               
+               lines.add(s);
+           }
+           
+           String conditionalsite = "";
+           res = st.executeQuery("select user_allowedsites, user_site from  " +
+                        "  user_mstr where user_id = " + "'" + userid + "'" + ";" );
+               while (res.next()) {
+                    if (res.getString("user_allowedsites").equals("*")) {
+                      conditionalsite = "all";
+                    } else {
+                      conditionalsite = res.getString("user_site");
+                    }
+               }
+               String[] sx = new String[2];
+               sx[0] = "conditionalsite";
+               sx[1] = conditionalsite;
+               lines.add(sx);
+               
+             
+            res = st.executeQuery("select site_site from site_mstr;");
+            while (res.next()) {
+               if (allsites || Arrays.stream(sites).anyMatch(res.getString("site_site")::equals)) {
+                 String[] s = new String[2];
+                 s[0] = "sites";
+                 s[1] = res.getString("site_site");
+                 lines.add(s);
+               }
+            }
+            
+            res = st.executeQuery("select ov_site, ov_currency from ov_mstr;" );
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "currency";
+               s[1] = res.getString("ov_currency");
+               lines.add(s);
+               s = new String[2];
+               s[0] = "site";
+               s[1] = res.getString("ov_site");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select * from ov_ctrl;" );
+            while (res.next()) {
+               lines.add(new String[]{"jasperdir", res.getString("ov_jasper_directory")});
+               lines.add(new String[]{"imagedir", res.getString("ov_image_directory")});
+               lines.add(new String[]{"tempdir", res.getString("ov_temp_directory")});
+               lines.add(new String[]{"labeldir", res.getString("ov_label_directory")});
+               lines.add(new String[]{"edidir", res.getString("ov_edi_directory")});
+            }
+            
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+        return lines;
+    }
+    
     public static ArrayList<String[]> getCronInit(String panelClassName, String userid) {
         
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {

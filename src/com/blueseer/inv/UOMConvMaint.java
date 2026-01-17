@@ -35,7 +35,15 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.inv.invData.addUOMConvMstr;
+import static com.blueseer.inv.invData.addUOMMstr;
+import com.blueseer.inv.invData.conv_mstr;
+import static com.blueseer.inv.invData.deleteUOMConvMstr;
+import static com.blueseer.inv.invData.getUOMConvMstr;
+import static com.blueseer.inv.invData.updateUOMConvMstr;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import com.blueseer.utl.IBlueSeer;
 import com.blueseer.utl.OVData;
@@ -67,6 +75,10 @@ public class UOMConvMaint extends javax.swing.JPanel    {
 
      // global variable declarations
                 boolean isLoad = false;
+                ArrayList<String[]> initDataSets = new ArrayList<>();
+                String defaultSite = "";
+                String defaultCurrency = "";
+                boolean canupdate = false;
     
    // global datatablemodel declarations    
         
@@ -238,6 +250,20 @@ public class UOMConvMaint extends javax.swing.JPanel    {
     
     public void setComponentDefaultValues() {
         isLoad = true;
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid);
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canupdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }            
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+           
+        }
+       
         tbkey.setText("");
         tbkey2.setText("");
         key1value.setText("");
@@ -261,24 +287,21 @@ public class UOMConvMaint extends javax.swing.JPanel    {
         tbkey.requestFocus();
     }
     
-    public String[] setAction(int i) {
+    public void setAction(String[] x) {
         String[] m = new String[2];
-        if (i > 0) {
-            m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};  
+        if (x[0].equals("0")) {
                    setPanelComponentState(this, true);
                    btnew.setEnabled(false);
                    btadd.setEnabled(false);
                    tbkey.setEditable(false);
                    tbkey.setForeground(Color.blue);
         } else {
-           m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};  
                    tbkey.setForeground(Color.red); 
         }
-        return m;
     }
     
     public boolean validateInput(String x) {
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canupdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -321,216 +344,49 @@ public class UOMConvMaint extends javax.swing.JPanel    {
     }
      
     public String[] addRecord(String[] x) {
-         String[] m = new String[2];
-          try {
-
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-               
-                int i = 0;
-                
-               boolean proceed = validateInput("addRecord");
-                
-                if (proceed) {
-
-                    res = st.executeQuery("SELECT conv_fromamt FROM  conv_mstr where conv_fromcode = " + "'" + x[0] + "'" + 
-                            " AND conv_tocode = " + "'" + x[1] + "'" + 
-                            " AND conv_type = 'uom' ;");
-                    while (res.next()) {
-                        i++;
-                    }
-                    if (i == 0) {
-                        st.executeUpdate("insert into conv_mstr "
-                            + "(conv_notes, conv_type, conv_fromcode, conv_tocode, conv_fromamt, conv_toamt ) "
-                            + " values ( " 
-                            + "'" + tanotes.getText().replace("'", "''") + "'" + ","  
-                            + "'" + "uom" + "'" + ","        
-                            + "'" + x[0] + "'" + ","
-                            + "'" + x[1] + "'" + ","
-                            + "'" + key1value.getText().toString().replace(defaultDecimalSeparator, '.') + "'" + ","
-                            + "'" + key2value.getText().toString().replace(defaultDecimalSeparator, '.') + "'"        
-                            + ")"
-                            + ";");
-                         m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
-                    } else {
-                       m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordAlreadyExists}; 
-                    }
-
-                   initvars(null);
-                   
-                } // if proceed
-          } catch (SQLException s) {
-                MainFrame.bslog(s);
-                 m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};  
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-             m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1020, Thread.currentThread().getStackTrace()[1].getMethodName())};
-        }
-    return m;
-    }
-    
-    public String[] updateRecord(String[] x) {
-        String[] m = new String[2];
-         try {
-           
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {   
-                int i = 0;   
-                boolean proceed = validateInput("updateRecord");
-                
-                res = st.executeQuery("SELECT conv_fromamt FROM  conv_mstr where conv_fromcode = " + "'" + x[0] + "'" + 
-                            " AND conv_tocode = " + "'" + x[1] + "'" + 
-                            " AND conv_type = 'uom' ;");
-                    while (res.next()) {
-                        i++;
-                    }
-                
-                if (i == 0) {
-                    proceed = false;
-                    bsmf.MainFrame.show(getMessageTag(1079));
-                }
-                
-                if (proceed) {
-                    st.executeUpdate("update conv_mstr set " +
-                            " conv_fromamt = " + "'" + key1value.getText().replace(defaultDecimalSeparator, '.') + "'" + ","
-                            + " conv_toamt = " + "'" + key2value.getText().replace(defaultDecimalSeparator, '.') + "'" + ","
-                            + " conv_notes = " + "'" + tanotes.getText().replace("'", "''") + "'"
-                            + " where conv_tocode = " + "'" + x[1] + "'"
-                            + " AND conv_fromcode = " + "'" + x[0] + "'"           
-                            + " AND conv_type = 'uom' "        
-                            + ";");
-                      m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
-                    initvars(null);
-                  
-                } 
-         
-           } catch (SQLException s) {
-                MainFrame.bslog(s);
-                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};  
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1020, Thread.currentThread().getStackTrace()[1].getMethodName())};
-        }
-    return m;
-    }
-    
-    public String[] deleteRecord(String[] x) {
-        String[] m = new String[2];
-        boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
-        if (proceed) {
-        try {
-
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-              
-                   int i = st.executeUpdate("delete from conv_mstr where conv_fromcode = " + "'" + x[0] + "'" 
-                           + " and conv_tocode = " + "'" + x[1] + "'"
-                           + " and conv_type = 'uom' "
-                           + ";");
-                
-                    if (i > 0) {
-                    m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
-                    initvars(null);
-                    }
-                } catch (SQLException s) {
-                 MainFrame.bslog(s); 
-                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};  
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1020, Thread.currentThread().getStackTrace()[1].getMethodName())};
-        }
-        } else {
-           m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordCanceled}; 
-        }
+     String[] m = addUOMConvMstr(createRecord());
      return m;
     }
     
+    public String[] updateRecord(String[] x) {
+     String[] m = updateUOMConvMstr(createRecord());
+     return m;
+    }
     
-    public String[] getRecord(String[] x) {
-        String[] m = new String[2];
-        try {
-
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-                int i = 0;
-                if (x == null && x.length < 1) { return new String[]{}; };
-                // two key system....make accomodation for first key action performed returning first record where it exists..else grab specific rec with both keys
-                if (x[1].isEmpty()) {
-                res = st.executeQuery("select * from conv_mstr where conv_fromcode = " + "'" + x[0] + "'"  + " limit 1 ;"); 
-                } else {
-                 res = st.executeQuery("select * from conv_mstr where conv_fromcode = " + "'" + x[0] + "'"  + 
-                        " and conv_tocode = " + "'" + x[1] + "'" +
-                        ";");   
-                }
-                while (res.next()) {
-                    i++;
-                    tbkey.setText(x[0]);
-                    tbkey2.setText(res.getString("conv_tocode"));
-                    key1value.setText(res.getString("conv_fromamt").replace('.',defaultDecimalSeparator));
-                    key2value.setText(res.getString("conv_toamt").replace('.',defaultDecimalSeparator));
-                    tanotes.setText(res.getString("conv_notes"));
-                    
-                }
-              
-           
-               // set Action if Record found (i > 0)
-                m = setAction(i);
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};  
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1020, Thread.currentThread().getStackTrace()[1].getMethodName())};  
+    public String[] deleteRecord(String[] x) {
+        String[] m;
+        boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
+        if (proceed) {
+         m = deleteUOMConvMstr(createRecord()); 
+        } else {
+           m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordCanceled}; 
         }
-      return m;
+         return m;
+    }
+       
+    public String[] getRecord(String[] y) {
+      conv_mstr x = getUOMConvMstr(y);
+      tbkey.setText(x.conv_fromcode());
+      tbkey2.setText(x.conv_tocode());
+      key1value.setText(bsNumber(x.conv_fromamt()));
+      key2value.setText(bsNumber(x.conv_toamt()));
+      tanotes.setText(x.conv_notes());
+      setAction(x.m());
+      return x.m(); 
 
     }
+    
+    public conv_mstr createRecord() {
+        conv_mstr cm = new conv_mstr(null,
+        tanotes.getText().replace("'", "''"),
+        "uom",
+        tbkey.getText(),
+        tbkey2.getText(),
+        bsParseDouble(key1value.getText()),
+        bsParseDouble(key2value.getText()));
+        return cm;
+    }
+    
     
     /**
      * This method is called from within the constructor to initialize the form.

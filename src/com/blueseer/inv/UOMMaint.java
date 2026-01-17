@@ -28,6 +28,7 @@ package com.blueseer.inv;
 
 import bsmf.MainFrame;
 import static bsmf.MainFrame.tags;
+import com.blueseer.adm.admData;
 import static com.blueseer.inv.invData.addUOMMstr;
 import static com.blueseer.inv.invData.deleteUOMMstr;
 import static com.blueseer.inv.invData.getUOMMstr;
@@ -61,6 +62,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -82,6 +84,10 @@ public class UOMMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     // global variable declarations
     boolean isLoad = false;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultSite = "";
+    String defaultCurrency = "";
+    boolean canupdate = false;
     
     // global datatablemodel declarations    
                 
@@ -269,6 +275,19 @@ public class UOMMaint extends javax.swing.JPanel implements IBlueSeerT {
          
     public void setComponentDefaultValues() {
        isLoad = true;
+       initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid);
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canupdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }            
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+           
+        }
         tbkey.setText("");
         tbdesc.setText("");
        isLoad = false;
@@ -302,7 +321,7 @@ public class UOMMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public boolean validateInput(dbaction x) {
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canupdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }

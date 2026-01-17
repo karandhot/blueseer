@@ -1876,6 +1876,168 @@ public class invData {
     }
     
     
+    public static String[] addUOMConvMstr(conv_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addUOMConvMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
+        String sqlSelect = "SELECT * FROM  conv_mstr where conv_fromcode = ? and conv_tocode = ?";
+        String sqlInsert = "insert into conv_mstr (conv_notes, conv_type, conv_fromcode, conv_tocode, conv_fromamt, conv_toamt  ) "
+                        + " values (?,?,?,?,?,?); "; 
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+             PreparedStatement ps = con.prepareStatement(sqlSelect);) {
+             ps.setString(1, x.conv_fromcode);
+             ps.setString(2, x.conv_tocode);
+          try (ResultSet res = ps.executeQuery();
+               PreparedStatement psi = con.prepareStatement(sqlInsert);) {  
+            if (! res.isBeforeFirst()) {
+            psi.setString(1, x.conv_notes);
+            psi.setString(2, x.conv_type);
+            psi.setString(3, x.conv_fromcode);
+            psi.setString(4, x.conv_tocode);
+            psi.setDouble(5, x.conv_fromamt);
+            psi.setDouble(6, x.conv_toamt);
+            int rows = psi.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+            } else {
+            m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordAlreadyExists};    
+            }
+          } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+          }
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
+    public static String[] updateUOMConvMstr(conv_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateUOMConvMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
+        String sql = "update conv_mstr set conv_notes = ?, conv_type = ?, conv_fromamt = ?, conv_toamt = ?   "
+                        + " where conv_fromcode = ? and conv_tocode = ?;"; 
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, x.conv_notes);
+            ps.setString(2, x.conv_type);
+            ps.setString(5, x.conv_fromcode);
+            ps.setString(6, x.conv_tocode);
+            ps.setDouble(3, x.conv_fromamt);
+            ps.setDouble(4, x.conv_toamt);
+            int rows = ps.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+
+    public static conv_mstr getUOMConvMstr(String[] x) {
+        conv_mstr r = null;
+        String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getUOMConvMstr"});
+            list.add(new String[]{"param1",x[0]});
+            list.add(new String[]{"param2",x[1]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServINV");
+                r = objectMapper.readValue(returnstring, conv_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new conv_mstr(m);
+                return r;
+            }
+        }
+        String sql = "select * from conv_mstr where where conv_fromcode = ? and conv_tocode = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());   
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, x[0]);
+        ps.setString(2, x[1]);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new conv_mstr(m);  // minimum return
+                } else {
+                    while(res.next()) {
+                        
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new conv_mstr(m, res.getString("conv_notes"), 
+                                res.getString("conv_type"),
+                                res.getString("conv_fromcode"),
+                                res.getString("conv_tocode"),
+                                res.getDouble("conv_fromamt"),
+                                res.getDouble("conv_toamt"));
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getClassName() + "." + Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new conv_mstr(m);
+        }
+        return r;
+    }
+  
+    public static String[] deleteUOMConvMstr(conv_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteUOMConvMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m;
+        String sqlDelete = "delete from conv_mstr where where conv_fromcode = ? and conv_tocode = ? ;"; 
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+             PreparedStatement ps = con.prepareStatement(sqlDelete);) {
+             ps.setString(1, x.conv_fromcode);
+             ps.setString(2, x.conv_tocode);
+             int rows = ps.executeUpdate();
+             if (rows > 0) {
+                m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess}; 
+             } else {
+                m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError}; 
+             }
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
+    
     public static String[] addWareHouseMstr(wh_mstr x) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
@@ -7680,5 +7842,12 @@ public class invData {
         }
     }
 
-    
+     public record conv_mstr(String[] m, String conv_notes, String conv_type, String conv_fromcode, 
+        String conv_tocode, double conv_fromamt, double conv_toamt) {
+        public conv_mstr(String[] m) {
+            this(m, "", "", "", "", 0.00, 0.00);
+        }
+    }
+     
+     
 }

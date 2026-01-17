@@ -34,6 +34,7 @@ import static com.blueseer.inv.invData.addItemMstr;
 import static com.blueseer.inv.invData.addLocationMstr;
 import static com.blueseer.inv.invData.addPLMstr;
 import static com.blueseer.inv.invData.addRoutingMstr;
+import static com.blueseer.inv.invData.addUOMConvMstr;
 import static com.blueseer.inv.invData.addUOMMstr;
 import static com.blueseer.inv.invData.addWareHouseMstr;
 import static com.blueseer.inv.invData.addWorkCenterMstr;
@@ -42,6 +43,7 @@ import static com.blueseer.inv.invData.deleteItemMstr;
 import static com.blueseer.inv.invData.deleteLocationMstr;
 import static com.blueseer.inv.invData.deletePLMstr;
 import static com.blueseer.inv.invData.deleteRoutingMstr;
+import static com.blueseer.inv.invData.deleteUOMConvMstr;
 import static com.blueseer.inv.invData.deleteUOMMstr;
 import static com.blueseer.inv.invData.deleteWareHouseMstr;
 import static com.blueseer.inv.invData.deleteWorkCenterMstr;
@@ -74,6 +76,7 @@ import static com.blueseer.inv.invData.getRecentTransByItem;
 import static com.blueseer.inv.invData.getRoutingMstr;
 import static com.blueseer.inv.invData.getTranMstr;
 import static com.blueseer.inv.invData.getTranMstrBySerial;
+import static com.blueseer.inv.invData.getUOMConvMstr;
 import static com.blueseer.inv.invData.getUOMMstr;
 import static com.blueseer.inv.invData.getWHLOCfromSerialNumber;
 import static com.blueseer.inv.invData.getWareHouseMaintInit;
@@ -86,6 +89,7 @@ import static com.blueseer.inv.invData.updateItemMstr;
 import static com.blueseer.inv.invData.updateLocationMstr;
 import static com.blueseer.inv.invData.updatePLMstr;
 import static com.blueseer.inv.invData.updateRoutingMstr;
+import static com.blueseer.inv.invData.updateUOMConvMstr;
 import static com.blueseer.inv.invData.updateUOMMstr;
 import static com.blueseer.inv.invData.updateWareHouseMstr;
 import static com.blueseer.inv.invData.updateWorkCenterMstr;
@@ -392,6 +396,55 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(r);
             break;
           }
+        
+        case "addUOMConvMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.conv_mstr x = objectMapper.readValue(sb.toString(), invData.conv_mstr.class);            
+            response.getWriter().print(arrayToJson(addUOMConvMstr(x)));
+            break;
+          }
+        
+        case "updateUOMConvMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.conv_mstr x = objectMapper.readValue(sb.toString(), invData.conv_mstr.class);            
+            response.getWriter().print(arrayToJson(updateUOMConvMstr(x)));
+            break;
+          }
+        
+        case "deleteUOMConvMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.conv_mstr x = objectMapper.readValue(sb.toString(), invData.conv_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteUOMConvMstr(x)));
+            break;
+          }
+        
+        case "getUOMConvMstr" : { 
+            String[] key = new String[]{request.getHeader("param1"), request.getHeader("param2")}; 
+            invData.conv_mstr x = getUOMConvMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
         
         case "addRoutingMstr" : { 
             String line;

@@ -62,6 +62,7 @@ import static com.blueseer.adm.admData.getCronMstr;
 import static com.blueseer.adm.admData.getFTPAttr;
 import static com.blueseer.adm.admData.getFTPAttrHash;
 import static com.blueseer.adm.admData.getFTPMstr;
+import static com.blueseer.adm.admData.getInitMinimum;
 import static com.blueseer.adm.admData.getJaspMstr;
 import static com.blueseer.adm.admData.getMenuCount;
 import static com.blueseer.adm.admData.getMenuMstr;
@@ -269,10 +270,15 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
           }
         
         
+        case "getInitMinimum" : { 
+            response.getWriter().print(ArrayListStringArrayToJson(getInitMinimum(request.getHeader("param1"), request.getHeader("param2"))));
+            break;  
+        } 
+        
         case "getSiteInit" : { 
             response.getWriter().print(ArrayListStringArrayToJson(getSiteInit(request.getHeader("param1"), request.getHeader("param2"))));
             break;  
-        }    
+        } 
         
         case "getCronInit" : { 
             response.getWriter().print(ArrayListStringArrayToJson(getCronInit(request.getHeader("param1"), request.getHeader("param2"))));
