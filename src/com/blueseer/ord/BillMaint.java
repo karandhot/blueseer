@@ -705,7 +705,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
                 setDateDB(dcservicedate.getDate()), // service start date
                 setDateDB(dcbillingstartdate.getDate()), // billing start date
                 setDateDB(null), // term date 
-                (tblastbillingdate.getText().isBlank()) ? setDateDB(null) : getDateDB(tblastbillingdate.getText()), // last bill date
+                setDateDB(null), // last bill date
                 setDateDB(dcnextdate.getDate()), // next bill date
                 ddacctstatus.getSelectedItem().toString(),
                 ddorderstatus.getSelectedItem().toString(),
