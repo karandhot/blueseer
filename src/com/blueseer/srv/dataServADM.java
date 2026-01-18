@@ -390,6 +390,21 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
           }
         
+        case "addChangeLog" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            admData.change_log[] sdarray = om.readValue(sb.toString(), admData.change_log[].class);
+            ArrayList<admData.change_log> list = new ArrayList<admData.change_log>(Arrays.asList(sdarray)); 
+            response.getWriter().print(arrayToJson(admData.addChangeLog(list)));    
+            break; 
+            }
+        
         
         case "addUpdateFTPAttr" : {
             String line;
