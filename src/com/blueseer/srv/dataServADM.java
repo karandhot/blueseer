@@ -55,6 +55,7 @@ import static com.blueseer.adm.admData.deletePksMstr;
 import static com.blueseer.adm.admData.deletePrtMstr;
 import static com.blueseer.adm.admData.deleteSiteMstr;
 import static com.blueseer.adm.admData.deleteUserMstr;
+import static com.blueseer.adm.admData.getChangeLog;
 import static com.blueseer.adm.admData.getCodeMstr;
 import static com.blueseer.adm.admData.getCounter;
 import static com.blueseer.adm.admData.getCronInit;
@@ -405,6 +406,13 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break; 
             }
         
+        case "getChangeLog" : {       
+        ArrayList<admData.change_log> xd = getChangeLog(new String[]{request.getHeader("param1"), request.getHeader("param2")});
+        ObjectMapper omsd = new ObjectMapper(); 
+        String rsd = omsd.writeValueAsString(xd);
+        response.getWriter().print(rsd);
+        break;
+        } 
         
         case "addUpdateFTPAttr" : {
             String line;

@@ -2547,6 +2547,21 @@ public class admData {
          ArrayList<change_log> list = new ArrayList<change_log>();
         change_log r = null;
         String[] m ;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<>();
+            paramlist.add(new String[]{"id","getChangeLog"});
+            paramlist.add(new String[]{"param1",x[0]});
+            paramlist.add(new String[]{"param2",x[1]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServADM");
+                list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<change_log>>() {});
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+                return list;
+            }
+        }
         String sql = "select * from change_log where chg_key = ? and chg_class = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
