@@ -2809,7 +2809,7 @@ public class ordData {
             }
             
             String nbd = findNextBillDate(LocalDate.parse(bm.bill_servicedate), bm.bill_billingtype, bm.bill_frequencytype);
-            _updateBillNextDate(bm.bill_nbr, nbd, "", bscon);
+            _updateBillNextDate(bm.bill_nbr, nbd, null, bscon);
             
             bscon.commit();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
