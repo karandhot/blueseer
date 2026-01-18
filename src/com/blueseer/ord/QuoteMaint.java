@@ -467,6 +467,10 @@ public class QuoteMaint extends javax.swing.JPanel implements IBlueSeerT {
             if (s[0].equals("site")) {
               defaultSite = s[1]; 
             }
+            if (s[0].equals("currencies")) {
+              ddcurr.addItem(s[1]);  
+            }
+            
             if (s[0].equals("uoms")) {
               dduom.addItem(s[1]); 
             }

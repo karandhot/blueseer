@@ -83,6 +83,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.callChangeDialog;
 import static com.blueseer.utl.BlueSeerUtils.clog;
+import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
@@ -704,7 +705,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
                 setDateDB(dcservicedate.getDate()), // service start date
                 setDateDB(dcbillingstartdate.getDate()), // billing start date
                 setDateDB(null), // term date 
-                tblastbillingdate.getText(), // last bill date
+                (tblastbillingdate.getText().isBlank()) ? setDateDB(null) : getDateDB(tblastbillingdate.getText()), // last bill date
                 setDateDB(dcnextdate.getDate()), // next bill date
                 ddacctstatus.getSelectedItem().toString(),
                 ddorderstatus.getSelectedItem().toString(),

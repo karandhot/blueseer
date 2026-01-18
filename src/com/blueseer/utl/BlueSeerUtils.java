@@ -1640,9 +1640,10 @@ public class BlueSeerUtils {
             try {
                 r = sdf.format(sdf.parse(indate));
             } catch (ParseException ex) {
-                bsmf.MainFrame.show("getDateDB Exception");
+                bslog("getDateDB Exception: " + ex.getMessage());
             }
         }
+        
         return r;
     }
     
