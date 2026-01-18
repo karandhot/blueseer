@@ -122,6 +122,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
                 double actamt = 0.00;
                 int billline = 0;
                 public static bill_mstr x = null;
+                public static cm_mstr cm = null;
                 public static ArrayList<bill_det> billdetlist = null;
                 public static ArrayList<bill_sac> saclist = null;
                 ArrayList<String[]> initDataSets = new ArrayList<>();
@@ -524,7 +525,6 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
                    tbkey.setEditable(false);
                    tbkey.setForeground(Color.blue);
                    btadd.setEnabled(false);
-                   lbcustomer.setText(cusData.getCustName(ddcust.getSelectedItem().toString()));
                    if (ddacctstatus.getSelectedItem().toString().compareTo(getGlobalProgTag("closed")) == 0) {
                              lbmessage.setText(getMessageTag(1097));
                              lbmessage.setForeground(Color.blue);
@@ -691,6 +691,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
        x = getBillMstr(key); 
        billdetlist = getBillDet(key[0]);
        saclist = getBillSAC(key[0]);
+       cm = getCustMstr(new String[]{x.bill_cust()});
        getAttachments(key[0]);
        return x.m();
     }
@@ -868,6 +869,9 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
         tblastbillingdate.setText(x.bill_lastbilldate());
         dcnextdate.setDate(parseDate(x.bill_nextbilldate()));
         
+        if (cm != null) {
+            lbcustomer.setText(cm.cm_name());
+        }
         
         
          // now detail
