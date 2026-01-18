@@ -271,7 +271,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         
         case "getInitMinimum" : { 
-            response.getWriter().print(ArrayListStringArrayToJson(getInitMinimum(request.getHeader("param1"), request.getHeader("param2"))));
+            response.getWriter().print(ArrayListStringArrayToJson(getInitMinimum(request.getHeader("param1"), request.getHeader("param2"), request.getHeader("param3"))));
             break;  
         } 
         

@@ -34,6 +34,7 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import com.blueseer.fgl.fglData;
 import static com.blueseer.inv.invData.addWorkCenterMstr;
 import static com.blueseer.inv.invData.deleteWorkCenterMstr;
@@ -92,7 +93,10 @@ public class WorkCenterMaint extends javax.swing.JPanel implements IBlueSeerT {
      // global variable declarations
                 boolean isLoad = false;
                 public static wc_mstr x = null;
-    
+                ArrayList<String[]> initDataSets = new ArrayList<>();
+                String defaultSite = "";
+                String defaultCurrency = "";
+                boolean canupdate = false;
    // global datatablemodel declarations    
                 
                 
@@ -281,24 +285,32 @@ public class WorkCenterMaint extends javax.swing.JPanel implements IBlueSeerT {
        isLoad = true;
         tbkey.setText("");
         tbdesc.setText("");
-       
         tarmks.setText("");
         tbrunrate.setText("0.00");
         tbsetuprate.setText("0.00");
         tbbdnrate.setText("0.00");
         tbruncrewsize.setText("1");
         tbsetupcrewsize.setText("1");
-        
-        ddcc.removeAllItems();
-        fglData.getGLCCList().stream().forEach((s) -> ddcc.addItem(s));
-        ddcc.setSelectedItem(OVData.getDefaultCC());
-        
         ddsite.removeAllItems();
-        OVData.getSiteList(bsmf.MainFrame.userid).stream().forEach((s) -> ddsite.addItem(s));
-        ddsite.setSelectedItem(OVData.getDefaultSite());
+        ddcc.removeAllItems();
         
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "depts");
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canupdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }            
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            if (s[0].equals("depts")) {
+              ddcc.addItem(s[1]);  
+            }
+        }
         
-        
+        ddsite.setSelectedItem(defaultSite);
         
        isLoad = false;
     }
@@ -332,7 +344,7 @@ public class WorkCenterMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public boolean validateInput(dbaction x) {
-       if (! canUpdate(this.getClass().getName())) {
+       if (! canupdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }

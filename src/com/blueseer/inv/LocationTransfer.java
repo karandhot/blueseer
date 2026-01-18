@@ -31,8 +31,11 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
+import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.luModel;
@@ -42,6 +45,7 @@ import static com.blueseer.utl.BlueSeerUtils.ludialog;
 import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
+import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.OVData;
 import java.awt.Color;
@@ -74,7 +78,11 @@ import javax.swing.JTable;
  * @author vaughnte
  */
 public class LocationTransfer extends javax.swing.JPanel {
-
+                boolean isLoad = false;
+                ArrayList<String[]> initDataSets = new ArrayList<>();
+                String defaultSite = "";
+                String defaultCurrency = "";
+                boolean canupdate = false;
     
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                     new String[]{
@@ -189,10 +197,11 @@ public class LocationTransfer extends javax.swing.JPanel {
        }
     }
     
-    
-    public void initvars(String[] arg) {
+    public void setComponentDefaultValues() {
+       isLoad = true;
         
-        //tbpart.requestFocus();
+        ArrayList<String[]> initDataSets = invData.getLocationMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        
         mymodel.setRowCount(0);
         tablelocqty.setModel(mymodel);
         
@@ -204,43 +213,49 @@ public class LocationTransfer extends javax.swing.JPanel {
         tbqty.setText("");
         tbrmks.setText("");
         
+       
         
-        
-         ArrayList<String> sites = new ArrayList();
         ddsitefrom.removeAllItems();
         ddsiteto.removeAllItems();
-        sites = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (String code : sites) {
-            ddsitefrom.addItem(code);
-            ddsiteto.addItem(code);
-        }
-        
-         ArrayList<String> wh = new ArrayList();
         ddwhfrom.removeAllItems();
         ddwhto.removeAllItems();
-        wh = OVData.getWareHouseList(); 
-        for (String code : wh) {
-            ddwhfrom.addItem(code);
-            ddwhto.addItem(code);
-        }
-        ddwhfrom.insertItemAt("", 0);
-        ddwhto.insertItemAt("", 0);
-        
-        ArrayList<String> mylist = new ArrayList();
         ddlocfrom.removeAllItems();
         ddlocto.removeAllItems();
-        if (ddwhfrom.getSelectedItem() != null) {
-            mylist = invData.getLocationListByWarehouse(ddwhfrom.getSelectedItem().toString());
-            for (String code : mylist) {
-                ddlocfrom.addItem(code);
-                ddlocto.addItem(code);
+        
+        for (String[] s : initDataSets) {
+           
+            if (s[0].equals("sites")) {
+              ddsitefrom.addItem(s[1]);
+              ddsiteto.addItem(s[1]);
             }
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            if (s[0].equals("warehouses")) {
+              ddwhfrom.addItem(s[1]); 
+              ddwhto.addItem(s[1]);  
+            }
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canupdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }       
+           
         }
+        
         ddlocfrom.insertItemAt("", 0);
+        ddlocfrom.setSelectedIndex(0);
         ddlocto.insertItemAt("", 0);
+        ddlocto.setSelectedIndex(0);
         
-        
-        
+       
+       isLoad = false;
+    }
+    
+    
+    public void initvars(String[] arg) {
+        setComponentDefaultValues();        
     }
    
     public void lookUpFrameItemDesc() {
@@ -649,13 +664,14 @@ public class LocationTransfer extends javax.swing.JPanel {
             //  String ref, String acct, String cc, String jobnbr, String serial, String program, String userid
 
             // do the transaction
-            OVData.TRHistIssDiscrete(dcdate.getDate(), 
+            String[] arr = new String[] {
+                setDateDB(dcdate.getDate()), 
                   tbitem.getText(), 
-                  qty.intValue(),
-                      op,
+                  bsNumber(qty),
+                  op,
                   "LOC-TRNF", 
-                  0.00, 
-                  0.00, 
+                  "0", 
+                  "0", 
                 siteto, 
                 locto,  
                 whto,
@@ -663,7 +679,7 @@ public class LocationTransfer extends javax.swing.JPanel {
                 "", 
                 "", 
                 "", 
-                0, 
+                "0", 
                 "", 
                 "", 
                 tbfromserial.getText(), // lot 
@@ -675,7 +691,9 @@ public class LocationTransfer extends javax.swing.JPanel {
                 tbtoserial.getText(),  // serial
                 "LocactionTransferMaint", // program
                 bsmf.MainFrame.userid
-                );
+            };
+            
+            OVData.TRHistIssDiscrete(arr);
             
         // do the 'to' side
        rtn = OVData.UpdateInventoryLocationTransfer(tbitem.getText(), siteto, ddlocto.getSelectedItem().toString(), whto, tbtoserial.getText(), "", qty);

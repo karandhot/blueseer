@@ -69,6 +69,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.bsformat;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.currformatDoubleUS;
+import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalTag;
@@ -12592,6 +12593,52 @@ return isgood;
 
 }
 
+    public static boolean isValidUOM(String code) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidUOM"});
+            list.add(new String[]{"param1", code});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+    boolean isgood = false;
+    try{
+
+    Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+
+        res = st.executeQuery("select uom_id from uom_mstr where uom_id = " + "'" + code + "'" + ";");
+       while (res.next()) {
+            isgood = true;
+        }
+
+   }
+    catch (SQLException s){
+         MainFrame.bslog(s);
+    } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+}
+catch (Exception e){
+    MainFrame.bslog(e);
+}
+return isgood;
+
+}
+
     public static ArrayList getShiftCodes() {
     ArrayList myarray = new ArrayList();
     try{
@@ -14154,7 +14201,26 @@ return mystring;
 
     public static boolean UpdateInventoryLocationTransfer(String item, String site, String loc, String wh, String serial, String expire, Double qty) {
           boolean myerror = false;  // Set myerror to true for any captured problem...otherwise return false
-    try{
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "UpdateInventoryLocationTransfer"});
+            list.add(new String[]{"param1", item});
+            list.add(new String[]{"param2", site});
+            list.add(new String[]{"param3", loc});
+            list.add(new String[]{"param4", wh});
+            list.add(new String[]{"param5", serial});
+            list.add(new String[]{"param6", expire});
+            list.add(new String[]{"param7", bsNumber(qty)});
+            try {
+                sendServerPost(list, "", null, "dataServOV");
+                return true;
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        } 
+          
+     try{
     
         Connection con = null;
             if (ds != null) {
@@ -15605,6 +15671,13 @@ return mystring;
     public static boolean TRHistIssDiscrete(Date effdate, String item, double qty, String op, String type, double price, double cost, String site, 
               String loc, String wh, String expire, String cust, String nbr, String order, int line, String po, String terms, String lot, String rmks, 
               String ref, String acct, String cc, String jobnbr, String serial, String program, String userid) {
+        
+        java.util.Date now = new java.util.Date();
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        DateFormat dftime = new SimpleDateFormat("HH:mm:ss");
+        String mydate = dfdate.format(now);
+            
+        
         boolean myerror = false;  // Set myerror to true for any captured problem...otherwise return false
         try{
             
@@ -15621,10 +15694,7 @@ return mystring;
                 
                 // NOTE:  all inventory transactions done at base uom level
                 
-               java.util.Date now = new java.util.Date();
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                DateFormat dftime = new SimpleDateFormat("HH:mm:ss");
-                String mydate = dfdate.format(now);
+               
                 String uom = OVData.getUOMFromItemSite(item, site);
                                            
                 st.executeUpdate("insert into tran_mstr "
@@ -15661,6 +15731,129 @@ return mystring;
                                 + "'" + price + "'" + ","
                                 + "'" + cost + "'" + ","
                                 + "'" + terms + "'"
+                                + ")"
+                                + ";");
+                
+               
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+                 myerror = true;
+            } finally {
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            myerror = true;
+        }
+        return myerror;
+        
+    }
+    
+    public static boolean TRHistIssDiscrete(String[] arr) {
+        /*
+        Date effdate, 
+        String item, 
+        double qty, 
+        String op, 
+        String type, 
+        double price, 
+        double cost, 
+        String site, 
+        String loc, 
+        String wh, 
+        String expire, // 10 base 0
+        String cust, 
+        String nbr, 
+        String order, 
+        int line, 
+        String po, 
+        String terms, 
+        String lot, 
+        String rmks, 
+        String ref, 
+        String acct, // 20 base 0
+        String cc, 
+        String jobnbr, 
+        String serial, 
+        String program, 
+        String userid
+        */
+        java.util.Date now = new java.util.Date();
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        DateFormat dftime = new SimpleDateFormat("HH:mm:ss");
+        String mydate = dfdate.format(now);
+                
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","TRHistIssDiscrete"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(arr);
+                return jsonToBoolean(sendServerPost(list, jsonString, null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+        
+        boolean myerror = false;  // Set myerror to true for any captured problem...otherwise return false
+        try{
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            try{
+            
+                arr[10] = (arr[10] != null && arr[10].isBlank()) ? null : "'" + arr[10] + "'";
+                
+                // NOTE:  all inventory transactions done at base uom level
+                
+               
+                String uom = OVData.getUOMFromItemSite(arr[1], arr[7]);
+                                           
+                st.executeUpdate("insert into tran_mstr "
+                                + "(tr_site, tr_item, tr_qty, tr_base_qty, tr_uom, tr_op, tr_ent_date, tr_eff_date, "
+                                + " tr_userid, tr_ref, tr_addrcode, tr_type, tr_rmks, tr_nbr, "
+                                + " tr_acct, tr_cc, tr_lot, tr_serial, tr_program, tr_loc, tr_wh, tr_expire, "
+                                + " tr_order, tr_line, tr_po, tr_price, tr_cost, tr_terms ) "
+                                + " values ( " 
+                                + "'" + arr[7] + "'" + ","
+                                + "'" + bsParseDouble(arr[2]) + "'" + ","
+                                + "'" + bsParseDouble(arr[2]) + "'" + ","
+                                + "'" + bsParseDouble(arr[2]) + "'" + "," // baseqty = qty for inventory movement
+                                + "'" + uom + "'" + "," // always base uom for inventory movement 
+                                + "'" + bsParseDouble(arr[3]) + "'" + ","
+                                + "'" + mydate + "'" + ","
+                                + "'" + getDateDB(arr[0]) + "'" + ","
+                                + "'" + arr[25] + "'" + ","
+                                + "'" + arr[19] + "'" + ","
+                                + "'" + arr[11] + "'" + ","
+                                + "'" + arr[4] + "'" + ","
+                                + "'" + arr[18] + "'" + ","
+                                + "'" + arr[12] + "'" + ","
+                                + "'" + arr[20] + "'" + ","
+                                + "'" + arr[21] + "'" + ","
+                                + "'" + arr[17] + "'" + ","
+                                + "'" + arr[23] + "'" + ","
+                                + "'" + arr[24] + "'" + ","
+                                + "'" + arr[8] + "'" + ","
+                                + "'" + arr[9] + "'" + ","
+                                + arr[10] + ","        
+                                + "'" + arr[13] + "'" + ","
+                                + "'" + bsParseInt(arr[14]) + "'" + ","
+                                + "'" + arr[15] + "'" + ","
+                                + "'" + bsParseDouble(arr[5]) + "'" + ","
+                                + "'" + bsParseDouble(arr[6]) + "'" + ","
+                                + "'" + arr[16] + "'"
                                 + ")"
                                 + ";");
                 

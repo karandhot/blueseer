@@ -35,6 +35,7 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import static com.blueseer.hrm.hrmData.getEmpFormalNameByID;
 import static com.blueseer.hrm.hrmData.getEmpNameAll;
 import static com.blueseer.hrm.hrmData.getempmstrlist;
@@ -109,6 +110,10 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
                 boolean isLoad = false;
                // public static wf_mstr x = null;
                 public static ArrayList<wf_mstr> x = null;
+                ArrayList<String[]> initDataSets = new ArrayList<>();
+                String defaultSite = "";
+                String defaultCurrency = "";
+                boolean canupdate = false;
     
    // global datatablemodel declarations   
     DefaultListModel listmodel = new DefaultListModel();
@@ -321,25 +326,36 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerT {
         cbmilestone.setSelected(false);
         
         ddsite.removeAllItems();
+        ddwc.removeAllItems();
+        ddoperator.removeAllItems();
+        
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "workcenters,employees");
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canupdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }            
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            if (s[0].equals("workcenters")) {
+              ddwc.addItem(s[1]);  
+            }
+            if (s[0].equals("employees")) {
+              ddoperator.addItem(s[1]);  
+            }
+        }
+        
         ArrayList<String>mylist = OVData.getSiteList(bsmf.MainFrame.userid);
         for (String code : mylist) {
             ddsite.addItem(code);
         }
-        ddsite.setSelectedItem(OVData.getDefaultSite());
         
-        ddwc.removeAllItems();
-        ArrayList<String> wc = OVData.getWorkCellList();
-        for (String code : wc) {
-            ddwc.addItem(code);
-        }
+        ddsite.setSelectedItem(defaultSite);
         ddwc.insertItemAt("", 0);
         ddwc.setSelectedIndex(0);
-        
-        ddoperator.removeAllItems();
-        ArrayList<String> ops = getempmstrlist();
-        for (String code : ops) {
-            ddoperator.addItem(code);
-        }
         ddoperator.setSelectedIndex(0);
         
         

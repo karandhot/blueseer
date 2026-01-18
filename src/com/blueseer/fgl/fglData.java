@@ -4935,7 +4935,7 @@ public class fglData {
             ResultSet res = null;
             try {
 
-            res = st.executeQuery("select dept_id from dept_mstr ;");
+           res = st.executeQuery("select dept_id from dept_mstr ;");
            while (res.next()) {
                 myarray.add(res.getString("dept_id"));
 

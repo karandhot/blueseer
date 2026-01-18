@@ -41,6 +41,7 @@ import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.doubleToJson;
 import static com.blueseer.utl.BlueSeerUtils.intToJson;
 import com.blueseer.utl.OVData;
+import static com.blueseer.utl.OVData.UpdateInventoryLocationTransfer;
 import static com.blueseer.utl.OVData.addItemCostRec;
 import static com.blueseer.utl.OVData.addMenuToAllUsers;
 import static com.blueseer.utl.OVData.addMenuToUser;
@@ -91,6 +92,7 @@ import static com.blueseer.utl.OVData.isValidShift;
 import static com.blueseer.utl.OVData.isValidShipper;
 import static com.blueseer.utl.OVData.isValidSite;
 import static com.blueseer.utl.OVData.isValidTerms;
+import static com.blueseer.utl.OVData.isValidUOM;
 import static com.blueseer.utl.OVData.isValidUOMConversion;
 import static com.blueseer.utl.OVData.isValidVendAddr;
 import static com.blueseer.utl.OVData.isValidVendPriceRecordExists;
@@ -275,6 +277,20 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
         }
         
+        case "TRHistIssDiscrete" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] arr = om.readValue(sb.toString(), String[].class);
+            response.getWriter().print(boolToJson(OVData.TRHistIssDiscrete(arr))); 
+            break;
+        }
+        
         case "getCodeMstrValueList" :        
             response.getWriter().print(ArrayListStringToJson(getCodeMstrValueList(request.getHeader("code"))));
             break;
@@ -356,6 +372,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         case "isValidItem" : {
         response.getWriter().println(boolToJson(isValidItem(request.getHeader("param1")))); 
+        break;
+        }
+        
+        case "isValidUOM" : {
+        response.getWriter().println(boolToJson(isValidUOM(request.getHeader("param1")))); 
         break;
         }
           
@@ -575,6 +596,17 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         case "deleteMenuToAllUsers" : { 
             deleteMenuToAllUsers(request.getHeader("param1"));
+            break;  
+        }
+        
+        case "UpdateInventoryLocationTransfer" : { 
+            UpdateInventoryLocationTransfer(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5"),
+                    request.getHeader("param6"),
+                    bsParseDouble(request.getHeader("param7")));
             break;  
         }
         

@@ -3003,13 +3003,14 @@ public class admData {
         return lines;
     }
     
-    public static ArrayList<String[]> getInitMinimum(String panelClassName, String userid) {
+    public static ArrayList<String[]> getInitMinimum(String panelClassName, String userid, String datasets) {
         
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id", "getInitMinimum"});
             list.add(new String[]{"param1", panelClassName});
-             list.add(new String[]{"param2", userid});
+            list.add(new String[]{"param2", userid});
+            list.add(new String[]{"param3", datasets});
             try {
                 return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServADM"));
             } catch (IOException ex) {
@@ -3017,6 +3018,8 @@ public class admData {
                 return null;
             }
         } 
+        
+        String[] datasetsarray = datasets.split(",");
         
         String[] sites = null;
         boolean allsites = false;
@@ -3102,6 +3105,38 @@ public class admData {
                lines.add(new String[]{"tempdir", res.getString("ov_temp_directory")});
                lines.add(new String[]{"labeldir", res.getString("ov_label_directory")});
                lines.add(new String[]{"edidir", res.getString("ov_edi_directory")});
+            }
+            
+            if (datasetsarray != null) {
+                for (String sd : datasetsarray) {
+                        if (sd.equals("depts")) {
+                            res = st.executeQuery("select dept_id from dept_mstr ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "depts";
+                               s[1] = res.getString("user_id");
+                               lines.add(s);
+                            }
+                        }
+                        if (sd.equals("workcenters")) {
+                            res = st.executeQuery("select wc_cell from wc_mstr;" );
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "workcenters";
+                               s[1] = res.getString("wc_cell");
+                               lines.add(s);
+                            }
+                        }
+                        if (sd.equals("employees")) {
+                            res = st.executeQuery("select emp_nbr from emp_mstr order by emp_nbr ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "employees";
+                               s[1] = res.getString("emp_nbr");
+                               lines.add(s);
+                            }
+                        }
+                }
             }
             
         }

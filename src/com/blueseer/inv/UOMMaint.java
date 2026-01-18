@@ -275,7 +275,7 @@ public class UOMMaint extends javax.swing.JPanel implements IBlueSeerT {
          
     public void setComponentDefaultValues() {
        isLoad = true;
-       initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid);
+       initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
         for (String[] s : initDataSets) {
             if (s[0].equals("currency")) {
               defaultCurrency = s[1];  

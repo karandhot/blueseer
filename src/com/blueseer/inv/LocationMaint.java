@@ -78,6 +78,10 @@ public class LocationMaint extends javax.swing.JPanel implements IBlueSeerT {
     // global variable declarations
                 boolean isLoad = false;
                 private static loc_mstr x = null;
+                ArrayList<String[]> initDataSets = new ArrayList<>();
+                String defaultSite = "";
+                String defaultCurrency = "";
+                boolean canupdate = false;
     
    // global datatablemodel declarations    
                 
@@ -290,6 +294,12 @@ public class LocationMaint extends javax.swing.JPanel implements IBlueSeerT {
             if (s[0].equals("warehouses")) {
               ddwh.addItem(s[1]);  
             }
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canupdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }       
            
         }
         ddwh.insertItemAt("", 0);
@@ -329,7 +339,7 @@ public class LocationMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public boolean validateInput(dbaction x) {
         
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canupdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }

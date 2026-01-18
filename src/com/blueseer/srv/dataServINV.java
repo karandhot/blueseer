@@ -47,6 +47,7 @@ import static com.blueseer.inv.invData.deleteUOMConvMstr;
 import static com.blueseer.inv.invData.deleteUOMMstr;
 import static com.blueseer.inv.invData.deleteWareHouseMstr;
 import static com.blueseer.inv.invData.deleteWorkCenterMstr;
+import static com.blueseer.inv.invData.deleteZeroInventoryRecs;
 import static com.blueseer.inv.invData.getBOMsByItemSite;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
 import static com.blueseer.inv.invData.getCurrentCost;
@@ -784,6 +785,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         case "resetBOMDefault" : { 
             resetBOMDefault(request.getHeader("param1"));
+            break;  
+        }
+        
+        case "deleteZeroInventoryRecs" : { 
+            deleteZeroInventoryRecs();
             break;  
         }
         

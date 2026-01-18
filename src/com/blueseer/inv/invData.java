@@ -1975,7 +1975,7 @@ public class invData {
                 return r;
             }
         }
-        String sql = "select * from conv_mstr where where conv_fromcode = ? and conv_tocode = ? ;";
+        String sql = "select * from conv_mstr where conv_fromcode = ? and conv_tocode = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());   
 	PreparedStatement ps = con.prepareStatement(sql);) {
         ps.setString(1, x[0]);
@@ -2846,6 +2846,18 @@ public class invData {
     }
     
     public static void deleteZeroInventoryRecs() { 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "deleteZeroInventoryRecs"});
+            try {
+                sendServerPost(list, "", null, "dataServINV");
+                return;
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        } 
+
         String sql = "delete from in_mstr where in_qoh = '0'; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql)) {
@@ -4879,6 +4891,36 @@ public class invData {
                   sites = res.getString("user_allowedsites").split(",");
               }
             }
+            
+            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + userid + "'" + 
+                    " AND menu_panel = " + "'" + panelClassName + "'" +
+                    ";");
+           while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "canupdate";
+               s[1] = "0";
+               if (res.getString("perm_readonly").equals("0")) {
+                 s[1] = "1";
+               }
+               
+               lines.add(s);
+           }
+           
+           String conditionalsite = "";
+           res = st.executeQuery("select user_allowedsites, user_site from  " +
+                        "  user_mstr where user_id = " + "'" + userid + "'" + ";" );
+               while (res.next()) {
+                    if (res.getString("user_allowedsites").equals("*")) {
+                      conditionalsite = "all";
+                    } else {
+                      conditionalsite = res.getString("user_site");
+                    }
+               }
+               String[] sx = new String[2];
+               sx[0] = "conditionalsite";
+               sx[1] = conditionalsite;
+               lines.add(sx);
+            
             res = st.executeQuery("select site_site from site_mstr;");
             while (res.next()) {
                if (allsites || Arrays.stream(sites).anyMatch(res.getString("site_site")::equals)) {
@@ -4973,6 +5015,35 @@ public class invData {
                   sites = res.getString("user_allowedsites").split(",");
               }
             }
+            
+            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + userid + "'" + 
+                    " AND menu_panel = " + "'" + panelClassName + "'" +
+                    ";");
+           while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "canupdate";
+               s[1] = "0";
+               if (res.getString("perm_readonly").equals("0")) {
+                 s[1] = "1";
+               }
+               
+               lines.add(s);
+           }
+           
+           String conditionalsite = "";
+           res = st.executeQuery("select user_allowedsites, user_site from  " +
+                        "  user_mstr where user_id = " + "'" + userid + "'" + ";" );
+               while (res.next()) {
+                    if (res.getString("user_allowedsites").equals("*")) {
+                      conditionalsite = "all";
+                    } else {
+                      conditionalsite = res.getString("user_site");
+                    }
+               }
+               String[] sx = new String[2];
+               sx[0] = "conditionalsite";
+               sx[1] = conditionalsite;
+               lines.add(sx);
             res = st.executeQuery("select site_site from site_mstr;");
             while (res.next()) {
                if (allsites || Arrays.stream(sites).anyMatch(res.getString("site_site")::equals)) {

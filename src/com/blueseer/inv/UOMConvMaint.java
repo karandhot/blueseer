@@ -44,12 +44,28 @@ import static com.blueseer.inv.invData.updateUOMConvMstr;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.callDialog;
+import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
+import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.luModel;
+import static com.blueseer.utl.BlueSeerUtils.luTable;
+import static com.blueseer.utl.BlueSeerUtils.lual;
+import static com.blueseer.utl.BlueSeerUtils.ludialog;
+import static com.blueseer.utl.BlueSeerUtils.luinput;
+import static com.blueseer.utl.BlueSeerUtils.luml;
+import static com.blueseer.utl.BlueSeerUtils.lurb1;
+import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeer;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.canUpdate;
+import static com.blueseer.utl.OVData.isValidUOM;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -250,7 +266,7 @@ public class UOMConvMaint extends javax.swing.JPanel    {
     
     public void setComponentDefaultValues() {
         isLoad = true;
-        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid);
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
         for (String[] s : initDataSets) {
             if (s[0].equals("currency")) {
               defaultCurrency = s[1];  
@@ -261,7 +277,6 @@ public class UOMConvMaint extends javax.swing.JPanel    {
             if (s[0].equals("site")) {
               defaultSite = s[1]; 
             }
-           
         }
        
         tbkey.setText("");
@@ -306,24 +321,45 @@ public class UOMConvMaint extends javax.swing.JPanel    {
             return false;
         }
         
-        boolean b = true;
-               
+        if (x.equals("deleteRecord")) {
+            return true;
+        }
                 
                 if (tbkey.getText().isEmpty()) {
-                    b = false;
                     bsmf.MainFrame.show(getMessageTag(1024));
                     tbkey.requestFocus();
-                    return b;
+                    return false;
                 }
                 
                 if (tbkey2.getText().isEmpty()) {
-                    b = false;
                     bsmf.MainFrame.show(getMessageTag(1024));
                     tbkey2.requestFocus();
-                    return b;
+                    return false;
+                }
+                
+                if (! isValidUOM(tbkey.getText())) {
+                   bsmf.MainFrame.show(getMessageTag(1021, tbkey.getText())); 
+                   tbkey.requestFocus();
+                   return false;
+                }
+                if (! isValidUOM(tbkey2.getText())) {
+                   bsmf.MainFrame.show(getMessageTag(1021, tbkey2.getText())); 
+                   tbkey2.requestFocus();
+                   return false;
+                }
+                
+                if (! BlueSeerUtils.isNumeric(key1value.getText())) {
+                   bsmf.MainFrame.show(getMessageTag(1028)); 
+                   key1value.requestFocus();
+                   return false;
+                }
+                if (! BlueSeerUtils.isNumeric(key2value.getText())) {
+                   bsmf.MainFrame.show(getMessageTag(1028)); 
+                   key2value.requestFocus();
+                   return false;
                 }
                
-        return b;
+        return true;
     }
     
     public void initvars(String[] arg) {
@@ -387,6 +423,45 @@ public class UOMConvMaint extends javax.swing.JPanel    {
         return cm;
     }
     
+    public void lookUpFrame() {
+        
+        luinput.removeActionListener(lual);
+        lual = new ActionListener() {
+        public void actionPerformed(ActionEvent event) {
+        if (lurb1.isSelected()) {  
+         luModel = DTData.getUOMConvBrowseUtil(luinput.getText(),0, "conv_fromcode");
+        } else {
+         luModel = DTData.getUOMConvBrowseUtil(luinput.getText(),0, "conv_tocode");   
+        }
+        luTable.setModel(luModel);
+        luTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        if (luModel.getRowCount() < 1) {
+            ludialog.setTitle(getMessageTag(1001));
+        } else {
+            ludialog.setTitle(getMessageTag(1002, String.valueOf(luModel.getRowCount())));
+        }
+        }
+        };
+        luinput.addActionListener(lual);
+        
+        luTable.removeMouseListener(luml);
+        luml = new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                JTable target = (JTable)e.getSource();
+                int row = target.getSelectedRow();
+                int column = target.getSelectedColumn();
+                if ( column == 0) {
+                ludialog.dispose();
+                initvars(new String[]{target.getValueAt(row,1).toString(), target.getValueAt(row,2).toString()});
+                }
+            }
+        };
+        luTable.addMouseListener(luml);
+      
+        callDialog(getGlobalColumnTag("key") + getGlobalColumnTag("1"), getGlobalColumnTag("key") + getGlobalColumnTag("2")); 
+        
+    }
+
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -409,7 +484,6 @@ public class UOMConvMaint extends javax.swing.JPanel    {
         jLabel3 = new javax.swing.JLabel();
         btnew = new javax.swing.JButton();
         btbrowsekey1 = new javax.swing.JButton();
-        btbrowsekey2 = new javax.swing.JButton();
         key2value = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -481,13 +555,6 @@ public class UOMConvMaint extends javax.swing.JPanel    {
             }
         });
 
-        btbrowsekey2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/lookup.png"))); // NOI18N
-        btbrowsekey2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btbrowsekey2ActionPerformed(evt);
-            }
-        });
-
         jLabel4.setText("Key2 Value");
         jLabel4.setName("lblvalue2"); // NOI18N
 
@@ -524,15 +591,12 @@ public class UOMConvMaint extends javax.swing.JPanel    {
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(key2value, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addGroup(jPanel1Layout.createSequentialGroup()
                                             .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
+                                            .addGap(26, 26, 26)
                                             .addComponent(btbrowsekey1, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGroup(jPanel1Layout.createSequentialGroup()
-                                            .addComponent(tbkey2, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                            .addComponent(btbrowsekey2, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(tbkey2, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(key1value, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnew))
@@ -550,12 +614,10 @@ public class UOMConvMaint extends javax.swing.JPanel    {
                         .addComponent(btnew))
                     .addComponent(btbrowsekey1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(tbkey2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel2))
-                    .addComponent(btbrowsekey2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbkey2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2))
+                .addGap(7, 7, 7)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(key1value, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
@@ -603,13 +665,9 @@ public class UOMConvMaint extends javax.swing.JPanel    {
     }//GEN-LAST:event_btdeleteActionPerformed
 
     private void btbrowsekey1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btbrowsekey1ActionPerformed
-        reinitpanels("BrowseUtil", true, new String[]{"uomconvmaint","conv_fromcode"});
-        
+      //  reinitpanels("BrowseUtil", true, new String[]{"uomconvmaint","conv_fromcode"});
+        lookUpFrame();
     }//GEN-LAST:event_btbrowsekey1ActionPerformed
-
-    private void btbrowsekey2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btbrowsekey2ActionPerformed
-        reinitpanels("BrowseUtil", true, new String[]{"uomconvmaint","conv_tocode"});
-    }//GEN-LAST:event_btbrowsekey2ActionPerformed
 
     private void btnewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnewActionPerformed
        newAction("");
@@ -627,7 +685,6 @@ public class UOMConvMaint extends javax.swing.JPanel    {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btadd;
     private javax.swing.JButton btbrowsekey1;
-    private javax.swing.JButton btbrowsekey2;
     private javax.swing.JButton btdelete;
     private javax.swing.JButton btnew;
     private javax.swing.JButton btupdate;
