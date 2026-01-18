@@ -2684,6 +2684,20 @@ public class ordData {
         quo_det r = null;
         String[] m = new String[2];
         ArrayList<quo_det> list = new ArrayList<quo_det>();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<>();
+            paramlist.add(new String[]{"id","getQuoteDet"});
+            paramlist.add(new String[]{"param1",code});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServORD");
+                list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<quo_det>>() {});
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+                return list;
+            }
+        }
         String sql = "select * from quo_det where quod_nbr = ? order by quod_line ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -2723,6 +2737,20 @@ public class ordData {
         quo_sac r = null;
         String[] m = new String[2];
         ArrayList<quo_sac> list = new ArrayList<quo_sac>();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<>();
+            paramlist.add(new String[]{"id","getQuoteSAC"});
+            paramlist.add(new String[]{"param1",code});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServORD");
+                list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<quo_sac>>() {});
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+                return list;
+            }
+        }
         String sql = "select * from quo_sac where quos_nbr = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -2755,6 +2783,17 @@ public class ordData {
        
     public static ArrayList<String> getQuoteLines(String nbr) {
         ArrayList<String> lines = new ArrayList<String>();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getQuoteLines"});
+            list.add(new String[]{"param1", nbr});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         try{
         Connection con = null;
         if (ds != null) {

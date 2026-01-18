@@ -35,6 +35,7 @@ import static com.blueseer.ord.ordData.deleteSOMeta;
 import static com.blueseer.ord.ordData.getBillBrowseView;
 import static com.blueseer.ord.ordData.getBillDet;
 import static com.blueseer.ord.ordData.getBillMstr;
+import static com.blueseer.ord.ordData.getBillSAC;
 import static com.blueseer.ord.ordData.getOrderBrowseView;
 import static com.blueseer.ord.ordData.getOrderChangeBrowseDetail;
 import static com.blueseer.ord.ordData.getOrderChangeBrowseView;
@@ -536,11 +537,17 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         String rsd = omsd.writeValueAsString(xd);
         response.getWriter().print(rsd);
         break;
-        }    
+        } 
+        
+        
             
-        case "getBillSAC" :
-            response.getWriter().print(ordData.getBillSAC(request.getHeader("param1")));  
-            break;    
+        case "getBillSAC" : {       
+        ArrayList<ordData.bill_sac> xd = getBillSAC(request.getHeader("param1"));
+        ObjectMapper omsd = new ObjectMapper(); 
+        String rsd = omsd.writeValueAsString(xd);
+        response.getWriter().print(rsd);
+        break;
+        }
             
         case "getServiceOrderBrowseDetail" :
             response.getWriter().print(ordData.getServiceOrderBrowseDetail(request.getHeader("param1")));  
@@ -562,7 +569,15 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             
         case "getOrderLines" :
             response.getWriter().print(ArrayListStringToJson(ordData.getOrderLines(request.getHeader("param1"))));  
+            break;
+            
+        case "getBillLines" :
+            response.getWriter().print(ArrayListStringToJson(ordData.getBillLines(request.getHeader("param1"))));  
             break; 
+            
+        case "getQuoteLines" :
+            response.getWriter().print(ArrayListStringToJson(ordData.getQuoteLines(request.getHeader("param1"))));  
+            break;    
             
         case "getSOMetaNotes" :
             response.getWriter().print(ArrayListStringToJson(ordData.getSOMetaNotes(request.getHeader("param1"))));  
