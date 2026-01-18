@@ -33,6 +33,7 @@ import static com.blueseer.ord.ordData.addUpdateSOMeta;
 import static com.blueseer.ord.ordData.applyOrderChange;
 import static com.blueseer.ord.ordData.deleteSOMeta;
 import static com.blueseer.ord.ordData.getBillBrowseView;
+import static com.blueseer.ord.ordData.getBillDet;
 import static com.blueseer.ord.ordData.getBillMstr;
 import static com.blueseer.ord.ordData.getOrderBrowseView;
 import static com.blueseer.ord.ordData.getOrderChangeBrowseDetail;
@@ -527,10 +528,15 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         case "getOrderBrowseDetail" :
             response.getWriter().print(ordData.getOrderBrowseDetail(request.getHeader("param1")));  
             break;
-            
-        case "getBillDet" :
-            response.getWriter().print(ordData.getBillDet(request.getHeader("param1")));  
-            break; 
+           
+       
+        case "getBillDet" : {       
+        ArrayList<ordData.bill_det> xd = getBillDet(request.getHeader("param1"));
+        ObjectMapper omsd = new ObjectMapper(); 
+        String rsd = omsd.writeValueAsString(xd);
+        response.getWriter().print(rsd);
+        break;
+        }    
             
         case "getBillSAC" :
             response.getWriter().print(ordData.getBillSAC(request.getHeader("param1")));  
@@ -602,13 +608,22 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         break;
         }
                 
-        case "getOrderDet" : {       
+        case "getOrderDetline" : {       
         ordData.sod_det sd = getOrderDet(request.getHeader("param1"), request.getHeader("param2"));
         ObjectMapper omsd = new ObjectMapper(); 
         String rsd = omsd.writeValueAsString(sd);
         response.getWriter().print(rsd);
         break;
         }
+        
+        case "getOrderDet" : { 
+            ArrayList<ordData.sod_det> x = getOrderDet(new String[]{request.getHeader("param1")}); 
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+       
         
         case "getQuoteMstr" : {       
         ordData.quo_mstr x = getQuoteMstr(new String[]{request.getHeader("param1")});

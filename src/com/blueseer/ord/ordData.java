@@ -1124,7 +1124,7 @@ public class ordData {
         
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
-            list.add(new String[]{"id", "getOrderDet"});
+            list.add(new String[]{"id", "getOrderDetline"});
             list.add(new String[]{"param1",  x});
             list.add(new String[]{"param2",  y});
             ObjectMapper objectMapper = new ObjectMapper();
@@ -1171,6 +1171,20 @@ public class ordData {
     public static ArrayList<sod_det> getOrderDet(String[] x) {
         ArrayList<sod_det> list = new ArrayList<sod_det>();
         sod_det r = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<String[]>();
+            paramlist.add(new String[]{"id", "getOrderDet"});
+            paramlist.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServORD");
+                list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<sod_det>>() {});
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+                return list;
+            }
+        }
         String[] m = new String[2];
         String sql = "select * from sod_det where sod_nbr = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
