@@ -120,8 +120,8 @@ public class SerialBrowse extends javax.swing.JPanel {
     public String rsData; 
      Object[][] roData;
     ArrayList<String[]> initDataSets = new ArrayList<>();
-    String defaultsite = "";
-    String defaultcurrency = "";
+    String defaultSite = "";
+    String defaultCurrency = "";
     
      public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
      
@@ -510,13 +510,13 @@ public class SerialBrowse extends javax.swing.JPanel {
               ddsite.addItem(s[1]); 
             }
             if (s[0].equals("site")) {
-              defaultsite = s[1]; 
+              defaultSite = s[1]; 
             }
             if (s[0].equals("trantype")) {
               ddtype.addItem(s[1]); 
             }
             if (s[0].equals("currency")) {
-              defaultcurrency = s[1]; 
+              defaultCurrency = s[1]; 
             }
             if (s[0].equals("items")) {
               ddfromitem.addItem(s[1]); 
@@ -524,7 +524,7 @@ public class SerialBrowse extends javax.swing.JPanel {
             }
         }
         if (ddsite.getItemCount() > 0) {
-            ddsite.setSelectedItem(defaultsite);
+            ddsite.setSelectedItem(defaultSite);
         }
         ddfromitem.insertItemAt("", 0);
         ddtoitem.insertItemAt("", 0);

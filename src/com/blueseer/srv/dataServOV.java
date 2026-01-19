@@ -26,7 +26,6 @@ SOFTWARE.
 package com.blueseer.srv;
 
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
-import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.ord.ordData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
@@ -147,34 +146,6 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         response.setStatus(HttpServletResponse.SC_OK);
         
         
-        
-        if (id.equals("getAccountBalanceReport")) {
-           String[] keys = new String[]{
-               request.getParameter("year"), 
-               request.getParameter("period"), 
-               request.getParameter("site"), 
-               request.getParameter("iscc"), 
-               request.getParameter("intype"), 
-               request.getParameter("fromacct"), 
-               request.getParameter("toacct")  
-           }; 
-           
-           for (String k : keys) {
-               if (k == null) {
-                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                   response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing param");  
-                   return;
-               }
-           }
-           
-           String r = getAccountBalanceReport(keys);
-           
-           if (r == null || r.isBlank()) {
-             response.getWriter().println("no return for: " + String.join(",",keys));   
-           } else {
-             response.getWriter().println(r);   
-           }
-        } 
         
         if (id.equals("getAccountActivityYear")) {
            String[] keys = new String[]{

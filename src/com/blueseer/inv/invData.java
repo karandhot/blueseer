@@ -2437,6 +2437,18 @@ public class invData {
     
     
     public static String[] addUpdateINVCtrl(inv_ctrl x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addUpdateINVCtrl"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         int rows = 0;
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  inv_ctrl"; // there should always be only 1 or 0 records 

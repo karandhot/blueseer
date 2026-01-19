@@ -2101,6 +2101,18 @@ public class ordData {
      
     
     public static String[] addUpdateORCtrl(order_ctrl x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addUpdateORCtrl"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServORD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         int rows = 0;
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  order_ctrl"; // there should always be only 1 or 0 records 
@@ -2151,6 +2163,22 @@ public class ordData {
     public static order_ctrl getORCtrl(String[] x) {
         order_ctrl r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getORCtrl"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServORD");
+                r = objectMapper.readValue(returnstring, order_ctrl.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new order_ctrl(m);
+                return r;
+            }
+        }
         String sql = "select * from order_ctrl;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql);) {

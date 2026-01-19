@@ -60,6 +60,7 @@ import static com.blueseer.utl.BlueSeerUtils.formatUSC;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
@@ -1359,6 +1360,22 @@ public class fglData {
     public static gl_ctrl getGLCtrl(String[] x) {
         gl_ctrl r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getGLCtrl"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServFIN");
+                r = objectMapper.readValue(returnstring, gl_ctrl.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new gl_ctrl(m);
+                return r;
+            }
+        }
         String sql = "select * from gl_ctrl;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -1861,7 +1878,8 @@ public class fglData {
     }     
     
     
-    public static String getAccountBalanceReport(String[] key) {
+    public static String getAccountBalanceView(String[] key) {
+        JSONArray jsonarray = new JSONArray();
         int year = Integer.valueOf(key[0]); 
         int period = Integer.valueOf(key[1]);
         String site = key[2];
@@ -1870,7 +1888,7 @@ public class fglData {
         String fromacct = key[5];
         String toacct = key[6];
         
-        StringBuilder sb = new StringBuilder();
+      //  StringBuilder sb = new StringBuilder();
         ArrayList<String[]> accounts = fglData.getGLAcctListRangeWCurrTypeDesc(fromacct, toacct);
         try {
             Connection con = null;
@@ -1978,6 +1996,7 @@ public class fglData {
                                begbal = begbal - activity;
                                endbal = begbal + activity;
                         if (in_accttype.equals(getGlobalProgTag("all"))) {       
+                            /*
                             sb.append(acctid + ";" +
                             res.getString("acb_cc") + ";" +
                             accttype + ";" + 
@@ -1989,11 +2008,24 @@ public class fglData {
                             currformatDouble(endbal)
                             );
                             sb.append("\n");
-                            
+                            */
+                           JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("detail");
+                            rowArray.put(acctid);
+                            rowArray.put(res.getString("acb_cc"));
+                            rowArray.put(accttype);
+                            rowArray.put(acctcurr);
+                            rowArray.put(acctdesc);
+                            rowArray.put(site);
+                            rowArray.put(currformatDouble(begbal));
+                            rowArray.put(currformatDouble(activity)); 
+                            rowArray.put(currformatDouble(endbal));
+                            jsonarray.put(rowArray); 
                             
                         } else {
                           if (accttype.equals(in_accttype))  {
-                          sb.append(acctid + ";" +
+                          /*
+                            sb.append(acctid + ";" +
                             res.getString("acb_cc") + ";" +
                             accttype + ";" + 
                             acctcurr + ";" +
@@ -2004,6 +2036,20 @@ public class fglData {
                             currformatDouble(endbal)
                             );
                             sb.append("\n");
+                            */
+                            JSONArray rowArray = new JSONArray();
+                            rowArray.put("detail");
+                            rowArray.put(acctid);
+                            rowArray.put(res.getString("acb_cc"));
+                            rowArray.put(accttype);
+                            rowArray.put(acctcurr);
+                            rowArray.put(acctdesc);
+                            rowArray.put(site);
+                            rowArray.put(currformatDouble(begbal));
+                            rowArray.put(currformatDouble(activity)); 
+                            rowArray.put(currformatDouble(endbal));
+                            jsonarray.put(rowArray);
+                            
                           }
                         }
                        }
@@ -2044,6 +2090,7 @@ public class fglData {
                         
                                
                     if (in_accttype.equals(getGlobalProgTag("all"))) {       
+                            /*
                             sb.append(acctid + ";" +
                             res.getString("acb_cc") + ";" +
                             accttype + ";" + 
@@ -2055,10 +2102,24 @@ public class fglData {
                             currformatDouble(endbal)
                             );
                             sb.append("\n");
+                            */
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("detail");
+                            rowArray.put(acctid);
+                            rowArray.put(res.getString("acb_cc"));
+                            rowArray.put(accttype);
+                            rowArray.put(acctcurr);
+                            rowArray.put(acctdesc);
+                            rowArray.put(site);
+                            rowArray.put(currformatDouble(begbal));
+                            rowArray.put(currformatDouble(activity)); 
+                            rowArray.put(currformatDouble(endbal));
+                            jsonarray.put(rowArray);
                            
                     } else {
                         if (accttype.equals(in_accttype)) {
-                        sb.append(acctid + ";" +
+                            /*
+                            sb.append(acctid + ";" +
                             res.getString("acb_cc") + ";" +
                             accttype + ";" + 
                             acctcurr + ";" +
@@ -2069,6 +2130,19 @@ public class fglData {
                             currformatDouble(endbal)
                             );
                             sb.append("\n");
+                            */
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("detail");
+                            rowArray.put(acctid);
+                            rowArray.put(res.getString("acb_cc"));
+                            rowArray.put(accttype);
+                            rowArray.put(acctcurr);
+                            rowArray.put(acctdesc);
+                            rowArray.put(site);
+                            rowArray.put(currformatDouble(begbal));
+                            rowArray.put(currformatDouble(activity)); 
+                            rowArray.put(currformatDouble(endbal));
+                            jsonarray.put(rowArray);
                        
                         }
                     }       
@@ -2180,6 +2254,7 @@ public class fglData {
               
                 
                if (in_accttype.equals(getGlobalProgTag("all"))) {
+                /*
                 sb.append(acctid + ";" + 
                             "" + ";" + 
                             accttype + ";" +  
@@ -2191,10 +2266,24 @@ public class fglData {
                             currformatDouble(endbal)
                             );
                 sb.append("\n");
+                */
+                JSONArray rowArray = new JSONArray();
+                            rowArray.put("detail");
+                            rowArray.put(acctid);
+                            rowArray.put("");
+                            rowArray.put(accttype);
+                            rowArray.put(acctcurr);
+                            rowArray.put(acctdesc);
+                            rowArray.put(site);
+                            rowArray.put(currformatDouble(begbal));
+                            rowArray.put(currformatDouble(activity)); 
+                            rowArray.put(currformatDouble(endbal));
+                            jsonarray.put(rowArray);
                
                } else {
                   if (accttype.equals(in_accttype)) {
-                  sb.append(acctid + ";" + 
+                 /* 
+                 sb.append(acctid + ";" + 
                             "" + ";" + 
                             accttype + ";" +  
                             acctcurr + ";" + 
@@ -2205,6 +2294,19 @@ public class fglData {
                             currformatDouble(endbal)
                             );
                 sb.append("\n");
+                */
+                JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("detail");
+                            rowArray.put(acctid);
+                            rowArray.put("");
+                            rowArray.put(accttype);
+                            rowArray.put(acctcurr);
+                            rowArray.put(acctdesc);
+                            rowArray.put(site);
+                            rowArray.put(currformatDouble(begbal));
+                            rowArray.put(currformatDouble(activity)); 
+                            rowArray.put(currformatDouble(endbal));
+                            jsonarray.put(rowArray);
                     
                   }
                }
@@ -2218,7 +2320,6 @@ public class fglData {
                 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                sb.append(s.getMessage());
                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                 if (res != null) {
@@ -2231,10 +2332,85 @@ public class fglData {
             }
         } catch (Exception e) {
             MainFrame.bslog(e);
-            sb.append(e.getMessage());
         }
-        
-        return sb.toString();
+       // System.out.println("HERE: " + jsonarray.toString());
+        return jsonarray.toString();
+    }
+    
+    public static String getAccountBalanceDetView(String acct, String cc, String site, int year, int period, boolean isCC) {
+        JSONArray jsonarray = new JSONArray();
+        ArrayList<String> actdatearray = fglData.getGLCalForPeriod(year, period);  
+        String datestart = String.valueOf(actdatearray.get(0));
+        String dateend = String.valueOf(actdatearray.get(1));
+               
+        try {
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                int i = 0;
+                
+                if (isCC) {
+                res = st.executeQuery("select glh_acct, glh_cc, glh_site, glh_ref, glh_doc, glh_effdate, glh_desc, glh_base_amt from gl_hist " +
+                        " where glh_acct = " + "'" + acct + "'" + " AND " + 
+                        " glh_cc = " + "'" + cc + "'" + " AND " +
+                        " glh_site = " + "'" + site + "'" + " AND " +
+                        " glh_effdate >= " + "'" + datestart + "'" + " AND " +
+                        " glh_effdate <= " + "'" + dateend + "'" + ";");
+                } else {
+                  res = st.executeQuery("select glh_acct, glh_cc, glh_site, glh_type, glh_ref, glh_doc, glh_effdate, glh_desc, glh_base_amt from gl_hist " +
+                        " where glh_acct = " + "'" + acct + "'" + " AND " + 
+                        " glh_site = " + "'" + site + "'" + " AND " +
+                        " glh_effdate >= " + "'" + datestart + "'" + " AND " +
+                        " glh_effdate <= " + "'" + dateend + "'" + ";");  
+                }
+                while (res.next()) {
+                    JSONArray rowArray = new JSONArray(); 
+                    rowArray.put(res.getString("glh_acct"));
+                    rowArray.put(res.getString("glh_cc"));
+                    rowArray.put(res.getString("glh_site"));
+                    rowArray.put(res.getString("glh_ref"));
+                    rowArray.put(res.getString("glh_type"));
+                    rowArray.put(res.getString("glh_effdate"));
+                    rowArray.put(res.getString("glh_desc"));
+                    rowArray.put(currformatDouble(res.getDouble("glh_base_amt")));
+                    jsonarray.put(rowArray); 
+                    /*
+                   modeldetail.addRow(new Object[]{ 
+                      res.getString("glh_acct"), 
+                       res.getString("glh_cc"),
+                       res.getString("glh_site"),
+                      res.getString("glh_ref"), 
+                      res.getString("glh_type"), 
+                      res.getString("glh_effdate"),
+                      res.getString("glh_desc"),
+                      bsParseDouble(currformatDouble(res.getDouble("glh_base_amt")))});
+                  */
+                }
+               
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+
+      return jsonarray.toString();
     }
     
     public static String getAccountActivityYear(String[] key) {
@@ -2685,7 +2861,6 @@ public class fglData {
                     
                     
                 for (int j = 0; j < acct_cr.size(); j++) {
-                  System.out.println("HERE entryvoucher:  " + bsParseDouble(cost.get(j).toString()) + "/" + cost.get(j).toString() );
                   glEntryXP(bscon, acct_cr.get(j).toString(), cc_cr.get(j).toString(), acct_dr.get(j).toString(), cc_dr.get(j).toString(), setDateDB(parseDate(ap.ap_effdate())), cost.get(j), basecost.get(j), currarray.get(j).toString(), basecurrarray.get(j).toString(), ref.get(j).toString(), site.get(j).toString(), type.get(j).toString(), desc.get(j).toString(), doc.get(j).toString());  
                 }
           
@@ -4804,7 +4979,19 @@ public class fglData {
 }
 
     public static ArrayList<String[]> getGLAcctListRangeWCurrTypeDesc(String fromacct, String toacct) {
-   ArrayList<String[]> myarray = new ArrayList();
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getGLAcctListRangeWCurrTypeDesc"});
+            list.add(new String[]{"param1", fromacct});
+            list.add(new String[]{"param2", toacct});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+    }
+    ArrayList<String[]> myarray = new ArrayList();
 
     try{
 
@@ -4964,7 +5151,19 @@ public class fglData {
           // third element = startdate 
           // fourth element = enddate 
           // fifth element = status 
-  String[] x = new String[]{"","","","",""};        
+    String[] x = new String[]{"","","","",""};
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getGLCalForDate"});
+            list.add(new String[]{"param1", BlueSeerUtils.setDateDB(EffDate)});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }       
+          
 
     try{
 
@@ -5054,12 +5253,23 @@ public class fglData {
 
 }
 
-    public static ArrayList getGLCalForPeriod(int year, int per) {
+    public static ArrayList<String> getGLCalForPeriod(int year, int per) {
           // function returns a 2 items from the gl_cal record where a period matches
           // first element = startdate
           // second element = enddate
-    
-  ArrayList myarray = new ArrayList();
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getGLCalForPeriod"});
+            list.add(new String[]{"param1", String.valueOf(year)});
+            list.add(new String[]{"param2", String.valueOf(per)});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+    ArrayList<String> myarray = new ArrayList();
     try{
 
             Connection con = null;
@@ -5393,7 +5603,7 @@ public class fglData {
     int period = Integer.valueOf(indate.substring(5,7));
     int prioryear = year - 1;
 
-    ArrayList<java.sql.Date> actdatearray = getGLCalForPeriod(year, period);  
+    ArrayList<String> actdatearray = getGLCalForPeriod(year, period);  
             String datestart = String.valueOf(actdatearray.get(0));
             String dateend = String.valueOf(actdatearray.get(1));
 

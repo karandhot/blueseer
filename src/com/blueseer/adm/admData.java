@@ -3145,6 +3145,16 @@ public class admData {
                                lines.add(s);
                             }
                         }
+                        if (sd.equals("accounts")) {
+                            res = st.executeQuery("select ac_id from ac_mstr order by ac_id ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "accounts";
+                               s[1] = res.getString("ac_id");
+                               lines.add(s);
+                            }
+                        }
+                        
                         if (sd.equals("workcenters")) {
                             res = st.executeQuery("select wc_cell from wc_mstr;" );
                             while (res.next()) {

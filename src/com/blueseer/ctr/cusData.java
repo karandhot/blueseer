@@ -857,6 +857,18 @@ public class cusData {
    
     
     public static String[] addUpdateCMCtrl(cm_ctrl x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addUpdateCMCtrl"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServCUS"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         int rows = 0;
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  cm_ctrl"; // there should always be only 1 or 0 records 
@@ -891,6 +903,22 @@ public class cusData {
     public static cm_ctrl getCMCtrl(String[] x) {
         cm_ctrl r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getCMCtrl"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServCUS");
+                r = objectMapper.readValue(returnstring, cm_ctrl.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new cm_ctrl(m);
+                return r;
+            }
+        }
         String sql = "select * from cm_ctrl;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql);) {

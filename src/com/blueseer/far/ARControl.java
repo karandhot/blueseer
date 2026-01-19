@@ -242,7 +242,7 @@ public class ARControl extends javax.swing.JPanel implements IBlueSeerc {
     
     public void initvars(String[] arg) {
             setComponentDefaultValues();
-            executeTask(dbaction.get, null);
+            executeTask(dbaction.get, new String[]{""});
     }
     
     public String[] updateRecord(String[] x) {

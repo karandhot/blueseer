@@ -27,8 +27,8 @@ package com.blueseer.srv;
 
 
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
-import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.ord.ordData;
+import static com.blueseer.ord.ordData.addUpdateORCtrl;
 import static com.blueseer.ord.ordData.addUpdateSOMeta;
 import static com.blueseer.ord.ordData.applyOrderChange;
 import static com.blueseer.ord.ordData.deleteSOMeta;
@@ -36,6 +36,7 @@ import static com.blueseer.ord.ordData.getBillBrowseView;
 import static com.blueseer.ord.ordData.getBillDet;
 import static com.blueseer.ord.ordData.getBillMstr;
 import static com.blueseer.ord.ordData.getBillSAC;
+import static com.blueseer.ord.ordData.getORCtrl;
 import static com.blueseer.ord.ordData.getOrderBrowseView;
 import static com.blueseer.ord.ordData.getOrderChangeBrowseDetail;
 import static com.blueseer.ord.ordData.getOrderChangeBrowseView;
@@ -104,88 +105,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     }
         
         String id = request.getParameter("id");
-        
         response.setStatus(HttpServletResponse.SC_OK);
-        
-        
-        
-        if (id.equals("getAccountBalanceReport")) {
-           String[] keys = new String[]{
-               request.getParameter("year"), 
-               request.getParameter("period"), 
-               request.getParameter("site"), 
-               request.getParameter("iscc"), 
-               request.getParameter("intype"), 
-               request.getParameter("fromacct"), 
-               request.getParameter("toacct")  
-           }; 
-           
-           for (String k : keys) {
-               if (k == null) {
-                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                   response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing param");  
-                   return;
-               }
-           }
-           
-           String r = getAccountBalanceReport(keys);
-           
-           if (r == null || r.isBlank()) {
-             response.getWriter().println("no return for: " + String.join(",",keys));   
-           } else {
-             response.getWriter().println(r);   
-           }
-        } 
-        
-         if (id.equals("getAccountActivityYear")) {
-           String[] keys = new String[]{
-               request.getParameter("year"), 
-               request.getParameter("site"), 
-               request.getParameter("fromacct"), 
-               request.getParameter("toacct")  
-           }; 
-           
-           for (String k : keys) {
-               if (k == null) {
-                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                   response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing param");  
-                   return;
-               }
-           }
-           
-           String r = getAccountActivityYear(keys);
-           
-           if (r == null || r.isBlank()) {
-             response.getWriter().println("no return for: " + String.join(",",keys));   
-           } else {
-             response.getWriter().println(r);   
-           }
-        } 
-        
-        if (id.equals("setStandardCosts")) {
-           String[] keys = new String[]{
-               request.getParameter("site"), 
-               request.getParameter("item") 
-           }; 
-           
-           for (String k : keys) {
-               if (k == null) {
-                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                   response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing param");  
-                   return;
-               }
-           }
-           
-           String r = getAccountActivityYear(keys);
-           
-           if (r == null || r.isBlank()) {
-             response.getWriter().println("no return for: " + String.join(",",keys));   
-           } else {
-             response.getWriter().println(r);   
-           }
-        } 
-        
-        
     }
 
  @Override
@@ -539,6 +459,15 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         break;
         } 
         
+        case "getORCtrl" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            ordData.order_ctrl x = getORCtrl(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
         
             
         case "getBillSAC" : {       
@@ -742,6 +671,19 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         case "getServiceOrderChartData" :
         response.getWriter().print(ArrayListStringArrayToJson(ordData.getServiceOrderChartData(request.getHeader("param1"), request.getHeader("param2"))));
         break;
+        
+        case "addUpdateORCtrl" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            ordData.order_ctrl x = objectMapper.readValue(sb.toString(), ordData.order_ctrl.class);            
+            response.getWriter().print(arrayToJson(addUpdateORCtrl(x)));
+            break;
+          }
             
         default:
         response.getWriter().print("no switch case exists in dataServORD for id: " + id);

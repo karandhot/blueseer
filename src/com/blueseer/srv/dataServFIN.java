@@ -26,7 +26,12 @@ SOFTWARE.
 package com.blueseer.srv;
 
 import static com.blueseer.adm.admData.getLoginInit;
+import com.blueseer.fap.fapData;
+import static com.blueseer.fap.fapData.addUpdateAPCtrl;
+import static com.blueseer.fap.fapData.getAPCtrl;
 import com.blueseer.far.farData;
+import static com.blueseer.far.farData.addUpdateARCtrl;
+import static com.blueseer.far.farData.getARCtrl;
 import static com.blueseer.far.farData.getARMstr;
 import com.blueseer.fgl.fglData;
 import com.blueseer.fgl.fglData.AcctMstr;
@@ -34,17 +39,21 @@ import static com.blueseer.fgl.fglData.addAcctMstr;
 import static com.blueseer.fgl.fglData.deleteAcctMstr;
 import com.blueseer.fgl.fglData.exc_mstr;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
-import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import static com.blueseer.fgl.fglData.getAcctMstr;
 import static com.blueseer.fgl.fglData.getBankMstr;
 import static com.blueseer.fgl.fglData.getCurrMstr;
 import static com.blueseer.fgl.fglData.getDeptMstr;
 import static com.blueseer.fgl.fglData.getExcMstr;
 import static com.blueseer.fgl.fglData.getFINInit;
+import static com.blueseer.fgl.fglData.getGLAcctListRangeWCurrTypeDesc;
+import static com.blueseer.fgl.fglData.getGLCalForPeriod;
+import static com.blueseer.fgl.fglData.getGLCtrl;
 import static com.blueseer.fgl.fglData.updateAcctMstr;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
@@ -91,7 +100,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         response.setStatus(HttpServletResponse.SC_OK);
         
         
-        
+        /*
         if (id.equals("getAccountBalanceReport")) {
            String[] keys = new String[]{
                request.getParameter("year"), 
@@ -119,7 +128,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
              response.getWriter().println(r);   
            }
         } 
-        
+        */
         if (id.equals("getAccountActivityYear")) {
            String[] keys = new String[]{
                request.getParameter("year"), 
@@ -301,23 +310,109 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       break;
     } 
     
+    case "getAccountBalanceView" : { 
+      response.getWriter().print(fglData.getAccountBalanceView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5"),
+                    request.getHeader("param6"),
+                    request.getHeader("param7")} ));
+      break;
+    } 
+    
+    case "getAccountBalanceDetView" : { 
+      response.getWriter().print(fglData.getAccountBalanceDetView(request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    bsParseInt(request.getHeader("param4")),
+                    bsParseInt(request.getHeader("param5")),
+                    BlueSeerUtils.ConvertStringToBool(request.getHeader("param6"))));
+      break;
+    } 
+    
     case "getInvoiceBrowseDetail" : { 
       response.getWriter().print(fglData.getInvoiceBrowseDetail(request.getHeader("param1"))); 
       break;
     }     
     
     case "getFINInit" : {
-      String param1 = request.getHeader("param1"); 
-      String user = request.getHeader("param2");
-      response.getWriter().print(ArrayListStringArrayToJson(getFINInit(param1, user)));
+      response.getWriter().print(ArrayListStringArrayToJson(getFINInit(request.getHeader("param1"), request.getHeader("param2"))));
       break;
-    }     
+    }  
+    
+    case "getGLAcctListRangeWCurrTypeDesc" : {
+      response.getWriter().print(ArrayListStringArrayToJson(getGLAcctListRangeWCurrTypeDesc(request.getHeader("param1"), request.getHeader("param2"))));
+      break;
+    } 
     
     case "PostGL" : { 
       fglData.PostGL();
       response.getWriter().print(arrayToJson(new String[]{BlueSeerUtils.SuccessBit, getMessageTag(1125)}));
       break;
     }
+    
+    case "getGLCtrl" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            fglData.gl_ctrl x = getGLCtrl(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+    }
+    
+    case "getARCtrl" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            farData.ar_ctrl x = getARCtrl(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+    }
+    
+    case "getAPCtrl" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            fapData.ap_ctrl x = getAPCtrl(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+    }
+    
+    case "addUpdateAPCtrl" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            fapData.ap_ctrl x = objectMapper.readValue(sb.toString(), fapData.ap_ctrl.class);            
+            response.getWriter().print(arrayToJson(addUpdateAPCtrl(x)));
+            break;
+          }
+    
+    case "addUpdateARCtrl" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            farData.ar_ctrl x = objectMapper.readValue(sb.toString(), farData.ar_ctrl.class);            
+            response.getWriter().print(arrayToJson(addUpdateARCtrl(x)));
+            break;
+          }
+    
+    case "getGLCalForDate" :
+            response.getWriter().print(arrayToJson(fglData.getGLCalForDate(BlueSeerUtils.parseDate(request.getHeader("param1")))));   
+            break;
+            
+    case "getGLCalForPeriod" : {
+      response.getWriter().print(ArrayListStringToJson(getGLCalForPeriod(bsParseInt(request.getHeader("param1")), bsParseInt(request.getHeader("param2")))));
+      break;
+    }         
     
     default:
         response.getWriter().print("no switch case exists in dataServFIN for id: " + id);

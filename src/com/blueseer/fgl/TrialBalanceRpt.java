@@ -200,7 +200,7 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
       
          modeldetail.setNumRows(0);
          double total = 0;
-         ArrayList<Date> actdatearray = fglData.getGLCalForPeriod(year, period);  
+         ArrayList<String> actdatearray = fglData.getGLCalForPeriod(year, period);  
                 String datestart = String.valueOf(actdatearray.get(0));
                 String dateend = String.valueOf(actdatearray.get(1));
                 
@@ -262,7 +262,7 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
       
          modeldetail.setNumRows(0);
          double total = 0;
-         ArrayList<Date> actdatearray = fglData.getGLCalForPeriod(year, period);  
+         ArrayList<String> actdatearray = fglData.getGLCalForPeriod(year, period);  
                 String datestart = String.valueOf(actdatearray.get(0));
                 String dateend = String.valueOf(actdatearray.get(1));
         tabledetail.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));

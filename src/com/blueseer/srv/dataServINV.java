@@ -27,7 +27,6 @@ package com.blueseer.srv;
 
 import com.blueseer.fgl.fglData;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
-import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.addItemMasterMass;
 import static com.blueseer.inv.invData.addItemMstr;
@@ -36,6 +35,7 @@ import static com.blueseer.inv.invData.addPLMstr;
 import static com.blueseer.inv.invData.addRoutingMstr;
 import static com.blueseer.inv.invData.addUOMConvMstr;
 import static com.blueseer.inv.invData.addUOMMstr;
+import static com.blueseer.inv.invData.addUpdateINVCtrl;
 import static com.blueseer.inv.invData.addWareHouseMstr;
 import static com.blueseer.inv.invData.addWorkCenterMstr;
 import static com.blueseer.inv.invData.bind_tree_op;
@@ -821,6 +821,19 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             ObjectMapper objectMapper = new ObjectMapper();
             ArrayList<String> sdarray = objectMapper.readValue(sb.toString(), ArrayList.class);
             response.getWriter().print(arrayToJson(addItemMasterMass(sdarray, request.getHeader("param1"))));
+            break;
+          }
+        
+        case "addUpdateINVCtrl" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.inv_ctrl x = objectMapper.readValue(sb.toString(), invData.inv_ctrl.class);            
+            response.getWriter().print(arrayToJson(addUpdateINVCtrl(x)));
             break;
           }
         

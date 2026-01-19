@@ -30,11 +30,13 @@ import static com.blueseer.ctr.cusData.addCMCDet;
 import static com.blueseer.ctr.cusData.addCMSDet;
 import static com.blueseer.ctr.cusData.addCprMstr;
 import static com.blueseer.ctr.cusData.addCustMstrMass;
+import static com.blueseer.ctr.cusData.addUpdateCMCtrl;
 import static com.blueseer.ctr.cusData.deleteCMCDet;
 import static com.blueseer.ctr.cusData.deleteCMSDet;
 import static com.blueseer.ctr.cusData.deleteCprMstr;
 import static com.blueseer.ctr.cusData.deleteCustMstr;
 import static com.blueseer.ctr.cusData.getCMCDet;
+import static com.blueseer.ctr.cusData.getCMCtrl;
 import static com.blueseer.ctr.cusData.getCMSDet;
 import static com.blueseer.ctr.cusData.getCprDiscLists;
 import static com.blueseer.ctr.cusData.getCprMstr;
@@ -198,6 +200,15 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(ArrayListStringArrayToJson(cusData.getCustMaintInit(request.getHeader("param1"), request.getHeader("param2"))));
             break;
         }
+        
+        case "getCMCtrl" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            cusData.cm_ctrl x = getCMCtrl(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
         
         case "addCMSDet" : { 
             String line;
@@ -371,6 +382,19 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             ObjectMapper objectMapper = new ObjectMapper();
             String r = objectMapper.writeValueAsString(x);
             response.getWriter().print(r);
+            break;
+          }
+        
+        case "addUpdateCMCtrl" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cm_ctrl x = objectMapper.readValue(sb.toString(), cusData.cm_ctrl.class);            
+            response.getWriter().print(arrayToJson(addUpdateCMCtrl(x)));
             break;
           }
         

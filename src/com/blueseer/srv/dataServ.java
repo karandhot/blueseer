@@ -41,7 +41,6 @@ import static com.blueseer.edi.apiUtils.getPublicKeyAsOPENSSH;
 import static com.blueseer.edi.apiUtils.getPublicKeyAsPEM;
 import static com.blueseer.edi.apiUtils.postAS2;
 import static com.blueseer.edi.apiUtils.runAPIPost;
-import static com.blueseer.fgl.fglData.getAccountBalanceReport;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import java.io.BufferedReader;
@@ -86,39 +85,6 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         String id = request.getParameter("id");
         
         response.setStatus(HttpServletResponse.SC_OK);
-        
-        
-        // doGet unused...moved to business function dataServXXX ...left as template for future use
-        if (id.equals("1")) {
-           String[] keys = new String[]{
-               request.getParameter("year"), 
-               request.getParameter("period"), 
-               request.getParameter("site"), 
-               request.getParameter("iscc"), 
-               request.getParameter("intype"), 
-               request.getParameter("fromacct"), 
-               request.getParameter("toacct")  
-           }; 
-           
-           for (String k : keys) {
-               if (k == null) {
-                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                   response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing param");  
-                   return;
-               }
-           }
-           
-           String r = getAccountBalanceReport(keys);
-           
-           if (r == null || r.isBlank()) {
-             response.getWriter().println("no return for: " + String.join(",",keys));   
-           } else {
-             response.getWriter().println(r);   
-           }
-        } 
-        
-        
-        
         
     }
 
