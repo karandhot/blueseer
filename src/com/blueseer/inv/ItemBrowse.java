@@ -46,6 +46,7 @@ import net.sf.jasperreports.view.JasperViewer;
 import static bsmf.MainFrame.checkperms;
 import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
@@ -418,6 +419,9 @@ public class ItemBrowse extends javax.swing.JPanel {
         
         for (Object[] rowData : roData) {
             i++;
+            rowData[6] = bsParseDouble(rowData[6].toString());
+            rowData[7] = bsParseDouble(rowData[7].toString());
+            rowData[8] = bsParseDouble(rowData[8].toString());
             mymodel.addRow(rowData); 
             /*
             mymodel.addRow(new Object[]{

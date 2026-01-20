@@ -190,7 +190,7 @@ public class cusData {
     return m;
     }
      
-     public static String[] addCustMstrMass(ArrayList<String> custlist, String delim) {
+    public static String[] addCustMstrMass(ArrayList<String> custlist, String delim) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id","addCustMstrMass"});
@@ -198,7 +198,6 @@ public class cusData {
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 String jsonString = objectMapper.writeValueAsString(custlist);
-                System.out.println("HERE: " + jsonString);
                 return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServCUS"));
             } catch (IOException ex) {
                 bslog(ex);
@@ -273,8 +272,7 @@ public class cusData {
         }
     return m;
     }
-    
-    
+        
     private static int _addCustMstr(cm_mstr x, Connection con, PreparedStatement ps, ResultSet res, boolean addupdate) throws SQLException {
         int rows = 0;
         String sqlSelect = "select * from cm_mstr where cm_code = ?";
@@ -392,9 +390,7 @@ public class cusData {
             } 
             return rows;
     }
-     
-    
-    
+        
     public static String[] updateCustMstr(cm_mstr x) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
@@ -512,8 +508,7 @@ public class cusData {
             rows = ps.executeUpdate();
         return rows;
     }
-    
-    
+        
     public static String[] deleteCustMstr(cm_mstr x) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
@@ -586,8 +581,7 @@ public class cusData {
         ps.setString(1, x.cm_code);
         ps.executeUpdate();
     }
-        
-    
+       
     public static cm_mstr getCustMstr(String[] x) {
         cm_mstr r = null;
         String[] m = new String[2];
