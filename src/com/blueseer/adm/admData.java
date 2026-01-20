@@ -3141,7 +3141,7 @@ public class admData {
                             while (res.next()) {
                                String[] s = new String[2];
                                s[0] = "depts";
-                               s[1] = res.getString("user_id");
+                               s[1] = res.getString("dept_id");
                                lines.add(s);
                             }
                         }
