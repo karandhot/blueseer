@@ -3855,7 +3855,9 @@ public class ordData {
                 res = st.executeQuery("select so_nbr, sod_nbr, so_curr, sod_desc, so_shipvia, cm_terms,  " + 
                 " (select case when sum(sos_amt) is null then 0 else sum(sos_amt) end from sos_det " +
                 " where sos_nbr = " + "'" + order + "'" + " and sos_amttype = 'amount' and sos_type <> 'tax' and sos_type <> 'passive' and sos_type <> 'shipping BIL' and sos_type <> 'shipping PPD' " +
-                " ) as charges, " + 
+                " ) as charges, " +
+                " (select case when sum(sos_amt) is null then 0 else sum(sos_amt) end from sos_det " +
+                " where sos_nbr = " + "'" + order + "'" + " and sos_amttype = 'amount' and sos_type = 'tax' ) as taxes, " +        
                 " so_cust, so_rmks, sod_po, sod_item, sod_custitem, sod_ord_qty, " +
                 " sod_netprice, sod_listprice, sod_taxamt, cm_code, cm_name, cm_line1, cm_line2,  " +
                 " cm_city, cm_state, cm_zip, cm_country, cms_city, cms_state, cms_zip, cms_country, " +
@@ -3918,6 +3920,7 @@ public class ordData {
                         rowArray.put(res.getString("so_nbr")); // 40 zero base
                         rowArray.put(res.getString("so_curr")); 
                         rowArray.put(res.getDouble("charges"));
+                        rowArray.put(res.getDouble("taxes"));
                         rowArray.put(res.getDouble("sod_listprice"));
                         rowArray.put(res.getString("cms_line2"));
                         rowArray.put(res.getDouble("sod_taxamt"));

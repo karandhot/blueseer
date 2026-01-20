@@ -18683,7 +18683,7 @@ return mystring;
                         "site_city,site_state,site_zip,site_country,site_site,cm_logo,site_logo," +
                         "ov_image_directory,cm_iv_jasper,site_or_jasper,ov_jasper_directory," +
                         "so_nbr,so_curr," +
-                        "charges,sod_listprice,cms_line2,sod_taxamt";
+                        "charges,taxes,sod_listprice,cms_line2,sod_taxamt";
         String[] columnnamesarray = columnnames.split(",", -1);
                
         JRDataSource datasource = new ListOfArrayDataSource(list, columnnamesarray);
@@ -23912,8 +23912,8 @@ return mylist;
                 // Fallback option, e.g., using Runtime.exec() or displaying a message
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("An error occurred while trying to open the email client.");
+            bslog(e);
+            bsmf.MainFrame.show("An error occurred while trying to open the desktop email client.");
         }
     
     }
