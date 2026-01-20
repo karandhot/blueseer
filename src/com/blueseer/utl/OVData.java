@@ -134,6 +134,7 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -23892,6 +23893,30 @@ return mylist;
         
        }
     
+    public static void mailDoc(String to, String subject) {
+        try {
+            // Check if the Desktop API is supported and if it can handle mail
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.MAIL)) {
+
+                // Create the mailto URI with pre-filled fields
+                // The values must be URL-encoded (e.g., space is %20, subject field is ?subject=)
+                String uristring = "mailto:" + to + "?" + "subject=" + subject;
+               // URI mailtoUri = new URI("mailto:recipient@example.com?subject=Hello%20World&body=This%20is%20the%20email%20body.");
+                URI mailtoUri = new URI(uristring);
+
+                // Launch the default email client's composing window
+                Desktop.getDesktop().mail(mailtoUri);
+
+            } else {
+                System.out.println("Desktop mail action not supported on this platform.");
+                // Fallback option, e.g., using Runtime.exec() or displaying a message
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("An error occurred while trying to open the email client.");
+        }
+    
+    }
         
     
 }
