@@ -132,7 +132,14 @@ public class BOMMaint extends javax.swing.JPanel {
                         getGlobalColumnTag("operation"), 
                         getGlobalColumnTag("qtyper"), 
                         getGlobalColumnTag("currentcost"),
-                        getGlobalColumnTag("standardcost")});
+                        getGlobalColumnTag("standardcost")}){
+                      @Override  
+                      public Class getColumnClass(int col) {  
+                        if (col == 2 || col == 3 || col == 4) 
+                            return Double.class;
+                        else return String.class;  //other columns accept String values  
+                      }  
+                        };
       
       javax.swing.event.TableModelListener ml = new javax.swing.event.TableModelListener() {
                     @Override
@@ -806,9 +813,9 @@ public class BOMMaint extends javax.swing.JPanel {
             matlmodel.addRow(new Object[]{
                                 code[1],
                                 code[2],
-                                code[3],
-                                code[4],
-                                code[5]
+                                bsParseDouble(code[3]),
+                                bsParseDouble(code[4]),
+                                bsParseDouble(code[5])
                             });
             }
             if (code[0].equals("costelements")) {
