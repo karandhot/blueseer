@@ -7713,20 +7713,18 @@ public class invData {
         df.applyPattern(pattern); 
        DefaultMutableTreeNode mynode = new DefaultMutableTreeNode(myop);
         String[] newpart = mypart.split("___");
-        ArrayList<String> mylist = new ArrayList<String>();
-        mylist = OVData.getpsmstrlistbyopWCost(newpart[0], myop);
+        ArrayList<String[]> mylist = OVData.getpsmstrlistbyopWCost(newpart[0], myop);
      //   mylist = OVData.getpsmstrlist(newpart[0]);
-        for ( String myvalue : mylist) {
-            String[] value = myvalue.toUpperCase().split(",");
-              if (value[0].toUpperCase().compareTo(newpart[0].toUpperCase().toString()) == 0) {
+        for ( String[] myvalue : mylist) {
+              if (myvalue[0].toUpperCase().compareTo(newpart[0].toUpperCase().toString()) == 0) {
                
-                  if (value[2].toUpperCase().compareTo("M") == 0) {
+                  if (myvalue[2].toUpperCase().compareTo("M") == 0) {
                     DefaultMutableTreeNode mfgnode = new DefaultMutableTreeNode();   
-                   mfgnode = get_nodes_op(value[1] + "___" + value[4] + "___" + df.format(Double.valueOf(value[3])) + "___" + df.format(Double.valueOf(value[5])));
+                   mfgnode = get_nodes_op(myvalue[1] + "___" + myvalue[4] + "___" + df.format(Double.valueOf(myvalue[3])) + "___" + df.format(Double.valueOf(myvalue[5])));
                    
                     mynode.add(mfgnode);
                   } else {
-                  DefaultMutableTreeNode childnode = new DefaultMutableTreeNode(value[1] + "___" + value[4] + "___" + df.format(Double.valueOf(value[3])) + "___" + df.format(Double.valueOf(value[5])));   
+                  DefaultMutableTreeNode childnode = new DefaultMutableTreeNode(myvalue[1] + "___" + myvalue[4] + "___" + df.format(Double.valueOf(myvalue[3])) + "___" + df.format(Double.valueOf(myvalue[5])));   
                  
                   mynode.add(childnode);
                   }

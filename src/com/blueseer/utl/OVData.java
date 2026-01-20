@@ -3893,20 +3893,17 @@ public class OVData {
          DefaultMutableTreeNode mynode = new DefaultMutableTreeNode(myroot);
          
         
-        ArrayList<String> mylist = new ArrayList<String>();
-        
-        mylist = OVData._getpsmstrlistbyopnew(item, myop, rootbom, bscon);
+        ArrayList<String[]> mylist = OVData._getpsmstrlistbyopnew(item, myop, rootbom, bscon);
      //   mylist = OVData.getpsmstrlist(newpart[0]);
-        for ( String myvalue : mylist) {
-            String[] value = myvalue.toUpperCase().split(",");
-              if (value[0].toUpperCase().compareTo(item.toUpperCase().toString()) == 0) {
+        for ( String[] myvalue : mylist) {
+              if (myvalue[0].toUpperCase().compareTo(item.toUpperCase().toString()) == 0) {
                
-                  if (value[2].toUpperCase().compareTo("M") == 0) {
+                  if (myvalue[2].toUpperCase().compareTo("M") == 0) {
                     DefaultMutableTreeNode mfgnode = new DefaultMutableTreeNode(); 
-                    mfgnode = get_op_nodes_new(value[1], value[5], bscon);
+                    mfgnode = get_op_nodes_new(myvalue[1], myvalue[5], bscon);
                     mynode.add(mfgnode);
                   } else {
-                  DefaultMutableTreeNode childnode = new DefaultMutableTreeNode(value[1]);   
+                  DefaultMutableTreeNode childnode = new DefaultMutableTreeNode(myvalue[1]);   
                  
                   mynode.add(childnode);
                   }
@@ -3920,20 +3917,18 @@ public class OVData {
     public static DefaultMutableTreeNode get_nodes_by_op(String item, String myop)  {
        DefaultMutableTreeNode mynode = new DefaultMutableTreeNode(myop);
         String[] newpart = item.split("___");
-        ArrayList<String> mylist = new ArrayList<String>();
-        mylist = OVData.getpsmstrlistbyopWCost(newpart[0], myop);
+        ArrayList<String[]> mylist = OVData.getpsmstrlistbyopWCost(newpart[0], myop);
      //   mylist = OVData.getpsmstrlist(newpart[0]);
-        for ( String myvalue : mylist) {
-            String[] value = myvalue.toUpperCase().split(",");
-              if (value[0].toUpperCase().compareTo(newpart[0].toUpperCase().toString()) == 0) {
+        for ( String myvalue[] : mylist) {
+              if (myvalue[0].toUpperCase().compareTo(newpart[0].toUpperCase().toString()) == 0) {
                
-                  if (value[2].toUpperCase().compareTo("M") == 0) {
+                  if (myvalue[2].toUpperCase().compareTo("M") == 0) {
                     DefaultMutableTreeNode mfgnode = new DefaultMutableTreeNode();   
-                   mfgnode = get_nodes_without_op(value[1] + "___" + value[4] + "___" + bsFormatDouble5(bsParseDouble(value[3])) + "___" + bsFormatDouble5(bsParseDouble(value[5])));
+                   mfgnode = get_nodes_without_op(myvalue[1] + "___" + myvalue[4] + "___" + bsFormatDouble5(bsParseDouble(myvalue[3])) + "___" + bsFormatDouble5(bsParseDouble(myvalue[5])));
                    
                     mynode.add(mfgnode);
                   } else {
-                  DefaultMutableTreeNode childnode = new DefaultMutableTreeNode(value[1] + "___" + value[4] + "___" + bsFormatDouble5(bsParseDouble(value[3])) + "___" + bsFormatDouble5(bsParseDouble(value[5])));   
+                  DefaultMutableTreeNode childnode = new DefaultMutableTreeNode(myvalue[1] + "___" + myvalue[4] + "___" + bsFormatDouble5(bsParseDouble(myvalue[3])) + "___" + bsFormatDouble5(bsParseDouble(myvalue[5])));   
                  
                   mynode.add(childnode);
                   }
@@ -4256,9 +4251,8 @@ public class OVData {
     }
 
    
-    public static ArrayList getpsmstrlistbyopnew(String item, String myop, String bomid) {
-        ArrayList myarray = new ArrayList();
-        String mystring = "";
+    public static ArrayList<String[]> getpsmstrlistbyopnew(String item, String myop, String bomid) {
+        ArrayList list = new ArrayList();
         try {
             
         Connection con = null;
@@ -4279,14 +4273,14 @@ public class OVData {
                         + " and ps_bom = " + "'" + bomid + "'"        
                         + ";");
                 while (res.next()) {
-                    mystring = res.getString("ps_parent") + ","
-                            + res.getString("ps_child") + ","
-                            + res.getString("ps_type") + ","
-                            + res.getString("ps_qty_per") + ","
-                            + res.getString("it_desc").replace(",","") + ","
-                            + res.getString("ps_bom");
+                    String[] myarray = new String[]{res.getString("ps_parent"),
+                            res.getString("ps_child"),
+                            res.getString("ps_type"),
+                            res.getString("ps_qty_per"),
+                            res.getString("it_desc").replace(",",""),
+                            res.getString("ps_bom")};
 
-                    myarray.add(mystring);
+                    list.add(myarray);
 
                 }
 
@@ -4306,13 +4300,13 @@ public class OVData {
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
-        return myarray;
+        return list;
 
     }
     
-    public static ArrayList _getpsmstrlistbyopnew(String item, String myop, String bomid, Connection bscon) {
-        ArrayList myarray = new ArrayList();
-        String mystring = "";
+    public static ArrayList<String[]> _getpsmstrlistbyopnew(String item, String myop, String bomid, Connection bscon) {
+        ArrayList list = new ArrayList();
+        
         try {
             
             Statement st = bscon.createStatement();
@@ -4329,14 +4323,14 @@ public class OVData {
                         + " and ps_bom = " + "'" + bomid + "'"        
                         + ";");
                 while (res.next()) {
-                    mystring = res.getString("ps_parent") + ","
-                            + res.getString("ps_child") + ","
-                            + res.getString("ps_type") + ","
-                            + res.getString("ps_qty_per") + ","
-                            + res.getString("it_desc").replace(",","") + ","
-                            + res.getString("childbom");
+                    String[] myarray = new String[]{res.getString("ps_parent"),
+                            res.getString("ps_child"),
+                            res.getString("ps_type"),
+                            res.getString("ps_qty_per"),
+                            res.getString("it_desc").replace(",",""),
+                            res.getString("childbom")};
 
-                    myarray.add(mystring);
+                    list.add(myarray);
 
                 }
 
@@ -4353,13 +4347,12 @@ public class OVData {
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
-        return myarray;
+        return list;
 
     }
             
-    public static ArrayList getpsmstrlistbyopWCost(String item, String myop) {
-        ArrayList myarray = new ArrayList();
-        String mystring = "";
+    public static ArrayList<String[]> getpsmstrlistbyopWCost(String item, String myop) {
+        ArrayList list = new ArrayList();
         try {
             
             Connection con = null;
@@ -4378,14 +4371,14 @@ public class OVData {
                         + " where ps_parent = " + "'" + item + "'"
                         + " and ps_op = " + "'" + myop + "'" + ";");
                 while (res.next()) {
-                    mystring = res.getString("ps_parent") + ","
-                            + res.getString("ps_child") + ","
-                            + res.getString("ps_type") + ","
-                            + res.getString("ps_qty_per") + ","
-                            + res.getString("it_desc") + ","
-                            + res.getString("itc_total");
+                    String[] mystring = new String[]{res.getString("ps_parent"),
+                            res.getString("ps_child"),
+                            res.getString("ps_type"),
+                            res.getString("ps_qty_per"),
+                            res.getString("it_desc"),
+                            res.getString("itc_total")};
 
-                    myarray.add(mystring);
+                    list.add(mystring);
 
                 }
 
@@ -4405,7 +4398,7 @@ public class OVData {
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
-        return myarray;
+        return list;
 
     }
  
