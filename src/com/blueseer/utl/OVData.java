@@ -18665,7 +18665,8 @@ return mystring;
                 rowData[40] = bsParseInt(rowData[40].toString());
                 rowData[42] = bsParseDouble(rowData[42].toString());
                 rowData[43] = bsParseDouble(rowData[43].toString());
-                rowData[45] = bsParseDouble(rowData[45].toString());
+                rowData[44] = bsParseDouble(rowData[44].toString());
+                rowData[46] = bsParseDouble(rowData[46].toString());
                 list.add(rowData);
                 k++;
         }
