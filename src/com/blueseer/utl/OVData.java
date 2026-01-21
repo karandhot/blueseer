@@ -23969,7 +23969,8 @@ return mylist;
                 // The values must be URL-encoded (e.g., space is %20, subject field is ?subject=)
             String encodedSubject = URLEncoder.encode(subject, StandardCharsets.UTF_8.toString());
             String encodedBody = URLEncoder.encode(body, StandardCharsets.UTF_8.toString());
-
+            encodedSubject = encodedSubject.replace("+", "%20");
+            encodedBody = encodedBody.replace("+", "%20");
             // 2. Construct the mailto URI
             // The structure is "mailto:recipient?subject=...&body=..."
             String uriString = String.format("mailto:%s?subject=%s&body=%s",
