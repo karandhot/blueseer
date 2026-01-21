@@ -175,7 +175,7 @@ public class BlueSeerUtils {
     public static  ImageIcon clicknocheck = new ImageIcon(BlueSeerUtils.class.getResource("/images/nocheck.png"));
     public static  ImageIcon clickleftdoc = new ImageIcon(BlueSeerUtils.class.getResource("/images/leftdoc.png"));
     public static  ImageIcon clickrightdoc = new ImageIcon(BlueSeerUtils.class.getResource("/images/rightdoc.png"));
-    public static  ImageIcon clickfile = new ImageIcon(BlueSeerUtils.class.getResource("/images/file.png"));
+    public static  ImageIcon clickfile = new ImageIcon(BlueSeerUtils.class.getResource("/images/pdf100.png"));
     
     
     
@@ -423,7 +423,7 @@ public class BlueSeerUtils {
         luModel.setColumnCount(0);
         }
         luinput.setText("");
-        luTable.setPreferredScrollableViewportSize(new Dimension(500,200));
+        luTable.setPreferredScrollableViewportSize(new Dimension(600,200));
         luTable.getTableHeader().setReorderingAllowed(false);
         JScrollPane scrollPane = new JScrollPane(luTable);
         JPanel rbpanel = new JPanel();
@@ -3527,7 +3527,7 @@ public class BlueSeerUtils {
         mydialog.setVisible(true);
         mydialog.setTitle("Drag and Drop File Attachment:");
         mydialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        mydialog.setSize(new Dimension(200, 200));
+        mydialog.setSize(new Dimension(300, 300));
     }
     
 }

@@ -1569,6 +1569,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
          luModel = DTData.getCustContactsBrowseUtil(luinput.getText(), 0, "cmc_type", ddcust.getSelectedItem().toString());   
         } 
         luTable.setModel(luModel);
+        luTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        luTable.getColumnModel().getColumn(1).setMaxWidth(75);
         if (luModel.getRowCount() < 1) {
             ludialog.setTitle(getMessageTag(1001));
         } else {
