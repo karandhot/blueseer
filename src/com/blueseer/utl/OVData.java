@@ -89,6 +89,7 @@ import com.blueseer.vdr.venData;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.awt.Component;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -123,8 +124,13 @@ import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.view.JasperViewer;
 import java.awt.FileDialog;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Image;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragSource;
+import java.awt.dnd.DragSourceAdapter;
 import java.awt.print.PrinterJob;
 import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
@@ -135,6 +141,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -167,9 +174,14 @@ import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.Copies;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import net.sf.jasperreports.engine.JRDataSource;
@@ -11971,6 +11983,52 @@ return autosource;
         
     }
     
+    public static boolean isValidOrder(String order) {
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidOrder"});
+            list.add(new String[]{"param1", order});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }      
+       boolean isValid = false;
+        try{
+           
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try{
+                res = st.executeQuery("select so_nbr from so_mstr where so_nbr = " + "'" + order + "'" +
+                        ";");
+               while (res.next()) {
+                    isValid = true;
+                }
+               
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return isValid;
+        
+    }
+    
     
     public static boolean isValidFreightOrderNbr(String nbr) {
        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
@@ -18612,7 +18670,7 @@ return mystring;
        }
     }
     
-    public static void printOrderRemote(String order, boolean isMultiShip) {
+    public static Path printOrderRemote(String order, boolean isMultiShip, boolean toFile) {
         
         String jsonString = null;
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
@@ -18623,12 +18681,13 @@ return mystring;
                 jsonString = sendServerPost(list, "", null, "dataServORD"); 
             } catch (IOException ex) {
                 bslog(ex);
-                return;
+                return null;
             }
         } else {
             jsonString = getOrderPrintData(order); 
         }        
         Object[][] rData = jsonToData(jsonString);
+        Path rFilePath = null;
         
         List<Object[]> list = new ArrayList<>();
         String site_csz = "";
@@ -18709,15 +18768,22 @@ return mystring;
         JasperPrint jasperPrint; 
         try {
          jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
-         JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
-           jasperViewer.setVisible(true);
-                jasperViewer.setTitle("Viewer");
-                jasperViewer.setIconImage(null);
-                jasperViewer.setFitPageZoomRatio();
+         if (toFile) {
+            String ef = "bstempfile." + Long.toHexString(System.currentTimeMillis()) + ".pdf";
+            rFilePath = FileSystems.getDefault().getPath("temp" + "/" + ef);
+            JasperExportManager.exportReportToPdfFile(jasperPrint,rFilePath.toString());   
+         } else {
+            JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+            jasperViewer.setVisible(true);
+            jasperViewer.setTitle("Viewer");
+            jasperViewer.setIconImage(null);
+            jasperViewer.setFitPageZoomRatio();
+         }
            //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
        } catch (JRException ex) {
            MainFrame.bslog(ex);
        }
+        return rFilePath;
     }
     
     public static void printServiceOrderRemote(String order) {
@@ -23894,17 +23960,87 @@ return mylist;
         
        }
     
-    public static void mailDoc(String to, String subject) {
+    public static void mailDoc(String to, String subject, String body, Path filepath) {
         try {
             // Check if the Desktop API is supported and if it can handle mail
             if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.MAIL)) {
-
+                //File file = new File("c:\\temp\\methods.txt");
                 // Create the mailto URI with pre-filled fields
                 // The values must be URL-encoded (e.g., space is %20, subject field is ?subject=)
-                String uristring = "mailto:" + to + "?" + "subject=" + subject;
+            String encodedSubject = URLEncoder.encode(subject, StandardCharsets.UTF_8.toString());
+            String encodedBody = URLEncoder.encode(body, StandardCharsets.UTF_8.toString());
+
+            // 2. Construct the mailto URI
+            // The structure is "mailto:recipient?subject=...&body=..."
+            String uriString = String.format("mailto:%s?subject=%s&body=%s",
+                                             to, encodedSubject, encodedBody);
+            URI mailtoUri = new URI(uriString);
+  /*              
+            String uristring = "mailto:" + to + "?" + "subject=" + subject + 
+                    "&body=" + body;     // URLEncoder.encode(body, "UTF-8");
+                  //  "&attachment=" + URLEncoder.encode(file.getAbsolutePath(), "UTF-8");
                // URI mailtoUri = new URI("mailto:recipient@example.com?subject=Hello%20World&body=This%20is%20the%20email%20body.");
                 URI mailtoUri = new URI(uristring);
+*/
+           /*
+            List<File> validFiles = new ArrayList<>();
+            validFiles.add(new File("c:\\temp\\methods.txt"));
+            JLabel label = new JLabel();
+            label.setText(String.join(", ", validFiles.stream().map(File::getName).toList()));
+            label.setHorizontalAlignment(SwingConstants.CENTER);
+            label.setFont(new Font("Arial", Font.PLAIN, 12));
+            label.setPreferredSize(new Dimension(400, 100));
 
+            // Enable drag-and-drop of files
+            new DragSource().createDefaultDragGestureRecognizer(label, DnDConstants.ACTION_COPY, e -> {
+                Transferable transferable = new BlueSeerUtils.FileTransferable(validFiles);
+                DragSource ds = (DragSource) e.getSource();
+                ds.startDrag(e, DragSource.DefaultCopyDrop, transferable, new DragSourceAdapter() {});
+                SwingUtilities.getWindowAncestor(label).dispose(); // Close the child window after drag
+            });
+
+            // Create the child window
+            JFrame childFrame = new JFrame("Drag-Drop Attachments to Email Window");
+            childFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            childFrame.getContentPane().add(label);
+            childFrame.pack();
+            childFrame.setLocationRelativeTo(null);
+            childFrame.setVisible(true);
+            
+            */
+           
+           
+        /*   
+           JFrame frame = new JFrame("Drag File Demo");
+        JPanel panel = new JPanel();
+        JLabel dragSourceLabel = new JLabel("Drag this file out");
+        
+        // The file to be dragged (ensure it exists for testing)
+        File fileToDrag = new File("C:/temp/methods.txt"); // Replace with a valid file path
+        List<File> files = Arrays.asList(fileToDrag);
+
+        // Set the custom TransferHandler on the component
+        dragSourceLabel.setTransferHandler(new BlueSeerUtils.FileDragHandler(files));
+        
+        // The JLabel doesn't have setDragEnabled(), so we use a MouseListener to start the drag
+        dragSourceLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                JComponent comp = (JComponent) e.getSource();
+                TransferHandler handler = comp.getTransferHandler();
+                handler.exportAsDrag(comp, e, TransferHandler.COPY);
+            }
+        });
+
+        panel.add(dragSourceLabel);
+        frame.add(panel);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
+        */
+        
+         
+        BlueSeerUtils.dndFile2(filepath);
+        
                 // Launch the default email client's composing window
                 Desktop.getDesktop().mail(mailtoUri);
 
@@ -23918,6 +24054,8 @@ return mylist;
         }
     
     }
+    
+     
         
     
 }

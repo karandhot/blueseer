@@ -8380,6 +8380,100 @@ public class DTData {
        return jsonarray.toString(); 
     }
      
+    public static DefaultTableModel getCustContactsBrowseUtil( String str, int state, String myfield, String cust) {
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getCustContactsBrowseUtilData"});
+            list.add(new String[]{"param1", str});
+            list.add(new String[]{"param2", String.valueOf(state)});
+            list.add(new String[]{"param3", myfield});
+            list.add(new String[]{"param4", cust});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServDT"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = getCustContactsBrowseUtilData(str, state, myfield, cust);
+        }
+        Object[][] data = jsonToData(jsonString);
+        javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+                      new String[]{getGlobalColumnTag("mail"), getGlobalColumnTag("type"), getGlobalColumnTag("name"), getGlobalColumnTag("phone"), getGlobalColumnTag("email")})
+                {
+                      @Override  
+                      public Class getColumnClass(int col) {  
+                        if (col == 0)       
+                         return ImageIcon.class;  
+                        else return String.class;  //other columns accept String values  
+                      }  
+                        }; 
+              
+        for (Object[] rowData : data) {
+        mymodel.addRow(rowData);
+        }
+        return mymodel;
+        
+         } 
+
+    public static String getCustContactsBrowseUtilData(String str, int state, String myfield, String cust) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                if (state == 1) { // begins
+                    res = st.executeQuery(" select cmc_type, cmc_name, cmc_phone, cmc_email " +
+                        " FROM  cmc_det where " + myfield + " like " + "'" + str + "%'" +
+                        " and cmc_code = " + "'" + cust + "'" +        
+                        " order by cmc_type, cmc_name ;");
+                }
+                if (state == 2) { // ends
+                    res = st.executeQuery(" select cmc_type, cmc_name, cmc_phone, cmc_email " +
+                        " FROM  cmc_det where " + myfield + " like " + "'%" + str + "'" +
+                                " and cmc_code = " + "'" + cust + "'" + 
+                        " order by cmc_type, cmc_name ;");
+                }
+                 if (state == 0) { // match
+                 res = st.executeQuery(" select cmc_type, cmc_name, cmc_phone, cmc_email " +
+                        " FROM  cmc_det where " + myfield + " like " + "'%" + str + "%'" +
+                                " and cmc_code = " + "'" + cust + "'" + 
+                        " order by cmc_type, cmc_name ;");
+                 }
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("mail");
+                        rowArray.put(res.getString("cmc_type"));
+                        rowArray.put(res.getString("cmc_name"));
+                        rowArray.put(res.getString("cmc_phone"));
+                        rowArray.put(res.getString("cmc_email"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
      public static DefaultTableModel getVendXrefBrowseUtil2( String str, int state, String myfield, String vend) {
         String jsonString = null;
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {

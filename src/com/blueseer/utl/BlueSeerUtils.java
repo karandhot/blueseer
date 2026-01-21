@@ -45,6 +45,9 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -105,7 +108,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -114,7 +119,9 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.TransferHandler;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -168,6 +175,7 @@ public class BlueSeerUtils {
     public static  ImageIcon clicknocheck = new ImageIcon(BlueSeerUtils.class.getResource("/images/nocheck.png"));
     public static  ImageIcon clickleftdoc = new ImageIcon(BlueSeerUtils.class.getResource("/images/leftdoc.png"));
     public static  ImageIcon clickrightdoc = new ImageIcon(BlueSeerUtils.class.getResource("/images/rightdoc.png"));
+    public static  ImageIcon clickfile = new ImageIcon(BlueSeerUtils.class.getResource("/images/file.png"));
     
     
     
@@ -3404,6 +3412,122 @@ public class BlueSeerUtils {
             }
         }
         return newArray;
+    }
+    
+    public static class FileDragHandler extends TransferHandler {
+
+    private final List<File> filesToDrag;
+
+    public FileDragHandler(List<File> files) {
+        this.filesToDrag = files;
+    }
+
+    @Override
+    public int getSourceActions(JComponent c) {
+        // Defines the allowed actions (COPY, MOVE, or both)
+        return TransferHandler.COPY; // Use COPY for dragging to external apps
+    }
+
+    @Override
+    protected Transferable createTransferable(JComponent c) {
+        // Wraps the list of files in a Transferable object
+        return new FileListTransferable(filesToDrag);
+    }
+
+    // Custom Transferable implementation for File lists
+    public static class FileListTransferable implements Transferable {
+        private final List<File> files;
+
+        public FileListTransferable(List<File> files) {
+            this.files = files;
+        }
+
+        @Override
+        public DataFlavor[] getTransferDataFlavors() {
+            // Only support javaFileListFlavor for native file explorer compatibility
+            return new DataFlavor[]{DataFlavor.javaFileListFlavor};
+        }
+
+        @Override
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return DataFlavor.javaFileListFlavor.equals(flavor);
+        }
+
+        @Override
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
+            if (isDataFlavorSupported(flavor)) {
+                return files; // Return the list of files
+            }
+            throw new UnsupportedFlavorException(flavor);
+        }
+        
+    }
+}
+    
+    public void dndFile() {
+    JFrame frame = new JFrame("Drag File Demo");
+        JPanel panel = new JPanel();
+        JLabel dragSourceLabel = new JLabel("Drag this file out");
+        
+        // The file to be dragged (ensure it exists for testing)
+        File fileToDrag = new File("C:/temp/methods.txt"); // Replace with a valid file path
+        List<File> files = Arrays.asList(fileToDrag);
+
+        // Set the custom TransferHandler on the component
+        dragSourceLabel.setTransferHandler(new BlueSeerUtils.FileDragHandler(files));
+        
+        // The JLabel doesn't have setDragEnabled(), so we use a MouseListener to start the drag
+        dragSourceLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                JComponent comp = (JComponent) e.getSource();
+                TransferHandler handler = comp.getTransferHandler();
+                handler.exportAsDrag(comp, e, TransferHandler.COPY);
+            }
+        });
+
+        panel.add(dragSourceLabel);
+        frame.add(panel);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
+    }
+    
+    public static void dndFile2(Path filepath) {
+        JDialog mydialog = new JDialog();
+        JLabel dragSourceLabel;
+        if (filepath == null) {
+            dragSourceLabel = new JLabel("No Attachment File was generated!");
+        } else {
+            dragSourceLabel = new JLabel("");
+            dragSourceLabel.setIcon(clickfile);
+            List<File> files = Arrays.asList(filepath.toFile());
+            dragSourceLabel.setTransferHandler(new BlueSeerUtils.FileDragHandler(files));
+            dragSourceLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mousePressed(java.awt.event.MouseEvent e) {
+                    JComponent comp = (JComponent) e.getSource();
+                    TransferHandler handler = comp.getTransferHandler();
+                    handler.exportAsDrag(comp, e, TransferHandler.COPY);
+                }
+            });
+        }
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2,2,2,2);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        panel.add( dragSourceLabel, gbc );
+        
+        mydialog.add(panel);
+        
+        mydialog.pack();
+        mydialog.setLocationRelativeTo( null );
+        mydialog.setResizable(false);
+        mydialog.setVisible(true);
+        mydialog.setTitle("Drag and Drop File Attachment:");
+        mydialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        mydialog.setSize(new Dimension(200, 200));
     }
     
 }

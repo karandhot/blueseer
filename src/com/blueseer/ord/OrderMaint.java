@@ -102,6 +102,7 @@ import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerT;
 import static com.blueseer.utl.OVData.getPackQtyForItem;
 import static com.blueseer.utl.OVData.getSysMetaValue;
+import static com.blueseer.utl.OVData.isValidOrder;
 import static com.blueseer.utl.OVData.isVoucherShippingSO;
 import static com.blueseer.utl.OVData.mailDoc;
 
@@ -115,6 +116,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -548,6 +550,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         //jTabbedPane1.setEnabledAt(2, false);
         
         initDataSets = ordData.getSalesOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        
+        clearShipAddress();
         
         
         currentline = "";
@@ -1470,8 +1474,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         
     }
- 
-    
+     
     public void lookUpFrameItemDesc() {
         
         luinput.removeActionListener(lual);
@@ -1552,6 +1555,50 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         luTable.addMouseListener(luml);
       
         callDialog(getClassLabelTag("lblcustnumber", this.getClass().getSimpleName())); 
+        
+        
+    }
+    
+    public void lookUpFrameContacts() {
+        
+        luinput.removeActionListener(lual);
+        lual = new ActionListener() {
+        public void actionPerformed(ActionEvent event) {
+        if (lurb1.isSelected()) {  
+         luModel = DTData.getCustContactsBrowseUtil(luinput.getText(), 0, "cmc_name", ddcust.getSelectedItem().toString());
+        } else {
+         luModel = DTData.getCustContactsBrowseUtil(luinput.getText(), 0, "cmc_type", ddcust.getSelectedItem().toString());   
+        } 
+        luTable.setModel(luModel);
+        if (luModel.getRowCount() < 1) {
+            ludialog.setTitle(getMessageTag(1001));
+        } else {
+            ludialog.setTitle(getMessageTag(1002, String.valueOf(luModel.getRowCount())));
+        }
+        }
+        };
+        luinput.addActionListener(lual);
+        
+        
+        luTable.removeMouseListener(luml);
+        luml = new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                JTable target = (JTable)e.getSource();
+                int row = target.getSelectedRow();
+                int column = target.getSelectedColumn();
+                if ( column == 0) {
+                ludialog.dispose();
+                    if (isValidOrder(tbkey.getText())) {
+                        Path filepath = OVData.printOrderRemote(tbkey.getText(), isMultiShip(), true);
+                        mailDoc(target.getValueAt(row,4).toString(), "Sales Order Info", "This is the content of the body", filepath);
+                    }
+                }
+            }
+        };
+        luTable.addMouseListener(luml);
+        
+        callDialog(getGlobalColumnTag("name"), 
+                getGlobalColumnTag("type"));  
         
         
     }
@@ -1854,17 +1901,17 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public void disableShipAddress() {
-        tbname.setEnabled(false);
-        tbaddr1.setEnabled(false);
-        tbaddr2.setEnabled(false);
-        tbcity.setEnabled(false);
-        tbzip.setEnabled(false);
-        tbphone.setEnabled(false);
-        tbemail.setEnabled(false);
-        tbcontact.setEnabled(false);
-        tbmisc1.setEnabled(false);
-        ddstate.setEnabled(false);
-        ddcountry.setEnabled(false);
+        tbname.setEditable(false);
+        tbaddr1.setEditable(false);
+        tbaddr2.setEditable(false);
+        tbcity.setEditable(false);
+        tbzip.setEditable(false);
+        tbphone.setEditable(false);
+        tbemail.setEditable(false);
+        tbcontact.setEditable(false);
+        tbmisc1.setEditable(false);
+        ddstate.setEditable(false);
+        ddcountry.setEditable(false);
     }
         
     public void getSchedRecords(String order, String po, String part, String line) {
@@ -2400,7 +2447,20 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         dialog.setVisible(true);
     }
     
-    
+    public boolean isMultiShip() {
+        Set<String> shiptos = new LinkedHashSet<String>();
+        boolean isMultiShip = false;
+        for (int j = 0; j < orddet.getRowCount(); j++) {
+            if (orddet.getModel().getValueAt(j, 17).toString().isBlank()) {
+                continue;
+            }
+            shiptos.add(orddet.getModel().getValueAt(j, 17).toString());
+        } 
+        if (shiptos.size() > 1) {
+           isMultiShip = true;
+        }
+        return isMultiShip;
+    }
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -2508,7 +2568,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         lbldollars = new javax.swing.JLabel();
         tbshipto = new javax.swing.JTextField();
         btLookUpShipTo = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        btmail = new javax.swing.JButton();
+        btcontacts = new javax.swing.JButton();
         jPanelLines = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         btadditem = new javax.swing.JButton();
@@ -3058,7 +3119,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                             .addComponent(tbphone, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(tbmisc1, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(tbzip, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(207, Short.MAX_VALUE))
+                .addContainerGap(209, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3182,10 +3243,17 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
-        jButton1.setIcon(new javax.swing.ImageIcon("C:\\bs\\blueseer\\src\\images\\mail.png")); // NOI18N
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        btmail.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/mail.png"))); // NOI18N
+        btmail.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                btmailActionPerformed(evt);
+            }
+        });
+
+        btcontacts.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/contacts.png"))); // NOI18N
+        btcontacts.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btcontactsActionPerformed(evt);
             }
         });
 
@@ -3230,9 +3298,11 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btclear)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(lblstatus, javax.swing.GroupLayout.PREFERRED_SIZE, 323, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(btmail)
+                                .addGap(4, 4, 4)
+                                .addComponent(btcontacts)
+                                .addGap(18, 18, 18)
+                                .addComponent(lblstatus, javax.swing.GroupLayout.PREFERRED_SIZE, 291, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, Short.MAX_VALUE))))
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanelMainLayout.createSequentialGroup()
                         .addContainerGap()
@@ -3271,9 +3341,10 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                             .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(btnew)
                                 .addComponent(btclear)
-                                .addComponent(jButton1)))
+                                .addComponent(btmail)))
                         .addComponent(btlookup))
-                    .addComponent(lblstatus, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lblstatus, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btcontacts))
                 .addGap(8, 8, 8)
                 .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(lblcustname, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -4351,18 +4422,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btinvoiceActionPerformed
 
     private void btprintorderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintorderActionPerformed
-        Set<String> shiptos = new LinkedHashSet<String>();
-        boolean isMultiShip = false;
-        for (int j = 0; j < orddet.getRowCount(); j++) {
-            if (orddet.getModel().getValueAt(j, 17).toString().isBlank()) {
-                continue;
-            }
-            shiptos.add(orddet.getModel().getValueAt(j, 17).toString());
-        } 
-        if (shiptos.size() > 1) {
-           isMultiShip = true;
-        }
-        OVData.printOrderRemote(tbkey.getText(), isMultiShip);
+       OVData.printOrderRemote(tbkey.getText(), isMultiShip(), false);
       //  OVData.printCustomerOrder(tbkey.getText(), isMultiShip); 
     }//GEN-LAST:event_btprintorderActionPerformed
 
@@ -4576,9 +4636,18 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         // TODO add your handling code here:
     }//GEN-LAST:event_tbpackqtyFocusLost
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        mailDoc("support@blueseer.com", "test");
-    }//GEN-LAST:event_jButton1ActionPerformed
+    private void btmailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btmailActionPerformed
+        if (isValidOrder(tbkey.getText())) {
+            Path filepath = OVData.printOrderRemote(tbkey.getText(), isMultiShip(), true);
+            mailDoc("support@blueseer.com", "test", "This is the content of the body", filepath);
+        }
+    }//GEN-LAST:event_btmailActionPerformed
+
+    private void btcontactsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcontactsActionPerformed
+        if (ddcust.getSelectedItem() != null && ddcust.getItemCount() > 0) {
+        lookUpFrameContacts();
+        }
+    }//GEN-LAST:event_btcontactsActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btLookUpBillTo;
@@ -4589,12 +4658,14 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btaddattachment;
     private javax.swing.JButton btadditem;
     private javax.swing.JButton btclear;
+    private javax.swing.JButton btcontacts;
     private javax.swing.JButton btdelete;
     private javax.swing.JButton btdeleteattachment;
     private javax.swing.JButton btdelitem;
     private javax.swing.JButton btinvoice;
     private javax.swing.JButton btitemkv;
     private javax.swing.JButton btlookup;
+    private javax.swing.JButton btmail;
     private javax.swing.JButton btnew;
     private javax.swing.JButton btnotes;
     private javax.swing.JButton btprintinvoice;
@@ -4630,7 +4701,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JTextField discount;
     private com.toedter.calendar.JDateChooser duedate;
     private javax.swing.JLabel itemshipaddrlbl;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel100;

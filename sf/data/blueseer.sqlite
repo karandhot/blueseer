@@ -268,11 +268,11 @@ CREATE TABLE "cm_mstr" (
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE "cmc_det" (
   "cmc_id" INTEGER PRIMARY KEY,
-  "cmc_code" varchar(10) COLLATE NOCASE DEFAULT '',
-  "cmc_type" varchar(20) COLLATE NOCASE DEFAULT '',
-  "cmc_name" varchar(50) COLLATE NOCASE DEFAULT '',
-  "cmc_phone" varchar(15) COLLATE NOCASE DEFAULT '',
-  "cmc_fax" varchar(15) COLLATE NOCASE DEFAULT '',
+  "cmc_code" varchar(50) COLLATE NOCASE DEFAULT '',
+  "cmc_type" varchar(50) COLLATE NOCASE DEFAULT '',
+  "cmc_name" varchar(100) COLLATE NOCASE DEFAULT '',
+  "cmc_phone" varchar(25) COLLATE NOCASE DEFAULT '',
+  "cmc_fax" varchar(25) COLLATE NOCASE DEFAULT '',
   "cmc_email" varchar(100) COLLATE NOCASE DEFAULT ''
 );
 /*!40101 SET character_set_client = @saved_cs_client */;

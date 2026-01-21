@@ -369,11 +369,11 @@ CREATE TABLE IF NOT EXISTS `cm_mstr` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `cmc_det` (
   `cmc_id` int(12) NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  `cmc_code` varchar(10)  NOT NULL DEFAULT '',
-  `cmc_type` varchar(20)  NOT NULL DEFAULT '',
-  `cmc_name` varchar(50)  NOT NULL DEFAULT '',
-  `cmc_phone` varchar(15)  NOT NULL DEFAULT '',
-  `cmc_fax` varchar(15)  NOT NULL DEFAULT '',
+  `cmc_code` varchar(50)  NOT NULL DEFAULT '',
+  `cmc_type` varchar(50)  NOT NULL DEFAULT '',
+  `cmc_name` varchar(100)  NOT NULL DEFAULT '',
+  `cmc_phone` varchar(25)  NOT NULL DEFAULT '',
+  `cmc_fax` varchar(25)  NOT NULL DEFAULT '',
   `cmc_email` varchar(100)  NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `edi_mstr` (

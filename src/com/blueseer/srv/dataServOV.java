@@ -82,6 +82,7 @@ import static com.blueseer.utl.OVData.isValidGLcc;
 import static com.blueseer.utl.OVData.isValidItem;
 import static com.blueseer.utl.OVData.isValidLocation;
 import static com.blueseer.utl.OVData.isValidOperation;
+import static com.blueseer.utl.OVData.isValidOrder;
 import static com.blueseer.utl.OVData.isValidPanel;
 import static com.blueseer.utl.OVData.isValidPrinter;
 import static com.blueseer.utl.OVData.isValidProdLine;
@@ -398,6 +399,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "isValidShipper" : {
             response.getWriter().print(boolToJson(isValidShipper(request.getHeader("param1")))); 
+            break;    
+        }
+        
+        case "isValidOrder" : {
+            response.getWriter().print(boolToJson(isValidOrder(request.getHeader("param1")))); 
             break;    
         }
         
