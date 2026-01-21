@@ -480,7 +480,7 @@ public class EDIPartnerMaint extends javax.swing.JPanel implements IBlueSeerT {
              edpd_partner x = new edpd_partner(null,
                 tbkey.getText(),
                 tablealias.getValueAt(j, 0).toString(), 
-                tablealias.getValueAt(j, 1).toString()
+                BlueSeerUtils.ConvertTrueFalseToStringInt(tablealias.getValueAt(j, 1).toString())
                 );
         list.add(x);
          }
