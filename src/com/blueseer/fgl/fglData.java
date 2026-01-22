@@ -1611,6 +1611,7 @@ public class fglData {
                String[] s = new String[2];
                s[0] = "accounts";
                s[1] = res.getString("ac_id");
+               lines.add(s);
             }
             
         }
