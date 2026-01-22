@@ -12387,7 +12387,6 @@ return mymodel;
                    
                     while (res.next()) {
                         JSONArray rowArray = new JSONArray(); 
-                        rowArray.put("select");
                         rowArray.put(res.getString("glt_id"));
                         rowArray.put(res.getString("glt_acct"));
                         rowArray.put(res.getString("ac_desc"));
