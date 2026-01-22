@@ -549,7 +549,7 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
               DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
              mymodel.addRow(new Object[]{
                 pm.plan_item(),
-                "ISS-WIP",
+                "ISS-PRD",
                 ddop.getSelectedItem().toString(),
                 tbqty.getText(),
                 dfdate.format(now),

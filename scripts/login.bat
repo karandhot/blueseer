@@ -4,9 +4,21 @@ IF "%HOUR:~0,1%" == " " SET HOUR=0%HOUR:~1,1%
 set mydate=%date:~10,4%%date:~4,2%%date:~7,2%%HOUR%%time:~3,2%
 echo %mydate%
 
+::  repofile is location of latest blueseer.jar...preferrably UNC path..i.e. \\someserver\somedir\blueseer.jar 
+::  uncomment below line to engage once UNC repo path is defined
+:: set "repofile=\\someserver\somedir\blueseer.jar"
+set "destfile=C:\BlueSeer\dist\blueseer.jar"
+IF EXIST "%repofile%" (
+    @echo "copying repo blueseer.jar".
+    copy /Y "%repofile%" "%destfile%"
+) else (
+    @echo "repo file does not exist...using current"
+)
+
 set PATCHDIR=
 set PATCH=
 set PATCHVER=
+
 
 if exist .update set /P PATCH=<.update
 

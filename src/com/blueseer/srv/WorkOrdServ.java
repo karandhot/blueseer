@@ -639,7 +639,7 @@ public class WorkOrdServ extends HttpServlet {
         // create table of data
         String[] det = invData.getItemDetail(item); 
         mymodel.addRow(new Object[]{item,
-                "ISS-WIP",
+                "ISS-PRD",
                 operation,
                 qtycomp,
                 datecomp,
@@ -764,7 +764,7 @@ public class WorkOrdServ extends HttpServlet {
         // create table of data
         String[] det = invData.getItemDetail(item); 
         mymodel.addRow(new Object[]{item,
-                "ISS-WIP",
+                "ISS-PRD",
                 operation,
                 qtycomp,
                 datecomp,

@@ -287,7 +287,7 @@ public class ProdDetRpt extends javax.swing.JPanel {
         jLabel9.setText("$");
         jLabel9.setName("lblamt"); // NOI18N
 
-        ddtype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ALL", "ISS-WIP", "RCT-FG" }));
+        ddtype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ALL", "ISS-PRD", "RCT-FG" }));
 
         jLabel10.setText("TranType");
         jLabel10.setName("lbltype"); // NOI18N
@@ -501,7 +501,7 @@ try {
                         " AND tr_item <= " + "'" + topart + "'" + 
                          " AND tr_actcell >= " + "'" + fromcell + "'" + 
                         " AND tr_actcell <= " + "'" + tocell + "'" + 
-                        " AND ( tr_type = 'ISS-WIP' or tr_type = 'RCT-FG') " + 
+                        " AND ( tr_type = 'ISS-PRD' or tr_type = 'RCT-FG') " + 
                         " order by tr_id desc ;");    
                   } else {
                       res = st.executeQuery("SELECT tr_id, tr_item,  tr_cost, tr_type, it_code, tr_qty, " +

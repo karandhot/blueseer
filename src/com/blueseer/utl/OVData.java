@@ -6770,11 +6770,11 @@ public class OVData {
            for (int j = 0; j < acct_cr.size(); j++) {
 
                // now process to GL
-               fglData.glEntry(acct_cr.get(j).toString(), cc_cr.get(j).toString(), acct_dr.get(j).toString(), cc_dr.get(j).toString(), date, bsParseDouble(cost.get(j).toString()), bsParseDouble(cost.get(j).toString()), curr, basecurr, ref.get(j).toString(), site.get(j).toString(), "ISS-WIP", desc.get(j).toString(), doc.get(j).toString());  
+               fglData.glEntry(acct_cr.get(j).toString(), cc_cr.get(j).toString(), acct_dr.get(j).toString(), cc_dr.get(j).toString(), date, bsParseDouble(cost.get(j).toString()), bsParseDouble(cost.get(j).toString()), curr, basecurr, ref.get(j).toString(), site.get(j).toString(), "ISS-PRD", desc.get(j).toString(), doc.get(j).toString());  
 
                // process tran_hist
                if (ctype.equals("ISS-SCRAP")) {
-                   tranhisttype = "ISS-WIP";
+                   tranhisttype = "ISS-PRD";
                } else {
                    tranhisttype = ctype;
                }
@@ -6933,7 +6933,7 @@ public class OVData {
             for (int j = 0; j < acct_cr.size(); j++) {
                //  bsmf.MainFrame.show(child.get(j).toString());
                 // process GL transactions
-                fglData.glEntry(acct_cr.get(j).toString(), cc_cr.get(j).toString(), acct_dr.get(j).toString(), cc_dr.get(j).toString(), date, bsParseDouble(cost.get(j).toString()), bsParseDouble(cost.get(j).toString()), curr, basecurr, ref.get(j).toString(), site.get(j).toString(), "ISS-WIP", desc.get(j).toString(), doc.get(j).toString());  
+                fglData.glEntry(acct_cr.get(j).toString(), cc_cr.get(j).toString(), acct_dr.get(j).toString(), cc_dr.get(j).toString(), date, bsParseDouble(cost.get(j).toString()), bsParseDouble(cost.get(j).toString()), curr, basecurr, ref.get(j).toString(), site.get(j).toString(), "ISS-PRD", desc.get(j).toString(), doc.get(j).toString());  
 
                
                // component (child) serial numbers of raw material consumed
@@ -6950,7 +6950,7 @@ public class OVData {
                // lot number defined as parent FG serial number
                 
                // process tran_hist
-               OVData.TRHistIssDiscrete(BlueSeerUtils.mysqlDateFormat.parse(date), child.get(j).toString(), (-1 * qty * bsParseDouble(qtyper.get(j).toString())), op, "ISS-WIP", 0, 0, csite, 
+               OVData.TRHistIssDiscrete(BlueSeerUtils.mysqlDateFormat.parse(date), child.get(j).toString(), (-1 * qty * bsParseDouble(qtyper.get(j).toString())), op, "ISS-PRD", 0, 0, csite, 
                        childserialloc, childserialwh, expire, "", "", item + ":" + op, 0, "", "", serial, cref, "", "", "", "", childserial, program, userid);
 
                // update inventory
@@ -15109,11 +15109,11 @@ return mystring;
                 _bom = OVData.getDefaultBomID(_part);
             }  
               /* now lets filter the type and hit the appropriate conditional followup */
-           if (_type == "ISS-WIP") {
+           if (_type == "ISS-PRD") {
                   /* let's first load the tran_hist */
                   
                   
-                  // if lastop convert type to RCT-FG else leave type as iss-wip
+                  // if lastop convert type to RCT-FG else leave type as ISS-PRD
                  if (islastop) {
                      temptype = "RCT-FG";
                      _wh = OVData.getWarehouseByItem(_part);
@@ -15478,11 +15478,11 @@ return mystring;
             } 
             
               /* now lets filter the type and hit the appropriate conditional followup */
-           if (_type.equals("ISS-WIP")) {
+           if (_type.equals("ISS-PRD")) {
                   /* let's first load the tran_hist */
              
                   
-                  // if lastop convert type to RCT-FG else leave type as iss-wip
+                  // if lastop convert type to RCT-FG else leave type as ISS-PRD
                  if (islastop) {
                      temptype = "RCT-FG";
                      _wh = OVData.getWarehouseByItem(_part);

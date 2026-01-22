@@ -392,7 +392,7 @@ public class ProdEntryMaint extends javax.swing.JPanel {
         
         String[] s = new String[]{
           tbitem.getText(), 
-                "ISS-WIP", 
+                "ISS-PRD", 
                 op, 
                 tbqty.getText(), 
                 BlueSeerUtils.mysqlDateFormat.format(dcdate.getDate()), 
@@ -414,31 +414,7 @@ public class ProdEntryMaint extends javax.swing.JPanel {
         };
         list.add(s);
         
-        /*
-        transtable.setModel(transmodel);
-            transmodel.addRow(new Object[]{tbitem.getText(), 
-                "ISS-WIP", 
-                op, 
-                tbqty.getText(), 
-                BlueSeerUtils.mysqlDateFormat.format(dcdate.getDate()), 
-                loc, 
-                tbserialno.getText(), 
-                tbreference.getText(),
-                ddsite.getSelectedItem().toString(),
-                tbuser.getText(),
-                prodline,
-                "",  // cell 
-                taremarks.getText(), // remarks
-                "", // packcell
-                "", // packdate
-                "",  // assydate
-                expire, // expiredate
-                "ProdEntryMaint", 
-                wh,
-                ddbom.getSelectedItem().toString()
-                });
-        */
-        // now let's load transaction
+                // now let's load transaction
         if (! OVData.loadTranHistByTable(list, serialkeys)) { 
             m = new String[]{"1", getMessageTag(1010,"loadTranHist")};
         } else {
