@@ -1399,14 +1399,14 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void getItemInfo(String item) {
         
-        HashMap<String, String> hm =  getItemDataInit(item, ddsite.getSelectedItem().toString(), ddvend.getSelectedItem().toString(), "vend");
+        HashMap<String, String[]> hm =  getItemDataInit(item, ddsite.getSelectedItem().toString(), ddvend.getSelectedItem().toString(), "vend");
         int i = 0;
         if (! tbitem.getText().isBlank()) {
           
-            for (Map.Entry<String, String> entry : hm.entrySet()) {
+            for (Map.Entry<String, String[]> entry : hm.entrySet()) {
            // String[] det = invData.getItemDetail(ddpart.getSelectedItem().toString());
             if (entry.getKey().equals("itemdata")) {
-            String[] det = entry.getValue().split(",", -1);
+            String[] det = entry.getValue();
             if (! det[0].isBlank()) {
             i++;
             }
@@ -1424,7 +1424,9 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
             
             if (entry.getKey().equals("itemvend")) {
-              vendnumber.setText(entry.getValue());
+                if (entry.getValue() != null && ! entry.getValue()[0].isBlank()) {
+                 vendnumber.setText(entry.getValue()[0]);
+                }
             }
                          
             } // for each entry

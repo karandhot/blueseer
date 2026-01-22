@@ -1107,11 +1107,11 @@ public class cusData {
         String sql = "update cms_det set " 
                 + " cms_name = ?, cms_line1 = ?, cms_line2 = ?, "
                 + "cms_line3 = ?, cms_city = ?, cms_state = ?, cms_zip = ?, "
-                + "cms_country = ?, cms_plantcode = ? "
+                + "cms_country = ?, cms_plantcode = ?, cms_contact = ?, cms_phone = ?, cms_email = ? "
                 + " where cms_code = ? and cms_shipto = ? ; ";
        ps = con.prepareStatement(sql);
-        ps.setString(10, x.cms_code);
-        ps.setString(11, x.cms_shipto);
+        ps.setString(13, x.cms_code);
+        ps.setString(14, x.cms_shipto);
             ps.setString(1, x.cms_name);
             ps.setString(2, x.cms_line1);
             ps.setString(3, x.cms_line2);
@@ -1121,6 +1121,9 @@ public class cusData {
             ps.setString(7, x.cms_zip);
             ps.setString(8, x.cms_country);
             ps.setString(9, x.cms_plantcode);
+            ps.setString(10, x.cms_contact);
+            ps.setString(11, x.cms_phone);
+            ps.setString(12, x.cms_email);
             rows = ps.executeUpdate();
         
        

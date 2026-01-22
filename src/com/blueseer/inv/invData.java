@@ -50,6 +50,7 @@ import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.jsonToDouble;
 import static com.blueseer.utl.BlueSeerUtils.jsonToHashMapStringString;
+import static com.blueseer.utl.BlueSeerUtils.jsonToHashMapStringStringArr;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
@@ -6626,7 +6627,7 @@ public class invData {
 
     }
 
-    public static HashMap<String, String> getItemDataInit(String item, String site, String entity, String type) {
+    public static HashMap<String, String[]> getItemDataInit(String item, String site, String entity, String type) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id", "getItemDataInit"});
@@ -6635,13 +6636,13 @@ public class invData {
             list.add(new String[]{"param3", entity});
             list.add(new String[]{"param4", type}); 
             try {
-                return jsonToHashMapStringString(sendServerPost(list, "", null, "dataServINV"));
+                return jsonToHashMapStringStringArr(sendServerPost(list, "", null, "dataServINV"));
             } catch (IOException ex) { 
                 bslog(ex);
                 return null;
             }
         } 
-        HashMap<String,String> hm = new HashMap<String,String>();
+        HashMap<String,String[]> hm = new HashMap<>();
         String[] x = new String[]{"","","","","","","","","","",""};
         int days = 0;
         Calendar caldate = Calendar.getInstance();
@@ -6675,21 +6676,21 @@ public class invData {
                   x[10] = BlueSeerUtils.setDateFormat(caldate.getTime());
                 }
                 }
-               hm.put("itemdata", String.join(",", x));
+               hm.put("itemdata", x);
                
             // cust item info   
             if (type.equals("cust")) {
                 res = st.executeQuery("select cup_citem from cup_mstr where cup_cust = " + "'" + entity + "'" + 
                                       " AND cup_item = " + "'" + item + "'" + ";");
                 while (res.next()) {
-                   hm.put("itemcust", res.getString("cup_citem"));
+                   hm.put("itemcust", new String[]{res.getString("cup_citem")});
                 }
 
                 // by cust item search key   
                 res = st.executeQuery("select cup_item, cup_citem from cup_mstr where cup_cust = " + "'" + entity + "'" + 
                                       " AND cup_citem = " + "'" + item + "'" + ";");
                 while (res.next()) {
-                   hm.put("bycustitem", res.getString("cup_item") + "," + res.getString("cup_citem"));
+                   hm.put("bycustitem", new String[]{res.getString("cup_item"),res.getString("cup_citem")});
                 }
 
 
@@ -6698,7 +6699,7 @@ public class invData {
                                 + " where bom_item = " + "'" + item + "'" 
                                 + " and bom_enabled = '1' " + " order by bom_primary desc ;" ); 
                        while (res.next()) {
-                        hm.put("boms", res.getString("bom_id"));
+                        hm.put("boms", new String[]{res.getString("bom_id")});
                         }
 
                 // default BOM
@@ -6719,7 +6720,7 @@ public class invData {
                            defaultBOM = res.getString("bom_id");
                         } 
                     }
-                 hm.put("defaultbom", defaultBOM);   
+                 hm.put("defaultbom", new String[]{defaultBOM});   
 
 
                 // top wh/loc qty
@@ -6740,14 +6741,14 @@ public class invData {
                 myloc[0] = res.getString("in_wh");  
                 myloc[1] = res.getString("in_loc");
                 }
-                hm.put("topwhloc", String.join(",", myloc));
+                hm.put("topwhloc", myloc);
             }
             
             if (type.equals("vend")) {
                 res = st.executeQuery("select vdp_vitem from vdp_mstr where vdp_vend = " + "'" + entity + "'" + 
                                       " AND vdp_item = " + "'" + item + "'" + ";");
                 while (res.next()) {
-                   hm.put("itemvend", res.getString("vdp_vitem"));
+                   hm.put("itemvend", new String[]{("vdp_vitem")});
                 } 
             }
             

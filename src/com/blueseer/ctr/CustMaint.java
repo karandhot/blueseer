@@ -672,9 +672,9 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                 (ddstate.getSelectedItem() == null) ? "" : ddstate.getSelectedItem().toString(),
                 tbzip.getText(),
                 (ddcountry.getSelectedItem() == null) ? "" : ddcountry.getSelectedItem().toString(),
-                "",
-                "",
-                "",
+                tbname.getText(),
+                tbphone.getText(),
+                tbemail.getText(),
                 "",
                 "",
                 ""
@@ -691,9 +691,9 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                 (ddshipstate.getSelectedItem() == null) ? "" : ddshipstate.getSelectedItem().toString(),
                 tbshipzip.getText(),
                 (ddshipcountry.getSelectedItem() == null) ? "" : ddshipcountry.getSelectedItem().toString(),
-                "", // contact
-                "", // phone
-                "", // email
+                tbshipcontact.getText(),
+                tbshipphone.getText(),
+                tbshipemail.getText(),
                 "", // misc
                 tbxrefcode.getText(), // xref external code (plant code)
                 ""  // cms_type
@@ -876,6 +876,24 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
             tbshipzip.requestFocus();
             return false;
         }
+        fc = checkLength(f,"cms_contact");
+        if (tbshipcontact.getText().length() > fc) {
+            bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
+            tbshipcontact.requestFocus();
+            return false;
+        }
+        fc = checkLength(f,"cms_phone");
+        if (tbshipphone.getText().length() > fc) {
+            bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
+            tbshipphone.requestFocus();
+            return false;
+        }
+        fc = checkLength(f,"cms_email");
+        if (tbshipemail.getText().length() > fc) {
+            bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
+            tbshipemail.requestFocus();
+            return false;
+        }
 
       return true;
      }
@@ -1053,6 +1071,9 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddshipstate.setSelectedItem(k.cms_state());
         ddshipcountry.setSelectedItem(k.cms_country());
         tbxrefcode.setText(k.cms_plantcode());
+        tbshipemail.setText(k.cms_email());
+        tbshipphone.setText(k.cms_phone());
+        tbshipcontact.setText(k.cms_contact());
         if (k.m()[0].equals("0")) {
             btshipedit.setEnabled(true);
             btshipnew.setEnabled(true);
@@ -1091,6 +1112,9 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
        tbshipzip.setText("");
        tbshipcode.setText("");
        tbxrefcode.setText("");
+       tbshipcontact.setText("");
+       tbshipphone.setText("");
+       tbshipemail.setText("");
        
       
         if (ddshipstate.getItemCount() > 0) {
@@ -1251,6 +1275,12 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel48 = new javax.swing.JLabel();
         btclearshipto = new javax.swing.JButton();
         btdeleteshipto = new javax.swing.JButton();
+        tbshipemail = new javax.swing.JTextField();
+        jLabel49 = new javax.swing.JLabel();
+        tbshipphone = new javax.swing.JTextField();
+        tbshipcontact = new javax.swing.JTextField();
+        jLabel50 = new javax.swing.JLabel();
+        jLabel51 = new javax.swing.JLabel();
         contactPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         contacttable = new javax.swing.JTable();
@@ -1894,6 +1924,12 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
+        jLabel49.setText("Email");
+
+        jLabel50.setText("Phone");
+
+        jLabel51.setText("Contact");
+
         javax.swing.GroupLayout shiptoPanelLayout = new javax.swing.GroupLayout(shiptoPanel);
         shiptoPanel.setLayout(shiptoPanelLayout);
         shiptoPanelLayout.setHorizontalGroup(
@@ -1944,7 +1980,17 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                                         .addComponent(ddshipcountry, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addGroup(shiptoPanelLayout.createSequentialGroup()
                                             .addComponent(tbxrefcode, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addGap(0, 0, Short.MAX_VALUE))))))))
+                                            .addGap(0, 0, Short.MAX_VALUE))))))
+                        .addGroup(shiptoPanelLayout.createSequentialGroup()
+                            .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel49)
+                                .addComponent(jLabel50)
+                                .addComponent(jLabel51))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(tbshipcontact, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
+                                .addComponent(tbshipphone)
+                                .addComponent(tbshipemail)))))
                 .addContainerGap(522, Short.MAX_VALUE))
         );
         shiptoPanelLayout.setVerticalGroup(
@@ -1994,12 +2040,24 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbxrefcode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel48))
-                .addGap(7, 7, 7)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbshipemail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel49))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbshipphone, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel50))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbshipcontact, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel51))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btshipadd)
                     .addComponent(btshipedit)
                     .addComponent(btdeleteshipto))
-                .addContainerGap(204, Short.MAX_VALUE))
+                .addContainerGap(121, Short.MAX_VALUE))
         );
 
         add(shiptoPanel);
@@ -2482,7 +2540,10 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JLabel jLabel46;
     private javax.swing.JLabel jLabel47;
     private javax.swing.JLabel jLabel48;
+    private javax.swing.JLabel jLabel49;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel50;
+    private javax.swing.JLabel jLabel51;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
@@ -2522,10 +2583,13 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JTextField tbsalesrep;
     private javax.swing.JTextField tbshipcity;
     private javax.swing.JTextField tbshipcode;
+    private javax.swing.JTextField tbshipcontact;
+    private javax.swing.JTextField tbshipemail;
     private javax.swing.JTextField tbshipline1;
     private javax.swing.JTextField tbshipline2;
     private javax.swing.JTextField tbshipline3;
     private javax.swing.JTextField tbshipname;
+    private javax.swing.JTextField tbshipphone;
     private javax.swing.JTextField tbshipzip;
     private javax.swing.JTextField tbshpformat;
     private javax.swing.JTextField tbtaxid;

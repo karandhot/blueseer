@@ -39,6 +39,7 @@ import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
 import com.blueseer.ctr.cusData.cm_mstr;
 import com.blueseer.ctr.cusData.cms_det;
+import static com.blueseer.ctr.cusData.getCMSDet;
 import static com.blueseer.ctr.cusData.getCustShipSet;
 import static com.blueseer.ctr.cusData.getDiscountRecsByCust;
 import static com.blueseer.edi.ediData.getEDIMetaValueAll;
@@ -1444,19 +1445,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 if ( column == 0) {
                 ludialog.dispose();
                     if (caller.equals("shipto")) {
-                        tbshipto.setText(target.getValueAt(row,1).toString());
-                        tbname.setText(target.getValueAt(row,3).toString());
-                        tbaddr1.setText(target.getValueAt(row,4).toString());
-                        tbaddr2.setText("");
-                        tbcity.setText(target.getValueAt(row,5).toString());
-                        ddstate.setSelectedItem(target.getValueAt(row,6).toString());
-                        tbzip.setText(target.getValueAt(row,7).toString());
-                        ddcountry.setSelectedItem(target.getValueAt(row,8).toString());
-                        tbcontact.setText("");
-                        tbphone.setText("");
-                        tbemail.setText("");
-                        tbmisc1.setText("");
-                        
+                        updateFormShipto(target.getValueAt(row,1).toString(), target.getValueAt(row,2).toString());
                     } else {
                      tbitemshipto.setText(target.getValueAt(row,1).toString());   
                      itemshipaddrlbl.setText(target.getValueAt(row,3).toString() + "..." + target.getValueAt(row,4).toString() + "..." + target.getValueAt(row,5).toString() + ", " + target.getValueAt(row,6).toString() + " " + target.getValueAt(row,7).toString());
@@ -1760,6 +1749,23 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
     }
    
+    public void updateFormShipto(String shipto, String cust) {
+        cms_det cms = getCMSDet(shipto, cust);
+        
+        tbshipto.setText(cms.cms_code());
+        tbname.setText(cms.cms_name());
+        tbaddr1.setText(cms.cms_line1());
+        tbaddr2.setText(cms.cms_line2());
+        tbcity.setText(cms.cms_city());
+        ddstate.setSelectedItem(cms.cms_state());
+        tbzip.setText(cms.cms_zip());
+        ddcountry.setSelectedItem(cms.cms_country());
+        tbcontact.setText(cms.cms_contact());
+        tbphone.setText(cms.cms_phone());
+        tbemail.setText(cms.cms_email());
+        tbmisc1.setText(cms.cms_misc());
+    }
+    
     public void getAttachments(String id) {
         attachmentmodel.setNumRows(0);
         ArrayList<String> list = OVData.getSysMetaData(id, this.getClass().getSimpleName(), "attachments");
@@ -1960,17 +1966,17 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
          
     public void getItemInfo(String part) {
        // if part is not already in list
-       HashMap<String, String> hm =  getItemDataInit(part, ddsite.getSelectedItem().toString(), ddcust.getSelectedItem().toString(), "cust");
+       HashMap<String, String[]> hm =  getItemDataInit(part, ddsite.getSelectedItem().toString(), ddcust.getSelectedItem().toString(), "cust");
         
         int i = 0;
         if (! tbitem.getText().isBlank()) {
             ddbom.removeAllItems();
             ddbom.insertItemAt("", 0);
             
-            for (Map.Entry<String, String> entry : hm.entrySet()) {
+            for (Map.Entry<String, String[]> entry : hm.entrySet()) {
            // String[] det = invData.getItemDetail(ddpart.getSelectedItem().toString());
             if (entry.getKey().equals("itemdata")) {
-            String[] det = entry.getValue().split(",", -1);
+            String[] det = entry.getValue();
             if (! det[0].isBlank()) {
             i++;
             }
@@ -1988,24 +1994,31 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
             
             if (entry.getKey().equals("itemcust")) {
-              custnumber.setText(entry.getValue());
+                if (entry.getValue() != null && ! entry.getValue()[0].isBlank()) {
+                  custnumber.setText(entry.getValue()[0].toString());
+                }
             }
             
             
             // do BOM alternates
             if (entry.getKey().equals("boms")) {
-                ddbom.addItem(entry.getValue());
+                if (entry.getValue() != null && ! entry.getValue()[0].isBlank()) {
+                ddbom.addItem(entry.getValue()[0].toString());
+                }
             }
             
             if (entry.getKey().equals("defaultbom")) {
-            ddbom.setSelectedItem(entry.getValue());
+                if (entry.getValue() != null && ! entry.getValue()[0].isBlank()) {
+                ddbom.setSelectedItem(entry.getValue());
+                }
             }
             
            
             if (entry.getKey().equals("topwhloc")) {
-                String[] arr = entry.getValue().split(",", -1);
-                ddwh.setSelectedItem(arr[0]);
-                ddloc.setSelectedItem(arr[1]);
+                if (entry.getValue() != null && entry.getValue().length > 1) {
+                ddwh.setSelectedItem(entry.getValue()[0]);
+                ddloc.setSelectedItem(entry.getValue()[1]);
+                }
             }
                          
             } // for each entry

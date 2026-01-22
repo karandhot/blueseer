@@ -331,6 +331,7 @@ public class BlueSeerUtils {
         */
         luTable.setPreferredScrollableViewportSize(new Dimension(300,200));
         JScrollPane scrollPane = new JScrollPane(luTable);
+        
        
         ludialog = new JDialog();
         ludialog.setTitle("ASCII Chart:");
@@ -338,10 +339,11 @@ public class BlueSeerUtils {
         
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
-      
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2,2,2,2);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
         gbc.gridx = 0;
         gbc.gridy = 0;
         panel.add( scrollPane, gbc );
@@ -350,7 +352,7 @@ public class BlueSeerUtils {
         
         ludialog.pack();
         ludialog.setLocationRelativeTo( null );
-        ludialog.setResizable(false);
+        ludialog.setResizable(true);
         ludialog.setVisible(true);
     } 
         
@@ -366,7 +368,7 @@ public class BlueSeerUtils {
         
         luinput.setText("");
         
-        luTable.setPreferredScrollableViewportSize(new Dimension(500,200));
+        luTable.setPreferredScrollableViewportSize(new Dimension(600,300));
         luTable.getTableHeader().setReorderingAllowed(false);
         JScrollPane scrollPane = new JScrollPane(luTable);
         JPanel rbpanel = new JPanel();
@@ -389,7 +391,7 @@ public class BlueSeerUtils {
       
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2,2,2,2);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.BOTH;
         gbc.gridx = 0;
         gbc.gridy = 0;
         panel.add(rbpanel, gbc);
@@ -399,6 +401,8 @@ public class BlueSeerUtils {
         gbc.gridy = 1;
         panel.add(luinput, gbc);
         
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
         gbc.gridwidth = 1;
         gbc.gridx = 0;
         gbc.gridy = 2;
@@ -408,7 +412,7 @@ public class BlueSeerUtils {
         
         ludialog.pack();
         ludialog.setLocationRelativeTo( null );
-        ludialog.setResizable(false);
+        ludialog.setResizable(true);
         ludialog.setVisible(true);
         luinput.requestFocus();
     } 
@@ -423,7 +427,7 @@ public class BlueSeerUtils {
         luModel.setColumnCount(0);
         }
         luinput.setText("");
-        luTable.setPreferredScrollableViewportSize(new Dimension(600,200));
+        luTable.setPreferredScrollableViewportSize(new Dimension(600,300));
         luTable.getTableHeader().setReorderingAllowed(false);
         JScrollPane scrollPane = new JScrollPane(luTable);
         JPanel rbpanel = new JPanel();
@@ -451,7 +455,7 @@ public class BlueSeerUtils {
       
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2,2,2,2);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.BOTH;
         gbc.gridx = 0;
         gbc.gridy = 0;
         panel.add(rbpanel, gbc);
@@ -461,6 +465,8 @@ public class BlueSeerUtils {
         gbc.gridy = 1;
         panel.add(luinput, gbc);
         
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
         gbc.gridwidth = 1;
         gbc.gridx = 0;
         gbc.gridy = 2;
@@ -470,7 +476,7 @@ public class BlueSeerUtils {
         
         ludialog.pack();
         ludialog.setLocationRelativeTo( null );
-        ludialog.setResizable(false);
+        ludialog.setResizable(true);
         ludialog.setVisible(true);
         luinput.requestFocus();
     } 
@@ -485,7 +491,7 @@ public class BlueSeerUtils {
         luModel.setColumnCount(0);
         }
         luinput.setText("");
-        luTable.setPreferredScrollableViewportSize(new Dimension(500,200));
+        luTable.setPreferredScrollableViewportSize(new Dimension(600,300));
         luTable.getTableHeader().setReorderingAllowed(false);
         JScrollPane scrollPane = new JScrollPane(luTable);
         JPanel rbpanel = new JPanel();
@@ -518,7 +524,7 @@ public class BlueSeerUtils {
       
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2,2,2,2);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.BOTH;
         gbc.gridx = 0;
         gbc.gridy = 0;
         panel.add(rbpanel, gbc);
@@ -528,6 +534,8 @@ public class BlueSeerUtils {
         gbc.gridy = 1;
         panel.add(luinput, gbc);
         
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
         gbc.gridwidth = 1;
         gbc.gridx = 0;
         gbc.gridy = 2;
@@ -537,7 +545,7 @@ public class BlueSeerUtils {
         
         ludialog.pack();
         ludialog.setLocationRelativeTo( null );
-        ludialog.setResizable(false);
+        ludialog.setResizable(true);
         ludialog.setVisible(true);
         luinput.requestFocus();
     } 
@@ -553,7 +561,7 @@ public class BlueSeerUtils {
         luModel.setColumnCount(0);
         }
         luinput.setText("");
-        luTable.setPreferredScrollableViewportSize(new Dimension(500,200));
+        luTable.setPreferredScrollableViewportSize(new Dimension(600,300));
         luTable.getTableHeader().setReorderingAllowed(false);
         JScrollPane scrollPane = new JScrollPane(luTable);
         JPanel rbpanel = new JPanel();
@@ -589,7 +597,7 @@ public class BlueSeerUtils {
       
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2,2,2,2);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.BOTH;
         gbc.gridx = 0;
         gbc.gridy = 0;
         panel.add(rbpanel, gbc);
@@ -599,16 +607,17 @@ public class BlueSeerUtils {
         gbc.gridy = 1;
         panel.add(luinput, gbc);
         
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
         gbc.gridwidth = 1;
         gbc.gridx = 0;
         gbc.gridy = 2;
         panel.add( scrollPane, gbc );
-        
         ludialog.add(panel);
         
         ludialog.pack();
         ludialog.setLocationRelativeTo( null );
-        ludialog.setResizable(false);
+        ludialog.setResizable(true);
         ludialog.setVisible(true);
         luinput.requestFocus();
     } 
@@ -623,7 +632,7 @@ public class BlueSeerUtils {
         luModel.setColumnCount(0);
         }
         luinput.setText("");
-        luTable.setPreferredScrollableViewportSize(new Dimension(500,200));
+        luTable.setPreferredScrollableViewportSize(new Dimension(600,300));
         luTable.getTableHeader().setReorderingAllowed(false);
         JScrollPane scrollPane = new JScrollPane(luTable);
         JPanel rbpanel = new JPanel();
@@ -665,7 +674,7 @@ public class BlueSeerUtils {
       
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2,2,2,2);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.BOTH;
         gbc.gridx = 0;
         gbc.gridy = 0;
         panel.add(rbpanel, gbc);
@@ -675,6 +684,8 @@ public class BlueSeerUtils {
         gbc.gridy = 1;
         panel.add(luinput, gbc);
         
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
         gbc.gridwidth = 1;
         gbc.gridx = 0;
         gbc.gridy = 2;
@@ -684,7 +695,7 @@ public class BlueSeerUtils {
         
         ludialog.pack();
         ludialog.setLocationRelativeTo( null );
-        ludialog.setResizable(false);
+        ludialog.setResizable(true);
         ludialog.setVisible(true);
         luinput.requestFocus();
     } 
@@ -699,7 +710,7 @@ public class BlueSeerUtils {
         luModel.setColumnCount(0);
         }
         luinput.setText("");
-        luTable.setPreferredScrollableViewportSize(new Dimension(500,200));
+        luTable.setPreferredScrollableViewportSize(new Dimension(600,300));
         luTable.getTableHeader().setReorderingAllowed(false);
         JScrollPane scrollPane = new JScrollPane(luTable);
         JPanel rbpanel = new JPanel();
@@ -747,7 +758,7 @@ public class BlueSeerUtils {
       
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2,2,2,2);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.BOTH;
         gbc.gridx = 0;
         gbc.gridy = 0;
         panel.add(rbpanel, gbc);
@@ -757,6 +768,8 @@ public class BlueSeerUtils {
         gbc.gridy = 1;
         panel.add(luinput, gbc);
         
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
         gbc.gridwidth = 1;
         gbc.gridx = 0;
         gbc.gridy = 2;
@@ -766,7 +779,7 @@ public class BlueSeerUtils {
         
         ludialog.pack();
         ludialog.setLocationRelativeTo( null );
-        ludialog.setResizable(false);
+        ludialog.setResizable(true);
         ludialog.setVisible(true);
         luinput.requestFocus();
     } 
@@ -3130,6 +3143,17 @@ public class BlueSeerUtils {
         return x;
     }
 
+    public static String HashMapStringStringArrToJson(HashMap<String,String[]> list) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String x = "";
+        try {   
+            x = objectMapper.writeValueAsString(list);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+
     
     public static String boolToJson(boolean b) {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -3262,6 +3286,17 @@ public class BlueSeerUtils {
     public static HashMap<String,String> jsonToHashMapStringString(String jsonstring) {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String,String> x = null;
+        try {
+            x = objectMapper.readValue(jsonstring, HashMap.class);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+
+    public static HashMap<String,String[]> jsonToHashMapStringStringArr(String jsonstring) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        HashMap<String,String[]> x = null;
         try {
             x = objectMapper.readValue(jsonstring, HashMap.class);
         } catch (JsonProcessingException ex) {

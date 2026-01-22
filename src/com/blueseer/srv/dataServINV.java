@@ -99,6 +99,7 @@ import static com.blueseer.utl.BlueSeerUtils.ArrayListDoubleToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringIntegerToJson;
+import static com.blueseer.utl.BlueSeerUtils.HashMapStringStringArrToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
@@ -704,7 +705,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         }
         
         case "getItemDataInit" : {
-            response.getWriter().print(HashMapStringStringToJson(getItemDataInit(
+            response.getWriter().print(HashMapStringStringArrToJson(getItemDataInit(
                 request.getHeader("param1"),
                 request.getHeader("param2"),
                 request.getHeader("param3"),
