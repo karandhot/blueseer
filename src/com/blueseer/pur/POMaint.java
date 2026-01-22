@@ -485,7 +485,7 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
               if (rawitemonly) {
                   classtype = "P";
               } else {
-                  classtype = "";
+                  classtype = "ALL";
               }
             }
             

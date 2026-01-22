@@ -9159,7 +9159,7 @@ public class DTData {
        return mymodel;
    } 
   
-    public static String getItemDescBrowseBySite2Data(String str, String myfield, String site, String type) {
+    public static String getItemDescBrowseBySite2Data(String str, String myfield, String site, String classtype) {
         JSONArray jsonarray = new JSONArray();
         try {
             
@@ -9174,11 +9174,18 @@ public class DTData {
             
             try{
             
-                res = st.executeQuery(" select it_item, it_desc, it_code, it_type  " +
+                if (classtype.equals("ALL")) {
+                 res = st.executeQuery(" select it_item, it_desc, it_code, it_type  " +
+                    " FROM  item_mstr where " + myfield + " like " + "'%" + str + "%'" +
+                    " and it_site = " + "'" + site + "'" +     
+                    " order by it_item limit 300;"); 
+                } else {
+                 res = st.executeQuery(" select it_item, it_desc, it_code, it_type  " +
                     " FROM  item_mstr where " + myfield + " like " + "'%" + str + "%'" +
                     " and it_site = " + "'" + site + "'" +
-                    " and it_code = " + "'" + type + "'" +        
-                    " order by it_item limit 300;"); 
+                    " and it_code = " + "'" + classtype + "'" +        
+                    " order by it_item limit 300;");    
+                }
                     while (res.next()) {
                         JSONArray rowArray = new JSONArray(); 
                         rowArray.put("select");
