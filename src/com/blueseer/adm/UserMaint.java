@@ -439,7 +439,7 @@ public class UserMaint extends javax.swing.JPanel implements IBlueSeerT {
     public user_mstr createRecord() {
      //   String passwd = bsmf.MainFrame.PassWord("0", tbpassword.getPassword());
      
-        user_mstr x = new user_mstr(null, 
+        user_mstr um = new user_mstr(null, 
                 tbkey.getText(),
                 ddsite.getSelectedItem().toString(),
                 tbUMLastName.getText(),  
@@ -452,7 +452,7 @@ public class UserMaint extends javax.swing.JPanel implements IBlueSeerT {
                 new String(tbpassword.getPassword()),
                 tballowedsites.getText()
         );
-        return x;
+        return um;
     }
     
     public void lookUpFrame() {

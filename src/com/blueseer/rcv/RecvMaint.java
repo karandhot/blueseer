@@ -53,6 +53,7 @@ import com.blueseer.rcv.rcvData.recv_mstr;
 import static com.blueseer.rcv.rcvData.updateReceiverTransaction;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
@@ -1669,8 +1670,8 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerT {
                   //  ddsite.setSelectedItem(res.getString("pod_site"));
                     lblvendpart.setText(res.getString("pod_venditem"));
                     duedate.setText(res.getString("pod_due_date"));
-                    tbqtyrcvd.setText(res.getString("pod_rcvd_qty"));
-                    tbqtyord.setText(res.getString("pod_ord_qty"));
+                    tbqtyrcvd.setText(bsNumber(res.getDouble("pod_rcvd_qty")));
+                    tbqtyord.setText(bsNumber(res.getDouble("pod_ord_qty")));
                     tbuom.setText(res.getString("pod_uom"));
                     orddate.setText(res.getString("pod_ord_date"));
                 }
