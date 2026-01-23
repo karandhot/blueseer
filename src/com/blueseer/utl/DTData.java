@@ -9065,7 +9065,7 @@ public class DTData {
         }
         Object[][] data = jsonToData(jsonString); 
        javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
-                    new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("item"), getGlobalColumnTag("description"), getGlobalColumnTag("class"), getGlobalColumnTag("type")})
+                    new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("item"), getGlobalColumnTag("description"), getGlobalColumnTag("class"), getGlobalColumnTag("type"), getGlobalColumnTag("uom")})
                {
                   @Override  
                   public Class getColumnClass(int col) {  
@@ -9095,7 +9095,7 @@ public class DTData {
             
             try{
             
-                res = st.executeQuery(" select it_item, it_desc, it_code, it_type  " +
+                res = st.executeQuery(" select it_item, it_desc, it_code, it_type, it_uom  " +
                     " FROM  item_mstr where " + myfield + " like " + "'%" + str + "%'" +
                     " and it_site = " + "'" + site + "'" +
                     " order by it_item limit 300;"); 
@@ -9106,6 +9106,7 @@ public class DTData {
                         rowArray.put(res.getString("it_desc"));
                         rowArray.put(res.getString("it_code"));
                         rowArray.put(res.getString("it_type"));
+                        rowArray.put(res.getString("it_uom"));
                         jsonarray.put(rowArray);
                     }
                 
