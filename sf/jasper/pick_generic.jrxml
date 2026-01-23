@@ -231,14 +231,14 @@ inner join site_mstr on site_site = so_site where sod_nbr =  $P{myid}]]>
 				<textFieldExpression><![CDATA[$R{jasper.order.lblfreight}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="327" y="79" width="40" height="11" uuid="54cb06ad-707f-4435-959c-a7d2062efca5"/>
+				<reportElement x="327" y="79" width="84" height="11" uuid="54cb06ad-707f-4435-959c-a7d2062efca5"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{jasper.order.lblbol}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="438" y="79" width="62" height="11" uuid="ced11d37-8b9f-4628-97ca-ac956e5d8cb9"/>
+				<reportElement x="438" y="79" width="112" height="11" uuid="ced11d37-8b9f-4628-97ca-ac956e5d8cb9"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
@@ -288,7 +288,7 @@ inner join site_mstr on site_site = so_site where sod_nbr =  $P{myid}]]>
 			</textField>
 			<textField>
 				<reportElement x="440" y="90" width="100" height="16" uuid="2f92b0c2-bd19-45a3-8119-29143253ff5d"/>
-				<textElement textAlignment="Right">
+				<textElement textAlignment="Left">
 					<font isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{so_slsperson1}]]></textFieldExpression>
@@ -375,7 +375,7 @@ inner join site_mstr on site_site = so_site where sod_nbr =  $P{myid}]]>
 		<band height="108" splitType="Stretch">
 			<staticText>
 				<reportElement x="0" y="40" width="90" height="18" uuid="125b4e3a-91ee-4e77-b838-d2d1ac2b1d4b"/>
-				<text><![CDATA[Comments:]]></text>
+				<text><![CDATA[Notes:]]></text>
 			</staticText>
 		</band>
 	</lastPageFooter>
