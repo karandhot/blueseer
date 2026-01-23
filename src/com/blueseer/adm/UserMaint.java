@@ -504,7 +504,8 @@ public class UserMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbphone.setText(x.user_phone());
         tbcell.setText(x.user_cell());
         tarmks.setText(x.user_rmks());
-        tbpassword.setText(bsmf.MainFrame.PassWord("1", x.user_passwd().toCharArray()));
+      //  tbpassword.setText(bsmf.MainFrame.PassWord("1", x.user_passwd().toCharArray()));
+        tbpassword.setText(x.user_passwd());
         ddsite.setSelectedItem(x.user_site());
         tballowedsites.setText(x.user_allowedsites());
         setAction(x.m());
