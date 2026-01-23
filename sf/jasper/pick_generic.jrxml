@@ -356,7 +356,7 @@ inner join site_mstr on site_site = so_site where sod_nbr =  $P{myid}]]>
 				<textFieldExpression><![CDATA[$F{sod_desc}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="320" y="0" width="72" height="16" uuid="edbe7124-d60b-42b0-a896-8522f841a299"/>
+				<reportElement x="321" y="0" width="72" height="16" uuid="edbe7124-d60b-42b0-a896-8522f841a299"/>
 				<textFieldExpression><![CDATA[$F{sod_po}]]></textFieldExpression>
 			</textField>
 			<textField pattern="¤ #,##0.00">
