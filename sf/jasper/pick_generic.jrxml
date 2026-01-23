@@ -296,7 +296,7 @@ inner join site_mstr on site_site = so_site where sod_nbr =  $P{myid}]]>
 		</band>
 	</pageHeader>
 	<columnHeader>
-		<band height="26" splitType="Stretch">
+		<band height="37" splitType="Stretch">
 			<textField>
 				<reportElement x="0" y="0" width="100" height="20" uuid="525fc8e7-9c4e-437a-baf3-4878b9decf1d"/>
 				<textElement>
@@ -308,43 +308,45 @@ inner join site_mstr on site_site = so_site where sod_nbr =  $P{myid}]]>
 				<reportElement x="0" y="19" width="555" height="1" uuid="c9e36006-c5df-41ef-96b1-529b4e6ddb52"/>
 			</line>
 			<textField>
-				<reportElement x="109" y="0" width="199" height="20" uuid="81998038-e104-4d3b-92a6-33b4974ea7da"/>
-				<textElement>
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{jasper.order.lbldesc}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="321" y="-1" width="90" height="20" uuid="108ad9fb-9907-4bd3-baba-c3b8ae77260f"/>
+				<reportElement x="156" y="0" width="90" height="20" uuid="108ad9fb-9907-4bd3-baba-c3b8ae77260f"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{jasper.order.lblponbr}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="489" y="0" width="46" height="20" uuid="8d4c65b7-0b44-42d7-9bbd-219bc6092d5c"/>
+				<reportElement x="340" y="0" width="46" height="20" uuid="8d4c65b7-0b44-42d7-9bbd-219bc6092d5c"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{jasper.order.lblqty}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="430" y="0" width="45" height="20" uuid="03a1ccb5-d6a9-456d-ad8a-9a599894500b"/>
-				<textElement textAlignment="Right">
+				<reportElement x="262" y="-1" width="45" height="20" uuid="03a1ccb5-d6a9-456d-ad8a-9a599894500b"/>
+				<textElement textAlignment="Left">
 					<font isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{jasper.order.lbluom}]]></textFieldExpression>
 			</textField>
+			<staticText>
+				<reportElement x="429" y="-2" width="61" height="20" uuid="943ba5ea-d33a-4f87-98f5-7db5a43ce12c">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Pick Qty]]></text>
+			</staticText>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="21" splitType="Stretch">
+		<band height="64" splitType="Stretch">
 			<textField>
 				<reportElement x="0" y="0" width="100" height="16" uuid="978682a3-4259-41c3-adae-54872ecfe90a"/>
 				<textFieldExpression><![CDATA[$F{sod_item}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#">
-				<reportElement x="490" y="0" width="46" height="16" uuid="32390b0a-6d5c-4fae-8870-72c4e68a5f90"/>
+				<reportElement x="342" y="0" width="46" height="16" uuid="32390b0a-6d5c-4fae-8870-72c4e68a5f90"/>
 				<textElement markup="none">
 					<font isBold="false"/>
 				</textElement>
@@ -352,19 +354,28 @@ inner join site_mstr on site_site = so_site where sod_nbr =  $P{myid}]]>
 				<patternExpression><![CDATA[com.blueseer.utl.BlueSeerUtils.bsFormatDouble(5)]]></patternExpression>
 			</textField>
 			<textField>
-				<reportElement x="109" y="0" width="191" height="16" uuid="a33e94ca-e3f8-4f4f-9bd9-5152ed973656"/>
-				<textFieldExpression><![CDATA[$F{sod_desc}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="321" y="0" width="72" height="16" uuid="edbe7124-d60b-42b0-a896-8522f841a299"/>
+				<reportElement x="153" y="0" width="72" height="16" uuid="edbe7124-d60b-42b0-a896-8522f841a299"/>
 				<textFieldExpression><![CDATA[$F{sod_po}]]></textFieldExpression>
 			</textField>
-			<textField pattern="¤ #,##0.00">
-				<reportElement x="432" y="0" width="46" height="16" uuid="592ac78d-fe13-4933-a359-766c6b58c1e7"/>
-				<textElement textAlignment="Right">
+			<textField>
+				<reportElement x="263" y="0" width="46" height="16" uuid="592ac78d-fe13-4933-a359-766c6b58c1e7"/>
+				<textElement textAlignment="Left">
 					<font isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{sod_uom}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="430" y="0" width="61" height="20" uuid="bc220d51-a752-48af-a467-da2bfd6008db">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[__________]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="0" y="14" width="389" height="16" uuid="a33e94ca-e3f8-4f4f-9bd9-5152ed973656"/>
+				<textFieldExpression><![CDATA[$F{sod_desc}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
