@@ -2436,7 +2436,9 @@ CREATE TABLE "so_mstr" (
   "so_confirm" tinyint(1) NOT NULL DEFAULT '0',
   "so_plan" tinyint(1) NOT NULL DEFAULT '1',
   "so_mod_date" date DEFAULT '0000-00-00',
-  "so_cascade" tinyint(1) NOT NULL DEFAULT '0'
+  "so_cascade" tinyint(1) NOT NULL DEFAULT '0',
+  "so_slsperson1" varchar(100)  NOT NULL COLLATE NOCASE DEFAULT '',
+  "so_slsperson2" varchar(100)  NOT NULL COLLATE NOCASE DEFAULT ''
 );
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

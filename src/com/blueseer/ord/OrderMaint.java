@@ -2582,6 +2582,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         lbldollars = new javax.swing.JLabel();
         btmail = new javax.swing.JButton();
         btcontacts = new javax.swing.JButton();
+        btprintpick = new javax.swing.JButton();
         jPanelLines = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         btadditem = new javax.swing.JButton();
@@ -3284,6 +3285,13 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
+        btprintpick.setText("Print PIckTicket");
+        btprintpick.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btprintpickActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanelMainLayout = new javax.swing.GroupLayout(jPanelMain);
         jPanelMain.setLayout(jPanelMainLayout);
         jPanelMainLayout.setHorizontalGroup(
@@ -3328,23 +3336,21 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addContainerGap(37, Short.MAX_VALUE))
             .addGroup(jPanelMainLayout.createSequentialGroup()
                 .addGap(41, 41, 41)
-                .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanelMainLayout.createSequentialGroup()
-                        .addComponent(btinvoice)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btprintinvoice)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btprintps)
-                        .addGap(491, 491, 491))
-                    .addGroup(jPanelMainLayout.createSequentialGroup()
-                        .addGap(468, 468, 468)
-                        .addComponent(btprintorder)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btdelete)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btupdate)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btadd)))
+                .addComponent(btinvoice)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btprintinvoice)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btprintps)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btprintpick)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btprintorder)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btdelete)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btupdate)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btadd)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanelMainLayout.setVerticalGroup(
@@ -3388,7 +3394,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(btinvoice)
                     .addComponent(btprintorder)
                     .addComponent(btprintinvoice)
-                    .addComponent(btprintps))
+                    .addComponent(btprintps)
+                    .addComponent(btprintpick))
                 .addGap(20, 20, 20))
         );
 
@@ -4660,6 +4667,10 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
     }//GEN-LAST:event_btcontactsActionPerformed
 
+    private void btprintpickActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintpickActionPerformed
+        OVData.printPickRemote(tbkey.getText(), isMultiShip(), false);
+    }//GEN-LAST:event_btprintpickActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btLookUpBillTo;
     private javax.swing.JButton btLookUpItemDesc;
@@ -4681,6 +4692,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btnotes;
     private javax.swing.JButton btprintinvoice;
     private javax.swing.JButton btprintorder;
+    private javax.swing.JButton btprintpick;
     private javax.swing.JButton btprintps;
     private javax.swing.JButton btsacadd;
     private javax.swing.JButton btsacdelete;

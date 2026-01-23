@@ -2132,6 +2132,8 @@ CREATE TABLE IF NOT EXISTS `so_mstr` (
   `so_plan` tinyint(1)  NOT NULL DEFAULT '1',
   `so_mod_date` date DEFAULT NULL,
   `so_cascade` tinyint(1)  NOT NULL DEFAULT '0',
+  `so_slsperson1` varchar(100)  NOT NULL DEFAULT '',
+  `so_slsperson2` varchar(100)  NOT NULL DEFAULT ''
   index cust (`so_cust`),
   index sitestatus (`so_site`, `so_status`),
   index custstatus(`so_cust`, `so_status`),

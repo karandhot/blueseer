@@ -53,6 +53,7 @@ import static com.blueseer.inv.invData._updateInventoryBalance;
 import static com.blueseer.lbl.lblData.getLabelMultiPrintData;
 import static com.blueseer.ord.ordData.getOrderPrintData;
 import static com.blueseer.ord.ordData.getOrderTotalTax;
+import static com.blueseer.ord.ordData.getPickPrintData;
 import static com.blueseer.ord.ordData.getSVOrderTotalTax;
 import static com.blueseer.ord.ordData.getServiceOrderPrintData;
 import static com.blueseer.pur.purData.getPOTotalTax;
@@ -18752,6 +18753,122 @@ return mystring;
         Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
         HashMap hm = new HashMap();
         hm.put("REPORT_TITLE", "Sales Order");
+                hm.put("myid",  order);
+                hm.put("site_csz", site_csz);
+                hm.put("bill_csz", bill_csz);
+                hm.put("ship_csz", ship_csz);
+                hm.put("imagepath", imagepath.toString());
+                hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+                hm.put("sacdatasource", sacds);
+       
+        
+        // assumes explicit jasper file name is larger than 3 chars.....if 3 chars or less...then must be key based L8, L8C, etc
+        // type = "L8C";  ...or type = genericJTableL8.jasper
+        // String jasperfile = (type.length() > 3) ? jasperfile = type  : OVData.getCodeValueByCodeKey("jasper", type)  ;
+        Path template = checkForCustomPath(jasperdir, jasperfile);
+        JasperPrint jasperPrint; 
+        try {
+         jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
+         if (toFile) {
+            String ef = "bstempfile." + Long.toHexString(System.currentTimeMillis()) + ".pdf";
+            rFilePath = FileSystems.getDefault().getPath("temp" + "/" + ef);
+            JasperExportManager.exportReportToPdfFile(jasperPrint,rFilePath.toString());   
+         } else {
+            JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+            jasperViewer.setVisible(true);
+            jasperViewer.setTitle("Viewer");
+            jasperViewer.setIconImage(null);
+            jasperViewer.setFitPageZoomRatio();
+         }
+           //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
+       } catch (JRException ex) {
+           MainFrame.bslog(ex);
+       }
+        return rFilePath;
+    }
+    
+    public static Path printPickRemote(String order, boolean isMultiShip, boolean toFile) {
+        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getPickPrintData"});
+            list.add(new String[]{"param1", order});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } else {
+            jsonString = getPickPrintData(order); 
+        }        
+        Object[][] rData = jsonToData(jsonString);
+        Path rFilePath = null;
+        
+        List<Object[]> list = new ArrayList<>();
+        String site_csz = "";
+        String bill_csz = "";
+        String ship_csz = "";
+        String cust = "";
+        String site = "";
+        String logo = "";
+        String imagedir = "";
+        String jasperfile = "";
+        String jasperdir = "";
+        ArrayList<Object[]> saclist = new ArrayList<>();
+        int k = 0;
+        for (Object[] rowData : rData) {
+            if (rowData[0].toString().equals("sacarray")) {
+                saclist.add(new Object[]{rowData[1], bsParseDouble(rowData[2].toString())});
+                continue;
+            }
+            if (k == 0) {
+                cust = rowData[2].toString();
+                site = rowData[33].toString();
+                logo = (rowData[34].toString().isBlank()) ? rowData[35].toString() : rowData[34].toString(); // if cm_logo = "" then site_logo
+                jasperfile = rowData[38].toString();
+                jasperdir = rowData[39].toString();
+                imagedir = rowData[36].toString();
+                bill_csz = rowData[21].toString() + " " + rowData[22].toString() + " " + rowData[23].toString() + " " + rowData[24].toString();
+                ship_csz = rowData[25].toString() + " " + rowData[26].toString() + " " + rowData[27].toString() + " " + rowData[28].toString();
+                site_csz = rowData[29].toString() + " " + rowData[30].toString() + " " + rowData[31].toString() + " " + rowData[32].toString();
+            }
+              //  totalsales = totalsales + (bsParseDouble(rowData[6].toString()) * bsParseDouble(rowData[7].toString()));
+             //   totalqty = totalqty + bsParseDouble(rowData[6].toString());
+                rowData[7] = bsParseDouble(rowData[7].toString());
+                rowData[8] = bsParseDouble(rowData[8].toString());
+                rowData[40] = bsParseInt(rowData[40].toString());
+                rowData[42] = bsParseDouble(rowData[42].toString());
+                rowData[43] = bsParseDouble(rowData[43].toString());
+                rowData[44] = bsParseDouble(rowData[44].toString());
+                rowData[46] = bsParseDouble(rowData[46].toString());
+                list.add(rowData);
+                k++;
+        }
+            
+        if (isMultiShip) {
+          jasperfile = "pick_generic_multidest.jasper";
+        }
+        
+        String[] rec;
+        String columnnames = "sod_nbr,sod_desc,so_cust,so_rmks,sod_po," +
+                        "sod_item,sod_custitem,sod_ord_qty,sod_netprice,cm_code,cm_name,cm_line1,cm_line2," +
+                        "cms_name,cms_line1,site_desc,site_line1,so_shipvia," +
+                        "cm_terms,so_create_date,so_due_date," +
+                        "cm_city,cm_state,cm_zip,cm_country,cms_city,cms_state,cms_zip,cms_country," +
+                        "site_city,site_state,site_zip,site_country,site_site,cm_logo,site_logo," +
+                        "ov_image_directory,cm_iv_jasper,site_or_jasper,ov_jasper_directory," +
+                        "so_nbr,so_curr," +
+                        "charges,taxes,sod_listprice,cms_line2,sod_taxamt,sod_uom,so_slsperson1";
+        String[] columnnamesarray = columnnames.split(",", -1);
+               
+        JRDataSource datasource = new ListOfArrayDataSource(list, columnnamesarray);
+        JRDataSource sacds = new ListOfArrayDataSource(saclist, new String[]{"sos_desc", "amt"});
+        
+        Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
+        HashMap hm = new HashMap();
+        hm.put("REPORT_TITLE", "PICK TICKET");
                 hm.put("myid",  order);
                 hm.put("site_csz", site_csz);
                 hm.put("bill_csz", bill_csz);

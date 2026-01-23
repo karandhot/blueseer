@@ -71,6 +71,7 @@ import static com.blueseer.utl.BlueSeerUtils.parseDateLD;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.OVData;
+import static com.blueseer.utl.OVData.getSysMetaValue;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -3962,6 +3963,138 @@ public class ordData {
         }
        return jsonarray.toString(); 
     }
+    
+    public static String getPickPrintData(String order) {
+        JSONArray jsonarray = new JSONArray();
+        
+        // get generic pick jasper from sysmeta
+        String jasperfile = getSysMetaValue("system", "jasper", "generic");
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                
+                res = st.executeQuery("select so_nbr, sod_nbr, so_curr, sod_desc, so_shipvia, cm_terms,  " + 
+                " (select case when sum(sos_amt) is null then 0 else sum(sos_amt) end from sos_det " +
+                " where sos_nbr = " + "'" + order + "'" + " and sos_amttype = 'amount' and sos_type <> 'tax' and sos_type <> 'passive' and sos_type <> 'shipping BIL' and sos_type <> 'shipping PPD' " +
+                " ) as charges, " +
+                " (select case when sum(sos_amt) is null then 0 else sum(sos_amt) end from sos_det " +
+                " where sos_nbr = " + "'" + order + "'" + " and sos_amttype = 'amount' and sos_type = 'tax' ) as taxes, " +        
+                " so_cust, so_rmks, sod_po, sod_item, sod_custitem, sod_ord_qty, " +
+                " sod_netprice, sod_listprice, sod_taxamt, cm_code, cm_name, cm_line1, cm_line2,  " +
+                " cm_city, cm_state, cm_zip, cm_country, cms_city, cms_state, cms_zip, cms_country, " +
+                " site_site, site_desc, site_line1, site_city, site_state, site_zip, site_country, " +                        
+                " cms_name, cms_line1, cms_line2, so_create_date, so_due_date, cm_logo, site_logo, " +
+                " cm_iv_jasper, site_or_jasper, ov_image_directory, ov_jasper_directory, sod_taxamt, sod_uom, so_slsperson1 " +
+                " from sod_det  " +
+                " inner join so_mstr on so_nbr = sod_nbr " +
+                " inner join cm_mstr on cm_code = so_cust " +
+                " left outer join cms_det on cms_code = so_cust and cms_shipto = so_ship " +
+                " inner join site_mstr on site_site = so_site " +
+                " inner join ov_ctrl " +         
+                " where sod_nbr = " + "'" + order + "'");
+                
+                    
+                    String shipper = "";
+                    int i = 0;
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("sod_nbr")); 
+                        rowArray.put(res.getString("sod_desc"));
+                        rowArray.put(res.getString("so_cust"));
+                        rowArray.put(res.getString("so_rmks"));
+                        rowArray.put(res.getString("sod_po"));
+                        rowArray.put(res.getString("sod_item"));
+                        rowArray.put(res.getString("sod_custitem"));
+                        rowArray.put(res.getDouble("sod_ord_qty"));
+                        rowArray.put(res.getDouble("sod_netprice")); 
+                        rowArray.put(res.getString("cm_code"));
+                        rowArray.put(res.getString("cm_name")); // 10 zero base
+                        rowArray.put(res.getString("cm_line1"));
+                        rowArray.put(res.getString("cm_line2"));
+                        rowArray.put(res.getString("cms_name"));
+                        rowArray.put(res.getString("cms_line1"));
+                        rowArray.put(res.getString("site_desc"));
+                        rowArray.put(res.getString("site_line1"));
+                        rowArray.put(res.getString("so_shipvia"));
+                        rowArray.put(res.getString("cm_terms")); 
+                        rowArray.put(res.getString("so_create_date"));
+                        rowArray.put(res.getString("so_due_date")); // 20 zero base
+                        rowArray.put(res.getString("cm_city"));
+                        rowArray.put(res.getString("cm_state"));
+                        rowArray.put(res.getString("cm_zip"));
+                        rowArray.put(res.getString("cm_country"));
+                        rowArray.put(res.getString("cms_city"));  
+                        rowArray.put(res.getString("cms_state"));
+                        rowArray.put(res.getString("cms_zip"));
+                        rowArray.put(res.getString("cms_country"));
+                        rowArray.put(res.getString("site_city"));
+                        rowArray.put(res.getString("site_state"));  // 30 zero base
+                        rowArray.put(res.getString("site_zip"));
+                        rowArray.put(res.getString("site_country"));
+                        rowArray.put(res.getString("site_site"));
+                        rowArray.put(res.getString("cm_logo"));
+                        rowArray.put(res.getString("site_logo")); 
+                        rowArray.put(res.getString("ov_image_directory"));
+                        rowArray.put(res.getString("cm_iv_jasper"));
+                        rowArray.put(jasperfile); // from sysmeta
+                        rowArray.put(res.getString("ov_jasper_directory"));
+                        rowArray.put(res.getString("so_nbr")); // 40 zero base
+                        rowArray.put(res.getString("so_curr")); 
+                        rowArray.put(res.getDouble("charges"));
+                        rowArray.put(res.getDouble("taxes"));
+                        rowArray.put(res.getDouble("sod_listprice"));
+                        rowArray.put(res.getString("cms_line2"));
+                        rowArray.put(res.getDouble("sod_taxamt"));
+                        rowArray.put(res.getString("sod_uom"));
+                        rowArray.put(res.getString("so_slsperson1"));
+                        jsonarray.put(rowArray);
+                        i++;
+                    }
+                
+              // get SAC
+              if (i > 0) {
+              res = st.executeQuery("select sos_desc, " +
+                      " case when sos_amttype = 'percent' and sos_type <> 'tax' then (myamt * -1 * (sos_amt / 100.0)) " +
+                      " when sos_amttype = 'percent' and sos_type = 'tax' then (myamt * (sos_amt / 100.0)) " +
+                      " else sos_amt end as 'amt' " +
+                      " from sos_det, (select sod_nbr, sum(sod_ord_qty * sod_listprice) as 'myamt' from sod_det group by sod_nbr) sub " +
+                      " where sub.sod_nbr = sos_nbr and sos_nbr = " + "'" + order + "'");
+              while (res.next()) {
+                  JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("sacarray");
+                        rowArray.put(res.getString("sos_desc")); 
+                        rowArray.put(res.getString("amt"));
+                        jsonarray.put(rowArray);
+              }
+              
+              
+              }
+                    
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
     
     public static String getServiceOrderPrintData(String order) {
         JSONArray jsonarray = new JSONArray();

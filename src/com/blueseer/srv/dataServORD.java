@@ -658,7 +658,11 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         
         case "getOrderPrintData" :
             response.getWriter().print(ordData.getOrderPrintData(request.getHeader("param1")));    
-            break; 
+            break;
+            
+        case "getPickPrintData" :
+            response.getWriter().print(ordData.getPickPrintData(request.getHeader("param1")));    
+            break;     
             
         case "getServiceOrderPrintData" :
             response.getWriter().print(ordData.getServiceOrderPrintData(request.getHeader("param1")));    
