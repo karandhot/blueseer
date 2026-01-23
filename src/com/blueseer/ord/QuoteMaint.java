@@ -1036,9 +1036,9 @@ public class QuoteMaint extends javax.swing.JPanel implements IBlueSeerT {
         luTable.addMouseListener(luml);
       
         
-        callDialog(getClassLabelTag("lblcode", this.getClass().getSimpleName()), 
-                getClassLabelTag("lblname", this.getClass().getSimpleName()),
-                getClassLabelTag("lblzip", this.getClass().getSimpleName())); 
+        callDialog(getGlobalColumnTag("code"), 
+                getGlobalColumnTag("name"),
+                getGlobalColumnTag("zip")); 
         
         
     }

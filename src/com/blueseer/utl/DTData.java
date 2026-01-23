@@ -9020,7 +9020,7 @@ public class DTData {
             
                 res = st.executeQuery(" select it_item, it_desc, it_code, it_type  " +
                     " FROM  item_mstr where " + myfield + " like " + "'%" + str + "%'" +
-                    " order by it_item limit 300;");
+                    " order by it_item ;");
                     while (res.next()) {
                         JSONArray rowArray = new JSONArray(); 
                         rowArray.put("select");
@@ -9065,7 +9065,7 @@ public class DTData {
         }
         Object[][] data = jsonToData(jsonString); 
        javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
-                    new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("item"), getGlobalColumnTag("description"), getGlobalColumnTag("class"), getGlobalColumnTag("type"), getGlobalColumnTag("uom")})
+                    new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("item"), getGlobalColumnTag("description"), getGlobalColumnTag("class"), getGlobalColumnTag("type"), getGlobalColumnTag("uom"), getGlobalColumnTag("price")})
                {
                   @Override  
                   public Class getColumnClass(int col) {  
@@ -9095,10 +9095,10 @@ public class DTData {
             
             try{
             
-                res = st.executeQuery(" select it_item, it_desc, it_code, it_type, it_uom  " +
+                res = st.executeQuery(" select it_item, it_desc, it_code, it_type, it_uom, it_sell_price  " +
                     " FROM  item_mstr where " + myfield + " like " + "'%" + str + "%'" +
                     " and it_site = " + "'" + site + "'" +
-                    " order by it_item limit 300;"); 
+                    " order by it_item ;"); 
                     while (res.next()) {
                         JSONArray rowArray = new JSONArray(); 
                         rowArray.put("select");
@@ -9107,6 +9107,7 @@ public class DTData {
                         rowArray.put(res.getString("it_code"));
                         rowArray.put(res.getString("it_type"));
                         rowArray.put(res.getString("it_uom"));
+                        rowArray.put(res.getString("it_sell_price"));
                         jsonarray.put(rowArray);
                     }
                 
@@ -9179,13 +9180,13 @@ public class DTData {
                  res = st.executeQuery(" select it_item, it_desc, it_code, it_type  " +
                     " FROM  item_mstr where " + myfield + " like " + "'%" + str + "%'" +
                     " and it_site = " + "'" + site + "'" +     
-                    " order by it_item limit 300;"); 
+                    " order by it_item ;"); 
                 } else {
                  res = st.executeQuery(" select it_item, it_desc, it_code, it_type  " +
                     " FROM  item_mstr where " + myfield + " like " + "'%" + str + "%'" +
                     " and it_site = " + "'" + site + "'" +
                     " and it_code = " + "'" + classtype + "'" +        
-                    " order by it_item limit 300;");    
+                    " order by it_item ;");    
                 }
                     while (res.next()) {
                         JSONArray rowArray = new JSONArray(); 
