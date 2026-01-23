@@ -109,7 +109,7 @@ inner join site_mstr on site_site = so_site where sod_nbr =  $P{myid}]]>
 				<textElement>
 					<font size="24"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{jasper.order.lbltitle}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{jasper.order.lbltitlePT}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="192" y="0" width="152" height="15" uuid="9f662613-b949-47dc-bcb7-81404d37bb2f"/>
@@ -333,7 +333,7 @@ inner join site_mstr on site_site = so_site where sod_nbr =  $P{myid}]]>
 				<textElement textAlignment="Right">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{jasper.order.lbllistuom}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{jasper.order.lbluom}]]></textFieldExpression>
 			</textField>
 		</band>
 	</columnHeader>
