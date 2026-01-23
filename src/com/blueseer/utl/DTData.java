@@ -9107,7 +9107,7 @@ public class DTData {
                         rowArray.put(res.getString("it_code"));
                         rowArray.put(res.getString("it_type"));
                         rowArray.put(res.getString("it_uom"));
-                        rowArray.put(res.getString("it_sell_price"));
+                        rowArray.put(BlueSeerUtils.currformat(res.getString("it_sell_price")));
                         jsonarray.put(rowArray);
                     }
                 
