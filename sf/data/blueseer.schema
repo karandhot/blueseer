@@ -2598,7 +2598,8 @@ CREATE TABLE `ov_ctrl` (
   `ov_email_from` varchar(80) NOT NULL DEFAULT '',
   `ov_smtpauthuser` varchar(50) NOT NULL DEFAULT '',
   `ov_smtpauthpass` varchar(50) NOT NULL DEFAULT '',
-  `ov_varchar` varchar(50) NOT NULL DEFAULT ''
+  `ov_varchar` varchar(50) NOT NULL DEFAULT '',
+  `ov_notes` varchar(2000) NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE `pay_mstr` (
   `py_id` int(8) NOT NULL,

@@ -4385,7 +4385,7 @@ public class ordData {
                 orderSet.so().so_curr(),
                 "", // wh
                 orderSet.cm().cm_terms(), // terms
-                "", // taxcode
+                orderSet.so().so_taxcode(), // taxcode
                 orderSet.cm().cm_ar_acct(), // aracct
                 orderSet.cm().cm_ar_cc(), // arcc
                 "S", // type

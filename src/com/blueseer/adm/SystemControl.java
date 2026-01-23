@@ -363,6 +363,7 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
             tblabeldir.setText(oc.ov_label_directory());
             tbjasperdir.setText(oc.ov_jasper_directory());
             tbedidir.setText(oc.ov_edi_directory());
+            tanotes.setText(oc.ov_notes());
 
             if (oc.ov_fileservertype().toUpperCase().equals("S")) {
                 rbsamba.setSelected(true);
@@ -412,7 +413,8 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
                 tbemailfrom.getText(),
                 tbsmtpuser.getText(),
                 new String(tbsmtppass.getPassword()), // String passwd = bsmf.MainFrame.PassWord("0", tbsmtppass.getPassword());,
-                "");
+                "",
+                tanotes.getText());
         return ovc;
     }
 
@@ -547,6 +549,15 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
         rblocal = new javax.swing.JRadioButton();
         rbwin = new javax.swing.JRadioButton();
         rbsamba = new javax.swing.JRadioButton();
+        tblocale = new javax.swing.JTextField();
+        jLabel17 = new javax.swing.JLabel();
+        btpatch = new javax.swing.JButton();
+        btclean = new javax.swing.JButton();
+        cbautopatch = new javax.swing.JCheckBox();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tanotes = new javax.swing.JTextArea();
+        jLabel15 = new javax.swing.JLabel();
+        jPanel4 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         tbimagedir = new javax.swing.JTextField();
         tbtempdir = new javax.swing.JTextField();
@@ -569,11 +580,6 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
         jLabel13 = new javax.swing.JLabel();
         tbsmtppass = new javax.swing.JPasswordField();
         jLabel14 = new javax.swing.JLabel();
-        tblocale = new javax.swing.JTextField();
-        jLabel17 = new javax.swing.JLabel();
-        btpatch = new javax.swing.JButton();
-        btclean = new javax.swing.JButton();
-        cbautopatch = new javax.swing.JCheckBox();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -643,6 +649,31 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
                 .addComponent(rblocal)
                 .addContainerGap())
         );
+
+        jLabel17.setText("Locale");
+        jLabel17.setName("lbllocale"); // NOI18N
+
+        btpatch.setText("Patch");
+        btpatch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btpatchActionPerformed(evt);
+            }
+        });
+
+        btclean.setText("Clean");
+        btclean.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btcleanActionPerformed(evt);
+            }
+        });
+
+        cbautopatch.setText("AutoPatch");
+
+        tanotes.setColumns(20);
+        tanotes.setRows(5);
+        jScrollPane1.setViewportView(tanotes);
+
+        jLabel15.setText("Notes:");
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Directory Configurations"));
         jPanel3.setName("paneldirectory"); // NOI18N
@@ -714,7 +745,7 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbattachdir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel18))
-                .addContainerGap(100, Short.MAX_VALUE))
+                .addContainerGap(16, Short.MAX_VALUE))
         );
 
         panelCopySite.setBorder(javax.swing.BorderFactory.createTitledBorder("Email Configurations"));
@@ -771,27 +802,29 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
                 .addGroup(panelCopySiteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbsmtppass, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel14))
-                .addContainerGap(28, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jLabel17.setText("Locale");
-        jLabel17.setName("lbllocale"); // NOI18N
-
-        btpatch.setText("Patch");
-        btpatch.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btpatchActionPerformed(evt);
-            }
-        });
-
-        btclean.setText("Clean");
-        btclean.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btcleanActionPerformed(evt);
-            }
-        });
-
-        cbautopatch.setText("AutoPatch");
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(panelCopySite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(panelCopySite, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -822,18 +855,22 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
                     .addComponent(tbversion, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(490, Short.MAX_VALUE)
+                .addComponent(btupdate)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(btupdate)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btclean)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btpatch))
-                    .addComponent(panelCopySite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(btclean)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btpatch)
                 .addGap(23, 23, 23))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel15)
+                            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -868,16 +905,17 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
                             .addComponent(tbbcolor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel5)))
                     .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(24, 24, 24)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(panelCopySite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(btupdate)
-                            .addComponent(btpatch)
-                            .addComponent(btclean)))
-                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel15)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btupdate)
+                    .addComponent(btpatch)
+                    .addComponent(btclean))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -920,6 +958,7 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel2;
@@ -933,10 +972,13 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel panelCopySite;
     private javax.swing.JRadioButton rblocal;
     private javax.swing.JRadioButton rbsamba;
     private javax.swing.JRadioButton rbwin;
+    private javax.swing.JTextArea tanotes;
     private javax.swing.JTextField tbattachdir;
     private javax.swing.JTextField tbbcolor;
     private javax.swing.JTextField tbbgimage;

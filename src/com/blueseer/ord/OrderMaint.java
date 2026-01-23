@@ -1611,7 +1611,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddstatus.setSelectedItem(so.so_status());
         ddcurr.setSelectedItem(so.so_curr());
         ddshipvia.setSelectedItem(so.so_shipvia());
-        ddtax.setSelectedItem(so.so_taxcode());
+       // ddtax.setSelectedItem(so.so_taxcode());
         ddsite.setSelectedItem(so.so_site());
         tbshipto.setText(so.so_ship());
         ponbr.setText(so.so_po());
@@ -1646,6 +1646,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         cbblanket.setEnabled(false);
         } 
        
+        
+        isLoad = false;
+        ddtax.setSelectedItem(so.so_taxcode()); // fire after isLoad=false so it will trigger header tax retrieval
         // now detail
         myorddetmodel.setRowCount(0);
         for (sod_det sod : sodlist) {
@@ -1744,7 +1747,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         soslist = null;
         sodtaxlist = null;
         
-        isLoad = false;
+        
         
         
     }

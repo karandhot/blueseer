@@ -527,7 +527,7 @@ public class admData {
                         res.getString("ov_bgimage"), res.getInt("ov_rcolor"), res.getInt("ov_gcolor"), res.getInt("ov_bcolor"),
                         res.getString("ov_fileservertype"), res.getString("ov_image_directory"), res.getString("ov_temp_directory"), res.getString("ov_label_directory"),
                         res.getString("ov_jasper_directory"),res.getString("ov_edi_directory"),res.getString("ov_email_server"),res.getString("ov_email_from"),
-                        res.getString("ov_smtpauthuser"), bsmf.MainFrame.PassWord("1", res.getString("ov_image_directory").toCharArray()), res.getString("ov_varchar"));
+                        res.getString("ov_smtpauthuser"), bsmf.MainFrame.PassWord("1", res.getString("ov_image_directory").toCharArray()), res.getString("ov_varchar"), res.getString("ov_notes"));
                     }
                 }
             }
@@ -560,13 +560,13 @@ public class admData {
         "ov_login, ov_custom, ov_bgimage, ov_rcolor, ov_gcolor, ov_bcolor," +
         "ov_fileservertype, ov_image_directory, ov_temp_directory, ov_label_directory," +
         "ov_jasper_directory, ov_edi_directory, ov_email_server," +
-        "ov_email_from, ov_smtpauthuser, ov_smtpauthpass, ov_varchar) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+        "ov_email_from, ov_smtpauthuser, ov_smtpauthpass, ov_varchar, ov_notes) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
         String sqlUpdate = "update ov_ctrl set ov_version = ?, ov_dist_dir = ?, ov_source_dir = ?, " +
         "ov_login = ?, ov_custom = ?, ov_bgimage = ?, ov_rcolor = ?, ov_gcolor = ?, ov_bcolor = ?," +
         "ov_fileservertype = ?, ov_image_directory = ?, ov_temp_directory = ?, ov_label_directory = ?," +
         "ov_jasper_directory = ?, ov_edi_directory = ?, ov_email_server = ?," +
-        "ov_email_from = ?, ov_smtpauthuser = ?, ov_smtpauthpass = ?, ov_varchar = ?; ";
+        "ov_email_from = ?, ov_smtpauthuser = ?, ov_smtpauthpass = ?, ov_varchar = ?, ov_notes = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
              PreparedStatement ps = con.prepareStatement(sqlSelect);) {
           try (ResultSet res = ps.executeQuery();
@@ -593,6 +593,7 @@ public class admData {
             psi.setString(18, x.ov_smtpauthuser);
             psi.setString(19, bsmf.MainFrame.PassWord("0", x.ov_smtpauthpass().toCharArray())); 
             psi.setString(20, x.ov_varchar);
+            psi.setString(21, x.ov_notes);
              rows = psi.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
             } else {
@@ -616,6 +617,7 @@ public class admData {
             psu.setString(18, x.ov_smtpauthuser);
             psu.setString(19, bsmf.MainFrame.PassWord("0", x.ov_smtpauthpass().toCharArray())); 
             psu.setString(20, x.ov_varchar); 
+            psu.setString(21, x.ov_notes);
             rows = psu.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};    
             }
@@ -4833,10 +4835,10 @@ public class admData {
         int ov_login, int ov_custom, String ov_bgimage, int ov_rcolor, int ov_gcolor, int ov_bcolor,
         String ov_fileservertype, String ov_image_directory, String ov_temp_directory, String ov_label_directory, 
         String ov_jasper_directory, String ov_edi_directory, String ov_email_server,
-        String ov_email_from, String ov_smtpauthuser, String ov_smtpauthpass, String ov_varchar) {
+        String ov_email_from, String ov_smtpauthuser, String ov_smtpauthpass, String ov_varchar, String ov_notes) {
         public ov_ctrl(String[] m) {
             this(m, "", "", "", 0, 0, "", 0, 0, 0, "",
-                    "", "", "", "", "", "", "", "", "", "");
+                    "", "", "", "", "", "", "", "", "", "", "");
         }
     }
 

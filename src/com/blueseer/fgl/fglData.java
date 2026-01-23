@@ -4145,12 +4145,31 @@ public class fglData {
                       ArrayList<String[]> taxelements = OVData.getTaxPercentElementsApplicableByTaxCode(taxcode);
                           double taxvalue = 0;
                           double basetaxvalue = 0;
-                          for (String[] elements : taxelements) {
+                        for (String[] elements : taxelements) {
                               taxvalue = totamt * ( bsParseDouble(elements[1]) / 100 );
                               basetaxvalue = basetotamt * ( bsParseDouble(elements[1]) / 100 );
                            //   bsmf.MainFrame.show(taxvalue + "/" + basetaxvalue + "/" + totamt + "/" + basetotamt );
-                          glEntryXP(bscon, defaultsalesacct, defaultsalescc, OVData.getDefaultTaxAcctByType(elements[2]), OVData.getDefaultTaxCCByType(elements[2]), setDateDB(effdate), taxvalue, basetaxvalue, curr, basecurr, thisref, thissite, thistype, "Tax: " + elements[2], gldoc);
-                          }
+                         //  glEntryXP(bscon, defaultsalesacct, defaultsalescc, OVData.getDefaultTaxAcctByType(elements[2]), OVData.getDefaultTaxCCByType(elements[2]), setDateDB(effdate), taxvalue, basetaxvalue, curr, basecurr, thisref, thissite, thistype, "Tax: " + elements[2], gldoc);
+                          
+                        acct_cr.add(defaultsalesacct);
+                        acct_dr.add(OVData.getDefaultTaxAcctByType(elements[2]));
+                        cc_cr.add(defaultsalescc);
+                        cc_dr.add(OVData.getDefaultTaxCCByType(elements[2]));
+                        cost.add(taxvalue);
+                        if (basecurr.toUpperCase().equals(curr.toUpperCase())) {
+                        basecost.add(basetaxvalue);   
+                        } else {
+                        basecost.add(OVData.getExchangeBaseValue(basecurr, curr, basetaxvalue));  
+                        }
+                        site.add(thissite);
+                        ref.add(thisref);
+                        type.add(thistype);
+                        desc.add("Tax: " + elements[2]);
+                        doc.add(gldoc);
+                          
+                          
+                          
+                        }
                           // now add matl tax at item level
                     }
                     // now add matl tax at item level

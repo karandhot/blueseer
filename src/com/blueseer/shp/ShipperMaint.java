@@ -408,7 +408,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         } else {
             return;
         }
-        
+         
         if (panel != null) {
         panel.setEnabled(b);
         Component[] components = panel.getComponents();
@@ -1015,7 +1015,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddsite.setSelectedItem(so.so().so_site());
         ddshipfrom.setSelectedItem(so.so().so_site());
         terms = so.cm().cm_terms();
-        taxcode = so.cm().cm_tax_code();
+        taxcode = so.so().so_taxcode();
         aracct = so.cm().cm_ar_acct();
         arcc = so.cm().cm_ar_cc();
         
