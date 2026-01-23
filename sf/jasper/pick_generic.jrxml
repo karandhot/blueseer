@@ -286,7 +286,7 @@ inner join site_mstr on site_site = so_site where sod_nbr =  $P{myid}]]>
 				<reportElement x="489" y="56" width="76" height="19" uuid="3ae84711-7768-4a61-9cad-a536dd170f23"/>
 				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("yyyy-MM-dd", $P{REPORT_LOCALE}).format(new java.text.SimpleDateFormat("yyyy-MM-dd").parse($F{so_due_date}))]]></textFieldExpression>
 			</textField>
-			<textField pattern="¤ #,##0.00">
+			<textField>
 				<reportElement x="440" y="90" width="100" height="16" uuid="2f92b0c2-bd19-45a3-8119-29143253ff5d"/>
 				<textElement textAlignment="Right">
 					<font isBold="false"/>
