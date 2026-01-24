@@ -1458,6 +1458,7 @@ return myitem;
         
     } 
 
+    
     public static String[] getVendInfo(String vend) {
            // get vendor specific data
             // addr, acct, cc, currency, bank, terms, site

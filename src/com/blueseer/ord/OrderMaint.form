@@ -265,10 +265,10 @@
               </Group>
               <Group type="102" alignment="0" attributes="0">
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="jPanel1" alignment="0" pref="893" max="32767" attributes="0"/>
+                      <Component id="jPanel1" alignment="0" pref="894" max="32767" attributes="0"/>
                       <Component id="jPanel3" alignment="0" max="32767" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="37" max="32767" attributes="0"/>
+                  <EmptySpace pref="36" max="32767" attributes="0"/>
               </Group>
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
@@ -508,7 +508,7 @@
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="ddsalesrep2" alignment="1" pref="131" max="32767" attributes="0"/>
+                                          <Component id="ddsalesrep2" alignment="1" max="32767" attributes="0"/>
                                           <Component id="ddsalesrep" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
@@ -925,7 +925,7 @@
                                           <Component id="tbaddr2" alignment="0" min="-2" pref="260" max="-2" attributes="0"/>
                                           <Component id="tbaddr1" alignment="0" min="-2" pref="260" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace min="47" pref="117" max="32767" attributes="0"/>
+                                      <EmptySpace min="47" pref="118" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                               <Component id="jLabel11" min="-2" max="-2" attributes="0"/>

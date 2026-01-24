@@ -820,6 +820,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         setComponentDefaultValues();
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btinvoice.setEnabled(false);
+        btmail.setEnabled(false);
+        btcontacts.setEnabled(false);
         btprintinvoice.setEnabled(false);
         btprintorder.setEnabled(false);
         btprintpick.setEnabled(false);

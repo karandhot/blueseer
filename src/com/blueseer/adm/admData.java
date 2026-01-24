@@ -4933,5 +4933,11 @@ public class admData {
         }
     }
     
+    public record txt_meta(String[] m, String txt_id, String txt_type, String txt_key, String txt_value) {
+        public txt_meta(String[] m) {
+            this(m, "", "", "", "");
+        }
+    }
+    
     
 }

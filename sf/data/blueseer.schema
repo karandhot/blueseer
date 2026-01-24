@@ -3166,4 +3166,10 @@ CREATE TABLE IF NOT EXISTS `tax_meta` (
   `taxm_key` varchar(80) NOT NULL DEFAULT '',
   `taxm_value` varchar(200) NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS `txt_meta` (
+  `txt_id` varchar(30) NOT NULL DEFAULT '',
+  `txt_type` varchar(80) NOT NULL DEFAULT '',
+  `txt_key` varchar(80) NOT NULL DEFAULT '',
+  `txt_value` varchar(2000) NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
