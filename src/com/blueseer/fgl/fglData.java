@@ -4150,36 +4150,48 @@ public class fglData {
                     // we will credit sales (income) acct and debit (liability) appropriate tax account for each tax element in cm_tax_code
                     tottax = shpData.getTaxAmtApplicableByShipper(shipper, totamt);
                     if (tottax > 0) {
-                      ArrayList<String[]> taxelements = OVData.getTaxPercentElementsApplicableByTaxCode(taxcode); // elements = taxd_desc, taxd_percent, taxd_type
-                          double taxvalue = 0;
-                          double basetaxvalue = 0;
-                        for (String[] elements : taxelements) {
-                              taxvalue = totamt * ( bsParseDouble(elements[1]) / 100 );
-                              basetaxvalue = basetotamt * ( bsParseDouble(elements[1]) / 100 );
-                           //   bsmf.MainFrame.show(taxvalue + "/" + basetaxvalue + "/" + totamt + "/" + basetotamt );
-                         //  glEntryXP(bscon, defaultsalesacct, defaultsalescc, OVData.getDefaultTaxAcctByType(elements[2]), OVData.getDefaultTaxCCByType(elements[2]), setDateDB(effdate), taxvalue, basetaxvalue, curr, basecurr, thisref, thissite, thistype, "Tax: " + elements[2], gldoc);
-                          
-                        acct_cr.add(defaultsalesacct);
-                        acct_dr.add(OVData.getDefaultTaxAcctByType(elements[2]));
-                        cc_cr.add(defaultsalescc);
-                        cc_dr.add(OVData.getDefaultTaxCCByType(elements[2]));
-                        cost.add(taxvalue);
-                        if (basecurr.toUpperCase().equals(curr.toUpperCase())) {
-                        basecost.add(basetaxvalue);   
-                        } else {
-                        basecost.add(OVData.getExchangeBaseValue(basecurr, curr, basetaxvalue));  
-                        }
-                        site.add(thissite);
-                        ref.add(thisref);
-                        type.add(thistype);
-                        desc.add("Tax: " + elements[2]);
-                        doc.add(gldoc);
-                          
-                          
-                          
+                     // ArrayList<String[]> taxelements = OVData.getTaxPercentElementsApplicableByTaxCode(taxcode); // elements = taxd_desc, taxd_percent, taxd_type
+                      ArrayList<taxd_mstr> taxdarray = getTaxDet(taxcode);    
+                      double taxvalue = 0;
+                      double basetaxvalue = 0;
+                        for (taxd_mstr taxd : taxdarray) {
+                             
+                            if (taxd.taxd_conditional().equals("NONE")) {
+                            taxvalue = totamt * ( bsParseDouble(taxd.taxd_percent()) / 100 );
+                            basetaxvalue = basetotamt * ( bsParseDouble(taxd.taxd_percent()) / 100 );
+                            }
+                            
+                            if (taxd.taxd_conditional().equals("STATE")) {
+                               taxvalue = totamt * getTaxPercentByState(shipper, taxd.taxd_method()); 
+                               basetaxvalue = basetotamt * getTaxPercentByState(shipper, taxd.taxd_method());
+                            }
+                            
+                            if (taxd.taxd_conditional().equals("ZIP")) {
+                                taxvalue = totamt * getTaxPercentByZip(shipper, taxd.taxd_method()); 
+                                basetaxvalue = basetotamt * getTaxPercentByZip(shipper, taxd.taxd_method());
+                            }
+                            
+                            acct_cr.add(defaultsalesacct);
+                            acct_dr.add(OVData.getDefaultTaxAcctByType(taxd.taxd_type()));
+                            cc_cr.add(defaultsalescc);
+                            cc_dr.add(OVData.getDefaultTaxCCByType(taxd.taxd_type()));
+                            cost.add(taxvalue);
+                            if (basecurr.toUpperCase().equals(curr.toUpperCase())) {
+                            basecost.add(basetaxvalue);   
+                            } else {
+                            basecost.add(OVData.getExchangeBaseValue(basecurr, curr, basetaxvalue));  
+                            }
+                            site.add(thissite);
+                            ref.add(thisref);
+                            type.add(thistype);
+                            desc.add("Tax: " + taxd.taxd_desc());
+                            doc.add(gldoc);
                         }
                           // now add matl tax at item level
                     }
+                    
+                    
+                    
                     // now add matl tax at item level
                     if (matltax > 0)
                     glEntryXP(bscon, defaultsalesacct, defaultsalescc, OVData.getDefaultTaxAcctByType("MATERIAL"), OVData.getDefaultTaxCCByType("MATERIAL"), setDateDB(effdate), matltax, basematltax, curr, basecurr, thisref, thissite, thistype, "Tax: Material ", gldoc);
@@ -5813,6 +5825,100 @@ public class fglData {
                     " group by glh_acct " + ";" );
             while (res.next()) {
                myamt = res.getDouble("sum");
+            }
+
+        } catch (SQLException s) {
+            MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+    } catch (Exception e) {
+        MainFrame.bslog(e);
+    }
+         return myamt;
+     }
+
+    public static double getTaxPercentByState(String shipper, String method) {
+         double myamt = 0.00;
+         
+         try {
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+            if (method.equals("Origin Billing"))  {  
+                res = st.executeQuery("SELECT taxm_value from tax_meta inner join cm_mstr on cm_state = taxm_key " +
+                                  " inner join ship_mstr on sh_cust = cm_code and sh_id = " + "'" + shipper + "'" +
+                                  " where taxm_id = 'state' and taxm_type = 'generic' " +
+                                  " ;" );
+            } else if (method.equals("Origin ShipFrom")) {
+                res = st.executeQuery("SELECT taxm_value from tax_meta inner join cm_mstr on cm_state = taxm_key " +
+                                  " inner join ship_mstr on sh_cust = cm_code and sh_id = " + "'" + shipper + "'" +
+                                  " where taxm_id = 'state' and taxm_type = 'generic' " +
+                                  " ;" );  
+            } else { // must be Destination ShipTo
+                res = st.executeQuery("SELECT taxm_value from tax_meta inner join cms_det on cms_state = taxm_key " +
+                                  " inner join ship_mstr on sh_ship = cms_shipto and sh_id = " + "'" + shipper + "'" +
+                                  " where taxm_id = 'state' and taxm_type = 'generic' " +
+                                  " ;" );
+            }
+            while (res.next()) {
+               myamt = res.getDouble("taxm_value");
+            }
+
+        } catch (SQLException s) {
+            MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+    } catch (Exception e) {
+        MainFrame.bslog(e);
+    }
+         return myamt;
+     }
+
+    public static double getTaxPercentByZip(String shipper, String method) {
+         double myamt = 0.00;
+         
+         try {
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+            if (method.equals("Origin Billing"))  {  
+                res = st.executeQuery("SELECT taxm_value from tax_meta inner join cm_mstr on cm_zip = taxm_key " +
+                                  " inner join ship_mstr on sh_cust = cm_code and sh_id = " + "'" + shipper + "'" +
+                                  " where taxm_id = 'zip' and taxm_type = 'generic' " +
+                                  " ;" );
+            } else if (method.equals("Origin ShipFrom")) {
+                res = st.executeQuery("SELECT taxm_value from tax_meta inner join cm_mstr on cm_zip = taxm_key " +
+                                  " inner join ship_mstr on sh_cust = cm_code and sh_id = " + "'" + shipper + "'" +
+                                  " where taxm_id = 'zip' and taxm_type = 'generic' " +
+                                  " ;" );  
+            } else { // must be Destination ShipTo
+                res = st.executeQuery("SELECT taxm_value from tax_meta inner join cms_det on cms_zip = taxm_key " +
+                                  " inner join ship_mstr on sh_ship = cms_shipto and sh_id = " + "'" + shipper + "'" +
+                                  " where taxm_id = 'zip' and taxm_type = 'generic' " +
+                                  " ;" );
+            }
+            while (res.next()) {
+               myamt = res.getDouble("taxm_value");
             }
 
         } catch (SQLException s) {

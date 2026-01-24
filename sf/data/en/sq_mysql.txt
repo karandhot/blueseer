@@ -73,3 +73,4 @@ load data local infile 'invmeta.csv' replace into table inv_meta fields terminat
 load data local infile 'wkfmstr.csv' replace into table wkf_mstr fields terminated by ',' ignore 0 Lines; show errors; 
 load data local infile 'wkfdet.csv' replace into table wkf_det fields terminated by ',' ignore 0 Lines; show errors; 
 load data local infile 'wkfdmeta.csv' replace into table wkfd_meta fields terminated by ',' ignore 0 Lines; show errors; 
+load data local infile 'taxmeta.csv' replace into table tax_meta fields terminated by ',' ignore 0 Lines; show errors;

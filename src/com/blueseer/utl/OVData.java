@@ -2712,7 +2712,7 @@ public class OVData {
     }
 
     //example remote return ArrayList<String[]>
-    public static ArrayList<String[]> getTaxPercentElementsApplicableByTaxCode(String taxcode) {
+        public static ArrayList<String[]> getTaxPercentElementsApplicableByTaxCode(String taxcode) {
 
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
