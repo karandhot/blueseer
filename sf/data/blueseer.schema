@@ -221,7 +221,9 @@ CREATE TABLE IF NOT EXISTS `ar_ctrl` (
   `arc_localtax_cc` varchar(4) NOT NULL  DEFAULT '',
   `arc_othertax_acct` varchar(12) NOT NULL  DEFAULT '',
   `arc_othertax_cc` varchar(4) NOT NULL  DEFAULT '',
-  `arc_varchar` varchar(50) NOT NULL  DEFAULT ''
+  `arc_varchar` varchar(50) NOT NULL  DEFAULT '',
+  `arc_salestax_acct` varchar(12) NOT NULL  DEFAULT '',
+  `arc_salestax_cc` varchar(4) NOT NULL  DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `pay_ctrl` (
   `payc_bank` varchar(10) NOT NULL  DEFAULT '',
@@ -1265,32 +1267,33 @@ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `pl_mstr` (
   `pl_line` varchar(4) NOT NULL  DEFAULT '',
   `pl_desc` varchar(50)  NOT NULL DEFAULT '',
-  `pl_inventory` varchar(10)  NOT NULL DEFAULT '',
-  `pl_inv_discr` varchar(10)  NOT NULL DEFAULT '',
-  `pl_scrap` varchar(10)  NOT NULL DEFAULT '',
-  `pl_wip` varchar(10)  NOT NULL DEFAULT '',
-  `pl_wip_var` varchar(10)  NOT NULL DEFAULT '',
-  `pl_inv_change` varchar(10)  NOT NULL DEFAULT '',
-  `pl_sales` varchar(10)  NOT NULL DEFAULT '',
-  `pl_sales_disc` varchar(10)  NOT NULL DEFAULT '',
-  `pl_cogs_mtl` varchar(10)  NOT NULL DEFAULT '',
-  `pl_cogs_lbr` varchar(10)  NOT NULL DEFAULT '',
-  `pl_cogs_bdn` varchar(10)  NOT NULL DEFAULT '',
-  `pl_cogs_ovh` varchar(10)  NOT NULL DEFAULT '',
-  `pl_cogs_out` varchar(10)  NOT NULL DEFAULT '',
-  `pl_purchases` varchar(10)  NOT NULL DEFAULT '',
-  `pl_po_rcpt` varchar(10)  NOT NULL DEFAULT '',
-  `pl_po_ovh` varchar(10)  NOT NULL DEFAULT '',
-  `pl_po_pricevar` varchar(10) NOT NULL  DEFAULT '',
-  `pl_ap_usage` varchar(10)  NOT NULL DEFAULT '',
-  `pl_ap_ratevar` varchar(10)  NOT NULL DEFAULT '',
-  `pl_job_stock` varchar(10)  NOT NULL DEFAULT '',
-  `pl_mtl_usagevar` varchar(10)  NOT NULL DEFAULT '',
-  `pl_mtl_ratevar` varchar(10)  NOT NULL DEFAULT '',
-  `pl_mix_var` varchar(10)  NOT NULL DEFAULT '',
-  `pl_cop` varchar(10)  NOT NULL DEFAULT '',
-  `pl_out_usagevar` varchar(10)  NOT NULL DEFAULT '',
-  `pl_out_ratevar` varchar(10)  NOT NULL DEFAULT '') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `pl_inventory` varchar(12)  NOT NULL DEFAULT '',
+  `pl_inv_discr` varchar(12)  NOT NULL DEFAULT '',
+  `pl_scrap` varchar(12)  NOT NULL DEFAULT '',
+  `pl_wip` varchar(12)  NOT NULL DEFAULT '',
+  `pl_wip_var` varchar(12)  NOT NULL DEFAULT '',
+  `pl_inv_change` varchar(12)  NOT NULL DEFAULT '',
+  `pl_sales` varchar(12)  NOT NULL DEFAULT '',
+  `pl_sales_disc` varchar(12)  NOT NULL DEFAULT '',
+  `pl_cogs_mtl` varchar(12)  NOT NULL DEFAULT '',
+  `pl_cogs_lbr` varchar(12)  NOT NULL DEFAULT '',
+  `pl_cogs_bdn` varchar(12)  NOT NULL DEFAULT '',
+  `pl_cogs_ovh` varchar(12)  NOT NULL DEFAULT '',
+  `pl_cogs_out` varchar(12)  NOT NULL DEFAULT '',
+  `pl_purchases` varchar(12)  NOT NULL DEFAULT '',
+  `pl_po_rcpt` varchar(12)  NOT NULL DEFAULT '',
+  `pl_po_ovh` varchar(12)  NOT NULL DEFAULT '',
+  `pl_po_pricevar` varchar(12) NOT NULL  DEFAULT '',
+  `pl_ap_usage` varchar(12)  NOT NULL DEFAULT '',
+  `pl_ap_ratevar` varchar(12)  NOT NULL DEFAULT '',
+  `pl_sales_tax` varchar(12)  NOT NULL DEFAULT '',
+  `pl_mtl_usagevar` varchar(12)  NOT NULL DEFAULT '',
+  `pl_mtl_ratevar` varchar(12)  NOT NULL DEFAULT '',
+  `pl_mix_var` varchar(12)  NOT NULL DEFAULT '',
+  `pl_cop` varchar(12)  NOT NULL DEFAULT '',
+  `pl_out_usagevar` varchar(12)  NOT NULL DEFAULT '',
+  `pl_out_ratevar` varchar(12)  NOT NULL DEFAULT '') 
+ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `plan_mstr` (
   `plan_nbr` int(8) NOT NULL DEFAULT '0',
   `plan_item` varchar(36) NOT NULL DEFAULT '',
@@ -2256,7 +2259,9 @@ CREATE TABLE IF NOT EXISTS `taxd_mstr` (
   `taxd_moddate` date  DEFAULT NULL,
   `taxd_enabled` tinyint(1) NOT NULL DEFAULT '0',
   `taxd_userid` varchar(30) NOT NULL  DEFAULT '',
-  `taxd_line` varchar(8) NOT NULL  DEFAULT ''
+  `taxd_line` varchar(8) NOT NULL  DEFAULT '',
+  `taxd_conditional` varchar(30) NOT NULL  DEFAULT '',
+  `taxd_method` varchar(50) NOT NULL  DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `task_mstr` (
   `task_id` int(8) NOT NULL,
@@ -3155,3 +3160,10 @@ CREATE TABLE IF NOT EXISTS `sod_chg` (
   `sodc_misc` varchar(200) NOT NULL DEFAULT '',
   `sodc_change` varchar(50) NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS `tax_meta` (
+  `taxm_id` varchar(30) NOT NULL DEFAULT '',
+  `taxm_type` varchar(80) NOT NULL DEFAULT '',
+  `taxm_key` varchar(80) NOT NULL DEFAULT '',
+  `taxm_value` varchar(200) NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+

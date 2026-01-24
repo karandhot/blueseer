@@ -50,6 +50,7 @@ import static com.blueseer.utl.BlueSeerUtils.ConvertIntToBoolString;
 import static com.blueseer.utl.BlueSeerUtils.ConvertIntToYesNo;
 import static com.blueseer.utl.BlueSeerUtils.ConvertTrueFalseToBoolean;
 import static com.blueseer.utl.BlueSeerUtils.ConvertTrueFalseToStringInt;
+import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.checkLength;
 import com.blueseer.utl.BlueSeerUtils.dbaction;
@@ -639,7 +640,7 @@ public class APIMaint extends javax.swing.JPanel implements IBlueSeerT {
              api_det x = new api_det(null, 
                 tbkey.getText(),
                 tabledetail.getModel().getValueAt(j, 0).toString(),
-                tabledetail.getModel().getValueAt(j, 3).toString(),
+                bsParseInt(tabledetail.getModel().getValueAt(j, 3).toString()),
                 tabledetail.getModel().getValueAt(j, 1).toString(),
                 tabledetail.getModel().getValueAt(j, 2).toString(),
                 tbpath.getText(),

@@ -272,28 +272,32 @@ public class ARControl extends javax.swing.JPanel implements IBlueSeerc {
             tblocalcc.getText(),
             tbothertax.getText(),
             tbothercc.getText(),
-            tbshippingacct.getText()
+            tbshippingacct.getText(),
+            tbsalestaxacct.getText(),
+            tbsalestaxcc.getText()
         );
         return x;
     }
         
     public void updateForm() {
-    tbbank.setText(x.arc_bank());
-            tbaracct.setText(x.arc_default_acct());
-            tbarcc.setText(x.arc_default_cc());
-            tbsalesacct.setText(x.arc_sales_acct());
-            tbsalescc.setText(x.arc_sales_cc());
-            tbasset.setText(x.arc_asset_acct());
-            tbassetcc.setText(x.arc_asset_cc());
-            tbfederaltax.setText(x.arc_fedtax_acct());
-            tbfederalcc.setText(x.arc_fedtax_cc());
-            tbstatetax.setText(x.arc_statetax_acct());
-            tbstatecc.setText(x.arc_statetax_cc());
-            tblocaltax.setText(x.arc_localtax_acct());
-            tblocalcc.setText(x.arc_localtax_cc());
-            tbothertax.setText(x.arc_othertax_acct());
-            tbothercc.setText(x.arc_othertax_cc());
-            tbshippingacct.setText(x.arc_varchar());
+        tbbank.setText(x.arc_bank());
+        tbaracct.setText(x.arc_default_acct());
+        tbarcc.setText(x.arc_default_cc());
+        tbsalesacct.setText(x.arc_sales_acct());
+        tbsalescc.setText(x.arc_sales_cc());
+        tbsalestaxacct.setText(x.arc_salestax_acct());
+        tbsalestaxcc.setText(x.arc_salestax_cc());
+        tbasset.setText(x.arc_asset_acct());
+        tbassetcc.setText(x.arc_asset_cc());
+        tbfederaltax.setText(x.arc_fedtax_acct());
+        tbfederalcc.setText(x.arc_fedtax_cc());
+        tbstatetax.setText(x.arc_statetax_acct());
+        tbstatecc.setText(x.arc_statetax_cc());
+        tblocaltax.setText(x.arc_localtax_acct());
+        tblocalcc.setText(x.arc_localtax_cc());
+        tbothertax.setText(x.arc_othertax_acct());
+        tbothercc.setText(x.arc_othertax_cc());
+        tbshippingacct.setText(x.arc_varchar());
     }
     
     
@@ -343,6 +347,10 @@ public class ARControl extends javax.swing.JPanel implements IBlueSeerc {
         jLabel15 = new javax.swing.JLabel();
         tbshippingacct = new javax.swing.JTextField();
         jLabel16 = new javax.swing.JLabel();
+        tbsalestaxacct = new javax.swing.JTextField();
+        tbsalestaxcc = new javax.swing.JTextField();
+        jLabel17 = new javax.swing.JLabel();
+        jLabel18 = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -404,6 +412,10 @@ public class ARControl extends javax.swing.JPanel implements IBlueSeerc {
 
         jLabel16.setText("AR Shipping Acct");
 
+        jLabel17.setText("Default Sales Tax Acct");
+
+        jLabel18.setText("Default Sales Tax CC");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -428,27 +440,32 @@ public class ARControl extends javax.swing.JPanel implements IBlueSeerc {
                             .addComponent(jLabel13, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel14, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel15, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel16, javax.swing.GroupLayout.Alignment.TRAILING))
+                            .addComponent(jLabel16, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel17, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel18, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(tbstatetax, javax.swing.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
                             .addComponent(tblocaltax, javax.swing.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
                             .addComponent(tbothertax, javax.swing.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(tbothercc, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tbstatecc, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tbfederalcc, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tbaracct, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
-                                    .addComponent(tbsalesacct, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
-                                    .addComponent(tbsalescc, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tbarcc, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tbbank, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tbfederaltax)
-                                    .addComponent(tblocalcc, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tbasset)
-                                    .addComponent(tbassetcc, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tbshippingacct))
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addComponent(tbsalestaxacct)
+                                        .addComponent(tbothercc, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(tbstatecc, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(tbfederalcc, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(tbaracct, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
+                                        .addComponent(tbsalesacct, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
+                                        .addComponent(tbsalescc, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(tbarcc, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(tbbank, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(tbfederaltax, javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(tblocalcc, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(tbasset, javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(tbassetcc, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(tbshippingacct, javax.swing.GroupLayout.Alignment.LEADING))
+                                    .addComponent(tbsalestaxcc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(0, 0, Short.MAX_VALUE))))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
@@ -484,6 +501,14 @@ public class ARControl extends javax.swing.JPanel implements IBlueSeerc {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(tbsalescc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel5))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(tbsalestaxacct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel17))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(tbsalestaxcc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel18))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(tbasset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -550,6 +575,8 @@ public class ARControl extends javax.swing.JPanel implements IBlueSeerc {
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -572,6 +599,8 @@ public class ARControl extends javax.swing.JPanel implements IBlueSeerc {
     private javax.swing.JTextField tbothertax;
     private javax.swing.JTextField tbsalesacct;
     private javax.swing.JTextField tbsalescc;
+    private javax.swing.JTextField tbsalestaxacct;
+    private javax.swing.JTextField tbsalestaxcc;
     private javax.swing.JTextField tbshippingacct;
     private javax.swing.JTextField tbstatecc;
     private javax.swing.JTextField tbstatetax;

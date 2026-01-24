@@ -1222,7 +1222,9 @@ public class fglData {
                                 res.getString("taxd_moddate"),
                                 res.getString("taxd_enabled"),
                                 res.getString("taxd_userid"),
-                                res.getString("taxd_line"));
+                                res.getString("taxd_line"),
+                                res.getString("taxd_conditional"),
+                                res.getString("taxd_method"));
                         list.add(r);
                     }
                 }
@@ -1242,8 +1244,8 @@ public class fglData {
         String sqlSelect = "select * from taxd_mstr where taxd_parentcode = ? and taxd_line = ?";
         String sqlInsert = "insert into taxd_mstr (taxd_parentcode, taxd_line, taxd_desc, taxd_type, " 
                         + "taxd_percent, taxd_crtdate, taxd_moddate, taxd_enabled, " 
-                        + "taxd_userid ) "
-                        + " values (?,?,?,?,?,?,?,?,?); "; 
+                        + "taxd_userid, taxd_conditional, taxd_method ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?); "; 
        
           ps = con.prepareStatement(sqlSelect); 
           ps.setString(1, x.taxd_parentcode);
@@ -1260,6 +1262,8 @@ public class fglData {
             ps.setString(7, x.taxd_moddate);
             ps.setString(8, x.taxd_enabled);
             ps.setString(9, x.taxd_userid);
+            ps.setString(10, x.taxd_conditional);
+            ps.setString(11, x.taxd_method);
             rows = ps.executeUpdate();
             } 
             return rows;
@@ -1270,12 +1274,12 @@ public class fglData {
         String sqlSelect = "select * from taxd_mstr where taxd_parentcode = ? and taxd_line = ?";
         String sqlUpdate = "update taxd_mstr set taxd_desc = ?, taxd_type = ?, " +
                 "taxd_percent = ?, taxd_crtdate = ?, taxd_moddate = ?, taxd_enabled = ?, " +
-                " taxd_userid = ? " +
+                " taxd_userid = ?, taxd_conditional = ?, taxd_method = ? " +
                  " where taxd_parentcode = ? and taxd_line = ? ; ";
         String sqlInsert = "insert into taxd_mstr (taxd_parentcode, taxd_line, taxd_desc, taxd_type, " 
                         + "taxd_percent, taxd_crtdate, taxd_moddate, taxd_enabled, " 
-                        + "taxd_userid ) "
-                        + " values (?,?,?,?,?,?,?,?,?); ";  
+                        + "taxd_userid, taxd_conditional, taxd_method ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?); ";  
         ps = con.prepareStatement(sqlSelect); 
         ps.setString(1, x.taxd_parentcode);
         ps.setString(2, x.taxd_line);
@@ -1291,11 +1295,13 @@ public class fglData {
             ps.setString(7, x.taxd_moddate);
             ps.setString(8, x.taxd_enabled);
             ps.setString(9, x.taxd_userid);
+            ps.setString(10, x.taxd_conditional);
+            ps.setString(11, x.taxd_method);
             rows = ps.executeUpdate();
         } else {    // update
          ps = con.prepareStatement(sqlUpdate) ;
-            ps.setString(8, x.taxd_parentcode);
-            ps.setString(9, x.taxd_line);
+            ps.setString(10, x.taxd_parentcode);
+            ps.setString(11, x.taxd_line);
             ps.setString(1, x.taxd_desc);
             ps.setString(2, x.taxd_type);
             ps.setString(3, x.taxd_percent);
@@ -1303,6 +1309,8 @@ public class fglData {
             ps.setString(5, x.taxd_moddate);
             ps.setString(6, x.taxd_enabled);
             ps.setString(7, x.taxd_userid);
+            ps.setString(8, x.taxd_conditional);
+            ps.setString(9, x.taxd_method);
             rows = ps.executeUpdate();
         }
             
@@ -4004,7 +4012,7 @@ public class fglData {
                         i = 0;
                         
                         nres = st2.executeQuery("select  itc_total, pl_scrap, pl_line, pl_inventory, " +
-                       " pl_cogs_mtl, pl_cogs_lbr, pl_cogs_bdn, pl_cogs_ovh, pl_cogs_out, pl_sales, " +
+                       " pl_cogs_mtl, pl_cogs_lbr, pl_cogs_bdn, pl_cogs_ovh, pl_cogs_out, pl_sales, pl_sales_disc, " +
                        " itc_mtl_top, itc_mtl_low, itc_lbr_top, itc_lbr_low, itc_bdn_top, itc_bdn_low, " +
                        " itc_ovh_top, itc_ovh_low, itc_out_top, itc_out_low, itc_bdn_top, itc_bdn_low " +
                        " from item_mstr  " + 
@@ -4142,7 +4150,7 @@ public class fglData {
                     // we will credit sales (income) acct and debit (liability) appropriate tax account for each tax element in cm_tax_code
                     tottax = shpData.getTaxAmtApplicableByShipper(shipper, totamt);
                     if (tottax > 0) {
-                      ArrayList<String[]> taxelements = OVData.getTaxPercentElementsApplicableByTaxCode(taxcode);
+                      ArrayList<String[]> taxelements = OVData.getTaxPercentElementsApplicableByTaxCode(taxcode); // elements = taxd_desc, taxd_percent, taxd_type
                           double taxvalue = 0;
                           double basetaxvalue = 0;
                         for (String[] elements : taxelements) {
@@ -7098,9 +7106,9 @@ return myarray;
     
     public record taxd_mstr(String[] m, String taxd_parentcode, String taxd_id,  String taxd_desc, 
         String taxd_type, String taxd_percent, String taxd_crtdate, String taxd_moddate, String taxd_enabled, 
-        String taxd_userid, String taxd_line) {
+        String taxd_userid, String taxd_line, String taxd_conditional, String taxd_method) {
         public taxd_mstr(String[] m) {
-            this(m, "", "", "", "", "", "", "", "", "", "");
+            this(m, "", "", "", "", "", "", "", "", "", "", "", "");
         }
     }
     

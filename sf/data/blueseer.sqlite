@@ -93,7 +93,10 @@ CREATE TABLE "ar_ctrl" (
   "arc_localtax_cc" varchar(4) NOT NULL COLLATE NOCASE DEFAULT '',
   "arc_othertax_acct" varchar(12) NOT NULL COLLATE NOCASE DEFAULT '',
   "arc_othertax_cc" varchar(4) NOT NULL COLLATE NOCASE DEFAULT '',
-  "arc_varchar" varchar(50) COLLATE NOCASE DEFAULT ''
+  "arc_varchar" varchar(50) COLLATE NOCASE DEFAULT '',
+  "arc_salestax_acct` varchar(12) NOT NULL COLLATE NOCASE DEFAULT '',
+  "arc_salestax_cc` varchar(4) NOT NULL COLLATE NOCASE DEFAULT ''
+
 );
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1517,32 +1520,32 @@ CREATE TABLE "menuw_mstr" (
 CREATE TABLE "pl_mstr" (
   "pl_line" varchar(4) NOT NULL COLLATE NOCASE DEFAULT '',
   "pl_desc" varchar(50) COLLATE NOCASE DEFAULT '',
-  "pl_inventory" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_inv_discr" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_scrap" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_wip" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_wip_var" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_inv_change" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_sales" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_sales_disc" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_cogs_mtl" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_cogs_lbr" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_cogs_bdn" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_cogs_ovh" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_cogs_out" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_purchases" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_po_rcpt" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_po_ovh" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_po_pricevar" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
-  "pl_ap_usage" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_ap_ratevar" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_job_stock" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_mtl_usagevar" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_mtl_ratevar" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_mix_var" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_cop" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_out_usagevar" varchar(10) COLLATE NOCASE DEFAULT '',
-  "pl_out_ratevar" varchar(10) COLLATE NOCASE DEFAULT '');
+  "pl_inventory" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_inv_discr" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_scrap" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_wip" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_wip_var" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_inv_change" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_sales" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_sales_disc" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_cogs_mtl" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_cogs_lbr" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_cogs_bdn" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_cogs_ovh" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_cogs_out" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_purchases" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_po_rcpt" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_po_ovh" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_po_pricevar" varchar(12) NOT NULL COLLATE NOCASE DEFAULT '',
+  "pl_ap_usage" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_ap_ratevar" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_sales_tax" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_mtl_usagevar" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_mtl_ratevar" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_mix_var" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_cop" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_out_usagevar" varchar(12) COLLATE NOCASE DEFAULT '',
+  "pl_out_ratevar" varchar(12) COLLATE NOCASE DEFAULT '');
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -2590,7 +2593,9 @@ CREATE TABLE "taxd_mstr" (
   "taxd_moddate" date DEFAULT '0000-00-00',
   "taxd_enabled" tinyint(1) NOT NULL DEFAULT '0',
   "taxd_userid" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
-  "taxd_line" varchar(8) NOT NULL COLLATE NOCASE DEFAULT ''
+  "taxd_line" varchar(8) NOT NULL COLLATE NOCASE DEFAULT '',
+  "taxd_conditional" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
+  "taxd_method" varchar(50) NOT NULL COLLATE NOCASE DEFAULT ''
 );
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -3616,5 +3621,12 @@ CREATE TABLE "cfo_status" (
   "cfox_key" varchar(20) NOT NULL COLLATE NOCASE DEFAULT '',
   "cfox_ref" varchar(200) NOT NULL COLLATE NOCASE DEFAULT ''
 );
+CREATE TABLE "tax_meta" (
+  "taxm_id" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
+  "taxm_type" varchar(80) NOT NULL COLLATE NOCASE DEFAULT '',
+  "taxm_key" varchar(80) NOT NULL COLLATE NOCASE DEFAULT '',
+  "taxm_value" varchar(200) NOT NULL COLLATE NOCASE DEFAULT ''
+);
+
 
 End Transaction;

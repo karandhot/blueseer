@@ -450,7 +450,8 @@ public class farData {
         String sqlUpdate = "update ar_ctrl set arc_bank = ?, arc_default_acct = ?, arc_default_cc = ?,"
                 + "arc_sales_acct = ?, arc_sales_cc = ?, arc_asset_acct = ?, arc_asset_cc = ?,"
                 + "arc_fedtax_acct = ?, arc_fedtax_cc = ?, arc_statetax_acct = ?, arc_statetax_cc = ?,"
-                + "arc_localtax_acct = ?, arc_localtax_cc = ?, arc_othertax_acct = ?, arc_othertax_cc = ?, arc_varchar = ? ; ";
+                + "arc_localtax_acct = ?, arc_localtax_cc = ?, arc_othertax_acct = ?, arc_othertax_cc = ?, arc_varchar = ?, "
+                + " arc_salestax_acct = ?, arc_salestax_cc = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
              PreparedStatement ps = con.prepareStatement(sqlSelect);) {
           try (ResultSet res = ps.executeQuery();
@@ -473,6 +474,8 @@ public class farData {
             psi.setString(14, x.arc_othertax_acct);
             psi.setString(15, x.arc_othertax_cc);
             psi.setString(16, x.arc_varchar);
+            psi.setString(17, x.arc_salestax_acct);
+            psi.setString(18, x.arc_salestax_cc);
              rows = psi.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
             } else {
@@ -492,6 +495,8 @@ public class farData {
             psu.setString(14, x.arc_othertax_acct);
             psu.setString(15, x.arc_othertax_cc);
             psu.setString(16, x.arc_varchar);
+            psu.setString(17, x.arc_salestax_acct);
+            psu.setString(18, x.arc_salestax_cc);
             rows = psu.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};    
             }
@@ -551,7 +556,9 @@ public class farData {
                                 res.getString("arc_localtax_cc"),
                                 res.getString("arc_othertax_acct"),
                                 res.getString("arc_othertax_cc"),
-                                res.getString("arc_varchar")
+                                res.getString("arc_varchar"),
+                                res.getString("arc_salestax_acct"),
+                                res.getString("arc_salestax_cc")
                         );
                     }
                 }
@@ -625,10 +632,10 @@ public class farData {
         String arc_sales_acct, String arc_sales_cc, String arc_asset_acct, String arc_asset_cc, 
         String arc_fedtax_acct, String arc_fedtax_cc, String arc_statetax_acct, String arc_statetax_cc, 
         String arc_localtax_acct, String arc_localtax_cc, String arc_othertax_acct, String arc_othertax_cc,
-        String arc_varchar) {
+        String arc_varchar, String arc_salestax_acct, String arc_salestax_cc) {
         public ar_ctrl(String[] m) {
             this(m, "", "", "", "", "", "", "", "", "", "",
-                    "", "", "", "", "", "" );
+                    "", "", "", "", "", "", "", "" );
         }
     }
 }

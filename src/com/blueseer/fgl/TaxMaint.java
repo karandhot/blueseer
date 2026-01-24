@@ -102,7 +102,9 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
                 getGlobalColumnTag("element"), 
                 getGlobalColumnTag("percent"), 
                 getGlobalColumnTag("type"), 
-                getGlobalColumnTag("enabled")
+                getGlobalColumnTag("enabled"),
+                getGlobalColumnTag("code"),
+                getGlobalColumnTag("method")
             });
     
      class MyTableModel extends DefaultTableModel {  
@@ -519,8 +521,9 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
                       taxd.taxd_desc(), 
                       taxd.taxd_percent(),
                       taxd.taxd_type(),
-                      ConvertIntToYesNo(Integer.valueOf(taxd.taxd_enabled()))
-                     
+                      ConvertIntToYesNo(Integer.parseInt(taxd.taxd_enabled())),
+                      taxd.taxd_conditional(),
+                      taxd.taxd_method()                     
                   });
                 }
         
@@ -552,7 +555,9 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
                 now, // moddate
                 ConvertTrueFalseToStringInt(tabletax.getValueAt(j, 4).toString()),
                 bsmf.MainFrame.userid,
-                tabletax.getValueAt(j, 0).toString()
+                tabletax.getValueAt(j, 0).toString(),
+                tabletax.getValueAt(j, 5).toString(),
+                tabletax.getValueAt(j, 6).toString()
                 );
         list.add(x);
          }
@@ -595,6 +600,10 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddtype = new javax.swing.JComboBox<>();
         jLabel7 = new javax.swing.JLabel();
         btupdateelement = new javax.swing.JButton();
+        ddmethod = new javax.swing.JComboBox<>();
+        ddconditional = new javax.swing.JComboBox<>();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         btnew = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
@@ -663,12 +672,12 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
-        jLabel4.setText("Percent");
+        jLabel4.setText("Type");
         jLabel4.setName("lblpercent"); // NOI18N
 
-        ddtype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "OTHER", "MATERIAL", "FEDERAL", "STATE", "LOCAL" }));
+        ddtype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "SALES", "OTHER", "MATERIAL", "FEDERAL", "STATE", "LOCAL" }));
 
-        jLabel7.setText("Type");
+        jLabel7.setText("Percent");
         jLabel7.setName("lbltype"); // NOI18N
 
         btupdateelement.setText("Update Element");
@@ -677,6 +686,14 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
                 btupdateelementActionPerformed(evt);
             }
         });
+
+        ddmethod.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Destination ShipTo", "Origin Billing", "Origin ShipFrom", " " }));
+
+        ddconditional.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "NONE", "STATE", "ZIP" }));
+
+        jLabel1.setText("Method");
+
+        jLabel2.setText("Conditional");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -687,28 +704,37 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel3)
                     .addComponent(jLabel4)
-                    .addComponent(jLabel7))
+                    .addComponent(jLabel7)
+                    .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(tbtaxelement)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
                             .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(tbtaxpercent, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(cbenabled)
-                                .addGap(0, 0, Short.MAX_VALUE)))
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(ddconditional, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(tbtaxpercent)
+                                    .addComponent(ddtype, 0, 104, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                                        .addComponent(btaddelement)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btupdateelement)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btdeleteelement)
+                                        .addGap(15, 15, 15))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                                        .addComponent(jLabel1)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(ddmethod, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(195, 195, 195)))))
                         .addContainerGap())
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btaddelement)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btupdateelement)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btdeleteelement)
-                        .addGap(21, 21, 21))))
+                        .addComponent(cbenabled)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -717,20 +743,25 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbtaxelement, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbenabled)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cbenabled)
+                    .addComponent(ddmethod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ddconditional, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
-                    .addComponent(tbtaxpercent, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(4, 4, 4)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(btaddelement)
-                        .addComponent(btdeleteelement)
-                        .addComponent(btupdateelement))
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel7)))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btaddelement)
+                    .addComponent(btdeleteelement)
+                    .addComponent(btupdateelement)
+                    .addComponent(tbtaxpercent, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel7))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -913,12 +944,19 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
         line++;
         
         
-        taxmodel.addRow(new Object[]{ String.valueOf(line), tbtaxelement.getText(), tbtaxpercent.getText(), ddtype.getSelectedItem().toString(), ConvertBoolToYesNo(cbenabled.isSelected()) });
+        taxmodel.addRow(new Object[]{ String.valueOf(line), tbtaxelement.getText(), 
+            tbtaxpercent.getText(), 
+            ddtype.getSelectedItem().toString(), 
+            ConvertBoolToYesNo(cbenabled.isSelected()),
+            ddconditional.getSelectedItem().toString(),
+            ddmethod.getSelectedItem().toString()});
         
         // reset element values to default
         tbtaxelement.setText("");
         tbtaxpercent.setText("");
         ddtype.setSelectedIndex(0);
+        ddconditional.setSelectedIndex(0);
+        ddmethod.setSelectedIndex(0);
         cbenabled.setSelected(true);
         // send cursor back to tax element for next entry
         tbtaxelement.requestFocus();
@@ -971,6 +1009,8 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbtaxpercent.setText(tabletax.getValueAt(row, 2).toString());
         ddtype.setSelectedItem(tabletax.getValueAt(row, 3).toString());
         cbenabled.setSelected(ConvertStringToBool(tabletax.getValueAt(row, 4).toString()));
+        ddconditional.setSelectedItem(tabletax.getValueAt(row, 5).toString());
+        ddmethod.setSelectedItem(tabletax.getValueAt(row, 6).toString());
         
     }//GEN-LAST:event_tabletaxMouseClicked
 
@@ -995,6 +1035,8 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
                 tabletax.setValueAt(tbtaxpercent.getText(), i, 2);
                 tabletax.setValueAt(ddtype.getSelectedItem().toString(), i, 3);
                 tabletax.setValueAt(ConvertBoolToYesNo(cbenabled.isSelected()), i, 4);
+                tabletax.setValueAt(ddconditional.getSelectedItem().toString(), i, 5);
+                tabletax.setValueAt(ddmethod.getSelectedItem().toString(), i, 6);
                
         }
     }//GEN-LAST:event_btupdateelementActionPerformed
@@ -1012,7 +1054,11 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btupdate;
     private javax.swing.JButton btupdateelement;
     private javax.swing.JCheckBox cbenabled;
+    private javax.swing.JComboBox<String> ddconditional;
+    private javax.swing.JComboBox<String> ddmethod;
     private javax.swing.JComboBox<String> ddtype;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;

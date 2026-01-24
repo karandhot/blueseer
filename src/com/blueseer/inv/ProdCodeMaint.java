@@ -301,7 +301,7 @@ public class ProdCodeMaint extends javax.swing.JPanel implements IBlueSeerT {
          tbpopricevaracct.setText("");
          tbapusageacct.setText("");
          tbapratevaracct.setText("");
-         tbjobstockacct.setText("");
+         tbsalestaxacct.setText("");
          tbmtlusagevaracct.setText("");
          tbmtlratevaracct.setText("");
          tbmixedvaracct.setText("");
@@ -457,9 +457,9 @@ public class ProdCodeMaint extends javax.swing.JPanel implements IBlueSeerT {
                    tbapratevaracct.requestFocus();
                    return false;
                 }
-         if (! OVData.isValidGLAcct(tbjobstockacct.getText().toString())) {
+         if (! OVData.isValidGLAcct(tbsalestaxacct.getText().toString())) {
                    bsmf.MainFrame.show(getMessageTag(1052));
-                   tbjobstockacct.requestFocus();
+                   tbsalestaxacct.requestFocus();
                    return false;
                 }
          if (! OVData.isValidGLAcct(tbmtlusagevaracct.getText().toString())) {
@@ -564,7 +564,7 @@ public class ProdCodeMaint extends javax.swing.JPanel implements IBlueSeerT {
             tbpopricevaracct.getText(),
             tbapusageacct.getText(),
             tbapratevaracct.getText(),
-            tbjobstockacct.getText(),
+            tbsalestaxacct.getText(),
             tbmtlusagevaracct.getText(),
             tbmtlratevaracct.getText(),
             tbmixedvaracct.getText(),
@@ -638,7 +638,7 @@ public class ProdCodeMaint extends javax.swing.JPanel implements IBlueSeerT {
          tbpopricevaracct.setText(x.pl_po_pricevar());
          tbapusageacct.setText(x.pl_ap_usage());
          tbapratevaracct.setText(x.pl_ap_ratevar());
-         tbjobstockacct.setText(x.pl_job_stock());
+         tbsalestaxacct.setText(x.pl_sales_tax());
          tbmtlusagevaracct.setText(x.pl_mtl_usagevar());
          tbmtlratevaracct.setText(x.pl_mtl_ratevar());
          tbmixedvaracct.setText(x.pl_mix_var());
@@ -721,7 +721,7 @@ public class ProdCodeMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel93 = new javax.swing.JLabel();
         tbmtlratevaracct = new javax.swing.JTextField();
         tbmtlusagevaracct = new javax.swing.JTextField();
-        tbjobstockacct = new javax.swing.JTextField();
+        tbsalestaxacct = new javax.swing.JTextField();
         jLabel94 = new javax.swing.JLabel();
         btnew = new javax.swing.JButton();
         btdelete = new javax.swing.JButton();
@@ -840,7 +840,7 @@ public class ProdCodeMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel93.setText("AP Usage Acct");
         jLabel93.setName("lblapusage"); // NOI18N
 
-        jLabel94.setText("Job Stock Acct");
+        jLabel94.setText("Sales Tax Acct");
         jLabel94.setName("lbljobstock"); // NOI18N
 
         btnew.setText("New");
@@ -927,7 +927,7 @@ public class ProdCodeMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel94)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tbjobstockacct, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(tbsalestaxacct, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
@@ -1068,7 +1068,7 @@ public class ProdCodeMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(tbpopricevaracct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel84)
-                            .addComponent(tbjobstockacct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbsalestaxacct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel94)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1224,7 +1224,6 @@ public class ProdCodeMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JTextField tbinvacct;
     private javax.swing.JTextField tbinvchangeacct;
     private javax.swing.JTextField tbinvdescrepancyacct;
-    private javax.swing.JTextField tbjobstockacct;
     private javax.swing.JTextField tbkey;
     private javax.swing.JTextField tbmixedvaracct;
     private javax.swing.JTextField tbmtlratevaracct;
@@ -1237,6 +1236,7 @@ public class ProdCodeMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JTextField tbpurchacct;
     private javax.swing.JTextField tbsalesacct;
     private javax.swing.JTextField tbsalesdiscacct;
+    private javax.swing.JTextField tbsalestaxacct;
     private javax.swing.JTextField tbscrapacct;
     private javax.swing.JTextField tbtbd;
     private javax.swing.JTextField tbwipacct;

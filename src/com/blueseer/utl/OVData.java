@@ -9472,22 +9472,24 @@ public class OVData {
                 res = st.executeQuery("select * from ar_ctrl;");
                 while (res.next()) {
                     other = res.getString("arc_othertax_acct");
-
-                    if (type.toUpperCase().equals("FEDERAL") && !res.getString("arc_fedtax_acct").isEmpty()) {
+                    if (type.toUpperCase().equals("SALES") && ! res.getString("arc_salestax_acct").isEmpty()) {
+                        acct = res.getString("arc_salestax_acct");
+                    }
+                    if (type.toUpperCase().equals("FEDERAL") && ! res.getString("arc_fedtax_acct").isEmpty()) {
                         acct = res.getString("arc_fedtax_acct");
                     }
-                    if (type.toUpperCase().equals("STATE") && !res.getString("arc_statetax_acct").isEmpty()) {
+                    if (type.toUpperCase().equals("STATE") && ! res.getString("arc_statetax_acct").isEmpty()) {
                         acct = res.getString("arc_statetax_acct");
                     }
-                    if (type.toUpperCase().equals("LOCAL") && !res.getString("arc_localtax_acct").isEmpty()) {
+                    if (type.toUpperCase().equals("LOCAL") && ! res.getString("arc_localtax_acct").isEmpty()) {
                         acct = res.getString("arc_localtax_acct");
                     }
-                    if (type.toUpperCase().equals("OTHER") && !res.getString("arc_othertax_acct").isEmpty()) {
+                    if (type.toUpperCase().equals("OTHER") && ! res.getString("arc_othertax_acct").isEmpty()) {
                         acct = res.getString("arc_othertax_acct");
                     }
                     // need to move this post Version 6.0 to inside the TaxMaint
                     // for now...material and other are synonymous
-                    if (type.toUpperCase().equals("MATERIAL") && !res.getString("arc_othertax_acct").isEmpty()) {
+                    if (type.toUpperCase().equals("MATERIAL") && ! res.getString("arc_othertax_acct").isEmpty()) {
                         acct = res.getString("arc_othertax_acct");
                     }
                 }
@@ -9535,6 +9537,9 @@ public class OVData {
                 while (res.next()) {
                     other = res.getString("arc_othertax_cc");
 
+                    if (type.toUpperCase().equals("SALES") && !res.getString("arc_salestax_cc").isEmpty()) {
+                        cc = res.getString("arc_salestax_cc");
+                    }
                     if (type.toUpperCase().equals("FEDERAL") && !res.getString("arc_fedtax_cc").isEmpty()) {
                         cc = res.getString("arc_fedtax_cc");
                     }

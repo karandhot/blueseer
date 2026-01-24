@@ -2226,7 +2226,7 @@ public class invData {
             + "pl_scrap, pl_wip, pl_wip_var, pl_inv_change, pl_sales, pl_sales_disc, "
             + "pl_cogs_mtl, pl_cogs_lbr, pl_cogs_bdn, pl_cogs_ovh, pl_cogs_out, "
             + "pl_purchases, pl_po_rcpt, pl_po_ovh, pl_po_pricevar, pl_ap_usage, pl_ap_ratevar, "
-            + "pl_job_stock, pl_mtl_usagevar, pl_mtl_ratevar, pl_mix_var, pl_cop, pl_out_usagevar, pl_out_ratevar )"
+            + "pl_sales_tax, pl_mtl_usagevar, pl_mtl_ratevar, pl_mix_var, pl_cop, pl_out_usagevar, pl_out_ratevar )"
                         + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
              PreparedStatement ps = con.prepareStatement(sqlSelect);) {
@@ -2255,7 +2255,7 @@ public class invData {
             psi.setString(19, x.pl_po_pricevar);
             psi.setString(20, x.pl_ap_usage);
             psi.setString(21, x.pl_ap_ratevar);
-            psi.setString(22, x.pl_job_stock);
+            psi.setString(22, x.pl_sales_tax);
             psi.setString(23, x.pl_mtl_usagevar);
             psi.setString(24, x.pl_mtl_ratevar);
             psi.setString(25, x.pl_mix_var);
@@ -2297,7 +2297,7 @@ public class invData {
         "pl_sales = ?,  pl_sales_disc = ?,  pl_cogs_mtl = ?,  pl_cogs_lbr = ?," +
         "pl_cogs_bdn = ?,  pl_cogs_ovh = ?,  pl_cogs_out = ?,  pl_purchases = ?," +
         "pl_po_rcpt = ?,  pl_po_ovh = ?,  pl_po_pricevar = ?,  pl_ap_usage = ?," +
-        "pl_ap_ratevar = ?,  pl_job_stock = ?,  pl_mtl_usagevar = ?,  pl_mtl_ratevar = ?," +
+        "pl_ap_ratevar = ?,  pl_sales_tax = ?,  pl_mtl_usagevar = ?,  pl_mtl_ratevar = ?," +
         "pl_mix_var = ?,  pl_cop = ?,  pl_out_usagevar = ?,  pl_out_ratevar = ? " +
         " where pl_line = ? ;"; 
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
@@ -2323,7 +2323,7 @@ public class invData {
             ps.setString(18, x.pl_po_pricevar);
             ps.setString(19, x.pl_ap_usage);
             ps.setString(20, x.pl_ap_ratevar);
-            ps.setString(21, x.pl_job_stock);
+            ps.setString(21, x.pl_sales_tax);
             ps.setString(22, x.pl_mtl_usagevar);
             ps.setString(23, x.pl_mtl_ratevar);
             ps.setString(24, x.pl_mix_var);
@@ -2417,7 +2417,7 @@ public class invData {
                             res.getString("pl_po_pricevar"),
                             res.getString("pl_ap_usage"),
                             res.getString("pl_ap_ratevar"),
-                            res.getString("pl_job_stock"),
+                            res.getString("pl_sales_tax"),
                             res.getString("pl_mtl_usagevar"),
                             res.getString("pl_mtl_ratevar"),
                             res.getString("pl_mix_var"),
@@ -7863,7 +7863,7 @@ public class invData {
         String pl_sales, String pl_sales_disc, String pl_cogs_mtl, String pl_cogs_lbr, 
         String pl_cogs_bdn, String pl_cogs_ovh, String pl_cogs_out, String pl_purchases, 
         String pl_po_rcpt, String pl_po_ovh, String pl_po_pricevar, String pl_ap_usage, 
-        String pl_ap_ratevar, String pl_job_stock, String pl_mtl_usagevar, String pl_mtl_ratevar, 
+        String pl_ap_ratevar, String pl_sales_tax, String pl_mtl_usagevar, String pl_mtl_ratevar, 
         String pl_mix_var, String pl_cop, String pl_out_usagevar, String pl_out_ratevar) {
         public pl_mstr(String[] m) {
             this(m, "", "", "", "", "", "", "", "", "", "",

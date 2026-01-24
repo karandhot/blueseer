@@ -3166,7 +3166,7 @@ public class ediData {
             if (! res.isBeforeFirst()) {
             ps.setString(1, x.apid_id);
             ps.setString(2, x.apid_method);
-            ps.setString(3, x.apid_seq); 
+            ps.setInt(3, x.apid_seq); 
             ps.setString(4, x.apid_verb);
             ps.setString(5, x.apid_type);
             ps.setString(6, x.apid_path);
@@ -3540,7 +3540,7 @@ public class ediData {
 	 ps = con.prepareStatement(sqlInsert) ;
             ps.setString(1, x.apid_id);
             ps.setString(2, x.apid_method);
-            ps.setString(3, x.apid_seq);
+            ps.setInt(3, x.apid_seq);
             ps.setString(4, x.apid_verb);
             ps.setString(5, x.apid_type);
             ps.setString(6, x.apid_path);
@@ -3557,7 +3557,7 @@ public class ediData {
         } else {    // update
          
          ps = con.prepareStatement(sqlUpdate) ;
-            ps.setString(1, x.apid_seq);
+            ps.setInt(1, x.apid_seq);
             ps.setString(2, x.apid_verb);
             ps.setString(3, x.apid_type);
             ps.setString(4, x.apid_path);
@@ -4280,7 +4280,7 @@ public class ediData {
                         m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
                         r = new api_det(m, res.getString("apid_id"), 
                         res.getString("apid_method"), 
-                        res.getString("apid_seq"), 
+                        res.getInt("apid_seq"), 
                         res.getString("apid_verb"), 
                         res.getString("apid_type"),
                         res.getString("apid_path"),
@@ -4344,7 +4344,7 @@ public class ediData {
                         m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
                       r = new api_det(m, res.getString("apid_id"), 
                         res.getString("apid_method"), 
-                        res.getString("apid_seq"), 
+                        res.getInt("apid_seq"), 
                         res.getString("apid_verb"), 
                         res.getString("apid_type"),
                         res.getString("apid_path"),
@@ -8687,12 +8687,12 @@ public class ediData {
         }
     }
     
-    public record api_det(String[] m, String apid_id, String apid_method, String apid_seq,
+    public record api_det(String[] m, String apid_id, String apid_method, int apid_seq,
         String apid_verb, String apid_type, String apid_path, String apid_key,
          String apid_value, String apid_source, String apid_destination, String apid_enabled,
          String apid_char1, String apid_char2, String apid_char3) {
         public api_det(String[] m) {
-            this(m, "", "", "", "", "", "", "", "", "", "", "", "", "", "");
+            this(m, "", "", 0, "", "", "", "", "", "", "", "", "", "", "");
         }
     }
     
