@@ -846,7 +846,9 @@ public class QuoteMaint extends javax.swing.JPanel implements IBlueSeerT {
                 "", // entrytype...blank for manual; 'edi' for EDI entry
                 "0",
                 setDateDB(now),
-                "0" // cascading default quote to no
+                "0", // cascading default quote to no
+                "", // salesrep1
+                ""  // salesrep2
                 );
         
         // now detail

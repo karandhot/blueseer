@@ -3635,7 +3635,9 @@ public class EDI {
                 "edi",
                 "0",
                 bsmf.MainFrame.dfdate.format(new Date()),
-                custinfo[9]
+                custinfo[9],
+                "", // salesrep1
+                "" // salesrep2
                 );
         
          // sacs discount/charges 5 elements 
