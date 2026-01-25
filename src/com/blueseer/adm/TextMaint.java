@@ -30,6 +30,9 @@ import com.blueseer.inv.*;
 import bsmf.MainFrame;
 import static bsmf.MainFrame.tags;
 import com.blueseer.adm.admData;
+import static com.blueseer.adm.admData.addUpdateTxtMeta;
+import static com.blueseer.adm.admData.deleteTxtMeta;
+import static com.blueseer.adm.admData.getTxtMeta;
 import com.blueseer.adm.admData.txt_meta;
 import static com.blueseer.inv.invData.addUOMMstr;
 import static com.blueseer.inv.invData.deleteUOMMstr;
@@ -41,6 +44,7 @@ import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.checkLength;
 import com.blueseer.utl.BlueSeerUtils.dbaction;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
+import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.luModel;
 import static com.blueseer.utl.BlueSeerUtils.luTable;
@@ -49,6 +53,7 @@ import static com.blueseer.utl.BlueSeerUtils.ludialog;
 import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
+import static com.blueseer.utl.BlueSeerUtils.lurb2;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeer;
 import com.blueseer.utl.IBlueSeerT;
@@ -370,12 +375,12 @@ public class TextMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public String[] addRecord(String[] x) {
-     String[] m = addTxtMeta(createRecord());
+     String[] m = addUpdateTxtMeta(createRecord());
      return m;
      }
      
     public String[] updateRecord(String[] x) {
-     String[] m = updateTxtMeta(createRecord());
+     String[] m = addUpdateTxtMeta(createRecord());
      return m;
      }
      
@@ -392,8 +397,9 @@ public class TextMaint extends javax.swing.JPanel implements IBlueSeerT {
       
     public String[] getRecord(String[] key) {
       txt_meta x = getTxtMeta(key);
-      tbkey.setText(x.uom_id());
-      tbdesc.setText(x.uom_desc());
+      tbkey.setText(x.txt_type());   // usage of type and key are inverted here when compared to txt_meta table schema
+      ddtype.setSelectedItem(x.txt_key());  // usage of type and key are inverted here when compared to txt_meta table schema
+      tacomments.setText(x.txt_value());
       setAction(x.m());
       return x.m();  
     }
@@ -414,10 +420,12 @@ public class TextMaint extends javax.swing.JPanel implements IBlueSeerT {
         lual = new ActionListener() {
         public void actionPerformed(ActionEvent event) {
         if (lurb1.isSelected()) {  
-         luModel = DTData.getUOMBrowseUtil(luinput.getText(),0, "uom_id");
+         luModel = DTData.getTXTBrowseUtil(luinput.getText(),0, "txt_id");
+        } else if (lurb2.isSelected()) {
+         luModel = DTData.getTXTBrowseUtil(luinput.getText(),0, "txt_type");   
         } else {
-         luModel = DTData.getUOMBrowseUtil(luinput.getText(),0, "uom_desc");   
-        }
+         luModel = DTData.getTXTBrowseUtil(luinput.getText(), 0, "txt_key");   
+        } 
         luTable.setModel(luModel);
         luTable.getColumnModel().getColumn(0).setMaxWidth(50);
         if (luModel.getRowCount() < 1) {
@@ -443,7 +451,7 @@ public class TextMaint extends javax.swing.JPanel implements IBlueSeerT {
         };
         luTable.addMouseListener(luml);
       
-        callDialog(getClassLabelTag("lblid", this.getClass().getSimpleName()), getClassLabelTag("lbldesc", this.getClass().getSimpleName())); 
+        callDialog(getGlobalColumnTag(getGlobalColumnTag("id")), getGlobalColumnTag("type"), getGlobalColumnTag("key")); 
         
     }
 

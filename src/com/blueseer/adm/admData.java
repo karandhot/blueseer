@@ -631,8 +631,7 @@ public class admData {
         }
         return m;
     }
-    
-    
+        
     public static String[] addUpdateOVMstr(ov_mstr x) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
@@ -686,7 +685,235 @@ public class admData {
         }
         return m;
     }
-       
+    
+    public static String[] addUpdateTxtMeta(txt_meta x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id","addUpdateTxtMeta"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
+        int rows = 0;
+        String[] m ;
+        String sqlSelect = "SELECT * FROM  txt_meta where txt_id = ? and txt_type = ? and txt_key = ?;";
+        String sqlInsert = "insert into txt_meta (txt_id, txt_type, txt_key, txt_value) " +
+                           " values (?,?,?,?); "; 
+        String sqlUpdate = "update txt_meta set txt_value = ? where txt_id = ? and txt_type = ? and txt_key = ?;"; 
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+             PreparedStatement ps = con.prepareStatement(sqlSelect);) {
+             ps.setString(1, x.txt_id);
+             ps.setString(2, x.txt_type);
+             ps.setString(3, x.txt_key);
+          try (ResultSet res = ps.executeQuery();
+               PreparedStatement psi = con.prepareStatement(sqlInsert);
+               PreparedStatement psu = con.prepareStatement(sqlUpdate);) {  
+            if (! res.isBeforeFirst()) {
+            psi.setString(1, x.txt_id);
+            psi.setString(2, x.txt_type);
+            psi.setString(3, x.txt_key);
+            psi.setString(4, x.txt_value);
+             rows = psi.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+            } else {
+            psu.setString(1, x.txt_value);
+            psu.setString(2, x.txt_id);
+            psu.setString(3, x.txt_type);
+            psu.setString(4, x.txt_key);
+            
+            rows = psu.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};    
+            }
+          } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+          }
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
+    public static String[] deleteTxtMeta(txt_meta x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id","deleteTxtMeta"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
+        int rows = 0;
+        String[] m ;
+        String sqlDelete = "DELETE FROM  txt_meta where txt_id = ? and txt_type = ? and txt_key = ?;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+             PreparedStatement ps = con.prepareStatement(sqlDelete);) {
+             ps.setString(1, x.txt_id);
+             ps.setString(2, x.txt_type);
+             ps.setString(3, x.txt_key);
+             rows = ps.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
+    public static txt_meta getTxtMeta(String[] x) {
+        txt_meta r = null;
+        String[] m ;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getTxtMeta"});
+            list.add(new String[]{"param1",x[0]});
+            list.add(new String[]{"param2",x[1]});
+            list.add(new String[]{"param3",x[2]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServADM");
+                r = objectMapper.readValue(returnstring, txt_meta.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new txt_meta(m);
+                return r;
+            }
+        }
+        String sql = "Select * FROM txt_meta where txt_id = ? and txt_type = ? and txt_key = ? ; " ; 
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+            ps.setString(1, x[0]);
+            ps.setString(2, x[1]);
+            ps.setString(3, x[2]);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new txt_meta(m);  // minimum return
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new txt_meta(m, res.getString("txt_id"), res.getString("txt_type"),
+                        res.getString("txt_key"), res.getString("txt_value"));
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getClassName() + "." + Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new txt_meta(m);
+        }
+        return r;
+    }
+  
+    public static ArrayList<txt_meta> getTxtMetaByID(String[] x) {
+        ArrayList<txt_meta> rlist = new ArrayList<>();
+        txt_meta r = null;
+        String[] m ;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<>();
+            paramlist.add(new String[]{"id","getTxtMetaByID"});
+            paramlist.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServADM");
+                rlist = objectMapper.readValue(returnstring, new TypeReference<ArrayList<txt_meta>>() {});
+                return rlist;
+            } catch (IOException ex) {
+                bslog(ex);
+                return rlist;
+            }
+        }
+        String sql = "Select * FROM txt_meta where txt_id = ?  ; " ; 
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+            ps.setString(1, x[0]);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new txt_meta(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new txt_meta(m, res.getString("txt_id"), 
+                            res.getString("txt_type"),
+                            res.getString("txt_key"),
+                            res.getString("txt_value")
+                        );
+                        rlist.add(r);
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getClassName() + "." + Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new txt_meta(m);
+        }
+        return rlist;
+    }
+  
+    public static ArrayList<txt_meta> getTxtMetaByIDandType(String[] x) {
+        ArrayList<txt_meta> rlist = new ArrayList<>();
+        txt_meta r = null;
+        String[] m ;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<>();
+            paramlist.add(new String[]{"id","getTxtMetaByIDandType"});
+            paramlist.add(new String[]{"param1",x[0]});
+            paramlist.add(new String[]{"param2",x[1]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServADM");
+                rlist = objectMapper.readValue(returnstring, new TypeReference<ArrayList<txt_meta>>() {});
+                return rlist;
+            } catch (IOException ex) {
+                bslog(ex);
+                return rlist;
+            }
+        }
+        String sql = "Select * FROM txt_meta where txt_id = ? and txt_type = ?  ; " ; 
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+            ps.setString(1, x[0]);
+            ps.setString(2, x[1]);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new txt_meta(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new txt_meta(m, res.getString("txt_id"), 
+                            res.getString("txt_type"),
+                            res.getString("txt_key"),
+                            res.getString("txt_value")
+                        );
+                        rlist.add(r);
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getClassName() + "." + Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new txt_meta(m);
+        }
+        return rlist;
+    }
+  
+    
     public static ov_mstr getOVMstr(String[] x) {
         ov_mstr r = null;
         String[] m ;
