@@ -211,7 +211,7 @@ public class CostRollMaint extends javax.swing.JPanel {
         ArrayList<Double> costs = new ArrayList<Double>();
         costs = invData.getItemCostElements(tbitem.getText(), "standard", thissite);
        
-        calcCost cur = new calcCost();
+        calcCost cur = new calcCost("current");
         
         ArrayList<Double> costcur = new ArrayList<Double>();
         costcur = cur.getTotalCostElements(tbitem.getText(),""); // assume default bom

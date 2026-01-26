@@ -43,6 +43,7 @@ import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData._addTranMstr;
 import static com.blueseer.inv.invData._addUpdateInMstr;
 import static com.blueseer.inv.invData._updateInventoryBalance;
+import static com.blueseer.pur.purData._updateItemCurrPriceFromReceiver;
 import static com.blueseer.pur.purData._updatePOFromReceiver;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
@@ -166,6 +167,9 @@ public class rcvData {
             
             // update PO
             _updatePOFromReceiver(rv.rv_id(),bscon);
+            
+            // update current item pur price and item mtl cost
+            _updateItemCurrPriceFromReceiver(rv.rv_id(), bscon);
             
             // if auto-vouchering....ap and vod should not be null...otherwise pass null,null to method
             if (ap != null && vod != null) {

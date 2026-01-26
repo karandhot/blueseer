@@ -938,7 +938,7 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT {
     
      
     public void getcurrentcost(String item) {
-     calcCost cur = new calcCost();
+     calcCost cur = new calcCost("current");
      ArrayList<Double> costlist = invData.getCurrentCost(item);
      tbmtlcur.setText(currformatDouble(costlist.get(0)));
      tblbrcur.setText(currformatDouble(costlist.get(1)));

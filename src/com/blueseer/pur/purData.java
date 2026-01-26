@@ -1799,6 +1799,33 @@ public class purData {
                
    }
  
+    public static void _updateItemCurrPriceFromReceiver(String receiver, Connection bscon) throws SQLException {
+
+      
+        Statement st = bscon.createStatement();
+        ResultSet res = null;
+
+            
+            ArrayList itemarr = new ArrayList();
+            ArrayList pricearr = new ArrayList();
+
+            res = st.executeQuery("select pod_nbr, pod_netprice, pod_status, pod_line, rvd_qty, pod_rcvd_qty, pod_ord_qty from recv_det inner join " +
+                     " pod_mstr on rvd_item = pod_item and rvd_poline = pod_line and rvd_po = pod_nbr " +
+               " where rvd_id = " + "'" + receiver + "'" +";");
+               while (res.next()) {
+                   itemarr.add(res.getString("pod_item"));
+                   pricearr.add(res.getString("pod_netprice"));
+                }
+               res.close();
+               for (int j = 0; j < itemarr.size(); j++) {
+                   st.executeUpdate(
+                     " update item_mstr set it_pur_price = " + "'" + bsParseDouble(pricearr.get(j).toString()) + "'" + ", " +
+                     " it_mtl_cost = " + "'" + bsParseDouble(pricearr.get(j).toString()) + "'" +         
+                     " where it_item = " + "'" + itemarr.get(j).toString() + "'" + " ;");  
+               }
+               st.close();
+   }
+ 
     
     public static String[] updatePOFromAck(String po, String status) {
         String[] m = new String[]{"",""};

@@ -28,6 +28,7 @@ package com.blueseer.inv;
 import bsmf.MainFrame;
 import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
+import static bsmf.MainFrame.dbtype;
 import static bsmf.MainFrame.defaultDecimalSeparator;
 import static bsmf.MainFrame.driver;
 import static bsmf.MainFrame.ds;
@@ -44,6 +45,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.formatUSC;
 import static com.blueseer.utl.BlueSeerUtils.formatUSZ;
+import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListDouble;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
@@ -74,6 +76,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -3584,6 +3587,7 @@ public class invData {
     }
     
     
+    
     public static String[] getWHLOCfromSerialNumber(String item, String serial) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
@@ -3649,7 +3653,7 @@ public class invData {
                 return;
             }
         }
-        calcCost cur = new calcCost();
+        calcCost cur = new calcCost("current");
         ArrayList<Double> costlist = cur.getTotalCost(item, OVData.getDefaultBomID(item) );
         OVData.updateItemCostRec(item, invData.getItemSite(item), "current", costlist.get(0), costlist.get(1), costlist.get(2), costlist.get(3), costlist.get(4), costlist.get(0) + costlist.get(1) + costlist.get(2) + costlist.get(3) + costlist.get(4));
     }
@@ -3670,7 +3674,7 @@ public class invData {
                 return;
             }
         }
-        calcCost cur = new calcCost();
+        calcCost cur = new calcCost("current");
         double curcost = cur.getTotalCostSum(item, OVData.getDefaultBomID(item));
         updateCurrentItemCost(item);
         if (curcost != (mtlcost + ovhcost + outcost)) {
@@ -4506,7 +4510,7 @@ public class invData {
                 return null;
             }
         }
-     calcCost cur = new calcCost();
+     calcCost cur = new calcCost("current");
      ArrayList<Double> costlist = cur.getTotalCost(item, ""); // assume default bom
      return costlist;
     }

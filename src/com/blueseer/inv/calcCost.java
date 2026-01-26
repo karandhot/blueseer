@@ -53,7 +53,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
  */
 public class calcCost {
     
-      public double lastlevel = 0;
+         public double lastlevel = 0;
          public double thisparent = 1;
          public double parentqty = 1;
          public double mtlcost = 0;
@@ -77,6 +77,13 @@ public class calcCost {
          public double upperovhcost = 0;
          public double loweroutcost = 0;
          public double upperoutcost = 0;
+         
+         public String costset = "standard";
+    
+    public calcCost(String set) {
+        this.costset = set;
+    }
+    
          
     public Double getMtlCost(String part, String bom) {
             Connection bscon = null;

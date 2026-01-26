@@ -591,7 +591,7 @@ public class BOMMaint extends javax.swing.JPanel {
         x = z;     
         
         // get current cost
-        calcCost cur = new calcCost();
+        calcCost cur = new calcCost("current");
         currentcost = cur.getTotalCost(key[0], BomID);
         
         String[] message = x.m();
@@ -887,7 +887,7 @@ public class BOMMaint extends javax.swing.JPanel {
     
     public void getCurrentCost(String item, String bom) {
         
-        calcCost cur = new calcCost();
+        calcCost cur = new calcCost("current");
         currentcost = cur.getTotalCost(item, bom);
         
         tbparentcostCUR.setText(bsFormatDouble5(currentcost.get(0) + currentcost.get(1) + currentcost.get(2) + currentcost.get(3) + currentcost.get(4)));
@@ -1028,7 +1028,7 @@ public class BOMMaint extends javax.swing.JPanel {
     public void getComponents(String parent, String bomid) {
                
        double matlcost = 0.00;
-       calcCost cur = new calcCost();
+       calcCost cur = new calcCost("current");
        matlcost = cur.getMtlCost(parent, bomid);
        
        tbtotmaterial.setText(String.valueOf(matlcost));

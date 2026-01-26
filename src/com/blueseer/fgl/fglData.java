@@ -1324,10 +1324,10 @@ public class fglData {
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  gl_ctrl"; // there should always be only 1 or 0 records 
         String sqlInsert = "insert into gl_ctrl (gl_bs_from, gl_bs_to, gl_is_from, " +
-        "gl_is_to, gl_earnings, gl_foreignreal, gl_autopost ) "
-                        + " values (?,?,?,?,?,?,?); "; 
+        "gl_is_to, gl_earnings, gl_foreignreal, gl_autopost, gl_currmtl ) "
+                        + " values (?,?,?,?,?,?,?,?); "; 
         String sqlUpdate = "update gl_ctrl set gl_bs_from = ?, gl_bs_to = ?, gl_is_from = ?, " +
-        "gl_is_to = ?, gl_earnings = ?, gl_foreignreal = ?, gl_autopost = ? ";
+        "gl_is_to = ?, gl_earnings = ?, gl_foreignreal = ?, gl_autopost = ?, gl_currmtl = ? ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
              PreparedStatement ps = con.prepareStatement(sqlSelect);) {
           try (ResultSet res = ps.executeQuery();
@@ -1341,6 +1341,7 @@ public class fglData {
             psi.setString(5, x.gl_earnings);
             psi.setString(6, x.gl_foreignreal);
             psi.setString(7, x.gl_autopost);
+            psi.setString(8, x.gl_currmtl);
              rows = psi.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
             } else {
@@ -1351,6 +1352,7 @@ public class fglData {
             psu.setString(5, x.gl_earnings);
             psu.setString(6, x.gl_foreignreal);
             psu.setString(7, x.gl_autopost);
+            psu.setString(8, x.gl_currmtl);
             rows = psu.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};    
             }
@@ -1401,7 +1403,8 @@ public class fglData {
                                 res.getString("gl_is_to"),
                                 res.getString("gl_earnings"),
                                 res.getString("gl_foreignreal"),
-                                res.getString("gl_autopost")
+                                res.getString("gl_autopost"),
+                                res.getString("gl_currmtl")
                         );
                     }
                 }
@@ -3776,6 +3779,7 @@ public class fglData {
                     ArrayList currarray =  new ArrayList();
                     ArrayList basecurrarray =  new ArrayList();
                    
+                    gl_ctrl glc = getGLCtrl(new String[]{""});
                    
                     String thistype = "RCT-PURCH";
                     String gldoc = fglData.setGLRecNbr("AP");
@@ -3801,7 +3805,7 @@ public class fglData {
                     res.close();
                     
                     for (recv_det z : rvd) { 
-                        nres = st2.executeQuery("select  itc_total, pl_po_rcpt, pl_po_ovh, pl_line, pl_inventory, pl_po_pricevar, " +
+                        nres = st2.executeQuery("select  itc_total, it_pur_price, pl_po_rcpt, pl_po_ovh, pl_line, pl_inventory, pl_po_pricevar, " +
                        " pl_cogs_mtl, pl_cogs_lbr, pl_cogs_bdn, pl_cogs_ovh, pl_cogs_out, pl_sales, itc_total, " +
                        " itc_mtl_top, itc_mtl_low, itc_lbr_top, itc_lbr_low, itc_bdn_top, itc_bdn_low, " +
                        " itc_ovh_top, itc_ovh_low, itc_out_top, itc_out_low, itc_bdn_top, itc_bdn_low " +
@@ -3810,7 +3814,11 @@ public class fglData {
                        " inner join item_cost on itc_item = it_item and itc_set = 'standard' where it_item = " + "'" + z.rvd_item() + "'" + ";"
                         );
                     while (nres.next()) {
-                    thiscost = nres.getDouble("itc_mtl_top") + nres.getDouble("itc_mtl_low");
+                    if (BlueSeerUtils.ConvertStringToBool(glc.gl_currmtl())) {  // if GL Control set to use curr pur price vs standard cost  
+                      thiscost = z.rvd_netprice();
+                    } else {
+                      thiscost = nres.getDouble("itc_mtl_top") + nres.getDouble("itc_mtl_low");  
+                    }
                     costtot = thiscost * z.rvd_qty();
                     variance = thiscost - z.rvd_netprice();
                       if (! curr.toUpperCase().equals(basecurr.toUpperCase())) {
@@ -3946,17 +3954,23 @@ public class fglData {
                     
                     int i = 0;
                    
-                       res = st.executeQuery("select sh_site, sh_ar_acct, sh_taxcode, sh_curr, " +
-                               " sh_ar_cc, sh_cust, sh_type, cm_ar_acct, cm_ar_cc, " +
-                               " arc_sales_acct, arc_sales_cc, arc_asset_acct, arc_asset_cc, arc_varchar, " +
-                               " ov_currency, bk_acct, apc_apacct " +
-                               " from ship_mstr " +
-                               " inner join cm_mstr on cm_code = sh_cust " +
-                               " inner join ov_mstr " +
-                               " inner join ar_ctrl " +
-                               " inner join ap_ctrl " +
-                               " inner join bk_mstr on bk_id = apc_bank " +
-                               " where sh_id = " + "'" + shipper + "'" +";");
+                    gl_ctrl glc = getGLCtrl(new String[]{""});
+                    String costset = "standard";
+                    if (BlueSeerUtils.ConvertStringToBool(glc.gl_currmtl())) {  // if GL Control set to use curr pur price vs standard cost
+                        costset = "current";
+                    }
+                    
+                    res = st.executeQuery("select sh_site, sh_ar_acct, sh_taxcode, sh_curr, " +
+                       " sh_ar_cc, sh_cust, sh_type, cm_ar_acct, cm_ar_cc, " +
+                       " arc_sales_acct, arc_sales_cc, arc_asset_acct, arc_asset_cc, arc_varchar, " +
+                       " ov_currency, bk_acct, apc_apacct " +
+                       " from ship_mstr " +
+                       " inner join cm_mstr on cm_code = sh_cust " +
+                       " inner join ov_mstr " +
+                       " inner join ar_ctrl " +
+                       " inner join ap_ctrl " +
+                       " inner join bk_mstr on bk_id = apc_bank " +
+                       " where sh_id = " + "'" + shipper + "'" +";");
                     while (res.next()) {
                         aracct = res.getString("sh_ar_acct");
                         arcc = res.getString("sh_ar_cc");
@@ -4010,14 +4024,15 @@ public class fglData {
                         
                         
                         i = 0;
+                       
                         
-                        nres = st2.executeQuery("select  itc_total, pl_scrap, pl_line, pl_inventory, " +
+                       nres = st2.executeQuery("select  itc_total, pl_scrap, pl_line, pl_inventory, " +
                        " pl_cogs_mtl, pl_cogs_lbr, pl_cogs_bdn, pl_cogs_ovh, pl_cogs_out, pl_sales, pl_sales_disc, " +
                        " itc_mtl_top, itc_mtl_low, itc_lbr_top, itc_lbr_low, itc_bdn_top, itc_bdn_low, " +
                        " itc_ovh_top, itc_ovh_low, itc_out_top, itc_out_low, itc_bdn_top, itc_bdn_low " +
                        " from item_mstr  " + 
                        " inner join pl_mstr on pl_line = it_prodline " +
-                       " inner join item_cost on itc_item = it_item and itc_set = 'standard' " +
+                       " inner join item_cost on itc_item = it_item and itc_set = " + "'" + costset + "'" +
                        " where it_item = " + "'" + part + "'" +  ";"
                         );
                     
@@ -7266,9 +7281,9 @@ return myarray;
     }
     
     public record gl_ctrl(String[] m, String gl_bs_from, String gl_bs_to, String gl_is_from,
-        String gl_is_to, String gl_earnings, String gl_foreignreal, String gl_autopost) {
+        String gl_is_to, String gl_earnings, String gl_foreignreal, String gl_autopost, String gl_currmtl) {
         public gl_ctrl(String[] m) {
-            this(m, "", "", "", "", "", "", "");
+            this(m, "", "", "", "", "", "", "", "");
         }
     }
     

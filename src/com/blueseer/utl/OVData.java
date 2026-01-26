@@ -45,6 +45,7 @@ import static com.blueseer.edi.EDI.getFileContentBytes;
 import static com.blueseer.edi.EDI.writeFile;
 import static com.blueseer.edi.ediData.getEDIMetaValueAsKVString;
 import com.blueseer.fgl.fglData;
+import static com.blueseer.fgl.fglData.getGLCtrl;
 import static com.blueseer.fgl.fglData.setGLRecNbr;
 import com.blueseer.hrm.hrmData;
 import com.blueseer.inv.calcCost;
@@ -3981,6 +3982,13 @@ public class OVData {
     public static ArrayList getpsmstrlist(String item) {
         ArrayList myarray = new ArrayList();
         String mystring = "";
+        
+        fglData.gl_ctrl glc = getGLCtrl(new String[]{""});
+        String costset = "standard";
+        if (BlueSeerUtils.ConvertStringToBool(glc.gl_currmtl())) {  // if GL Control set to use curr pur price vs standard cost
+            costset = "current";
+        }
+        
         try {
             
             Connection con = null;
@@ -3997,7 +4005,7 @@ public class OVData {
                 res = st.executeQuery("select ps_parent, ps_child, ps_type, ps_qty_per, it_desc, itc_total, ps_op from pbm_mstr "
                         + " inner join bom_mstr on bom_id = ps_bom and bom_primary = '1' "
                         + " inner join item_mstr on it_item = ps_child "
-                        + " inner join  item_cost on itc_item = it_item and itc_set = 'standard' "
+                        + " inner join  item_cost on itc_item = it_item and itc_set = " + "'" + costset + "'"
                         + " where ps_parent = " + "'" + item + "'" + ";");
                 while (res.next()) {
                     mystring = res.getString("ps_parent") + ","
@@ -4033,9 +4041,14 @@ public class OVData {
     public static ArrayList _getpsmstrlist(String item, Connection bscon) {
         ArrayList myarray = new ArrayList();
         String mystring = "";
+        
+        fglData.gl_ctrl glc = getGLCtrl(new String[]{""});
+        String costset = "standard";
+        if (BlueSeerUtils.ConvertStringToBool(glc.gl_currmtl())) {  // if GL Control set to use curr pur price vs standard cost
+            costset = "current";
+        }
+        
         try {
-            
-            
             
             Statement st = bscon.createStatement();
             ResultSet res = null;
@@ -4044,7 +4057,7 @@ public class OVData {
                 res = st.executeQuery("select ps_parent, ps_child, ps_type, ps_qty_per, it_desc, itc_total, ps_op from pbm_mstr "
                         + " inner join bom_mstr on bom_id = ps_bom and bom_primary = '1' "
                         + " inner join item_mstr on it_item = ps_child "
-                        + " inner join  item_cost on itc_item = it_item and itc_set = 'standard' "
+                        + " inner join  item_cost on itc_item = it_item and itc_set = " + "'" + costset + "'"
                         + " where ps_parent = " + "'" + item + "'" + ";");
                 while (res.next()) {
                     mystring = res.getString("ps_parent") + ","
@@ -4080,6 +4093,13 @@ public class OVData {
     public static ArrayList getpsmstrlist(String item, String bom) {
         ArrayList myarray = new ArrayList();
         String mystring = "";
+        
+        fglData.gl_ctrl glc = getGLCtrl(new String[]{""});
+        String costset = "standard";
+        if (BlueSeerUtils.ConvertStringToBool(glc.gl_currmtl())) {  // if GL Control set to use curr pur price vs standard cost
+            costset = "current";
+        }
+        
         try {
             
             Connection con = null;
@@ -4096,7 +4116,7 @@ public class OVData {
                 res = st.executeQuery("select ps_parent, ps_child, ps_type, ps_qty_per, it_desc, itc_total, ps_op from pbm_mstr "
                         + " inner join bom_mstr on bom_id = ps_bom  "
                         + " inner join item_mstr on it_item = ps_child "
-                        + " inner join  item_cost on itc_item = it_item and itc_set = 'standard' "
+                        + " inner join  item_cost on itc_item = it_item and itc_set = " + "'" + costset + "'"
                         + " where ps_parent = " + "'" + item + "'"
                         + " and ps_bom = " + "'" + bom + "'" + ";");
                 while (res.next()) {
@@ -6680,6 +6700,13 @@ public class OVData {
         
         boolean isReportable = false;
         
+        fglData.gl_ctrl glc = getGLCtrl(new String[]{""});
+        String costset = "standard";
+        if (BlueSeerUtils.ConvertStringToBool(glc.gl_currmtl())) {  // if GL Control set to use curr pur price vs standard cost
+            costset = "current";
+        }
+        
+        
         Connection con = null;
             if (ds != null) {
               con = ds.getConnection();
@@ -6722,7 +6749,7 @@ public class OVData {
                 res = st.executeQuery("select  itc_total, pl_scrap, pl_line, pl_inventory " +
                    " from item_mstr  " + 
                    " inner join pl_mstr on pl_line = it_prodline " +
-                   " inner join item_cost on itc_item = it_item and itc_set = 'standard' where it_item = " + "'" + item + "'" + ";"
+                   " inner join item_cost on itc_item = it_item and itc_set = " + "'" + costset + "'" + " where it_item = " + "'" + item + "'" + ";"
                     );
                 while (res.next()) {
                 acct_cr.add(res.getString("pl_inventory"));
@@ -6747,7 +6774,7 @@ public class OVData {
                    " inner join bom_mstr on bom_id = ps_bom  " +
                    " inner join item_mstr on it_item = ps_child " + 
                    " inner join pl_mstr on pl_line = it_prodline " +
-                   " inner join item_cost on itc_item = ps_child and itc_set = 'standard' where ps_parent = " + "'" + item + "'" +
+                   " inner join item_cost on itc_item = ps_child and itc_set = " + "'" + costset + "'" + "  where ps_parent = " + "'" + item + "'" +
                    " AND ps_op = " + "'" + op + "'" +
                    " AND ps_bom = " + "'" + bom + "'" );
            while (res.next()) {
@@ -6880,6 +6907,11 @@ public class OVData {
         String childserialwh = "";
         String childserialloc = "";
         
+        fglData.gl_ctrl glc = getGLCtrl(new String[]{""});
+        String costset = "standard";
+        if (BlueSeerUtils.ConvertStringToBool(glc.gl_currmtl())) {  // if GL Control set to use curr pur price vs standard cost
+            costset = "current";
+        }
         
         Connection con = null;
             if (ds != null) {
@@ -6910,7 +6942,7 @@ public class OVData {
                    " inner join bom_mstr on bom_id = ps_bom  " +
                    " inner join item_mstr on it_item = ps_child " + 
                    " inner join pl_mstr on pl_line = it_prodline " +
-                   " inner join item_cost on itc_item = ps_child and itc_set = 'standard' where ps_parent = " + "'" + item + "'" +
+                   " inner join item_cost on itc_item = ps_child and itc_set = " + "'" + costset + "'" + "  where ps_parent = " + "'" + item + "'" +
                    " AND ps_op = " + "'" + op + "'" +
                    " AND ps_bom = " + "'" + bom + "'" );
            while (res.next()) {
@@ -13208,7 +13240,7 @@ return myarray;
 
     public static void setStandardCosts(String site, String item) {
         
-        calcCost cur = new calcCost();
+        calcCost cur = new calcCost("current");
         ArrayList<Double> costcur = cur.getTotalCostElements(item, ""); // assume default bom
         Double totalcost = 0.00;
         for (Double d : costcur) {
