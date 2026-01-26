@@ -5887,6 +5887,40 @@ public class fglData {
          return myamt;
      }
 
+    public static double getTaxMetaByState(String statecode) {
+         double myamt = 0.00;
+         
+         try {
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                res = st.executeQuery("SELECT taxm_value from tax_meta where " +
+                        " taxm_id = 'state' and taxm_type = 'generic' and taxm_key = " + "'" + statecode + "'" +
+                                  " ;" );
+            while (res.next()) {
+               myamt = res.getDouble("taxm_value");
+            }
+
+        } catch (SQLException s) {
+            MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+    } catch (Exception e) {
+        MainFrame.bslog(e);
+    }
+         return myamt;
+     }
+
     public static double getTaxPercentByZip(String shipper, String method) {
          double myamt = 0.00;
          

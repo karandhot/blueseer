@@ -45,9 +45,15 @@ import static com.blueseer.ctr.cusData.getDiscountRecsByCust;
 import static com.blueseer.edi.ediData.getEDIMetaValueAll;
 import static com.blueseer.edi.ediData.getEDIMetaValueDetail;
 import com.blueseer.fgl.fglData;
+import static com.blueseer.fgl.fglData.getTaxDet;
+import static com.blueseer.fgl.fglData.getTaxMetaByState;
+import static com.blueseer.fgl.fglData.getTaxPercentByState;
+import static com.blueseer.fgl.fglData.getTaxPercentByZip;
+import com.blueseer.fgl.fglData.taxd_mstr;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.getItemDataInit;
 import static com.blueseer.inv.invData.getItemQOHTotal;
+import static com.blueseer.inv.invData.getWareHouseMstr;
 import static com.blueseer.ord.ordData.addOrderTransaction;
 import static com.blueseer.ord.ordData.addUpdateSOMeta;
 import static com.blueseer.ord.ordData.addUpdateSOMetaNotes;
@@ -190,7 +196,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 public static ArrayList<String[]> someta = null;
                 
                 Map<Integer, ArrayList<String[]>> linetax = new HashMap<Integer, ArrayList<String[]>>();
-                ArrayList<String[]> headertax = new ArrayList<String[]>();
+                ArrayList<taxd_mstr> headertax = new ArrayList<>();
      
                
     
@@ -1271,11 +1277,11 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     public ArrayList<so_tax> createTaxRecord() {
          ArrayList<so_tax> list = new ArrayList<so_tax>();
          if (! headertax.isEmpty()) {
-          for (String[] s : headertax) {
+          for (taxd_mstr tdm : headertax) {
               so_tax x = new so_tax(null, bsNumberToUS(tbkey.getText()),
-                s[0].toString(),
-                bsParseDouble(xZero(s[1])),
-                xZero(s[2]));   
+                tdm.taxd_desc(),
+                bsParseDouble(xZero(tdm.taxd_percent())),
+                tdm.taxd_type());   
                 list.add(x);
           }
          }
@@ -4415,15 +4421,39 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void ddtaxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddtaxActionPerformed
         if (! isLoad) {
-            headertax = OVData.getTaxPercentElementsApplicableByTaxCode(ddtax.getSelectedItem().toString());
+           // headertax = OVData.getTaxPercentElementsApplicableByTaxCode(ddtax.getSelectedItem().toString());
+            headertax = getTaxDet(ddtax.getSelectedItem().toString());
             // remove all 'tax' records and refresh
             for (int j = 0; j < sactable.getRowCount(); j++) {
                 if (sactable.getValueAt(j, 0).toString().equals("tax"))
                ((javax.swing.table.DefaultTableModel) sactable.getModel()).removeRow(j); 
             }
             //refresh tax records
-            for (String[] t : headertax) {
-            sacmodel.addRow(new Object[]{ "tax", t[0], "percent", t[1]});
+            double taxpercent = 0.00;
+            for (taxd_mstr taxd : headertax) {
+                if (taxd.taxd_conditional().equals("NONE")) {
+                    taxpercent = bsParseDouble(taxd.taxd_percent());
+                }
+
+                if (taxd.taxd_conditional().equals("STATE")) {
+                   if (taxd.taxd_method().equals("Destination ShipTo")) { 
+                    taxpercent = getTaxMetaByState(ddstate.getSelectedItem().toString());
+                   }
+                   if (taxd.taxd_method().equals("Origin ShipFrom")) { 
+                    if (ddshipfrom.getSelectedItem() != null && ! ddshipfrom.getSelectedItem().toString().isBlank()) {   
+                        invData.wh_mstr wm = getWareHouseMstr(new String[]{ddshipfrom.getSelectedItem().toString()});
+                        taxpercent = getTaxMetaByState(wm.wh_state());
+                    }
+                   }
+                   if (taxd.taxd_method().equals("Origin Billing")) { 
+                    taxpercent = getTaxMetaByState(cm.cm_state());
+                   }
+                }
+
+                if (taxd.taxd_conditional().equals("ZIP")) {
+                   // To be done... taxpercent = getTaxPercentByZip(shipper, taxd.taxd_method()); 
+                }    
+            sacmodel.addRow(new Object[]{ "tax", taxd.taxd_desc(), "percent", bsNumber(taxpercent)});
             }
             
         }
