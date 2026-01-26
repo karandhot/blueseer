@@ -1809,7 +1809,7 @@ public class purData {
             ArrayList itemarr = new ArrayList();
             ArrayList pricearr = new ArrayList();
 
-            res = st.executeQuery("select pod_nbr, pod_netprice, pod_status, pod_line, rvd_qty, pod_rcvd_qty, pod_ord_qty from recv_det inner join " +
+            res = st.executeQuery("select pod_nbr, pod_item, pod_netprice, pod_status, pod_line, rvd_qty, pod_rcvd_qty, pod_ord_qty from recv_det inner join " +
                      " pod_mstr on rvd_item = pod_item and rvd_poline = pod_line and rvd_po = pod_nbr " +
                " where rvd_id = " + "'" + receiver + "'" +";");
                while (res.next()) {
