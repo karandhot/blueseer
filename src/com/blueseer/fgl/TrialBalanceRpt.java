@@ -1059,6 +1059,7 @@ try {
                //  if (begbal == 0 && endbal == 0 && activity == 0)
                //      bsmf.MainFrame.show(account);
                
+               /*
                  if (accttype.equals("A") || accttype.equals("E")) {  // Debits
                      totaldebits = totaldebits + endbal;
                      mymodel.addRow(new Object[]{BlueSeerUtils.clickbasket, acctid, accttype, acctcurr,
@@ -1076,7 +1077,24 @@ try {
                                 bsParseDouble(currformatDouble((-1 * endbal)))  // reverse sign of credit column for trial balance
                             }); 
                  }
-                    
+                 */ 
+                if (endbal > 0) {
+                    totaldebits = totaldebits + endbal;
+                    mymodel.addRow(new Object[]{BlueSeerUtils.clickbasket, acctid, accttype, acctcurr,
+                                acctdesc,
+                                site,
+                                bsParseDouble(currformatDouble(endbal)),
+                                0
+                            });
+                } else {
+                    totalcredits = totalcredits + endbal;
+                    mymodel.addRow(new Object[]{BlueSeerUtils.clickbasket, acctid, accttype, acctcurr,
+                                acctdesc,
+                                site,
+                                0,
+                                bsParseDouble(currformatDouble(endbal))
+                            });
+                }
                
              
                    

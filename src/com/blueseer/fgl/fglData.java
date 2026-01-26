@@ -2880,7 +2880,7 @@ public class fglData {
         
         }
     
-    public static boolean _glEntryFromVoucherExpense(String voucher, Date effdate, Connection bscon, boolean Void) throws SQLException {
+    public static boolean _glEntryFromVoucherExpense(String voucher, Date effdate, Connection bscon, boolean Void, String ctype) throws SQLException {
                 boolean myerror = false;  // Set myerror to true for any captured problem...otherwise return false
         
                 Statement st = bscon.createStatement();
@@ -2906,7 +2906,7 @@ public class fglData {
                     ArrayList basecurr =  new ArrayList();
                     ArrayList doc =  new ArrayList();
                    
-                    String thistype = "RCT-VOUCH";
+                    String thistype = ctype;
                    
                     // set parent GL doc number
                     String gldoc = fglData.setGLRecNbr("AP");
@@ -7006,7 +7006,8 @@ return myarray;
        }
 
     public static void PostGL() {
-       
+        
+        
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id", "PostGL"});
@@ -7059,16 +7060,6 @@ return myarray;
             
             Collections.sort(gltran);
 
-            
-            /*
-            if (i > 0) {            
-                if (dbtype.equals("sqlite")) {
-                 st.executeUpdate("begin transaction;");
-                } else {
-                 st.executeUpdate("start transaction;");  
-                }
-            }
-            */
             
             if (i > 0) {
             // now get group by sums of those IDs
@@ -7136,6 +7127,8 @@ return myarray;
                  /*
                 st.executeUpdate("commit;");
                 */
+                 
+                 
                 glCopyTranToHist(gltran);
              }
              

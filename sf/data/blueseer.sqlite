@@ -1147,7 +1147,8 @@ CREATE TABLE "gl_ctrl" (
   "gl_earnings" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
   "gl_foreignreal" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
   "gl_autopost" tinyint(1) NOT NULL DEFAULT '0',
-  "gl_varchar" varchar(50) COLLATE NOCASE DEFAULT ''
+  "gl_varchar" varchar(50) COLLATE NOCASE DEFAULT '',
+  "gl_currmtl" tinyint(1) NOT NULL DEFAULT '0'
 );
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -3633,6 +3634,19 @@ CREATE TABLE "txt_meta" (
   "txt_key" varchar(80) NOT NULL COLLATE NOCASE DEFAULT '',
   "txt_value" varchar(3000) NOT NULL COLLATE NOCASE DEFAULT ''
 );
+CREATE TABLE "slsp_mstr" (
+  "slsp_id" varchar(10) NOT NULL,
+  "slsp_name" varchar(50) NOT NULL COLLATE NOCASE DEFAULT '',
+  "slsp_line1" varchar(50) NOT NULL COLLATE NOCASE DEFAULT '',
+  "slsp_line2" varchar(50) NOT NULL COLLATE NOCASE  DEFAULT '',
+  "slsp_city" varchar(50) NOT NULL COLLATE NOCASE DEFAULT '',
+  "slsp_state" varchar(3) NOT NULL COLLATE NOCASE DEFAULT '',
+  "slsp_zip" varchar(15) NOT NULL COLLATE NOCASE DEFAULT '',
+  "slsp_phone" varchar(20) NOT NULL COLLATE NOCASE DEFAULT '',
+  "slsp_email" varchar(100) NOT NULL COLLATE NOCASE DEFAULT '',
+  "slsp_company" varchar(100) NOT NULL COLLATE NOCASE DEFAULT '',
+  "slsp_active" tinyint(1) NOT NULL  DEFAULT '0',
+  "slsp_rate" decimal(18,4) NOT NULL  DEFAULT '0') ;
 
 
 

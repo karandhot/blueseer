@@ -2173,6 +2173,141 @@ public class cusData {
         return list;
     }
     
+    public static String[] addSlspMstr(slsp_mstr x) {
+        String[] m = new String[2];
+        String sqlSelect = "select * from slsp_mstr where slsp_id = ?";
+        String sqlInsert = "insert into slsp_mstr (slsp_id, slsp_name, slsp_line1," +
+        " slsp_line2, slsp_city, slsp_state, slsp_zip, " +
+        " slsp_phone, slsp_email, slsp_company, slsp_active, " +
+        " slsp_rate )  " +
+                " values (?,?,?,?,?,?,?,?,?,?,?,?); "; 
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+             PreparedStatement ps = con.prepareStatement(sqlSelect);) {
+             ps.setString(1, x.slsp_id);
+          try (ResultSet res = ps.executeQuery();
+               PreparedStatement psi = con.prepareStatement(sqlInsert);) {  
+            if (! res.isBeforeFirst()) {
+            psi.setString(1, x.slsp_id);
+            psi.setString(2, x.slsp_name);
+            psi.setString(3, x.slsp_line1);
+            psi.setString(4, x.slsp_line2);
+            psi.setString(5, x.slsp_city);
+            psi.setString(6, x.slsp_state);
+            psi.setString(7, x.slsp_zip);
+            psi.setString(8, x.slsp_phone);
+            psi.setString(9, x.slsp_email);
+            psi.setString(10, x.slsp_company);
+            psi.setString(11, x.slsp_active);
+            psi.setDouble(12, x.slsp_rate);
+            int rows = psi.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+            } else {
+            m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordAlreadyExists};    
+            }
+          } 
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+        
+    public static String[] updateSlspMstr(slsp_mstr x) {
+        String[] m = new String[2];
+        String sql = "update slsp_mstr set slsp_name = ?, slsp_line1 = ?," +
+        " slsp_line2 = ?, slsp_city = ?, slsp_state = ?, slsp_zip = ?, " +
+        " slsp_phone = ?, slsp_email = ?, slsp_company = ?, slsp_active = ?, " +
+        " slsp_rate = ? where slsp_id = ? ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(12, x.slsp_id);
+        ps.setString(1, x.slsp_name);
+        ps.setString(2, x.slsp_line1);
+        ps.setString(3, x.slsp_line2);
+        ps.setString(4, x.slsp_city);
+        ps.setString(5, x.slsp_state);
+        ps.setString(6, x.slsp_zip);
+        ps.setString(7, x.slsp_phone);
+        ps.setString(8, x.slsp_email);
+        ps.setString(9, x.slsp_company);
+        ps.setString(10, x.slsp_active);
+        ps.setDouble(11, x.slsp_rate);
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
+    public static String[] deleteSlspMstr(slsp_mstr x) { 
+       String[] m = new String[2];
+        String sql = "delete from slsp_mstr where slsp_id = ?; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, x.slsp_id);
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+      
+    public static slsp_mstr getSlspMstr(String[] x) {
+        slsp_mstr r = null;
+        String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getSlspMstr"});
+            list.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServCUS");
+                r = objectMapper.readValue(returnstring, slsp_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        String sql = "select * from slsp_mstr where slsp_id = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, x[0]);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new slsp_mstr(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new slsp_mstr(m, res.getString("slsp_id"), 
+                            res.getString("slsp_name"),
+                            res.getString("slsp_line1"),
+                            res.getString("slsp_line2"),
+                            res.getString("slsp_city"),
+                            res.getString("slsp_state"),
+                            res.getString("slsp_zip"),
+                            res.getString("slsp_phone"),
+                            res.getString("slsp_email"),
+                            res.getString("slsp_company"),
+                            res.getString("slsp_active"),
+                            res.getDouble("slsp_rate")
+                        );
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new slsp_mstr(m);
+        }
+        return r;
+    }
+   
     
          
     // miscellaneous functions
@@ -3607,6 +3742,16 @@ public class cusData {
         String cut_mfimonth, String cut_mfiday) {
         public cust_term(String[] m) {
             this(m,"","",0,0,0.00,"","","","");
+        }
+    } 
+  
+    public record slsp_mstr(String[] m, String slsp_id, String slsp_name, String slsp_line1, 
+        String slsp_line2, String slsp_city, String slsp_state, String slsp_zip, 
+        String slsp_phone, String slsp_email, String slsp_company, String slsp_active,
+        double slsp_rate ) {
+        public slsp_mstr(String[] m) {
+            this(m,"","","","","","","","","", "",
+                   "", 0.00);
         }
     } 
   

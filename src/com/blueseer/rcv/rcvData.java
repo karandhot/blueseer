@@ -181,7 +181,7 @@ public class rcvData {
                 if (ap.ap_subtype().equals("Receipt")) {
                 fglData._glEntryFromVoucher(ap, bscon, false); 
                 } else {
-                fglData._glEntryFromVoucherExpense(ap.ap_nbr(), parseDate(ap.ap_effdate()), bscon, false);    
+                fglData._glEntryFromVoucherExpense(ap.ap_nbr(), parseDate(ap.ap_effdate()), bscon, false, "RCT-VOUCH");    
                 }
             }
             

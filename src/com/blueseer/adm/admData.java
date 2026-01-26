@@ -3274,9 +3274,10 @@ public class admData {
                 return null;
             }
         } 
-        
-        String[] datasetsarray = datasets.split(",");
-        
+        String[] datasetsarray = null;
+        if (datasets != null && ! datasets.isBlank()) {
+          datasetsarray = datasets.split(",");
+        }
         String[] sites = null;
         boolean allsites = false;
         ArrayList<String[]> lines = new ArrayList<String[]>();
@@ -3402,6 +3403,26 @@ public class admData {
                                lines.add(s);
                             }
                         }
+                        if (sd.equals("states")) {
+                            res = st.executeQuery("select code_key from code_mstr where code_code = 'state' order by code_key ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "states";
+                               s[1] = res.getString("code_key");
+                               lines.add(s);
+                            }
+                        }
+                        if (sd.equals("countries")) {
+                            res = st.executeQuery("select code_key from code_mstr where code_code = 'country' order by code_key ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "countries";
+                               s[1] = res.getString("code_key");
+                               lines.add(s);
+                            }
+                        }
+                        
+                        
                 }
             }
             

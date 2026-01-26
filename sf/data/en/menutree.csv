@@ -4,9 +4,10 @@ CustomerMenu,CustXrefMaint,3,JMenuItem,Customer Xref Maint,,,,1,1
 CustomerMenu,CustXrefBrowse,4,JMenuItem,Customer Xref Browse,,,,1,1
 CustomerMenu,CustPriceMaint,5,JMenuItem,Customer Price Maintenance,,,,1,1
 CustomerMenu,CustPriceReport,6,JMenuItem,Customer Price Browse,,,,1,1
-CustomerMenu,CusRptPicker,7,JMenuItem,Customer Report Selector,,,,1,1
-CustomerMenu,CustomerReports,8,JMenu,Other Customer Reports,,,,1,1
-CustomerMenu,CustControl,9,JMenuItem,Customer Control,,,,1,1
+CustomerMenu,SalesRepMaint,7,JMenuItem,Sales Representative Maintenance,,,,1,1
+CustomerMenu,CusRptPicker,8,JMenuItem,Customer Report Selector,,,,1,1
+CustomerMenu,CustomerReports,9,JMenu,Other Customer Reports,,,,1,1
+CustomerMenu,CustControl,10,JMenuItem,Customer Control,,,,1,1
 Address,CustomerMenu,1,JMenu,Customer Menu,,,,1,1
 Address,VendorMenu,2,JMenu,Vendor Menu,,,,1,1
 Address,EDIMenu,3,JMenu,EDI Menu,,,,1,1

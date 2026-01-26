@@ -6286,7 +6286,99 @@ public class DTData {
        return jsonarray.toString(); 
     }
     
+    public static DefaultTableModel getSalesRepBrowseUtil( String str, int state, String myfield) {
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getSalesRepBrowseUtilData"});
+            list.add(new String[]{"param1", str});
+            list.add(new String[]{"param2", String.valueOf(state)});
+            list.add(new String[]{"param3", myfield});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServDT"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = getSalesRepBrowseUtilData(str, state, myfield);
+        }
+        Object[][] data = jsonToData(jsonString);
+        javax.swing.table.DefaultTableModel mymodel = mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+                      new String[]{getGlobalColumnTag("select"), getGlobalColumnTag("id"), getGlobalColumnTag("name"), getGlobalColumnTag("addr1"), getGlobalColumnTag("city"), getGlobalColumnTag("state"), getGlobalColumnTag("zip")})
+                {
+                      @Override  
+                      public Class getColumnClass(int col) {  
+                        if (col == 0)       
+                            return ImageIcon.class;  
+                        else return String.class;  //other columns accept String values  
+                      }  
+                        }; 
+              
+        for (Object[] rowData : data) {
+        mymodel.addRow(rowData);
+        }
+        return mymodel;
+        
+         } 
+          
+    public static String getSalesRepBrowseUtilData(String str, int state, String myfield) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                if (state == 1) { // begins
+                    res = st.executeQuery(" SELECT slsp_id, slsp_name, slsp_line1, slsp_city, slsp_state, slsp_zip " +
+                        " FROM  slsp_mstr where " + myfield + " like " + "'" + str + "%'" +
+                        " order by slsp_id ;");
+                }
+                if (state == 2) { // ends
+                    res = st.executeQuery(" SELECT slsp_id, slsp_name, slsp_line1, slsp_city, slsp_state, slsp_zip  " +
+                        " FROM  slsp_mstr where " + myfield + " like " + "'%" + str + "'" +
+                        " order by slsp_id ;");
+                }
+                 if (state == 0) { // match
+                 res = st.executeQuery(" SELECT slsp_id, slsp_name, slsp_line1, slsp_city, slsp_state, slsp_zip   " +
+                        " FROM  slsp_mstr where " + myfield + " like " + "'%" + str + "%'" +
+                        " order by slsp_id ;");
+                 }
+                 
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("slsp_id"));
+                        rowArray.put(res.getString("slsp_name"));
+                        rowArray.put(res.getString("slsp_line1"));
+                        rowArray.put(res.getString("slsp_city"));
+                        rowArray.put(res.getString("slsp_state"));
+                        rowArray.put(res.getString("slsp_zip"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
      
+    
     public static DefaultTableModel getQuoteBrowseUtil( String str, int state, String myfield) {
         String jsonString = null;
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {

@@ -2930,7 +2930,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
 
         cbcascade.setText("Cascade");
 
-        jLabel19.setText("SalesRep");
+        jLabel19.setText("SalesRep1");
 
         jLabel20.setText("UserID");
 
@@ -2982,12 +2982,16 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                                         .addComponent(lblIsSourced, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                     .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(tbuserid, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(18, 18, 18)
                                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel81, javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jLabel87, javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jLabel93, javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jLabel14, javax.swing.GroupLayout.Alignment.TRAILING))
+                                    .addGroup(jPanel3Layout.createSequentialGroup()
+                                        .addGap(30, 30, 30)
+                                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(jLabel81, javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(jLabel87, javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(jLabel93, javax.swing.GroupLayout.Alignment.TRAILING)))
+                                    .addGroup(jPanel3Layout.createSequentialGroup()
+                                        .addGap(18, 18, 18)
+                                        .addComponent(jLabel14)))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(orddate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -3011,7 +3015,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                                     .addComponent(jLabel22))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(ddsalesrep2, javax.swing.GroupLayout.Alignment.TRAILING, 0, 131, Short.MAX_VALUE)
+                                    .addComponent(ddsalesrep2, javax.swing.GroupLayout.Alignment.TRAILING, 0, 129, Short.MAX_VALUE)
                                     .addComponent(ddsalesrep, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))))
                 .addGap(18, 18, 18))
         );
@@ -3061,10 +3065,10 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(dccreate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel14)
                             .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(tbuserid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel20)))
+                                .addComponent(jLabel20)
+                                .addComponent(jLabel14)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblIsSourced)
@@ -3085,7 +3089,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                             .addComponent(cbcascade))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(cbisallocated)
                             .addComponent(cbissourced)
@@ -3186,7 +3189,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                                     .addComponent(tbcity, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(tbaddr2, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(tbaddr1, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(47, 117, Short.MAX_VALUE)))
+                                .addGap(47, 118, Short.MAX_VALUE)))
                         .addComponent(jLabel11))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(tbname, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -3390,9 +3393,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addGap(87, 87, 87))
             .addGroup(jPanelMainLayout.createSequentialGroup()
                 .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 893, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 894, Short.MAX_VALUE)
                     .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(37, Short.MAX_VALUE))
+                .addContainerGap(36, Short.MAX_VALUE))
             .addGroup(jPanelMainLayout.createSequentialGroup()
                 .addGap(41, 41, 41)
                 .addComponent(btinvoice)
