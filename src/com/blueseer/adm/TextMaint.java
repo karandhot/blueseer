@@ -397,8 +397,8 @@ public class TextMaint extends javax.swing.JPanel implements IBlueSeerT {
       
     public String[] getRecord(String[] key) {
       txt_meta x = getTxtMeta(key);
-      tbkey.setText(x.txt_type());   // usage of type and key are inverted here when compared to txt_meta table schema
-      ddtype.setSelectedItem(x.txt_key());  // usage of type and key are inverted here when compared to txt_meta table schema
+      tbkey.setText(x.txt_key());   
+      ddtype.setSelectedItem(x.txt_type());  
       tacomments.setText(x.txt_value());
       setAction(x.m());
       return x.m();  
@@ -407,8 +407,8 @@ public class TextMaint extends javax.swing.JPanel implements IBlueSeerT {
      public txt_meta createRecord() {
         txt_meta x = new txt_meta(null, 
            ddkeytype.getSelectedItem().toString(),
-           tbkey.getText(),
            ddtype.getSelectedItem().toString(),
+           tbkey.getText(),
            tacomments.getText()
         );
         return x;
@@ -445,13 +445,13 @@ public class TextMaint extends javax.swing.JPanel implements IBlueSeerT {
                 int column = target.getSelectedColumn();
                 if ( column == 0) {
                 ludialog.dispose();
-                initvars(new String[]{target.getValueAt(row,1).toString(), target.getValueAt(row,2).toString()});
+                initvars(new String[]{target.getValueAt(row,1).toString(), target.getValueAt(row,2).toString(), target.getValueAt(row,3).toString()});
                 }
             }
         };
         luTable.addMouseListener(luml);
       
-        callDialog(getGlobalColumnTag(getGlobalColumnTag("id")), getGlobalColumnTag("type"), getGlobalColumnTag("key")); 
+        callDialog(getGlobalColumnTag("id"), getGlobalColumnTag("type"), getGlobalColumnTag("key"));  
         
     }
 
@@ -604,13 +604,13 @@ public class TextMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(btlookup))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(34, 34, 34)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)

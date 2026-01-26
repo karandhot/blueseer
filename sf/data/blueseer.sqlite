@@ -93,9 +93,9 @@ CREATE TABLE "ar_ctrl" (
   "arc_localtax_cc" varchar(4) NOT NULL COLLATE NOCASE DEFAULT '',
   "arc_othertax_acct" varchar(12) NOT NULL COLLATE NOCASE DEFAULT '',
   "arc_othertax_cc" varchar(4) NOT NULL COLLATE NOCASE DEFAULT '',
-  "arc_varchar" varchar(50) COLLATE NOCASE DEFAULT '',
-  "arc_salestax_acct` varchar(12) NOT NULL COLLATE NOCASE DEFAULT '',
-  "arc_salestax_cc` varchar(4) NOT NULL COLLATE NOCASE DEFAULT ''
+  "arc_varchar" varchar(50) NOT NULL COLLATE NOCASE DEFAULT '',
+  "arc_salestax_acct" varchar(12) NOT NULL COLLATE NOCASE DEFAULT '',
+  "arc_salestax_cc" varchar(4) NOT NULL COLLATE NOCASE DEFAULT ''
 
 );
 /*!40101 SET character_set_client = @saved_cs_client */;
