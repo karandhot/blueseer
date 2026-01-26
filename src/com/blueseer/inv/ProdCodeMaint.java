@@ -841,7 +841,7 @@ public class ProdCodeMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel93.setName("lblapusage"); // NOI18N
 
         jLabel94.setText("Sales Tax Acct");
-        jLabel94.setName("lbljobstock"); // NOI18N
+        jLabel94.setName("lblsalestax"); // NOI18N
 
         btnew.setText("New");
         btnew.setName("btnew"); // NOI18N

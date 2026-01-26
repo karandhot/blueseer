@@ -672,12 +672,12 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
-        jLabel4.setText("Type");
+        jLabel4.setText("Percent");
         jLabel4.setName("lblpercent"); // NOI18N
 
         ddtype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "SALES", "OTHER", "MATERIAL", "FEDERAL", "STATE", "LOCAL" }));
 
-        jLabel7.setText("Percent");
+        jLabel7.setText("Type");
         jLabel7.setName("lbltype"); // NOI18N
 
         btupdateelement.setText("Update Element");
@@ -703,9 +703,9 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel3)
-                    .addComponent(jLabel4)
                     .addComponent(jLabel7)
-                    .addComponent(jLabel2))
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
@@ -753,15 +753,15 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel7))
                 .addGap(4, 4, 4)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btaddelement)
                     .addComponent(btdeleteelement)
                     .addComponent(btupdateelement)
                     .addComponent(tbtaxpercent, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel7))
+                    .addComponent(jLabel4))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())

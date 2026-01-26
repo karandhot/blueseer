@@ -197,6 +197,8 @@ public class ordData {
             ps.setString(24, x.so_entrytype);
             ps.setString(25, x.so_mod_date);
             ps.setString(26, x.so_cascade);
+            ps.setString(27, x.so_salesperson1);
+            ps.setString(28, x.so_salesperson2);
             rows = ps.executeUpdate();
             } 
             return rows;

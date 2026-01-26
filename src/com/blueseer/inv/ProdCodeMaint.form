@@ -566,7 +566,7 @@
         <Component class="javax.swing.JLabel" name="jLabel94">
           <Properties>
             <Property name="text" type="java.lang.String" value="Sales Tax Acct"/>
-            <Property name="name" type="java.lang.String" value="lbljobstock" noResource="true"/>
+            <Property name="name" type="java.lang.String" value="lblsalestax" noResource="true"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JButton" name="btnew">
