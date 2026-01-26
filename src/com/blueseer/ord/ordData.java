@@ -163,7 +163,7 @@ public class ordData {
                         + "so_create_date, so_userid, so_status, so_isallocated, "
                         + "so_terms, so_ar_acct, so_ar_cc, so_rmks, so_type, so_taxcode, "
                         + "so_issourced, so_confirm, so_plan, so_entrytype, so_mod_date, so_cascade, "
-                        + " so_salesperson1, so_salesperson2 ) "
+                        + " so_slsperson1, so_slsperson2 ) "
                         + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
        
           ps = con.prepareStatement(sqlSelect); 
@@ -197,8 +197,8 @@ public class ordData {
             ps.setString(24, x.so_entrytype);
             ps.setString(25, x.so_mod_date);
             ps.setString(26, x.so_cascade);
-            ps.setString(27, x.so_salesperson1);
-            ps.setString(28, x.so_salesperson2);
+            ps.setString(27, x.so_slsperson1);
+            ps.setString(28, x.so_slsperson2);
             rows = ps.executeUpdate();
             } 
             return rows;
@@ -463,7 +463,7 @@ public class ordData {
         String sql = "update so_mstr set so_cust = ?, so_ship = ?, " +
                 "so_site = ?, so_curr = ?, so_shipvia = ?, so_wh = ?, so_po = ?, so_due_date = ?, so_ord_date = ?, so_mod_date = ?, " +
                 "so_userid = ?, so_status = ?, so_isallocated = ?, so_terms = ?, so_ar_acct = ?, so_ar_cc = ?, so_rmks = ?, so_type = ?, " +
-                "so_taxcode = ?, so_confirm = ?, so_plan = ?, so_export_855 = ?, so_salesperson1 = ?, so_salesperson1 = ? " +
+                "so_taxcode = ?, so_confirm = ?, so_plan = ?, so_export_855 = ?, so_slsperson1 = ?, so_slsperson2 = ? " +
                  " where so_nbr = ? ; ";
 	ps = con.prepareStatement(sql) ;
         ps.setString(25, x.so_nbr);
@@ -489,8 +489,8 @@ public class ordData {
             ps.setString(20, x.so_confirm);
             ps.setString(21, x.so_plan);
             ps.setString(22, x.so_export_855);
-            ps.setString(23, x.so_salesperson1);
-            ps.setString(24, x.so_salesperson2);
+            ps.setString(23, x.so_slsperson1);
+            ps.setString(24, x.so_slsperson2);
             rows = ps.executeUpdate();
         return rows;
     }
@@ -997,7 +997,7 @@ public class ordData {
                     res.getString("so_isallocated"), res.getString("so_terms"), res.getString("so_ar_acct"), res.getString("so_ar_cc"), 
                     res.getString("so_rmks"), res.getString("so_type"), res.getString("so_taxcode"), res.getString("so_issourced"),
                     res.getString("so_confirm"), res.getString("so_plan"), res.getString("so_entrytype"), res.getString("so_export_855"), res.getString("so_mod_date"),
-                        res.getString("so_cascade"), res.getString("so_salesperson1"), res.getString("so_salesperson2"));
+                        res.getString("so_cascade"), res.getString("so_slsperson1"), res.getString("so_slsperson2"));
                     }
                 }
             }
@@ -1043,7 +1043,7 @@ public class ordData {
                     res.getString("so_isallocated"), res.getString("so_terms"), res.getString("so_ar_acct"), res.getString("so_ar_cc"), 
                     res.getString("so_rmks"), res.getString("so_type"), res.getString("so_taxcode"), res.getString("so_issourced"),
                     res.getString("so_confirm"), res.getString("so_plan"), res.getString("so_entrytype"), res.getString("so_export_855"), res.getString("so_mod_date"),
-                    res.getString("so_cascade"), res.getString("so_salesperson1"), res.getString("so_salesperson2"));
+                    res.getString("so_cascade"), res.getString("so_slsperson1"), res.getString("so_slsperson2"));
                     }
                 }
             }
@@ -1076,7 +1076,7 @@ public class ordData {
                 res.getString("so_isallocated"), res.getString("so_terms"), res.getString("so_ar_acct"), res.getString("so_ar_cc"), 
                 res.getString("so_rmks"), res.getString("so_type"), res.getString("so_taxcode"), res.getString("so_issourced"),
                 res.getString("so_confirm"), res.getString("so_plan"), res.getString("so_entrytype"), res.getString("so_export_855"), res.getString("so_mod_date"),
-                    res.getString("so_cascade"), res.getString("so_salesperson1"), res.getString("so_salesperson2"));
+                    res.getString("so_cascade"), res.getString("so_slsperson1"), res.getString("so_slsperson2"));
                 }
             }
             return r;
@@ -8478,7 +8478,7 @@ public class ordData {
     String so_ord_date, String so_create_date, String so_userid, String so_status, String so_isallocated,
     String so_terms, String so_ar_acct, String so_ar_cc, String so_rmks, String so_type, String so_taxcode,
     String so_issourced, String so_confirm, String so_plan, String so_entrytype, String so_export_855, String so_mod_date, 
-    String so_cascade, String so_salesperson1, String so_salesperson2) {
+    String so_cascade, String so_slsperson1, String so_slsperson2) {
         public so_mstr(String[] m) {
             this(m, "", "", "", "", "", "", "", "", "", "",
                     "", "", "", "", "", "", "", "", "", "",
