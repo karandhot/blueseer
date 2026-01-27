@@ -171,8 +171,8 @@ public class MenuTreeMaint extends javax.swing.JPanel {
         tbindex.setEnabled(true);
         tbname.setText("");
     
-        btadd.setEnabled(false);
-        btupdate.setEnabled(false);
+       // btadd.setEnabled(false);
+      //  btupdate.setEnabled(false);
         btdelete.setEnabled(false);
         
         DefaultTreeModel model = (DefaultTreeModel)jTree1.getModel();
