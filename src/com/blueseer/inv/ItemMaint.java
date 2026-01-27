@@ -552,6 +552,10 @@ public class ItemMaint extends javax.swing.JPanel implements IBlueSeerT {
         Map<String,Integer> f = OVData.getTableInfo(new String[]{"item_mstr"});
         int fc;
 
+        if (x.name().equals("delete")) {
+            return true;
+        }
+        
         fc = checkLength(f,"it_item");
         if (tbkey.getText().length() > fc || tbkey.getText().isEmpty()) {
             bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));

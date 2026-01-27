@@ -745,7 +745,7 @@ public class InventoryBrowse extends javax.swing.JPanel {
                  list.add(rec);
              }
             HashMap hm = new HashMap();
-            hm.put("REPORT_TITLE", "Quote Report");
+            hm.put("REPORT_TITLE", "Inventory Report");
             hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
             for (int j = 0; j < tablereport.getColumnCount(); j++) {
                hm.put("d" + j,  tablereport.getColumnName(j));
