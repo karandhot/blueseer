@@ -56,6 +56,7 @@ import static com.blueseer.utl.BlueSeerUtils.jsonToHashMapStringStringArr;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
+import static com.blueseer.utl.BlueSeerUtils.xNull;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.getPackQtyForItem;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -3480,8 +3481,8 @@ public class invData {
                         rowArray.put(res.getString("it_code"));
                         rowArray.put(res.getString("wh"));
                         rowArray.put(res.getString("loc"));
-                        rowArray.put(res.getString("serial")); 
-                        rowArray.put(res.getString("expire"));
+                        rowArray.put(xNull(res.getString("serial"))); 
+                        rowArray.put(xNull(res.getString("expire")));
                         rowArray.put(bsNumber(res.getDouble("qoh")));
                         jsonarray.put(rowArray);
                     /*
