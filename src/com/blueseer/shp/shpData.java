@@ -1529,8 +1529,8 @@ public class shpData {
                         rowArray.put(res.getString("sh_shipdate"));
                         rowArray.put(res.getString("sh_po"));
                         rowArray.put(res.getString("sh_status"));
-                        rowArray.put(bsNumber(res.getString("qty")));
-                        rowArray.put(bsNumber(res.getString("price")));
+                        rowArray.put(bsNumber(res.getDouble("qty")));
+                        rowArray.put(bsNumber(res.getDouble("price")));
                         jsonarray.put(rowArray);
                     }
            }
