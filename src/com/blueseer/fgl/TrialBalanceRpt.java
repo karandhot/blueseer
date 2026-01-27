@@ -1092,7 +1092,7 @@ try {
                                 acctdesc,
                                 site,
                                 0,
-                                bsParseDouble(currformatDouble(endbal))
+                                bsParseDouble(currformatDouble(-1 * endbal))
                             });
                 }
                
@@ -1107,7 +1107,7 @@ try {
                  
               
                 lbldebits.setText(currformatDouble(totaldebits));
-                lblcredits.setText(currformatDouble(totalcredits));
+                lblcredits.setText(currformatDouble(-1 * totalcredits));
             } catch (SQLException s) {
                 MainFrame.bslog(s);
                 bsmf.MainFrame.show(getMessageTag(1016,Thread.currentThread().getStackTrace()[1].getMethodName()));
