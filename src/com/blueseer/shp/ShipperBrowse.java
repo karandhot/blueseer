@@ -98,7 +98,9 @@ public class ShipperBrowse extends javax.swing.JPanel {
                       @Override  
                       public Class getColumnClass(int col) {  
                         if (col == 0 || col == 1)       
-                            return ImageIcon.class;  
+                            return ImageIcon.class; 
+                        else if (col == 9) 
+                            return Double.class;
                         else return String.class;  //other columns accept String values  
                       }
                       
@@ -410,6 +412,7 @@ public class ShipperBrowse extends javax.swing.JPanel {
                  if (! cbunconfirmed.isSelected() && rowData[7].equals("0")) { continue; }
                  totsales = totsales + bsParseDouble(rowData[9].toString()); 
                  totqty = totqty + bsParseDouble(rowData[8].toString());
+                 rowData[9] = bsParseDouble(rowData[9].toString());
                  modeltable.addRow(rowData); 
                  i++;
                 } 
