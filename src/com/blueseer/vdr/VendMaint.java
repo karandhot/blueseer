@@ -1915,7 +1915,7 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
-        ddshiptype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ShipFrom", "ShipTo" }));
+        ddshiptype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ShipFrom", "RemitTo", "ShipTo" }));
 
         jLabel43.setText("Type");
 
@@ -2062,17 +2062,13 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
         panelAttachmentLayout.setHorizontalGroup(
             panelAttachmentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelAttachmentLayout.createSequentialGroup()
-                .addGroup(panelAttachmentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(panelAttachmentLayout.createSequentialGroup()
-                        .addComponent(btaddattachment)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btdeleteattachment)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 446, Short.MAX_VALUE)
-                        .addComponent(labelmessage, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(panelAttachmentLayout.createSequentialGroup()
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addComponent(btaddattachment)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btdeleteattachment)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 439, Short.MAX_VALUE)
+                .addComponent(labelmessage, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
+            .addComponent(jScrollPane4)
         );
         panelAttachmentLayout.setVerticalGroup(
             panelAttachmentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2084,8 +2080,8 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addComponent(btaddattachment)
                         .addComponent(btdeleteattachment)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(157, 157, 157))
+                .addComponent(jScrollPane4)
+                .addContainerGap())
         );
 
         add(panelAttachment);
