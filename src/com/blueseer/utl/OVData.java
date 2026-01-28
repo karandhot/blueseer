@@ -57,6 +57,7 @@ import static com.blueseer.ord.ordData.getOrderTotalTax;
 import static com.blueseer.ord.ordData.getPickPrintData;
 import static com.blueseer.ord.ordData.getSVOrderTotalTax;
 import static com.blueseer.ord.ordData.getServiceOrderPrintData;
+import static com.blueseer.pur.purData.getPOPrintData;
 import static com.blueseer.pur.purData.getPOTotalTax;
 import com.blueseer.sch.schData;
 import com.blueseer.shp.shpData;
@@ -141,6 +142,7 @@ import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.math.BigDecimal;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -18991,30 +18993,33 @@ return mystring;
         String jsonString = null;
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<>();
-            list.add(new String[]{"id", "getOrderPrintData"});
+            list.add(new String[]{"id", "getPOPrintData"});
             list.add(new String[]{"param1", order});
             try {
-                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+                jsonString = sendServerPost(list, "", null, "dataServPUR"); 
             } catch (IOException ex) {
                 bslog(ex);
                 return null;
             }
         } else {
-            jsonString = getOrderPrintData(order); 
+            jsonString = getPOPrintData(order); 
         }        
         Object[][] rData = jsonToData(jsonString);
         Path rFilePath = null;
         
         List<Object[]> list = new ArrayList<>();
         String site_csz = "";
-        String bill_csz = "";
+        String vend_csz = "";
         String ship_csz = "";
-        String cust = "";
+        String currency = "";
+        String shipname = "";
+        String shipline1 = "";
         String site = "";
         String logo = "";
         String imagedir = "";
         String jasperfile = "";
         String jasperdir = "";
+        String taxes = "";
         ArrayList<Object[]> saclist = new ArrayList<>();
         int k = 0;
         for (Object[] rowData : rData) {
@@ -19023,25 +19028,27 @@ return mystring;
                 continue;
             }
             if (k == 0) {
-                cust = rowData[2].toString();
+                currency = rowData[38].toString();
+                shipname = rowData[14].toString();
+                shipline1 = rowData[14].toString();
+                
                 site = rowData[33].toString();
-                logo = (rowData[34].toString().isBlank()) ? rowData[35].toString() : rowData[34].toString(); // if cm_logo = "" then site_logo
-                jasperfile = rowData[38].toString();
-                jasperdir = rowData[39].toString();
-                imagedir = rowData[36].toString();
-                bill_csz = rowData[21].toString() + " " + rowData[22].toString() + " " + rowData[23].toString() + " " + rowData[24].toString();
+                logo = rowData[34].toString(); // if cm_logo = "" then site_logo
+                jasperfile = rowData[36].toString();
+                jasperdir = rowData[37].toString();
+                imagedir = rowData[35].toString();
+                taxes = rowData[40].toString();
+                vend_csz = rowData[21].toString() + " " + rowData[22].toString() + " " + rowData[23].toString() + " " + rowData[24].toString();
                 ship_csz = rowData[25].toString() + " " + rowData[26].toString() + " " + rowData[27].toString() + " " + rowData[28].toString();
                 site_csz = rowData[29].toString() + " " + rowData[30].toString() + " " + rowData[31].toString() + " " + rowData[32].toString();
             }
               //  totalsales = totalsales + (bsParseDouble(rowData[6].toString()) * bsParseDouble(rowData[7].toString()));
              //   totalqty = totalqty + bsParseDouble(rowData[6].toString());
                 rowData[7] = bsParseDouble(rowData[7].toString());
-                rowData[8] = bsParseDouble(rowData[8].toString());
-                rowData[40] = bsParseInt(rowData[40].toString());
-                rowData[42] = bsParseDouble(rowData[42].toString());
-                rowData[43] = bsParseDouble(rowData[43].toString());
-                rowData[44] = bsParseDouble(rowData[44].toString());
-                rowData[46] = bsParseDouble(rowData[46].toString());
+                rowData[8] = BigDecimal.valueOf(bsParseDouble(rowData[8].toString()));
+                rowData[39] = bsParseDouble(rowData[39].toString());
+                rowData[40] = bsParseDouble(rowData[40].toString());
+                rowData[41] = bsParseDouble(rowData[41].toString());
                 list.add(rowData);
                 k++;
         }
@@ -19051,29 +19058,46 @@ return mystring;
         }
         
         String[] rec;
-        String columnnames = "sod_nbr,sod_desc,so_cust,so_rmks,sod_po," +
-                        "sod_item,sod_custitem,sod_ord_qty,sod_netprice,cm_code,cm_name,cm_line1,cm_line2," +
-                        "cms_name,cms_line1,site_desc,site_line1,so_shipvia," +
-                        "cm_terms,so_create_date,so_due_date," +
-                        "cm_city,cm_state,cm_zip,cm_country,cms_city,cms_state,cms_zip,cms_country," +
-                        "site_city,site_state,site_zip,site_country,site_site,cm_logo,site_logo," +
-                        "ov_image_directory,cm_iv_jasper,site_or_jasper,ov_jasper_directory," +
-                        "so_nbr,so_curr," +
-                        "charges,taxes,sod_listprice,cms_line2,sod_taxamt";
+        String columnnames = "pod_nbr,pod_desc,po_vend,po_rmks,pod_nbr," +
+                        "pod_item,pod_venditem,pod_ord_qty,pod_netprice,vd_addr,vd_name,vd_line1,vd_line2," +
+                        "vds_name,vds_line1,site_desc,site_line1,po_shipvia," +
+                        "po_terms,po_ord_date,po_due_date," +
+                        "vd_city,vd_state,vd_zip,vd_country,vds_city,vds_state,vds_zip,vds_country," +
+                        "site_city,site_state,site_zip,site_country,site_site,site_logo," +
+                        "ov_image_directory,site_po_jasper,ov_jasper_directory," +
+                        "so_curr," +
+                        "charges,taxes,pod_listprice,vds_line2,po_nbr,it_desc,poa_name,poa_line1";
         String[] columnnamesarray = columnnames.split(",", -1);
                
         JRDataSource datasource = new ListOfArrayDataSource(list, columnnamesarray);
         JRDataSource sacds = new ListOfArrayDataSource(saclist, new String[]{"sos_desc", "amt"});
         
+                 // terms and conditions file
+                 String tac_str = "";
+                 if (Files.exists(FileSystems.getDefault().getPath("conf/tac.txt"))) {
+                   byte[] tac = null;
+                    try {
+                        tac = Files.readAllBytes(FileSystems.getDefault().getPath("conf/tac.txt"));
+                    } catch (IOException ex) {
+                        bslog(ex);
+                    }
+                   tac_str = new String(tac, StandardCharsets.UTF_8);
+                 }
+        
         Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
         HashMap hm = new HashMap();
-        hm.put("REPORT_TITLE", "Sales Order");
-                hm.put("myid",  order);
+        hm.put("REPORT_TITLE", "Purchase Order");
+            hm.put("myid",  order);
                 hm.put("site_csz", site_csz);
-                hm.put("bill_csz", bill_csz);
+                hm.put("vend_csz", vend_csz);
                 hm.put("ship_csz", ship_csz);
+                hm.put("shipname", shipname);
+                hm.put("shipline1", shipline1);
                 hm.put("imagepath", imagepath.toString());
+                hm.put("taxes", taxes);
+                hm.put("REPORT_LOCALE", BlueSeerUtils.getCurrencyLocale(currency));
                 hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+                hm.put("tac", tac_str);
                 hm.put("sacdatasource", sacds);
        
         

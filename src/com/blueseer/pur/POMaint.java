@@ -1827,6 +1827,7 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -3184,18 +3185,9 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btdeleteActionPerformed
 
     private void btpoprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btpoprintActionPerformed
-        Set<String> shiptos = new LinkedHashSet<String>();
-        boolean isMultiShip = false;
-        for (int j = 0; j < orddet.getRowCount(); j++) {
-            if (orddet.getValueAt(j, 12).toString().isBlank()) {
-                continue;
-            }
-            shiptos.add(orddet.getValueAt(j, 12).toString());
-        } 
-        if (shiptos.size() > 1) {
-           isMultiShip = true;
-        }
-        OVData.printPurchaseOrder(tbkey.getText(), isMultiShip);
+        
+       // OVData.printPurchaseOrder(tbkey.getText(), isMultiShip);
+       OVData.printPurchaseOrderRemote(tbkey.getText(), isMultiShip(), false);
     }//GEN-LAST:event_btpoprintActionPerformed
 
     private void btupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateActionPerformed

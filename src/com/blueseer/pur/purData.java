@@ -61,6 +61,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import org.json.JSONArray;
 
 /**
  *
@@ -1310,6 +1311,133 @@ public class purData {
     
     
     // miscellaneous SQL queries
+    public static String getPOPrintData(String order) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                
+                res = st.executeQuery("select po_nbr, pod_nbr, po_curr, pod_desc, po_shipvia, po_terms,  " + 
+                " (select case when sum(pom_amt) is null then 0 else sum(pom_amt) end from po_meta " +
+                " where pom_nbr = " + "'" + order + "'" + " and pom_amttype = 'amount' and pom_type <> 'tax' and pom_type <> 'passive' and pom_type <> 'shipping BIL' and pom_type <> 'shipping PPD' " +
+                " ) as charges, " +
+                " (select case when sum(pom_amt) is null then 0 else sum(pom_amt) end from po_meta " +
+                " where pom_nbr = " + "'" + order + "'" + " and pom_amttype = 'amount' and pom_type = 'tax' ) as taxes, " +        
+                " po_vend, po_rmks, pod_nbr, pod_item, pod_venditem, pod_ord_qty, " +
+                " pod_netprice, pod_listprice, vd_addr, vd_name, vd_line1, vd_line2,  " +
+                " vd_city, vd_state, vd_zip, vd_country, vds_city, vds_state, vds_zip, vds_country, " +
+                " site_site, site_desc, site_line1, site_city, site_state, site_zip, site_country, " +                        
+                " vds_name, vds_line1, vds_line2, po_ord_date, po_due_date, site_logo, " +
+                " site_po_jasper, ov_image_directory, ov_jasper_directory, po_nbr, poa_name, poa_line1 " +
+                " from pod_mstr  " +
+                " inner join po_mstr on po_nbr = pod_nbr " +
+                " inner join vd_mstr on vd_addr = po_vend " +
+                " inner join po_addr on poa_code = po_nbr " +        
+                " left outer join vds_det on vds_code = po_vend and vds_shipto = po_ship " +
+                " inner join site_mstr on site_site = po_site " +
+                " inner join ov_ctrl " +         
+                " where pod_nbr = " + "'" + order + "'");
+                
+                    
+                    String shipper = "";
+                    int i = 0;
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("pod_nbr")); 
+                        rowArray.put(res.getString("pod_desc"));
+                        rowArray.put(res.getString("po_vend"));
+                        rowArray.put(res.getString("po_rmks"));
+                        rowArray.put(res.getString("pod_nbr"));
+                        rowArray.put(res.getString("pod_item"));
+                        rowArray.put(res.getString("pod_venditem"));
+                        rowArray.put(res.getDouble("pod_ord_qty"));
+                        rowArray.put(res.getDouble("pod_netprice")); 
+                        rowArray.put(res.getString("vd_addr"));
+                        rowArray.put(res.getString("vd_name")); // 10 zero base
+                        rowArray.put(res.getString("vd_line1"));
+                        rowArray.put(res.getString("vd_line2"));
+                        rowArray.put(res.getString("vds_name"));
+                        rowArray.put(res.getString("vds_line1"));
+                        rowArray.put(res.getString("site_desc"));
+                        rowArray.put(res.getString("site_line1"));
+                        rowArray.put(res.getString("po_shipvia"));
+                        rowArray.put(res.getString("po_terms")); 
+                        rowArray.put(res.getString("po_ord_date"));
+                        rowArray.put(res.getString("po_due_date")); // 20 zero base
+                        rowArray.put(res.getString("vd_city"));
+                        rowArray.put(res.getString("vd_state"));
+                        rowArray.put(res.getString("vd_zip"));
+                        rowArray.put(res.getString("vd_country"));
+                        rowArray.put(res.getString("vds_city"));  
+                        rowArray.put(res.getString("vds_state"));
+                        rowArray.put(res.getString("vds_zip"));
+                        rowArray.put(res.getString("vds_country"));
+                        rowArray.put(res.getString("site_city"));
+                        rowArray.put(res.getString("site_state"));  // 30 zero base
+                        rowArray.put(res.getString("site_zip"));
+                        rowArray.put(res.getString("site_country"));
+                        rowArray.put(res.getString("site_site"));
+                        rowArray.put(res.getString("site_logo")); 
+                        rowArray.put(res.getString("ov_image_directory"));
+                        rowArray.put(res.getString("site_po_jasper"));
+                        rowArray.put(res.getString("ov_jasper_directory"));
+                        rowArray.put(res.getString("po_curr")); 
+                        rowArray.put(res.getDouble("charges"));
+                        rowArray.put(res.getDouble("taxes"));  // 40 zero base
+                        rowArray.put(res.getDouble("pod_listprice"));
+                        rowArray.put(res.getString("vds_line2"));
+                        rowArray.put(res.getString("po_nbr"));
+                        rowArray.put(""); // blank for it_desc...not needed
+                        rowArray.put(res.getString("poa_name"));
+                        rowArray.put(res.getString("poa_line1"));
+                        jsonarray.put(rowArray);
+                        i++;
+                    }
+                
+              // get SAC
+              if (i > 0) {
+              res = st.executeQuery("select pom_desc, " +
+                      " case when pom_amttype = 'percent' and pom_type <> 'tax' then (myamt * -1 * (pom_amt / 100.0)) " +
+                      " when pom_amttype = 'percent' and pom_type = 'tax' then (myamt * (pom_amt / 100.0)) " +
+                      " else pom_amt end as 'amt' " +
+                      " from po_meta, (select pod_nbr, sum(pod_ord_qty * pod_listprice) as 'myamt' from pod_mstr group by pod_nbr) sub " +
+                      " where sub.pod_nbr = pom_nbr and pom_nbr = " + "'" + order + "'");
+              while (res.next()) {
+                  JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("sacarray");
+                        rowArray.put(res.getString("pom_desc")); 
+                        rowArray.put(res.getString("amt"));
+                        jsonarray.put(rowArray);
+              }
+              
+              
+              }
+                    
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
     public static ArrayList<String[]> getPurchaseOrderInit() {
         String defaultsite = "";
         ArrayList<String[]> lines = new ArrayList<String[]>();

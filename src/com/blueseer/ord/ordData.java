@@ -5032,11 +5032,11 @@ public class ordData {
                lines.add(s);
             }
             
-            res = st.executeQuery("select code_key from code_mstr where code_code = 'salesrep' order by code_key ;");
+            res = st.executeQuery("select slsp_name from slsp_mstr order by slsp_name ;");
             while (res.next()) {
                 String[] s = new String[2];
                s[0] = "salesreps";
-               s[1] = res.getString("code_key");
+               s[1] = res.getString("slsp_name");
                lines.add(s);
             }
             
