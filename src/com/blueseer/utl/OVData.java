@@ -15109,7 +15109,13 @@ return mystring;
           
         // set parent GL ref number
               String gldoc = fglData.setGLRecNbr("IN");
-                
+               
+        fglData.gl_ctrl glc = getGLCtrl(new String[]{""});
+        String costset = "standard";
+        if (BlueSeerUtils.ConvertStringToBool(glc.gl_currmtl())) {  // if GL Control set to use curr pur price vs standard cost
+            costset = "current";
+        }      
+              
           // try block for updating tran_mstr
        try {
              
@@ -15191,9 +15197,9 @@ return mystring;
                _assydate = "'" + _assydate + "'";
               
               islastop = OVData.isLastOperation(_part, _op);
-              double opcost = invData.getItemCostUpToOp(_part, "standard", _site, _op) ;
+              double opcost = invData.getItemCostUpToOp(_part, costset, _site, _op) ;
               if (invData.getItemCode(_part).toString().equals("P")) {
-                  opcost = invData.getItemCost(_part, "standard", _site);
+                  opcost = invData.getItemCost(_part, costset, _site);
               }
               
                           
@@ -15297,7 +15303,7 @@ return mystring;
                   /* adjust inventory for this part FG being produced ...if last OP */
                   if (islastop) {
                      OVData.UpdateInventoryDiscrete(_part, _site, _loc, _wh, _serial, _expiredate, _qty);
-                     double cost = (invData.getItemCost(_part, "standard", _site) * _qty);
+                     double cost = (invData.getItemCost(_part, costset, _site) * _qty);
                      OVData.wip_to_fg(_part, _site, cost, _date, _ref, "RCT-FG", _remarks, gldoc); 
                   }
               }
