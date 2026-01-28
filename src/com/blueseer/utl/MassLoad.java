@@ -1738,9 +1738,9 @@ public class MassLoad extends javax.swing.JPanel {
         list.add("vd_line2,s,50,optional,unvalidated");
         list.add("vd_line3,s,50,optional,unvalidated");
         list.add("vd_city,s,50,optional,unvalidated");
-        list.add("vd_state,s,3,optional,validated");
+        list.add("vd_state,s,50,optional,validated");
         list.add("vd_zip,s,15,optional,unvalidated");
-        list.add("vd_country,s,3,optional,validated");
+        list.add("vd_country,s,50,optional,validated");
         list.add("vd_group,s,30,optional,unvalidated");
         list.add("vd_market,s,30,optional,unvalidated");
         list.add("vd_buyer,s,30,optional,unvalidated");
