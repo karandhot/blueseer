@@ -73,6 +73,7 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
@@ -91,6 +92,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.table.TableCellRenderer;
 
 /**
  *
@@ -98,20 +100,23 @@ import javax.swing.JTabbedPane;
  */
 public class SalesRepBrowse extends javax.swing.JPanel {
  
+    String defaultSite = "";
+    String defaultCurrency = "";
+    
      MyTableModel mymodel = new SalesRepBrowse.MyTableModel(new Object[][]{},
                         new String[]{
                             getGlobalColumnTag("id"),
                             getGlobalColumnTag("date"), 
-                            getGlobalColumnTag("so_slsperson1"),
-                            getGlobalColumnTag("so_slsperson2"),
-                            getGlobalColumnTag("custcode"),
-                            getGlobalColumnTag("shipcode"),
-                            getGlobalColumnTag("state"),
+                            getGlobalColumnTag("slsrep1"),
+                            getGlobalColumnTag("customer"),
+                            getGlobalColumnTag("name"),
+                            getGlobalColumnTag("po"),
+                            getGlobalColumnTag("total"),
                             getGlobalColumnTag("amount")})
              {
                       @Override  
                       public Class getColumnClass(int col) {  
-                        if ( col == 7)       
+                        if ( col == 6 || col == 7)       
                         return Double.class;
                         else return String.class;  //other columns accept String values  
                       }  
@@ -122,7 +127,7 @@ public class SalesRepBrowse extends javax.swing.JPanel {
      * Creates new form ScrapReportPanel
      */
     
-     class MyTableModel extends DefaultTableModel {  
+    class MyTableModel extends DefaultTableModel {  
       
         public MyTableModel(Object rowData[][], Object columnNames[]) {  
              super(rowData, columnNames);  
@@ -182,7 +187,25 @@ public class SalesRepBrowse extends javax.swing.JPanel {
         return c;
     }
     }
-        
+    
+    private static class myHeaderRenderer implements TableCellRenderer {
+      DefaultTableCellRenderer renderer;
+      int horAlignment;
+      public myHeaderRenderer(JTable table, int horizontalAlignment) {
+        horAlignment = horizontalAlignment;
+        renderer = (DefaultTableCellRenderer)table.getTableHeader()
+            .getDefaultRenderer();
+      }
+      public Component getTableCellRendererComponent(JTable table, Object value,
+          boolean isSelected, boolean hasFocus, int row, int col) {
+        Component c = renderer.getTableCellRendererComponent(table, value,
+          isSelected, hasFocus, row, col);
+        JLabel label = (JLabel)c;
+        label.setHorizontalAlignment(horAlignment);
+        return label;
+      }
+}
+    
         
     public SalesRepBrowse() {
         initComponents();
@@ -242,22 +265,55 @@ public class SalesRepBrowse extends javax.swing.JPanel {
          dcfrom.setDate(now);
          dcto.setDate(now);
          
-         
-          ArrayList myacct = fglData.getGLAcctList();
-        for (int i = 0; i < myacct.size(); i++) {
-            ddfromrep.addItem(myacct.get(i));
-            ddtorep.addItem(myacct.get(i));
-        }
-            ddfromrep.setSelectedIndex(0);
-            ddtorep.setSelectedIndex(ddtorep.getItemCount() - 1);
-        
+         ArrayList<String[]> initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "reps");
+          
         ddsite.removeAllItems();
-        ArrayList sites = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (Object site : sites) {
-            ddsite.addItem(site);
-        }  
+        
+        
+        for (String[] s : initDataSets) {
+           
+           
+            if (s[0].equals("reps")) {
+              ddfromrep.addItem(s[1]); 
+              ddtorep.addItem(s[1]);
+            }
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+        }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultSite);
+        }
+        ddfromrep.insertItemAt("", 0);
+        ddfromrep.setSelectedIndex(0);
+        ddtorep.insertItemAt("", 0);
+        ddtorep.setSelectedIndex(0);
+        
+        
+        
+        ddfromrep.setSelectedIndex(0);
+        ddtorep.setSelectedIndex(ddtorep.getItemCount() - 1);
          
-         
+         tablereport.setModel(mymodel);
+               // tableorder.getColumnModel().getColumn(0).setCellRenderer(new OrderReport1.SomeRenderer());  
+                tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+                tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+                
+         for (int i = 0 ; i < tablereport.getColumnCount(); i++) { 
+          if (i == 7 || i == 8) {
+         tablereport.getTableHeader().getColumnModel().getColumn(i)
+         .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.RIGHT));
+          } else {
+          tablereport.getTableHeader().getColumnModel().getColumn(i)
+         .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.LEFT));    
+          }
+        }
          
        
     }
@@ -278,7 +334,7 @@ public class SalesRepBrowse extends javax.swing.JPanel {
         btRun = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tablereport = new javax.swing.JTable();
-        labelcount = new javax.swing.JLabel();
+        labelrep = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         labeldollar = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
@@ -290,10 +346,6 @@ public class SalesRepBrowse extends javax.swing.JPanel {
         jLabel6 = new javax.swing.JLabel();
         btcsv = new javax.swing.JButton();
         tbprint = new javax.swing.JButton();
-        ddfromstate = new javax.swing.JComboBox<>();
-        jLabel1 = new javax.swing.JLabel();
-        ddtostate = new javax.swing.JComboBox<>();
-        jLabel8 = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -336,17 +388,17 @@ public class SalesRepBrowse extends javax.swing.JPanel {
         });
         jScrollPane1.setViewportView(tablereport);
 
-        labelcount.setText("0");
+        labelrep.setText("0");
 
         jLabel7.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        jLabel7.setText("Count");
+        jLabel7.setText("Rep Total Amount");
         jLabel7.setName("lblcount"); // NOI18N
 
         labeldollar.setBackground(new java.awt.Color(195, 129, 129));
         labeldollar.setText("0");
 
         jLabel9.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        jLabel9.setText("Sum");
+        jLabel9.setText("Total Sales");
         jLabel9.setName("lblsum"); // NOI18N
 
         jLabel4.setText("From Rep");
@@ -374,14 +426,6 @@ public class SalesRepBrowse extends javax.swing.JPanel {
             }
         });
 
-        ddfromstate.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        jLabel1.setText("From State");
-
-        ddtostate.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        jLabel8.setText("To State");
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -400,20 +444,10 @@ public class SalesRepBrowse extends javax.swing.JPanel {
                     .addComponent(jLabel4)
                     .addComponent(jLabel5))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(ddfromrep, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(8, 8, 8)
-                        .addComponent(jLabel1))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(ddtorep, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel8)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(ddfromstate, 0, 87, Short.MAX_VALUE)
-                    .addComponent(ddtostate, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(ddfromrep, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ddtorep, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(164, 164, 164)
                 .addComponent(jLabel6)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -423,12 +457,12 @@ public class SalesRepBrowse extends javax.swing.JPanel {
                 .addComponent(btcsv)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tbprint)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 548, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 484, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel7)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(labelcount, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(labelrep, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -458,20 +492,16 @@ public class SalesRepBrowse extends javax.swing.JPanel {
                                 .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(jLabel6)
                                 .addComponent(btcsv)
-                                .addComponent(tbprint)
-                                .addComponent(ddfromstate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel1))
+                                .addComponent(tbprint))
                             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(labelcount, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(labelrep, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(jLabel7)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(labeldollar, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel9)
                             .addComponent(ddtorep, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel5)
-                            .addComponent(ddtostate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel8))))
+                            .addComponent(jLabel5))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 547, Short.MAX_VALUE))
         );
@@ -503,29 +533,30 @@ try {
             try {
                 int qty = 0;
                 double dol = 0;
+                double repamt = 0;
+                double repamttotal = 0;
                 int i = 0;
                 
                    
                  mymodel.setNumRows(0);
                    
                
-                tablereport.setModel(mymodel);
-               // tableorder.getColumnModel().getColumn(0).setCellRenderer(new OrderReport1.SomeRenderer());  
-                tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+               
                 Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
                  
              
                  DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
 
                      
-                 res = st.executeQuery("SELECT sh_id, sh_confdate, so_slsperson1, so_slsperson2, cms_code, cms_shipto, cms_state, ar_amt from ship_mstr " +
+                 res = st.executeQuery("SELECT sh_id, sh_confdate, so_slsperson1, so_slsperson2, cm_code, cm_name, sh_po, ar_amt, slsp_rate from ship_mstr " +
                         " inner join ar_mstr on ar_nbr = sh_id " +
-                        " inner join cms_det on cms_code = sh_cust and cms_shipto = sh_ship " +
+                        " inner join cm_mstr on cm_code = sh_cust " +
                         " inner join so_mstr on so_nbr = sh_so " + 
+                        " inner join slsp_mstr on slsp_name = so_slsperson1 " +  
                         " where sh_confdate >= " + "'" + setDateDB(dcfrom.getDate())  + "'" + 
                         " AND sh_confdate <= " + "'" + setDateDB(dcto.getDate()) + "'" +
-                         " AND slsperson1 >= " + "'" + ddfromrep.getSelectedItem().toString() + "'" +
-                         " AND slsperson1 <= " + "'" + ddtorep.getSelectedItem().toString() + "'" +
+                         " AND so_slsperson1 >= " + "'" + ddfromrep.getSelectedItem().toString() + "'" +
+                         " AND so_slsperson1 <= " + "'" + ddtorep.getSelectedItem().toString() + "'" +
                          " AND sh_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +
                          " order by sh_id desc ;");    
                  
@@ -533,21 +564,22 @@ try {
                 while (res.next()) {
                                       
                     dol = dol + res.getDouble("ar_amt");
-                 
+                    repamt = (res.getDouble("ar_amt") * (res.getDouble("slsp_rate") / 100));
+                    repamttotal = repamttotal + repamt;
                     i++;
                         mymodel.addRow(new Object[]{
                                 res.getString("sh_id"),
                                 getDateDB(res.getString("sh_confdate")),
                                 res.getString("so_slsperson1"),
-                                res.getString("so_slsperson2"),
-                                res.getString("cms_code"),
-                                res.getString("cms_shipto"),
-                                res.getString("cms_state"),
-                                bsParseDouble(currformatDouble(res.getDouble("ar_amt")))
+                                res.getString("cm_code"),
+                                res.getString("cm_name"),
+                                res.getString("sh_po"),
+                                bsParseDouble(currformatDouble(res.getDouble("ar_amt"))),
+                                bsParseDouble(currformatDouble(repamt))
                             });
                 }
                 labeldollar.setText(String.valueOf(currformatDouble(dol)));
-                labelcount.setText(String.valueOf(i));
+                labelrep.setText(String.valueOf(currformatDouble(repamttotal)));
                
             } catch (SQLException s) {
                 MainFrame.bslog(s);
@@ -575,7 +607,7 @@ try {
     private void tbprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbprintActionPerformed
 
         if (tablereport != null && mymodel.getRowCount() > 0) {
-            OVData.printJTableToJasper("Ledger Transaction Report", tablereport, "genericJTableL9.jasper" );
+            OVData.printJTableToJasper("Sales Rep Report", tablereport, "genericJTableL8.jasper" );
             /*
             try {
 
@@ -599,13 +631,6 @@ try {
     private void tablereportMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablereportMouseClicked
        int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
-        if ( col == 0) {
-                String mypanel = "GLTranMaint";
-               if (! checkperms(mypanel)) { return; }
-               String[] args = new String[]{tablereport.getValueAt(row, 1).toString(), "gl_hist"};
-               reinitpanels(mypanel, true, args);
-              
-        }
     }//GEN-LAST:event_tablereportMouseClicked
 
 
@@ -615,23 +640,19 @@ try {
     private com.toedter.calendar.JDateChooser dcfrom;
     private com.toedter.calendar.JDateChooser dcto;
     private javax.swing.JComboBox ddfromrep;
-    private javax.swing.JComboBox<String> ddfromstate;
     private javax.swing.JComboBox ddsite;
     private javax.swing.JComboBox ddtorep;
-    private javax.swing.JComboBox<String> ddtostate;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JLabel labelcount;
     private javax.swing.JLabel labeldollar;
+    private javax.swing.JLabel labelrep;
     private javax.swing.JTable tablereport;
     private javax.swing.JButton tbprint;
     // End of variables declaration//GEN-END:variables

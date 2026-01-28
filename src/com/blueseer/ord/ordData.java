@@ -5032,7 +5032,7 @@ public class ordData {
                lines.add(s);
             }
             
-            res = st.executeQuery("select slsp_name from slsp_mstr order by slsp_name ;");
+            res = st.executeQuery("select slsp_name from slsp_mstr where slsp_active = '1' order by slsp_name ;");
             while (res.next()) {
                 String[] s = new String[2];
                s[0] = "salesreps";

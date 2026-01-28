@@ -3403,6 +3403,15 @@ public class admData {
                                lines.add(s);
                             }
                         }
+                        if (sd.equals("reps")) {
+                            res = st.executeQuery("select slsp_name from slsp_mstr order by slsp_name ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "reps";
+                               s[1] = res.getString("slsp_name");
+                               lines.add(s);
+                            }
+                        }
                         if (sd.equals("states")) {
                             res = st.executeQuery("select code_key from code_mstr where code_code = 'state' order by code_key ;");
                             while (res.next()) {
