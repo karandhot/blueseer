@@ -1102,8 +1102,7 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
         };
         luTable.addMouseListener(luml);
       
-        callDialog(getClassLabelTag("lblvend", this.getClass().getSimpleName()), 
-                getClassLabelTag("lblname", this.getClass().getSimpleName()));  
+        callDialog(getGlobalColumnTag("name"), getGlobalColumnTag("zip"));  
         
         
     }
