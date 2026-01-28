@@ -6772,7 +6772,7 @@ public class OVData {
                   fglData.glEntry(acct_cr.get(j).toString(), cc_cr.get(j).toString(), acct_dr.get(j).toString(), cc_dr.get(j).toString(), date, bsParseDouble(cost.get(j).toString()), bsParseDouble(cost.get(j).toString()), curr, basecurr, ref.get(j).toString(), site.get(j).toString(), type.get(j).toString(), desc.get(j).toString(), doc.get(j).toString());  
                 }
            } else {
-               System.out.println("HERE: " + item + "/" + op + "/" + csite + "/" + pmcode + "  INSIDE ELSE");
+               System.out.println("HERE: " + item + "/" + op + "/" + csite + "/" + pmcode + "/" + costset + "  INSIDE ELSE");
            res = st.executeQuery("select ps_child, ps_qty_per, it_loc, it_wh, itc_total, pl_inventory, pl_line " +
                    " from pbm_mstr " +
                    " inner join bom_mstr on bom_id = ps_bom  " +
