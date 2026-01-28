@@ -6659,7 +6659,8 @@ public class OVData {
     }        
 
     public static void wip_iss_mtl_gl(String item, String op, String csite, Double qty, String date, String cref, String ctype, String cdesc, String serial, String userid, String program, String bom, String gldoc, LinkedHashMap<String,String[]> serialkeys) {
-
+            System.out.println("HERE: wip_iss_mtl_gl");
+        
     try{
 
          // added SQLITE adjustment here...create arraylist of entries for glentry instead of inline
@@ -6718,7 +6719,7 @@ public class OVData {
         Statement st = con.createStatement();
         ResultSet res = null;
         try{
-            
+            System.out.println("HERE: " + item + "/" + op + "/" + csite);
             res = st.executeQuery("select wf_assert " +
                    " from wf_mstr " +
                    " inner join item_mstr on it_wf = wf_id " +
@@ -6746,7 +6747,7 @@ public class OVData {
             /*  NOTE:  we will be debiting the backflushed part WIP account and
             crediting the component Inventory account  */
 
-
+           System.out.println("HERE: " + item + "/" + op + "/" + csite + "/" + pmcode);
            if (pmcode.equalsIgnoreCase("P")) {
                 res = st.executeQuery("select  itc_total, pl_scrap, pl_line, pl_inventory " +
                    " from item_mstr  " + 
@@ -6771,6 +6772,7 @@ public class OVData {
                   fglData.glEntry(acct_cr.get(j).toString(), cc_cr.get(j).toString(), acct_dr.get(j).toString(), cc_dr.get(j).toString(), date, bsParseDouble(cost.get(j).toString()), bsParseDouble(cost.get(j).toString()), curr, basecurr, ref.get(j).toString(), site.get(j).toString(), type.get(j).toString(), desc.get(j).toString(), doc.get(j).toString());  
                 }
            } else {
+               System.out.println("HERE: " + item + "/" + op + "/" + csite + "/" + pmcode + "  INSIDE ELSE");
            res = st.executeQuery("select ps_child, ps_qty_per, it_loc, it_wh, itc_total, pl_inventory, pl_line " +
                    " from pbm_mstr " +
                    " inner join bom_mstr on bom_id = ps_bom  " +
@@ -6780,6 +6782,7 @@ public class OVData {
                    " AND ps_op = " + "'" + op + "'" +
                    " AND ps_bom = " + "'" + bom + "'" );
            while (res.next()) {
+               
                acct_cr.add(res.getString("pl_inventory"));
                 acct_dr.add(par_acct_dr);
                 cc_cr.add(res.getString("pl_line"));
@@ -6849,6 +6852,7 @@ public class OVData {
                 if (opsarray[1].equals("1")) {
                     break;
                 }
+                System.out.println("HERE: myops loop just before unreported issue");
                 wip_iss_mtl_gl_unreported(item, opsarray[0], csite, qty, date, cref, ctype, cdesc, serial, userid, program, bom, gldoc, serialkeys);
             }
            } /* if Reportable Op */
@@ -6925,6 +6929,7 @@ public class OVData {
         ResultSet res = null;
         try{
 
+            System.out.println("INSIDE unreported... " + item + "/" + costset + "/" + op + "/" + bom);
             /* lets get the 'wip' acct and cc from product line info for the item */
             res = st.executeQuery("select pl_wip, pl_line " +
                    " from item_mstr " +
@@ -6948,6 +6953,7 @@ public class OVData {
                    " AND ps_op = " + "'" + op + "'" +
                    " AND ps_bom = " + "'" + bom + "'" );
            while (res.next()) {
+               System.out.println("HERE (unreported): " + res.getString("ps_child") + "/" + res.getString("ps_qty_per") + "/" + res.getString("itc_total"));
                acct_cr.add(res.getString("pl_inventory"));
                cc_cr.add(res.getString("pl_line"));
                 acct_dr.add(par_acct_dr);
