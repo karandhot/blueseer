@@ -1767,7 +1767,7 @@ public class MassLoad extends javax.swing.JPanel {
         boolean proceed = true;
         
         // first check for correct number of fields
-        if (rs.length != list.size()) {
+        if (rs.length != list.size() && ! cboverride.isSelected()) {
                    tacomments.append("line " + i + " does not have correct number of fields. " + String.valueOf(rs.length) + " ...should have " + String.valueOf(list.size()) + " fields \n" );
                    proceed = false;
         }
@@ -1796,23 +1796,23 @@ public class MassLoad extends javax.swing.JPanel {
                     tacomments.append("line:field " + i + ":" + j + " " + String.valueOf(rs[j]) + " field must be of type double" + "\n" );
                        proceed = false;
                 }
-                if (ld[0].compareTo("vd_terms") == 0 && ! OVData.isValidTerms(rs[j])) {
+                if (ld[0].compareTo("vd_terms") == 0 && ! OVData.isValidTerms(rs[j]) && ! cboverride.isSelected()) {
                     tacomments.append("line:field " + i + ":" + j + " " + String.valueOf(rs[j]) + " must be valid Terms Code" + "\n" );
                        proceed = false;
                 }
-                if (ld[0].compareTo("vd_ap_acct") == 0 && ! OVData.isValidGLAcct(rs[j])) {
+                if (ld[0].compareTo("vd_ap_acct") == 0 && ! OVData.isValidGLAcct(rs[j]) && ! cboverride.isSelected()) {
                     tacomments.append("line:field " + i + ":" + j + " " + String.valueOf(rs[j]) + " must be valid Account" + "\n" );
                        proceed = false;
                 }
-                if (ld[0].compareTo("vd_ap_cc") == 0 && ! OVData.isValidGLcc(rs[j])) {
+                if (ld[0].compareTo("vd_ap_cc") == 0 && ! OVData.isValidGLcc(rs[j]) && ! cboverride.isSelected()) {
                     tacomments.append("line:field " + i + ":" + j + " " + String.valueOf(rs[j]) + " must be valid CC" + "\n" );
                        proceed = false;
                 }
-                if (ld[0].compareTo("vd_bank") == 0 && ! OVData.isValidBank(rs[j])) {
+                if (ld[0].compareTo("vd_bank") == 0 && ! OVData.isValidBank(rs[j]) && ! cboverride.isSelected()) {
                     tacomments.append("line:field " + i + ":" + j + " " + String.valueOf(rs[j]) + " must be valid Bank" + "\n" );
                        proceed = false;
                 }
-                if (ld[0].compareTo("vd_curr") == 0 && ! OVData.isValidCurrency(rs[j])) {
+                if (ld[0].compareTo("vd_curr") == 0 && ! OVData.isValidCurrency(rs[j]) && ! cboverride.isSelected()) {
                     tacomments.append("line:field " + i + ":" + j + " " + String.valueOf(rs[j]) + " must be valid Currency" + "\n" );
                        proceed = false;
                 }
