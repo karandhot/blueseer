@@ -353,7 +353,7 @@ public class ordData {
             bscon.setAutoCommit(false);
             _addOrderMstr(so, bscon, ps, res);  
             for (sod_det z : sod) {
-                _addOrderDet(z, bscon, ps, res);
+                _addOrderDet(z, so, bscon, ps, res);
             }
             if (sot != null) {
                 for (so_tax z : sot) {
@@ -520,15 +520,15 @@ public class ordData {
             ps.setInt(2, x.sod_line);
             ps.setString(3, x.sod_item);
             ps.setString(4, x.sod_custitem);
-            ps.setString(5, x.sod_po);
+            ps.setString(5, z.so_po);
             ps.setDouble(6, x.sod_ord_qty);
             ps.setString(7, x.sod_uom);
             ps.setDouble(8, x.sod_all_qty);
             ps.setDouble(9, x.sod_listprice);
             ps.setDouble(10, x.sod_disc);
             ps.setDouble(11, x.sod_netprice);
-            ps.setString(12, x.sod_ord_date);
-            ps.setString(13, x.sod_due_date);
+            ps.setString(12, z.so_ord_date);
+            ps.setString(13, z.so_due_date);
             ps.setDouble(14, x.sod_shipped_qty);
             ps.setString(15, x.sod_status);
             ps.setString(16, x.sod_wh);
@@ -1385,7 +1385,7 @@ public class ordData {
     }
     
     
-    private static int _addOrderDet(sod_det x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+    private static int _addOrderDet(sod_det x, so_mstr z, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
         int rows = 0;
         String sqlSelect = "select * from sod_det where sod_nbr = ? and sod_line = ?";
         String sqlInsert = "insert into sod_det (sod_nbr, sod_line, sod_item, sod_custitem, " 
@@ -1406,15 +1406,15 @@ public class ordData {
             ps.setInt(2, x.sod_line);
             ps.setString(3, x.sod_item);
             ps.setString(4, x.sod_custitem);
-            ps.setString(5, x.sod_po);
+            ps.setString(5, z.so_po);
             ps.setDouble(6, x.sod_ord_qty);
             ps.setString(7, x.sod_uom);
             ps.setDouble(8, x.sod_all_qty);
             ps.setDouble(9, x.sod_listprice);
             ps.setDouble(10, x.sod_disc);
             ps.setDouble(11, x.sod_netprice);
-            ps.setString(12, x.sod_ord_date);
-            ps.setString(13, x.sod_due_date);
+            ps.setString(12, z.so_ord_date);
+            ps.setString(13, z.so_due_date);
             ps.setDouble(14, x.sod_shipped_qty);
             ps.setString(15, x.sod_status);
             ps.setString(16, x.sod_wh);
