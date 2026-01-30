@@ -354,18 +354,23 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbtaxid.setText("");
         tbhighbalance.setText("");
         tbhighbalance.setEditable(false);
+        tbhighbalance.setBackground(Color.LIGHT_GRAY);
         tbavgdays.setText("");
         tbavgdays.setEditable(false);
+        tbavgdays.setBackground(Color.LIGHT_GRAY);
         tblastpaydate.setText("");
         tblastpaydate.setEditable(false);
+        tblastpaydate.setBackground(Color.LIGHT_GRAY);
         tblastselldate.setText("");
         tblastselldate.setEditable(false);
+        tblastselldate.setBackground(Color.LIGHT_GRAY);
         
         java.util.Date now = new java.util.Date();
         DateFormat dtf = new SimpleDateFormat("yyyy-MM-dd");
         tbdateadded.setText(dtf.format(now));
         tbdatemod.setText(dtf.format(now));
-        
+        tbdateadded.setBackground(Color.LIGHT_GRAY);
+        tbdatemod.setBackground(Color.LIGHT_GRAY);
          cbshipto.setSelected(true);
         cb855.setSelected(false);
         cb856.setSelected(false);
@@ -1549,7 +1554,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel10.setText("DateAdded");
         jLabel10.setName("lbldateadded"); // NOI18N
 
-        jLabel13.setText("Last Sale Date");
+        jLabel13.setText("Last Order Date");
         jLabel13.setName("lbllastsaledate"); // NOI18N
 
         cbonhold.setText("On Hold");

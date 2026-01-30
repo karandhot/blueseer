@@ -714,7 +714,7 @@
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel13">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Last Sale Date"/>
+                <Property name="text" type="java.lang.String" value="Last Order Date"/>
                 <Property name="name" type="java.lang.String" value="lbllastsaledate" noResource="true"/>
               </Properties>
             </Component>
