@@ -4784,6 +4784,12 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             btdelete.setEnabled(false);
             btupdate.setEnabled(false);
             btcopy.setEnabled(false);
+            ddstatus.setSelectedItem(getGlobalProgTag("open"));
+                for (int j = 0; j < orddet.getRowCount(); j++) {
+                 orddet.setValueAt(0, j, 10);
+                 orddet.setValueAt(getGlobalProgTag("open"), j, 11);
+                }
+
             }
     }//GEN-LAST:event_btcopyActionPerformed
 
