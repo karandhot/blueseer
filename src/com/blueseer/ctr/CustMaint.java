@@ -352,6 +352,14 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbmainphone.setText("");
         tbmainemail.setText("");
         tbtaxid.setText("");
+        tbhighbalance.setText("");
+        tbhighbalance.setEditable(false);
+        tbavgdays.setText("");
+        tbavgdays.setEditable(false);
+        tblastpaydate.setText("");
+        tblastpaydate.setEditable(false);
+        tblastselldate.setText("");
+        tblastselldate.setEditable(false);
         
         java.util.Date now = new java.util.Date();
         DateFormat dtf = new SimpleDateFormat("yyyy-MM-dd");
@@ -652,7 +660,11 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                 BlueSeerUtils.boolToString(cb810.isSelected()),
                 (ddsite.getSelectedItem() == null) ? "" : ddsite.getSelectedItem().toString(),
                 tbtaxid.getText(), 
-                BlueSeerUtils.boolToString(cbcascade.isSelected())
+                BlueSeerUtils.boolToString(cbcascade.isSelected()),
+                tbhighbalance.getText(),
+                tbavgdays.getText(),
+                tblastpaydate.getText(),
+                tblastselldate.getText()
                 );
         return x;
     }
@@ -789,9 +801,9 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
         
         fc = checkLength(f,"cm_group");
-        if (tblastsaleday.getText().length() > fc) {
+        if (tblastselldate.getText().length() > fc) {
             bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
-            tblastsaleday.requestFocus();
+            tblastselldate.requestFocus();
             return false;
         }
         
@@ -1002,6 +1014,10 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         cb810.setSelected(BlueSeerUtils.ConvertStringToBool(k.cm_is810export()));
         cbcascade.setSelected(BlueSeerUtils.ConvertStringToBool(k.cm_cascade()));
         tbtaxid.setText(k.cm_misc1());
+        tbhighbalance.setText(k.cm_highbal());
+        tbavgdays.setText(k.cm_avgdays());
+        tblastpaydate.setText(k.cm_lastpaydate());
+        tblastselldate.setText(k.cm_lastselldate()); 
         contactmodel.setRowCount(0);
         clearShipTo();
         clearContacts();
@@ -1206,7 +1222,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel12 = new javax.swing.JLabel();
         tbdateadded = new javax.swing.JTextField();
         jLabel11 = new javax.swing.JLabel();
-        tblastsaleday = new javax.swing.JTextField();
+        tblastselldate = new javax.swing.JTextField();
         tbmarket = new javax.swing.JTextField();
         jLabel14 = new javax.swing.JLabel();
         ddterms = new javax.swing.JComboBox();
@@ -1679,7 +1695,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                                     .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                         .addComponent(tbtaxid)
                                         .addComponent(tbdateadded, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(tblastsaleday, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
+                                        .addComponent(tblastselldate, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
                                         .addComponent(ddcarrier, 0, 171, Short.MAX_VALUE)
                                         .addComponent(tbpricecode, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
                                         .addComponent(tbsalesrep, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
@@ -1758,7 +1774,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(tblastsaleday, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(tblastselldate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(tblastpaydate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1780,8 +1796,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(tbcreditlimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel12))
-                        .addGap(0, 0, 0)))
+                            .addComponent(jLabel12))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
@@ -1794,15 +1809,14 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(tbmarket, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(3, 3, 3)
-                        .addComponent(jLabel19))
                     .addComponent(tbpricecode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGap(3, 3, 3)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(ddterms, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel15))))
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel19)
+                            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(ddterms, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel15)))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
@@ -1888,7 +1902,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(btdelete)
                     .addComponent(btupdate)
                     .addComponent(btadd))
-                .addContainerGap(11, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
@@ -2651,7 +2665,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JTextField tbinvformat;
     private javax.swing.JTextField tbkey;
     private javax.swing.JTextField tblastpaydate;
-    private javax.swing.JTextField tblastsaleday;
+    private javax.swing.JTextField tblastselldate;
     private javax.swing.JTextField tbline1;
     private javax.swing.JTextField tbline2;
     private javax.swing.JTextField tbline3;

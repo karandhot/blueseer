@@ -2840,7 +2840,7 @@ CREATE TABLE "vd_mstr" (
   "vd_phone" varchar(15) NOT NULL DEFAULT '0',
   "vd_email" varchar(60) NOT NULL DEFAULT '0',
   "vd_is850export" tinyint(1) NOT NULL DEFAULT '0',
-  "vd_type" varchar(30) NOT NULL COLLATE NOCASE DEFAULT ''
+  "vd_type" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
   "vd_taxid" varchar(50) NOT NULL COLLATE NOCASE DEFAULT '',
   "vd_taxexempt" tinyint(1) NOT NULL DEFAULT '0',
   "vd_1099" tinyint(1) NOT NULL DEFAULT '0'

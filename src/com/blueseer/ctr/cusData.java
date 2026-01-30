@@ -233,7 +233,11 @@ public class cusData {
                     (ld[26].isBlank()) ? "USD" : ld[26],
                     ld[23], 
                     ld[30], ld[28], ld[29], ld[31], ld[32],
-                    ld[33], ld[34], ld[35], (ld[9].isBlank()) ? "1000" : ld[9], "", "0"
+                    ld[33], ld[34], ld[35], (ld[9].isBlank()) ? "1000" : ld[9], "", "0", 
+                    "0", // highbal
+                    "0", // avgdays
+                    "",
+                    ""
                 );
      
                 _addCustMstr(x, con, ps, res, true);
@@ -619,7 +623,7 @@ public class cusData {
                     res.getString("cm_ar_acct"), res.getString("cm_ar_cc"), res.getString("cm_bank"), res.getString("cm_curr"), res.getString("cm_remarks"), 
                     res.getString("cm_label"), res.getString("cm_ps_jasper"), res.getString("cm_iv_jasper"), res.getString("cm_phone"), res.getString("cm_email"), 
                     res.getString("cm_is855export"),res.getString("cm_is856export"),res.getString("cm_is810export"),res.getString("cm_site"), res.getString("cm_misc1"),
-                    res.getString("cm_cascade"));
+                    res.getString("cm_cascade"), res.getString("cm_highbal"), res.getString("cm_avgdays"), res.getString("cm_lastpaydate"), res.getString("cm_lastselldate"));
                     }
                 }
             }
@@ -654,7 +658,7 @@ public class cusData {
                     res.getString("cm_ar_acct"), res.getString("cm_ar_cc"), res.getString("cm_bank"), res.getString("cm_curr"), res.getString("cm_remarks"), 
                     res.getString("cm_label"), res.getString("cm_ps_jasper"), res.getString("cm_iv_jasper"), res.getString("cm_phone"), res.getString("cm_email"), 
                     res.getString("cm_is855export"),res.getString("cm_is856export"),res.getString("cm_is810export"),res.getString("cm_site"), res.getString("cm_misc1"),
-                        res.getString("cm_cascade"));
+                    res.getString("cm_cascade"), res.getString("cm_highbal"), res.getString("cm_avgdays"), res.getString("cm_lastpaydate"), res.getString("cm_lastselldate"));
                     }
             }
             return r;
@@ -3695,12 +3699,14 @@ public class cusData {
     String cm_disc_code, String cm_tax_code, String cm_salesperson, String cm_ar_acct,
     String cm_ar_cc, String cm_bank, String cm_curr, String cm_remarks,
     String cm_label, String cm_ps_jasper, String cm_iv_jasper, String cm_phone, String cm_email,
-    String cm_is855export, String cm_is856export, String cm_is810export, String cm_site, String cm_misc1, String cm_cascade) {
+    String cm_is855export, String cm_is856export, String cm_is810export, String cm_site, String cm_misc1, String cm_cascade,
+    String cm_highbal, String cm_avgdays, String cm_lastpaydate, String cm_lastselldate ) {
         public cm_mstr(String[] m) {
             this(m, "", "", "", "", "", "", "", "", "", "",
                     "", "", "", "", "", "", "", "", "", "",
                     "", "", "", "", "", "", "", "", "", "",
-                    "", "", "", "", "", "", "", "", ""
+                    "", "", "", "", "", "", "", "", "", "",
+                    "", "", ""
                     );
         }
     }

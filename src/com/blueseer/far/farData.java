@@ -36,6 +36,8 @@ import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import static com.blueseer.utl.BlueSeerUtils.setDateDB;
+import com.blueseer.utl.OVData;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.sql.Connection;
@@ -43,7 +45,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  *
@@ -573,6 +577,41 @@ public class farData {
     
     
     // misc functions
+    
+    public static void _updateCustAR(String cust, Connection bscon) throws SQLException {
+           
+        Statement st = bscon.createStatement();
+        ResultSet res;
+                
+        // high balance
+        double highbal = 0.00;
+        res = st.executeQuery("select ar_open_amt from ar_mstr where ar_status = 'o' and ar_cust = " + "'" + cust + "'" +";");
+        while (res.next()) {
+         highbal += res.getDouble("ar_open_amt");
+        }
+        //System.out.println("HERE: " + cust + "/" + highbal);
+        // avg days to pay
+        int avgdays = 0;
+        if (bsmf.MainFrame.dbtype.equals("sqlite")) {
+            res = st.executeQuery("SELECT coalesce(avg(julianday(ar_paiddate) - julianday(ar_duedate)),0) AS nbrofdays from ar_mstr " +
+                    " where ar_cust = " + "'" + cust + "'" );
+        } else {
+            res = st.executeQuery("SELECT coalesce(avg(datediff(ar_paiddate, ar_duedate)),0) AS nbrofdays from ar_mstr " +
+                    " where ar_cust = " + "'" + cust + "'" );
+        }
+        while (res.next()) {
+         avgdays += res.getInt("nbrofdays");
+         
+        }
+
+        //System.out.println("HERE: " + cust + "/" + highbal + "/" + avgdays);
+        st.executeUpdate("update cm_mstr set cm_highbal = " + "'" + highbal + "'" + ", cm_avgdays = " + "'" + avgdays + "'" +
+                " where cm_code = " + "'" + cust + "'");
+        
+        res.close();
+        st.close();
+           
+    }
     
     public static String[] getARTaxMaterialOnly(String ref) {
            // get AR tax info

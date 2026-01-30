@@ -44,6 +44,7 @@ import com.blueseer.ctr.cusData;
 import static com.blueseer.edi.EDI.getFileContentBytes;
 import static com.blueseer.edi.EDI.writeFile;
 import static com.blueseer.edi.ediData.getEDIMetaValueAsKVString;
+import static com.blueseer.far.farData._updateCustAR;
 import com.blueseer.fgl.fglData;
 import static com.blueseer.fgl.fglData.getGLCtrl;
 import static com.blueseer.fgl.fglData.setGLRecNbr;
@@ -16689,6 +16690,10 @@ return mystring;
                      
                   } // if type = "P"
           
+                // update cm_mstr with highbalance and average days to pay
+               // System.out.println("HERE: " + cust);
+                _updateCustAR(cust, bscon);
+                   
                 res.close();
                 st.close();
     }
