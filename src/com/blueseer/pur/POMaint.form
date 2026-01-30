@@ -115,7 +115,7 @@
                           <Component id="btupdate" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
                           <Component id="btadd" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" pref="211" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="208" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
@@ -123,29 +123,36 @@
                               <Group type="102" attributes="0">
                                   <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="1" attributes="0">
-                                      <Component id="jLabel77" alignment="1" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jLabel78" alignment="1" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jLabel83" alignment="1" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jLabel16" alignment="1" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jLabel10" alignment="1" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jLabel11" alignment="1" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jLabel81" alignment="1" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jLabel17" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="duedate" alignment="0" min="-2" pref="158" max="-2" attributes="0"/>
-                                      <Component id="orddate" alignment="0" min="-2" pref="158" max="-2" attributes="0"/>
-                                      <Component id="cbconfirm" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="ddcurr" alignment="0" min="-2" pref="84" max="-2" attributes="0"/>
-                                      <Component id="ddtax" alignment="0" min="-2" pref="84" max="-2" attributes="0"/>
-                                      <Component id="ddtype" alignment="0" min="-2" pref="84" max="-2" attributes="0"/>
-                                      <Component id="ddedistatus" alignment="0" min="-2" pref="84" max="-2" attributes="0"/>
-                                      <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                                          <Component id="tbtaxid" alignment="0" pref="112" max="32767" attributes="0"/>
-                                          <Component id="userid" alignment="0" max="32767" attributes="0"/>
+                                      <Group type="102" alignment="1" attributes="0">
+                                          <Group type="103" groupAlignment="1" attributes="0">
+                                              <Component id="jLabel77" alignment="1" min="-2" max="-2" attributes="0"/>
+                                              <Component id="jLabel78" alignment="1" min="-2" max="-2" attributes="0"/>
+                                              <Component id="jLabel83" alignment="1" min="-2" max="-2" attributes="0"/>
+                                              <Component id="jLabel16" alignment="1" min="-2" max="-2" attributes="0"/>
+                                              <Component id="jLabel81" alignment="1" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="duedate" alignment="0" min="-2" pref="158" max="-2" attributes="0"/>
+                                              <Component id="orddate" alignment="0" min="-2" pref="158" max="-2" attributes="0"/>
+                                              <Component id="ddcurr" alignment="0" min="-2" pref="84" max="-2" attributes="0"/>
+                                              <Component id="ddtax" alignment="0" min="-2" pref="84" max="-2" attributes="0"/>
+                                              <Component id="userid" alignment="0" min="-2" pref="112" max="-2" attributes="0"/>
+                                          </Group>
                                       </Group>
-                                      <Component id="jCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Group type="102" alignment="1" attributes="0">
+                                          <Group type="103" groupAlignment="1" attributes="0">
+                                              <Component id="jLabel10" alignment="1" min="-2" max="-2" attributes="0"/>
+                                              <Component id="jLabel11" alignment="1" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="cbconfirm" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="ddtype" alignment="0" min="-2" pref="84" max="-2" attributes="0"/>
+                                              <Component id="ddedistatus" alignment="0" min="-2" pref="84" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace min="-2" pref="74" max="-2" attributes="0"/>
+                                      </Group>
                                   </Group>
                                   <EmptySpace max="32767" attributes="0"/>
                               </Group>
@@ -285,13 +292,6 @@
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="tbtaxid" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLabel17" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jCheckBox1" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="ddtype" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="jLabel10" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -300,7 +300,7 @@
                               <Component id="ddedistatus" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="jLabel11" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="cbconfirm" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
@@ -682,18 +682,6 @@
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btcopyActionPerformed"/>
           </Events>
-        </Component>
-        <Component class="javax.swing.JTextField" name="tbtaxid">
-        </Component>
-        <Component class="javax.swing.JCheckBox" name="jCheckBox1">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Tax Exempt"/>
-          </Properties>
-        </Component>
-        <Component class="javax.swing.JLabel" name="jLabel17">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Tax ID"/>
-          </Properties>
         </Component>
       </SubComponents>
     </Container>

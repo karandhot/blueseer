@@ -509,7 +509,10 @@ public class CarrierMaint extends javax.swing.JPanel implements IBlueSeerT {
                 tbphone.getText(),
                 tbemail.getText(),
                 "0", // String.valueOf(BlueSeerUtils.boolToInt(cb850.isSelected()))
-                "carrier" // vdtype
+                "carrier", // vdtype
+                "", // taxid
+                "0", //taxexempt
+                "0" // 1099
                 );
         return x;
     }

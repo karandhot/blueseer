@@ -5467,7 +5467,10 @@ public class OVData {
                 ld[10],
                 ld[11],
                 "0", // String.valueOf(BlueSeerUtils.boolToInt(cb850.isSelected()))
-                "carrier" // vdtype
+                "carrier", // vdtype
+                "", // taxid
+                "0", // taxexempt
+                "0" // 1099
                 );
                 venData.addVendMstr(x);    
                     

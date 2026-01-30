@@ -1760,6 +1760,9 @@ public class MassLoad extends javax.swing.JPanel {
         list.add("vd_email,s,80,optional,unvalidated");
         list.add("vd_is850export,i,1,optional,unvalidated");
         list.add("vd_type,s,50,optional,unvalidated");
+        list.add("vd_taxid,s,50,optional,unvalidated");
+        list.add("vd_taxexempt,i,1,optional,unvalidated");
+        list.add("vd_1099,i,1,optional,unvalidated");
         return list;
     }
     

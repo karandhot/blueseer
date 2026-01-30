@@ -355,6 +355,8 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbtaxid.setText("");
         ddshiptype.setSelectedIndex(0);
         cb850.setSelected(false);
+        cb1099.setSelected(false);
+        cbtaxexempt.setSelected(false);
         
         tbsalesrep.setText("");
         tbgroup.setText("");
@@ -687,8 +689,11 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
                 tbmainphone.getText(),
                 tbmainemail.getText(),
                 String.valueOf(BlueSeerUtils.boolToInt(cb850.isSelected())),
-                vdtype // type ...if added via carrier maintenance...this value will be 'carrier'...otherwise blank
-                );
+                vdtype, // type ...if added via carrier maintenance...this value will be 'carrier'...otherwise blank
+                tbtaxid.getText(),
+                String.valueOf(BlueSeerUtils.boolToInt(cbtaxexempt.isSelected())),
+                String.valueOf(BlueSeerUtils.boolToInt(cb1099.isSelected()))
+            );
         return x;
     }
    
@@ -834,6 +839,9 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbmainemail.setText(k.vd_email());
         cb850.setSelected(BlueSeerUtils.ConvertStringToBool(k.vd_is850export()));
         vdtype = k.vd_type();
+        tbtaxid.setText(k.vd_taxid());
+        cbtaxexempt.setSelected(BlueSeerUtils.ConvertStringToBool(k.vd_taxexempt()));
+        cb1099.setSelected(BlueSeerUtils.ConvertStringToBool(k.vd_1099()));
         refreshContactTable(k.vd_addr());
         setAction(k.m());
         clearShipTo();
@@ -1246,6 +1254,8 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddtaxcode = new javax.swing.JComboBox<>();
         ddsite = new javax.swing.JComboBox<>();
         jLabel44 = new javax.swing.JLabel();
+        cbtaxexempt = new javax.swing.JCheckBox();
+        cb1099 = new javax.swing.JCheckBox();
         contactPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         contacttable = new javax.swing.JTable();
@@ -1468,10 +1478,11 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(tbzip, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel8))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(ddcountry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel9)
-                    .addComponent(lblcountry, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblcountry, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(ddcountry, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel9)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbmainphone, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1567,6 +1578,10 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel44.setText("Site");
         jLabel44.setName("lblsite"); // NOI18N
 
+        cbtaxexempt.setText("Tax Exempt");
+
+        cb1099.setText("1099");
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -1628,7 +1643,10 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
                                     .addComponent(cb850)
                                     .addComponent(ddtaxcode, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                             .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(cbtaxexempt)
+                                    .addComponent(cb1099))
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addGap(62, 62, 62))
         );
@@ -1703,7 +1721,11 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(tbtaxid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel32))))
-                .addGap(8, 8, 8)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbtaxexempt)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cb1099)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel29))
@@ -2284,7 +2306,9 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btshipedit;
     private javax.swing.JButton btshipnew;
     private javax.swing.JButton btupdate;
+    private javax.swing.JCheckBox cb1099;
     private javax.swing.JCheckBox cb850;
+    private javax.swing.JCheckBox cbtaxexempt;
     private javax.swing.JPanel contactPanel;
     private javax.swing.JTable contacttable;
     private javax.swing.JComboBox<String> ddaccount;
