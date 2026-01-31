@@ -336,7 +336,7 @@
                   <Component id="jPanel1" min="-2" pref="223" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="40" max="32767" attributes="0"/>
+                  <EmptySpace pref="46" max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="btupdate" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="btadd" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -1159,6 +1159,7 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/images/find.png"/>
                 </Property>
+                <Property name="toolTipText" type="java.lang.String" value="lookup"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btLookUpShipToActionPerformed"/>
@@ -1227,6 +1228,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/images/find.png"/>
             </Property>
+            <Property name="toolTipText" type="java.lang.String" value="lookup"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btLookUpBillToActionPerformed"/>
@@ -1237,6 +1239,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/images/lookup.png"/>
             </Property>
+            <Property name="toolTipText" type="java.lang.String" value="search"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btlookupActionPerformed"/>
@@ -1255,6 +1258,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/images/mail.png"/>
             </Property>
+            <Property name="toolTipText" type="java.lang.String" value="mail"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btmailActionPerformed"/>
@@ -1265,6 +1269,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/images/contacts.png"/>
             </Property>
+            <Property name="toolTipText" type="java.lang.String" value="contacts"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btcontactsActionPerformed"/>
@@ -1283,6 +1288,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/images/addfile.png"/>
             </Property>
+            <Property name="toolTipText" type="java.lang.String" value="Copy"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btcopyActionPerformed"/>

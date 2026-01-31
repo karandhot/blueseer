@@ -3099,7 +3099,6 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                             .addComponent(cbconfirm)
                             .addComponent(cbplan))
                         .addGap(0, 0, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(remarks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel86))
@@ -3151,6 +3150,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel12.setName("lblcountry"); // NOI18N
 
         btLookUpShipTo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/find.png"))); // NOI18N
+        btLookUpShipTo.setToolTipText("lookup");
         btLookUpShipTo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btLookUpShipToActionPerformed(evt);
@@ -3322,6 +3322,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         });
 
         btLookUpBillTo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/find.png"))); // NOI18N
+        btLookUpBillTo.setToolTipText("lookup");
         btLookUpBillTo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btLookUpBillToActionPerformed(evt);
@@ -3329,6 +3330,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         });
 
         btlookup.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/lookup.png"))); // NOI18N
+        btlookup.setToolTipText("search");
         btlookup.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btlookupActionPerformed(evt);
@@ -3339,6 +3341,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         lbldollars.setName("lbltotalamount"); // NOI18N
 
         btmail.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/mail.png"))); // NOI18N
+        btmail.setToolTipText("mail");
         btmail.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btmailActionPerformed(evt);
@@ -3346,6 +3349,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         });
 
         btcontacts.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/contacts.png"))); // NOI18N
+        btcontacts.setToolTipText("contacts");
         btcontacts.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btcontactsActionPerformed(evt);
@@ -3360,6 +3364,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         });
 
         btcopy.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/addfile.png"))); // NOI18N
+        btcopy.setToolTipText("Copy");
         btcopy.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btcopyActionPerformed(evt);
@@ -3463,7 +3468,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 223, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 46, Short.MAX_VALUE)
                 .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btupdate)
                     .addComponent(btadd)

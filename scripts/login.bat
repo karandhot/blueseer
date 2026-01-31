@@ -7,13 +7,23 @@ echo %mydate%
 ::  repofile is location of latest blueseer.jar...preferrably UNC path..i.e. \\someserver\somedir\blueseer.jar 
 ::  uncomment below line to engage once UNC repo path is defined
 :: set "repofile=\\someserver\somedir\blueseer.jar"
+:: set "repofile2=\\someserver\somedir\bsmf.jar"
 set "destfile=C:\BlueSeer\dist\blueseer.jar"
+set "destfile2=C:\BlueSeer\dist\bsmf.jar"
+
 IF EXIST "%repofile%" (
     @echo "copying repo blueseer.jar".
     copy /Y "%repofile%" "%destfile%"
 ) else (
-    @echo "repo file does not exist...using current"
+    @echo "repo file blueseer.jar does not exist...using current"
 )
+IF EXIST "%repofile2%" (
+    @echo "copying repo bsmf.jar".
+    copy /Y "%repofile2%" "%destfile2%"
+) else (
+    @echo "repo file bsmf.jar does not exist...using current"
+)
+
 
 set PATCHDIR=
 set PATCH=

@@ -205,6 +205,8 @@ public class farData {
                 _addArdMstr(z, bscon, ps, res);
             }
            
+            _updateCustAR(ar.ar_cust(), bscon);
+                    
             bscon.commit();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
         } catch (SQLException s) {
@@ -604,9 +606,10 @@ public class farData {
          
         }
 
-        //System.out.println("HERE: " + cust + "/" + highbal + "/" + avgdays);
-        st.executeUpdate("update cm_mstr set cm_highbal = " + "'" + highbal + "'" + ", cm_avgdays = " + "'" + avgdays + "'" +
+        
+        st.executeUpdate("update cm_mstr set cm_highbal = case when cm_highbal < " +  highbal + " then " + highbal + " else cm_highbal end, cm_avgdays = " + "'" + avgdays + "'" +
                 " where cm_code = " + "'" + cust + "'");
+       
         
         res.close();
         st.close();

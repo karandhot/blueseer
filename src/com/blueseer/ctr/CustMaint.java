@@ -77,12 +77,14 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.SwingWorker;
 
@@ -101,7 +103,8 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
      ArrayList<String[]> initDataSets = null;
      String defaultsite = null;
      boolean canupdate = false;
-   
+     
+     
      
      public static cm_mstr k = null;
     
@@ -208,6 +211,8 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public void setPanelComponentState(Object myobj, boolean b) {
+        
+        
         JPanel panel = null;
         JTabbedPane tabpane = null;
         JScrollPane scrollpane = null;
@@ -226,6 +231,20 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         Component[] components = panel.getComponents();
         
             for (Component component : components) {
+                
+                // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                
                 if (component instanceof JLabel || component instanceof JTable ) {
                     continue;
                 }
@@ -337,6 +356,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbline2.setText("");
         tbline3.setText("");
         tbcity.setText("");
+        tbmunicipality.setText("");
         tbzip.setText("");
         tbpricecode.setText("");
         tbgroup.setText("");
@@ -354,23 +374,23 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbtaxid.setText("");
         tbhighbalance.setText("");
         tbhighbalance.setEditable(false);
-        tbhighbalance.setBackground(Color.LIGHT_GRAY);
+        tbhighbalance.setBackground(bsmf.MainFrame.nonEditableColor);
         tbavgdays.setText("");
         tbavgdays.setEditable(false);
-        tbavgdays.setBackground(Color.LIGHT_GRAY);
+        tbavgdays.setBackground(bsmf.MainFrame.nonEditableColor);
         tblastpaydate.setText("");
         tblastpaydate.setEditable(false);
-        tblastpaydate.setBackground(Color.LIGHT_GRAY);
+        tblastpaydate.setBackground(bsmf.MainFrame.nonEditableColor);
         tblastselldate.setText("");
         tblastselldate.setEditable(false);
-        tblastselldate.setBackground(Color.LIGHT_GRAY);
+        tblastselldate.setBackground(bsmf.MainFrame.nonEditableColor);
         
         java.util.Date now = new java.util.Date();
         DateFormat dtf = new SimpleDateFormat("yyyy-MM-dd");
         tbdateadded.setText(dtf.format(now));
         tbdatemod.setText(dtf.format(now));
-        tbdateadded.setBackground(Color.LIGHT_GRAY);
-        tbdatemod.setBackground(Color.LIGHT_GRAY);
+        tbdateadded.setBackground(bsmf.MainFrame.nonEditableColor);
+        tbdatemod.setBackground(bsmf.MainFrame.nonEditableColor);
          cbshipto.setSelected(true);
         cb855.setSelected(false);
         cb856.setSelected(false);
@@ -537,6 +557,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public void initvars(String[] arg) {
+        
         
        
            setPanelComponentState(mainPanel, false); 
@@ -746,6 +767,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         if (tbkey.getText().length() > fc || tbkey.getText().isEmpty()) {
             bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
             tbkey.requestFocus();
+            tbkey.setBackground(bsmf.MainFrame.invalidColor);
             return false;
         }  
         
@@ -781,6 +803,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         if (tbcity.getText().length() > fc) {
             bsmf.MainFrame.show(getMessageTag(1032,"0" + "/" + fc));
             tbcity.requestFocus();
+            tbcity.setBackground(bsmf.MainFrame.invalidColor);
             return false;
         }
         
@@ -923,23 +946,23 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         public void actionPerformed(ActionEvent event) {
         if (option.equals("shipto")) {
             if (lurb1.isSelected()) {  
-             luModel = DTData.getShipToBrowseUtil(luinput.getText(),0, "cms_shipto", tbkey.getText());
+             luModel = DTData.getShipToBrowseUtil(luinput.getText(),0, "cms_name", tbkey.getText());
             } else if (lurb2.isSelected()) {
-             luModel = DTData.getShipToBrowseUtil(luinput.getText(),0, "cms_name", tbkey.getText());   
+             luModel = DTData.getShipToBrowseUtil(luinput.getText(),0, "cms_line1", tbkey.getText());   
             } else if (lurb3.isSelected()) {
-             luModel = DTData.getShipToBrowseUtil(luinput.getText(),0, "cms_line1", tbkey.getText());
+             luModel = DTData.getShipToBrowseUtil(luinput.getText(),0, "cms_zip", tbkey.getText());
             } else {
-             luModel = DTData.getShipToBrowseUtil(luinput.getText(),0, "cms_zip", tbkey.getText());   
+             luModel = DTData.getShipToBrowseUtil(luinput.getText(),0, "cms_code", tbkey.getText());   
             }
         } else {
             if (lurb1.isSelected()) {  
-             luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_code");
+             luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_name");
             } else if (lurb2.isSelected()) {
-             luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_name");   
+             luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_line1");   
             } else if (lurb3.isSelected()) {
-             luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_line1");
+             luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_zip");
             } else {
-             luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_zip");   
+             luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_code");   
             }
         }
         luTable.setModel(luModel);
@@ -971,10 +994,10 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         };
         luTable.addMouseListener(luml);
          
-        callDialog(getClassLabelTag("lblid", this.getClass().getSimpleName()), 
-                getClassLabelTag("lblname", this.getClass().getSimpleName()),
+        callDialog(getClassLabelTag("lblname", this.getClass().getSimpleName()), 
                 getClassLabelTag("lbladdr1", this.getClass().getSimpleName()),
-                getClassLabelTag("lblzip", this.getClass().getSimpleName())); 
+                getClassLabelTag("lblzip", this.getClass().getSimpleName()),
+                getClassLabelTag("lblid", this.getClass().getSimpleName())); 
         
         
         
@@ -1136,6 +1159,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
        tbshipcontact.setText("");
        tbshipphone.setText("");
        tbshipemail.setText("");
+       tbshiptomunicipality.setText("");
        
       
         if (ddshipstate.getItemCount() > 0) {
@@ -1218,6 +1242,8 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         btclear = new javax.swing.JButton();
         btlookup = new javax.swing.JButton();
         lblcountry = new javax.swing.JLabel();
+        tbmunicipality = new javax.swing.JTextField();
+        jLabel56 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         tbdatemod = new javax.swing.JTextField();
         jLabel10 = new javax.swing.JLabel();
@@ -1311,6 +1337,8 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbshipcontact = new javax.swing.JTextField();
         jLabel50 = new javax.swing.JLabel();
         jLabel51 = new javax.swing.JLabel();
+        tbshiptomunicipality = new javax.swing.JTextField();
+        jLabel57 = new javax.swing.JLabel();
         contactPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         contacttable = new javax.swing.JTable();
@@ -1416,41 +1444,13 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
+        jLabel56.setText("Municipality");
+        jLabel56.setName("lblmunicipality"); // NOI18N
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(10, 10, 10)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel8, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel44, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel45, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel29, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addGap(4, 4, 4)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tbname, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbline1, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbline2, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbline3, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbcity, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbzip, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbmainemail, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(ddstate, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
-                            .addComponent(ddcountry, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(lblcountry, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addComponent(tbmainphone, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))))
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(27, 27, 27)
                 .addComponent(jLabel1)
@@ -1462,6 +1462,45 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addComponent(btnew)
                 .addGap(6, 6, 6)
                 .addComponent(btclear))
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel8, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel44, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel45, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel29, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addGap(4, 4, 4))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel56)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(tbname, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tbline1, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tbline2, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tbline3, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tbcity, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tbmainemail, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ddstate, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
+                            .addComponent(ddcountry, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(lblcountry, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(tbmainphone, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(tbmunicipality, javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(tbzip, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1511,13 +1550,17 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addGap(3, 3, 3)
                         .addComponent(jLabel6))
                     .addComponent(tbcity, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(6, 6, 6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbmunicipality, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel56))
+                .addGap(5, 5, 5)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(4, 4, 4)
                         .addComponent(jLabel7))
                     .addComponent(ddstate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(11, 11, 11)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(3, 3, 3)
@@ -1546,7 +1589,8 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                 .addGap(6, 6, 6)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel29)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(27, 27, 27))
         );
 
         tbdatemod.setEnabled(false);
@@ -1953,6 +1997,8 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel35.setText("Line2");
         jLabel35.setName("lbladdr2"); // NOI18N
 
+        ddshipcountry.setPreferredSize(new java.awt.Dimension(80, 22));
+
         jLabel36.setText("ShipCode");
         jLabel36.setName("lblshipto"); // NOI18N
 
@@ -2016,6 +2062,8 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
 
         jLabel51.setText("Contact");
 
+        jLabel57.setText("Municipality");
+
         javax.swing.GroupLayout shiptoPanelLayout = new javax.swing.GroupLayout(shiptoPanel);
         shiptoPanel.setLayout(shiptoPanelLayout);
         shiptoPanelLayout.setHorizontalGroup(
@@ -2041,6 +2089,16 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(btshipadd))
                         .addGroup(shiptoPanelLayout.createSequentialGroup()
+                            .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel49)
+                                .addComponent(jLabel50)
+                                .addComponent(jLabel51))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(tbshipcontact, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
+                                .addComponent(tbshipphone)
+                                .addComponent(tbshipemail)))
+                        .addGroup(shiptoPanelLayout.createSequentialGroup()
                             .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(jLabel37, javax.swing.GroupLayout.Alignment.TRAILING)
                                 .addComponent(jLabel33, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -2050,34 +2108,26 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                                 .addComponent(jLabel30, javax.swing.GroupLayout.Alignment.TRAILING)
                                 .addComponent(jLabel32, javax.swing.GroupLayout.Alignment.TRAILING)
                                 .addComponent(jLabel34, javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(jLabel48, javax.swing.GroupLayout.Alignment.TRAILING))
+                                .addComponent(jLabel48, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel57, javax.swing.GroupLayout.Alignment.TRAILING))
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                 .addComponent(tbshipline3, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
                                 .addComponent(tbshipline2, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
                                 .addComponent(tbshipline1, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
-                                .addComponent(ddshipstate, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(tbshipcity, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
-                                .addComponent(tbshipzip, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(tbshipname)
                                 .addGroup(shiptoPanelLayout.createSequentialGroup()
                                     .addGap(1, 1, 1)
                                     .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(ddshipcountry, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(ddshipcountry, 0, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGroup(shiptoPanelLayout.createSequentialGroup()
                                             .addComponent(tbxrefcode, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addGap(0, 0, Short.MAX_VALUE))))))
-                        .addGroup(shiptoPanelLayout.createSequentialGroup()
-                            .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(jLabel49)
-                                .addComponent(jLabel50)
-                                .addComponent(jLabel51))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(tbshipcontact, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
-                                .addComponent(tbshipphone)
-                                .addComponent(tbshipemail)))))
-                .addContainerGap(522, Short.MAX_VALUE))
+                                            .addGap(0, 0, Short.MAX_VALUE))))
+                                .addComponent(tbshiptomunicipality, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(tbshipzip, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(ddshipstate, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addGap(1, 1, 1))
         );
         shiptoPanelLayout.setVerticalGroup(
             shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2112,6 +2162,10 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(jLabel38))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbshiptomunicipality, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel57))
+                .addGap(5, 5, 5)
+                .addGroup(shiptoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(ddshipstate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel30))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2143,7 +2197,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(btshipadd)
                     .addComponent(btshipedit)
                     .addComponent(btdeleteshipto))
-                .addContainerGap(121, Short.MAX_VALUE))
+                .addContainerGap(94, Short.MAX_VALUE))
         );
 
         add(shiptoPanel);
@@ -2336,11 +2390,9 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addComponent(btaddattachment)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btdeleteattachment)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 446, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 439, Short.MAX_VALUE)
                         .addComponent(labelmessage, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(panelAttachmentLayout.createSequentialGroup()
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                    .addComponent(jScrollPane4))
                 .addContainerGap())
         );
         panelAttachmentLayout.setVerticalGroup(
@@ -2353,8 +2405,8 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addComponent(btaddattachment)
                         .addComponent(btdeleteattachment)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(157, 157, 157))
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 578, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         add(panelAttachment);
@@ -2640,6 +2692,8 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JLabel jLabel53;
     private javax.swing.JLabel jLabel54;
     private javax.swing.JLabel jLabel55;
+    private javax.swing.JLabel jLabel56;
+    private javax.swing.JLabel jLabel57;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
@@ -2677,6 +2731,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JTextField tbmainemail;
     private javax.swing.JTextField tbmainphone;
     private javax.swing.JTextField tbmarket;
+    private javax.swing.JTextField tbmunicipality;
     private javax.swing.JTextField tbname;
     private javax.swing.JTextField tbphone;
     private javax.swing.JTextField tbpricecode;
@@ -2691,6 +2746,7 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JTextField tbshipline3;
     private javax.swing.JTextField tbshipname;
     private javax.swing.JTextField tbshipphone;
+    private javax.swing.JTextField tbshiptomunicipality;
     private javax.swing.JTextField tbshipzip;
     private javax.swing.JTextField tbshpformat;
     private javax.swing.JTextField tbtaxid;
