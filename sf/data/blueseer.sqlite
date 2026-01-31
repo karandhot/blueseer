@@ -268,7 +268,9 @@ CREATE TABLE "cm_mstr" (
   "cm_highbal" decimal(18,2) NOT NULL DEFAULT '0',
   "cm_avgdays" int(8) NOT NULL DEFAULT '0',
   "cm_lastpaydate" date DEFAULT '0000-00-00',
-  "cm_lastselldate" date DEFAULT '0000-00-00' 
+  "cm_lastselldate" date DEFAULT '0000-00-00',
+  "cm_municipality" varchar(70) NOT NULL COLLATE NOCASE DEFAULT '',
+  "cm_county" varchar(70) NOT NULL COLLATE NOCASE DEFAULT ''
 );
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

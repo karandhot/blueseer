@@ -237,14 +237,16 @@ public class cusData {
                     "0", // highbal
                     "0", // avgdays
                     "",
-                    ""
+                    "",
+                    "", // muncipal
+                    "" // county
                 );
      
                 _addCustMstr(x, con, ps, res, true);
                 cms_det y = new cms_det(null, 
                 ld[0], ld[0], ld[1], ld[2], ld[3],
                     ld[4], ld[5], ld[6], ld[7],
-                    ld[8], "", "", "", "", "", "" );
+                    ld[8], "", "", "", "", "", "", "", "" );
                 _addCMSDet(y,  con, ps, res, true);
             }
         } catch (SQLException s) {
@@ -288,8 +290,8 @@ public class cusData {
                         + "cm_disc_code, cm_tax_code, cm_salesperson, "
                         + "cm_ar_acct, cm_ar_cc, cm_bank, cm_curr, cm_remarks, " 
                         + "cm_label, cm_ps_jasper, cm_iv_jasper, cm_phone, cm_email, "
-                        + "cm_is855export, cm_is856export, cm_is810export, cm_site, cm_misc1, cm_cascade ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                        + "cm_is855export, cm_is856export, cm_is810export, cm_site, cm_misc1, cm_cascade, cm_municipality, cm_county ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
         String sqlUpdate = "update cm_mstr set " 
                 + " cm_name = ?, cm_line1 = ?, cm_line2 = ?, "
                 + "cm_line3 = ?, cm_city = ?, cm_state = ?, cm_zip = ?, "
@@ -299,7 +301,8 @@ public class cusData {
                 + "cm_disc_code = ?, cm_tax_code = ?, cm_salesperson = ?, "
                 + "cm_ar_acct = ?, cm_ar_cc = ?, cm_bank = ?, cm_curr = ?, cm_remarks = ?, " 
                 + "cm_label = ?, cm_ps_jasper = ?, cm_iv_jasper = ?, cm_phone = ?, cm_email = ?, "
-                + "cm_is855export = ?, cm_is856export = ?, cm_is810export = ?, cm_site = ?, cm_misc1 = ?, cm_cascade = ? "
+                + "cm_is855export = ?, cm_is856export = ?, cm_is810export = ?, cm_site = ?, cm_misc1 = ?, cm_cascade = ?, "
+                + "cm_municipality = ?, cm_county = ? "
                 + " where cm_code = ? ; ";  
           ps = con.prepareStatement(sqlSelect);
           ps.setString(1, x.cm_code);
@@ -346,10 +349,12 @@ public class cusData {
             ps.setString(37,x.cm_site);
             ps.setString(38,x.cm_misc1);
             ps.setString(39,x.cm_cascade);
+            ps.setString(40,x.cm_municipality);
+            ps.setString(41,x.cm_county);
             rows = ps.executeUpdate();
             } else {
                 if (addupdate) {
-                 psu.setString(39, x.cm_code);
+                 psu.setString(41, x.cm_code);
                 psu.setString(1, x.cm_name);
                 psu.setString(2, x.cm_line1);
                 psu.setString(3, x.cm_line2);
@@ -387,7 +392,9 @@ public class cusData {
                 psu.setString(35,x.cm_is810export);
                 psu.setString(36,x.cm_site);
                 psu.setString(37,x.cm_misc1);
-                 psu.setString(38,x.cm_cascade);
+                psu.setString(38,x.cm_cascade);
+                psu.setString(39,x.cm_municipality);
+                psu.setString(40,x.cm_county);
                 rows = psu.executeUpdate();
                 psu.close();
                 }
@@ -468,9 +475,10 @@ public class cusData {
                 + "cm_ar_acct = ?, cm_ar_cc = ?, cm_bank = ?, cm_curr = ?, cm_remarks = ?, " 
                 + "cm_label = ?, cm_ps_jasper = ?, cm_iv_jasper = ?, cm_phone = ?, cm_email = ?, "
                 + "cm_is855export = ?, cm_is856export = ?, cm_is810export = ?, cm_site = ?, cm_misc1 = ?, cm_cascade = ? "
+                + "cm_municipality = ?, cm_county = ? "
                 + " where cm_code = ? ; ";
         ps = con.prepareStatement(sql);
-        ps.setString(39, x.cm_code);
+        ps.setString(41, x.cm_code);
             ps.setString(1, x.cm_name);
             ps.setString(2, x.cm_line1);
             ps.setString(3, x.cm_line2);
@@ -509,6 +517,8 @@ public class cusData {
             ps.setString(36,x.cm_site);
             ps.setString(37,x.cm_misc1);
             ps.setString(38,x.cm_cascade);
+            ps.setString(39,x.cm_municipality);
+            ps.setString(40,x.cm_county);
             rows = ps.executeUpdate();
         return rows;
     }
@@ -623,7 +633,8 @@ public class cusData {
                     res.getString("cm_ar_acct"), res.getString("cm_ar_cc"), res.getString("cm_bank"), res.getString("cm_curr"), res.getString("cm_remarks"), 
                     res.getString("cm_label"), res.getString("cm_ps_jasper"), res.getString("cm_iv_jasper"), res.getString("cm_phone"), res.getString("cm_email"), 
                     res.getString("cm_is855export"),res.getString("cm_is856export"),res.getString("cm_is810export"),res.getString("cm_site"), res.getString("cm_misc1"),
-                    res.getString("cm_cascade"), res.getString("cm_highbal"), res.getString("cm_avgdays"), res.getString("cm_lastpaydate"), res.getString("cm_lastselldate"));
+                    res.getString("cm_cascade"), res.getString("cm_highbal"), res.getString("cm_avgdays"), res.getString("cm_lastpaydate"), res.getString("cm_lastselldate"),
+                        res.getString("cm_municipality"), res.getString("cm_county"));
                     }
                 }
             }
@@ -658,7 +669,8 @@ public class cusData {
                     res.getString("cm_ar_acct"), res.getString("cm_ar_cc"), res.getString("cm_bank"), res.getString("cm_curr"), res.getString("cm_remarks"), 
                     res.getString("cm_label"), res.getString("cm_ps_jasper"), res.getString("cm_iv_jasper"), res.getString("cm_phone"), res.getString("cm_email"), 
                     res.getString("cm_is855export"),res.getString("cm_is856export"),res.getString("cm_is810export"),res.getString("cm_site"), res.getString("cm_misc1"),
-                    res.getString("cm_cascade"), res.getString("cm_highbal"), res.getString("cm_avgdays"), res.getString("cm_lastpaydate"), res.getString("cm_lastselldate"));
+                    res.getString("cm_cascade"), res.getString("cm_highbal"), res.getString("cm_avgdays"), res.getString("cm_lastpaydate"), res.getString("cm_lastselldate"),
+                    res.getString("cm_municipality"), res.getString("cm_county"));
                     }
             }
             return r;
@@ -1005,12 +1017,14 @@ public class cusData {
         if (x == null) return;
         String sqlSelect = "select * from cms_det where cms_code = ? and cms_shipto = ?";
         String sqlInsert = "insert into cms_det (cms_code, cms_shipto, cms_name, cms_line1, cms_line2, " 
-                        + "cms_line3, cms_city, cms_state, cms_zip, cms_country, cms_plantcode ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?); "; 
+                        + "cms_line3, cms_city, cms_state, cms_zip, cms_country, cms_plantcode, "
+                        + "cms_contact, cms_phone, cms_email, cms_municipality, cms_county ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
         String sqlUpdate = "update cms_det set " 
                 + " cms_name = ?, cms_line1 = ?, cms_line2 = ?, "
                 + "cms_line3 = ?, cms_city = ?, cms_state = ?, cms_zip = ?, "
-                + "cms_country = ?, cms_plantcode = ? "
+                + "cms_country = ?, cms_plantcode = ?, cms_contact = ?, cms_phone = ?, cms_email = ?, "
+                + " cms_municipality = ?, cms_county = ?  "
                 + " where cms_code = ? and cms_shipto = ? ; ";
             ps = con.prepareStatement(sqlSelect);
             ps.setString(1, x.cms_code);
@@ -1029,12 +1043,17 @@ public class cusData {
             ps.setString(9, x.cms_zip);
             ps.setString(10, x.cms_country);
             ps.setString(11, x.cms_plantcode);
+            ps.setString(12, x.cms_contact);
+            ps.setString(13, x.cms_phone);
+            ps.setString(14, x.cms_email);
+            ps.setString(15, x.cms_municipality);
+            ps.setString(16, x.cms_county);
             int rows = ps.executeUpdate();
             } else {
                  if (addupdate) {
                     ps = con.prepareStatement(sqlUpdate); 
-                    ps.setString(10, x.cms_code);
-                    ps.setString(11, x.cms_shipto);
+                    ps.setString(15, x.cms_code);
+                    ps.setString(16, x.cms_shipto);
                     ps.setString(1, x.cms_name);
                     ps.setString(2, x.cms_line1);
                     ps.setString(3, x.cms_line2);
@@ -1044,6 +1063,11 @@ public class cusData {
                     ps.setString(7, x.cms_zip);
                     ps.setString(8, x.cms_country);
                     ps.setString(9, x.cms_plantcode);
+                    ps.setString(10, x.cms_contact);
+                    ps.setString(11, x.cms_phone);
+                    ps.setString(12, x.cms_email);
+                    ps.setString(13, x.cms_municipality);
+                    ps.setString(14, x.cms_county);
                     ps.executeUpdate();    
                  }
              }
@@ -1111,11 +1135,12 @@ public class cusData {
         String sql = "update cms_det set " 
                 + " cms_name = ?, cms_line1 = ?, cms_line2 = ?, "
                 + "cms_line3 = ?, cms_city = ?, cms_state = ?, cms_zip = ?, "
-                + "cms_country = ?, cms_plantcode = ?, cms_contact = ?, cms_phone = ?, cms_email = ? "
+                + "cms_country = ?, cms_plantcode = ?, cms_contact = ?, cms_phone = ?, cms_email = ?, "
+                + "cms_municpality = ?, cms_county = ? "
                 + " where cms_code = ? and cms_shipto = ? ; ";
        ps = con.prepareStatement(sql);
-        ps.setString(13, x.cms_code);
-        ps.setString(14, x.cms_shipto);
+        ps.setString(15, x.cms_code);
+        ps.setString(16, x.cms_shipto);
             ps.setString(1, x.cms_name);
             ps.setString(2, x.cms_line1);
             ps.setString(3, x.cms_line2);
@@ -1128,6 +1153,8 @@ public class cusData {
             ps.setString(10, x.cms_contact);
             ps.setString(11, x.cms_phone);
             ps.setString(12, x.cms_email);
+            ps.setString(13, x.cms_municipality);
+            ps.setString(14, x.cms_county);
             rows = ps.executeUpdate();
         
        
@@ -1291,7 +1318,7 @@ public class cusData {
                     res.getString("cms_line3"), res.getString("cms_city"), res.getString("cms_state"), res.getString("cms_zip"),
                     res.getString("cms_country"), res.getString("cms_contact"), res.getString("cms_phone"),
                     res.getString("cms_email"), res.getString("cms_misc"), res.getString("cms_plantcode"),
-                    res.getString("cms_type") 
+                    res.getString("cms_type"), res.getString("cms_municipality"), res.getString("cms_county") 
                     );
                     }
                 }
@@ -1323,7 +1350,7 @@ public class cusData {
                     res.getString("cms_line3"), res.getString("cms_city"), res.getString("cms_state"), res.getString("cms_zip"),
                     res.getString("cms_country"), res.getString("cms_contact"), res.getString("cms_phone"),
                     res.getString("cms_email"), res.getString("cms_misc"), res.getString("cms_plantcode"),
-                    res.getString("cms_type") 
+                    res.getString("cms_type") , res.getString("cms_municipality"), res.getString("cms_county")
                     );
                         list.add(r);
                     }
@@ -1356,7 +1383,7 @@ public class cusData {
                     res.getString("cms_line3"), res.getString("cms_city"), res.getString("cms_state"), res.getString("cms_zip"),
                     res.getString("cms_country"), res.getString("cms_contact"), res.getString("cms_phone"),
                     res.getString("cms_email"), res.getString("cms_misc"), res.getString("cms_plantcode"),
-                    res.getString("cms_type") 
+                    res.getString("cms_type") , res.getString("cms_municipality"), res.getString("cms_county")
                     );
                     list.add(r);
                 }
@@ -1383,7 +1410,7 @@ public class cusData {
                     res.getString("cms_line3"), res.getString("cms_city"), res.getString("cms_state"), res.getString("cms_zip"),
                     res.getString("cms_country"), res.getString("cms_contact"), res.getString("cms_phone"),
                     res.getString("cms_email"), res.getString("cms_misc"), res.getString("cms_plantcode"),
-                    res.getString("cms_type")
+                    res.getString("cms_type"), res.getString("cms_municipality"), res.getString("cms_county")
                         
                     );
                 }
@@ -3700,13 +3727,14 @@ public class cusData {
     String cm_ar_cc, String cm_bank, String cm_curr, String cm_remarks,
     String cm_label, String cm_ps_jasper, String cm_iv_jasper, String cm_phone, String cm_email,
     String cm_is855export, String cm_is856export, String cm_is810export, String cm_site, String cm_misc1, String cm_cascade,
-    String cm_highbal, String cm_avgdays, String cm_lastpaydate, String cm_lastselldate ) {
+    String cm_highbal, String cm_avgdays, String cm_lastpaydate, String cm_lastselldate,
+    String cm_municipality, String cm_county) {
         public cm_mstr(String[] m) {
             this(m, "", "", "", "", "", "", "", "", "", "",
                     "", "", "", "", "", "", "", "", "", "",
                     "", "", "", "", "", "", "", "", "", "",
                     "", "", "", "", "", "", "", "", "", "",
-                    "", "", ""
+                    "", "", "", "", ""
                     );
         }
     }
@@ -3715,10 +3743,10 @@ public class cusData {
         String cms_name, String cms_line1, String cms_line2,
         String cms_line3, String cms_city, String cms_state, 
         String cms_zip, String cms_country, String cms_contact, String cms_phone, String cms_email,
-        String cms_misc, String cms_plantcode, String cms_type) {
+        String cms_misc, String cms_plantcode, String cms_type, String cms_municipality, String cms_county) {
         public cms_det(String[] m) {
             this(m,"","","","","","","","","","",
-                    "","","","","","");
+                    "","","","","","","","");
         }
     }
     

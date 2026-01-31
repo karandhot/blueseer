@@ -371,7 +371,9 @@ CREATE TABLE IF NOT EXISTS `cm_mstr` (
   `cm_highbal` decimal(18,2) NOT NULL DEFAULT '0',
   `cm_avgdays` int(8) NOT NULL DEFAULT '0',
   `cm_lastpaydate` date DEFAULT NULL,
-  `cm_lastselldate` date DEFAULT NULL  
+  `cm_lastselldate` date DEFAULT NULL,
+  `cm_municipality` varchar(70) NOT NULL  DEFAULT '',
+  `cm_county` varchar(70) NOT NULL  DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `cmc_det` (
   `cmc_id` int(12) NOT NULL PRIMARY KEY AUTO_INCREMENT,
