@@ -1039,7 +1039,9 @@ public class CashTran extends javax.swing.JPanel {
                 "Expense",
                 "",
                 "1",
-                ""); 
+                "",
+                0,
+                0); 
         
         ArrayList<fapData.vod_mstr> list = new ArrayList<fapData.vod_mstr>();
          for (int j = 0; j < expenseTable.getRowCount(); j++) {

@@ -2788,7 +2788,11 @@ public class fglData {
                    
                     String thistype = "RCT-VOUCH";
                     String thisdesc = "RCT VOUCHER";   
-                
+                    double matlcost = (ap.ap_amt() - ap.ap_amt_tax() - ap.ap_amt_sac());
+                    double matlcostbase = (ap.ap_base_amt() - ap.ap_amt_tax() - ap.ap_amt_sac());
+                    double saccost = ap.ap_amt_sac();
+                    double taxcost = ap.ap_amt_tax();
+                    
                     // set parent GL doc number
                     String gldoc = fglData.setGLRecNbr("AP");
                     String unvouchacct = "";
@@ -2802,11 +2806,11 @@ public class fglData {
                     cc_cr.add(ap.ap_cc());
                     cc_dr.add(res.getString("poc_rcpt_cc"));
                     if (Void) {
-                    cost.add(-1 * ap.ap_amt());
-                    basecost.add(-1 * ap.ap_base_amt());
+                    cost.add(-1 * matlcost);
+                    basecost.add(-1 * matlcostbase);
                     } else {
-                    cost.add(ap.ap_amt());
-                    basecost.add(ap.ap_base_amt());   
+                    cost.add(matlcost);
+                    basecost.add(matlcostbase);   
                     }
                     currarray.add(ap.ap_curr());
                     basecurrarray.add(ap.ap_base_curr());
@@ -2814,7 +2818,50 @@ public class fglData {
                     ref.add(ap.ap_ref());
                     doc.add(gldoc);
                     type.add(thistype);
-                    desc.add(ap.ap_rmks());     
+                    desc.add(ap.ap_rmks());
+                    
+                    // tax
+                    if (taxcost > 0) {
+                        acct_cr.add(ap.ap_acct());
+                    acct_dr.add(res.getString("poc_taxacct"));
+                    cc_cr.add(ap.ap_cc());
+                    cc_dr.add(res.getString("poc_taxcc"));
+                    if (Void) {
+                    cost.add(-1 * taxcost);
+                    basecost.add(-1 * taxcost);
+                    } else {
+                    cost.add(taxcost);
+                    basecost.add(taxcost);   
+                    }
+                    currarray.add(ap.ap_curr());
+                    basecurrarray.add(ap.ap_base_curr());
+                    site.add(ap.ap_site());
+                    ref.add(ap.ap_ref());
+                    doc.add(gldoc);
+                    type.add(thistype);
+                    desc.add(ap.ap_rmks());
+                    }
+                    
+                    if (saccost > 0) {
+                        acct_cr.add(ap.ap_acct());
+                    acct_dr.add(res.getString("poc_serviceacct"));
+                    cc_cr.add(ap.ap_cc());
+                    cc_dr.add(res.getString("poc_servicecc"));
+                    if (Void) {
+                    cost.add(-1 * saccost);
+                    basecost.add(-1 * saccost);
+                    } else {
+                    cost.add(saccost);
+                    basecost.add(saccost);   
+                    }
+                    currarray.add(ap.ap_curr());
+                    basecurrarray.add(ap.ap_base_curr());
+                    site.add(ap.ap_site());
+                    ref.add(ap.ap_ref());
+                    doc.add(gldoc);
+                    type.add(thistype);
+                    desc.add(ap.ap_rmks());
+                    }
           
                     // need to do discounts ..credit sales, debit disc, debit AR (-$4.00, $.02, $3.98)
                     }

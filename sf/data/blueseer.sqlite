@@ -337,7 +337,10 @@ CREATE TABLE "cms_det" (
   "cms_email" varchar(100) COLLATE NOCASE DEFAULT '',
   "cms_misc" varchar(50) COLLATE NOCASE DEFAULT '',
   "cms_plantcode" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
-  "cms_type" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '');
+  "cms_type" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
+  "cms_municipality" varchar(70) NOT NULL COLLATE NOCASE DEFAULT '',
+  "cms_county" varchar(70) NOT NULL COLLATE NOCASE DEFAULT ''
+);
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -1595,7 +1598,13 @@ CREATE TABLE "po_ctrl" (
   "poc_rcpt_cc" varchar(30) COLLATE NOCASE DEFAULT '',
   "poc_venditem" tinyint(1) NOT NULL DEFAULT '0',
   "poc_rawonly" tinyint(1) NOT NULL DEFAULT '0',
-  "poc_varchar" varchar(50) COLLATE NOCASE DEFAULT ''
+  "poc_varchar" varchar(50) COLLATE NOCASE DEFAULT '',
+  "poc_taxacct" varchar(12) COLLATE NOCASE DEFAULT '',
+  "poc_taxcc" varchar(30) COLLATE NOCASE DEFAULT '',
+  "poc_freightacct" varchar(12) COLLATE NOCASE DEFAULT '',
+  "poc_freightcc" varchar(30) COLLATE NOCASE DEFAULT '',
+  "poc_serviceacct" varchar(12) COLLATE NOCASE DEFAULT '',
+  "poc_servicecc" varchar(30) COLLATE NOCASE DEFAULT ''
 );
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

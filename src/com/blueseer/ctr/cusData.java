@@ -1019,7 +1019,7 @@ public class cusData {
         String sqlInsert = "insert into cms_det (cms_code, cms_shipto, cms_name, cms_line1, cms_line2, " 
                         + "cms_line3, cms_city, cms_state, cms_zip, cms_country, cms_plantcode, "
                         + "cms_contact, cms_phone, cms_email, cms_municipality, cms_county ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
         String sqlUpdate = "update cms_det set " 
                 + " cms_name = ?, cms_line1 = ?, cms_line2 = ?, "
                 + "cms_line3 = ?, cms_city = ?, cms_state = ?, cms_zip = ?, "

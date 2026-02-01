@@ -223,15 +223,27 @@ public class POControl extends javax.swing.JPanel implements IBlueSeerc {
            tbacct.getText(),
            tbcc.getText(),
            String.valueOf(BlueSeerUtils.boolToInt(cbvenditem.isSelected())),
-           String.valueOf(BlueSeerUtils.boolToInt(cbrawitem.isSelected())));
+           String.valueOf(BlueSeerUtils.boolToInt(cbrawitem.isSelected())),
+           tbtaxacct.getText(),
+           tbtaxcc.getText(),
+           tbfreightacct.getText(),
+           tbfreightcc.getText(),
+           tbserviceacct.getText(),
+           tbservicecc.getText());
         return x;
     }
         
     public void updateForm() {
-    cbvenditem.setSelected(BlueSeerUtils.ConvertStringToBool(x.poc_venditem()));
-    cbrawitem.setSelected(BlueSeerUtils.ConvertStringToBool(x.poc_rawonly()));
-    tbacct.setText(x.poc_rcpt_acct());
-    tbcc.setText(x.poc_rcpt_cc());
+       cbvenditem.setSelected(BlueSeerUtils.ConvertStringToBool(x.poc_venditem()));
+       cbrawitem.setSelected(BlueSeerUtils.ConvertStringToBool(x.poc_rawonly()));
+       tbacct.setText(x.poc_rcpt_acct());
+       tbcc.setText(x.poc_rcpt_cc());
+       tbtaxacct.setText(x.poc_taxacct());
+       tbtaxcc.setText(x.poc_taxcc());
+       tbfreightacct.setText(x.poc_freightacct());
+       tbfreightcc.setText(x.poc_freightcc());
+       tbserviceacct.setText(x.poc_serviceacct());
+       tbservicecc.setText(x.poc_servicecc());
     }
     
     
@@ -252,6 +264,18 @@ public class POControl extends javax.swing.JPanel implements IBlueSeerc {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         cbrawitem = new javax.swing.JCheckBox();
+        tbtaxacct = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        tbtaxcc = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        tbfreightacct = new javax.swing.JTextField();
+        tbfreightcc = new javax.swing.JTextField();
+        tbserviceacct = new javax.swing.JTextField();
+        tbservicecc = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -277,26 +301,54 @@ public class POControl extends javax.swing.JPanel implements IBlueSeerc {
 
         cbrawitem.setText("Item Class P Only?");
 
+        jLabel3.setText("Tax Expense Account");
+
+        jLabel4.setText("Tax Expense CC");
+
+        jLabel5.setText("Freight Expense Acct");
+
+        jLabel6.setText("Freight Expense CC");
+
+        jLabel7.setText("Service Expense Acct");
+
+        jLabel8.setText("Service Expense CC");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btupdate)
-                .addGap(25, 25, 25))
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jLabel1)
+                        .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING))
+                    .addComponent(jLabel4)
+                    .addComponent(jLabel5)
+                    .addComponent(jLabel6)
+                    .addComponent(jLabel7)
+                    .addComponent(jLabel8))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cbrawitem)
-                    .addComponent(cbvenditem)
-                    .addComponent(tbacct, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tbcc, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(tbtaxcc, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
+                        .addComponent(btupdate))
+                    .addComponent(tbserviceacct)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(tbfreightacct)
+                                .addComponent(cbrawitem, javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(cbvenditem, javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(tbacct, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
+                                .addComponent(tbcc, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(tbtaxacct, javax.swing.GroupLayout.Alignment.LEADING))
+                            .addComponent(tbfreightcc, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbservicecc, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -313,9 +365,32 @@ public class POControl extends javax.swing.JPanel implements IBlueSeerc {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbcc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
-                .addComponent(btupdate)
-                .addGap(21, 21, 21))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbtaxacct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbtaxcc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbfreightacct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel5))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbfreightcc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbserviceacct, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel7))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbservicecc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel8))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                .addComponent(btupdate))
         );
 
         add(jPanel1);
@@ -335,8 +410,20 @@ public class POControl extends javax.swing.JPanel implements IBlueSeerc {
     private javax.swing.JCheckBox cbvenditem;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField tbacct;
     private javax.swing.JTextField tbcc;
+    private javax.swing.JTextField tbfreightacct;
+    private javax.swing.JTextField tbfreightcc;
+    private javax.swing.JTextField tbserviceacct;
+    private javax.swing.JTextField tbservicecc;
+    private javax.swing.JTextField tbtaxacct;
+    private javax.swing.JTextField tbtaxcc;
     // End of variables declaration//GEN-END:variables
 }

@@ -38,6 +38,7 @@ import static bsmf.MainFrame.user;
 import com.blueseer.fap.fapData;
 import static com.blueseer.fap.fapData.VoucherTransaction;
 import com.blueseer.fap.fapData.ap_mstr;
+import static com.blueseer.fap.fapData.getPOsummaryChargesTaxes;
 import com.blueseer.fap.fapData.vod_mstr;
 import com.blueseer.fgl.fglData;
 import com.blueseer.inv.invData;
@@ -925,9 +926,15 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerT {
     public fapData.ap_mstr createAPMstr(String vonbr, String[] v) {
         int batchid = OVData.getNextNbr("batch");
         double actamt = 0.00;
+        String po = "";
         for (int j = 0; j < rvdet.getRowCount(); j++) {
+        po = rvdet.getModel().getValueAt(j,2).toString();  // assumes receiving a single PO
         actamt += bsParseDouble(rvdet.getModel().getValueAt(j,4).toString()) * bsParseDouble(rvdet.getModel().getValueAt(j,8).toString());
         }
+        
+        // add SAC charges or discounts
+        String[] d = getPOsummaryChargesTaxes(po); // summary = grossamt, taxamt, sacamt ...initialized as 0,0,0
+        actamt += bsParseDouble(d[1]) + bsParseDouble(d[2]); // add tax and sacs
         
         fapData.ap_mstr x = new fapData.ap_mstr(null, 
                 "", //ap_id
@@ -955,7 +962,9 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerT {
                 "Receipt",
                 "",
                 "1",
-                "");  
+                "",
+                bsParseDouble(d[1]),
+                bsParseDouble(d[2]));  
         return x;  
     }
     

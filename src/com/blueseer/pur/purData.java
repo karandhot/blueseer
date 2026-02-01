@@ -805,7 +805,13 @@ public class purData {
                                 res.getString("poc_rcpt_acct"),
                                 res.getString("poc_rcpt_cc"),
                                 res.getString("poc_venditem"),
-                                res.getString("poc_rawonly")
+                                res.getString("poc_rawonly"),
+                                res.getString("poc_taxacct"),
+                                res.getString("poc_taxcc"),
+                                res.getString("poc_freightacct"),
+                                res.getString("poc_freightcc"),
+                                res.getString("poc_serviceacct"),
+                                res.getString("poc_servicecc")
                         );
                     }
                 }
@@ -2270,9 +2276,11 @@ public class purData {
         }
     } 
      
-    public record po_ctrl (String[] m, String poc_rcpt_acct, String poc_rcpt_cc, String poc_venditem, String poc_rawonly ) {
+    public record po_ctrl (String[] m, String poc_rcpt_acct, String poc_rcpt_cc, String poc_venditem, String poc_rawonly,
+                           String poc_taxacct, String poc_taxcc, String poc_freightacct, String poc_freightcc,
+                           String poc_serviceacct, String poc_servicecc) {
         public po_ctrl(String[] m) {
-            this(m,"", "", "", "");
+            this(m,"", "", "", "", "", "", "", "", "", "");
         }
     } 
     

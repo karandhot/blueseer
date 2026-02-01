@@ -2538,7 +2538,9 @@ public class shpData {
                         "Expense",
                         "",
                         "1",
-                        "");  
+                        "",
+                        0,
+                        0);  
                         
                         // create vod_mstr JRT
                         fapData.vod_mstr y = new fapData.vod_mstr(null, 

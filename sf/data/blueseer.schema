@@ -431,7 +431,9 @@ CREATE TABLE IF NOT EXISTS `cms_det` (
   `cms_email` varchar(100)  DEFAULT '',
   `cms_misc` varchar(50)  DEFAULT '',
   `cms_plantcode` varchar(30) NOT NULL  DEFAULT '',
-  `cms_type` varchar(30) NOT NULL  DEFAULT ''
+  `cms_type` varchar(30) NOT NULL  DEFAULT '',
+  `cms_municipality` varchar(70) NOT NULL  DEFAULT '',
+  `cms_county` varchar(70) NOT NULL  DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `cpr_mstr` (
   `cpr_cust` varchar(10)  NOT NULL DEFAULT '',
@@ -1385,7 +1387,13 @@ CREATE TABLE IF NOT EXISTS `po_ctrl` (
   `poc_rcpt_cc` varchar(30)  DEFAULT '',
   `poc_venditem` tinyint(1) NOT NULL DEFAULT '0',
   `poc_rawonly` tinyint(1) NOT NULL DEFAULT '0',
-  `poc_varchar` varchar(50)  DEFAULT ''
+  `poc_varchar` varchar(50)  DEFAULT '',
+  `poc_taxacct` varchar(12)  DEFAULT '',
+  `poc_taxcc` varchar(30)  DEFAULT '',
+  `poc_freightacct` varchar(12)  DEFAULT '',
+  `poc_freightcc` varchar(30)  DEFAULT '',
+  `poc_serviceacct` varchar(12)  DEFAULT '',
+  `poc_servicecc` varchar(30)  DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `po_mstr` (
   `po_nbr` varchar(8)  NOT NULL DEFAULT '',

@@ -36,6 +36,7 @@ import static bsmf.MainFrame.user;
 import com.blueseer.fgl.fglData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
@@ -124,7 +125,9 @@ public class fapData {
                 "", // subtype
                 "", // entrytype
                 "1", // approved
-                "" // approver
+                "", // approver
+                0,
+                0
                 );
                 
                 
@@ -238,7 +241,9 @@ public class fapData {
                 ap.ap_subtype,
                 ap.ap_entrytype,
                 ap.ap_approved,
-                ap.ap_approver
+                ap.ap_approver,
+                0,
+                0
                 ); 
                 _addAPMstr(x, bscon, ps, res); // add AP Type E payment
             
@@ -351,7 +356,9 @@ public class fapData {
                 ap.ap_subtype,
                 ap.ap_entrytype,
                 ap.ap_approved,
-                ap.ap_approver
+                ap.ap_approver,
+                0,
+                0
                 ); 
                 _addAPMstr(x, bscon, ps, res); // add AP Type E payment
             
@@ -520,7 +527,9 @@ public class fapData {
                 "Expense",
                 "manual",
                 "1",
-                ""
+                "",
+                0,
+                0
                 );
                 _addAPMstr(x, bscon, ps, res);
                 // increment each check nbr per record
@@ -742,6 +751,79 @@ public class fapData {
     }
      
     // misc
+    public static String[] getPOsummaryChargesTaxes(String po) {
+        String[] r = new String[]{"0", "0", "0"}; // gross, tax, sac
+        double taxamt = 0.00;
+        double sacamt = 0.00;
+        double grossamt = 0.00;
+        
+            try{
+
+                Connection con = null;
+                if (ds != null) {
+                  con = ds.getConnection();
+                } else {
+                  con = DriverManager.getConnection(url + db, user, pass);  
+                }
+                Statement st = con.createStatement();
+                ResultSet res = null;
+                try {
+                    
+                    res = st.executeQuery("select pod_listprice, pod_ord_qty  from pod_mstr where pod_nbr = " + "'" + po + "';" );
+                    while (res.next()) {
+                        grossamt += (bsParseDouble(res.getString("pod_listprice")) * bsParseDouble(res.getString("pod_ord_qty")));
+                    }
+
+                   res = st.executeQuery("select *  from po_meta where pom_nbr = " + "'" + po + "';" );
+                   while (res.next()) {
+                        if (res.getString("pom_type").equals("tax")) {
+                            if (res.getString("pom_amttype").equals("amount")) {
+                                taxamt += bsParseDouble(res.getString("pom_amt"));
+                            } else {
+                                taxamt += (grossamt + (grossamt * (bsParseDouble(res.getString("pom_amt")) / 100)));
+                            }
+                        }
+                        if (res.getString("pom_type").equals("charge") || res.getString("pom_type").equals("discount")) {
+                            if (res.getString("pom_amttype").equals("amount")) {
+                                sacamt += bsParseDouble(res.getString("pom_amt"));
+                            } else {
+                                sacamt += (grossamt + (grossamt * (bsParseDouble(res.getString("pom_amt")) / 100)));
+                            }
+                        }
+                    }
+                   
+                    // standard taxes from header po_tax
+                    res = st.executeQuery("select *  from po_tax where pot_nbr = " + "'" + po + "';" );
+                   while (res.next()) {
+                        if (res.getString("pot_type").equals("tax")) {
+                            if (res.getString("pot_amttype").equals("amount")) {
+                                taxamt += bsParseDouble(res.getString("pot_amt"));
+                            } else {
+                                taxamt += (grossamt + (grossamt * (bsParseDouble(res.getString("pot_amt")) / 100)));
+                            }
+                        }
+                    }
+                   
+                    
+                   
+                   
+                   r[0] = bsNumber(grossamt);
+                   r[1] = bsNumber(taxamt);
+                   r[2] = bsNumber(sacamt);
+
+                }  catch (SQLException s){
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                } finally {
+                   if (res != null) res.close();
+                   if (st != null) st.close();
+                   con.close();
+                }
+            } catch (Exception e){
+            MainFrame.bslog(e);
+            }
+        
+        return r;
+    }
     
     public static void updateAPVoucherStatus(String nbr, String status) {
             try{
@@ -1099,11 +1181,11 @@ public class fapData {
         String ap_type, String ap_rmks, String ap_ref, String ap_terms, String ap_acct,
         String ap_cc, String ap_applied, String ap_status, String ap_bank, String ap_curr,
         String ap_base_curr, String ap_check, String ap_batch, String ap_site, String ap_subtype,
-        String ap_entrytype, String ap_approved, String ap_approver) {
+        String ap_entrytype, String ap_approved, String ap_approver, double ap_amt_tax, double ap_amt_sac) {
         public ap_mstr(String[]m) {
             this(m, "", "", "", 0, 0, "", "", "", "", "", 
                     "", "", "", "", "", "", "", "", "", "",
-                    "", "", "", "", "", "");
+                    "", "", "", "", "", "", 0, 0);
         }
     }
     

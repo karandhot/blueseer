@@ -2654,7 +2654,7 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
-        ddsactype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "discount", "charge", "passive" }));
+        ddsactype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "charge", "discount", "tax", "passive" }));
 
         ddsacamttype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "amount", "percent" }));
         ddsacamttype.addActionListener(new java.awt.event.ActionListener() {

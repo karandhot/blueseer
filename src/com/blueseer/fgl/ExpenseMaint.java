@@ -629,7 +629,9 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerT {
                 "Expense",
                 "",
                 "1",
-                ""); 
+                "",
+                0,
+                0); 
         return x;  
     }
     

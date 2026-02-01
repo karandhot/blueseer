@@ -3499,7 +3499,9 @@ public class EDI {
                 "Receipt",
                 "EDI",
                 "0",
-                ""); 
+                "",
+                0,
+                0); 
             
             // now the detail
             
