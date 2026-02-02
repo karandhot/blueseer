@@ -1415,7 +1415,12 @@ CREATE TABLE "wh_mstr" (
   "wh_city" varchar(50) COLLATE NOCASE DEFAULT '',
   "wh_state" varchar(3) COLLATE NOCASE DEFAULT '',
   "wh_zip" varchar(15) COLLATE NOCASE DEFAULT '',
-  "wh_country" varchar(3) COLLATE NOCASE DEFAULT '');
+  "wh_country" varchar(3) COLLATE NOCASE DEFAULT '',
+  "wh_municipality" varchar(70) COLLATE NOCASE DEFAULT '',
+  "wh_county" varchar(70) COLLATE NOCASE DEFAULT '',
+  "wh_email" varchar(80) COLLATE NOCASE DEFAULT '',
+  "wh_phone" varchar(15) COLLATE NOCASE DEFAULT ''
+);
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;

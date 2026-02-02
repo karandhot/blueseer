@@ -2060,8 +2060,9 @@ public class invData {
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  wh_mstr where wh_id = ?";
         String sqlInsert = "insert into wh_mstr (wh_id, wh_site, wh_name, "
-                        + " wh_addr1, wh_addr2, wh_city, wh_state, wh_zip, wh_country ) "
-                        + " values (?,?,?,?,?,?,?,?,?); "; 
+                        + " wh_addr1, wh_addr2, wh_city, wh_state, wh_zip, wh_country, "
+                        + " wh_municipality, wh_county, wh_email, wh_phone ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
              PreparedStatement ps = con.prepareStatement(sqlSelect);) {
              ps.setString(1, x.wh_id);
@@ -2077,6 +2078,10 @@ public class invData {
             psi.setString(7, x.wh_state);
             psi.setString(8, x.wh_zip);
             psi.setString(9, x.wh_country);
+            psi.setString(10, x.wh_municipality);
+            psi.setString(11, x.wh_county);
+            psi.setString(12, x.wh_email);
+            psi.setString(13, x.wh_phone);
             int rows = psi.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
             } else {
@@ -2109,11 +2114,12 @@ public class invData {
         String[] m = new String[2];
         String sql = "update wh_mstr set wh_site = ?, wh_name = ?, "
                         + " wh_addr1 = ?, wh_addr2 = ?, wh_city = ?, wh_state = ?, "
-                        + " wh_zip = ?, wh_country = ? "
+                        + " wh_zip = ?, wh_country = ?, wh_municipality = ?, wh_county = ?, "
+                        + " wh_email = ?, wh_phone = ? "
                         + " where wh_id = ? ;"; 
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(9, x.wh_id);
+            ps.setString(13, x.wh_id);
             ps.setString(1, x.wh_site);
             ps.setString(2, x.wh_name);
             ps.setString(3, x.wh_addr1);
@@ -2122,6 +2128,10 @@ public class invData {
             ps.setString(6, x.wh_state);
             ps.setString(7, x.wh_zip);
             ps.setString(8, x.wh_country);
+            ps.setString(9, x.wh_municipality);
+            ps.setString(10, x.wh_county);
+            ps.setString(11, x.wh_email);
+            ps.setString(12, x.wh_phone);
             int rows = ps.executeUpdate();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
         } catch (SQLException s) {
@@ -2196,7 +2206,11 @@ public class invData {
                             res.getString("wh_city"),
                             res.getString("wh_state"),
                             res.getString("wh_zip"),
-                            res.getString("wh_country")    
+                            res.getString("wh_country"),
+                            res.getString("wh_municipality"),
+                            res.getString("wh_county"),
+                            res.getString("wh_email"),
+                            res.getString("wh_phone")
                         );
                     }
                 }
@@ -7858,9 +7872,10 @@ public class invData {
     
     public record wh_mstr(String[] m, String wh_id, String wh_site, String wh_name, 
         String wh_addr1, String wh_addr2, String wh_city, 
-        String wh_state, String wh_zip, String wh_country) {
+        String wh_state, String wh_zip, String wh_country, String wh_municipality, String wh_county,
+        String wh_email, String wh_phone ) {
         public wh_mstr(String[] m) {
-            this(m, "", "", "", "", "", "", "", "", "");
+            this(m, "", "", "", "", "", "", "", "", "", "", "", "", "");
         }
     }
 

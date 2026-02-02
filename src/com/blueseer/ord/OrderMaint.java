@@ -46,6 +46,7 @@ import static com.blueseer.edi.ediData.getEDIMetaValueAll;
 import static com.blueseer.edi.ediData.getEDIMetaValueDetail;
 import com.blueseer.fgl.fglData;
 import static com.blueseer.fgl.fglData.getTaxDet;
+import static com.blueseer.fgl.fglData.getTaxMetaByMunicipality;
 import static com.blueseer.fgl.fglData.getTaxMetaByState;
 import static com.blueseer.fgl.fglData.getTaxPercentByState;
 import static com.blueseer.fgl.fglData.getTaxPercentByZip;
@@ -4472,6 +4473,22 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                     taxpercent = getTaxMetaByState(cm.cm_state());
                    }
                 }
+                
+                if (taxd.taxd_conditional().equals("MUNICIPALITY")) {
+                   if (taxd.taxd_method().equals("Destination ShipTo")) { 
+                    taxpercent = getTaxMetaByMunicipality(cms.cms_municipality());
+                   }
+                   if (taxd.taxd_method().equals("Origin ShipFrom")) { 
+                    if (ddshipfrom.getSelectedItem() != null && ! ddshipfrom.getSelectedItem().toString().isBlank()) {   
+                        invData.wh_mstr wm = getWareHouseMstr(new String[]{ddshipfrom.getSelectedItem().toString()});
+                        taxpercent = getTaxMetaByMunicipality(wm.wh_state());
+                    }
+                   }
+                   if (taxd.taxd_method().equals("Origin Billing")) { 
+                    taxpercent = getTaxMetaByMunicipality(cm.cm_municipality());
+                   }
+                }
+
 
                 if (taxd.taxd_conditional().equals("ZIP")) {
                    // To be done... taxpercent = getTaxPercentByZip(shipper, taxd.taxd_method()); 

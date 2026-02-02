@@ -689,7 +689,7 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
 
         ddmethod.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Destination ShipTo", "Origin Billing", "Origin ShipFrom", " " }));
 
-        ddconditional.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "NONE", "STATE", "ZIP" }));
+        ddconditional.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "NONE", "STATE", "ZIP", "MUNICIPALITY" }));
 
         jLabel1.setText("Method");
 
@@ -716,7 +716,7 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addComponent(ddconditional, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(tbtaxpercent)
-                                    .addComponent(ddtype, 0, 104, Short.MAX_VALUE))
+                                    .addComponent(ddtype, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()

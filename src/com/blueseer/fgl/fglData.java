@@ -4233,6 +4233,12 @@ public class fglData {
                                 basetaxvalue = basetotamt * getTaxPercentByZip(shipper, taxd.taxd_method());
                             }
                             
+                            if (taxd.taxd_conditional().equals("MUNICIPALITY")) {
+                                taxvalue = totamt * getTaxPercentByMunicipality(shipper, taxd.taxd_method()); 
+                                basetaxvalue = basetotamt * getTaxPercentByMunicipality(shipper, taxd.taxd_method());
+                            }
+                            
+                            
                             acct_cr.add(defaultsalesacct);
                             acct_dr.add(OVData.getDefaultTaxAcctByType(taxd.taxd_type()));
                             cc_cr.add(defaultsalescc);
@@ -6029,6 +6035,123 @@ public class fglData {
     }
          return myamt;
      }
+
+    public static double getTaxMetaByZip(String zip) {
+         double myamt = 0.00;
+         
+         try {
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                res = st.executeQuery("SELECT taxm_value from tax_meta where " +
+                        " taxm_id = 'zip' and taxm_type = 'generic' and taxm_key = " + "'" + zip + "'" +
+                                  " ;" );
+            while (res.next()) {
+               myamt = res.getDouble("taxm_value");
+            }
+
+        } catch (SQLException s) {
+            MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+    } catch (Exception e) {
+        MainFrame.bslog(e);
+    }
+         return myamt;
+     }
+
+
+    public static double getTaxPercentByMunicipality(String shipper, String method) {
+         double myamt = 0.00;
+         
+         try {
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+            if (method.equals("Origin Billing"))  {  
+                res = st.executeQuery("SELECT taxm_value from tax_meta inner join cm_mstr on cm_municipality = taxm_key " +
+                                  " inner join ship_mstr on sh_cust = cm_code and sh_id = " + "'" + shipper + "'" +
+                                  " where taxm_id = 'zip' and taxm_type = 'generic' " +
+                                  " ;" );
+            } else if (method.equals("Origin ShipFrom")) {
+                res = st.executeQuery("SELECT taxm_value from tax_meta inner join cm_mstr on cm_municipality = taxm_key " +
+                                  " inner join ship_mstr on sh_cust = cm_code and sh_id = " + "'" + shipper + "'" +
+                                  " where taxm_id = 'zip' and taxm_type = 'generic' " +
+                                  " ;" );  
+            } else { // must be Destination ShipTo
+                res = st.executeQuery("SELECT taxm_value from tax_meta inner join cms_det on cms_municipality = taxm_key " +
+                                  " inner join ship_mstr on sh_ship = cms_shipto and sh_id = " + "'" + shipper + "'" +
+                                  " where taxm_id = 'zip' and taxm_type = 'generic' " +
+                                  " ;" );
+            }
+            while (res.next()) {
+               myamt = res.getDouble("taxm_value");
+            }
+
+        } catch (SQLException s) {
+            MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+    } catch (Exception e) {
+        MainFrame.bslog(e);
+    }
+         return myamt;
+     }
+
+    public static double getTaxMetaByMunicipality(String municipality) {
+         double myamt = 0.00;
+         
+         try {
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                res = st.executeQuery("SELECT taxm_value from tax_meta where " +
+                        " taxm_id = 'municipality' and taxm_type = 'generic' and taxm_key = " + "'" + municipality + "'" +
+                                  " ;" );
+            while (res.next()) {
+               myamt = res.getDouble("taxm_value");
+            }
+
+        } catch (SQLException s) {
+            MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+    } catch (Exception e) {
+        MainFrame.bslog(e);
+    }
+         return myamt;
+     }
+
 
     
     public static ArrayList getGLICDefsList() {

@@ -1202,7 +1202,12 @@ CREATE TABLE IF NOT EXISTS `wh_mstr` (
   `wh_city` varchar(50)  DEFAULT '',
   `wh_state` varchar(3)  DEFAULT '',
   `wh_zip` varchar(15)  DEFAULT '',
-  `wh_country` varchar(3)  DEFAULT '') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `wh_country` varchar(3)  DEFAULT '',
+  `wh_municipality` varchar(70)  DEFAULT '',
+  `wh_county` varchar(70)  DEFAULT '',
+  `wh_email` varchar(80)  DEFAULT '',
+  `wh_phone` varchar(15)  DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `mock_mstr` (
   `mock_nbr` int(6) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
