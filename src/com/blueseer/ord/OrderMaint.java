@@ -542,25 +542,13 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         
         
-       // ArrayList<String[]> initDataSets = ordData.getSalesOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
-       // initDataSets = ordData.getSalesOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
-        
-        /*
-       jTabbedPane1.removeAll();
-       jTabbedPane1.add(getClassLabelTag("main", this.getClass().getSimpleName()), jPanelMain);
-       jTabbedPane1.add(getClassLabelTag("lines", this.getClass().getSimpleName()), jPanelLines);
-       jTabbedPane1.add(getClassLabelTag("summary", this.getClass().getSimpleName()), jPanelSched);
-       jTabbedPane1.add(getClassLabelTag("attachments", this.getClass().getSimpleName()), panelAttachment);
-       jTabbedPane1.add(getClassLabelTag("notes", this.getClass().getSimpleName()), panelNotes);
-        */
-        
-       // jTabbedPane1.setEnabledAt(1, false);
-        //jTabbedPane1.setEnabledAt(2, false);
-        
         initDataSets = ordData.getSalesOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
         
         clearShipAddress();
         
+        tbuserid.setText(bsmf.MainFrame.userid);
+        tbuserid.setEditable(false);
+        tbuserid.setBackground(bsmf.MainFrame.nonEditableColor);
         
         currentline = "";
         btitemkv.setEnabled(false);
@@ -611,6 +599,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         
         orddate.setDate(now);
+        
         dccreate.setDate(now);
         
         
@@ -4444,7 +4433,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_orddetMouseClicked
 
     private void ddtaxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddtaxActionPerformed
-        if (! isLoad) {
+        if (! isLoad && cms != null) {
            // headertax = OVData.getTaxPercentElementsApplicableByTaxCode(ddtax.getSelectedItem().toString());
             headertax = getTaxDet(ddtax.getSelectedItem().toString());
             // remove all 'tax' records and refresh
