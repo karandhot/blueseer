@@ -474,7 +474,7 @@ public class cusData {
                 + "cm_disc_code = ?, cm_tax_code = ?, cm_salesperson = ?, "
                 + "cm_ar_acct = ?, cm_ar_cc = ?, cm_bank = ?, cm_curr = ?, cm_remarks = ?, " 
                 + "cm_label = ?, cm_ps_jasper = ?, cm_iv_jasper = ?, cm_phone = ?, cm_email = ?, "
-                + "cm_is855export = ?, cm_is856export = ?, cm_is810export = ?, cm_site = ?, cm_misc1 = ?, cm_cascade = ? "
+                + "cm_is855export = ?, cm_is856export = ?, cm_is810export = ?, cm_site = ?, cm_misc1 = ?, cm_cascade = ?, "
                 + "cm_municipality = ?, cm_county = ? "
                 + " where cm_code = ? ; ";
         ps = con.prepareStatement(sql);
