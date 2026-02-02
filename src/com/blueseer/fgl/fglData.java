@@ -4224,18 +4224,29 @@ public class fglData {
                             }
                             
                             if (taxd.taxd_conditional().equals("STATE")) {
-                               taxvalue = totamt * getTaxPercentByState(shipper, taxd.taxd_method()); 
-                               basetaxvalue = basetotamt * getTaxPercentByState(shipper, taxd.taxd_method());
-                            }
+                               double pct = getTaxPercentByState(shipper, taxd.taxd_method());
+                                if (pct > 0) {
+                                    pct = (pct / 100);
+                                }
+                                taxvalue = totamt * pct;
+                                basetaxvalue = basetotamt * pct;                            }
                             
                             if (taxd.taxd_conditional().equals("ZIP")) {
-                                taxvalue = totamt * getTaxPercentByZip(shipper, taxd.taxd_method()); 
-                                basetaxvalue = basetotamt * getTaxPercentByZip(shipper, taxd.taxd_method());
+                                double pct = getTaxPercentByZip(shipper, taxd.taxd_method());
+                                if (pct > 0) {
+                                    pct = (pct / 100);
+                                }
+                                taxvalue = totamt * pct;
+                                basetaxvalue = basetotamt * pct;
                             }
                             
                             if (taxd.taxd_conditional().equals("MUNICIPALITY")) {
-                                taxvalue = totamt * getTaxPercentByMunicipality(shipper, taxd.taxd_method()); 
-                                basetaxvalue = basetotamt * getTaxPercentByMunicipality(shipper, taxd.taxd_method());
+                                double pct = getTaxPercentByMunicipality(shipper, taxd.taxd_method());
+                                if (pct > 0) {
+                                    pct = (pct / 100);
+                                }
+                                taxvalue = totamt * pct;
+                                basetaxvalue = basetotamt * pct;
                             }
                             
                             
@@ -5952,6 +5963,7 @@ public class fglData {
     } catch (Exception e) {
         MainFrame.bslog(e);
     }
+         
          return myamt;
      }
 
@@ -6033,6 +6045,7 @@ public class fglData {
     } catch (Exception e) {
         MainFrame.bslog(e);
     }
+         
          return myamt;
      }
 
@@ -6115,6 +6128,8 @@ public class fglData {
     } catch (Exception e) {
         MainFrame.bslog(e);
     }
+         
+         
          return myamt;
      }
 
