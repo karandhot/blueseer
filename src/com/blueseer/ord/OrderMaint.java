@@ -1876,6 +1876,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             tbmisc1.setText(css.cms().cms_misc());
             ddstate.setSelectedItem(css.cms().cms_state());
             ddcountry.setSelectedItem(css.cms().cms_country());
+            
+            cms = css.cms();
+            refreshTaxRecords();
         } 
         
         if (! disckey.isBlank()) {
