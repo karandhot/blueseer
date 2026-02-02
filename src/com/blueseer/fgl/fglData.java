@@ -6088,17 +6088,17 @@ public class fglData {
             if (method.equals("Origin Billing"))  {  
                 res = st.executeQuery("SELECT taxm_value from tax_meta inner join cm_mstr on cm_municipality = taxm_key " +
                                   " inner join ship_mstr on sh_cust = cm_code and sh_id = " + "'" + shipper + "'" +
-                                  " where taxm_id = 'zip' and taxm_type = 'generic' " +
+                                  " where taxm_id = 'municipality' and taxm_type = 'generic' " +
                                   " ;" );
             } else if (method.equals("Origin ShipFrom")) {
                 res = st.executeQuery("SELECT taxm_value from tax_meta inner join cm_mstr on cm_municipality = taxm_key " +
                                   " inner join ship_mstr on sh_cust = cm_code and sh_id = " + "'" + shipper + "'" +
-                                  " where taxm_id = 'zip' and taxm_type = 'generic' " +
+                                  " where taxm_id = 'municipality' and taxm_type = 'generic' " +
                                   " ;" );  
             } else { // must be Destination ShipTo
                 res = st.executeQuery("SELECT taxm_value from tax_meta inner join cms_det on cms_municipality = taxm_key " +
                                   " inner join ship_mstr on sh_ship = cms_shipto and sh_id = " + "'" + shipper + "'" +
-                                  " where taxm_id = 'zip' and taxm_type = 'generic' " +
+                                  " where taxm_id = 'municipality' and taxm_type = 'generic' " +
                                   " ;" );
             }
             while (res.next()) {
