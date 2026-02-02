@@ -1018,6 +1018,8 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbline2.setText(k.cm_line2());
         tbline3.setText(k.cm_line3());
         tbcity.setText(k.cm_city());
+        tbmunicipality.setText(k.cm_municipality());
+        tbcounty.setText(k.cm_county());
         ddstate.setSelectedItem(k.cm_state());
         ddcountry.setSelectedItem(k.cm_country());
         tbzip.setText(k.cm_zip());
@@ -1125,6 +1127,8 @@ public class CustMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbshipemail.setText(k.cms_email());
         tbshipphone.setText(k.cms_phone());
         tbshipcontact.setText(k.cms_contact());
+        tbshipmunicipality.setText(k.cms_municipality());
+        tbshipcounty.setText(k.cms_county());
         if (k.m()[0].equals("0")) {
             btshipedit.setEnabled(true);
             btshipnew.setEnabled(true);
