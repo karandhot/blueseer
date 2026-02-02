@@ -1889,7 +1889,13 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
            sacmodel.addRow(new Object[]{ "discount", s[0], "percent", s[1] });
         }
         
-        ddtax.setSelectedItem((css.cm().cm_tax_code())); // fire this after tbshipto is set
+        if (css.cm().cm_tax_exempt().equals("1")) {
+            ddtax.setEnabled(false);
+        } else {
+            ddtax.setEnabled(true);
+            ddtax.setSelectedItem((css.cm().cm_tax_code())); // fire this after tbshipto is set
+        }
+        
         
         } // if ! isLoad
     }

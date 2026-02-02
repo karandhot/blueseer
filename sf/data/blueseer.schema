@@ -373,7 +373,8 @@ CREATE TABLE IF NOT EXISTS `cm_mstr` (
   `cm_lastpaydate` date DEFAULT NULL,
   `cm_lastselldate` date DEFAULT NULL,
   `cm_municipality` varchar(70) NOT NULL  DEFAULT '',
-  `cm_county` varchar(70) NOT NULL  DEFAULT ''
+  `cm_county` varchar(70) NOT NULL  DEFAULT '',
+  `cm_tax_exempt` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `cmc_det` (
   `cmc_id` int(12) NOT NULL PRIMARY KEY AUTO_INCREMENT,

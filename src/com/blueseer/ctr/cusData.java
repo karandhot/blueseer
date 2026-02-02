@@ -239,7 +239,8 @@ public class cusData {
                     "",
                     "",
                     "", // muncipal
-                    "" // county
+                    "", // county
+                    "0" // tax exempt
                 );
      
                 _addCustMstr(x, con, ps, res, true);
@@ -290,8 +291,8 @@ public class cusData {
                         + "cm_disc_code, cm_tax_code, cm_salesperson, "
                         + "cm_ar_acct, cm_ar_cc, cm_bank, cm_curr, cm_remarks, " 
                         + "cm_label, cm_ps_jasper, cm_iv_jasper, cm_phone, cm_email, "
-                        + "cm_is855export, cm_is856export, cm_is810export, cm_site, cm_misc1, cm_cascade, cm_municipality, cm_county ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                        + "cm_is855export, cm_is856export, cm_is810export, cm_site, cm_misc1, cm_cascade, cm_municipality, cm_county, cm_tax_exempt ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
         String sqlUpdate = "update cm_mstr set " 
                 + " cm_name = ?, cm_line1 = ?, cm_line2 = ?, "
                 + "cm_line3 = ?, cm_city = ?, cm_state = ?, cm_zip = ?, "
@@ -302,7 +303,7 @@ public class cusData {
                 + "cm_ar_acct = ?, cm_ar_cc = ?, cm_bank = ?, cm_curr = ?, cm_remarks = ?, " 
                 + "cm_label = ?, cm_ps_jasper = ?, cm_iv_jasper = ?, cm_phone = ?, cm_email = ?, "
                 + "cm_is855export = ?, cm_is856export = ?, cm_is810export = ?, cm_site = ?, cm_misc1 = ?, cm_cascade = ?, "
-                + "cm_municipality = ?, cm_county = ? "
+                + "cm_municipality = ?, cm_county = ?, cm_tax_exempt = ? "
                 + " where cm_code = ? ; ";  
           ps = con.prepareStatement(sqlSelect);
           ps.setString(1, x.cm_code);
@@ -351,10 +352,11 @@ public class cusData {
             ps.setString(39,x.cm_cascade);
             ps.setString(40,x.cm_municipality);
             ps.setString(41,x.cm_county);
+            ps.setString(42,x.cm_tax_exempt);
             rows = ps.executeUpdate();
             } else {
                 if (addupdate) {
-                 psu.setString(41, x.cm_code);
+                 psu.setString(42, x.cm_code);
                 psu.setString(1, x.cm_name);
                 psu.setString(2, x.cm_line1);
                 psu.setString(3, x.cm_line2);
@@ -395,6 +397,7 @@ public class cusData {
                 psu.setString(38,x.cm_cascade);
                 psu.setString(39,x.cm_municipality);
                 psu.setString(40,x.cm_county);
+                psu.setString(41,x.cm_tax_exempt);
                 rows = psu.executeUpdate();
                 psu.close();
                 }
@@ -475,10 +478,10 @@ public class cusData {
                 + "cm_ar_acct = ?, cm_ar_cc = ?, cm_bank = ?, cm_curr = ?, cm_remarks = ?, " 
                 + "cm_label = ?, cm_ps_jasper = ?, cm_iv_jasper = ?, cm_phone = ?, cm_email = ?, "
                 + "cm_is855export = ?, cm_is856export = ?, cm_is810export = ?, cm_site = ?, cm_misc1 = ?, cm_cascade = ?, "
-                + "cm_municipality = ?, cm_county = ? "
+                + "cm_municipality = ?, cm_county = ?, cm_tax_exempt = ? "
                 + " where cm_code = ? ; ";
         ps = con.prepareStatement(sql);
-        ps.setString(41, x.cm_code);
+        ps.setString(42, x.cm_code);
             ps.setString(1, x.cm_name);
             ps.setString(2, x.cm_line1);
             ps.setString(3, x.cm_line2);
@@ -519,6 +522,7 @@ public class cusData {
             ps.setString(38,x.cm_cascade);
             ps.setString(39,x.cm_municipality);
             ps.setString(40,x.cm_county);
+            ps.setString(41,x.cm_tax_exempt);
             rows = ps.executeUpdate();
         return rows;
     }
@@ -634,7 +638,7 @@ public class cusData {
                     res.getString("cm_label"), res.getString("cm_ps_jasper"), res.getString("cm_iv_jasper"), res.getString("cm_phone"), res.getString("cm_email"), 
                     res.getString("cm_is855export"),res.getString("cm_is856export"),res.getString("cm_is810export"),res.getString("cm_site"), res.getString("cm_misc1"),
                     res.getString("cm_cascade"), res.getString("cm_highbal"), res.getString("cm_avgdays"), res.getString("cm_lastpaydate"), res.getString("cm_lastselldate"),
-                        res.getString("cm_municipality"), res.getString("cm_county"));
+                        res.getString("cm_municipality"), res.getString("cm_county"), res.getString("cm_tax_exempt"));
                     }
                 }
             }
@@ -670,7 +674,7 @@ public class cusData {
                     res.getString("cm_label"), res.getString("cm_ps_jasper"), res.getString("cm_iv_jasper"), res.getString("cm_phone"), res.getString("cm_email"), 
                     res.getString("cm_is855export"),res.getString("cm_is856export"),res.getString("cm_is810export"),res.getString("cm_site"), res.getString("cm_misc1"),
                     res.getString("cm_cascade"), res.getString("cm_highbal"), res.getString("cm_avgdays"), res.getString("cm_lastpaydate"), res.getString("cm_lastselldate"),
-                    res.getString("cm_municipality"), res.getString("cm_county"));
+                    res.getString("cm_municipality"), res.getString("cm_county"), res.getString("cm_tax_exempt"));
                     }
             }
             return r;
@@ -3728,13 +3732,13 @@ public class cusData {
     String cm_label, String cm_ps_jasper, String cm_iv_jasper, String cm_phone, String cm_email,
     String cm_is855export, String cm_is856export, String cm_is810export, String cm_site, String cm_misc1, String cm_cascade,
     String cm_highbal, String cm_avgdays, String cm_lastpaydate, String cm_lastselldate,
-    String cm_municipality, String cm_county) {
+    String cm_municipality, String cm_county, String cm_tax_exempt) {
         public cm_mstr(String[] m) {
             this(m, "", "", "", "", "", "", "", "", "", "",
                     "", "", "", "", "", "", "", "", "", "",
                     "", "", "", "", "", "", "", "", "", "",
                     "", "", "", "", "", "", "", "", "", "",
-                    "", "", "", "", ""
+                    "", "", "", "", "", ""
                     );
         }
     }
