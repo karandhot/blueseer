@@ -311,7 +311,7 @@ public class GLTranMaint extends javax.swing.JPanel {
        
     }
     
-    public void getGLTranHist(String docid) {
+    public void getGLHist(String docid) {
         try {
             Connection con = null;
             if (ds != null) {
@@ -329,7 +329,7 @@ public class GLTranMaint extends javax.swing.JPanel {
                 
                 while (res.next()) {
                     i++;
-                    tbref.setText(res.getString("glh_ref"));
+                    tbref.setText(res.getString("glh_doc"));
                     dateentered.setText(res.getString("glh_entdate"));
                     
                     transmodel.addRow(new Object[]{transmodel.getRowCount() + 1,
@@ -389,7 +389,7 @@ public class GLTranMaint extends javax.swing.JPanel {
                 
                 while (res.next()) {
                     i++;
-                    tbref.setText(res.getString("glt_ref"));
+                    tbref.setText(res.getString("glt_doc"));
                     dateentered.setText(res.getString("glt_entdate"));
                     
                     transmodel.addRow(new Object[]{transmodel.getRowCount() + 1,
@@ -710,7 +710,7 @@ public class GLTranMaint extends javax.swing.JPanel {
              if (arg[1].equals("gl_tran")) {
               getGLTran(arg[0]);
              } else {
-              getGLTranHist(arg[0]);    
+              getGLHist(arg[0]);    
              }
          }  
     }

@@ -292,6 +292,7 @@ public class GLTranRpt1 extends javax.swing.JPanel {
         jLabel6 = new javax.swing.JLabel();
         btcsv = new javax.swing.JButton();
         tbprint = new javax.swing.JButton();
+        cbunposted = new javax.swing.JCheckBox();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -372,6 +373,8 @@ public class GLTranRpt1 extends javax.swing.JPanel {
             }
         });
 
+        cbunposted.setText("UnPosted Transactions");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -396,14 +399,17 @@ public class GLTranRpt1 extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel6)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(ddacctto, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(btRun)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btcsv)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(tbprint))
-                    .addComponent(ddacctto, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cbunposted))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 574, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
@@ -448,7 +454,8 @@ public class GLTranRpt1 extends javax.swing.JPanel {
                             .addComponent(labeldollar, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel9)
                             .addComponent(ddacctto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel5))))
+                            .addComponent(jLabel5)
+                            .addComponent(cbunposted))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 547, Short.MAX_VALUE))
         );
@@ -494,34 +501,57 @@ try {
              
                  DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
 
-                     
-                 res = st.executeQuery("SELECT * from gl_hist " +
+                 if (cbunposted.isSelected()) {    
+                 res = st.executeQuery("SELECT * from gl_tran " +
+                        " inner join ac_mstr on ac_id = glt_acct " +
+                        " where glt_effdate >= " + "'" + setDateDB(dcFrom.getDate())  + "'" + 
+                        " AND glt_effdate <= " + "'" + setDateDB(dcTo.getDate()) + "'" +
+                         " AND glt_acct >= " + "'" + ddacctfrom.getSelectedItem().toString() + "'" +
+                         " AND glt_acct <= " + "'" + ddacctto.getSelectedItem().toString() + "'" +
+                         " AND glt_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +
+                         " order by glt_id desc ;"); 
+                while (res.next()) {
+                    dol = dol + res.getDouble("glt_base_amt");
+                    i++;
+                        mymodel.addRow(new Object[]{
+                                BlueSeerUtils.clickflag,
+                                res.getString("glt_doc"),
+                                res.getString("glt_site"),
+                                res.getString("glt_acct"),
+                                res.getString("ac_desc"),
+                                res.getString("glt_cc"),
+                                getDateDB(res.getString("glt_effdate")),
+                                res.getString("glt_type"),
+                                res.getString("glt_ref"),
+                                bsParseDouble(currformatDouble(res.getDouble("glt_base_amt")))
+                            });
+                }
+                
+                } else {
+                  res = st.executeQuery("SELECT * from gl_hist " +
                         " inner join ac_mstr on ac_id = glh_acct " +
                         " where glh_effdate >= " + "'" + setDateDB(dcFrom.getDate())  + "'" + 
                         " AND glh_effdate <= " + "'" + setDateDB(dcTo.getDate()) + "'" +
                          " AND glh_acct >= " + "'" + ddacctfrom.getSelectedItem().toString() + "'" +
                          " AND glh_acct <= " + "'" + ddacctto.getSelectedItem().toString() + "'" +
                          " AND glh_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +
-                         " order by glh_id desc ;");    
-                 
-                 
-                while (res.next()) {
-                                      
-                    dol = dol + res.getDouble("glh_base_amt");
-                 
-                    i++;
-                        mymodel.addRow(new Object[]{
-                                BlueSeerUtils.clickflag,
-                                res.getString("glh_doc"),
-                                res.getString("glh_site"),
-                                res.getString("glh_acct"),
-                                res.getString("ac_desc"),
-                                res.getString("glh_cc"),
-                                getDateDB(res.getString("glh_effdate")),
-                                res.getString("glh_type"),
-                                res.getString("glh_ref"),
-                                bsParseDouble(currformatDouble(res.getDouble("glh_base_amt")))
-                            });
+                         " order by glh_id desc ;");      
+                    while (res.next()) { 
+                        dol = dol + res.getDouble("glh_base_amt");
+                        i++;
+                            mymodel.addRow(new Object[]{
+                                    BlueSeerUtils.clickflag,
+                                    res.getString("glh_doc"),
+                                    res.getString("glh_site"),
+                                    res.getString("glh_acct"),
+                                    res.getString("ac_desc"),
+                                    res.getString("glh_cc"),
+                                    getDateDB(res.getString("glh_effdate")),
+                                    res.getString("glh_type"),
+                                    res.getString("glh_ref"),
+                                    bsParseDouble(currformatDouble(res.getDouble("glh_base_amt")))
+                                });
+                    }  
                 }
                 labeldollar.setText(String.valueOf(currformatDouble(dol)));
                 labelcount.setText(String.valueOf(i));
@@ -577,9 +607,10 @@ try {
        int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
         if ( col == 0) {
-                String mypanel = "GLTranMaint";
+               String mypanel = "GLTranMaint";
+               String gltable = (cbunposted.isSelected()) ? "gl_tran" : "gl_hist"; 
                if (! checkperms(mypanel)) { return; }
-               String[] args = new String[]{tablereport.getValueAt(row, 1).toString(), "gl_hist"};
+               String[] args = new String[]{tablereport.getValueAt(row, 1).toString(), gltable};
                reinitpanels(mypanel, true, args);
               
         }
@@ -589,6 +620,7 @@ try {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btRun;
     private javax.swing.JButton btcsv;
+    private javax.swing.JCheckBox cbunposted;
     private com.toedter.calendar.JDateChooser dcFrom;
     private com.toedter.calendar.JDateChooser dcTo;
     private javax.swing.JComboBox ddacctfrom;
