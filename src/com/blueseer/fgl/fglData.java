@@ -1892,13 +1892,14 @@ public class fglData {
     
     public static String getAccountBalanceView(String[] key) {
         JSONArray jsonarray = new JSONArray();
-        int year = Integer.valueOf(key[0]); 
-        int period = Integer.valueOf(key[1]);
+        int year = Integer.parseInt(key[0]); 
+        int period = Integer.parseInt(key[1]);
         String site = key[2];
         boolean iscc = BlueSeerUtils.ConvertStringToBool(key[3]);
         String in_accttype = key[4];
         String fromacct = key[5];
         String toacct = key[6];
+        int endperiod = Integer.parseInt(key[7]);
         
       //  StringBuilder sb = new StringBuilder();
         ArrayList<String[]> accounts = fglData.getGLAcctListRangeWCurrTypeDesc(fromacct, toacct);
@@ -1955,24 +1956,15 @@ public class fglData {
                  if (iscc) {
                  
                  ACCTS:    for (String account[] : accounts) {
-                     
-                     
-                  
                   acctid = account[0];
                   acctcurr = account[1];
                   accttype = account[2];
                   acctdesc = account[3];
-                  
-                 
-                  
                   begbal = 0.00;
                   activity = 0.00;
                   endbal = 0.00;
                   preact = 0.00;
                   postact = 0.00;
-                
-                  
-                  
                  // calculate all acb_mstr records for whole periods < fromdateperiod
                     // begbal += OVData.getGLAcctBalSummCC(account.toString(), String.valueOf(fromdateyear), String.valueOf(p));
                   if (accttype.equals("L") || accttype.equals("A")) {
@@ -1980,7 +1972,7 @@ public class fglData {
                   res = st.executeQuery("select acb_cc, sum(acb_amt) as sum from acb_mstr where " +
                         " acb_acct = " + "'" + acctid + "'" + " AND " +
                         " acb_site = " + "'" + site + "'" + " AND " +
-                        " (( acb_year = " + "'" + year + "'" + " AND acb_per <= " + "'" + period + "'" + " ) OR " +
+                        " (( acb_year = " + "'" + year + "'" + " AND acb_per < " + "'" + period + "'" + " ) OR " +
                         "  ( acb_year <= " + "'" + prioryear + "'" + " )) " +
                         " group by acb_cc ;");
                 
@@ -1993,8 +1985,10 @@ public class fglData {
                            // now activity
                                       res2= st2.executeQuery("select sum(acb_amt) as sum from acb_mstr where acb_year = " +
                                 "'" + String.valueOf(year) + "'" + 
-                                " AND acb_per = " +
+                                " AND acb_per >= " +
                                 "'" + String.valueOf(period) + "'" +
+                                " AND acb_per <= " +
+                                "'" + String.valueOf(endperiod) + "'" +  
                                 " AND acb_acct = " +
                                 "'" + acctid + "'" +
                                 " AND acb_cc = " +
@@ -2007,20 +2001,7 @@ public class fglData {
                             
                                begbal = begbal - activity;
                                endbal = begbal + activity;
-                        if (in_accttype.equals(getGlobalProgTag("all"))) {       
-                            /*
-                            sb.append(acctid + ";" +
-                            res.getString("acb_cc") + ";" +
-                            accttype + ";" + 
-                            acctcurr + ";" +
-                            acctdesc + ";" +
-                            site + ";" +
-                                currformatDouble(begbal) + ";" +
-                            currformatDouble(activity) + ";" +
-                            currformatDouble(endbal)
-                            );
-                            sb.append("\n");
-                            */
+                        if (in_accttype.equals(getGlobalProgTag("all"))) {   
                            JSONArray rowArray = new JSONArray(); 
                             rowArray.put("detail");
                             rowArray.put(acctid);
@@ -2036,19 +2017,6 @@ public class fglData {
                             
                         } else {
                           if (accttype.equals(in_accttype))  {
-                          /*
-                            sb.append(acctid + ";" +
-                            res.getString("acb_cc") + ";" +
-                            accttype + ";" + 
-                            acctcurr + ";" +
-                            acctdesc + ";" +
-                            site + ";" +
-                                currformatDouble(begbal) + ";" +
-                            currformatDouble(activity) + ";" +
-                            currformatDouble(endbal)
-                            );
-                            sb.append("\n");
-                            */
                             JSONArray rowArray = new JSONArray();
                             rowArray.put("detail");
                             rowArray.put(acctid);
@@ -2070,7 +2038,7 @@ public class fglData {
                       res = st.executeQuery("select acb_cc, sum(acb_amt) as sum from acb_mstr where " +
                         " acb_acct = " + "'" + acctid + "'" + " AND " +
                         " acb_site = " + "'" + site + "'" + " AND " +
-                        " ( acb_year = " + "'" + year + "'" + " AND acb_per <= " + "'" + period + "'" + ")" +
+                        " ( acb_year = " + "'" + year + "'" + " AND acb_per = " + "'" + period + "'" + ")" +
                         " group by acb_cc ;");
                 
                        while (res.next()) {
@@ -2101,20 +2069,7 @@ public class fglData {
                                
                         
                                
-                    if (in_accttype.equals(getGlobalProgTag("all"))) {       
-                            /*
-                            sb.append(acctid + ";" +
-                            res.getString("acb_cc") + ";" +
-                            accttype + ";" + 
-                            acctcurr + ";" +
-                            acctdesc + ";" +
-                            site + ";" +
-                                currformatDouble(begbal) + ";" +
-                            currformatDouble(activity) + ";" +
-                            currformatDouble(endbal)
-                            );
-                            sb.append("\n");
-                            */
+                    if (in_accttype.equals(getGlobalProgTag("all"))) {   
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put("detail");
                             rowArray.put(acctid);
@@ -2166,23 +2121,7 @@ public class fglData {
                        
                   }
                   
-                  /* 
-                   // calculate period(s) activity defined by date range 
-                  // activity += OVData.getGLAcctBalSummCC(account.toString(), String.valueOf(fromdateyear), String.valueOf(p));
-                       res = st.executeQuery("select acb_cc, sum(acb_amt) as sum from acb_mstr where acb_year = " +
-                        "'" + String.valueOf(year) + "'" + 
-                        " AND acb_per = " +
-                        "'" + String.valueOf(period) + "'" +
-                        " AND acb_acct = " +
-                        "'" + acctid + "'" +
-                        " AND acb_site = " + "'" + site + "'" +
-                        " group by acb_cc ;");
-                       while (res.next()) {
-                         // activity += res.getDouble(("sum"));
-                         // ccamts.add(res.getString("acb_cc") + "," + "activity" + "," + res.getString("sum"));
-                       }
                  
-                  */
                 
                  } // Accts
                                
@@ -2195,23 +2134,15 @@ public class fglData {
                      
                   
                  ACCTS:    for (String[] account : accounts) {
-                     
-                     
-                  
                   acctid = account[0];
                   acctcurr = account[1];
                   accttype = account[2];
                   acctdesc = account[3];
-               
-                  
                   begbal = 0.00;
                   activity = 0.00;
                   endbal = 0.00;
                   preact = 0.00;
                   postact = 0.00;
-                
-                  
-                  
                  // calculate all acb_mstr records for whole periods < fromdateperiod
                     // begbal += OVData.getGLAcctBalSummCC(account.toString(), String.valueOf(fromdateyear), String.valueOf(p));
                   if (accttype.equals("L") || accttype.equals("A")) {
@@ -2238,24 +2169,17 @@ public class fglData {
                           begbal += res.getDouble("sum");
                        }
                   }
-                  
-                   
-                   // calculate period(s) activity defined by date range 
-                  // activity += OVData.getGLAcctBalSummCC(account.toString(), String.valueOf(fromdateyear), String.valueOf(p));
-               
-                  
-                 
+                        // now activity           
                        res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where acb_year = " +
                         "'" + String.valueOf(year) + "'" + 
-                        " AND acb_per = " +
+                        " AND acb_per >= " +
                         "'" + String.valueOf(period) + "'" +
+                        " AND acb_per <= " +
+                        "'" + String.valueOf(endperiod) + "'" +        
                         " AND acb_acct = " +
                         "'" + acctid + "'" +
                         " AND acb_site = " + "'" + site + "'" +
                         ";");
-               
-                  
-                
                        while (res.next()) {
                           activity += res.getDouble(("sum"));
                        }
@@ -2266,19 +2190,6 @@ public class fglData {
               
                 
                if (in_accttype.equals(getGlobalProgTag("all"))) {
-                /*
-                sb.append(acctid + ";" + 
-                            "" + ";" + 
-                            accttype + ";" +  
-                            acctcurr + ";" + 
-                            acctdesc + ";" + 
-                            site + ";" + 
-                            currformatDouble(begbal) + ";" + 
-                            currformatDouble(activity) + ";" + 
-                            currformatDouble(endbal)
-                            );
-                sb.append("\n");
-                */
                 JSONArray rowArray = new JSONArray();
                             rowArray.put("detail");
                             rowArray.put(acctid);
@@ -2294,19 +2205,6 @@ public class fglData {
                
                } else {
                   if (accttype.equals(in_accttype)) {
-                 /* 
-                 sb.append(acctid + ";" + 
-                            "" + ";" + 
-                            accttype + ";" +  
-                            acctcurr + ";" + 
-                            acctdesc + ";" + 
-                            site + ";" + 
-                            currformatDouble(begbal) + ";" + 
-                            currformatDouble(activity) + ";" + 
-                            currformatDouble(endbal)
-                            );
-                sb.append("\n");
-                */
                 JSONArray rowArray = new JSONArray(); 
                             rowArray.put("detail");
                             rowArray.put(acctid);
@@ -5407,6 +5305,67 @@ public class fglData {
                     "'" + bsFormatIntUS(year) + "'" + ";");
            while (res.next()) {
                   myarray.add(res.getString("glc_start"));
+                   myarray.add(res.getString("glc_end"));
+           }
+
+       }
+        catch (SQLException s){
+             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    return myarray;
+
+}
+
+    public static ArrayList<String> getGLCalForPeriodRange(int year, int fromper, int toper) {
+          // function returns a 2 items from the gl_cal record where a period matches
+          // first element = startdate
+          // second element = enddate
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getGLCalForPeriodRange"});
+            list.add(new String[]{"param1", String.valueOf(year)});
+            list.add(new String[]{"param2", String.valueOf(fromper)});
+            list.add(new String[]{"param2", String.valueOf(toper)});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+    ArrayList<String> myarray = new ArrayList();
+    try{
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+            res = st.executeQuery("select * from gl_cal where glc_per = " +
+                    "'" + bsFormatIntUS(fromper) + "'" + 
+                    " AND glc_year = " +
+                    "'" + bsFormatIntUS(year) + "'" + ";");
+           while (res.next()) {
+                  myarray.add(res.getString("glc_start"));
+           }
+            res = st.executeQuery("select * from gl_cal where glc_per = " +
+                    "'" + bsFormatIntUS(toper) + "'" + 
+                    " AND glc_year = " +
+                    "'" + bsFormatIntUS(year) + "'" + ";");
+           while (res.next()) {
                    myarray.add(res.getString("glc_end"));
            }
 

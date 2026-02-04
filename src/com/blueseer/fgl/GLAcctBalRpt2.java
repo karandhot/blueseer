@@ -359,6 +359,7 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
        btprint.setEnabled(false);
        ddyear.setEnabled(false);
        ddperiod.setEnabled(false);
+       ddendperiod.setEnabled(false);
        ddtype.setEnabled(false);
        ddacctfrom.setEnabled(false);
        ddacctto.setEnabled(false);
@@ -371,6 +372,7 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
        btprint.setEnabled(true);
        ddyear.setEnabled(true);
        ddperiod.setEnabled(true);
+       ddendperiod.setEnabled(true);
        ddtype.setEnabled(true);
        ddacctfrom.setEnabled(true);
        ddacctto.setEnabled(true);
@@ -497,15 +499,18 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
         DateFormat dfyear = new SimpleDateFormat("yyyy");
         ddyear.removeAllItems();
         ddperiod.removeAllItems();
+        ddendperiod.removeAllItems();
          for (int i = 1967 ; i < 2222; i++) {
             ddyear.addItem(bsFormatInt(i));
         }
         ddyear.setSelectedItem(bsNumber(dfyear.format(now)));
         for (int i = 1 ; i <= 12; i++) {
             ddperiod.addItem(bsFormatInt(i));
+            ddendperiod.addItem(bsFormatInt(i));
         }
         ddperiod.setSelectedItem(bsNumber(glCalDateArray[1]));
-        datelabels = fglData.getGLCalForPeriod(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperiod.getSelectedItem().toString()));
+        ddendperiod.setSelectedItem(bsNumber(glCalDateArray[1]));
+        datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperiod.getSelectedItem().toString()), bsParseInt(ddendperiod.getSelectedItem().toString()));
         datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1));
         isLoad = false;
         executeTask("dataInit", null);
@@ -523,7 +528,8 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
         list.add(new String[]{"param4",BlueSeerUtils.ConvertBoolToYesNo(cbcc.isSelected())});
         list.add(new String[]{"param5",ddtype.getSelectedItem().toString()});
         list.add(new String[]{"param6",ddacctfrom.getSelectedItem().toString()});
-        list.add(new String[]{"param7",ddacctto.getSelectedItem().toString()});   
+        list.add(new String[]{"param7",ddacctto.getSelectedItem().toString()});  
+        list.add(new String[]{"param8",ddendperiod.getSelectedItem().toString()});
         
         try {
                 jsonString = sendServerPost(list, "", null, "dataServFIN"); 
@@ -539,8 +545,8 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
                 BlueSeerUtils.ConvertBoolToYesNo(cbcc.isSelected()),
                 ddtype.getSelectedItem().toString(),
                 ddacctfrom.getSelectedItem().toString(),
-                ddacctto.getSelectedItem().toString()
-                
+                ddacctto.getSelectedItem().toString(),
+                ddendperiod.getSelectedItem().toString()
             });
         }
       
@@ -720,6 +726,8 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
         ddtype = new javax.swing.JComboBox<>();
         jLabel9 = new javax.swing.JLabel();
         btprint = new javax.swing.JButton();
+        ddendperiod = new javax.swing.JComboBox<>();
+        jLabel10 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         lblactbal = new javax.swing.JLabel();
@@ -809,8 +817,8 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
         cbzero.setText("Supress Zeros");
         cbzero.setName("cbsuppresszeros"); // NOI18N
 
-        jLabel3.setText("Period");
-        jLabel3.setName("lblperiod"); // NOI18N
+        jLabel3.setText("From Period");
+        jLabel3.setName("lblfromperiod"); // NOI18N
 
         jLabel2.setText("Year");
         jLabel2.setName("lblyear"); // NOI18N
@@ -842,52 +850,64 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
             }
         });
 
+        ddendperiod.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" }));
+        ddendperiod.setName("lbltoperiod"); // NOI18N
+
+        jLabel10.setText("To Period");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(datelabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(28, 28, 28)
-                        .addComponent(jLabel9)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
-                        .addComponent(ddyear, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel4))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ddacctfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(ddperiod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(ddacctto, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel5)
-                .addGap(4, 4, 4)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(btRun)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel10, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btdetail)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(ddyear, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(ddperiod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(ddendperiod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(jLabel1)
+                                    .addComponent(jLabel4))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(ddacctfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                                .addGap(44, 44, 44)
+                                .addComponent(jLabel9)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(ddacctto, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btprint))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(cbcc)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbzero)))
-                .addContainerGap())
+                        .addComponent(jLabel5)
+                        .addGap(4, 4, 4)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(btRun)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btdetail)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btprint))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(cbcc)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cbzero)))
+                        .addContainerGap())
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(datelabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(524, 524, 524))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -913,11 +933,13 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
                         .addComponent(cbcc)
                         .addComponent(cbzero, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(datelabel, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel9)))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ddendperiod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel10)
+                    .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel9))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(datelabel, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -1094,12 +1116,14 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
     private javax.swing.JLabel datelabel;
     private javax.swing.JComboBox ddacctfrom;
     private javax.swing.JComboBox ddacctto;
+    private javax.swing.JComboBox<String> ddendperiod;
     private javax.swing.JComboBox ddperiod;
     private javax.swing.JComboBox ddsite;
     private javax.swing.JComboBox<String> ddtype;
     private javax.swing.JComboBox ddyear;
     private javax.swing.JPanel detailpanel;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;

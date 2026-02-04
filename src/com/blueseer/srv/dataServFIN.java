@@ -47,6 +47,7 @@ import static com.blueseer.fgl.fglData.getExcMstr;
 import static com.blueseer.fgl.fglData.getFINInit;
 import static com.blueseer.fgl.fglData.getGLAcctListRangeWCurrTypeDesc;
 import static com.blueseer.fgl.fglData.getGLCalForPeriod;
+import static com.blueseer.fgl.fglData.getGLCalForPeriodRange;
 import static com.blueseer.fgl.fglData.getGLCtrl;
 import static com.blueseer.fgl.fglData.updateAcctMstr;
 import com.blueseer.utl.BlueSeerUtils;
@@ -317,7 +318,8 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     request.getHeader("param4"),
                     request.getHeader("param5"),
                     request.getHeader("param6"),
-                    request.getHeader("param7")} ));
+                    request.getHeader("param7"),
+                    request.getHeader("param8")} ));
       break;
     } 
     
@@ -411,6 +413,12 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
     case "getGLCalForPeriod" : {
       response.getWriter().print(ArrayListStringToJson(getGLCalForPeriod(bsParseInt(request.getHeader("param1")), bsParseInt(request.getHeader("param2")))));
+      break;
+    }         
+    
+    case "getGLCalForPeriodRange" : {
+      response.getWriter().print(ArrayListStringToJson(getGLCalForPeriodRange(bsParseInt(request.getHeader("param1")), bsParseInt(request.getHeader("param2")),
+              bsParseInt(request.getHeader("param3")))));
       break;
     }         
     
