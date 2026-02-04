@@ -801,178 +801,7 @@ try {
                  String acctcurr = "";
                  String cc = "";
                  
-                 
-                 if (cbcc.isSelected()) {
-                 
-                 ACCTS:    for (String[] account : accounts) {
-                     
-                     
-                 
-                  acctid = account[0];
-                  acctcurr = account[1];
-                  accttype = account[2];
-                  acctdesc = account[3];
                   
-                 
-                  
-                  begbal = 0;
-                  activity = 0;
-                  endbal = 0;
-                  preact = 0;
-                  postact = 0;
-                
-                  
-                  
-                 // calculate all acb_mstr records for whole periods < fromdateperiod
-                    // begbal += OVData.getGLAcctBalSummCC(account.toString(), String.valueOf(fromdateyear), String.valueOf(p));
-                  if (accttype.equals("L") || accttype.equals("A")) {
-                      //must be type balance sheet
-                  res = st.executeQuery("select acb_cc, sum(acb_amt) as sum from acb_mstr where " +
-                        " acb_acct = " + "'" + acctid + "'" + " AND " +
-                        " acb_site = " + "'" + site + "'" + " AND " +
-                        " (( acb_year = " + "'" + year + "'" + " AND acb_per <= " + "'" + period + "'" + " ) OR " +
-                        "  ( acb_year <= " + "'" + prioryear + "'" + " )) " +
-                        " group by acb_cc ;");
-                
-                       while (res.next()) {
-                          endbal = 0;
-                          activity = 0;
-                          begbal = 0;
-                          begbal = res.getDouble("sum");
-                          
-                           // now activity
-                                      res2= st2.executeQuery("select sum(acb_amt) as sum from acb_mstr where acb_year = " +
-                                "'" + String.valueOf(year) + "'" + 
-                                " AND acb_per = " +
-                                "'" + String.valueOf(period) + "'" +
-                                " AND acb_acct = " +
-                                "'" + acctid + "'" +
-                                " AND acb_cc = " +
-                                "'" + res.getString("acb_cc") + "'" +
-                                " AND acb_site = " + "'" + site + "'" +
-                                " ;");
-                               while (res2.next()) {
-                                  activity = res2.getDouble(("sum"));
-                               }
-                            
-                               begbal = begbal - activity;
-                               endbal = begbal + activity;
-                           
-                             if (accttype.equals("L") || accttype.equals("O")) {
-                                   totalcredits = totalcredits + (-1 * endbal);
-                                   mymodelCC.addRow(new Object[]{BlueSeerUtils.clickbasket, acctid, accttype, acctcurr,
-                                acctdesc,
-                                site,
-                                res.getString("acb_cc"),
-                                0,
-                                bsParseDouble(currformatDouble((-1 * endbal)))
-                            });
-                               } else {
-                                   totaldebits = totaldebits + endbal ;
-                                   mymodelCC.addRow(new Object[]{BlueSeerUtils.clickbasket, acctid, accttype, acctcurr,
-                                acctdesc,
-                                site,
-                                res.getString("acb_cc"),
-                                bsParseDouble(currformatDouble(endbal)),
-                                0
-                            });
-                               }
-                 totendbal = totendbal + endbal;
-                 totbegbal = totbegbal + begbal;
-                 totactivity = totactivity + activity;
-                            
-                       }
-                  } else {
-                     // must be income statement
-                      res = st.executeQuery("select acb_cc, sum(acb_amt) as sum from acb_mstr where " +
-                        " acb_acct = " + "'" + acctid + "'" + " AND " +
-                        " acb_site = " + "'" + site + "'" + " AND " +
-                        " ( acb_year = " + "'" + year + "'" + " AND acb_per <= " + "'" + period + "'" + ")" +
-                        " group by acb_cc ;");
-                
-                       while (res.next()) {
-                          endbal = 0;
-                          activity = 0;
-                          begbal = 0;
-                          
-                       
-                          begbal = res.getDouble("sum");
-                        
-                                    // now activity
-                                      res2= st2.executeQuery("select sum(acb_amt) as sum from acb_mstr where acb_year = " +
-                                "'" + String.valueOf(year) + "'" + 
-                                " AND acb_per = " +
-                                "'" + String.valueOf(period) + "'" +
-                                " AND acb_acct = " +
-                                "'" + acctid + "'" +
-                                " AND acb_cc = " +
-                                "'" + res.getString("acb_cc") + "'" +
-                                " AND acb_site = " + "'" + site + "'" +
-                                "  ;");
-                               while (res2.next()) {
-                                  activity = res2.getDouble(("sum"));
-                               }
-                            
-                               begbal = begbal - activity;
-                               endbal = begbal + activity;
-                               if (accttype.equals("I") ) {
-                                   totalcredits = totalcredits + (-1 * endbal);
-                                   mymodelCC.addRow(new Object[]{BlueSeerUtils.clickbasket, acctid, accttype, acctcurr,
-                                acctdesc,
-                                site,
-                                res.getString("acb_cc"),
-                                0,
-                                bsParseDouble(currformatDouble((-1 * endbal)))
-                            });
-                               } else {
-                                   totaldebits = totaldebits + endbal ;
-                                   mymodelCC.addRow(new Object[]{BlueSeerUtils.clickbasket, acctid, accttype, acctcurr,
-                                acctdesc,
-                                site,
-                                res.getString("acb_cc"),
-                                bsParseDouble(currformatDouble(endbal)),
-                                0
-                            });
-                               }
-                            
-                            
-                                  
-                 totendbal = totendbal + endbal;
-                 totbegbal = totbegbal + begbal;
-                 totactivity = totactivity + activity;
-                            
-                       }
-                 
-                       
-                  }
-                  
-                  /* 
-                   // calculate period(s) activity defined by date range 
-                  // activity += OVData.getGLAcctBalSummCC(account.toString(), String.valueOf(fromdateyear), String.valueOf(p));
-                       res = st.executeQuery("select acb_cc, sum(acb_amt) as sum from acb_mstr where acb_year = " +
-                        "'" + String.valueOf(year) + "'" + 
-                        " AND acb_per = " +
-                        "'" + String.valueOf(period) + "'" +
-                        " AND acb_acct = " +
-                        "'" + acctid + "'" +
-                        " AND acb_site = " + "'" + site + "'" +
-                        " group by acb_cc ;");
-                       while (res.next()) {
-                         // activity += res.getDouble(("sum"));
-                         // ccamts.add(res.getString("acb_cc") + "," + "activity" + "," + res.getString("sum"));
-                       }
-                 
-                  */
-                
-                 } // Accts
-                               
-                   
-                 // now sum for the total labels display
-                 
-                
-                
-                 } else {    // else if not CC included
-                     
                   
                  ACCTS:    for (String account[] : accounts) {
                      
@@ -989,42 +818,6 @@ try {
                   endbal = 0;
                   preact = 0;
                   postact = 0;
-                  
-                
-                  
-                  
-                 // calculate all acb_mstr records for whole periods < fromdateperiod
-                    // begbal += OVData.getGLAcctBalSummCC(account.toString(), String.valueOf(fromdateyear), String.valueOf(p));
-                  if (accttype.equals("L") || accttype.equals("A")) {
-                      //must be type balance sheet
-                  res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where " +
-                        " acb_acct = " + "'" + acctid + "'" + " AND " +
-                        " acb_site = " + "'" + site + "'" + " AND " +
-                        " (( acb_year = " + "'" + year + "'" + " AND acb_per < " + "'" + period + "'" + " ) OR " +
-                        "  ( acb_year <= " + "'" + prioryear + "'" + " )) " +
-                        ";");
-                
-                       while (res.next()) {
-                          begbal += res.getDouble("sum");
-                       }
-                  } else {
-                     // must be income statement
-                      res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where " +
-                        " acb_acct = " + "'" + acctid + "'" + " AND " +
-                        " acb_site = " + "'" + site + "'" + " AND " +
-                        " ( acb_year = " + "'" + year + "'" + " AND acb_per < " + "'" + period + "'" + ")" +
-                        ";");
-                
-                       while (res.next()) {
-                          begbal += res.getDouble("sum");
-                       }
-                  }
-                  
-                   
-                   // calculate period(s) activity defined by date range 
-                  // activity += OVData.getGLAcctBalSummCC(account.toString(), String.valueOf(fromdateyear), String.valueOf(p));
-               
-                  
                  
                        res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where acb_year = " +
                         "'" + String.valueOf(year) + "'" + 
@@ -1034,8 +827,6 @@ try {
                         "'" + acctid + "'" +
                         " AND acb_site = " + "'" + site + "'" +
                         ";");
-               
-                  
                 
                        while (res.next()) {
                           activity += res.getDouble(("sum"));
@@ -1055,29 +846,7 @@ try {
                  totendbal = totendbal + endbal;
                  totbegbal = totbegbal + begbal;
                  totactivity = totactivity + activity;
-                 
-               //  if (begbal == 0 && endbal == 0 && activity == 0)
-               //      bsmf.MainFrame.show(account);
-               
-               /*
-                 if (accttype.equals("A") || accttype.equals("E")) {  // Debits
-                     totaldebits = totaldebits + endbal;
-                     mymodel.addRow(new Object[]{BlueSeerUtils.clickbasket, acctid, accttype, acctcurr,
-                                acctdesc,
-                                site,
-                                bsParseDouble(currformatDouble(endbal)),
-                                0
-                            });
-                 } else {  // credits
-                     totalcredits = totalcredits + (-1 * endbal);
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickbasket, acctid, accttype, acctcurr,
-                                acctdesc,
-                                site,
-                                0,
-                                bsParseDouble(currformatDouble((-1 * endbal)))  // reverse sign of credit column for trial balance
-                            }); 
-                 }
-                 */ 
+              
                 if (endbal > 0) {
                     totaldebits = totaldebits + endbal;
                     mymodel.addRow(new Object[]{BlueSeerUtils.clickbasket, acctid, accttype, acctcurr,
@@ -1101,7 +870,7 @@ try {
                 } // Accts   
                      
                      
-                 } // else of cc is not included
+                
                  
                  
                  
