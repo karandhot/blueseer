@@ -11,7 +11,6 @@ admin,CusRptPicker,0
 admin,VenRptPicker,0
 admin,HRRptPicker,0
 admin,CustMaint,0
-admin,CustReport1,0
 admin,CustXrefMaint,0
 admin,CustXrefBrowse,0
 admin,CustPriceMaint,0
@@ -26,7 +25,6 @@ admin,piechart_custAR,0
 admin,piechart_profitandloss,0
 admin,VendorMenu,0
 admin,VendMaint,0
-admin,VendBrowse,0
 admin,VendXrefMaint,0
 admin,VendXrefRpt1,0
 admin,VendPriceMaint,0
@@ -410,3 +408,5 @@ admin,ShipOrderLine,0
 admin,TextMaint,0
 admin,SalesRepMaint,0
 admin,SalesRepBrowse,0
+admin,CustBrowse,0
+admin,VendBrowse,0

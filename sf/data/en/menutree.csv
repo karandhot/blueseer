@@ -1,5 +1,5 @@
 CustomerMenu,CustMaint,1,JMenuItem,Customer Maintenance,,,,1,1
-CustomerMenu,CustReport1,2,JMenuItem,Customer Browse,,1,,1,1
+CustomerMenu,CustBrowse,2,JMenuItem,Customer Browse,,1,,1,1
 CustomerMenu,CustXrefMaint,3,JMenuItem,Customer Xref Maint,,,,1,1
 CustomerMenu,CustXrefBrowse,4,JMenuItem,Customer Xref Browse,,,,1,1
 CustomerMenu,CustPriceMaint,5,JMenuItem,Customer Price Maintenance,,,,1,1

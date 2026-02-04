@@ -35,6 +35,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
@@ -52,6 +53,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import org.json.JSONArray;
 
 /**
  *
@@ -2347,7 +2349,66 @@ public class cusData {
          
     // miscellaneous functions
     
-     public static ArrayList<String[]> getCustMaintInit(String panelClassName, String userid) {
+    public static String getCustBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                if (keys[0].equals("cm_code")) {
+                res = st.executeQuery("SELECT cm_code, cm_name, cm_line1, cm_city, cm_state, cm_zip " +
+                        " from cm_mstr where cm_code like " + "'" + '%' + keys[1] + '%' + "'" + ";");
+                }
+                if (keys[0].equals("cm_name")) {
+                res = st.executeQuery("SELECT cm_code, cm_name, cm_line1, cm_city, cm_state, cm_zip " +
+                        " from cm_mstr where cm_name like " + "'" + '%' + keys[1] + '%' + "'" + ";");
+                }
+                if (keys[0].equals("cm_zip")) {
+                res = st.executeQuery("SELECT cm_code, cm_name, cm_line1, cm_city, cm_state, cm_zip " +
+                        " from cm_mstr where cm_zip like " + "'" + '%' + keys[1] + '%' + "'" + ";");
+                }
+                
+                
+                    while (res.next()) {
+                   
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("cm_code"));
+                        rowArray.put(res.getString("cm_name"));
+                        rowArray.put(res.getString("cm_line1"));
+                        rowArray.put(res.getString("cm_city"));
+                        rowArray.put(res.getString("cm_state"));
+                        rowArray.put(res.getString("cm_zip"));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static ArrayList<String[]> getCustMaintInit(String panelClassName, String userid) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id", "getCustMaintInit"});

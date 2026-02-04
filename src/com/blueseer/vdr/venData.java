@@ -45,6 +45,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import org.json.JSONArray;
 
 /**
  *
@@ -997,6 +998,65 @@ public class venData {
     
     
     // misc
+    
+    public static String getVendBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                if (keys[0].equals("vd_addr")) {
+                res = st.executeQuery("SELECT vd_addr, vd_name, vd_line1, vd_city, vd_state, vd_zip " +
+                        " from vd_mstr where vd_addr like " + "'" + '%' + keys[1] + '%' + "'" + ";");
+                }
+                if (keys[0].equals("vd_name")) {
+                res = st.executeQuery("SELECT vd_addr, vd_name, vd_line1, vd_city, vd_state, vd_zip  " +
+                        " from vd_mstr where vd_name like " + "'" + '%' + keys[1] + '%' + "'" + ";");
+                }
+                if (keys[0].equals("vd_zip")) {
+                res = st.executeQuery("SELECT vd_addr, vd_name, vd_line1, vd_city, vd_state, vd_zip  " +
+                        " from vd_mstr where vd_zip like " + "'" + '%' + keys[1] + '%' + "'" + ";");
+                }
+                
+                
+                    while (res.next()) {
+                   
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("vd_addr"));
+                        rowArray.put(res.getString("vd_name"));
+                        rowArray.put(res.getString("vd_line1"));
+                        rowArray.put(res.getString("vd_city"));
+                        rowArray.put(res.getString("vd_state"));
+                        rowArray.put(res.getString("vd_zip"));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
     
     public static ArrayList getVendMstrList() {
         ArrayList myarray = new ArrayList();

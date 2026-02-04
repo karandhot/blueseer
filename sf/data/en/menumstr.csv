@@ -261,7 +261,6 @@ ProdDetRpt,,com.blueseer.prd.ProdDetRpt,JMenuItem,prdr1
 DiscreteOrderPerWeekUnits,,com.blueseer.utl.ChartView,JMenuItem,orc1
 DiscreteOrderPerWeekDollars,,com.blueseer.utl.ChartView,JMenuItem,orc2
 ARPaymentBrowse,,com.blueseer.utl.ReportPanel,JMenuItem,arpb
-VendBrowse,,com.blueseer.utl.ReportPanel,JMenuItem,venb
 VendMaint,,com.blueseer.vdr.VendMaint,JMenuItem,venm
 ShipPerWeekDollarsChart,,com.blueseer.utl.ChartView,JMenuItem,shpr1
 ShipUnconfirm,,com.blueseer.shp.ShipperUnConfirm,JMenuItem,uncf
@@ -357,3 +356,5 @@ ShipOrderLine,,com.blueseer.shp.ShipOrderLine,JMenuItem,shpp
 TextMaint,,com.blueseer.adm.TextMaint,JMenuItem,text
 SalesRepMaint,,com.blueseer.ctr.SalesRepMaint,JMenuItem,slsp
 SalesRepBrowse,,com.blueseer.ctr.SalesRepBrowse,JMenuItem,slsb
+CustBrowse,,com.blueseer.ctr.CustBrowse,JMenuItem,cusr
+VendBrowse,,com.blueseer.vdr.VendBrowse,JMenuItem,venr

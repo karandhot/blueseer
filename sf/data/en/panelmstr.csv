@@ -255,3 +255,5 @@ com.blueseer.shp.ShipOrderLine,,1
 com.blueseer.adm.TextMaint,,1
 com.blueseer.ctr.SalesRepMaint,,1
 com.blueseer.ctr.SalesRepBrowse,,1
+com.blueseer.ctr.CustBrowse,,1
+com.blueseer.vdr.VendBrowse,,1

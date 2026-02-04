@@ -146,7 +146,7 @@ public class GLTranMaint extends javax.swing.JPanel {
             })    {
     @Override
     public boolean isCellEditable(int row, int column) {
-        return false;
+           return false;
     }
 };
     
@@ -160,7 +160,11 @@ public class GLTranMaint extends javax.swing.JPanel {
                  positiveamt += bsParseDouble(transtable.getValueAt(i, 4).toString());
              }
           }
-        
+        if (amt != 0) {
+            btsubmit.setEnabled(false);
+        } else {
+            btsubmit.setEnabled(true);
+        }
         labeltotal.setText(bsFormatDouble(amt));
     }
     
@@ -209,7 +213,8 @@ public class GLTranMaint extends javax.swing.JPanel {
        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
        effdate.setDate(now);
        dateentered.setText(dfdate.format(now));
-       
+       lblmessage.setText("");
+       lblmessage.setForeground(Color.black);
        tbref.setText("");
        tbcontrolamt.setText("");
        tbamt.setText("");
@@ -276,8 +281,11 @@ public class GLTranMaint extends javax.swing.JPanel {
        btLookUpAccount2.setEnabled(true);
        btdeleteALL.setEnabled(true);
        btsubmit.setEnabled(true);
-        btadd.setEnabled(true);
+       btclear.setEnabled(true);
+       btadd.setEnabled(true);
        btdelete.setEnabled(true);
+       btupdate.setEnabled(true);
+       btflip.setEnabled(true);
        ddtype.setSelectedIndex(0);
        ddtype.setEnabled(true); 
        ddsite.setEnabled(true);
@@ -304,9 +312,12 @@ public class GLTranMaint extends javax.swing.JPanel {
        btLookUpAccount.setEnabled(false);
        btLookUpAccount2.setEnabled(false);
        btdeleteALL.setEnabled(false);
+       btflip.setEnabled(false);
        btsubmit.setEnabled(false);
-        btadd.setEnabled(false);
+       btadd.setEnabled(false);
        btdelete.setEnabled(false);
+       btupdate.setEnabled(false);
+       btclear.setEnabled(false);
        ddtype.setSelectedIndex(0);
        ddtype.setEnabled(false);
        dateentered.setEnabled(false);
@@ -364,10 +375,11 @@ public class GLTranMaint extends javax.swing.JPanel {
                     tallyamount();
                     clearinput();
                     disableAll();
-                    btdeleteALL.setEnabled(true);
+                    btdeleteALL.setEnabled(false);
                     transtable.setEnabled(true);
                     btnew.setEnabled(true);
                     btlookup.setEnabled(true);
+                    btclear.setEnabled(true);
                 }
             } catch (SQLException s) {
                 MainFrame.bslog(s);
@@ -428,6 +440,7 @@ public class GLTranMaint extends javax.swing.JPanel {
                     transtable.setEnabled(true);
                     btnew.setEnabled(true);
                     btlookup.setEnabled(true);
+                    btclear.setEnabled(true);
                 }
             } catch (SQLException s) {
                 MainFrame.bslog(s);
@@ -737,8 +750,12 @@ public class GLTranMaint extends javax.swing.JPanel {
        btcopy.setEnabled(false);
         if (arg != null && arg.length > 1) {
              if (arg[1].equals("gl_tran")) {
+              lblmessage.setText("Unposted Transactions");
+              lblmessage.setForeground(Color.red);
               getGLTran(arg[0]);
              } else {
+              lblmessage.setText("Posted Transactions");
+              lblmessage.setForeground(Color.blue);
               getGLHist(arg[0]);    
              }
              btcopy.setEnabled(true);
@@ -1044,6 +1061,9 @@ public class GLTranMaint extends javax.swing.JPanel {
         lbacct2 = new javax.swing.JLabel();
         btclear = new javax.swing.JButton();
         btcopy = new javax.swing.JButton();
+        lblmessage = new javax.swing.JLabel();
+        btupdate = new javax.swing.JButton();
+        btflip = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -1256,12 +1276,27 @@ public class GLTranMaint extends javax.swing.JPanel {
             }
         });
 
+        btupdate.setText("Update");
+        btupdate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btupdateActionPerformed(evt);
+            }
+        });
+
+        btflip.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/upload.png"))); // NOI18N
+        btflip.setToolTipText("Copy");
+        btflip.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btflipActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(20, 20, 20)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel46, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -1269,7 +1304,10 @@ public class GLTranMaint extends javax.swing.JPanel {
                     .addComponent(lbacct1, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel48, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel52, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(btflip)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel52))
                     .addComponent(lbacct2, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1291,9 +1329,11 @@ public class GLTranMaint extends javax.swing.JPanel {
                             .addComponent(jLabel50, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(tbuserid, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(dateentered, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(effdate, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(effdate, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(lblmessage, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(tbuserid, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 130, Short.MAX_VALUE))))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -1349,7 +1389,9 @@ public class GLTranMaint extends javax.swing.JPanel {
                                 .addComponent(tbamt, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(btadd)
-                                .addGap(12, 12, 12)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btupdate)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btdelete)))))
                 .addGap(6, 6, 6))
         );
@@ -1370,17 +1412,19 @@ public class GLTranMaint extends javax.swing.JPanel {
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGap(31, 31, 31)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(btnew)
+                                        .addComponent(btclear))
                                     .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addComponent(btcopy)
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(lblmessage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(btcopy, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                         .addGap(7, 7, 7)
                                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                             .addComponent(btlookup)
                                             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                                 .addComponent(tbref, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(jLabel46))))
-                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(btnew)
-                                        .addComponent(btclear)))))
+                                                .addComponent(jLabel46)))))))
                         .addGap(7, 7, 7)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel1)
@@ -1434,16 +1478,24 @@ public class GLTranMaint extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(1, 1, 1)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(tbdesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel52)))
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(btadd)
+                                .addComponent(tbamt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel51))
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(btdelete)
+                                .addComponent(btupdate)))
+                        .addGap(13, 13, 13))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(1, 1, 1)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(tbdesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel52)))
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(btadd)
-                        .addComponent(tbamt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel51))
-                    .addComponent(btdelete))
-                .addGap(13, 13, 13)
+                        .addComponent(btflip, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1550,18 +1602,22 @@ public class GLTranMaint extends javax.swing.JPanel {
         
        if (ddtype.getSelectedItem().toString().equals("simple")) {
            // add double entry...ddacct is credit (-) ddacct2 is debit (+)
+           double nbr = bsParseDouble(tbamt.getText());
+            
             transmodel.addRow(new Object[]{transmodel.getRowCount() + 1,
                 ddacct.getSelectedItem().toString(),
                 ddcc.getSelectedItem().toString(),
                 tbdesc.getText(),
-                "-" + tbamt.getText()
+                currformatDouble(nbr)
             });
+           
             transmodel.addRow(new Object[]{transmodel.getRowCount() + 1,
                 ddacct2.getSelectedItem().toString(),
                 ddcc.getSelectedItem().toString(),
                 tbdesc.getText(),
-                tbamt.getText()
+                currformatDouble(-1 * nbr)
             });
+            
         } else {
            // allow custom entry...sign is determined by entry in amount field
            transmodel.addRow(new Object[]{transmodel.getRowCount() + 1,
@@ -1806,6 +1862,30 @@ public class GLTranMaint extends javax.swing.JPanel {
         
     }//GEN-LAST:event_btcopyActionPerformed
 
+    private void btupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateActionPerformed
+        int[] rows = transtable.getSelectedRows();
+        if (rows.length != 1) {
+            bsmf.MainFrame.show(getMessageTag(1095));
+                return;
+        }
+        for (int i : rows) {
+            transtable.setValueAt(currformatDouble(bsParseDouble(tbamt.getText())), i, 4);
+            transtable.setValueAt(ddcc.getSelectedItem().toString(), i, 2);
+            transtable.setValueAt(tbdesc.getText(), i, 3);
+        }
+          
+          tallyamount();
+    }//GEN-LAST:event_btupdateActionPerformed
+
+    private void btflipActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btflipActionPerformed
+        for (int i = 0; i < transtable.getRowCount(); i++) {
+            double nbr = bsParseDouble(transtable.getValueAt(i, 4).toString());
+            nbr = -1 * nbr;
+                transtable.setValueAt(currformatDouble(nbr),i, 4);
+            }
+        tallyamount();
+    }//GEN-LAST:event_btflipActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btLookUpAccount;
     private javax.swing.JButton btLookUpAccount2;
@@ -1814,9 +1894,11 @@ public class GLTranMaint extends javax.swing.JPanel {
     private javax.swing.JButton btcopy;
     private javax.swing.JButton btdelete;
     private javax.swing.JButton btdeleteALL;
+    private javax.swing.JButton btflip;
     private javax.swing.JButton btlookup;
     private javax.swing.JButton btnew;
     private javax.swing.JButton btsubmit;
+    private javax.swing.JButton btupdate;
     private javax.swing.JTextField dateentered;
     private static javax.swing.JComboBox ddacct;
     private static javax.swing.JComboBox<String> ddacct2;
@@ -1844,6 +1926,7 @@ public class GLTranMaint extends javax.swing.JPanel {
     private javax.swing.JLabel lbacctname;
     private javax.swing.JLabel lbacctname2;
     private javax.swing.JLabel lbccname;
+    private javax.swing.JLabel lblmessage;
     private javax.swing.JTextField tbamt;
     private javax.swing.JTextField tbcontrolamt;
     private javax.swing.JTextField tbdesc;

@@ -35,6 +35,7 @@ import static com.blueseer.adm.admData.updateSiteMstr;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.vdr.venData.addVendMstrMass;
+import static com.blueseer.vdr.venData.getVendBrowseView;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -142,6 +143,16 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(r);
             break;
           }
+        
+        case "getVendBrowseView" : {
+        String[] x = new String[]{
+               request.getHeader("param1"), 
+               request.getHeader("param2"), 
+               request.getHeader("param3")
+               };     
+        response.getWriter().print(getVendBrowseView(x));  
+        break;
+        }
         
          
         

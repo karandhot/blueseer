@@ -155,7 +155,7 @@ public class Browse extends javax.swing.JPanel {
             }
         });
 
-        btview.setText("Find It");
+        btview.setText("Search");
         btview.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btviewActionPerformed(evt);

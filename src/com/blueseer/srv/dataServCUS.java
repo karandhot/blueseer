@@ -41,6 +41,7 @@ import static com.blueseer.ctr.cusData.getCMSDet;
 import static com.blueseer.ctr.cusData.getCprDiscLists;
 import static com.blueseer.ctr.cusData.getCprMstr;
 import static com.blueseer.ctr.cusData.getCprPriceLists;
+import static com.blueseer.ctr.cusData.getCustBrowseView;
 import static com.blueseer.ctr.cusData.getCustLabel;
 import static com.blueseer.ctr.cusData.getCustMstr;
 import static com.blueseer.ctr.cusData.getCustShipSet;
@@ -397,6 +398,16 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(arrayToJson(addUpdateCMCtrl(x)));
             break;
           }
+        
+        case "getCustBrowseView" : {
+        String[] x = new String[]{
+               request.getHeader("param1"), 
+               request.getHeader("param2"), 
+               request.getHeader("param3")
+               };     
+        response.getWriter().print(getCustBrowseView(x));  
+        break;
+        }
         
         
         
