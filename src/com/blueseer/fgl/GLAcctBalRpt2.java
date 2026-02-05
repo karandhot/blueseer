@@ -74,6 +74,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsFormatInt;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
+import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.dropColumn;
@@ -81,8 +82,18 @@ import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.luModel;
+import static com.blueseer.utl.BlueSeerUtils.luTable;
+import static com.blueseer.utl.BlueSeerUtils.lual;
+import static com.blueseer.utl.BlueSeerUtils.ludialog;
+import static com.blueseer.utl.BlueSeerUtils.luinput;
+import static com.blueseer.utl.BlueSeerUtils.luml;
+import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.sendServerRequest;
+import com.blueseer.utl.DTData;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -395,7 +406,8 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
         lblbegbal.setText("0");
         lblactbal.setText("0");
         labeldettotal.setText("");
-        
+        lblfromacct.setText("");
+        lbltoacct.setText("");
         
         
         
@@ -689,6 +701,55 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
        roData = null;
     }
     
+    public void lookUpFrameAcctDesc(String ddfield) {
+        
+        luinput.removeActionListener(lual);
+        lual = new ActionListener() {
+        public void actionPerformed(ActionEvent event) {
+        if (lurb1.isSelected()) {  
+         luModel = DTData.getAcctBrowseUtil(luinput.getText(),0, "ac_id");
+        } else {
+         luModel = DTData.getAcctBrowseUtil(luinput.getText(), 0, "ac_desc");   
+        } 
+         
+        luTable.setModel(luModel);
+        luTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        if (luModel.getRowCount() < 1) {
+            ludialog.setTitle(getMessageTag(1001));
+        } else {
+            ludialog.setTitle(getMessageTag(1002, String.valueOf(luModel.getRowCount())));
+        }
+        }
+        };
+        luinput.addActionListener(lual);
+        
+        luTable.removeMouseListener(luml);
+        luml = new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                JTable target = (JTable)e.getSource();
+                int row = target.getSelectedRow();
+                int column = target.getSelectedColumn();
+                if ( column == 0) {
+                ludialog.dispose();
+                if (ddfield.equals("from")) {
+                    ddacctfrom.setSelectedItem(target.getValueAt(row,1).toString());
+                    lblfromacct.setText(target.getValueAt(row,2).toString());
+                } else {
+                    ddacctto.setSelectedItem(target.getValueAt(row,1).toString());
+                    lbltoacct.setText(target.getValueAt(row,2).toString()); 
+                }
+                    
+                }
+            }
+        };
+        luTable.addMouseListener(luml);
+      
+         
+        callDialog(getGlobalColumnTag("id"), 
+                getGlobalColumnTag("description")); 
+        
+    }
+    
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -728,6 +789,10 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
         btprint = new javax.swing.JButton();
         ddendperiod = new javax.swing.JComboBox<>();
         jLabel10 = new javax.swing.JLabel();
+        btLookUpAccountFrom = new javax.swing.JButton();
+        lblfromacct = new javax.swing.JLabel();
+        btLookUpAccountTo = new javax.swing.JButton();
+        lbltoacct = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         lblactbal = new javax.swing.JLabel();
@@ -855,6 +920,20 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
 
         jLabel10.setText("To Period");
 
+        btLookUpAccountFrom.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/find.png"))); // NOI18N
+        btLookUpAccountFrom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btLookUpAccountFromActionPerformed(evt);
+            }
+        });
+
+        btLookUpAccountTo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/find.png"))); // NOI18N
+        btLookUpAccountTo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btLookUpAccountToActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -888,8 +967,17 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
                                     .addComponent(ddtype, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(ddacctto, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel5)
-                        .addGap(4, 4, 4)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btLookUpAccountFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btLookUpAccountTo, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(lblfromacct, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jLabel5))
+                            .addComponent(lbltoacct, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -905,7 +993,6 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
                                 .addComponent(cbzero)))
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(datelabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(524, 524, 524))))
         );
@@ -913,25 +1000,33 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(ddacctfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(ddyear, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2)
-                    .addComponent(btRun)
-                    .addComponent(btdetail)
-                    .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel5)
-                    .addComponent(btprint))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel4)
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(ddacctto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(ddperiod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel3)
-                        .addComponent(cbcc)
-                        .addComponent(cbzero, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(ddacctfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(ddyear, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2)
+                            .addComponent(btRun)
+                            .addComponent(btdetail)
+                            .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel5)
+                            .addComponent(btprint)
+                            .addComponent(lblfromacct, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel4)
+                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(ddacctto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(ddperiod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel3)
+                                .addComponent(cbcc)
+                                .addComponent(cbzero, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(lbltoacct, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(btLookUpAccountFrom)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btLookUpAccountTo)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(ddendperiod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1105,9 +1200,19 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
         OVData.printJTableToJasper("Account Balances Report", tablereport, "acctbalance.jasper" );
     }//GEN-LAST:event_btprintActionPerformed
 
+    private void btLookUpAccountFromActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btLookUpAccountFromActionPerformed
+        lookUpFrameAcctDesc("from");
+    }//GEN-LAST:event_btLookUpAccountFromActionPerformed
+
+    private void btLookUpAccountToActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btLookUpAccountToActionPerformed
+        lookUpFrameAcctDesc("to");
+    }//GEN-LAST:event_btLookUpAccountToActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel EndBal;
+    private javax.swing.JButton btLookUpAccountFrom;
+    private javax.swing.JButton btLookUpAccountTo;
     private javax.swing.JButton btRun;
     private javax.swing.JButton btdetail;
     private javax.swing.JButton btprint;
@@ -1141,6 +1246,8 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
     private javax.swing.JLabel lblactbal;
     private javax.swing.JLabel lblbegbal;
     private javax.swing.JLabel lblendbal;
+    private javax.swing.JLabel lblfromacct;
+    private javax.swing.JLabel lbltoacct;
     private javax.swing.JPanel summarypanel;
     private javax.swing.JTable tabledetail;
     private javax.swing.JPanel tablepanel;
