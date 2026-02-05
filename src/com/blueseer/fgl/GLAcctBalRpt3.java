@@ -197,9 +197,9 @@ public class GLAcctBalRpt3 extends javax.swing.JPanel {
               double doublevalue = 0;
                for (String value : values) {
                         doublevalue = bsParseDouble(value);
-                           if (doublevalue < 0) {
-                               doublevalue *= -1;
-                           }
+                          // if (doublevalue < 0) {
+                          //     doublevalue *= -1;
+                         //  }
                         dataset.setValue(doublevalue, acct, String.valueOf(i));
                         i++;
                     }  
