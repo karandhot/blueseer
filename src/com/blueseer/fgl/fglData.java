@@ -1972,6 +1972,7 @@ public class fglData {
                   res = st.executeQuery("select acb_cc, sum(acb_amt) as sum from acb_mstr where " +
                         " acb_acct = " + "'" + acctid + "'" + " AND " +
                         " acb_site = " + "'" + site + "'" + " AND " +
+                        " acb_per <> '0'  AND " +          
                         " (( acb_year = " + "'" + year + "'" + " AND acb_per < " + "'" + period + "'" + " ) OR " +
                         "  ( acb_year <= " + "'" + prioryear + "'" + " )) " +
                         " group by acb_cc ;");
@@ -1985,6 +1986,7 @@ public class fglData {
                            // now activity
                                       res2= st2.executeQuery("select sum(acb_amt) as sum from acb_mstr where acb_year = " +
                                 "'" + String.valueOf(year) + "'" + 
+                                " AND acb_per <> '0' " +         
                                 " AND acb_per >= " +
                                 "'" + String.valueOf(period) + "'" +
                                 " AND acb_per <= " +
@@ -2038,6 +2040,7 @@ public class fglData {
                       res = st.executeQuery("select acb_cc, sum(acb_amt) as sum from acb_mstr where " +
                         " acb_acct = " + "'" + acctid + "'" + " AND " +
                         " acb_site = " + "'" + site + "'" + " AND " +
+                        " acb_per <> '0'  AND " +         
                         " ( acb_year = " + "'" + year + "'" + " AND acb_per = " + "'" + period + "'" + ")" +
                         " group by acb_cc ;");
                 
@@ -2052,6 +2055,7 @@ public class fglData {
                                     // now activity
                                       res2= st2.executeQuery("select sum(acb_amt) as sum from acb_mstr where acb_year = " +
                                 "'" + String.valueOf(year) + "'" + 
+                                " AND acb_per <> '0' " +         
                                 " AND acb_per = " +
                                 "'" + String.valueOf(period) + "'" +
                                 " AND acb_acct = " +
@@ -2150,6 +2154,7 @@ public class fglData {
                   res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where " +
                         " acb_acct = " + "'" + acctid + "'" + " AND " +
                         " acb_site = " + "'" + site + "'" + " AND " +
+                        " acb_per <> '0' AND " +          
                         " (( acb_year = " + "'" + year + "'" + " AND acb_per < " + "'" + period + "'" + " ) OR " +
                         "  ( acb_year <= " + "'" + prioryear + "'" + " )) " +
                         ";");
@@ -2162,6 +2167,7 @@ public class fglData {
                       res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where " +
                         " acb_acct = " + "'" + acctid + "'" + " AND " +
                         " acb_site = " + "'" + site + "'" + " AND " +
+                        " acb_per <> '0' AND " +         
                         " ( acb_year = " + "'" + year + "'" + " AND acb_per < " + "'" + period + "'" + ")" +
                         ";");
                 
@@ -2172,6 +2178,7 @@ public class fglData {
                         // now activity           
                        res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where acb_year = " +
                         "'" + String.valueOf(year) + "'" + 
+                        " AND acb_per <> '0' " +         
                         " AND acb_per >= " +
                         "'" + String.valueOf(period) + "'" +
                         " AND acb_per <= " +
