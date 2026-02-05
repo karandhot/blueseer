@@ -1208,6 +1208,7 @@ CREATE TABLE "gl_tran" (
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE "glic_accts" (
+  "glicd_profile" varchar(100) NOT NULL COLLATE NOCASE DEFAULT '',
   "glicd_name" varchar(100) NOT NULL COLLATE NOCASE DEFAULT '',
   "glicd_acct" varchar(12) NOT NULL COLLATE NOCASE DEFAULT '',
   "glicd_seq" int(4) NOT NULL DEFAULT '0',
@@ -1217,6 +1218,7 @@ CREATE TABLE "glic_accts" (
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE "glic_def" (
+  "glic_profile" varchar(100) NOT NULL COLLATE NOCASE DEFAULT '',
   "glic_name" varchar(100) NOT NULL COLLATE NOCASE DEFAULT '',
   "glic_desc" varchar(300) NOT NULL COLLATE NOCASE DEFAULT '',
   "glic_seq" int(4) NOT NULL DEFAULT '0',

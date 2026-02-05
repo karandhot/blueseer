@@ -1019,12 +1019,14 @@ CREATE TABLE IF NOT EXISTS `gl_tran` (
   `glt_desc` varchar(30)  NOT NULL DEFAULT '',
   `glt_userid` varchar(8)  NOT NULL DEFAULT '') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `glic_accts` (
+  `glicd_profile` varchar(100) NOT NULL  DEFAULT '',
   `glicd_name` varchar(100) NOT NULL  DEFAULT '',
   `glicd_acct` varchar(12) NOT NULL  DEFAULT '',
   `glicd_seq` int(4) NOT NULL DEFAULT '0',
   `glicd_type` varchar(10) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `glic_def` (
+  `glic_profile` varchar(100) NOT NULL  DEFAULT '',
   `glic_name` varchar(100) NOT NULL  DEFAULT '',
   `glic_desc` varchar(300) NOT NULL  DEFAULT '',
   `glic_seq` int(4) NOT NULL DEFAULT '0',

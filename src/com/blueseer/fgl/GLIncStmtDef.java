@@ -32,9 +32,23 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.utl.BlueSeerUtils.callDialog;
+import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.luModel;
+import static com.blueseer.utl.BlueSeerUtils.luTable;
+import static com.blueseer.utl.BlueSeerUtils.lual;
+import static com.blueseer.utl.BlueSeerUtils.ludialog;
+import static com.blueseer.utl.BlueSeerUtils.luinput;
+import static com.blueseer.utl.BlueSeerUtils.luml;
+import static com.blueseer.utl.BlueSeerUtils.lurb1;
+import com.blueseer.utl.DTData;
 import com.blueseer.utl.OVData;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -50,6 +64,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.ListModel;
 
 /**
@@ -60,6 +75,7 @@ public class GLIncStmtDef extends javax.swing.JPanel {
 
     DefaultListModel mymodel = new DefaultListModel() ;
     DefaultListModel mymodelex = new DefaultListModel() ;
+    boolean isLoad = false;
     
     /**
      * Creates new form GLIncStmtDef
@@ -135,6 +151,47 @@ public class GLIncStmtDef extends javax.swing.JPanel {
     excludelist.setModel(mymodelex);
     }
     
+    public void lookUpFrame() {
+        
+        luinput.removeActionListener(lual);
+        lual = new ActionListener() {
+        public void actionPerformed(ActionEvent event) {
+        if (lurb1.isSelected()) {  
+         luModel = DTData.getGLICBrowseUtil(luinput.getText(),0, "glic_profile");
+        } else {
+         luModel = DTData.getGLICBrowseUtil(luinput.getText(),0, "glic_name");   
+        }
+        luTable.setModel(luModel);
+        luTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        if (luModel.getRowCount() < 1) {
+            ludialog.setTitle(getMessageTag(1001));
+        } else {
+            ludialog.setTitle(getMessageTag(1002, String.valueOf(luModel.getRowCount())));
+        }
+        }
+        };
+        luinput.addActionListener(lual);
+        
+        luTable.removeMouseListener(luml);
+        luml = new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                JTable target = (JTable)e.getSource();
+                int row = target.getSelectedRow();
+                int column = target.getSelectedColumn();
+                if ( column == 0) {
+                ludialog.dispose();
+                tbprofile.setText(target.getValueAt(row,1).toString());
+                ddcategory.setSelectedItem(target.getValueAt(row,2).toString());
+                //initvars(new String[]{target.getValueAt(row,1).toString()});
+                }
+            }
+        };
+        luTable.addMouseListener(luml);
+      
+        callDialog(getClassLabelTag("lblid", this.getClass().getSimpleName()), getClassLabelTag("lbldesc", this.getClass().getSimpleName())); 
+        
+    }
+
     
     
     /**
@@ -150,23 +207,31 @@ public class GLIncStmtDef extends javax.swing.JPanel {
         ddcategory = new javax.swing.JComboBox();
         btupdate = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
-        ddacct = new javax.swing.JComboBox();
-        acctname = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        assignlist = new javax.swing.JList();
-        jLabel4 = new javax.swing.JLabel();
-        btaddassign = new javax.swing.JButton();
-        btdeleteassigned = new javax.swing.JButton();
         tbfrom = new javax.swing.JTextField();
         tbto = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
+        tbprofile = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        btaddassign = new javax.swing.JButton();
+        btdeleteexclude = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        btaddexclude = new javax.swing.JButton();
+        btdeleteassigned = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         excludelist = new javax.swing.JList();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        assignlist = new javax.swing.JList();
+        acctname = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
-        btaddexclude = new javax.swing.JButton();
-        btdeleteexclude = new javax.swing.JButton();
+        ddacct = new javax.swing.JComboBox();
+        tbdesc = new javax.swing.JTextField();
+        jLabel8 = new javax.swing.JLabel();
+        tbsequence = new javax.swing.JTextField();
+        jLabel9 = new javax.swing.JLabel();
+        btlookup = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -189,52 +254,22 @@ public class GLIncStmtDef extends javax.swing.JPanel {
         jLabel1.setText("Category");
         jLabel1.setName("lblcategory"); // NOI18N
 
-        ddacct.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ddacctActionPerformed(evt);
-            }
-        });
-
-        jLabel3.setText("Accounts");
-        jLabel3.setName("lblaccounts"); // NOI18N
-
-        jScrollPane2.setViewportView(assignlist);
-
-        jLabel4.setText("Excluded:");
-        jLabel4.setName("lblexcluded"); // NOI18N
-
-        btaddassign.setText("Add");
-        btaddassign.setName("btadd"); // NOI18N
-        btaddassign.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btaddassignActionPerformed(evt);
-            }
-        });
-
-        btdeleteassigned.setText("Delete");
-        btdeleteassigned.setName("btdelete"); // NOI18N
-        btdeleteassigned.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btdeleteassignedActionPerformed(evt);
-            }
-        });
-
         jLabel5.setText("From");
         jLabel5.setName("lblfrom"); // NOI18N
 
         jLabel6.setText("To");
         jLabel6.setName("lblto"); // NOI18N
 
-        jScrollPane3.setViewportView(excludelist);
+        jLabel2.setText("Profile");
 
-        jLabel7.setText("Assigned");
-        jLabel7.setName("lblassigned"); // NOI18N
+        jLabel3.setText("Account:");
+        jLabel3.setName("lblaccounts"); // NOI18N
 
-        btaddexclude.setText("Add");
-        btaddexclude.setName("btadd"); // NOI18N
-        btaddexclude.addActionListener(new java.awt.event.ActionListener() {
+        btaddassign.setText("Add");
+        btaddassign.setName("btadd"); // NOI18N
+        btaddassign.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btaddexcludeActionPerformed(evt);
+                btaddassignActionPerformed(evt);
             }
         });
 
@@ -246,69 +281,165 @@ public class GLIncStmtDef extends javax.swing.JPanel {
             }
         });
 
+        jLabel4.setText("Excluded:");
+        jLabel4.setName("lblexcluded"); // NOI18N
+
+        btaddexclude.setText("Add");
+        btaddexclude.setName("btadd"); // NOI18N
+        btaddexclude.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btaddexcludeActionPerformed(evt);
+            }
+        });
+
+        btdeleteassigned.setText("Delete");
+        btdeleteassigned.setName("btdelete"); // NOI18N
+        btdeleteassigned.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btdeleteassignedActionPerformed(evt);
+            }
+        });
+
+        jScrollPane3.setViewportView(excludelist);
+
+        jScrollPane2.setViewportView(assignlist);
+
+        jLabel7.setText("Assigned:");
+        jLabel7.setName("lblassigned"); // NOI18N
+
+        ddacct.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ddacctActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(44, 44, 44)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel7)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel3)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(btdeleteexclude)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btaddexclude))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(ddacct, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(btdeleteassigned)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btaddassign)))
+                        .addGap(18, 18, 18)
+                        .addComponent(acctname, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
+                    .addComponent(jScrollPane3))
+                .addContainerGap(40, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(9, 9, 9)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(ddacct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel3))
+                    .addComponent(acctname, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btaddassign)
+                    .addComponent(btdeleteassigned))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel7))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btaddexclude)
+                    .addComponent(btdeleteexclude))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel4)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+
+        jLabel8.setText("Description");
+
+        jLabel9.setText("Sequence");
+
+        btlookup.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/lookup.png"))); // NOI18N
+        btlookup.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btlookupActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(87, 87, 87)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGap(31, 31, 31)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jLabel4)
-                                    .addComponent(jLabel7))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                        .addComponent(btdeleteassigned)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btaddassign))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                        .addComponent(jLabel1)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(ddcategory, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE))))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jLabel5)
-                                    .addComponent(jLabel6))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(tbto, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tbfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addComponent(acctname, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 227, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel3)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(ddacct, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btupdate))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(80, 80, 80)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel6)
+                            .addComponent(jLabel8)
+                            .addComponent(jLabel9))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btupdate, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                .addComponent(btdeleteexclude)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(tbprofile, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btaddexclude)))))
+                                .addComponent(btlookup, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(ddcategory, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbto, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbdesc, javax.swing.GroupLayout.PREFERRED_SIZE, 265, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbsequence, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(20, 20, 20)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(tbprofile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel2))
+                    .addComponent(btlookup))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(ddcategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbdesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel8))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tbsequence, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel9))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5))
@@ -316,28 +447,8 @@ public class GLIncStmtDef extends javax.swing.JPanel {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
-                .addComponent(acctname, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(ddacct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3))
-                .addGap(10, 10, 10)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btaddassign)
-                    .addComponent(btdeleteassigned))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel7))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 13, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btaddexclude)
-                    .addComponent(btdeleteexclude))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel4)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(44, 44, 44)
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btupdate))
         );
@@ -380,25 +491,45 @@ public class GLIncStmtDef extends javax.swing.JPanel {
             Statement st = con.createStatement();
             ResultSet res = null;
             try {
-                boolean proceed = true;
+                
                 int i = 0;
-                
-                
-                if (proceed) {
-
+                res = st.executeQuery("SELECT glic_profile FROM glic_def where glic_profile = " + "'" + tbprofile.getText() + "'"
+                        + " AND glic_name = " + "'" + ddcategory.getSelectedItem().toString() + "'"
+                        + " ;");
+                while (res.next()) {
+                    i++;
+                }
+                if (i == 0) {
+                    st.executeUpdate("insert into glic_def (glic_profile, glic_name, glic_desc, glic_seq, glic_type, glic_start, glic_end) values ( "
+                            + "'" + tbprofile.getText() + "'" + ","
+                            + "'" + ddcategory.getSelectedItem().toString() + "'" + ","
+                            + "'" + tbdesc.getText() + "'" + ","
+                            + "'" + tbsequence.getText() + "'" + ","
+                            + "'" + "" + "'" + "," // type unused
+                            + "'" + tbfrom.getText() + "'" + ","
+                            + "'" + tbto.getText() + "'" + ")"
+                            + ";");
                     
-                    st.executeUpdate("update glic_def set glic_start = " + "'" + tbfrom.getText() + "'" + "," +
+                } else {
+                    st.executeUpdate("update glic_def set " +
+                            " glic_desc = " + "'" + tbdesc.getText() + "'" + "," +
+                            " glic_seq = " + "'" + tbsequence.getText() + "'" + "," +        
+                            " glic_start = " + "'" + tbfrom.getText() + "'" + "," +
                             " glic_end = " + "'" + tbto.getText() + "'" + 
-                            " where glic_name = " + "'" + ddcategory.getSelectedItem().toString() + "'" + ";");
-                    
-                    
-                    // erase all assigned accounts and refill with current assign and exclude list
+                            " where glic_name = " + "'" + ddcategory.getSelectedItem().toString() + "'" + 
+                            " and glic_profile = " + "'" + tbprofile.getText() + "'" +
+                            ";");
+                } // else record exists
+                
+                 // erase all assigned accounts and refill with current assign and exclude list
                     st.executeUpdate("delete from glic_accts where glicd_name = " + "'" + ddcategory.getSelectedItem().toString() + "'" + ";");
                     
                        for (int j = 0; j < mymodel.getSize(); j++) {
                         st.executeUpdate("insert into glic_accts "
-                            + "(glicd_name, glicd_acct, glicd_type ) "
-                            + " values ( " + "'" + ddcategory.getSelectedItem().toString() + "'" + ","
+                            + "(glicd_profile, glicd_name, glicd_acct, glicd_type ) "
+                            + " values ( " 
+                            + "'" + tbprofile.getText() + "'" + ","
+                            + "'" + ddcategory.getSelectedItem().toString() + "'" + ","
                             + "'" + mymodel.getElementAt(j) + "'" + ","
                             + "'in'"
                             + ")"
@@ -407,18 +538,18 @@ public class GLIncStmtDef extends javax.swing.JPanel {
                        
                        for (int j = 0; j < mymodelex.getSize(); j++) {
                         st.executeUpdate("insert into glic_accts "
-                            + "(glicd_name, glicd_acct, glicd_type ) "
-                            + " values ( " + "'" + ddcategory.getSelectedItem().toString() + "'" + ","
+                            + "(glicd_profile, glicd_name, glicd_acct, glicd_type ) "
+                            + " values ( " 
+                            + "'" + tbprofile.getText() + "'" + ","
+                            + "'" + ddcategory.getSelectedItem().toString() + "'" + ","
                             + "'" + mymodelex.getElementAt(j) + "'" + ","
                             + "'out'"
                             + ")"
                             + ";");
                        }
-                       
-                       
-                        bsmf.MainFrame.show(getMessageTag(1008));
-                   
-                } // if proceed
+                
+               bsmf.MainFrame.show(getMessageTag(1008)); 
+                
             } catch (SQLException s) {
                 MainFrame.bslog(s);
                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
@@ -452,6 +583,10 @@ public class GLIncStmtDef extends javax.swing.JPanel {
         mymodelex.removeElement(excludelist.getSelectedValue());
     }//GEN-LAST:event_btdeleteexcludeActionPerformed
 
+    private void btlookupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupActionPerformed
+        lookUpFrame();
+    }//GEN-LAST:event_btlookupActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel acctname;
@@ -460,20 +595,28 @@ public class GLIncStmtDef extends javax.swing.JPanel {
     private javax.swing.JButton btaddexclude;
     private javax.swing.JButton btdeleteassigned;
     private javax.swing.JButton btdeleteexclude;
+    private javax.swing.JButton btlookup;
     private javax.swing.JButton btupdate;
     private javax.swing.JComboBox ddacct;
     private javax.swing.JComboBox ddcategory;
     private javax.swing.JList excludelist;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JTextField tbdesc;
     private javax.swing.JTextField tbfrom;
+    private javax.swing.JTextField tbprofile;
+    private javax.swing.JTextField tbsequence;
     private javax.swing.JTextField tbto;
     // End of variables declaration//GEN-END:variables
 }
