@@ -647,9 +647,9 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
             mymodel.addRow(rowData);    
             }
         }
-        lblbegbal.setText(bsNumber(totbegbal));
-        lblactbal.setText(bsNumber(totactivity));
-        lblendbal.setText(bsNumber(totendbal));
+        lblbegbal.setText(currformatDouble(totbegbal));
+        lblactbal.setText(currformatDouble(totactivity));
+        lblendbal.setText(currformatDouble(totendbal));
         
         }          
         roData = null;
