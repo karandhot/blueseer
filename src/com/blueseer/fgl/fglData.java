@@ -5132,6 +5132,43 @@ public class fglData {
 
 }
 
+    public static String[] getGLAcctDescType(String acct) {
+  String[] r = new String[2];
+    try{
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+            res = st.executeQuery("select ac_desc, ac_type from ac_mstr where " +
+                     " ac_id = " + "'" + acct + "'" + ";");
+           while (res.next()) {
+                r[0] = res.getString("ac_desc");
+                r[1] = res.getString("ac_type");
+            }
+
+       }
+        catch (SQLException s){
+             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    return r;
+
+}
+
     public static ArrayList getGLCCList() {
   ArrayList myarray = new ArrayList();
     try{

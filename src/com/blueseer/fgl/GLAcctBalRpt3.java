@@ -191,19 +191,19 @@ public class GLAcctBalRpt3 extends javax.swing.JPanel {
                 if(f.exists()) {
                     f.delete();
                 }
-              String acctdesc = fglData.getGLAcctDesc(acct);
+              String[] acctarr = fglData.getGLAcctDescType(acct);  // ac_desc, ac_type
               DefaultCategoryDataset dataset = new DefaultCategoryDataset();  
               int i = 1;
               double doublevalue = 0;
                for (String value : values) {
                         doublevalue = bsParseDouble(value);
-                          // if (doublevalue < 0) {
-                          //     doublevalue *= -1;
-                         //  }
+                           if (doublevalue < 0 && acctarr[1].equals("I")) {
+                               doublevalue *= -1;
+                           }
                         dataset.setValue(doublevalue, acct, String.valueOf(i));
                         i++;
                     }  
-               JFreeChart chart = ChartFactory.createBarChart(acctdesc, getGlobalColumnTag("period"), getGlobalColumnTag("amount"), dataset, PlotOrientation.VERTICAL, true, true, false);
+               JFreeChart chart = ChartFactory.createBarChart(acctarr[0], getGlobalColumnTag("period"), getGlobalColumnTag("amount"), dataset, PlotOrientation.VERTICAL, true, true, false);
                   //  CategoryItemRenderer renderer = new ScrapChartView.CustomRenderer();
                     
                     Font font = new Font("Dialog", Font.PLAIN, 30);
