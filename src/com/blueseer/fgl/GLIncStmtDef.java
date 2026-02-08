@@ -32,6 +32,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
@@ -134,13 +135,13 @@ public class GLIncStmtDef extends javax.swing.JPanel {
     
     
     public void initvars(String[] vars) {
-        
+      /*  
         ddcategory.removeAllItems();
         ArrayList mylist = fglData.getGLICDefsList();
         for (int i = 0; i < mylist.size(); i++) {
             ddcategory.addItem(mylist.get(i));
         }
-    
+    */
         ddacct.removeAllItems();
         ArrayList accts = fglData.getGLAcctList();
         for (int i = 0; i < accts.size(); i++) {
@@ -575,9 +576,12 @@ public class GLIncStmtDef extends javax.swing.JPanel {
                             + "'" + ddcategory.getSelectedItem().toString() + "'" + ","
                             + "'" + tbdesc.getText() + "'" + ","
                             + "'" + tbsequence.getText() + "'" + ","
-                            + "'" + "" + "'" + "," // type unused
+                            + "'" + ddtype.getSelectedItem().toString() + "'" + "," // type unused
                             + "'" + tbfrom.getText() + "'" + ","
-                            + "'" + tbto.getText() + "'" + ")"
+                            + "'" + tbto.getText() + "'" + ","
+                            + "'" + BlueSeerUtils.boolToString(cbsummarize.isSelected()) + "'" + ","
+                            + "'" + BlueSeerUtils.boolToString(cbflipsign.isSelected()) + "'"         
+                            + ")"
                             + ";");
                     
                 } else {
@@ -585,7 +589,9 @@ public class GLIncStmtDef extends javax.swing.JPanel {
                             " glic_desc = " + "'" + tbdesc.getText() + "'" + "," +
                             " glic_seq = " + "'" + tbsequence.getText() + "'" + "," +        
                             " glic_start = " + "'" + tbfrom.getText() + "'" + "," +
-                            " glic_end = " + "'" + tbto.getText() + "'" + 
+                            " glic_end = " + "'" + tbto.getText() + "'" + "," +
+                            " glic_summarize = " + "'" + BlueSeerUtils.boolToString(cbsummarize.isSelected()) + "'" + "," +
+                            " glic_flipsign = " + "'" + BlueSeerUtils.boolToString(cbflipsign.isSelected()) + "'" +         
                             " where glic_name = " + "'" + ddcategory.getSelectedItem().toString() + "'" + 
                             " and glic_profile = " + "'" + tbprofile.getText() + "'" +
                             ";");
