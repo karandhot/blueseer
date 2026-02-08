@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.fgl;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import java.awt.Color;
@@ -71,12 +72,16 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatInt;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -88,6 +93,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 
 /**
  *
@@ -95,6 +101,10 @@ import javax.swing.JTabbedPane;
  */
 public class IncomeStatementRpt1 extends javax.swing.JPanel {
  
+    Object[][] rData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultcurrency = "";
+    
      MyTableModel mymodel = new IncomeStatementRpt1.MyTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("description"), 
                             getGlobalColumnTag("definition"),  
@@ -218,6 +228,69 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
        }
     }
     
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+          String type = "";
+          String[] key = null; 
+          /*
+          String key = "";
+          int row = 0;
+          String site = "";
+          */
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
+              this.key = key;
+          } 
+           
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            
+            switch(this.type) {
+                case "init":
+                    message = getInitialization();
+                    break;
+                    
+                case "run":
+                    if (this.key[0].equals("getGLICBrowseView")) {
+                      message = getGLICBrowseView();
+                    } 
+                    break;
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+            BlueSeerUtils.endTask(message);
+            if (this.type.equals("init")) {
+                    done_Initialization();
+            }
+            if (this.type.equals("run")) {
+                    if (this.key != null && this.key[0].equals("getGLICBrowseView")) {
+                      done_getGLICBrowseView();
+                    } 
+                    
+            } 
+           
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"", getMessageTag(1189)});
+       Task z = new Task(x, y);  
+       z.execute(); 
+       
+    }
+    
     
     public void initvars(String[] arg) {
         mymodel.setRowCount(0);
@@ -246,14 +319,107 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
         ArrayList startend = fglData.getGLCalForPeriod(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddper.getSelectedItem().toString()));
         datelabel.setText(startend.get(0).toString() + " To " + startend.get(1).toString());
         
-        ddsite.removeAllItems();
-        ArrayList sites = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (Object site : sites) {
-            ddsite.addItem(site);
-        }
+        executeTask(BlueSeerUtils.dbaction.init, null);
         
         
     }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+        
+    }    
+    
+    public void done_Initialization() {
+        
+        ddsite.removeAllItems();
+        
+        String defaultsite = "";
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultsite = s[1];  
+            }
+                      
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("currency")) {
+              defaultcurrency = s[1];  
+            }
+        }
+        
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+        
+        mymodel.setNumRows(0);
+           
+        mytable.setModel(mymodel);
+        mytable.getTableHeader().setReorderingAllowed(false);
+        mytable.getColumnModel().getColumn(2).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+       
+       
+    }
+
+    public String[] getGLICBrowseView() {
+       
+       DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getGLICBrowseView"});
+            list.add(new String[]{"param1", ddprofile.getSelectedItem().toString()});
+            list.add(new String[]{"param2", ddsite.getSelectedItem().toString()});
+            list.add(new String[]{"param3", ddyear.getSelectedItem().toString()});
+            list.add(new String[]{"param4", ddper.getSelectedItem().toString()});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServFIN"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getInvoiceBrowseView")};
+            }
+        } else {
+            jsonString = fglData.getGLICBrowseView(ddprofile.getSelectedItem().toString(), 
+                    ddsite.getSelectedItem().toString(), 
+                    ddyear.getSelectedItem().toString(), 
+                    ddper.getSelectedItem().toString());
+        }
+         rData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+   }
+    
+    public void done_getGLICBrowseView() {
+        double totsales = 0;
+        double totopen = 0;
+        mymodel.setNumRows(0);
+        mytable.setModel(mymodel);
+        if (rData != null) {
+            
+        
+            int i = 0;
+            if (rData.length > 0) {
+                for (Object[] rowData : rData) {
+                 rowData[2] = bsParseDouble(rowData[2].toString());    
+                 totsales = totsales + bsParseDouble(rowData[2].toString()); 
+                 mymodel.addRow(rowData);  
+                 i++;
+                } 
+            }
+          //  tbtotopen.setText(currformatDouble(totopen));
+          //  tbtotsales.setText(currformatDouble(totsales));
+        }
+        rData = null;
+    }   
+    
+    
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -279,6 +445,8 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
         ddsite = new javax.swing.JComboBox();
         jLabel4 = new javax.swing.JLabel();
         btprint = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        ddprofile = new javax.swing.JComboBox<>();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -334,6 +502,10 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
             }
         });
 
+        jLabel1.setText("Profile:");
+
+        ddprofile.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "default", "test" }));
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -344,22 +516,27 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
                     .addComponent(jLabel3)
                     .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(ddyear, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(38, 38, 38)
                         .addComponent(jLabel4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(btRun))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ddprofile, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btRun)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btprint)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(ddper, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(datelabel, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btprint)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 666, Short.MAX_VALUE)
+                        .addComponent(datelabel, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 744, Short.MAX_VALUE)))
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel7)
@@ -389,11 +566,14 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(ddyear, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel2))
+                                .addComponent(jLabel2)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel4)
+                                    .addComponent(jLabel1)
+                                    .addComponent(ddprofile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(btRun)
-                                .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel4)
                                 .addComponent(btprint)))
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(jPanel1Layout.createSequentialGroup()
@@ -419,9 +599,9 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-    
-try {
+    executeTask(BlueSeerUtils.dbaction.run, new String[]{"getGLICBrowseView",""});
+    /*
+       try {
             Connection con = null;
             if (ds != null) {
             con = ds.getConnection();
@@ -957,7 +1137,7 @@ try {
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
-       
+       */
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
@@ -987,8 +1167,10 @@ try {
     private javax.swing.JButton btprint;
     private javax.swing.JLabel datelabel;
     private javax.swing.JComboBox ddper;
+    private javax.swing.JComboBox<String> ddprofile;
     private javax.swing.JComboBox ddsite;
     private javax.swing.JComboBox ddyear;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;

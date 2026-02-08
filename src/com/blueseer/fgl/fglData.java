@@ -1640,6 +1640,93 @@ public class fglData {
         return lines;
     }
     
+    public static String getGLICBrowseView(String profile, String site, String year, String per) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                
+                int seqnbr = 0;
+                double seqsubtotal = 0;
+                double profiletotal = 0;
+                
+                res = st.executeQuery("select * from glic_def where " +
+                        " glic_profile = " + "'" + profile + "'" + " order by glic_seq ;" ) ;
+                 while (res.next()) {
+                     // create range of accounts and store in ArrayList
+                     
+                     ArrayList<String> accts = new ArrayList<>();
+                     if (! res.getString("glic_start").isBlank() && ! res.getString("glic_end").isBlank()) {
+                         ArrayList<String[]> rangelist = getGLAcctListRangeWCurrTypeDesc(res.getString("glic_start"), res.getString("glic_end"));
+                         for (String[] s : rangelist) {
+                             accts.add(s[0]);
+                         }
+                     }                     
+                     // add inclusive accts to arraylist
+                     ArrayList<String> includeaccts = fglData.getGLICAccts(profile, res.getString("glic_name"), "in");
+                       for (String ex : includeaccts) {
+                           if (! accts.contains(ex)) {
+                               accts.add(ex);
+                           }
+                       }
+                     // backout exclusive accts from arraylist
+                     ArrayList<String> excludeaccts = fglData.getGLICAccts(profile, res.getString("glic_name"), "out");
+                       for (String ex : excludeaccts) {
+                           if (accts.contains(ex)) {
+                               accts.remove(ex);
+                           }
+                       }
+                       
+                    // accumulate balances for this sequence in profile
+                    double acctval = 0;
+                    for (String acc : accts) {
+                        acctval = _getAcctBalance(acc, site, year, per, con );
+                        seqsubtotal += acctval;
+                        if (true) { // showdetail
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put(acc);
+                            rowArray.put(res.getString("glic_name"));
+                            rowArray.put(acctval);
+                            jsonarray.put(rowArray);
+                        }
+                    }
+                        if (true) {  // showsubtotal
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put(res.getString("glic_name"));
+                            rowArray.put("Sub Total: ");
+                            rowArray.put(seqsubtotal);
+                            jsonarray.put(rowArray);
+                        }
+                     
+                 } // while profile
+                 
+                 
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    
     public static String getInvoiceBrowseView(String shipperfrom, String shipperto, String custfrom, String custto, String fromdate, String todate) {
         JSONArray jsonarray = new JSONArray();
         try {
@@ -5169,7 +5256,7 @@ public class fglData {
 
 }
 
-    public static ArrayList getGLCCList() {
+        public static ArrayList getGLCCList() {
   ArrayList myarray = new ArrayList();
     try{
 
@@ -6352,6 +6439,46 @@ public class fglData {
 
 }
 
+    public static ArrayList getGLICAccts(String profile, String name, String type) {
+   ArrayList mylist = new ArrayList() ;
+
+    try{
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+            res = st.executeQuery("select glicd_acct from glic_accts where " +
+                    " glicd_name = " + "'" + name + "'" +
+                    " AND glicd_profile = " + "'" + profile + "'" +        
+                    " AND glicd_type = " + "'" + type + "'" + ";");
+                   while (res.next()) {
+                      mylist.add(res.getString(("glicd_acct")));
+                   }
+
+       }
+        catch (SQLException s){
+            MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    return mylist;
+
+}
+
+    
     public static Double getGLICBackOut(String acct, String site, String year, String per, Double begamt) {
           double myamt = 0.00;
 
@@ -6436,6 +6563,23 @@ public class fglData {
 
       }
 
+    public static Double _getAcctBalance(String acct, String site, String year, String per, Connection bscon) throws SQLException {
+            double r = 0.00;
+            Statement st = bscon.createStatement();  
+            ResultSet res = null;  
+            res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where " +
+                   " acb_acct = " + "'" + acct + "'" + 
+                    "AND acb_site = " + "'" + site + "'" +
+                    " AND acb_year = " + "'" + year + "'" + 
+                    " AND acb_per = " + "'" + per + "'" +
+                    ";");
+                   while (res.next()) {
+                      r = res.getDouble("sum"); 
+                   }
+          return r;
+      }
+
+    
     public static ArrayList getGLBalanceRange(int fromyear, int toyear, String site) {
           java.util.Date now = new java.util.Date();
           DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
