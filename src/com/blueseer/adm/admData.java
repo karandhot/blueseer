@@ -3375,6 +3375,15 @@ public class admData {
                                lines.add(s);
                             }
                         }
+                        if (sd.equals("icprofiles")) {
+                            res = st.executeQuery("select distinct glic_profile from glic_def ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "icprofiles";
+                               s[1] = res.getString("glic_profile");
+                               lines.add(s);
+                            }
+                        }
                         if (sd.equals("accounts")) {
                             res = st.executeQuery("select ac_id from ac_mstr order by ac_id ;");
                             while (res.next()) {

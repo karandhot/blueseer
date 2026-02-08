@@ -325,7 +325,7 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
     }
     
     public String[] getInitialization() {
-        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "icprofiles");
         if (initDataSets.isEmpty()) {
            return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
         } else {
@@ -346,6 +346,10 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
                       
             if (s[0].equals("sites")) {
               ddsite.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("icprofiles")) {
+              ddprofile.addItem(s[1]); 
             }
             
             if (s[0].equals("currency")) {
