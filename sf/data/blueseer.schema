@@ -1034,7 +1034,10 @@ CREATE TABLE IF NOT EXISTS `glic_def` (
   `glic_seq` int(4) NOT NULL DEFAULT '0',
   `glic_type` varchar(10) NOT NULL  DEFAULT '',
   `glic_start` varchar(10) NOT NULL  DEFAULT '',
-  `glic_end` varchar(10) NOT NULL  DEFAULT ''
+  `glic_end` varchar(10) NOT NULL  DEFAULT '',
+  `glic_summarize` tinyint(1) NOT NULL  DEFAULT '0',
+  `glic_flipsign` tinyint(1) NOT NULL  DEFAULT '0',
+  `glic_enabled` tinyint(1) NOT NULL  DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `in_mstr` (
   `in_item` varchar(36) NOT NULL,

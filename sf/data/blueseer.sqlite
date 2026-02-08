@@ -1224,7 +1224,10 @@ CREATE TABLE "glic_def" (
   "glic_seq" int(4) NOT NULL DEFAULT '0',
   "glic_type" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
   "glic_start" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
-  "glic_end" varchar(10) NOT NULL COLLATE NOCASE DEFAULT ''
+  "glic_end" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
+  "glic_summarize" tinyint(1) NOT NULL  DEFAULT '0',
+  "glic_flipsign" tinyint(1) NOT NULL  DEFAULT '0',
+  "glic_enabled" tinyint(1) NOT NULL  DEFAULT '0'
 );
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

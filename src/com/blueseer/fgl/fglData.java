@@ -6402,6 +6402,42 @@ public class fglData {
 
 }
 
+    public static ArrayList<String> getGLICCategoryList(String profile) {
+   ArrayList mylist = new ArrayList() ;
+
+    try{
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+            res = st.executeQuery("select glic_name from glic_def where glic_profile = " + "'" + profile + "'" + " order by glic_seq;");
+                   while (res.next()) {
+                      mylist.add(res.getString(("glic_name")));
+                   }
+
+       }
+        catch (SQLException s){
+            MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    return mylist;
+
+}
+
     public static ArrayList getGLICAccts(String name, String type) {
    ArrayList mylist = new ArrayList() ;
 
