@@ -1691,7 +1691,7 @@ public class fglData {
                     for (String acc : accts) {
                         acctval = _getAcctBalance(acc, site, year, per, con );
                         seqsubtotal += acctval;
-                        if (true) { // showdetail
+                        if (res.getString("glic_summarize").equals("0")) { // showdetail
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(acc);
                             rowArray.put(res.getString("glic_name"));
@@ -1699,7 +1699,7 @@ public class fglData {
                             jsonarray.put(rowArray);
                         }
                     }
-                        if (true) {  // showsubtotal
+                        if (res.getString("glic_summarize").equals("1")) {  // showsubtotal
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(res.getString("glic_name"));
                             rowArray.put("Sub Total: ");
