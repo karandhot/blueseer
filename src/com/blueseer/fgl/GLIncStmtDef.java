@@ -545,6 +545,7 @@ public class GLIncStmtDef extends javax.swing.JPanel {
         mymodelex.removeAllElements();
         mymodel.removeAllElements();
         String[] x = getGLICDefElements(tbprofile.getText(), ddcategory.getSelectedItem().toString());
+        if (x != null) {
         tbfrom.setText(x[5]);
         tbto.setText(x[6]);
         tbdesc.setText(x[2]);
@@ -552,7 +553,7 @@ public class GLIncStmtDef extends javax.swing.JPanel {
         ddtype.setSelectedItem(x[4]);
         cbsummarize.setSelected(BlueSeerUtils.ConvertStringToBool(x[7]));
         cbflipsign.setSelected(BlueSeerUtils.ConvertStringToBool(x[8]));
-        
+        }
         ArrayList mylistin = fglData.getGLICAccts(ddcategory.getSelectedItem().toString(),"in");
         for (int i = 0; i < mylistin.size(); i++) {
             mymodel.addElement(mylistin.get(i));
