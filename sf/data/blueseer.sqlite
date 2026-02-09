@@ -1229,6 +1229,12 @@ CREATE TABLE "glic_def" (
   "glic_flipsign" tinyint(1) NOT NULL  DEFAULT '0',
   "glic_enabled" tinyint(1) NOT NULL  DEFAULT '0'
 );
+CREATE TABLE "glic_meta" (
+  "glicm_id" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
+  "glicm_type" varchar(80) NOT NULL COLLATE NOCASE DEFAULT '',
+  "glicm_key" varchar(80) NOT NULL COLLATE NOCASE DEFAULT '',
+  "glicm_value" varchar(3000) NOT NULL COLLATE NOCASE DEFAULT ''
+);
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;

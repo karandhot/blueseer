@@ -62,6 +62,7 @@ import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToBoolean;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
@@ -1664,23 +1665,23 @@ public class fglData {
                  while (res.next()) {
                      // create range of accounts and store in ArrayList
                      
-                     ArrayList<String> accts = new ArrayList<>();
+                     ArrayList<String[]> accts = new ArrayList<>();
                      if (! res.getString("glic_start").isBlank() && ! res.getString("glic_end").isBlank()) {
                          ArrayList<String[]> rangelist = getGLAcctListRangeWCurrTypeDesc(res.getString("glic_start"), res.getString("glic_end"));
                          for (String[] s : rangelist) {
-                             accts.add(s[0]);
+                             accts.add(s);
                          }
                      }                     
                      // add inclusive accts to arraylist
-                     ArrayList<String> includeaccts = fglData.getGLICAccts(profile, res.getString("glic_name"), "in");
-                       for (String ex : includeaccts) {
+                     ArrayList<String[]> includeaccts = fglData.getGLICAccts(profile, res.getString("glic_name"), "in");
+                       for (String[] ex : includeaccts) {
                            if (! accts.contains(ex)) {
                                accts.add(ex);
                            }
                        }
                      // backout exclusive accts from arraylist
-                     ArrayList<String> excludeaccts = fglData.getGLICAccts(profile, res.getString("glic_name"), "out");
-                       for (String ex : excludeaccts) {
+                     ArrayList<String[]> excludeaccts = fglData.getGLICAccts(profile, res.getString("glic_name"), "out");
+                       for (String[] ex : excludeaccts) {
                            if (accts.contains(ex)) {
                                accts.remove(ex);
                            }
@@ -1688,13 +1689,16 @@ public class fglData {
                        
                     // accumulate balances for this sequence in profile
                     double acctval = 0;
-                    for (String acc : accts) {
-                        acctval = _getAcctBalance(acc, site, year, per, con );
+                    for (String[] acc : accts) {
+                        acctval = _getAcctBalance(acc[0], site, year, per, con );
+                        if (("glic_flipsign").equals("1")) {
+                           acctval = -1 * acctval; 
+                        }
                         seqsubtotal += acctval;
                         if (res.getString("glic_summarize").equals("0")) { // showdetail
                             JSONArray rowArray = new JSONArray(); 
-                            rowArray.put(acc);
-                            rowArray.put(res.getString("glic_name"));
+                            rowArray.put(acc[0]);
+                            rowArray.put(acc[1]);
                             rowArray.put(acctval);
                             jsonarray.put(rowArray);
                         }
@@ -1726,6 +1730,134 @@ public class fglData {
        return jsonarray.toString(); 
     }
     
+    public static boolean addUpdateGLICMeta(String id, String type, String key, String value) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "addUpdateGLICMeta"});
+            list.add(new String[]{"param1", id});
+            list.add(new String[]{"param2", type});
+            list.add(new String[]{"param3", key});
+            list.add(new String[]{"param4", value});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+        boolean x = false;
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+                int i = 0;
+                res = st.executeQuery("SELECT glicm_value FROM glic_meta where glicm_id = " + "'" + id + "'"
+                        + " AND glicm_type = " + "'" + type + "'"
+                        + " AND glicm_key = " + "'" + key + "'"     
+                        + " ;");
+                while (res.next()) {
+                    i++;
+                }
+
+                if (i == 0) {
+                    st.executeUpdate("insert into glic_meta (glicm_id, glicm_type, glicm_key, glicm_value) values ( "
+                            + "'" + id + "'" + ","
+                            + "'" + type + "'" + ","
+                            + "'" + key + "'" + ","
+                            + "'" + value + "'" + ")"
+                            + ";");
+                    x = true;
+                } else {
+                    st.executeUpdate("update glic_meta set "
+                            + " glicm_value = " + "'" + value + "'"
+                            + " where glicm_id = " + "'" + id + "'" + " and "
+                            + " glicm_type = " +  "'" + type + "'" + " and "
+                            + " glicm_key = " +  "'" + key + "'"  
+                            + ";");
+                    x = true;
+                }
+            } // if proceed
+            catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return x;
+    }
+
+    public static boolean deleteGLICMeta(String id, String type, String key, String value) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "deleteGLICMeta"});
+            list.add(new String[]{"param1", id});
+            list.add(new String[]{"param2", type});
+            list.add(new String[]{"param3", key});
+            list.add(new String[]{"param4", value});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+        boolean x = false;
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            
+            try {
+                if (value.isBlank()) {
+                 st.executeUpdate("delete from glic_meta "
+                            + " where glicm_id = " + "'" + id + "'" + " and "
+                            + " glicm_type = " +  "'" + type + "'" + " and "
+                            + " glicm_key = " +  "'" + key +  ";");   
+                } else {
+                st.executeUpdate("delete from glic_meta "
+                            + " where glicm_id = " + "'" + id + "'" + " and "
+                            + " glicm_type = " +  "'" + type + "'" + " and "
+                            + " glicm_key = " +  "'" + key + "'" + " and "        
+                            + " glicm_value = " +  "'" + value + "'"  
+                            + ";");
+                }
+               
+            } // if proceed
+            catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return x;
+    }
+
     
     public static String getInvoiceBrowseView(String shipperfrom, String shipperto, String custfrom, String custto, String fromdate, String todate) {
         JSONArray jsonarray = new JSONArray();
@@ -6475,8 +6607,8 @@ public class fglData {
 
 }
 
-    public static ArrayList getGLICAccts(String profile, String name, String type) {
-   ArrayList mylist = new ArrayList() ;
+    public static ArrayList<String[]> getGLICAccts(String profile, String name, String type) {
+   ArrayList<String[]> mylist = new ArrayList() ;
 
     try{
 
@@ -6490,12 +6622,12 @@ public class fglData {
             ResultSet res = null;
             try {
 
-            res = st.executeQuery("select glicd_acct from glic_accts where " +
+            res = st.executeQuery("select glicd_acct, ac_desc from glic_accts inner join ac_mstr on ac_id = glcid_acct where " +
                     " glicd_name = " + "'" + name + "'" +
                     " AND glicd_profile = " + "'" + profile + "'" +        
                     " AND glicd_type = " + "'" + type + "'" + ";");
                    while (res.next()) {
-                      mylist.add(res.getString(("glicd_acct")));
+                      mylist.add(new String[]{res.getString("glicd_acct"), res.getString("ac_desc")});  
                    }
 
        }

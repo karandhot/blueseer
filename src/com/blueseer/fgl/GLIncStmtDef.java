@@ -32,6 +32,8 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.fgl.fglData.addUpdateGLICMeta;
+import static com.blueseer.fgl.fglData.deleteGLICMeta;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
@@ -418,9 +420,19 @@ public class GLIncStmtDef extends javax.swing.JPanel {
 
         btaddcat.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/add.png"))); // NOI18N
         btaddcat.setToolTipText("Add Category");
+        btaddcat.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btaddcatActionPerformed(evt);
+            }
+        });
 
         btdeletecat.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/delete.png"))); // NOI18N
         btdeletecat.setToolTipText("Delete Category");
+        btdeletecat.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btdeletecatActionPerformed(evt);
+            }
+        });
 
         cbsummarize.setText("Summarize");
 
@@ -662,6 +674,32 @@ public class GLIncStmtDef extends javax.swing.JPanel {
     private void btlookupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupActionPerformed
         lookUpFrame();
     }//GEN-LAST:event_btlookupActionPerformed
+
+    private void btaddcatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddcatActionPerformed
+        if (! tbprofile.getText().isBlank()) {
+            String input = bsmf.MainFrame.input("Enter new category");
+            boolean proceed = true;
+            for (int i = 0; i < ddcategory.getItemCount(); i++) {
+                  if (ddcategory.getItemAt(i).toString().toLowerCase().equals(input.toLowerCase())) {
+                     proceed = false;
+                   }
+            }
+            if (proceed) {
+            addUpdateGLICMeta("glic", "category", tbprofile.getText(), input);
+            ddcategory.addItem(input);
+            ddcategory.requestFocus();
+            }
+        }
+    }//GEN-LAST:event_btaddcatActionPerformed
+
+    private void btdeletecatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeletecatActionPerformed
+        if (! tbprofile.getText().isBlank()) {
+            int i = ddcategory.getSelectedIndex();
+            String item = ddcategory.getSelectedItem().toString();
+            deleteGLICMeta("glic", "category", tbprofile.getText(), item);
+            ddcategory.remove(i);
+        }
+    }//GEN-LAST:event_btdeletecatActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
