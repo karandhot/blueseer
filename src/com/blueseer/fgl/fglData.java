@@ -1670,7 +1670,7 @@ public class fglData {
                          ArrayList<String[]> rangelist = getGLAcctListRangeWCurrTypeDesc(res.getString("glic_start"), res.getString("glic_end"));
                          for (String[] s : rangelist) {
                              accts.add(s);
-                         }
+                         } 
                      }                     
                      // add inclusive accts to arraylist
                      ArrayList<String[]> includeaccts = fglData.getGLICAccts(profile, res.getString("glic_name"), "in");
@@ -1691,7 +1691,7 @@ public class fglData {
                     double acctval = 0;
                     for (String[] acc : accts) {
                         acctval = _getAcctBalance(acc[0], site, year, per, con );
-                        if (("glic_flipsign").equals("1")) {
+                        if (res.getString("glic_flipsign").equals("1")) {
                            acctval = -1 * acctval; 
                         }
                         seqsubtotal += acctval;
@@ -6424,6 +6424,52 @@ public class fglData {
         MainFrame.bslog(e);
     }
     return mylist;
+
+}
+
+    public static String[] getGLICDefElements(String profile, String name) {
+    String[] r = null;
+    try{
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+            res = st.executeQuery("select * from glic_def where " +
+                    " glic_profile = " + "'" + profile + "'" + " AND " +
+                    " glic_name = " + "'" + name + "'" + ";");
+                   while (res.next()) {
+                     r = new String[]{
+                         res.getString("glic_profile"),
+                         res.getString("glic_name"),
+                         res.getString("glic_desc"),
+                         res.getString("glic_seq"),
+                         res.getString("glic_type"),
+                         res.getString("glic_start"),
+                         res.getString("glic_end"),
+                         res.getString("glic_summarize"),
+                         res.getString("glic_flipsign"),
+                         res.getString("glic_enabled")};
+                   }
+
+       }
+        catch (SQLException s){
+            MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+    } catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    return r;
 
 }
 

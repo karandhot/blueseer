@@ -34,6 +34,7 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import static com.blueseer.fgl.fglData.addUpdateGLICMeta;
 import static com.blueseer.fgl.fglData.deleteGLICMeta;
+import static com.blueseer.fgl.fglData.getGLICDefElements;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
@@ -543,8 +544,14 @@ public class GLIncStmtDef extends javax.swing.JPanel {
        if (! isLoad && ddcategory.getItemCount() > 0) {
         mymodelex.removeAllElements();
         mymodel.removeAllElements();
-        tbfrom.setText(fglData.getGLICDefsStart(ddcategory.getSelectedItem().toString()));
-        tbto.setText(fglData.getGLICDefsEnd(ddcategory.getSelectedItem().toString()));
+        String[] x = getGLICDefElements(tbprofile.getText(), ddcategory.getSelectedItem().toString());
+        tbfrom.setText(x[5]);
+        tbto.setText(x[6]);
+        tbdesc.setText(x[2]);
+        tbsequence.setText(x[3]);
+        ddtype.setSelectedItem(x[4]);
+        cbsummarize.setSelected(BlueSeerUtils.ConvertStringToBool(x[7]));
+        cbflipsign.setSelected(BlueSeerUtils.ConvertStringToBool(x[8]));
         
         ArrayList mylistin = fglData.getGLICAccts(ddcategory.getSelectedItem().toString(),"in");
         for (int i = 0; i < mylistin.size(); i++) {
