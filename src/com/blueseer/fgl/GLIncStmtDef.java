@@ -591,7 +591,7 @@ public class GLIncStmtDef extends javax.swing.JPanel {
                     i++;
                 }
                 if (i == 0) {
-                    st.executeUpdate("insert into glic_def (glic_profile, glic_name, glic_desc, glic_seq, glic_type, glic_start, glic_end) values ( "
+                    st.executeUpdate("insert into glic_def (glic_profile, glic_name, glic_desc, glic_seq, glic_type, glic_start, glic_end, glic_summarize, glic_flipsign) values ( "
                             + "'" + tbprofile.getText() + "'" + ","
                             + "'" + ddcategory.getSelectedItem().toString() + "'" + ","
                             + "'" + tbdesc.getText() + "'" + ","
