@@ -1705,7 +1705,7 @@ public class fglData {
                     }
                         if (res.getString("glic_summarize").equals("1")) {  // showsubtotal
                             JSONArray rowArray = new JSONArray(); 
-                            rowArray.put(res.getString("glic_name"));
+                            rowArray.put(res.getString("glic_desc"));
                             rowArray.put("Sub Total: ");
                             rowArray.put(seqsubtotal);
                             jsonarray.put(rowArray);
