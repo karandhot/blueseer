@@ -1213,7 +1213,9 @@ public class StatementReport extends javax.swing.JPanel {
         if (! isLoad) {
             if (ddperfrom.getItemCount() > 0 && ddperto.getItemCount() > 0 && ddyear.getItemCount() > 0) {
                 datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
-                datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1)); 
+                if (datelabels != null && datelabels.size() == 2) {
+                datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1));
+                } 
             }
         }
     }//GEN-LAST:event_ddperfromActionPerformed
@@ -1222,7 +1224,9 @@ public class StatementReport extends javax.swing.JPanel {
         if (! isLoad) {
             if (ddperfrom.getItemCount() > 0 && ddperto.getItemCount() > 0 && ddyear.getItemCount() > 0) {
                 datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
-                datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1)); 
+                if (datelabels != null && datelabels.size() == 2) {
+                datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1));
+                }
             }
         }
     }//GEN-LAST:event_ddpertoActionPerformed
@@ -1231,7 +1235,9 @@ public class StatementReport extends javax.swing.JPanel {
         if (! isLoad) {
             if (ddperfrom.getItemCount() > 0 && ddperto.getItemCount() > 0 && ddyear.getItemCount() > 0) {
                 datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
-                datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1)); 
+                if (datelabels != null && datelabels.size() == 2) {
+                datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1));
+                }
             }
         }
     }//GEN-LAST:event_ddyearActionPerformed
