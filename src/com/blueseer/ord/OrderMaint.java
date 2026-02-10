@@ -36,6 +36,8 @@ import com.blueseer.utl.OVData;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import static com.blueseer.adm.admData.addChangeLog;
 import com.blueseer.ctr.cusData;
 import com.blueseer.ctr.cusData.cm_mstr;
 import com.blueseer.ctr.cusData.cms_det;
@@ -82,6 +84,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
+import static com.blueseer.utl.BlueSeerUtils.callChangeDialog;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.checkLength;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
@@ -93,6 +96,8 @@ import static com.blueseer.utl.BlueSeerUtils.getGlobalLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
+import static com.blueseer.utl.BlueSeerUtils.logChange;
+import static com.blueseer.utl.BlueSeerUtils.logChangeArrays;
 import static com.blueseer.utl.BlueSeerUtils.luModel;
 import static com.blueseer.utl.BlueSeerUtils.luTable;
 import static com.blueseer.utl.BlueSeerUtils.lual;
@@ -1095,12 +1100,26 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         ArrayList<String> badlines = getBadLines(tbkey.getText());
         
         // now update
-        m = updateOrderTransaction(tbkey.getText(), badlines, createDetRecord(), createRecord(), createTaxRecord(), createTaxDetRecord(), createSOSRecord());
+        so_mstr _so = createRecord();
+        ArrayList<sod_det> _sodlist = createDetRecord();
+        m = updateOrderTransaction(tbkey.getText(), badlines, _sodlist, _so, createTaxRecord(), createTaxDetRecord(), createSOSRecord()); 
      
         //  update someta
         if (! tbtracking.getText().isBlank()) {
             addUpdateSOMeta(tbkey.getText(), "header", "trackingnumber", tbtracking.getText());
         }
+        
+        // change log check
+     if (m[0].equals("0")) {
+       ArrayList<admData.change_log> c = logChange(tbkey.getText(), this.getClass().getSimpleName(),so,_so);
+       if (! c.isEmpty()) {
+           addChangeLog(c);
+       } 
+       ArrayList<admData.change_log> c2 = logChangeArrays(tbkey.getText(), this.getClass().getSimpleName(),sodlist,_sodlist);
+       if (! c2.isEmpty()) {
+           addChangeLog(c2);
+       }
+     }
         
      return m;
      }
@@ -1167,7 +1186,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                  ponbr.getText(),
                  setDateDB(duedate.getDate()),
                  setDateDB(orddate.getDate()),
-                 setDateDB(new Date()),
+                 setDateDB(dccreate.getDate()),
                  bsmf.MainFrame.userid,
                  ddstatus.getSelectedItem().toString(),
                  allocationStatus,   // order level allocation status (global variable) set by createDetRecord 
@@ -1768,8 +1787,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         btinvoice.setEnabled(canInvoice);
               
-        so = null;
-        sodlist = null;
+       // so = null;
+       // sodlist = null;
         soslist = null;
         sodtaxlist = null;
         
@@ -2693,6 +2712,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         btcontacts = new javax.swing.JButton();
         btprintpick = new javax.swing.JButton();
         btcopy = new javax.swing.JButton();
+        btchangelog = new javax.swing.JButton();
         jPanelLines = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         btadditem = new javax.swing.JButton();
@@ -3429,6 +3449,13 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
+        btchangelog.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/change.png"))); // NOI18N
+        btchangelog.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btchangelogActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanelMainLayout = new javax.swing.GroupLayout(jPanelMain);
         jPanelMain.setLayout(jPanelMainLayout);
         jPanelMainLayout.setHorizontalGroup(
@@ -3464,6 +3491,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addComponent(btcontacts)
                         .addGap(4, 4, 4)
                         .addComponent(btcopy)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btchangelog)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lblstatus, javax.swing.GroupLayout.PREFERRED_SIZE, 291, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
@@ -3509,7 +3538,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addComponent(btlookup))
                     .addComponent(lblstatus, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btcontacts)
-                    .addComponent(btcopy))
+                    .addComponent(btcopy)
+                    .addComponent(btchangelog))
                 .addGap(8, 8, 8)
                 .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(lblcustname, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -4823,6 +4853,10 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
     }//GEN-LAST:event_btcopyActionPerformed
 
+    private void btchangelogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btchangelogActionPerformed
+        callChangeDialog(tbkey.getText(), this.getClass().getSimpleName());
+    }//GEN-LAST:event_btchangelogActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btLookUpBillTo;
     private javax.swing.JButton btLookUpItemDesc;
@@ -4831,6 +4865,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btadd;
     private javax.swing.JButton btaddattachment;
     private javax.swing.JButton btadditem;
+    private javax.swing.JButton btchangelog;
     private javax.swing.JButton btclear;
     private javax.swing.JButton btcontacts;
     private javax.swing.JButton btcopy;

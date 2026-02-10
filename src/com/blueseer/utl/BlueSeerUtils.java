@@ -2276,6 +2276,26 @@ public class BlueSeerUtils {
          return x;
      } 
      
+     public static <T> ArrayList<change_log> logChangeArrays(String key, String callclass, ArrayList<T> x, ArrayList<T> y) {
+        ArrayList<change_log> c = new ArrayList<change_log>();
+        ArrayList<change_log> cf = new ArrayList<change_log>();
+        for (int k = 0; k < x.size(); k++) {
+            if (x.size() == y.size()) {
+            c = logChange(key, callclass, x.get(k), y.get(k));
+            cf.addAll(c);
+            } else {
+                cf.add(clog(key, 
+                 x.getClass().getSimpleName(), 
+                 callclass, 
+                 "order line count difference", 
+                 String.valueOf(x.size()), 
+                 String.valueOf(y.size())));
+                break; // only pass through once if count difference...otherwise it reports same thing each instance of x line
+            }
+        }        
+        return cf;
+     }
+     
      public static <T> ArrayList<change_log> logChange(String key, String callclass, T x, T y)  {
         
         ArrayList<change_log> c = new ArrayList<change_log>();
