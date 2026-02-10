@@ -240,7 +240,7 @@ LabelFileMaint,,com.blueseer.lbl.LabelMaint,JMenuItem,lblm
 LabelFileBrowse,,com.blueseer.utl.ReportPanel,JMenuItem,lblfb
 ARTranRpt,,com.blueseer.far.ARTranRpt,JMenuItem,artr
 GLTranRpt1,,com.blueseer.fgl.GLTranRpt1,JMenuItem,glrp
-IncomeStatement1,,com.blueseer.fgl.IncomeStatementRpt1,JMenuItem,inst
+StatementReport,,com.blueseer.fgl.StatementReport,JMenuItem,strp
 GLIncStmtDef,,com.blueseer.fgl.GLIncStmtDef,JMenuItem,insd
 IncomeStatementYear,,com.blueseer.fgl.IncomeStatementRptYear,JMenuItem,insty
 ProdSchedRpt1,,com.blueseer.prd.ProdSchedRpt,JMenuItem,prscr

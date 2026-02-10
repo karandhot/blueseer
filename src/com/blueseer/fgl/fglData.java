@@ -1418,6 +1418,370 @@ public class fglData {
         return r;
     }
     
+    public static String[] addUpdateGLICTransaction(String x, ArrayList<glic_def> glic, ArrayList<glic_accts> accts) {
+        String[] m = new String[2];
+        Connection bscon = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            if (ds != null) {
+              bscon = ds.getConnection();
+            } else {
+              bscon = DriverManager.getConnection(url + db, user, pass);  
+            }
+            bscon.setAutoCommit(false);
+            
+            _deleteGLICAll(x, bscon); 
+            
+            for (glic_def z : glic) {
+                _addUpdateGLIC(z, bscon);
+            }
+            
+            for (glic_accts z : accts) {
+                _addUpdateGLICAcct(z, bscon);
+            }
+            
+            bscon.commit();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             try {
+                 bscon.rollback();
+                 m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordError};
+             } catch (SQLException rb) {
+                 MainFrame.bslog(rb);
+             }
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.setAutoCommit(true);
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+    
+    public static void _deleteGLICAll(String x, Connection con) throws SQLException { 
+        PreparedStatement ps = null; 
+        String sql = "delete from glic_def where glic_profile = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        sql = "delete from glic_accts where glicd_profile = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        ps.close();
+    }
+    
+
+    
+    public static int _addUpdateGLIC(glic_def x, Connection con) throws SQLException {
+        int rows = 0;
+        String sqlSelect = "SELECT * FROM  glic_def where glic_profile = ? and glic_name = ? ; "; // there should always be only 1 or 0 records 
+        String sqlInsert = "insert into glic_def (glic_profile, glic_name, glic_desc," +
+        " glic_seq, glic_type, glic_start, glic_end, glic_summarize," +
+        " glic_flipsign, glic_enabled, glic_suppzerodet, glic_suppzerosum ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?); "; 
+        String sqlUpdate = "update glic_def set glic_desc = ?," +
+        " glic_seq = ?, glic_type = ?, glic_start = ?, glic_end = ?, glic_summarize = ?," +
+        " glic_flipsign = ?, glic_enabled = ?, glic_suppzerodet = ?, glic_suppzerosum = ? " +
+        " where glic_profile = ? and glic_name = ? ";
+        PreparedStatement ps = con.prepareStatement(sqlSelect);
+        ps.setString(1, x.glic_profile());
+        ps.setString(2, x.glic_name());
+        PreparedStatement psi = con.prepareStatement(sqlInsert);
+        PreparedStatement psu = con.prepareStatement(sqlUpdate);
+        
+        ResultSet res = ps.executeQuery();
+        
+            
+            if (! res.isBeforeFirst()) {
+            psi.setString(1, x.glic_profile);
+            psi.setString(2, x.glic_name);
+            psi.setString(3, x.glic_desc);
+            psi.setInt(4, x.glic_seq);
+            psi.setString(5, x.glic_type);
+            psi.setString(6, x.glic_start);
+            psi.setString(7, x.glic_end);
+            psi.setString(8, x.glic_summarize);
+            psi.setString(9, x.glic_flipsign);
+            psi.setString(10, x.glic_enabled);
+            psi.setString(11, x.glic_suppzerodet);
+            psi.setString(12, x.glic_suppzerosum);
+             rows = psi.executeUpdate();
+            } else {
+            psu.setString(1, x.glic_desc);
+            psu.setInt(2, x.glic_seq);
+            psu.setString(3, x.glic_type);
+            psu.setString(4, x.glic_start);
+            psu.setString(5, x.glic_end);
+            psu.setString(6, x.glic_summarize);
+            psu.setString(7, x.glic_flipsign);
+            psu.setString(8, x.glic_enabled);
+            psu.setString(9, x.glic_suppzerodet);
+            psu.setString(10, x.glic_suppzerosum);
+            psu.setString(11, x.glic_profile);
+            psu.setString(12, x.glic_name);
+            rows = psu.executeUpdate();   
+            }
+          
+        return rows;
+    }
+   
+    public static int _addUpdateGLICAcct(glic_accts x, Connection con) throws SQLException {
+        int rows = 0;
+        String sqlSelect = "SELECT * FROM  glic_accts"; // there should always be only 1 or 0 records 
+        String sqlInsert = "insert into glic_accts (glicd_profile, glicd_name, glicd_acct," +
+        " glicd_seq, glicd_type ) "
+                        + " values (?,?,?,?,?); "; 
+        String sqlUpdate = "update glic_accts set glicd_acct = ?," +
+        " glicd_seq = ?, glicd_type = ? " +
+        " where glicd_profile = ? and glicd_name = ? ";
+        PreparedStatement ps = con.prepareStatement(sqlSelect);
+        PreparedStatement psi = con.prepareStatement(sqlInsert);
+        PreparedStatement psu = con.prepareStatement(sqlUpdate);
+        
+        ResultSet res = ps.executeQuery();
+        
+            
+            if (! res.isBeforeFirst()) {
+            psi.setString(1, x.glicd_profile);
+            psi.setString(2, x.glicd_name);
+            psi.setString(3, x.glicd_acct);
+            psi.setInt(4, x.glicd_seq);
+            psi.setString(5, x.glicd_type);
+             rows = psi.executeUpdate();
+            } else {
+            psu.setString(1, x.glicd_acct);
+            psu.setInt(2, x.glicd_seq);
+            psu.setString(3, x.glicd_type);
+            psu.setString(4, x.glicd_profile);
+            psu.setString(5, x.glicd_name);
+            rows = psu.executeUpdate();   
+            }
+          
+        return rows;
+    }
+   
+    
+    public static String[] deleteGLIC(String x) { 
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteGLIC"});
+            list.add(new String[]{"param1", x});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
+        String sql = "delete from glic_def where glic_profile = ?; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection())) {
+        PreparedStatement ps = con.prepareStatement(sql);     
+        ps.setString(1, x);
+        int rows = ps.executeUpdate();
+        
+        sql = "delete from glic_accts where glicd_profile = ?; ";
+        ps = con.prepareStatement(sql); 
+        ps.setString(1, x);
+        rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
+    public static glic_def getGLIC(String[] x) {
+        glic_def r = null;
+        String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getGLIC"});
+            list.add(new String[]{"param1",x[0]});
+            list.add(new String[]{"param2",x[1]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServFIN");
+                r = objectMapper.readValue(returnstring, glic_def.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new glic_def(m);
+                return r;
+            }
+        }
+        String sql = "select * from glic_def where glic_profile = ? and glic_name = ?;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+         ps.setString(1, x[0]);  
+         ps.setString(2, x[1]);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new glic_def(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new glic_def(m, 
+                                res.getString("glic_profile"),
+                                res.getString("glic_name"),
+                                res.getString("glic_desc"),
+                                res.getInt("glic_seq"),
+                                res.getString("glic_type"),
+                                res.getString("glic_start"),
+                                res.getString("glic_end"),
+                                res.getString("glic_summarize"),
+                                res.getString("glic_flipsign"),
+                                res.getString("glic_enabled"),
+                                res.getString("glic_suppzerodet"),
+                                res.getString("glic_suppzerosum")
+                        );
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new glic_def(m);
+        }
+        return r;
+    }
+    
+    public static ArrayList<glic_def> getGLIClist(String[] x) {
+        ArrayList<glic_def> list = new ArrayList<glic_def>();
+        glic_def r;
+        String[] m;
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> params = new ArrayList<String[]>();
+            params.add(new String[]{"id","getGLIClist"});
+            params.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(params, "", null, "dataServFIN");
+                list = objectMapper.readValue(returnstring, ArrayList.class); 
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new glic_def(m);
+               list.add(r);
+            }
+        }
+        String sql = "select * from glic_def where glic_profile = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+         ps.setString(1, x[0]); 
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new glic_def(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new glic_def(m, 
+                                res.getString("glic_profile"),
+                                res.getString("glic_name"),
+                                res.getString("glic_desc"),
+                                res.getInt("glic_seq"),
+                                res.getString("glic_type"),
+                                res.getString("glic_start"),
+                                res.getString("glic_end"),
+                                res.getString("glic_summarize"),
+                                res.getString("glic_flipsign"),
+                                res.getString("glic_enabled"),
+                                res.getString("glic_suppzerodet"),
+                                res.getString("glic_suppzerosum")
+                        );
+                        list.add(r); 
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new glic_def(m);
+               list.add(r);
+        }
+        return list;
+    }
+    
+    public static ArrayList<glic_accts> getGLICAcctlist(String[] x) {
+        ArrayList<glic_accts> list = new ArrayList<>();
+        glic_accts r;
+        String[] m;
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> params = new ArrayList<String[]>();
+            params.add(new String[]{"id","getGLICAcctlist"});
+            params.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(params, "", null, "dataServFIN");
+                list = objectMapper.readValue(returnstring, ArrayList.class); 
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new glic_accts(m);
+               list.add(r);
+            }
+        }
+        String sql = "select * from glic_accts where glicd_profile = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+         ps.setString(1, x[0]); 
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new glic_accts(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new glic_accts(m, 
+                                res.getString("glicd_profile"),
+                                res.getString("glicd_name"),
+                                res.getString("glicd_acct"),
+                                res.getInt("glicd_seq"),
+                                res.getString("glicd_type")
+                        );
+                        list.add(r); 
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new glic_accts(m);
+               list.add(r);
+        }
+        return list;
+    }
+    
     
     public static String[] addUpdatePAYCtrl(pay_ctrl x) {
         int rows = 0;
@@ -1641,7 +2005,7 @@ public class fglData {
         return lines;
     }
     
-    public static String getGLICBrowseView(String profile, String site, String year, String per) {
+    public static String getGLICBrowseView(String profile, String site, String year, String perfrom, String perto) {
         JSONArray jsonarray = new JSONArray();
         try {
             
@@ -1664,6 +2028,7 @@ public class fglData {
                         " glic_profile = " + "'" + profile + "'" + " order by glic_seq ;" ) ;
                  while (res.next()) {
                      // create range of accounts and store in ArrayList
+                     seqsubtotal = 0;
                      
                      ArrayList<String[]> accts = new ArrayList<>();
                      if (! res.getString("glic_start").isBlank() && ! res.getString("glic_end").isBlank()) {
@@ -1690,17 +2055,20 @@ public class fglData {
                     // accumulate balances for this sequence in profile
                     double acctval = 0;
                     for (String[] acc : accts) {
-                        acctval = _getAcctBalance(acc[0], site, year, per, con );
+                        acctval = _getAcctBalance(acc[0], site, year, perfrom, perto, con );
                         if (res.getString("glic_flipsign").equals("1")) {
                            acctval = -1 * acctval; 
                         }
                         seqsubtotal += acctval;
+                        profiletotal += acctval;
                         if (res.getString("glic_summarize").equals("0")) { // showdetail
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(acc[0]);
                             rowArray.put(acc[1]);
                             rowArray.put(acctval);
-                            jsonarray.put(rowArray);
+                            if (! res.getString("glic_suppzerodet").equals("1")) {
+                             jsonarray.put(rowArray);
+                            }
                         }
                     }
                         if (res.getString("glic_summarize").equals("1")) {  // showsubtotal
@@ -1708,12 +2076,19 @@ public class fglData {
                             rowArray.put(res.getString("glic_desc"));
                             rowArray.put("Sub Total: ");
                             rowArray.put(seqsubtotal);
-                            jsonarray.put(rowArray);
+                            if (! res.getString("glic_suppzerosum").equals("1")) {
+                             jsonarray.put(rowArray);
+                            }
                         }
                      
                  } // while profile
-                 
-                 
+                    /*
+                    JSONArray rowArray = new JSONArray(); 
+                    rowArray.put("NET TOTAL:");
+                    rowArray.put("NET TOTAL2:");
+                    rowArray.put(profiletotal);
+                    jsonarray.put(rowArray);
+                  */
            }
             catch (SQLException s){
                  MainFrame.bslog(s);
@@ -2176,9 +2551,9 @@ public class fglData {
                  
                  ACCTS:    for (String account[] : accounts) {
                   acctid = account[0];
-                  acctcurr = account[1];
+                  acctcurr = account[3];
                   accttype = account[2];
-                  acctdesc = account[3];
+                  acctdesc = account[1];
                   begbal = 0.00;
                   activity = 0.00;
                   endbal = 0.00;
@@ -2358,9 +2733,9 @@ public class fglData {
                   
                  ACCTS:    for (String[] account : accounts) {
                   acctid = account[0];
-                  acctcurr = account[1];
+                  acctcurr = account[3];
                   accttype = account[2];
-                  acctdesc = account[3];
+                  acctdesc = account[1];
                   begbal = 0.00;
                   activity = 0.00;
                   endbal = 0.00;
@@ -5257,9 +5632,9 @@ public class fglData {
            while (res.next()) {
                String[] x = new String[4];
                x[0] = res.getString("ac_id");
-               x[1] = res.getString("ac_cur");
+               x[1] = res.getString("ac_desc");
                x[2] = res.getString("ac_type");
-               x[3] = res.getString("ac_desc");
+               x[3] = res.getString("ac_cur");
                 myarray.add(x);
             }
 
@@ -6777,7 +7152,7 @@ public class fglData {
 
       }
 
-    public static Double _getAcctBalance(String acct, String site, String year, String per, Connection bscon) throws SQLException {
+    public static Double _getAcctBalance(String acct, String site, String year, String perfrom, String perto, Connection bscon) throws SQLException {
             double r = 0.00;
             Statement st = bscon.createStatement();  
             ResultSet res = null;  
@@ -6785,8 +7160,9 @@ public class fglData {
                    " acb_acct = " + "'" + acct + "'" + 
                     "AND acb_site = " + "'" + site + "'" +
                     " AND acb_year = " + "'" + year + "'" + 
-                    " AND acb_per = " + "'" + per + "'" +
-                    ";");
+                    " AND acb_per >= " + "'" + perfrom + "'" +
+                    " AND acb_per <= " + "'" + perto + "'" +
+                     ";");
                    while (res.next()) {
                       r = res.getDouble("sum"); 
                    }
@@ -7826,6 +8202,27 @@ return myarray;
         }
     }
     
+    public record glic_def(String[] m, String glic_profile, String glic_name, String glic_desc,
+        int glic_seq, String glic_type, String glic_start, String glic_end, String glic_summarize,
+        String glic_flipsign, String glic_enabled, String glic_suppzerodet, String glic_suppzerosum) {
+        public glic_def(String[] m) {
+            this(m, "", "", "", 0, "", "", "", "", "", "",
+                    "", "");
+        }
+    }
+    
+    public record glic_accts(String[] m, String glicd_profile, String glicd_name, String glicd_acct,
+        int glicd_seq, String glicd_type) {
+        public glic_accts(String[] m) {
+            this(m, "", "", "", 0, "");
+        }
+    }
+    
+    public record glic_meta(String[] m, String glicm_id, String glicm_type, String glicm_key, String glicm_value) {
+        public glic_meta(String[] m) {
+            this(m, "", "", "", "");
+        }
+    }
     public record pay_ctrl(String[] m, String payc_bank, String payc_labor_acct, String payc_labor_cc,
         String payc_salaried_acct, String payc_salaried_cc, String payc_payrolltax_acct, String payc_payrolltax_cc,
         String payc_withhold_acct, String payc_varchar ) {

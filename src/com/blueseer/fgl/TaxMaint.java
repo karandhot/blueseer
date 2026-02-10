@@ -968,7 +968,6 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
         for (int i : rows) {
             bsmf.MainFrame.show(getMessageTag(1031, String.valueOf(i)));
             ((javax.swing.table.DefaultTableModel) tabletax.getModel()).removeRow(i);
-            
         }
     }//GEN-LAST:event_btdeleteelementActionPerformed
 

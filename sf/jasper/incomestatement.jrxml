@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.9.0.final using JasperReports Library version 6.9.0-cb8f9004be492ccc537180b49c026951f4220bf3  -->
+<!-- Created with Jaspersoft Studio version 6.21.3.final using JasperReports Library version 6.21.3-4a3078d20785ebe464f18037d738d12fc98c13cf  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report name" pageWidth="595" pageHeight="842" columnWidth="567" leftMargin="14" rightMargin="14" topMargin="72" bottomMargin="72" uuid="5c23a538-9f5b-41f2-97dc-c7635f83e5fc">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<parameter name="ReportTitle" class="java.lang.String"/>
+	<parameter name="imagepath" class="java.lang.String"/>
+	<parameter name="daterange" class="java.lang.String"/>
+	<parameter name="yearandperiod" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -16,17 +20,43 @@
 	<field name="COLUMN_2" class="java.lang.Double">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
+	<variable name="totalsum" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{COLUMN_2}]]></variableExpression>
+	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
 		<band height="48" splitType="Stretch">
 			<textField>
-				<reportElement x="152" y="0" width="235" height="36" uuid="fce969de-9b30-479b-a8b5-7a767112e757"/>
+				<reportElement x="260" y="-40" width="235" height="36" uuid="fce969de-9b30-479b-a8b5-7a767112e757"/>
 				<textElement>
 					<font size="24"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{jasper.incomestatement.lbltitle}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{ReportTitle}]]></textFieldExpression>
+			</textField>
+			<image>
+				<reportElement x="20" y="-50" width="119" height="82" uuid="0c627786-edbe-4098-9ff2-8bf7ccb3c023">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<imageExpression><![CDATA[$P{imagepath}]]></imageExpression>
+			</image>
+			<textField>
+				<reportElement x="290" y="0" width="200" height="20" uuid="47c32b16-9bf0-478e-bac3-605df05de1b7"/>
+				<textFieldExpression><![CDATA[$P{daterange}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="177" y="0" width="113" height="20" uuid="971d1025-7258-4240-8fa2-8152487aca6a"/>
+				<text><![CDATA[Effective Date Range:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="180" y="20" width="111" height="20" uuid="66828435-d87c-4613-8afb-c656e404b19b"/>
+				<text><![CDATA[GL Year and Period:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="290" y="20" width="200" height="20" uuid="de9b3e44-4180-465f-a4f9-4f6b25290446"/>
+				<textFieldExpression><![CDATA[$P{yearandperiod}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -39,6 +69,14 @@
 			<textField evaluationTime="Report">
 				<reportElement x="507" y="0" width="38" height="20" uuid="e3347eeb-bbb7-42d5-b9db-d8de409a7ae5"/>
 				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="270" y="0" width="81" height="21" uuid="615a0a7a-9403-4eea-b260-b26098448c46"/>
+				<text><![CDATA[Report Date:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="354" y="0" width="81" height="21" uuid="0e4b7e7b-2876-417a-bfdd-b5d50d4b11c1"/>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("yyyy-MM-dd").format(new Date())]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -71,7 +109,7 @@
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="20" splitType="Stretch">
+		<band height="44" splitType="Stretch">
 			<textField>
 				<reportElement x="19" y="0" width="133" height="16" uuid="978682a3-4259-41c3-adae-54872ecfe90a"/>
 				<textFieldExpression><![CDATA[$F{COLUMN_0}]]></textFieldExpression>
@@ -85,6 +123,41 @@
 				<reportElement x="194" y="0" width="208" height="16" uuid="b202aa9b-07ef-4a26-9442-05e6aa8064a1"/>
 				<textFieldExpression><![CDATA[$F{COLUMN_1}]]></textFieldExpression>
 			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="434" y="24" width="96" height="16" uuid="210e98dd-e410-48bb-a8ec-0c2ecce92aad">
+					<printWhenExpression><![CDATA[$F{COLUMN_1}.toString().equals("Sub Total:")]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{COLUMN_2}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="432" y="22" width="110" height="1" uuid="702fb62c-712e-4539-bb22-75c3e496f296">
+					<printWhenExpression><![CDATA[$F{COLUMN_1}.toString().equals("Sub Total:")]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineStyle="Dashed"/>
+				</graphicElement>
+			</line>
 		</band>
 	</detail>
+	<lastPageFooter>
+		<band height="31">
+			<textField pattern="¤ #,##0.00">
+				<reportElement x="434" y="5" width="96" height="16" uuid="25c4aa16-9d76-4b22-9897-71661090db5c">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{totalsum}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="320" y="5" width="96" height="16" uuid="6c8fb81a-f6a7-4c71-a1ad-a28527c2559b">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Net Total:]]></text>
+			</staticText>
+		</band>
+	</lastPageFooter>
 </jasperReport>

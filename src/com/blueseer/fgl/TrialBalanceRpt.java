@@ -808,9 +808,9 @@ try {
                      
                   
                   acctid = account[0];
-                  acctcurr = account[1];
+                  acctcurr = account[3];
                   accttype = account[2];
-                  acctdesc = account[3];
+                  acctdesc = account[1];
                
                   
                   begbal = 0;

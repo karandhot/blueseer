@@ -151,8 +151,8 @@ LedgerReportsMenu,AcctBalSumYTD,4,JMenuItem,Account Balance YTD,,,,1,1
 LedgerReportsMenu,UnPostedTransRpt,5,JMenuItem,Unposted Transactions,,1,,1,1
 LedgerReportsMenu,GLTranRpt1,6,JMenuItem,Ledger Transaction Report,,1,,1,1
 LedgerReportsMenu,LedgerBalanceExport,7,JMenuItem,Ledger Balance View/Export,,,,1,1
-LedgerReportsMenu,IncomeStatement1,8,JMenuItem,Income Statement,,1,,1,1
-LedgerReportsMenu,IncomeStatementYear,9,JMenuItem,Income Statement(Year),,1,,1,1
+LedgerReportsMenu,StatementReport,8,JMenuItem,Statement Report Generator,,1,,1,1
+LedgerReportsMenu,IncomeStatementYear,9,JMenuItem,Income Statement (Year),,1,,1,1
 LedgerReportsMenu,ReconAccount,10,JMenuItem,Account Reconciliation,,1,,1,1
 LedgerReportsMenu,ChartMain,11,JMenuItem,Chart Reporting,,1,,1,1
 Finance,PostGLTrans,3,JMenuItem,Post Transactions,,,,1,1

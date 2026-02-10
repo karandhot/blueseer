@@ -82,6 +82,7 @@ import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import static com.blueseer.utl.OVData.getSiteLogo;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -99,13 +100,16 @@ import javax.swing.SwingWorker;
  *
  * @author vaughnte
  */
-public class IncomeStatementRpt1 extends javax.swing.JPanel {
+public class StatementReport extends javax.swing.JPanel {
  
     Object[][] rData;
     ArrayList<String[]> initDataSets = new ArrayList<>();
     String defaultcurrency = "";
+    String[] glCalDateArray;
+    ArrayList<String> datelabels = new ArrayList<>();
+    boolean isLoad = false;
     
-     MyTableModel mymodel = new IncomeStatementRpt1.MyTableModel(new Object[][]{},
+     MyTableModel mymodel = new StatementReport.MyTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("description"), 
                             getGlobalColumnTag("definition"),  
                             getGlobalColumnTag("amount")});
@@ -177,7 +181,7 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
     }
         
         
-    public IncomeStatementRpt1() {
+    public StatementReport() {
         initComponents();
         setLanguageTags(this);
     }
@@ -293,6 +297,8 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
     
     
     public void initvars(String[] arg) {
+        
+        isLoad = true;
         mymodel.setRowCount(0);
         
         mytable.getColumnModel().getColumn(2).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
@@ -302,22 +308,28 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
         DateFormat dfyear = new SimpleDateFormat("yyyy");
         DateFormat dfperiod = new SimpleDateFormat("M");
          
-          ddyear.removeAllItems();
+        ddyear.removeAllItems();
         for (int i = 1967 ; i < 2222; i++) {
             ddyear.addItem(bsFormatInt(i));
         }
         ddyear.setSelectedItem(bsNumber(dfyear.format(now)));
             
-        ddper.removeAllItems();
+        ddperfrom.removeAllItems();
         for (int i = 1 ; i <= 12; i++) {
-            ddper.addItem(bsFormatInt(i));
+            ddperfrom.addItem(bsFormatInt(i));
+        }
+        
+        ddperto.removeAllItems();
+        for (int i = 1 ; i <= 12; i++) {
+            ddperto.addItem(bsFormatInt(i));
         }
        
-         String[] fromdatearray = fglData.getGLCalForDate(now);
-        //int fromdateperiod = Integer.valueOf(fromdatearray.get(1).toString());
-        ddper.setSelectedItem(fromdatearray[1].toString());
-        ArrayList startend = fglData.getGLCalForPeriod(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddper.getSelectedItem().toString()));
-        datelabel.setText(startend.get(0).toString() + " To " + startend.get(1).toString());
+        glCalDateArray = fglData.getGLCalForDate(now);
+        ddperfrom.setSelectedItem(bsNumber(glCalDateArray[1]));
+        ddperto.setSelectedItem(bsNumber(glCalDateArray[1]));
+        datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
+        datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1));
+        isLoad = false;
         
         executeTask(BlueSeerUtils.dbaction.init, null);
         
@@ -337,7 +349,7 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
     public void done_Initialization() {
         
         ddsite.removeAllItems();
-        
+        ddprofile.removeAllItems();
         String defaultsite = "";
         for (String[] s : initDataSets) {
             if (s[0].equals("site")) {
@@ -380,7 +392,8 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
             list.add(new String[]{"param1", ddprofile.getSelectedItem().toString()});
             list.add(new String[]{"param2", ddsite.getSelectedItem().toString()});
             list.add(new String[]{"param3", ddyear.getSelectedItem().toString()});
-            list.add(new String[]{"param4", ddper.getSelectedItem().toString()});
+            list.add(new String[]{"param4", ddperfrom.getSelectedItem().toString()});
+            list.add(new String[]{"param5", ddperto.getSelectedItem().toString()});
             try {
                 jsonString = sendServerPost(list, "", null, "dataServFIN"); 
             } catch (IOException ex) {
@@ -391,7 +404,8 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
             jsonString = fglData.getGLICBrowseView(ddprofile.getSelectedItem().toString(), 
                     ddsite.getSelectedItem().toString(), 
                     ddyear.getSelectedItem().toString(), 
-                    ddper.getSelectedItem().toString());
+                    ddperfrom.getSelectedItem().toString(),
+                    ddperto.getSelectedItem().toString());
         }
          rData = jsonToData(jsonString);
        
@@ -415,8 +429,8 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
                  i++;
                 } 
             }
-          //  tbtotopen.setText(currformatDouble(totopen));
-          //  tbtotsales.setText(currformatDouble(totsales));
+          labelcount.setText(String.valueOf(i));
+          labeltotal.setText(currformatDouble(totsales));
         }
         rData = null;
     }   
@@ -441,16 +455,18 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
         mytable = new javax.swing.JTable();
         labelcount = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
-        labeldollar = new javax.swing.JLabel();
+        labeltotal = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         ddyear = new javax.swing.JComboBox();
-        ddper = new javax.swing.JComboBox();
+        ddperfrom = new javax.swing.JComboBox();
         datelabel = new javax.swing.JLabel();
         ddsite = new javax.swing.JComboBox();
         jLabel4 = new javax.swing.JLabel();
         btprint = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
         ddprofile = new javax.swing.JComboBox<>();
+        jLabel5 = new javax.swing.JLabel();
+        ddperto = new javax.swing.JComboBox<>();
+        jLabel6 = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -459,8 +475,8 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
         jLabel2.setText("Year");
         jLabel2.setName("lblyear"); // NOI18N
 
-        jLabel3.setText("Period");
-        jLabel3.setName("lblperiod"); // NOI18N
+        jLabel3.setText("From Period:");
+        jLabel3.setName("lblperfrom"); // NOI18N
 
         btRun.setText("Run");
         btRun.setName("btrun"); // NOI18N
@@ -486,14 +502,26 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
 
         labelcount.setText("0");
 
-        jLabel7.setText("Operating Profit Before Taxes:");
+        jLabel7.setText("Lines:");
         jLabel7.setName("lbloperating"); // NOI18N
 
-        labeldollar.setBackground(new java.awt.Color(195, 129, 129));
-        labeldollar.setText("0");
+        labeltotal.setBackground(new java.awt.Color(195, 129, 129));
+        labeltotal.setText("0");
 
-        jLabel9.setText("EBITDA");
+        jLabel9.setText("Total:");
         jLabel9.setName("lblebitda"); // NOI18N
+
+        ddyear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ddyearActionPerformed(evt);
+            }
+        });
+
+        ddperfrom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ddperfromActionPerformed(evt);
+            }
+        });
 
         jLabel4.setText("Site");
         jLabel4.setName("lblsite"); // NOI18N
@@ -506,41 +534,50 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
             }
         });
 
-        jLabel1.setText("Profile:");
+        jLabel5.setText("Profile:");
+        jLabel5.setName("lblprofile"); // NOI18N
 
-        ddprofile.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "default", "test" }));
+        ddperto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ddpertoActionPerformed(evt);
+            }
+        });
+
+        jLabel6.setText("To Period:");
+        jLabel6.setName("lblperto"); // NOI18N
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(17, 17, 17)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel2))
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(ddsite, 0, 86, Short.MAX_VALUE)
+                    .addComponent(ddyear, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(48, 48, 48)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(ddyear, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(38, 38, 38)
-                        .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ddprofile, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btRun)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btprint)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(ddper, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(datelabel, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 744, Short.MAX_VALUE)))
+                    .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(ddperfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ddperto, 0, 1, Short.MAX_VALUE))
+                .addGap(20, 20, 20)
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(ddprofile, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btRun)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btprint)
+                .addGap(28, 28, 28)
+                .addComponent(datelabel, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 277, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel7)
@@ -549,7 +586,7 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(labeldollar, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(labeltotal, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(36, 36, 36))
             .addComponent(jScrollPane1)
         );
@@ -559,35 +596,36 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel7)
-                            .addComponent(labelcount, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(labeldollar, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel9)))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addComponent(ddyear, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2)
+                            .addComponent(ddperfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel5))
+                        .addGap(7, 7, 7)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(ddyear, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel2)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel4)
-                                    .addComponent(jLabel1)
-                                    .addComponent(ddprofile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(btRun)
-                                .addComponent(btprint)))
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGap(6, 6, 6)
-                                .addComponent(datelabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel4))
                             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(ddper, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel3)))))
+                                .addComponent(ddperto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel6))))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel7)
+                                .addComponent(labelcount, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(datelabel, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(labeltotal, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel9)))
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(btRun)
+                        .addComponent(btprint)
+                        .addComponent(ddprofile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 548, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -603,7 +641,9 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
+    
     executeTask(BlueSeerUtils.dbaction.run, new String[]{"getGLICBrowseView",""});
+    
     /*
        try {
             Connection con = null;
@@ -1148,8 +1188,12 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
        try {
                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
                 HashMap hm = new HashMap();
+                String logo = getSiteLogo(ddsite.getSelectedItem().toString());
                 hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
-                //hm.put("imagepath", "images/avmlogo.png");
+                hm.put("imagepath", "images/" + logo);
+                hm.put("ReportTitle", ddprofile.getSelectedItem().toString());
+                hm.put("daterange", datelabel.getText());
+                hm.put("yearandperiod", ddyear.getSelectedItem().toString() + "   " + ddperfrom.getSelectedItem().toString() + " - " + ddperto.getSelectedItem().toString());
                // res = st.executeQuery("select shd_id, sh_cust, shd_po, shd_item, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, cm_city, cm_state, cm_zip, concat(cm_city, \" \", cm_state, \" \", cm_zip) as st_citystatezip, site_desc from ship_det inner join ship_mstr on sh_id = shd_id inner join cm_mstr on cm_code = sh_cust inner join site_mstr on site_site = sh_site where shd_id = '1848' ");
                // JRResultSetDataSource jasperReports = new JRResultSetDataSource(res);
                 File mytemplate = new File("jasper/incomestatement.jasper");
@@ -1165,25 +1209,54 @@ public class IncomeStatementRpt1 extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btprintActionPerformed
 
+    private void ddperfromActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddperfromActionPerformed
+        if (! isLoad) {
+            if (ddperfrom.getItemCount() > 0 && ddperto.getItemCount() > 0 && ddyear.getItemCount() > 0) {
+                datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
+                datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1)); 
+            }
+        }
+    }//GEN-LAST:event_ddperfromActionPerformed
+
+    private void ddpertoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddpertoActionPerformed
+        if (! isLoad) {
+            if (ddperfrom.getItemCount() > 0 && ddperto.getItemCount() > 0 && ddyear.getItemCount() > 0) {
+                datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
+                datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1)); 
+            }
+        }
+    }//GEN-LAST:event_ddpertoActionPerformed
+
+    private void ddyearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddyearActionPerformed
+        if (! isLoad) {
+            if (ddperfrom.getItemCount() > 0 && ddperto.getItemCount() > 0 && ddyear.getItemCount() > 0) {
+                datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
+                datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1)); 
+            }
+        }
+    }//GEN-LAST:event_ddyearActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btRun;
     private javax.swing.JButton btprint;
     private javax.swing.JLabel datelabel;
-    private javax.swing.JComboBox ddper;
+    private javax.swing.JComboBox ddperfrom;
+    private javax.swing.JComboBox<String> ddperto;
     private javax.swing.JComboBox<String> ddprofile;
     private javax.swing.JComboBox ddsite;
     private javax.swing.JComboBox ddyear;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel labelcount;
-    private javax.swing.JLabel labeldollar;
+    private javax.swing.JLabel labeltotal;
     private javax.swing.JTable mytable;
     // End of variables declaration//GEN-END:variables
 }
