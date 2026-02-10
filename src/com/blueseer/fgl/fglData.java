@@ -2047,8 +2047,10 @@ public class fglData {
                      // backout exclusive accts from arraylist
                      ArrayList<String[]> excludeaccts = fglData.getGLICAccts(profile, res.getString("glic_name"), "out");
                        for (String[] ex : excludeaccts) {
-                           if (accts.contains(ex)) {
-                               accts.remove(ex);
+                           for (int k = 0; k < accts.size(); k++) {
+                               if (accts.get(k)[0].equals(ex[0])) {
+                                   accts.remove(k);
+                               }
                            }
                        }
                        
