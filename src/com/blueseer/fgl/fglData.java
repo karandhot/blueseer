@@ -2073,20 +2073,22 @@ public class fglData {
                         }
                         seqsubtotal += acctval;
                         profiletotal += acctval;
-                        if (res.getString("glic_summarize").equals("0")) { // showdetail
+                        if (res.getString("glic_type").equals("detail")) { // showdetail
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(acc[0]);
                             rowArray.put(acc[1]);
                             rowArray.put(acctval);
-                            if (! res.getString("glic_suppzerodet").equals("1")) {
-                             jsonarray.put(rowArray);
+                            if (acctval == 0 && res.getString("glic_suppzerodet").equals("1")) {
+                              continue;
+                            } else {
+                              jsonarray.put(rowArray);  
                             }
                         }
                     }
                         if (res.getString("glic_summarize").equals("1")) {  // showsubtotal
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(res.getString("glic_desc"));
-                            rowArray.put("Sub Total: ");
+                            rowArray.put("Sub Total:");
                             rowArray.put(seqsubtotal);
                             if (! res.getString("glic_suppzerosum").equals("1")) {
                              jsonarray.put(rowArray);
