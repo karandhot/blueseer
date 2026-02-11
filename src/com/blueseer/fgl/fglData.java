@@ -7225,12 +7225,12 @@ public class fglData {
             double r = 0.00;
             Statement st = bscon.createStatement();  
             ResultSet res = null;  
+            int prioryear = bsParseInt(year) - 1;
             res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where " +
                    " acb_acct = " + "'" + acct + "'" + 
                     "AND acb_site = " + "'" + site + "'" +
-                    " AND ( acb_year < " + "'" + year + "'" + 
-                    " or  ( acb_year = " + "'" + year + "'" + 
-                    " AND acb_per < " + "'" + perfrom + "'" + " ))" +
+                    " AND (( acb_year = " + "'" + year + "'" + " AND acb_per < " + "'" + perfrom + "'" + " ) OR " +
+                        "  ( acb_year <= " + "'" + prioryear + "'" + " )) " +  
                      ";");
                    while (res.next()) {
                       r = res.getDouble("sum"); 
