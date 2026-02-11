@@ -328,9 +328,10 @@ public class StatementReport extends javax.swing.JPanel {
         glCalDateArray = fglData.getGLCalForDate(now);
         ddperfrom.setSelectedItem(bsNumber(glCalDateArray[1]));
         ddperto.setSelectedItem(bsNumber(glCalDateArray[1]));
+        datelabels.clear();
         datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
         datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1));
-        datelabels.clear();
+        
         isLoad = false;
         
         executeTask(BlueSeerUtils.dbaction.init, null);
@@ -1219,6 +1220,7 @@ public class StatementReport extends javax.swing.JPanel {
     private void ddperfromActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddperfromActionPerformed
         if (! isLoad) {
             if (ddperfrom.getItemCount() > 0 && ddperto.getItemCount() > 0 && ddyear.getItemCount() > 0) {
+                datelabels.clear();
                 datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
                 if (datelabels != null && datelabels.size() == 2) {
                 datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1));
@@ -1231,6 +1233,7 @@ public class StatementReport extends javax.swing.JPanel {
     private void ddpertoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddpertoActionPerformed
         if (! isLoad) {
             if (ddperfrom.getItemCount() > 0 && ddperto.getItemCount() > 0 && ddyear.getItemCount() > 0) {
+                datelabels.clear();
                 datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
                 if (datelabels != null && datelabels.size() == 2) {
                 datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1));
@@ -1243,6 +1246,7 @@ public class StatementReport extends javax.swing.JPanel {
     private void ddyearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddyearActionPerformed
         if (! isLoad) {
             if (ddperfrom.getItemCount() > 0 && ddperto.getItemCount() > 0 && ddyear.getItemCount() > 0) {
+                datelabels.clear();
                 datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
                 if (datelabels != null && datelabels.size() == 2) {
                 datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1));

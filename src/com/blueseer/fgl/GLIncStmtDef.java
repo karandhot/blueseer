@@ -1541,9 +1541,9 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
         cbsuppzerodet.setSelected(BlueSeerUtils.ConvertStringToBool(tablereport.getValueAt(row, 9).toString()));
         cbsuppzerosum.setSelected(BlueSeerUtils.ConvertStringToBool(tablereport.getValueAt(row, 10).toString()));
         cbpassive.setSelected(BlueSeerUtils.ConvertStringToBool(tablereport.getValueAt(row, 11).toString()));
-        cbbegbal.setSelected(BlueSeerUtils.ConvertStringToBool(tablereport.getValueAt(row, 11).toString()));
-        cbactivity.setSelected(BlueSeerUtils.ConvertStringToBool(tablereport.getValueAt(row, 11).toString()));
-        cbendbal.setSelected(BlueSeerUtils.ConvertStringToBool(tablereport.getValueAt(row, 11).toString()));
+        cbbegbal.setSelected(BlueSeerUtils.ConvertStringToBool(tablereport.getValueAt(row, 12).toString()));
+        cbactivity.setSelected(BlueSeerUtils.ConvertStringToBool(tablereport.getValueAt(row, 13).toString()));
+        cbendbal.setSelected(BlueSeerUtils.ConvertStringToBool(tablereport.getValueAt(row, 14).toString()));
         mymodel.removeAllElements();
         mymodelex.removeAllElements();
         ArrayList<String> lm = acctsIn.get(ddcategory.getSelectedItem().toString());
