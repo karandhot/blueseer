@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.3.final using JasperReports Library version 6.21.3-4a3078d20785ebe464f18037d738d12fc98c13cf  -->
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report name" pageWidth="595" pageHeight="842" columnWidth="567" leftMargin="14" rightMargin="14" topMargin="72" bottomMargin="72" uuid="5c23a538-9f5b-41f2-97dc-c7635f83e5fc">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
@@ -8,6 +8,7 @@
 	<parameter name="imagepath" class="java.lang.String"/>
 	<parameter name="daterange" class="java.lang.String"/>
 	<parameter name="yearandperiod" class="java.lang.String"/>
+	<parameter name="activetotal" class="java.lang.Double"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -42,21 +43,13 @@
 				</reportElement>
 				<imageExpression><![CDATA[$P{imagepath}]]></imageExpression>
 			</image>
-			<textField>
-				<reportElement x="290" y="0" width="200" height="20" uuid="47c32b16-9bf0-478e-bac3-605df05de1b7"/>
-				<textFieldExpression><![CDATA[$P{daterange}]]></textFieldExpression>
-			</textField>
 			<staticText>
-				<reportElement x="177" y="0" width="113" height="20" uuid="971d1025-7258-4240-8fa2-8152487aca6a"/>
-				<text><![CDATA[Effective Date Range:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="180" y="20" width="111" height="20" uuid="66828435-d87c-4613-8afb-c656e404b19b"/>
-				<text><![CDATA[GL Year and Period:]]></text>
+				<reportElement x="300" y="10" width="81" height="21" uuid="615a0a7a-9403-4eea-b260-b26098448c46"/>
+				<text><![CDATA[Report Date:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="290" y="20" width="200" height="20" uuid="de9b3e44-4180-465f-a4f9-4f6b25290446"/>
-				<textFieldExpression><![CDATA[$P{yearandperiod}]]></textFieldExpression>
+				<reportElement x="390" y="10" width="81" height="21" uuid="0e4b7e7b-2876-417a-bfdd-b5d50d4b11c1"/>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("yyyy-MM-dd").format(new Date())]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -71,13 +64,21 @@
 				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="270" y="0" width="81" height="21" uuid="615a0a7a-9403-4eea-b260-b26098448c46"/>
-				<text><![CDATA[Report Date:]]></text>
+				<reportElement x="17" y="2" width="80" height="20" uuid="66828435-d87c-4613-8afb-c656e404b19b"/>
+				<text><![CDATA[Year / Period:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="354" y="0" width="81" height="21" uuid="0e4b7e7b-2876-417a-bfdd-b5d50d4b11c1"/>
-				<textFieldExpression><![CDATA[new SimpleDateFormat("yyyy-MM-dd").format(new Date())]]></textFieldExpression>
+				<reportElement x="94" y="2" width="90" height="20" uuid="de9b3e44-4180-465f-a4f9-4f6b25290446"/>
+				<textFieldExpression><![CDATA[$P{yearandperiod}]]></textFieldExpression>
 			</textField>
+			<textField>
+				<reportElement x="296" y="0" width="138" height="20" uuid="47c32b16-9bf0-478e-bac3-605df05de1b7"/>
+				<textFieldExpression><![CDATA[$P{daterange}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="183" y="0" width="113" height="20" uuid="971d1025-7258-4240-8fa2-8152487aca6a"/>
+				<text><![CDATA[Effective Date Range:]]></text>
+			</staticText>
 		</band>
 	</pageHeader>
 	<columnHeader>
@@ -109,46 +110,61 @@
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="44" splitType="Stretch">
-			<textField>
-				<reportElement x="19" y="0" width="133" height="16" uuid="978682a3-4259-41c3-adae-54872ecfe90a"/>
+		<band height="35" splitType="Stretch">
+			<textField textAdjust="StretchHeight">
+				<reportElement stretchType="ElementGroupHeight" x="19" y="0" width="133" height="16" uuid="978682a3-4259-41c3-adae-54872ecfe90a">
+					<printWhenExpression><![CDATA[! $F{COLUMN_1}.toString().equals("Category Total:")]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<paragraph lineSpacingSize="1.0"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{COLUMN_0}]]></textFieldExpression>
 			</textField>
-			<textField pattern="¤ #,##0.00">
-				<reportElement x="432" y="0" width="96" height="16" uuid="32390b0a-6d5c-4fae-8870-72c4e68a5f90"/>
+			<textField pattern="$#,##0.00;($#,##0.00)">
+				<reportElement x="432" y="0" width="96" height="16" uuid="32390b0a-6d5c-4fae-8870-72c4e68a5f90">
+					<printWhenExpression><![CDATA[! $F{COLUMN_1}.toString().equals("Category Total:") && 
+! $F{COLUMN_1}.toString().equals("Heading")]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA[$F{COLUMN_2}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="194" y="0" width="208" height="16" uuid="b202aa9b-07ef-4a26-9442-05e6aa8064a1"/>
+				<reportElement x="194" y="0" width="208" height="16" uuid="b202aa9b-07ef-4a26-9442-05e6aa8064a1">
+					<printWhenExpression><![CDATA[! $F{COLUMN_1}.toString().equals("Category Total:") &&
+! $F{COLUMN_1}.toString().equals("Heading")]]></printWhenExpression>
+				</reportElement>
 				<textFieldExpression><![CDATA[$F{COLUMN_1}]]></textFieldExpression>
 			</textField>
-			<textField pattern="¤ #,##0.00">
-				<reportElement x="434" y="24" width="96" height="16" uuid="210e98dd-e410-48bb-a8ec-0c2ecce92aad">
-					<printWhenExpression><![CDATA[$F{COLUMN_1}.toString().equals("Sub Total:")]]></printWhenExpression>
+			<textField pattern="$#,##0.00;($#,##0.00)">
+				<reportElement x="433" y="16" width="96" height="16" uuid="210e98dd-e410-48bb-a8ec-0c2ecce92aad">
+					<printWhenExpression><![CDATA[$F{COLUMN_1}.toString().equals("Category Total:")]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA[$F{COLUMN_2}]]></textFieldExpression>
 			</textField>
-			<line>
-				<reportElement x="432" y="22" width="110" height="1" uuid="702fb62c-712e-4539-bb22-75c3e496f296">
-					<printWhenExpression><![CDATA[$F{COLUMN_1}.toString().equals("Sub Total:")]]></printWhenExpression>
+			<textField>
+				<reportElement x="194" y="15" width="208" height="16" uuid="8d554666-6eed-44f0-bcf9-71bd5275e296">
+					<printWhenExpression><![CDATA[$F{COLUMN_1}.toString().equals("Category Total:")]]></printWhenExpression>
 				</reportElement>
-				<graphicElement>
-					<pen lineStyle="Dashed"/>
-				</graphicElement>
-			</line>
+				<textFieldExpression><![CDATA[$F{COLUMN_1}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="20" y="15" width="133" height="16" uuid="bae46e68-574e-4de0-8e3e-10af37542018">
+					<printWhenExpression><![CDATA[$F{COLUMN_1}.toString().equals("Category Total:")]]></printWhenExpression>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{COLUMN_0}]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 	<lastPageFooter>
 		<band height="31">
-			<textField pattern="¤ #,##0.00">
+			<textField pattern="$#,##0.00;($#,##0.00)">
 				<reportElement x="434" y="5" width="96" height="16" uuid="25c4aa16-9d76-4b22-9897-71661090db5c">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$V{totalsum}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{activetotal}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="320" y="5" width="96" height="16" uuid="6c8fb81a-f6a7-4c71-a1ad-a28527c2559b">
