@@ -353,7 +353,13 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="cbpassive" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Component id="cbbegbal" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="cbactivity" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="cbendbal" min="-2" max="-2" attributes="0"/>
+                          </Group>
                           <Component id="cbsuppzerosum" min="-2" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="ddcategory" min="-2" pref="222" max="-2" attributes="0"/>
@@ -366,15 +372,22 @@
                           <Component id="tbto" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
                           <Component id="tbdesc" alignment="0" min="-2" pref="265" max="-2" attributes="0"/>
                           <Component id="tbsequence" alignment="0" min="-2" pref="74" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="cbsummarize" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="cbflipsign" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="cbenabled" min="-2" max="-2" attributes="0"/>
-                          </Group>
                           <Component id="ddtype" alignment="0" min="-2" pref="128" max="-2" attributes="0"/>
-                          <Component id="cbsuppzerodet" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="cbsummarize" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="cbflipsign" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Component id="cbsuppzerodet" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="cbpassive" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbenabled" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -424,11 +437,18 @@
                           <Component id="cbenabled" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="cbsuppzerodet" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="cbsuppzerodet" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbpassive" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="cbsuppzerosum" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="cbpassive" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="cbbegbal" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbactivity" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbendbal" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
                       <EmptySpace pref="12" max="32767" attributes="0"/>
                   </Group>
               </Group>
@@ -552,6 +572,21 @@
             <Component class="javax.swing.JCheckBox" name="cbpassive">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Passive"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="cbbegbal">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="BegBal"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="cbactivity">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Activity"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="cbendbal">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="EndBal"/>
               </Properties>
             </Component>
           </SubComponents>

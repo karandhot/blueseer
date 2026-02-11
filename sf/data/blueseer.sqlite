@@ -1230,7 +1230,10 @@ CREATE TABLE "glic_def" (
   "glic_enabled" tinyint(1) NOT NULL  DEFAULT '0',
   "glic_suppzerodet" tinyint(1) NOT NULL  DEFAULT '0',
   "glic_suppzerosum" tinyint(1) NOT NULL  DEFAULT '0',
-  "glic_passive" tinyint(1) NOT NULL  DEFAULT '0'
+  "glic_passive" tinyint(1) NOT NULL  DEFAULT '0',
+  "glic_begbal" tinyint(1) NOT NULL  DEFAULT '0',
+  "glic_activity" tinyint(1) NOT NULL  DEFAULT '1',
+  "glic_endbal" tinyint(1) NOT NULL  DEFAULT '0'
 );
 CREATE TABLE "glic_meta" (
   "glicm_id" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
