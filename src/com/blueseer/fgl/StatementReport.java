@@ -329,6 +329,7 @@ public class StatementReport extends javax.swing.JPanel {
         ddperto.setSelectedItem(bsNumber(glCalDateArray[1]));
         datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
         datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1));
+        datelabels.clear();
         isLoad = false;
         
         executeTask(BlueSeerUtils.dbaction.init, null);
@@ -1215,6 +1216,7 @@ public class StatementReport extends javax.swing.JPanel {
                 datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
                 if (datelabels != null && datelabels.size() == 2) {
                 datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1));
+                datelabels.clear();
                 } 
             }
         }
@@ -1226,6 +1228,7 @@ public class StatementReport extends javax.swing.JPanel {
                 datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
                 if (datelabels != null && datelabels.size() == 2) {
                 datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1));
+                datelabels.clear();
                 }
             }
         }
@@ -1237,6 +1240,7 @@ public class StatementReport extends javax.swing.JPanel {
                 datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
                 if (datelabels != null && datelabels.size() == 2) {
                 datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1));
+                datelabels.clear();
                 }
             }
         }

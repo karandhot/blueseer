@@ -1548,14 +1548,17 @@ public class fglData {
    
     public static int _addUpdateGLICAcct(glic_accts x, Connection con) throws SQLException {
         int rows = 0;
-        String sqlSelect = "SELECT * FROM  glic_accts"; // there should always be only 1 or 0 records 
+        String sqlSelect = "SELECT * FROM  glic_accts where glicd_profile = ? and glicd_name = ? and glicd_acct = ? ;"; 
         String sqlInsert = "insert into glic_accts (glicd_profile, glicd_name, glicd_acct," +
         " glicd_seq, glicd_type ) "
                         + " values (?,?,?,?,?); "; 
-        String sqlUpdate = "update glic_accts set glicd_acct = ?," +
+        String sqlUpdate = "update glic_accts set " +
         " glicd_seq = ?, glicd_type = ? " +
-        " where glicd_profile = ? and glicd_name = ? ";
+        " where glicd_profile = ? and glicd_name = ? and glicd_acct = ? ";
         PreparedStatement ps = con.prepareStatement(sqlSelect);
+        ps.setString(1, x.glicd_profile());
+        ps.setString(2, x.glicd_name());
+        ps.setString(3, x.glicd_acct());
         PreparedStatement psi = con.prepareStatement(sqlInsert);
         PreparedStatement psu = con.prepareStatement(sqlUpdate);
         
@@ -1570,11 +1573,11 @@ public class fglData {
             psi.setString(5, x.glicd_type);
              rows = psi.executeUpdate();
             } else {
-            psu.setString(1, x.glicd_acct);
-            psu.setInt(2, x.glicd_seq);
-            psu.setString(3, x.glicd_type);
-            psu.setString(4, x.glicd_profile);
-            psu.setString(5, x.glicd_name);
+            psu.setInt(1, x.glicd_seq);
+            psu.setString(2, x.glicd_type);
+            psu.setString(3, x.glicd_profile);
+            psu.setString(4, x.glicd_name);
+            psu.setString(5, x.glicd_acct);
             rows = psu.executeUpdate();   
             }
           
@@ -2040,7 +2043,14 @@ public class fglData {
                      // add inclusive accts to arraylist
                      ArrayList<String[]> includeaccts = fglData.getGLICAccts(profile, res.getString("glic_name"), "in");
                        for (String[] ex : includeaccts) {
-                           if (! accts.contains(ex)) {
+                           boolean hasIt = false;
+                           for (int k = 0; k < accts.size(); k++) {
+                               if (accts.get(k)[0].equals(ex[0])) {
+                                   hasIt = true;
+                                   break;
+                               }
+                           }
+                           if (! hasIt) {
                                accts.add(ex);
                            }
                        }

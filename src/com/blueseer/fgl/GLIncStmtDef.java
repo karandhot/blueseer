@@ -686,7 +686,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
         };
         luTable.addMouseListener(luml);
       
-        callDialog(getClassLabelTag("lblid", this.getClass().getSimpleName()), getClassLabelTag("lbldesc", this.getClass().getSimpleName())); 
+        callDialog("profile", "category"); 
         
     }
 
@@ -1456,6 +1456,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
           }
           acctsIn.put(ddcategory.getSelectedItem().toString(), lm);
           
+          lm.clear();
           lm = new ArrayList<>();
           for (int j = 0; j < mymodelex.getSize(); j++) {
               lm.add(mymodelex.getElementAt(j).toString());
