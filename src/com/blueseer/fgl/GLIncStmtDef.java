@@ -937,7 +937,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
             }
         });
 
-        ddtype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "detail", "summation", "spacer", "dashline" }));
+        ddtype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "header", "detail", "summation", "spacer", "dashline" }));
 
         cbsummarize.setText("Summarize");
 

@@ -2064,6 +2064,14 @@ public class fglData {
                            }
                        }
                        
+                    // do header tag
+                    if (res.getString("glic_type").equals("header")) {  // showsubtotal
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put(res.getString("glic_desc"));
+                            rowArray.put("Heading");
+                            rowArray.put(-99999999);
+                            jsonarray.put(rowArray);
+                        }
                     // accumulate balances for this sequence in profile
                     double acctval = 0;
                     for (String[] acc : accts) {
@@ -2075,7 +2083,7 @@ public class fglData {
                         profiletotal += acctval;
                         if (res.getString("glic_type").equals("detail")) { // showdetail
                             JSONArray rowArray = new JSONArray(); 
-                            rowArray.put(acc[0]);
+                            rowArray.put("     " + acc[0]);
                             rowArray.put(acc[1]);
                             rowArray.put(acctval);
                             if (acctval == 0 && res.getString("glic_suppzerodet").equals("1")) {
