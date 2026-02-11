@@ -1219,38 +1219,36 @@ public class StatementReport extends javax.swing.JPanel {
 
     private void ddperfromActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddperfromActionPerformed
         if (! isLoad) {
+            if (! isLoad) {
             if (ddperfrom.getItemCount() > 0 && ddperto.getItemCount() > 0 && ddyear.getItemCount() > 0) {
-                datelabels.clear();
-                datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
-                if (datelabels != null && datelabels.size() == 2) {
-                datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1));
-                datelabels.clear();
-                } 
+                ArrayList<String> list = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
+                if (list != null && list.size() == 2) {
+                datelabel.setText(list.get(0) + " To " + list.get(1));
+                }
             }
+        }
         }
     }//GEN-LAST:event_ddperfromActionPerformed
 
     private void ddpertoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddpertoActionPerformed
         if (! isLoad) {
+            if (! isLoad) {
             if (ddperfrom.getItemCount() > 0 && ddperto.getItemCount() > 0 && ddyear.getItemCount() > 0) {
-                datelabels.clear();
-                datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
-                if (datelabels != null && datelabels.size() == 2) {
-                datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1));
-                datelabels.clear();
+                ArrayList<String> list = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
+                if (list != null && list.size() == 2) {
+                datelabel.setText(list.get(0) + " To " + list.get(1));
                 }
             }
+        }
         }
     }//GEN-LAST:event_ddpertoActionPerformed
 
     private void ddyearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddyearActionPerformed
         if (! isLoad) {
             if (ddperfrom.getItemCount() > 0 && ddperto.getItemCount() > 0 && ddyear.getItemCount() > 0) {
-                datelabels.clear();
-                datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
-                if (datelabels != null && datelabels.size() == 2) {
-                datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1));
-                datelabels.clear();
+                ArrayList<String> list = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
+                if (list != null && list.size() == 2) {
+                datelabel.setText(list.get(0) + " To " + list.get(1));
                 }
             }
         }

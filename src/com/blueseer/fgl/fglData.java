@@ -7228,7 +7228,8 @@ public class fglData {
             int prioryear = bsParseInt(year) - 1;
             res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where " +
                    " acb_acct = " + "'" + acct + "'" + 
-                    "AND acb_site = " + "'" + site + "'" +
+                    " AND acb_site = " + "'" + site + "'" +
+                    " AND acb_per <> '0' " +
                     " AND (( acb_year = " + "'" + year + "'" + " AND acb_per < " + "'" + perfrom + "'" + " ) OR " +
                         "  ( acb_year <= " + "'" + prioryear + "'" + " )) " +  
                      ";");
@@ -7244,7 +7245,8 @@ public class fglData {
             ResultSet res = null;  
             res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where " +
                    " acb_acct = " + "'" + acct + "'" + 
-                    "AND acb_site = " + "'" + site + "'" +
+                    " AND acb_site = " + "'" + site + "'" +
+                    " AND acb_per <> '0' " +
                     " AND ( acb_year < " + "'" + year + "'" + 
                     " or  ( acb_year = " + "'" + year + "'" + 
                     " AND acb_per <= " + "'" + perto + "'" + " ))" +
