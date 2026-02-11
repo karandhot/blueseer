@@ -427,8 +427,9 @@ public class StatementReport extends javax.swing.JPanel {
                 for (Object[] rowData : rData) {
                  rowData[2] = bsParseDouble(rowData[2].toString());    
                  totsales = totsales + bsParseDouble(rowData[2].toString()); 
-                 if (rowData[0].equals("ACTIVE TOTAL")) {
+                 if (rowData[0].equals("ACTIVE CATEGORIES")) {
                      activetotal = bsParseDouble(rowData[2].toString());
+                     continue;
                  }
                  mymodel.addRow(rowData);  
                  i++;
