@@ -2130,7 +2130,7 @@ public class fglData {
                         if (res.getString("glic_summarize").equals("1")) {  // showsubtotal
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(res.getString("glic_desc"));
-                            rowArray.put("accumulated accounts total");
+                            rowArray.put("Category Total:");
                             rowArray.put(seqsubtotal);
                             if (! res.getString("glic_suppzerosum").equals("1")) {
                              jsonarray.put(rowArray);
