@@ -522,7 +522,8 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                 glic.glic_flipsign(),
                 glic.glic_enabled(),
                 glic.glic_suppzerodet(),
-                glic.glic_suppzerosum()});
+                glic.glic_suppzerosum(),
+                glic.glic_passive()});
             tablereport.setModel(tablemodel);
         }
         
