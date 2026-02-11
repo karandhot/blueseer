@@ -48,6 +48,7 @@ import static com.blueseer.fgl.fglData.getFINInit;
 import static com.blueseer.fgl.fglData.getGLAcctListRangeWCurrTypeDesc;
 import static com.blueseer.fgl.fglData.getGLCalForPeriod;
 import static com.blueseer.fgl.fglData.getGLCalForPeriodRange;
+import static com.blueseer.fgl.fglData.getGLCalYearsRange;
 import static com.blueseer.fgl.fglData.getGLCtrl;
 import static com.blueseer.fgl.fglData.updateAcctMstr;
 import com.blueseer.utl.BlueSeerUtils;
@@ -420,7 +421,12 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       response.getWriter().print(ArrayListStringToJson(getGLCalForPeriodRange(bsParseInt(request.getHeader("param1")), bsParseInt(request.getHeader("param2")),
               bsParseInt(request.getHeader("param3")))));
       break;
-    }         
+    }  
+    
+    case "getGLCalYearsRange" : {
+      response.getWriter().print(ArrayListStringToJson(getGLCalYearsRange()));
+      break;
+    } 
     
     default:
         response.getWriter().print("no switch case exists in dataServFIN for id: " + id);

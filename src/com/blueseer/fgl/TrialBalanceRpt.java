@@ -67,6 +67,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.fgl.fglData.getGLCalYearsRange;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatInt;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
@@ -410,8 +411,9 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
         
         
         ddyear.removeAllItems();
-        for (int i = 1967 ; i < 2222; i++) {
-            ddyear.addItem(bsFormatInt(i));
+        ArrayList<String> years = getGLCalYearsRange();
+        for (String y : years) {
+            ddyear.addItem(y);
         }
         ddyear.setSelectedItem(bsNumber(dfyear.format(now)));
             

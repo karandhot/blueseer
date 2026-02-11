@@ -6075,6 +6075,53 @@ public class fglData {
 
 }
 
+    public static ArrayList<String> getGLCalYearsRange() {
+          // function returns a 2 items from the gl_cal record where a period matches
+          // first element = startdate
+          // second element = enddate
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getGLCalYearsRange"});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+    ArrayList<String> myarray = new ArrayList();
+    try{
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+            res = st.executeQuery("select distinct glc_year from gl_cal order by glc_year; " + ";");
+           while (res.next()) {
+                  myarray.add(res.getString("glc_year"));
+           } 
+       }
+        catch (SQLException s){
+             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    return myarray;
+
+}
+
     public static ArrayList getGLControl() {
               // function returns a 2 items from the gl_cal record where a period matches
               // first element = startdate

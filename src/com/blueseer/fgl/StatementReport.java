@@ -73,6 +73,7 @@ import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.adm.admData;
+import static com.blueseer.fgl.fglData.getGLCalYearsRange;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatInt;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
@@ -106,7 +107,6 @@ public class StatementReport extends javax.swing.JPanel {
     ArrayList<String[]> initDataSets = new ArrayList<>();
     String defaultcurrency = "";
     String[] glCalDateArray;
-    ArrayList<String> datelabels = new ArrayList<>();
     boolean isLoad = false;
     double activetotal = 0;
     
@@ -310,8 +310,9 @@ public class StatementReport extends javax.swing.JPanel {
         DateFormat dfperiod = new SimpleDateFormat("M");
          
         ddyear.removeAllItems();
-        for (int i = 1967 ; i < 2222; i++) {
-            ddyear.addItem(bsFormatInt(i));
+        ArrayList<String> years = getGLCalYearsRange();
+        for (String y : years) {
+            ddyear.addItem(y);
         }
         ddyear.setSelectedItem(bsNumber(dfyear.format(now)));
             
@@ -328,9 +329,8 @@ public class StatementReport extends javax.swing.JPanel {
         glCalDateArray = fglData.getGLCalForDate(now);
         ddperfrom.setSelectedItem(bsNumber(glCalDateArray[1]));
         ddperto.setSelectedItem(bsNumber(glCalDateArray[1]));
-        datelabels.clear();
-        datelabels = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
-        datelabel.setText(datelabels.get(0) + " To " + datelabels.get(1));
+        ArrayList<String> list = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
+        datelabel.setText(list.get(0) + " To " + list.get(1));
         
         isLoad = false;
         
@@ -1222,6 +1222,10 @@ public class StatementReport extends javax.swing.JPanel {
             if (! isLoad) {
             if (ddperfrom.getItemCount() > 0 && ddperto.getItemCount() > 0 && ddyear.getItemCount() > 0) {
                 ArrayList<String> list = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
+                if (list.isEmpty()) {
+                    bsmf.MainFrame.show("No GL Calendar records for that year and period range");
+                    return;
+                }
                 if (list != null && list.size() == 2) {
                 datelabel.setText(list.get(0) + " To " + list.get(1));
                 }
@@ -1235,6 +1239,10 @@ public class StatementReport extends javax.swing.JPanel {
             if (! isLoad) {
             if (ddperfrom.getItemCount() > 0 && ddperto.getItemCount() > 0 && ddyear.getItemCount() > 0) {
                 ArrayList<String> list = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
+                if (list.isEmpty()) {
+                    bsmf.MainFrame.show("No GL Calendar records for that year and period range");
+                    return;
+                }
                 if (list != null && list.size() == 2) {
                 datelabel.setText(list.get(0) + " To " + list.get(1));
                 }
@@ -1247,6 +1255,10 @@ public class StatementReport extends javax.swing.JPanel {
         if (! isLoad) {
             if (ddperfrom.getItemCount() > 0 && ddperto.getItemCount() > 0 && ddyear.getItemCount() > 0) {
                 ArrayList<String> list = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
+                if (list.isEmpty()) {
+                    bsmf.MainFrame.show("No GL Calendar records for that year and period range");
+                    return;
+                }
                 if (list != null && list.size() == 2) {
                 datelabel.setText(list.get(0) + " To " + list.get(1));
                 }

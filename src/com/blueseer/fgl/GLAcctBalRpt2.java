@@ -70,6 +70,7 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.adm.admData;
 import static com.blueseer.fgl.fglData.getAccountBalanceDetView;
+import static com.blueseer.fgl.fglData.getGLCalYearsRange;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatInt;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
@@ -512,8 +513,9 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
         ddyear.removeAllItems();
         ddperiod.removeAllItems();
         ddendperiod.removeAllItems();
-         for (int i = 1967 ; i < 2222; i++) {
-            ddyear.addItem(bsFormatInt(i));
+        ArrayList<String> years = getGLCalYearsRange();
+        for (String y : years) {
+            ddyear.addItem(y);
         }
         ddyear.setSelectedItem(bsNumber(dfyear.format(now)));
         for (int i = 1 ; i <= 12; i++) {
