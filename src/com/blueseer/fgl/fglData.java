@@ -1499,10 +1499,10 @@ public class fglData {
         String sqlInsert = "insert into glic_def (glic_profile, glic_name, glic_desc," +
         " glic_seq, glic_type, glic_start, glic_end, glic_summarize," +
         " glic_flipsign, glic_enabled, glic_suppzerodet, glic_suppzerosum, glic_passive ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
         String sqlUpdate = "update glic_def set glic_desc = ?," +
         " glic_seq = ?, glic_type = ?, glic_start = ?, glic_end = ?, glic_summarize = ?," +
-        " glic_flipsign = ?, glic_enabled = ?, glic_suppzerodet = ?, glic_suppzerosum = ?, glic_passive " +
+        " glic_flipsign = ?, glic_enabled = ?, glic_suppzerodet = ?, glic_suppzerosum = ?, glic_passive = ? " +
         " where glic_profile = ? and glic_name = ? ";
         PreparedStatement ps = con.prepareStatement(sqlSelect);
         ps.setString(1, x.glic_profile());
