@@ -108,6 +108,7 @@ public class StatementReport extends javax.swing.JPanel {
     String[] glCalDateArray;
     ArrayList<String> datelabels = new ArrayList<>();
     boolean isLoad = false;
+    double activetotal = 0;
     
      MyTableModel mymodel = new StatementReport.MyTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("description"), 
@@ -426,6 +427,9 @@ public class StatementReport extends javax.swing.JPanel {
                 for (Object[] rowData : rData) {
                  rowData[2] = bsParseDouble(rowData[2].toString());    
                  totsales = totsales + bsParseDouble(rowData[2].toString()); 
+                 if (rowData[0].equals("ACTIVE TOTAL")) {
+                     activetotal = bsParseDouble(rowData[2].toString());
+                 }
                  mymodel.addRow(rowData);  
                  i++;
                 } 
@@ -1194,7 +1198,8 @@ public class StatementReport extends javax.swing.JPanel {
                 hm.put("imagepath", "images/" + logo);
                 hm.put("ReportTitle", ddprofile.getSelectedItem().toString());
                 hm.put("daterange", datelabel.getText());
-                hm.put("yearandperiod", ddyear.getSelectedItem().toString() + "   " + ddperfrom.getSelectedItem().toString() + " - " + ddperto.getSelectedItem().toString());
+                hm.put("yearandperiod", ddyear.getSelectedItem().toString() + "   " + ddperfrom.getSelectedItem().toString() + " to " + ddperto.getSelectedItem().toString());
+                hm.put("activetotal", activetotal);
                // res = st.executeQuery("select shd_id, sh_cust, shd_po, shd_item, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, cm_city, cm_state, cm_zip, concat(cm_city, \" \", cm_state, \" \", cm_zip) as st_citystatezip, site_desc from ship_det inner join ship_mstr on sh_id = shd_id inner join cm_mstr on cm_code = sh_cust inner join site_mstr on site_site = sh_site where shd_id = '1848' ");
                // JRResultSetDataSource jasperReports = new JRResultSetDataSource(res);
                 File mytemplate = new File("jasper/incomestatement.jasper");

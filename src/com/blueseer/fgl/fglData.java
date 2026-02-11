@@ -2110,13 +2110,13 @@ public class fglData {
                         }
                      
                  } // while profile
-                    /*
+                    
                     JSONArray rowArray = new JSONArray(); 
+                    rowArray.put("ACTIVE CATEGORIES");
                     rowArray.put("NET TOTAL:");
-                    rowArray.put("NET TOTAL2:");
                     rowArray.put(profiletotal);
                     jsonarray.put(rowArray);
-                  */
+                  
            }
             catch (SQLException s){
                  MainFrame.bslog(s);
