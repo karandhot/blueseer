@@ -2613,7 +2613,7 @@ public class fglData {
                   postact = 0.00;
                  // calculate all acb_mstr records for whole periods < fromdateperiod
                     // begbal += OVData.getGLAcctBalSummCC(account.toString(), String.valueOf(fromdateyear), String.valueOf(p));
-                  if (accttype.equals("L") || accttype.equals("A")) {
+                  if (accttype.equals("L") || accttype.equals("A") || accttype.equals("O")) {
                       //must be type balance sheet
                   res = st.executeQuery("select acb_cc, sum(acb_amt) as sum from acb_mstr where " +
                         " acb_acct = " + "'" + acctid + "'" + " AND " +
@@ -2795,7 +2795,7 @@ public class fglData {
                   postact = 0.00;
                  // calculate all acb_mstr records for whole periods < fromdateperiod
                     // begbal += OVData.getGLAcctBalSummCC(account.toString(), String.valueOf(fromdateyear), String.valueOf(p));
-                  if (accttype.equals("L") || accttype.equals("A")) {
+                  if (accttype.equals("L") || accttype.equals("A") || accttype.equals("O")) {
                       //must be type balance sheet
                   res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where " +
                         " acb_acct = " + "'" + acctid + "'" + " AND " +
