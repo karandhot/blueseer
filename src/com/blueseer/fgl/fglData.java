@@ -2613,7 +2613,7 @@ public class fglData {
                   postact = 0.00;
                  // calculate all acb_mstr records for whole periods < fromdateperiod
                     // begbal += OVData.getGLAcctBalSummCC(account.toString(), String.valueOf(fromdateyear), String.valueOf(p));
-                  if (accttype.equals("L") || accttype.equals("A") || accttype.equals("O")) {
+                  if (accttype.equals("L") || accttype.equals("A")) {
                       //must be type balance sheet
                   res = st.executeQuery("select acb_cc, sum(acb_amt) as sum from acb_mstr where " +
                         " acb_acct = " + "'" + acctid + "'" + " AND " +
@@ -2681,6 +2681,72 @@ public class fglData {
                           }
                         }
                        }
+                  } else if (accttype.equals("O")) {
+                     res = st.executeQuery("select acb_cc, sum(acb_amt) as sum from acb_mstr where " +
+                        " acb_acct = " + "'" + acctid + "'" + " AND " +
+                        " acb_site = " + "'" + site + "'" + " AND " +
+                        " acb_year = " + "'" + year + "'" + " AND " +        
+                        " acb_per < " + "'" + period + "'" +      
+                        " group by acb_cc ;"); 
+                      while (res.next()) {
+                          endbal = 0.00;
+                          activity = 0.00;
+                          begbal = 0.00;
+                          begbal = res.getDouble("sum");
+                          
+                           // now activity
+                                      res2= st2.executeQuery("select sum(acb_amt) as sum from acb_mstr where acb_year = " +
+                                "'" + String.valueOf(year) + "'" + 
+                                " AND acb_per <> '0' " +         
+                                " AND acb_per >= " +
+                                "'" + String.valueOf(period) + "'" +
+                                " AND acb_per <= " +
+                                "'" + String.valueOf(endperiod) + "'" +  
+                                " AND acb_acct = " +
+                                "'" + acctid + "'" +
+                                " AND acb_cc = " +
+                                "'" + res.getString("acb_cc") + "'" +
+                                " AND acb_site = " + "'" + site + "'" +
+                                " ;");
+                               while (res2.next()) {
+                                  activity = res2.getDouble(("sum"));
+                               }
+                            
+                               begbal = begbal - activity;
+                               endbal = begbal + activity;
+                        if (in_accttype.equals(getGlobalProgTag("all"))) {   
+                           JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("detail");
+                            rowArray.put(acctid);
+                            rowArray.put(res.getString("acb_cc"));
+                            rowArray.put(accttype);
+                            rowArray.put(acctcurr);
+                            rowArray.put(acctdesc);
+                            rowArray.put(site);
+                            rowArray.put(currformatDouble(begbal));
+                            rowArray.put(currformatDouble(activity)); 
+                            rowArray.put(currformatDouble(endbal));
+                            jsonarray.put(rowArray); 
+                            
+                        } else {
+                          if (accttype.equals(in_accttype))  {
+                            JSONArray rowArray = new JSONArray();
+                            rowArray.put("detail");
+                            rowArray.put(acctid);
+                            rowArray.put(res.getString("acb_cc"));
+                            rowArray.put(accttype);
+                            rowArray.put(acctcurr);
+                            rowArray.put(acctdesc);
+                            rowArray.put(site);
+                            rowArray.put(currformatDouble(begbal));
+                            rowArray.put(currformatDouble(activity)); 
+                            rowArray.put(currformatDouble(endbal));
+                            jsonarray.put(rowArray);
+                            
+                          }
+                        }
+                       }
+                      
                   } else {
                      // must be income statement
                       res = st.executeQuery("select acb_cc, sum(acb_amt) as sum from acb_mstr where " +
@@ -2795,7 +2861,7 @@ public class fglData {
                   postact = 0.00;
                  // calculate all acb_mstr records for whole periods < fromdateperiod
                     // begbal += OVData.getGLAcctBalSummCC(account.toString(), String.valueOf(fromdateyear), String.valueOf(p));
-                  if (accttype.equals("L") || accttype.equals("A") || accttype.equals("O")) {
+                  if (accttype.equals("L") || accttype.equals("A")) {
                       //must be type balance sheet
                   res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where " +
                         " acb_acct = " + "'" + acctid + "'" + " AND " +
@@ -2803,6 +2869,17 @@ public class fglData {
                         " acb_per <> '0' AND " +          
                         " (( acb_year = " + "'" + year + "'" + " AND acb_per < " + "'" + period + "'" + " ) OR " +
                         "  ( acb_year <= " + "'" + prioryear + "'" + " )) " +
+                        ";");
+                
+                       while (res.next()) {
+                          begbal += res.getDouble("sum");
+                       }
+                  } else if (accttype.equals("O")) {
+                    res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where " +
+                        " acb_acct = " + "'" + acctid + "'" + " AND " +
+                        " acb_site = " + "'" + site + "'" + " AND " +
+                        " acb_year = " + "'" + year + "'" + " AND " + 
+                        " acb_per < " + "'" + period + "'" + 
                         ";");
                 
                        while (res.next()) {
@@ -6441,7 +6518,7 @@ public class fglData {
 
 
               // get all acb_mstr records associated with this account PRIOR to this date's period
-              if (accttype.equals("L") || accttype.equals("A") || accttype.equals("O")) {
+              if (accttype.equals("L") || accttype.equals("A")) {
                   //must be type balance sheet
               res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where " +
                     " acb_acct = " + "'" + acct + "'" + " AND " +
