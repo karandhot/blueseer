@@ -2065,7 +2065,7 @@ public class fglData {
                        }
                        
                     // do header tag
-                    if (res.getString("glic_type").equals("header")) {  // showsubtotal
+                    if (res.getString("glic_type").equals("detail")) {  // showsubtotal
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(res.getString("glic_desc"));
                             rowArray.put("Heading");
