@@ -353,6 +353,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="cbpassive" min="-2" max="-2" attributes="0"/>
                           <Component id="cbsuppzerosum" min="-2" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="ddcategory" min="-2" pref="222" max="-2" attributes="0"/>
@@ -426,7 +427,9 @@
                       <Component id="cbsuppzerodet" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="cbsuppzerosum" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="cbpassive" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="12" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -544,6 +547,11 @@
             <Component class="javax.swing.JCheckBox" name="cbenabled">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Enabled"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="cbpassive">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Passive"/>
               </Properties>
             </Component>
           </SubComponents>

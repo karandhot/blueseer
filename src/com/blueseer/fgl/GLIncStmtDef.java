@@ -123,7 +123,8 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                 "flip sign",
                 "enabled",
                 "suppress zeros DET",
-                "suppress zeros SUM"
+                "suppress zeros SUM",
+                "passive"
             });
     
      class MyTableModel extends DefaultTableModel {  
@@ -290,6 +291,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
         tbto.setText("");
         cbsummarize.setSelected(false);
         cbflipsign.setSelected(false);
+        cbpassive.setSelected(false);
         assignlist.removeAll();
         excludelist.removeAll(); 
         ddacct.removeAllItems();
@@ -569,7 +571,8 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                 tablereport.getValueAt( j, 7).toString(),
                 tablereport.getValueAt( j, 8).toString(),
                 tablereport.getValueAt( j, 9).toString(),
-                tablereport.getValueAt( j, 10).toString()
+                tablereport.getValueAt( j, 10).toString(),
+                tablereport.getValueAt( j, 11).toString()
                 );
         list.add(x);
         }
@@ -754,6 +757,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
         cbsuppzerodet = new javax.swing.JCheckBox();
         cbsuppzerosum = new javax.swing.JCheckBox();
         cbenabled = new javax.swing.JCheckBox();
+        cbpassive = new javax.swing.JCheckBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         tablereport = new javax.swing.JTable();
         btnew = new javax.swing.JButton();
@@ -947,6 +951,8 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
 
         cbenabled.setText("Enabled");
 
+        cbpassive.setText("Passive");
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -962,6 +968,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                     .addComponent(jLabel10))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cbpassive)
                     .addComponent(cbsuppzerosum)
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(ddcategory, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1022,7 +1029,9 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                 .addComponent(cbsuppzerodet)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbsuppzerosum)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbpassive)
+                .addContainerGap(12, Short.MAX_VALUE))
         );
 
         tablereport.setModel(new javax.swing.table.DefaultTableModel(
@@ -1381,7 +1390,9 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                 BlueSeerUtils.boolToInt(cbflipsign.isSelected()),
                 BlueSeerUtils.boolToInt(cbenabled.isSelected()),
                 BlueSeerUtils.boolToInt(cbsuppzerodet.isSelected()),
-                BlueSeerUtils.boolToInt(cbsuppzerosum.isSelected())});
+                BlueSeerUtils.boolToInt(cbsuppzerosum.isSelected()),
+                BlueSeerUtils.boolToInt(cbpassive.isSelected())});
+        
         tbdesc.setText("");
         tbsequence.setText("");
         ddtype.setSelectedIndex(0);
@@ -1392,6 +1403,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
         cbenabled.setSelected(false);
         cbsuppzerodet.setSelected(false);
         cbsuppzerosum.setSelected(false);
+        cbpassive.setSelected(false);
         
         ArrayList<String> lm = new ArrayList<>();
           for (int j = 0; j < mymodel.getSize(); j++) {
@@ -1439,6 +1451,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                 tablereport.setValueAt(boolToInt(cbenabled.isSelected()), i, 8);
                 tablereport.setValueAt(boolToInt(cbsuppzerodet.isSelected()), i, 9);
                 tablereport.setValueAt(boolToInt(cbsuppzerosum.isSelected()), i, 10);
+                tablereport.setValueAt(boolToInt(cbpassive.isSelected()), i, 11);
         }
         
         // update in/out list of accounts per ddcategory
@@ -1482,6 +1495,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
         cbenabled.setSelected(BlueSeerUtils.ConvertStringToBool(tablereport.getValueAt(row, 8).toString()));
         cbsuppzerodet.setSelected(BlueSeerUtils.ConvertStringToBool(tablereport.getValueAt(row, 9).toString()));
         cbsuppzerosum.setSelected(BlueSeerUtils.ConvertStringToBool(tablereport.getValueAt(row, 10).toString()));
+        cbpassive.setSelected(BlueSeerUtils.ConvertStringToBool(tablereport.getValueAt(row, 11).toString()));
         mymodel.removeAllElements();
         mymodelex.removeAllElements();
         ArrayList<String> lm = acctsIn.get(ddcategory.getSelectedItem().toString());
@@ -1520,6 +1534,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
     private javax.swing.JButton btupdatecategory;
     private javax.swing.JCheckBox cbenabled;
     private javax.swing.JCheckBox cbflipsign;
+    private javax.swing.JCheckBox cbpassive;
     private javax.swing.JCheckBox cbsummarize;
     private javax.swing.JCheckBox cbsuppzerodet;
     private javax.swing.JCheckBox cbsuppzerosum;

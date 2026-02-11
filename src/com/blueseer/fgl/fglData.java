@@ -1498,11 +1498,11 @@ public class fglData {
         String sqlSelect = "SELECT * FROM  glic_def where glic_profile = ? and glic_name = ? ; "; // there should always be only 1 or 0 records 
         String sqlInsert = "insert into glic_def (glic_profile, glic_name, glic_desc," +
         " glic_seq, glic_type, glic_start, glic_end, glic_summarize," +
-        " glic_flipsign, glic_enabled, glic_suppzerodet, glic_suppzerosum ) "
+        " glic_flipsign, glic_enabled, glic_suppzerodet, glic_suppzerosum, glic_passive ) "
                         + " values (?,?,?,?,?,?,?,?,?,?,?,?); "; 
         String sqlUpdate = "update glic_def set glic_desc = ?," +
         " glic_seq = ?, glic_type = ?, glic_start = ?, glic_end = ?, glic_summarize = ?," +
-        " glic_flipsign = ?, glic_enabled = ?, glic_suppzerodet = ?, glic_suppzerosum = ? " +
+        " glic_flipsign = ?, glic_enabled = ?, glic_suppzerodet = ?, glic_suppzerosum = ?, glic_passive " +
         " where glic_profile = ? and glic_name = ? ";
         PreparedStatement ps = con.prepareStatement(sqlSelect);
         ps.setString(1, x.glic_profile());
@@ -1526,6 +1526,7 @@ public class fglData {
             psi.setString(10, x.glic_enabled);
             psi.setString(11, x.glic_suppzerodet);
             psi.setString(12, x.glic_suppzerosum);
+            psi.setString(13, x.glic_passive);
              rows = psi.executeUpdate();
             } else {
             psu.setString(1, x.glic_desc);
@@ -1538,8 +1539,9 @@ public class fglData {
             psu.setString(8, x.glic_enabled);
             psu.setString(9, x.glic_suppzerodet);
             psu.setString(10, x.glic_suppzerosum);
-            psu.setString(11, x.glic_profile);
-            psu.setString(12, x.glic_name);
+            psu.setString(11, x.glic_passive);
+            psu.setString(12, x.glic_profile);
+            psu.setString(13, x.glic_name);
             rows = psu.executeUpdate();   
             }
           
@@ -1661,7 +1663,8 @@ public class fglData {
                                 res.getString("glic_flipsign"),
                                 res.getString("glic_enabled"),
                                 res.getString("glic_suppzerodet"),
-                                res.getString("glic_suppzerosum")
+                                res.getString("glic_suppzerosum"),
+                                res.getString("glic_passive")
                         );
                     }
                 }
@@ -1718,7 +1721,8 @@ public class fglData {
                                 res.getString("glic_flipsign"),
                                 res.getString("glic_enabled"),
                                 res.getString("glic_suppzerodet"),
-                                res.getString("glic_suppzerosum")
+                                res.getString("glic_suppzerosum"),
+                                res.getString("glic_passive")
                         );
                         list.add(r); 
                     }
@@ -2069,7 +2073,7 @@ public class fglData {
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(res.getString("glic_desc"));
                             rowArray.put("Heading");
-                            rowArray.put(-99999999);
+                            rowArray.put(0);
                             jsonarray.put(rowArray);
                         }
                     // accumulate balances for this sequence in profile
@@ -2080,7 +2084,9 @@ public class fglData {
                            acctval = -1 * acctval; 
                         }
                         seqsubtotal += acctval;
-                        profiletotal += acctval;
+                        if (! res.getString("glic_passive").equals("1")) {
+                          profiletotal += acctval;
+                        }
                         if (res.getString("glic_type").equals("detail")) { // showdetail
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put("     " + acc[0]);
@@ -8226,10 +8232,11 @@ return myarray;
     
     public record glic_def(String[] m, String glic_profile, String glic_name, String glic_desc,
         int glic_seq, String glic_type, String glic_start, String glic_end, String glic_summarize,
-        String glic_flipsign, String glic_enabled, String glic_suppzerodet, String glic_suppzerosum) {
+        String glic_flipsign, String glic_enabled, String glic_suppzerodet, String glic_suppzerosum,
+        String glic_passive ) {
         public glic_def(String[] m) {
             this(m, "", "", "", 0, "", "", "", "", "", "",
-                    "", "");
+                    "", "", "");
         }
     }
     
