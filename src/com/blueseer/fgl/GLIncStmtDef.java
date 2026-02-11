@@ -582,7 +582,10 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                 tablereport.getValueAt( j, 8).toString(),
                 tablereport.getValueAt( j, 9).toString(),
                 tablereport.getValueAt( j, 10).toString(),
-                tablereport.getValueAt( j, 11).toString()
+                tablereport.getValueAt( j, 11).toString(),
+                tablereport.getValueAt( j, 12).toString(),
+                tablereport.getValueAt( j, 13).toString(),
+                tablereport.getValueAt( j, 14).toString()
                 );
         list.add(x);
         }

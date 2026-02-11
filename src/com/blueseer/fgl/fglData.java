@@ -2093,7 +2093,17 @@ public class fglData {
                     // accumulate balances for this sequence in profile
                     double acctval = 0;
                     for (String[] acc : accts) {
-                        acctval = _getAcctBalance(acc[0], site, year, perfrom, perto, con );
+                        // balance can be current period activity, beginning or ending
+                        if (res.getString("glic_activity").equals("1")) {
+                          acctval = _getAcctBalance(acc[0], site, year, perfrom, perto, con );
+                        } 
+                        if (res.getString("glic_begbal").equals("1")) {
+                          acctval = _getAcctBegBalance(acc[0], site, year, perfrom, perto, con );  
+                        } 
+                        if (res.getString("glic_endbal").equals("1")) {
+                          acctval = _getAcctEndBalance(acc[0], site, year, perfrom, perto, con );  
+                        }
+                        
                         if (res.getString("glic_flipsign").equals("1")) {
                            acctval = -1 * acctval; 
                         }
@@ -7210,7 +7220,42 @@ public class fglData {
                    }
           return r;
       }
+    
+    public static Double _getAcctBegBalance(String acct, String site, String year, String perfrom, String perto, Connection bscon) throws SQLException {
+            double r = 0.00;
+            Statement st = bscon.createStatement();  
+            ResultSet res = null;  
+            res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where " +
+                   " acb_acct = " + "'" + acct + "'" + 
+                    "AND acb_site = " + "'" + site + "'" +
+                    " AND ( acb_year < " + "'" + year + "'" + 
+                    " or  ( acb_year = " + "'" + year + "'" + 
+                    " AND acb_per < " + "'" + perfrom + "'" + " ))" +
+                     ";");
+                   while (res.next()) {
+                      r = res.getDouble("sum"); 
+                   }
+          return r;
+      }
 
+    public static Double _getAcctEndBalance(String acct, String site, String year, String perfrom, String perto, Connection bscon) throws SQLException {
+            double r = 0.00;
+            Statement st = bscon.createStatement();  
+            ResultSet res = null;  
+            res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where " +
+                   " acb_acct = " + "'" + acct + "'" + 
+                    "AND acb_site = " + "'" + site + "'" +
+                    " AND ( acb_year < " + "'" + year + "'" + 
+                    " or  ( acb_year = " + "'" + year + "'" + 
+                    " AND acb_per <= " + "'" + perto + "'" + " ))" +
+                     ";");
+                   while (res.next()) {
+                      r = res.getDouble("sum"); 
+                   }
+          return r;
+      }
+
+    
     
     public static ArrayList getGLBalanceRange(int fromyear, int toyear, String site) {
           java.util.Date now = new java.util.Date();
