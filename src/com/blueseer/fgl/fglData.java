@@ -2092,16 +2092,20 @@ public class fglData {
                         }
                     // accumulate balances for this sequence in profile
                     double acctval = 0;
-                    for (String[] acc : accts) {
+                    for (String[] acc : accts) { // id, desc, type, curr
                         // balance can be current period activity, beginning or ending
-                        if (res.getString("glic_activity").equals("1")) {
-                          acctval = _getAcctBalance(acc[0], site, year, perfrom, perto, con );
-                        } 
-                        if (res.getString("glic_begbal").equals("1")) {
-                          acctval = _getAcctBegBalance(acc[0], site, year, perfrom, perto, con );  
-                        } 
-                        if (res.getString("glic_endbal").equals("1")) {
-                          acctval = _getAcctEndBalance(acc[0], site, year, perfrom, perto, con );  
+                        if (acc[2].equals("O")) { // special case for owner equity
+                        acctval = _getAcctBalance(acc[0], site, year, perfrom, perto, con );
+                        } else {
+                            if (res.getString("glic_activity").equals("1")) {
+                              acctval = _getAcctBalance(acc[0], site, year, perfrom, perto, con );
+                            } 
+                            if (res.getString("glic_begbal").equals("1")) {
+                              acctval = _getAcctBegBalance(acc[0], site, year, perfrom, perto, con );  
+                            } 
+                            if (res.getString("glic_endbal").equals("1")) {
+                              acctval = _getAcctEndBalance(acc[0], site, year, perfrom, perto, con );  
+                            }
                         }
                         
                         if (res.getString("glic_flipsign").equals("1")) {
@@ -7224,7 +7228,7 @@ public class fglData {
                     " AND glicd_profile = " + "'" + profile + "'" +        
                     " AND glicd_type = " + "'" + type + "'" + ";");
                    while (res.next()) {
-                      mylist.add(new String[]{res.getString("glicd_acct"), res.getString("ac_desc")});  
+                      mylist.add(new String[]{res.getString("glicd_acct"), res.getString("ac_desc"), res.getString("ac_type"), res.getString("ac_cur")});  
                    }
 
        }
@@ -7362,7 +7366,7 @@ public class fglData {
                    }
           return r;
       }
-
+    
     public static Double _getAcctEndBalance(String acct, String site, String year, String perfrom, String perto, Connection bscon) throws SQLException {
             double r = 0.00;
             Statement st = bscon.createStatement();  
@@ -7374,6 +7378,23 @@ public class fglData {
                     " AND ( acb_year < " + "'" + year + "'" + 
                     " or  ( acb_year = " + "'" + year + "'" + 
                     " AND acb_per <= " + "'" + perto + "'" + " ))" +
+                     ";");
+                   while (res.next()) {
+                      r = res.getDouble("sum"); 
+                   }
+          return r;
+      }
+
+    public static Double _getAcctOEBalance(String acct, String site, String year, String perfrom, String perto, Connection bscon) throws SQLException {
+            double r = 0.00;
+            Statement st = bscon.createStatement();  
+            ResultSet res = null;  
+            int prioryear = bsParseInt(year) - 1;
+            res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where " +
+                   " acb_acct = " + "'" + acct + "'" + 
+                    " AND acb_site = " + "'" + site + "'" +
+                    " AND acb_year = " + "'" + year + "'" +        
+                    " AND acb_per < " + "'" + perfrom + "'" +
                      ";");
                    while (res.next()) {
                       r = res.getDouble("sum"); 
