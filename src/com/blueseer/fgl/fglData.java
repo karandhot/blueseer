@@ -7460,7 +7460,7 @@ public class fglData {
             ResultSet res = null;
             try {
 
-            res = st.executeQuery("select glicd_acct, ac_desc from glic_accts inner join ac_mstr on ac_id = glicd_acct where " +
+            res = st.executeQuery("select glicd_acct, ac_desc, ac_type, ac_cur from glic_accts inner join ac_mstr on ac_id = glicd_acct where " +
                     " glicd_name = " + "'" + name + "'" +
                     " AND glicd_profile = " + "'" + profile + "'" +        
                     " AND glicd_type = " + "'" + type + "'" + ";");
