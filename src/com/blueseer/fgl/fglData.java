@@ -1509,6 +1509,7 @@ public class fglData {
         PreparedStatement ps = con.prepareStatement(sqlSelect);
         ps.setString(1, x.glic_profile());
         ps.setString(2, x.glic_name());
+        ps.setString(3, x.glic_type());
         PreparedStatement psi = con.prepareStatement(sqlInsert);
         PreparedStatement psu = con.prepareStatement(sqlUpdate);
         
