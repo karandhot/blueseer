@@ -2155,7 +2155,9 @@ public class fglData {
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(res.getString("glic_desc"));
                             rowArray.put("Group End");
-                            rowArray.put(groupmap.get(res.getString("glic_name")));
+                            double x = groupmap.get(res.getString("glic_name"));
+                            System.out.println("HERE:  value is " + x);
+                            rowArray.put(bsNumber(x));
                             jsonarray.put(rowArray);
                         }
                         
