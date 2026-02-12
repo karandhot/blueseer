@@ -1495,17 +1495,17 @@ public class fglData {
     
     public static int _addUpdateGLIC(glic_def x, Connection con) throws SQLException {
         int rows = 0;
-        String sqlSelect = "SELECT * FROM  glic_def where glic_profile = ? and glic_name = ? ; "; // there should always be only 1 or 0 records 
+        String sqlSelect = "SELECT * FROM  glic_def where glic_profile = ? and glic_name = ? and glic_type = ? ; "; // there should always be only 1 or 0 records 
         String sqlInsert = "insert into glic_def (glic_profile, glic_name, glic_desc," +
         " glic_seq, glic_type, glic_start, glic_end, glic_summarize," +
         " glic_flipsign, glic_enabled, glic_suppzerodet, glic_suppzerosum, glic_passive, " +
         " glic_begbal, glic_activity, glic_endbal ) "
                         + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
         String sqlUpdate = "update glic_def set glic_desc = ?," +
-        " glic_seq = ?, glic_type = ?, glic_start = ?, glic_end = ?, glic_summarize = ?," +
+        " glic_seq = ?, glic_start = ?, glic_end = ?, glic_summarize = ?," +
         " glic_flipsign = ?, glic_enabled = ?, glic_suppzerodet = ?, glic_suppzerosum = ?, glic_passive = ?, " +
         " glic_begbal = ?, glic_activity = ?, glic_endbal = ? " +
-        " where glic_profile = ? and glic_name = ? ";
+        " where glic_profile = ? and glic_name = ? and glic_type = ? ";
         PreparedStatement ps = con.prepareStatement(sqlSelect);
         ps.setString(1, x.glic_profile());
         ps.setString(2, x.glic_name());
@@ -1536,20 +1536,20 @@ public class fglData {
             } else {
             psu.setString(1, x.glic_desc);
             psu.setInt(2, x.glic_seq);
-            psu.setString(3, x.glic_type);
-            psu.setString(4, x.glic_start);
-            psu.setString(5, x.glic_end);
-            psu.setString(6, x.glic_summarize);
-            psu.setString(7, x.glic_flipsign);
-            psu.setString(8, x.glic_enabled);
-            psu.setString(9, x.glic_suppzerodet);
-            psu.setString(10, x.glic_suppzerosum);
-            psu.setString(11, x.glic_passive);
-            psu.setString(12, x.glic_begbal);
-            psu.setString(13, x.glic_activity);
-            psu.setString(14, x.glic_endbal);
-            psu.setString(15, x.glic_profile);
-            psu.setString(16, x.glic_name);
+            psu.setString(3, x.glic_start);
+            psu.setString(4, x.glic_end);
+            psu.setString(5, x.glic_summarize);
+            psu.setString(6, x.glic_flipsign);
+            psu.setString(7, x.glic_enabled);
+            psu.setString(8, x.glic_suppzerodet);
+            psu.setString(9, x.glic_suppzerosum);
+            psu.setString(10, x.glic_passive);
+            psu.setString(11, x.glic_begbal);
+            psu.setString(12, x.glic_activity);
+            psu.setString(13, x.glic_endbal);
+            psu.setString(14, x.glic_profile);
+            psu.setString(15, x.glic_name);
+            psu.setString(16, x.glic_type);
             rows = psu.executeUpdate();   
             }
           
@@ -1709,7 +1709,7 @@ public class fglData {
                list.add(r);
             }
         }
-        String sql = "select * from glic_def where glic_profile = ? ;";
+        String sql = "select * from glic_def where glic_profile = ? order by glic_seq ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
          ps.setString(1, x[0]); 
@@ -2129,7 +2129,6 @@ public class fglData {
                               double t = group.getValue();
                               t += acctval;
                               groupmap.put(group.getKey(), t);
-                              System.out.println(group.getKey() + " accum value " + t + " acctval = " + acctval + " for category " + res.getString("glic_name"));
                           }
                         }
                         if (res.getString("glic_type").equals("detail")) { // showdetail
@@ -2143,7 +2142,7 @@ public class fglData {
                               jsonarray.put(rowArray);  
                             }
                         }
-                    }
+                    } // for accounts
                         if (res.getString("glic_summarize").equals("1")) {  // showsubtotal
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(res.getString("glic_desc"));
@@ -2158,7 +2157,7 @@ public class fglData {
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(res.getString("glic_desc"));
                             rowArray.put("Group End");
-                            double x = groupmap.get(res.getString("glic_name"));
+                            double x = (groupmap.get(res.getString("glic_name")) == null) ? 0 : groupmap.get(res.getString("glic_name"));
                             rowArray.put(bsNumber(x));
                             jsonarray.put(rowArray);
                         }

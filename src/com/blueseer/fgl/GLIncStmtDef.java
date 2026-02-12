@@ -371,6 +371,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
              tbkey.requestFocus();
            } else {
              initvars(null);  
+             initvars(key);
            }
            
             
@@ -431,14 +432,14 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
             return false;
         }
         
-        
+        /*
         fc = checkLength(f,"glic_desc");
         if (tbdesc.getText().length() > fc || tbdesc.getText().isEmpty()) {
             bsmf.MainFrame.show(getMessageTag(1032,"1" + "/" + fc));
             tbdesc.requestFocus();
             return false;
         }
-                
+         */       
         if (tablereport.getRowCount() < 1) {
             bsmf.MainFrame.show(getMessageTag(1062));
             ddcategory.requestFocus();
@@ -1380,6 +1381,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
             if (proceed) {
             addUpdateGLICMeta("glic", "category", tbkey.getText(), input);
             ddcategory.addItem(input);
+            ddcategory.setSelectedItem(input);
             ddcategory.requestFocus();
             }
         }
@@ -1432,6 +1434,8 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                 BlueSeerUtils.boolToInt(cbactivity.isSelected()),
                 BlueSeerUtils.boolToInt(cbendbal.isSelected())});
         
+               
+        
         tbdesc.setText("");
         tbsequence.setText("");
         ddtype.setSelectedIndex(0);
@@ -1482,7 +1486,9 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
             bsmf.MainFrame.show(getMessageTag(1095));
                 return;
         }
+        int trow = 0;
         for (int i : rows) {
+                trow = i;
                 tablereport.setValueAt(tbdesc.getText(), i, 1);
                 tablereport.setValueAt(tbsequence.getText(), i, 2);
                 tablereport.setValueAt(ddtype.getSelectedItem().toString(), i, 3);
@@ -1497,6 +1503,14 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                 tablereport.setValueAt(boolToInt(cbbegbal.isSelected()), i, 12);
                 tablereport.setValueAt(boolToInt(cbactivity.isSelected()), i, 13);
                 tablereport.setValueAt(boolToInt(cbendbal.isSelected()), i, 14);
+        }
+        
+        // loop through model and adjust sequence line if new sequence is inserted
+        for (int j = 0; j < tablereport.getRowCount(); j++) {
+            if (j > trow && bsParseInt(tablereport.getValueAt(j, 2).toString()) >= bsParseInt(tbsequence.getText())) {
+              int k = bsParseInt(tablereport.getValueAt(j, 2).toString());
+              tablereport.setValueAt(k + 1, j, 2);  
+            }
         }
         
         // update in/out list of accounts per ddcategory
