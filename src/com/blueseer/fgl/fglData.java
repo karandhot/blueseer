@@ -2126,7 +2126,10 @@ public class fglData {
                         if (! res.getString("glic_passive").equals("1")) {
                           profiletotal += acctval;
                           for (Map.Entry<String,Double> group : groupmap.entrySet()) {
-                              groupmap.put(group.getKey(), (groupmap.get(group.getKey()).doubleValue() + acctval));
+                              double t = group.getValue();
+                              t += acctval;
+                              groupmap.put(group.getKey(), t);
+                              System.out.println(group.getKey() + " accum value " + t + " acctval = " + acctval);
                           }
                         }
                         if (res.getString("glic_type").equals("detail")) { // showdetail
