@@ -142,19 +142,20 @@ LedgerSetupMenu,BankBrowse,8,JMenuItem,Bank Browse,,1,,1,1
 LedgerSetupMenu,CurrencyMaint,9,JMenuItem,Currency Maintenance,,,,1,1
 LedgerSetupMenu,ExchangeMaint,10,JMenuItem,Exchange Rate Maintenance,,,,1,1
 LedgerSetupMenu,GLControl,11,JMenuItem,GL Control,,,,1,1
-LedgerSetupMenu,GLIncStmtDef,12,JMenuItem,Income Statement Definition,,,,1,1
+LedgerSetupMenu,GLIncStmtDef,12,JMenuItem,Report Statement Maintenance,,,,1,1
 Finance,LedgerReportsMenu,2,JMenu,Ledger Reports,,,,1,1
 LedgerReportsMenu,GLAcctBalSummaryByPeriod,1,JMenuItem,Account Balance Report,,,,1,1
 LedgerReportsMenu,TrialBalanceRpt,2,JMenuItem,Trial Balance Report,,,,1,1
-LedgerReportsMenu,GLAcctBalSummaryByYear,3,JMenuItem,Account Activity (Year),,,,1,1
-LedgerReportsMenu,AcctBalSumYTD,4,JMenuItem,Account Balance YTD,,,,1,1
-LedgerReportsMenu,UnPostedTransRpt,5,JMenuItem,Unposted Transactions,,1,,1,1
-LedgerReportsMenu,GLTranRpt1,6,JMenuItem,Ledger Transaction Report,,1,,1,1
-LedgerReportsMenu,LedgerBalanceExport,7,JMenuItem,Ledger Balance View/Export,,,,1,1
-LedgerReportsMenu,StatementReport,8,JMenuItem,Statement Report Generator,,1,,1,1
-LedgerReportsMenu,IncomeStatementYear,9,JMenuItem,Income Statement (Year),,1,,1,1
-LedgerReportsMenu,ReconAccount,10,JMenuItem,Account Reconciliation,,1,,1,1
-LedgerReportsMenu,ChartMain,11,JMenuItem,Chart Reporting,,1,,1,1
+LedgerReportsMenu,BalanceSheetReport,3,JMenuItem,Balance Sheet Report,,,,1,1
+LedgerReportsMenu,GLAcctBalSummaryByYear,4,JMenuItem,Account Activity (Year),,,,1,1
+LedgerReportsMenu,AcctBalSumYTD,5,JMenuItem,Account Balance YTD,,,,1,1
+LedgerReportsMenu,UnPostedTransRpt,6,JMenuItem,Unposted Transactions,,1,,1,1
+LedgerReportsMenu,GLTranRpt1,7,JMenuItem,Ledger Transaction Report,,1,,1,1
+LedgerReportsMenu,LedgerBalanceExport,8,JMenuItem,Ledger Balance View/Export,,,,1,1
+LedgerReportsMenu,StatementReport,9,JMenuItem,Statement Report Generator,,1,,1,1
+LedgerReportsMenu,IncomeStatementYear,10,JMenuItem,Income Statement (Year),,1,,1,1
+LedgerReportsMenu,ReconAccount,11,JMenuItem,Account Reconciliation,,1,,1,1
+LedgerReportsMenu,ChartMain,12,JMenuItem,Chart Reporting,,1,,1,1
 Finance,PostGLTrans,3,JMenuItem,Post Transactions,,,,1,1
 Finance,GLTranMaint,4,JMenuItem,GL Transaction Maintenance,,,,1,1
 Finance,ExpenseMaint,5,JMenuItem,Expense Maintenance,,,,1,1

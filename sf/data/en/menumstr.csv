@@ -358,3 +358,4 @@ SalesRepMaint,,com.blueseer.ctr.SalesRepMaint,JMenuItem,slsp
 SalesRepBrowse,,com.blueseer.ctr.SalesRepBrowse,JMenuItem,slsb
 CustBrowse,,com.blueseer.ctr.CustBrowse,JMenuItem,cusr
 VendBrowse,,com.blueseer.vdr.VendBrowse,JMenuItem,venr
+BalanceSheetReport,,com.blueseer.fgl.BalanceSheetReport,JMenuItem,bsrp

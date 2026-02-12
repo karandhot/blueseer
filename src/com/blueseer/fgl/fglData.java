@@ -2028,6 +2028,7 @@ public class fglData {
     
     public static String getGLICBrowseView(String profile, String site, String year, String perfrom, String perto) {
         JSONArray jsonarray = new JSONArray();
+        Map<String, Double> groupmap = new HashMap<>();
         try {
             
             Connection con = null;
@@ -2082,14 +2083,24 @@ public class fglData {
                            }
                        }
                        
-                    // do header tag
+                    // do group header tags   
+                    if (res.getString("glic_type").equals("groupstart")) {  // showsubtotal
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put(res.getString("glic_desc"));
+                            rowArray.put("Group Heading");
+                            rowArray.put(0);
+                            jsonarray.put(rowArray);
+                            groupmap.put(res.getString("glic_name"), 0.00);
+                    }
+                    
+                    // do detail header tag
                     if (res.getString("glic_type").equals("detail")) {  // showsubtotal
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(res.getString("glic_desc"));
-                            rowArray.put("Heading");
+                            rowArray.put("Category Heading");
                             rowArray.put(0);
                             jsonarray.put(rowArray);
-                        }
+                    }
                     // accumulate balances for this sequence in profile
                     double acctval = 0;
                     for (String[] acc : accts) { // id, desc, type, curr
@@ -2114,6 +2125,9 @@ public class fglData {
                         seqsubtotal += acctval;
                         if (! res.getString("glic_passive").equals("1")) {
                           profiletotal += acctval;
+                          if (groupmap.containsKey(res.getString("glic_name"))) {
+                             groupmap.put(res.getString("glic_name"), (groupmap.get(res.getString("glic_name") + acctval)));
+                          }
                         }
                         if (res.getString("glic_type").equals("detail")) { // showdetail
                             JSONArray rowArray = new JSONArray(); 
@@ -2136,6 +2150,15 @@ public class fglData {
                              jsonarray.put(rowArray);
                             }
                         }
+                        
+                        if (res.getString("glic_type").equals("groupend")) {  // showsubtotal
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put(res.getString("glic_desc"));
+                            rowArray.put("Group End");
+                            rowArray.put(groupmap.get(res.getString("glic_name")));
+                            jsonarray.put(rowArray);
+                        }
+                        
                      
                  } // while profile
                     
@@ -2980,6 +3003,164 @@ public class fglData {
        // System.out.println("HERE: " + jsonarray.toString());
         return jsonarray.toString();
     }
+    
+    public static String getBalanceSheetView(String[] key) {
+        JSONArray jsonarray = new JSONArray();
+        int year = Integer.parseInt(key[0]); 
+        int fromperiod = Integer.parseInt(key[1]);
+        int toperiod = Integer.parseInt(key[2]);
+        String site = key[3];
+        
+      //  StringBuilder sb = new StringBuilder();
+        ArrayList<String[]> accounts = fglData.getBalanceSheetAccounts();
+        try {
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                 
+                 int prioryear = 0;
+                 double begbal = 0.00;
+                 double activity = 0.00;
+                 double endbal = 0.00;
+                 double totbegbal = 0.00;
+                 double totactivity = 0.00;
+                 double totendbal = 0.00;
+                 double preact = 0.00;
+                 double postact = 0.00;
+                 Date p_datestart = null;
+                 Date p_dateend = null;
+                 
+                // ArrayList<String[]> accounts = fglData.getGLAcctListRangeWCurrTypeDesc(ddacctfrom.getSelectedItem().toString(), ddacctto.getSelectedItem().toString());
+                // ArrayList<String> ccs = fglData.getGLCCList();
+                 
+                  totbegbal = 0.00;
+                  totactivity = 0.00;
+                  totendbal = 0.00;
+                 
+                 prioryear = year - 1;
+                 String acctid = "";
+                 String acctdesc = "";
+                 String acctcurr = "";
+                 String accttype = "";
+                 String cc = "";
+                  
+                 ACCTS:    for (String[] account : accounts) {
+                  acctid = account[0];
+                  acctcurr = account[3];
+                  accttype = account[2];
+                  acctdesc = account[1];
+                  begbal = 0.00;
+                  activity = 0.00;
+                  endbal = 0.00;
+                  preact = 0.00;
+                  postact = 0.00;
+                  
+                  
+                  // ONLY L, A, O accounts from this point on for the balance sheet report
+                  if (accttype.equals("E") || accttype.equals("I")) {
+                      continue;
+                  }
+                  
+                 // calculate all acb_mstr records for whole periods < fromdateperiod
+                    // begbal += OVData.getGLAcctBalSummCC(account.toString(), String.valueOf(fromdateyear), String.valueOf(p));
+                  if (accttype.equals("L") || accttype.equals("A")) {
+                      //must be type balance sheet
+                  res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where " +
+                        " acb_acct = " + "'" + acctid + "'" + " AND " +
+                        " acb_site = " + "'" + site + "'" + " AND " +
+                        " acb_per <> '0' AND " +          
+                        " (( acb_year = " + "'" + year + "'" + " AND acb_per < " + "'" + fromperiod + "'" + " ) OR " +
+                        "  ( acb_year <= " + "'" + prioryear + "'" + " )) " +
+                        ";");
+                
+                       while (res.next()) {
+                          begbal += res.getDouble("sum");
+                       }
+                  } else if (accttype.equals("O")) {
+                    res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where " +
+                        " acb_acct = " + "'" + acctid + "'" + " AND " +
+                        " acb_site = " + "'" + site + "'" + " AND " +
+                        " acb_year = " + "'" + year + "'" + " AND " + 
+                        " acb_per < " + "'" + fromperiod + "'" + 
+                        ";");
+                
+                       while (res.next()) {
+                          begbal += res.getDouble("sum");
+                       }
+                  } else {
+                     // must be income statement
+                      res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where " +
+                        " acb_acct = " + "'" + acctid + "'" + " AND " +
+                        " acb_site = " + "'" + site + "'" + " AND " +
+                        " acb_per <> '0' AND " +         
+                        " ( acb_year = " + "'" + year + "'" + " AND acb_per < " + "'" + fromperiod + "'" + ")" +
+                        ";");
+                
+                       while (res.next()) {
+                          begbal += res.getDouble("sum");
+                       }
+                  }
+                        // now activity           
+                       res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where acb_year = " +
+                        "'" + String.valueOf(year) + "'" + 
+                        " AND acb_per <> '0' " +         
+                        " AND acb_per >= " +
+                        "'" + String.valueOf(fromperiod) + "'" +
+                        " AND acb_per <= " +
+                        "'" + String.valueOf(toperiod) + "'" +        
+                        " AND acb_acct = " +
+                        "'" + acctid + "'" +
+                        " AND acb_site = " + "'" + site + "'" +
+                        ";");
+                       while (res.next()) {
+                          activity += res.getDouble(("sum"));
+                       }
+                 
+                               
+                 endbal = begbal + activity;
+                
+                JSONArray rowArray = new JSONArray();
+                            rowArray.put("detail");
+                            rowArray.put(acctid);
+                            rowArray.put(accttype);
+                            rowArray.put(acctcurr);
+                            rowArray.put(acctdesc);
+                            rowArray.put(site);
+                            rowArray.put(currformatDouble(begbal));
+                            rowArray.put(currformatDouble(activity)); 
+                            rowArray.put(currformatDouble(endbal));
+                            jsonarray.put(rowArray);
+             
+                   
+                } // Accts   
+                     
+                 
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+       // System.out.println("HERE: " + jsonarray.toString());
+        return jsonarray.toString();
+    }
+    
     
     public static String getAccountBalanceDetView(String acct, String cc, String site, int year, int period, boolean isCC) {
         JSONArray jsonarray = new JSONArray();
@@ -5774,6 +5955,58 @@ public class fglData {
        }
         catch (SQLException s){
              bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    return myarray;
+
+}
+
+    public static ArrayList<String[]> getBalanceSheetAccounts() {
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getBalanceSheetAccounts"});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+    }
+    ArrayList<String[]> myarray = new ArrayList();
+
+    try{
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+            
+            res = st.executeQuery("select ac_id, ac_cur, ac_type, ac_desc from ac_mstr where " +
+                     " ac_type = 'A' or ac_type = 'L' or ac_type = 'O' order by ac_type, ac_id ; ");
+           while (res.next()) {
+               String[] x = new String[4];
+               x[0] = res.getString("ac_id");
+               x[1] = res.getString("ac_desc");
+               x[2] = res.getString("ac_type");
+               x[3] = res.getString("ac_cur");
+                myarray.add(x);
+            }
+
+       }
+        catch (SQLException s){
+             bslog(s);
         } finally {
                if (res != null) res.close();
                if (st != null) st.close();
