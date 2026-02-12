@@ -1559,6 +1559,7 @@ public class fglData {
    
     public static int _addUpdateGLICAcct(glic_accts x, Connection con) throws SQLException {
         int rows = 0;
+        System.out.println("yep = " + x.glicd_acct() + ", " + x.glicd_name() + ", " + x.glicd_profile());
         String sqlSelect = "SELECT * FROM  glic_accts where glicd_profile = ? and glicd_name = ? and glicd_acct = ? ;"; 
         String sqlInsert = "insert into glic_accts (glicd_profile, glicd_name, glicd_acct," +
         " glicd_seq, glicd_type ) "

@@ -1254,99 +1254,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
            return;
        }
         setPanelComponentState(this, false);
-        executeTask(dbaction.update, new String[]{tbkey.getText()});  
-        /*
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-                int i = 0;
-                res = st.executeQuery("SELECT glic_profile FROM glic_def where glic_profile = " + "'" + tbkey.getText() + "'"
-                        + " AND glic_name = " + "'" + ddcategory.getSelectedItem().toString() + "'"
-                        + " ;");
-                while (res.next()) {
-                    i++;
-                }
-                if (i == 0) {
-                    st.executeUpdate("insert into glic_def (glic_profile, glic_name, glic_desc, glic_seq, glic_type, glic_start, glic_end, glic_summarize, glic_flipsign) values ( "
-                            + "'" + tbkey.getText() + "'" + ","
-                            + "'" + ddcategory.getSelectedItem().toString() + "'" + ","
-                            + "'" + tbdesc.getText() + "'" + ","
-                            + "'" + tbsequence.getText() + "'" + ","
-                            + "'" + ddtype.getSelectedItem().toString() + "'" + "," // type unused
-                            + "'" + tbfrom.getText() + "'" + ","
-                            + "'" + tbto.getText() + "'" + ","
-                            + "'" + BlueSeerUtils.boolToString(cbsummarize.isSelected()) + "'" + ","
-                            + "'" + BlueSeerUtils.boolToString(cbflipsign.isSelected()) + "'"         
-                            + ")"
-                            + ";");
-                    
-                } else {
-                    st.executeUpdate("update glic_def set " +
-                            " glic_desc = " + "'" + tbdesc.getText() + "'" + "," +
-                            " glic_seq = " + "'" + tbsequence.getText() + "'" + "," +        
-                            " glic_start = " + "'" + tbfrom.getText() + "'" + "," +
-                            " glic_end = " + "'" + tbto.getText() + "'" + "," +
-                            " glic_summarize = " + "'" + BlueSeerUtils.boolToString(cbsummarize.isSelected()) + "'" + "," +
-                            " glic_flipsign = " + "'" + BlueSeerUtils.boolToString(cbflipsign.isSelected()) + "'" +         
-                            " where glic_name = " + "'" + ddcategory.getSelectedItem().toString() + "'" + 
-                            " and glic_profile = " + "'" + tbkey.getText() + "'" +
-                            ";");
-                } // else record exists
-                
-                 // erase all assigned accounts and refill with current assign and exclude list
-                    st.executeUpdate("delete from glic_accts where glicd_name = " + "'" + ddcategory.getSelectedItem().toString() + "'" + ";");
-                    
-                       for (int j = 0; j < mymodel.getSize(); j++) {
-                        st.executeUpdate("insert into glic_accts "
-                            + "(glicd_profile, glicd_name, glicd_acct, glicd_type ) "
-                            + " values ( " 
-                            + "'" + tbkey.getText() + "'" + ","
-                            + "'" + ddcategory.getSelectedItem().toString() + "'" + ","
-                            + "'" + mymodel.getElementAt(j) + "'" + ","
-                            + "'in'"
-                            + ")"
-                            + ";");
-                       }
-                       
-                       for (int j = 0; j < mymodelex.getSize(); j++) {
-                        st.executeUpdate("insert into glic_accts "
-                            + "(glicd_profile, glicd_name, glicd_acct, glicd_type ) "
-                            + " values ( " 
-                            + "'" + tbkey.getText() + "'" + ","
-                            + "'" + ddcategory.getSelectedItem().toString() + "'" + ","
-                            + "'" + mymodelex.getElementAt(j) + "'" + ","
-                            + "'out'"
-                            + ")"
-                            + ";");
-                       }
-                
-               bsmf.MainFrame.show(getMessageTag(1008)); 
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-        */
+        executeTask(dbaction.update, new String[]{tbkey.getText()}); 
     }//GEN-LAST:event_btupdateActionPerformed
 
     private void btaddassignActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddassignActionPerformed
@@ -1528,12 +1436,12 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
           }
           acctsIn.put(ddcategory.getSelectedItem().toString(), lm);
           
-          lm.clear();
-          lm = new ArrayList<>();
+          
+          ArrayList<String> lmex = new ArrayList<>();
           for (int j = 0; j < mymodelex.getSize(); j++) {
-              lm.add(mymodelex.getElementAt(j).toString());
+              lmex.add(mymodelex.getElementAt(j).toString());
           }
-          acctsOut.put(ddcategory.getSelectedItem().toString(), lm);
+          acctsOut.put(ddcategory.getSelectedItem().toString(), lmex);
           
         
         
