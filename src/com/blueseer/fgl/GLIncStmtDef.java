@@ -957,7 +957,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
             }
         });
 
-        ddtype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "header", "detail", "summation", "spacer", "dashline" }));
+        ddtype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "header", "detail", "summation", "spacer", "dashline", "groupstart", "groupend" }));
 
         cbsummarize.setText("Summarize");
 
@@ -1067,7 +1067,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                     .addComponent(cbbegbal)
                     .addComponent(cbactivity)
                     .addComponent(cbendbal))
-                .addContainerGap(12, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         tablereport.setModel(new javax.swing.table.DefaultTableModel(
