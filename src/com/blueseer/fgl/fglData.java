@@ -2125,8 +2125,8 @@ public class fglData {
                         seqsubtotal += acctval;
                         if (! res.getString("glic_passive").equals("1")) {
                           profiletotal += acctval;
-                          if (groupmap.containsKey(res.getString("glic_name"))) {
-                             groupmap.put(res.getString("glic_name"), (groupmap.get(res.getString("glic_name") + acctval)));
+                          for (Map.Entry<String,Double> group : groupmap.entrySet()) {
+                              groupmap.put(group.getKey(), (groupmap.get(group.getKey()).doubleValue() + acctval));
                           }
                         }
                         if (res.getString("glic_type").equals("detail")) { // showdetail
@@ -2156,7 +2156,6 @@ public class fglData {
                             rowArray.put(res.getString("glic_desc"));
                             rowArray.put("Group End");
                             double x = groupmap.get(res.getString("glic_name"));
-                            System.out.println("HERE:  value is " + x);
                             rowArray.put(bsNumber(x));
                             jsonarray.put(rowArray);
                         }
