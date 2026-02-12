@@ -2129,7 +2129,7 @@ public class fglData {
                               double t = group.getValue();
                               t += acctval;
                               groupmap.put(group.getKey(), t);
-                              System.out.println(group.getKey() + " accum value " + t + " acctval = " + acctval);
+                              System.out.println(group.getKey() + " accum value " + t + " acctval = " + acctval + " for category " + res.getString("glic_name"));
                           }
                         }
                         if (res.getString("glic_type").equals("detail")) { // showdetail
