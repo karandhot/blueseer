@@ -2200,11 +2200,20 @@ public class fglData {
                                     zz = x - y;
                                 }
                             }
-
+                            if (! groupmapfinal.containsKey(res.getString("glic_name"))) {
+                                groupmapfinal.put(res.getString("glic_name"), zz);
+                            } else {
+                                double g = groupmapfinal.get(res.getString("glic_name"));
+                                groupmapfinal.put(res.getString("glic_name"), g + zz);  
+                            }
+                        }
+                        
+                        if (res.getString("glic_type").equals("variable")) {  
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(res.getString("glic_desc"));
                             rowArray.put("assignment");
-                            rowArray.put(bsNumber(zz));
+                            double x = (groupmapfinal.get(res.getString("glic_expression")) == null) ? 0 : groupmapfinal.get(res.getString("glic_expression"));
+                            rowArray.put(bsNumber(x));
                             jsonarray.put(rowArray);
                         }
 
