@@ -2202,7 +2202,7 @@ public class fglData {
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(res.getString("glic_desc"));
                             rowArray.put("assignment");
-                            rowArray.put(bsNumber(x));
+                            rowArray.put(bsNumber(zz));
                             jsonarray.put(rowArray);
                         }
 
