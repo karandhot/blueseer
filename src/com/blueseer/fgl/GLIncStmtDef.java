@@ -39,6 +39,7 @@ import static com.blueseer.fgl.fglData.deleteGLIC;
 import static com.blueseer.fgl.fglData.deleteGLICMeta;
 import static com.blueseer.fgl.fglData.getGLICAcctlist;
 import static com.blueseer.fgl.fglData.getGLICDefElements;
+import static com.blueseer.fgl.fglData.getGLICMetaValue;
 import static com.blueseer.fgl.fglData.getGLIClist;
 import com.blueseer.fgl.fglData.glic_accts;
 import com.blueseer.fgl.fglData.glic_def;
@@ -109,6 +110,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
     public static ArrayList<glic_accts> ylist = null;
     public static LinkedHashMap<String, ArrayList<String>> acctsIn = new  LinkedHashMap<>();
     public static LinkedHashMap<String, ArrayList<String>> acctsOut = new  LinkedHashMap<>();
+    String jasper = "";
     boolean isLoad = false;
     
      GLIncStmtDef.MyTableModel tablemodel = new GLIncStmtDef.MyTableModel(new Object[][]{},
@@ -286,8 +288,9 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
        tablereport.setModel(tablemodel);
        tablemodel.setNumRows(0);
        
-       tbkey.setText("");
+        tbkey.setText("");
         tbdesc.setText("");
+        tbjasper.setText("");
         ddcategory.removeAllItems();
         ddtype.setSelectedIndex(0);
         tbsequence.setText("");
@@ -399,6 +402,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
         btnew.setEnabled(false);
         tbkey.setEditable(true);
         tbkey.setForeground(Color.blue);
+        tbjasper.setText("genericstatement.jasper");
         if (! x.isEmpty()) {
           tbkey.setText(String.valueOf(OVData.getNextNbr(x)));  
           tbkey.setEditable(false);
@@ -474,11 +478,13 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
        
     public String[] addRecord(String[] key) {
          String[] m = addUpdateGLICTransaction(key[0], createRecord(), createRecordAccts());
+         addUpdateGLICMeta("header", "jasper", key[0], tbjasper.getText());
          return m;
     }
         
     public String[] updateRecord(String[] key) {
          String[] m = addUpdateGLICTransaction(key[0], createRecord(), createRecordAccts());
+         addUpdateGLICMeta("header", "jasper", key[0], tbjasper.getText());
          return m;
     }
     
@@ -497,6 +503,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
     public String[] getRecord(String[] key) {
         ArrayList<glic_def> z = getGLIClist(key); 
         ArrayList<glic_accts> y = getGLICAcctlist(key);
+        jasper = getGLICMetaValue("header", "jasper", key[0]);
         xlist = z;
         ylist = y;
         return xlist.get(0).m();
@@ -508,6 +515,8 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
         
         acctsIn.clear();
         acctsOut.clear();
+        
+        tbjasper.setText(jasper);
         
         for (glic_def glic : xlist) {
             if (i == 0) {
@@ -711,6 +720,48 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
         
     }
 
+    public void lookUpFrameAcctDesc() {
+        
+        luinput.removeActionListener(lual);
+        lual = new ActionListener() {
+        public void actionPerformed(ActionEvent event) {
+        if (lurb1.isSelected()) {  
+         luModel = DTData.getAcctBrowseUtil(luinput.getText(),0, "ac_id");
+        } else {
+         luModel = DTData.getAcctBrowseUtil(luinput.getText(), 0, "ac_desc");   
+        } 
+         
+        luTable.setModel(luModel);
+        luTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        if (luModel.getRowCount() < 1) {
+            ludialog.setTitle(getMessageTag(1001));
+        } else {
+            ludialog.setTitle(getMessageTag(1002, String.valueOf(luModel.getRowCount())));
+        }
+        }
+        };
+        luinput.addActionListener(lual);
+        
+        luTable.removeMouseListener(luml);
+        luml = new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                JTable target = (JTable)e.getSource();
+                int row = target.getSelectedRow();
+                int column = target.getSelectedColumn();
+                if ( column == 0) {
+                ludialog.dispose();
+                  ddacct.setSelectedItem(target.getValueAt(row,1).toString());
+                }
+            }
+        };
+        luTable.addMouseListener(luml);
+      
+         
+        callDialog(getGlobalColumnTag("id"), 
+                getGlobalColumnTag("description")); 
+        
+    }
+    
     public void clearAll() {
         tbkey.setText("");
         tbdesc.setText("");
@@ -753,6 +804,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
         acctname = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         ddacct = new javax.swing.JComboBox();
+        btLookUpAccountFrom = new javax.swing.JButton();
         btlookup = new javax.swing.JButton();
         btclear = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
@@ -761,7 +813,6 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
         jLabel5 = new javax.swing.JLabel();
         tbto = new javax.swing.JTextField();
         tbfrom = new javax.swing.JTextField();
-        btdeletecat = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
@@ -789,6 +840,10 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
         btaddcategory = new javax.swing.JButton();
         btdeletecategory = new javax.swing.JButton();
         btupdatecategory = new javax.swing.JButton();
+        tbjasper = new javax.swing.JTextField();
+        jLabel12 = new javax.swing.JLabel();
+        btcopy = new javax.swing.JButton();
+        btsequence = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -855,6 +910,13 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
             }
         });
 
+        btLookUpAccountFrom.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/find.png"))); // NOI18N
+        btLookUpAccountFrom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btLookUpAccountFromActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -882,8 +944,10 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                                 .addComponent(btdeleteassigned)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btaddassign)))
-                        .addGap(18, 18, 18)
-                        .addComponent(acctname, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btLookUpAccountFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(acctname, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
                     .addComponent(jScrollPane3))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -896,7 +960,8 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(ddacct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel3))
-                    .addComponent(acctname, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(acctname, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btLookUpAccountFrom))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btaddassign)
@@ -905,7 +970,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel7))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btaddexclude)
                     .addComponent(btdeleteexclude))
@@ -929,14 +994,6 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
 
         jLabel5.setText("From");
         jLabel5.setName("lblfrom"); // NOI18N
-
-        btdeletecat.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/delete.png"))); // NOI18N
-        btdeletecat.setToolTipText("Delete Category");
-        btdeletecat.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btdeletecatActionPerformed(evt);
-            }
-        });
 
         jLabel1.setText("Code");
         jLabel1.setName("lblcode"); // NOI18N
@@ -1010,9 +1067,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(ddcategory, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btaddcat, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btdeletecat, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(btaddcat, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(tbfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(tbto, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(tbsequence, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1031,14 +1086,13 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                     .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                         .addComponent(tbexpression, javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(tbdesc, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)))
-                .addContainerGap())
+                .addGap(25, 25, 25))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btdeletecat)
                     .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(ddcategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel1))
@@ -1149,30 +1203,34 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
             }
         });
 
+        jLabel12.setText("Jasper File");
+
+        btcopy.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/addfile.png"))); // NOI18N
+        btcopy.setToolTipText("Copy");
+        btcopy.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btcopyActionPerformed(evt);
+            }
+        });
+
+        btsequence.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/map.png"))); // NOI18N
+        btsequence.setToolTipText("Copy");
+        btsequence.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btsequenceActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGap(106, 106, 106)
-                                .addComponent(jLabel2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btlookup, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnew)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btclear)
-                                .addGap(0, 10, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(33, 33, 33)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addContainerGap(47, Short.MAX_VALUE)
+                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(33, 33, 33)
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addContainerGap()
@@ -1183,7 +1241,26 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btupdate)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btadd)))
+                        .addComponent(btadd))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(97, 97, 97)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel12))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btlookup, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(tbjasper))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnew)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btclear)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btcopy)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(152, 152, 152)
@@ -1192,6 +1269,8 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                 .addComponent(btaddcategory)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btupdatecategory)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btsequence)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -1199,31 +1278,39 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel2))
-                    .addComponent(btlookup)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(btclear)
-                        .addComponent(btnew)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(tbkey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel2))
+                            .addComponent(btlookup)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(btclear)
+                                .addComponent(btnew)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(tbjasper, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel12)))
+                    .addComponent(btcopy))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btaddcategory)
-                    .addComponent(btdeletecategory)
-                    .addComponent(btupdatecategory))
-                .addGap(4, 4, 4)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btupdate)
-                    .addComponent(btadd)
-                    .addComponent(btdelete))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btaddcategory)
+                            .addComponent(btdeletecategory)
+                            .addComponent(btupdatecategory))
+                        .addGap(4, 4, 4)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btupdate)
+                            .addComponent(btadd)
+                            .addComponent(btdelete)))
+                    .addComponent(btsequence))
                 .addGap(24, 24, 24))
         );
 
@@ -1309,15 +1396,6 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
             }
         }
     }//GEN-LAST:event_btaddcatActionPerformed
-
-    private void btdeletecatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeletecatActionPerformed
-        if (! tbkey.getText().isBlank()) {
-            int i = ddcategory.getSelectedIndex();
-            String item = ddcategory.getSelectedItem().toString();
-            deleteGLICMeta("glic", "category", tbkey.getText(), item);
-            ddcategory.remove(i);
-        }
-    }//GEN-LAST:event_btdeletecatActionPerformed
 
     private void btnewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnewActionPerformed
         newAction("");
@@ -1502,23 +1580,54 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
         
     }//GEN-LAST:event_tablereportMouseClicked
 
+    private void btLookUpAccountFromActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btLookUpAccountFromActionPerformed
+        lookUpFrameAcctDesc();
+    }//GEN-LAST:event_btLookUpAccountFromActionPerformed
+
+    private void btcopyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcopyActionPerformed
+        if (! isLoad) {
+            tbkey.setText("");
+            tbkey.setBackground(Color.yellow);
+            //bsmf.MainFrame.show("choose new parent key and adjust ISA/GS IDs accordingly");
+            tbkey.requestFocus();
+            btadd.setEnabled(true);
+            tbkey.setEnabled(true);
+            tbkey.setEditable(true);
+            btdelete.setEnabled(false);
+            btupdate.setEnabled(false);
+            btcopy.setEnabled(false);
+          //  for (int j = 0; j < tablereport.getRowCount(); j++) {
+          //      tablereport.setValueAt(0, j, 10);
+          //  }
+
+        }
+    }//GEN-LAST:event_btcopyActionPerformed
+
+    private void btsequenceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btsequenceActionPerformed
+            for (int j = 0; j < tablereport.getRowCount(); j++) {
+                tablereport.setValueAt(j, j, 2);
+            }
+    }//GEN-LAST:event_btsequenceActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel acctname;
     private javax.swing.JList assignlist;
+    private javax.swing.JButton btLookUpAccountFrom;
     private javax.swing.JButton btadd;
     private javax.swing.JButton btaddassign;
     private javax.swing.JButton btaddcat;
     private javax.swing.JButton btaddcategory;
     private javax.swing.JButton btaddexclude;
     private javax.swing.JButton btclear;
+    private javax.swing.JButton btcopy;
     private javax.swing.JButton btdelete;
     private javax.swing.JButton btdeleteassigned;
-    private javax.swing.JButton btdeletecat;
     private javax.swing.JButton btdeletecategory;
     private javax.swing.JButton btdeleteexclude;
     private javax.swing.JButton btlookup;
     private javax.swing.JButton btnew;
+    private javax.swing.JButton btsequence;
     private javax.swing.JButton btupdate;
     private javax.swing.JButton btupdatecategory;
     private javax.swing.JCheckBox cbactivity;
@@ -1537,6 +1646,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -1555,6 +1665,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
     private javax.swing.JTextField tbdesc;
     private javax.swing.JTextField tbexpression;
     private javax.swing.JTextField tbfrom;
+    private javax.swing.JTextField tbjasper;
     private javax.swing.JTextField tbkey;
     private javax.swing.JTextField tbsequence;
     private javax.swing.JTextField tbto;

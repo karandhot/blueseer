@@ -73,7 +73,9 @@ import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.adm.admData;
+import static com.blueseer.fgl.fglData.addUpdateGLICMeta;
 import static com.blueseer.fgl.fglData.getGLCalYearsRange;
+import static com.blueseer.fgl.fglData.getGLICMetaValue;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatInt;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
@@ -107,6 +109,7 @@ public class StatementReport extends javax.swing.JPanel {
     ArrayList<String[]> initDataSets = new ArrayList<>();
     String defaultcurrency = "";
     String[] glCalDateArray;
+    String jasper = "";
     boolean isLoad = false;
     double activetotal = 0;
     
@@ -350,7 +353,7 @@ public class StatementReport extends javax.swing.JPanel {
     }    
     
     public void done_Initialization() {
-        
+        isLoad = true;
         ddsite.removeAllItems();
         ddprofile.removeAllItems();
         String defaultsite = "";
@@ -381,7 +384,10 @@ public class StatementReport extends javax.swing.JPanel {
         mytable.setModel(mymodel);
         mytable.getTableHeader().setReorderingAllowed(false);
         mytable.getColumnModel().getColumn(2).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+       isLoad = false;
        
+       ddprofile.setSelectedIndex(0);
+       jasper = getGLICMetaValue("header", "jasper", ddprofile.getSelectedItem().toString());
        
     }
 
@@ -538,6 +544,12 @@ public class StatementReport extends javax.swing.JPanel {
         btprint.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btprintActionPerformed(evt);
+            }
+        });
+
+        ddprofile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ddprofileActionPerformed(evt);
             }
         });
 
@@ -1204,7 +1216,10 @@ public class StatementReport extends javax.swing.JPanel {
                 hm.put("activetotal", activetotal);
                // res = st.executeQuery("select shd_id, sh_cust, shd_po, shd_item, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, cm_city, cm_state, cm_zip, concat(cm_city, \" \", cm_state, \" \", cm_zip) as st_citystatezip, site_desc from ship_det inner join ship_mstr on sh_id = shd_id inner join cm_mstr on cm_code = sh_cust inner join site_mstr on site_site = sh_site where shd_id = '1848' ");
                // JRResultSetDataSource jasperReports = new JRResultSetDataSource(res);
-                File mytemplate = new File("jasper/incomestatement.jasper");
+               if (jasper.isBlank()) {
+                   jasper = "incomestatement.jasper";
+               }
+                File mytemplate = new File("jasper/" + jasper);
                  
                 JasperPrint jasperPrint = JasperFillManager.fillReport(mytemplate.getPath(), hm, new JRTableModelDataSource(mytable.getModel()) );
                // JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/is.pdf");
@@ -1265,6 +1280,12 @@ public class StatementReport extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_ddyearActionPerformed
+
+    private void ddprofileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddprofileActionPerformed
+        if (! isLoad) {
+         jasper = getGLICMetaValue("header", "jasper", ddprofile.getSelectedItem().toString());
+        }
+    }//GEN-LAST:event_ddprofileActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -157,23 +157,6 @@
 		</band>
 	</detail>
 	<lastPageFooter>
-		<band height="31">
-			<textField pattern="$#,##0.00;($#,##0.00)">
-				<reportElement x="434" y="5" width="96" height="16" uuid="25c4aa16-9d76-4b22-9897-71661090db5c">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-				</reportElement>
-				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[$P{activetotal}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="320" y="5" width="96" height="16" uuid="6c8fb81a-f6a7-4c71-a1ad-a28527c2559b">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-				</reportElement>
-				<textElement textAlignment="Right"/>
-				<text><![CDATA[Net Total:]]></text>
-			</staticText>
-		</band>
+		<band height="31"/>
 	</lastPageFooter>
 </jasperReport>

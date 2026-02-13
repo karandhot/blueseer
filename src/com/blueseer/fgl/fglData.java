@@ -2155,7 +2155,7 @@ public class fglData {
                         if (res.getString("glic_summarize").equals("1")) {  
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(res.getString("glic_desc"));
-                            rowArray.put("Category Total:");
+                            rowArray.put("Total:");
                             rowArray.put(seqsubtotal);
                             if (! res.getString("glic_suppzerosum").equals("1")) {
                              jsonarray.put(rowArray);
@@ -2371,6 +2371,60 @@ public class fglData {
         return x;
     }
 
+    public static String getGLICMetaValue(String id, String type, String key) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getGLICMetaValue"});
+            list.add(new String[]{"param1", id});
+            list.add(new String[]{"param2", type});
+            list.add(new String[]{"param3", key});
+            try {
+                return sendServerPost(list, "", null, "dataServFIN"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        } 
+        
+        String x = "";
+         try{
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+                res = st.executeQuery("select glicm_value from glic_meta where " +
+                        " glicm_id = " + "'" + id + "'" + " AND " +
+                        " glicm_type = " + "'" + type + "'" + " AND " +
+                        " glicm_key = " + "'" + key + "'" +
+                        " order by glicm_value;" );
+               while (res.next()) {
+                x = res.getString("glicm_value");                    
+                }
+               
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return x;
+        
+    }   
+    
     
     public static String getInvoiceBrowseView(String shipperfrom, String shipperto, String custfrom, String custto, String fromdate, String todate) {
         JSONArray jsonarray = new JSONArray();
