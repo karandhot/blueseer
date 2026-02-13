@@ -80,12 +80,16 @@ import static com.blueseer.utl.BlueSeerUtils.bsFormatInt;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
+import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.OVData.getSiteLogo;
+import static com.blueseer.utl.OVData.getSystemJasperDirectory;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -1219,9 +1223,11 @@ public class StatementReport extends javax.swing.JPanel {
                if (jasper.isBlank()) {
                    jasper = "incomestatement.jasper";
                }
-                File mytemplate = new File("jasper/" + jasper);
+               
+                Path template = FileSystems.getDefault().getPath(cleanDirString(getSystemJasperDirectory()) + jasper);
+               
                  
-                JasperPrint jasperPrint = JasperFillManager.fillReport(mytemplate.getPath(), hm, new JRTableModelDataSource(mytable.getModel()) );
+                JasperPrint jasperPrint = JasperFillManager.fillReport(template.toString(), hm, new JRTableModelDataSource(mytable.getModel()) );
                // JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/is.pdf");
          
             JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
