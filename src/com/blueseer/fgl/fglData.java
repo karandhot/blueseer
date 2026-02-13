@@ -2037,6 +2037,7 @@ public class fglData {
     public static String getGLICBrowseView(String profile, String site, String year, String perfrom, String perto) {
         JSONArray jsonarray = new JSONArray();
         Map<String, Double> groupmap = new HashMap<>();
+        Map<String, Double> groupmapfinal = new HashMap<>();
         try {
             
             Connection con = null;
@@ -2151,7 +2152,7 @@ public class fglData {
                             }
                         }
                     } // for accounts
-                        if (res.getString("glic_summarize").equals("1")) {  // showsubtotal
+                        if (res.getString("glic_summarize").equals("1")) {  
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(res.getString("glic_desc"));
                             rowArray.put("Category Total:");
@@ -2161,13 +2162,14 @@ public class fglData {
                             }
                         }
                         
-                        if (res.getString("glic_type").equals("groupend")) {  // showsubtotal
+                        if (res.getString("glic_type").equals("groupend")) {  
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(res.getString("glic_desc"));
                             rowArray.put("Group End");
                             double x = (groupmap.get(res.getString("glic_name")) == null) ? 0 : groupmap.get(res.getString("glic_name"));
                             rowArray.put(bsNumber(x));
                             jsonarray.put(rowArray);
+                            groupmapfinal.put(res.getString("glic_name"), x);
                         }
                         
                         if (res.getString("glic_type").equals("expression")) {  
@@ -2181,7 +2183,7 @@ public class fglData {
                                     String[] resultarr = result.split(",", -1);
                                     for (String rs : resultarr) {
                                         if (rs != null) {
-                                          zz += (groupmap.get(rs) == null) ? 0 : groupmap.get(rs);
+                                          zz += (groupmapfinal.get(rs) == null) ? 0 : groupmapfinal.get(rs);
                                         }
                                     }
                                 }
@@ -2193,7 +2195,7 @@ public class fglData {
                                     String result = matcher.group(1); // Group 1 contains text inside ()
                                     String[] resultarr = result.split(",", -1);
                                     for (int i = resultarr.length - 1; i >= 0; i--) {
-                                        zz -= (groupmap.get(resultarr[i]) == null) ? 0 : groupmap.get(resultarr[i]);
+                                        zz -= (groupmapfinal.get(resultarr[i]) == null) ? 0 : groupmapfinal.get(resultarr[i]);
                                         System.out.println("yep " + resultarr[i] + " " + zz);
                                     }
                                 }
