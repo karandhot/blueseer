@@ -2183,7 +2183,8 @@ public class fglData {
                                     String[] resultarr = result.split(",", -1);
                                     for (String rs : resultarr) {
                                         if (rs != null) {
-                                          zz += (groupmapfinal.get(rs) == null) ? 0 : groupmapfinal.get(rs);
+                                          double x = (groupmapfinal.get(rs) == null) ? 0 : groupmapfinal.get(rs);  
+                                          zz = zz + x;
                                         }
                                     }
                                 }
@@ -2194,10 +2195,9 @@ public class fglData {
                                 if (matcher.find()) { // Finds the first occurrence
                                     String result = matcher.group(1); // Group 1 contains text inside ()
                                     String[] resultarr = result.split(",", -1);
-                                    for (int i = resultarr.length - 1; i >= 0; i--) {
-                                        zz -= (groupmapfinal.get(resultarr[i]) == null) ? 0 : groupmapfinal.get(resultarr[i]);
-                                        System.out.println("yep " + resultarr[i] + " " + zz);
-                                    }
+                                    double x = (groupmapfinal.get(resultarr[0]) == null) ? 0 : groupmapfinal.get(resultarr[0]);
+                                    double y = (groupmapfinal.get(resultarr[1]) == null) ? 0 : groupmapfinal.get(resultarr[1]);
+                                    zz = x - y;
                                 }
                             }
 
