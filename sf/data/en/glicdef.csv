@@ -1,14 +1,14 @@
-IncomeStatement,sales,Sales,1,,50000000,50000000,0,1,0,0,0,0,0,0,0
-IncomeStatement,cogs,Cost Of Goods Sold,2,,62000000,62005000,0,1,0,0,0,0,0,0,0
-IncomeStatement,mtlvar,Material Variance,3,,80001000,80002000,0,1,0,0,0,0,0,0,0
-IncomeStatement,lbrvar,Labor Variance,4,,70001000,70001000,0,1,0,0,0,0,0,0,0
-IncomeStatement,bdnvar,Burden Variance,5,,70001001,7001001,0,1,0,0,0,0,0,0,0
-IncomeStatement,prodeng,Production Engineering Costs,6,,, ,0,1,0,0,0,0,0,0,0
-IncomeStatement,mktsales,Marketing and Sales Costs,7,,, ,0,1,0,0,0,0,0,0,0
-IncomeStatement,g&a,General Administration Costs,8,,90000000,99999998 ,0,1,0,0,0,0,0,0,0
-IncomeStatement,interest,Interest,9,,, ,0,1,0,0,0,0,0,0,0
-IncomeStatement,alloc,Allocations,10,,, ,0,1,0,0,0,0,0,0,0
-IncomeStatement,mgtfee,Management Fees,11,,, ,0,1,0,0,0,0,0,0,0
-IncomeStatement,bankfee,Bank Fees,12,,, ,0,1,0,0,0,0,0,0,0
-IncomeStatement,otherie,Other Income/Expense,13,,, ,0,1,0,0,0,0,0,0,0
-IncomeStatement,depreciation,Depreciation,14,,, ,0,1,0,0,0,0,0,0,0
+IncomeStatement,sales,Sales,1,,50000000,50000000,0,1,0,0,0,0,0,0,0,
+IncomeStatement,cogs,Cost Of Goods Sold,2,,62000000,62005000,0,1,0,0,0,0,0,0,0,
+IncomeStatement,mtlvar,Material Variance,3,,80001000,80002000,0,1,0,0,0,0,0,0,0,
+IncomeStatement,lbrvar,Labor Variance,4,,70001000,70001000,0,1,0,0,0,0,0,0,0,
+IncomeStatement,bdnvar,Burden Variance,5,,70001001,7001001,0,1,0,0,0,0,0,0,0,
+IncomeStatement,prodeng,Production Engineering Costs,6,,, ,0,1,0,0,0,0,0,0,0,
+IncomeStatement,mktsales,Marketing and Sales Costs,7,,, ,0,1,0,0,0,0,0,0,0,
+IncomeStatement,g&a,General Administration Costs,8,,90000000,99999998 ,0,1,0,0,0,0,0,0,0,
+IncomeStatement,interest,Interest,9,,, ,0,1,0,0,0,0,0,0,0,
+IncomeStatement,alloc,Allocations,10,,, ,0,1,0,0,0,0,0,0,0,
+IncomeStatement,mgtfee,Management Fees,11,,, ,0,1,0,0,0,0,0,0,0,
+IncomeStatement,bankfee,Bank Fees,12,,, ,0,1,0,0,0,0,0,0,0,
+IncomeStatement,otherie,Other Income/Expense,13,,, ,0,1,0,0,0,0,0,0,0,
+IncomeStatement,depreciation,Depreciation,14,,, ,0,1,0,0,0,0,0,0,0,

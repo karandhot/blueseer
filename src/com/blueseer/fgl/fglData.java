@@ -91,6 +91,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JTable;
 import org.json.JSONArray;
 
@@ -1499,12 +1501,12 @@ public class fglData {
         String sqlInsert = "insert into glic_def (glic_profile, glic_name, glic_desc," +
         " glic_seq, glic_type, glic_start, glic_end, glic_summarize," +
         " glic_flipsign, glic_enabled, glic_suppzerodet, glic_suppzerosum, glic_passive, " +
-        " glic_begbal, glic_activity, glic_endbal ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+        " glic_begbal, glic_activity, glic_endbal, glic_expression ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
         String sqlUpdate = "update glic_def set glic_desc = ?," +
         " glic_seq = ?, glic_start = ?, glic_end = ?, glic_summarize = ?," +
         " glic_flipsign = ?, glic_enabled = ?, glic_suppzerodet = ?, glic_suppzerosum = ?, glic_passive = ?, " +
-        " glic_begbal = ?, glic_activity = ?, glic_endbal = ? " +
+        " glic_begbal = ?, glic_activity = ?, glic_endbal = ?, glic_expression = ? " +
         " where glic_profile = ? and glic_name = ? and glic_type = ? ";
         PreparedStatement ps = con.prepareStatement(sqlSelect);
         ps.setString(1, x.glic_profile());
@@ -1533,6 +1535,7 @@ public class fglData {
             psi.setString(14, x.glic_begbal);
             psi.setString(15, x.glic_activity);
             psi.setString(16, x.glic_endbal);
+            psi.setString(17, x.glic_expression);
              rows = psi.executeUpdate();
             } else {
             psu.setString(1, x.glic_desc);
@@ -1548,9 +1551,10 @@ public class fglData {
             psu.setString(11, x.glic_begbal);
             psu.setString(12, x.glic_activity);
             psu.setString(13, x.glic_endbal);
-            psu.setString(14, x.glic_profile);
-            psu.setString(15, x.glic_name);
-            psu.setString(16, x.glic_type);
+            psu.setString(14, x.glic_expression);
+            psu.setString(15, x.glic_profile);
+            psu.setString(16, x.glic_name);
+            psu.setString(17, x.glic_type);
             rows = psu.executeUpdate();   
             }
           
@@ -1677,7 +1681,8 @@ public class fglData {
                                 res.getString("glic_passive"),
                                 res.getString("glic_begbal"),
                                 res.getString("glic_activity"),
-                                res.getString("glic_endbal")
+                                res.getString("glic_endbal"),
+                                res.getString("glic_expression")
                         );
                     }
                 }
@@ -1738,7 +1743,8 @@ public class fglData {
                                 res.getString("glic_passive"),
                                 res.getString("glic_begbal"),
                                 res.getString("glic_activity"),
-                                res.getString("glic_endbal")
+                                res.getString("glic_endbal"),
+                                res.getString("glic_expression")
                         );
                         list.add(r); 
                     }
@@ -2163,6 +2169,42 @@ public class fglData {
                             rowArray.put(bsNumber(x));
                             jsonarray.put(rowArray);
                         }
+                        
+                        if (res.getString("glic_type").equals("expression")) {  
+                            String exp = res.getString("glic_expression");
+                            double x = 0;
+                            if (exp.startsWith("add(")) {
+                                Pattern pattern = Pattern.compile("\\((.*?)\\)");
+                                Matcher matcher = pattern.matcher(exp);
+                                if (matcher.find()) { // Finds the first occurrence
+                                    String result = matcher.group(1); // Group 1 contains text inside ()
+                                    String[] resultarr = result.split(",", -1);
+                                    for (String rs : resultarr) {
+                                        if (rs != null) {
+                                          x += (groupmap.get(rs) == null) ? 0 : groupmap.get(rs);
+                                        }
+                                    }
+                                }
+                            }
+                            if (exp.startsWith("subtract(")) {
+                                Pattern pattern = Pattern.compile("\\((.*?)\\)");
+                                Matcher matcher = pattern.matcher(exp);
+                                if (matcher.find()) { // Finds the first occurrence
+                                    String result = matcher.group(1); // Group 1 contains text inside ()
+                                    String[] resultarr = result.split(",", -1);
+                                    for (int i = resultarr.length - 1; i >= 0; i--) {
+                                        x -= (groupmap.get(resultarr[i]) == null) ? 0 : groupmap.get(resultarr[i]);
+                                    }
+                                }
+                            }
+
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put(res.getString("glic_desc"));
+                            rowArray.put("assignment");
+                            rowArray.put(bsNumber(x));
+                            jsonarray.put(rowArray);
+                        }
+
                         
                      
                  } // while profile
@@ -8693,10 +8735,10 @@ return myarray;
     public record glic_def(String[] m, String glic_profile, String glic_name, String glic_desc,
         int glic_seq, String glic_type, String glic_start, String glic_end, String glic_summarize,
         String glic_flipsign, String glic_enabled, String glic_suppzerodet, String glic_suppzerosum,
-        String glic_passive, String glic_begbal, String glic_activity, String glic_endbal ) {
+        String glic_passive, String glic_begbal, String glic_activity, String glic_endbal, String glic_expression ) {
         public glic_def(String[] m) {
             this(m, "", "", "", 0, "", "", "", "", "", "",
-                    "", "", "", "", "", "");
+                    "", "", "", "", "", "", "");
         }
     }
     

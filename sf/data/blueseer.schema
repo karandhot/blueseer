@@ -1043,7 +1043,8 @@ CREATE TABLE IF NOT EXISTS `glic_def` (
   `glic_passive` tinyint(1) NOT NULL  DEFAULT '0',
   `glic_begbal` tinyint(1) NOT NULL  DEFAULT '0',
   `glic_activity` tinyint(1) NOT NULL  DEFAULT '1',
-  `glic_endbal` tinyint(1) NOT NULL  DEFAULT '0'
+  `glic_endbal` tinyint(1) NOT NULL  DEFAULT '0',
+  `glic_expression` varchar(200) NOT NULL  DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `glic_meta` (
   `glicm_id` varchar(30) NOT NULL DEFAULT '',

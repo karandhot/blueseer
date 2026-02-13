@@ -350,6 +350,7 @@
                           <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel9" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel10" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel11" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -370,7 +371,6 @@
                           </Group>
                           <Component id="tbfrom" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
                           <Component id="tbto" alignment="0" min="-2" pref="150" max="-2" attributes="0"/>
-                          <Component id="tbdesc" alignment="0" min="-2" pref="265" max="-2" attributes="0"/>
                           <Component id="tbsequence" alignment="0" min="-2" pref="74" max="-2" attributes="0"/>
                           <Component id="ddtype" alignment="0" min="-2" pref="128" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
@@ -387,6 +387,10 @@
                                   <Component id="cbpassive" min="-2" max="-2" attributes="0"/>
                                   <Component id="cbenabled" min="-2" max="-2" attributes="0"/>
                               </Group>
+                          </Group>
+                          <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                              <Component id="tbexpression" alignment="0" max="32767" attributes="0"/>
+                              <Component id="tbdesc" alignment="0" pref="265" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -429,6 +433,11 @@
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="ddtype" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel10" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="tbexpression" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel11" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -536,14 +545,15 @@
             <Component class="javax.swing.JComboBox" name="ddtype">
               <Properties>
                 <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                  <StringArray count="7">
+                  <StringArray count="8">
                     <StringItem index="0" value="header"/>
                     <StringItem index="1" value="detail"/>
-                    <StringItem index="2" value="summation"/>
-                    <StringItem index="3" value="spacer"/>
-                    <StringItem index="4" value="dashline"/>
-                    <StringItem index="5" value="groupstart"/>
-                    <StringItem index="6" value="groupend"/>
+                    <StringItem index="2" value="expression"/>
+                    <StringItem index="3" value="summation"/>
+                    <StringItem index="4" value="spacer"/>
+                    <StringItem index="5" value="dashline"/>
+                    <StringItem index="6" value="groupstart"/>
+                    <StringItem index="7" value="groupend"/>
                   </StringArray>
                 </Property>
               </Properties>
@@ -589,6 +599,13 @@
             <Component class="javax.swing.JCheckBox" name="cbendbal">
               <Properties>
                 <Property name="text" type="java.lang.String" value="EndBal"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="tbexpression">
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel11">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Expression"/>
               </Properties>
             </Component>
           </SubComponents>
