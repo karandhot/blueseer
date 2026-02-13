@@ -535,7 +535,8 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
                 glic.glic_passive(),
                 glic.glic_begbal(),
                 glic.glic_activity(),
-                glic.glic_endbal()});
+                glic.glic_endbal(),
+                glic.glic_expression()});
             tablereport.setModel(tablemodel);
         }
         
