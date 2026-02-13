@@ -1563,7 +1563,7 @@ public class fglData {
    
     public static int _addUpdateGLICAcct(glic_accts x, Connection con) throws SQLException {
         int rows = 0;
-        System.out.println("yep = " + x.glicd_acct() + ", " + x.glicd_name() + ", " + x.glicd_profile());
+        
         String sqlSelect = "SELECT * FROM  glic_accts where glicd_profile = ? and glicd_name = ? and glicd_acct = ? ;"; 
         String sqlInsert = "insert into glic_accts (glicd_profile, glicd_name, glicd_acct," +
         " glicd_seq, glicd_type ) "
@@ -2172,7 +2172,7 @@ public class fglData {
                         
                         if (res.getString("glic_type").equals("expression")) {  
                             String exp = res.getString("glic_expression");
-                            double x = 0;
+                            double zz = 0;
                             if (exp.startsWith("add(")) {
                                 Pattern pattern = Pattern.compile("\\((.*?)\\)");
                                 Matcher matcher = pattern.matcher(exp);
@@ -2181,7 +2181,7 @@ public class fglData {
                                     String[] resultarr = result.split(",", -1);
                                     for (String rs : resultarr) {
                                         if (rs != null) {
-                                          x += (groupmap.get(rs) == null) ? 0 : groupmap.get(rs);
+                                          zz += (groupmap.get(rs) == null) ? 0 : groupmap.get(rs);
                                         }
                                     }
                                 }
@@ -2193,7 +2193,8 @@ public class fglData {
                                     String result = matcher.group(1); // Group 1 contains text inside ()
                                     String[] resultarr = result.split(",", -1);
                                     for (int i = resultarr.length - 1; i >= 0; i--) {
-                                        x -= (groupmap.get(resultarr[i]) == null) ? 0 : groupmap.get(resultarr[i]);
+                                        zz -= (groupmap.get(resultarr[i]) == null) ? 0 : groupmap.get(resultarr[i]);
+                                        System.out.println("yep " + resultarr[i] + " " + zz);
                                     }
                                 }
                             }
