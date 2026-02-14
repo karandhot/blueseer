@@ -1,0 +1,65 @@
+alter table ship_det change column shd_desc shd_desc varchar(100) not null default '';
+alter table pod_mstr change column pod_desc pod_desc varchar(100) not null default '';
+alter table sod_det change column sod_desc sod_desc varchar(100) not null default '';
+alter table pbm_mstr change column ps_desc ps_desc varchar(100) not null default '';
+update item_mstr set it_site = '1000';
+update item_mstr set it_wf = 'default' where it_code = 'M';
+alter table pl_mstr change column pl_job_stock pl_sales_tax varchar(12) not null default '';
+alter table so_mstr add column so_slsperson1 varchar(100) not null default '';
+alter table so_mstr add column so_slsperson2 varchar(100) not null default '';
+alter table ov_ctrl add column ov_notes varchar(2000) not null default '';
+alter table ar_ctrl add column arc_salestax_acct varchar(12) not null default '';
+alter table ar_ctrl add column arc_salestax_cc varchar(4) not null default '';
+alter table taxd_mstr add column taxd_conditional varchar(30) not null default '';
+alter table taxd_mstr add column taxd_method varchar(50) not null default '';
+create table "tax_meta" (
+"taxm_id varchar(30) not null default '',
+"taxm_type varchar(80) not null default '',
+"taxm_key varchar(80) not null default '',
+"taxm_value varchar(200) not null default ''
+);
+create table "text_meta" (
+"txt_id varchar(30) not null default '',
+"txt_type varchar(80) not null default '',
+"txt_key varchar(80) not null default '',
+"txt_value varchar(200) not null default ''
+);
+CREATE TABLE IF NOT EXISTS `slsp_mstr` (
+  `slsp_id` varchar(10) NOT NULL DEFAULT '',
+  `slsp_name` varchar(80) NOT NULL DEFAULT '',
+  `slsp_line1` varchar(80) NOT NULL DEFAULT '',
+  `slsp_line2` varchar(80) NOT NULL DEFAULT '',
+  `slsp_city` varchar(50) NOT NULL DEFAULT '',
+  `slsp_state` varchar(3) NOT NULL DEFAULT '',
+  `slsp_zip` varchar(15) NOT NULL DEFAULT '',
+  `slsp_phone` varchar(20) NOT NULL DEFAULT '',
+  `slsp_email` varchar(100) NOT NULL DEFAULT '',
+  `slsp_company` varchar(100) NOT NULL DEFAULT '',
+  `slsp_active` tinyint(1) NOT NULL DEFAULT '0',
+  `slsp_rate` decimal(18,4) NOT NULL DEFAULT '0') 
+ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+alter table vd_mstr add column vd_taxid varchar(50) not null default '';
+alter table vd_mstr add column vd_taxexempt tinyint(1) not null default '0';
+alter table vd_mstr add column vd_1099 tinyint(1) not null default '0';
+
+alter table cm_mstr add column cm_highbal decimal(18,2) not null default '0';
+alter table cm_mstr add column cm_avgdays int(8) not null default '0';
+alter table cm_mstr add column cm_lastpaydate date default null;
+alter table cm_mstr add column cm_lastselldate date default null;
+alter table cm_mstr add column cm_municipality varchar(70) not null default '';
+alter table cm_mstr add column cm_county varchar(70) not null default '';
+alter table cm_mstr add column cm_tax_exempt tinyint(1) not null default '0';
+
+alter table cms_det add column cms_municipality varchar(70) not null default '';
+alter table cms_det add column cms_county varchar(70) not null default '';
+
+alter table po_ctrl add column poc_taxacct varchar(12) not null default '';
+alter table po_ctrl add column poc_taxcc varchar(30) not null default '';
+alter table po_ctrl add column poc_freightacct varchar(12) not null default '';
+alter table po_ctrl add column poc_freightcc varchar(30) not null default '';
+alter table po_ctrl add column poc_serviceacct varchar(12) not null default '';
+alter table po_ctrl add column poc_servicecc varchar(30) not null default '';
+
+alter table glic_def add column glic_profile varchar(100) not null default '' first;
+alter table glic_accts add column glicd_profile varchar(100) not null default '' first;
