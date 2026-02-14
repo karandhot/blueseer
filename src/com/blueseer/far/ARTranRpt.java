@@ -302,7 +302,7 @@ public class ARTranRpt extends javax.swing.JPanel {
                 
                  res = st.executeQuery("SELECT * " +
                         " FROM  ard_mstr " +
-                        " where ard_id = " + "'" +id + "'" + 
+                        " where ard_nbr = " + "'" +id + "'" + 
                          " order by ard_line;");        
                  
                  
@@ -311,7 +311,7 @@ public class ARTranRpt extends javax.swing.JPanel {
                     qty = qty + 0;
                     i++;
                         modeldetail.addRow(new Object[]{
-                            res.getString("ard_id"),
+                            res.getString("ard_nbr"),
                             res.getString("ard_cust"),
                             res.getString("ard_ref"),
                             res.getString("ard_line"),

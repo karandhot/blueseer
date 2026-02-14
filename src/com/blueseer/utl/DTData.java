@@ -12825,7 +12825,7 @@ return mymodel;
             ResultSet res = null;
             
             try{
-                 res = st.executeQuery("select ar_cust, ar_effdate, ar_nbr, ard_amt, ar_ref, ard_ref from ar_mstr inner join ard_mstr on ard_id = ar_nbr where ar_type = 'P' order by ar_id desc; ");
+                 res = st.executeQuery("select ar_cust, ar_effdate, ar_nbr, ard_amt, ar_ref, ard_ref from ar_mstr inner join ard_mstr on ard_nbr = ar_nbr where ar_type = 'P' order by ar_id desc; ");
                                
                  
                     while (res.next()) {

@@ -268,7 +268,12 @@ CREATE TABLE IF NOT EXISTS `ar_mstr` (
   `ar_bank` varchar(2) NOT NULL  DEFAULT '',
   `ar_curr` varchar(3) NOT NULL  DEFAULT '',
   `ar_base_curr` varchar(3) NOT NULL  DEFAULT '',
-  `ar_reverse` int(1) NOT NULL DEFAULT '0') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `ar_reverse` int(1) NOT NULL DEFAULT '0',
+  `ar_termsdisc_amt` decimal(14,5) NOT NULL DEFAULT '0.00',
+  `ar_termsdisc_pct` decimal(14,2) NOT NULL DEFAULT '0.00',
+  `ar_termsdisc_days` int(3) NOT NULL DEFAULT '0'
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `art_tax` (
   `art_nbr` varchar(30) NOT NULL  DEFAULT '',
   `art_desc` varchar(30) NOT NULL  DEFAULT '',
@@ -276,7 +281,7 @@ CREATE TABLE IF NOT EXISTS `art_tax` (
   `art_amt` decimal(18,8) NOT NULL DEFAULT '0.00000',
   `art_percent` decimal(18,8) NOT NULL DEFAULT '0.00000') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `ard_mstr` (
-  `ard_id` int(11) NOT NULL DEFAULT '0',
+  `ard_nbr` varchar(11) NOT NULL DEFAULT '',
   `ard_cust` varchar(10) NOT NULL  DEFAULT '',
   `ard_ref` varchar(30) NOT NULL  DEFAULT '',
   `ard_line` int(8) NOT NULL DEFAULT '0',

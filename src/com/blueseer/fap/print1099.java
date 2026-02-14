@@ -1,0 +1,1098 @@
+/*
+The MIT License (MIT)
+
+Copyright (c) Terry Evans Vaughn 
+
+All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ */
+
+package com.blueseer.fap;
+
+import com.blueseer.fgl.*;
+import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
+import static bsmf.MainFrame.db;
+import com.blueseer.utl.OVData;
+import com.blueseer.utl.BlueSeerUtils;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.FileDialog;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.Date;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.UIManager;
+import javax.swing.table.TableCellRenderer;
+import static bsmf.MainFrame.driver;
+import static bsmf.MainFrame.ds;
+import static bsmf.MainFrame.mydialog;
+import static bsmf.MainFrame.pass;
+import static bsmf.MainFrame.tags;
+import static bsmf.MainFrame.url;
+import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import com.blueseer.adm.admData.site_mstr;
+import static com.blueseer.fgl.fglData.getAccountBalanceDetView;
+import static com.blueseer.fgl.fglData.getGLCalYearsRange;
+import static com.blueseer.utl.BlueSeerUtils.bsFormatInt;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
+import static com.blueseer.utl.BlueSeerUtils.callDialog;
+import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
+import static com.blueseer.utl.BlueSeerUtils.currformat;
+import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
+import static com.blueseer.utl.BlueSeerUtils.dropColumn;
+import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
+import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
+import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
+import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.luModel;
+import static com.blueseer.utl.BlueSeerUtils.luTable;
+import static com.blueseer.utl.BlueSeerUtils.lual;
+import static com.blueseer.utl.BlueSeerUtils.ludialog;
+import static com.blueseer.utl.BlueSeerUtils.luinput;
+import static com.blueseer.utl.BlueSeerUtils.luml;
+import static com.blueseer.utl.BlueSeerUtils.lurb1;
+import static com.blueseer.utl.BlueSeerUtils.lurb2;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import static com.blueseer.utl.BlueSeerUtils.sendServerRequest;
+import com.blueseer.utl.DTData;
+import static com.blueseer.utl.OVData.getSiteLogo;
+import static com.blueseer.utl.OVData.getSystemImageDirectory;
+import static com.blueseer.utl.OVData.getSystemJasperDirectory;
+import com.blueseer.vdr.venData;
+import com.blueseer.vdr.venData.vd_mstr;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.sql.Connection;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
+import javax.swing.table.DefaultTableCellRenderer;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.data.JRTableModelDataSource;
+import net.sf.jasperreports.view.JasperViewer;
+
+/**
+ *
+ * @author vaughnte
+ */
+public class print1099 extends javax.swing.JPanel {
+ 
+     public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
+     public ArrayList<String[]> accounts;
+     public String data = null;
+     ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultSite = "";
+    String defaultCurrency = "";
+    public String rsData; 
+     Object[][] roData;
+     boolean isLoad = false;
+     
+    javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
+                        new String[]{getGlobalColumnTag("detail"), 
+                            getGlobalColumnTag("vendor"), 
+                            getGlobalColumnTag("name"), 
+                            getGlobalColumnTag("addr1"), 
+                            getGlobalColumnTag("city"), 
+                            getGlobalColumnTag("state"), 
+                            getGlobalColumnTag("zip"), 
+                            getGlobalColumnTag("currency"), 
+                            getGlobalColumnTag("amount")})
+            {
+                      @Override  
+                      public Class getColumnClass(int col) {  
+                        if (col == 0  )       
+                            return ImageIcon.class; 
+                        else if ( col == 8) 
+                            return Double.class;
+                        else return String.class;  //other columns accept String values  
+                      }  
+                        };
+    
+    javax.swing.table.DefaultTableModel modeldetail = new javax.swing.table.DefaultTableModel(new Object[][]{},
+                        new String[]{getGlobalColumnTag("nbr"), 
+                            getGlobalColumnTag("date"), 
+                            getGlobalColumnTag("checknbr"), 
+                            getGlobalColumnTag("amount")})
+            {
+                      @Override  
+                      public Class getColumnClass(int col) {  
+                        if (col == 0  )       
+                            return ImageIcon.class; 
+                        else if ( col == 8) 
+                            return Double.class;
+                        else return String.class;  //other columns accept String values  
+                      }  
+                        };
+    
+    
+     class ButtonRenderer extends JButton implements TableCellRenderer {
+
+        public ButtonRenderer() {
+            setOpaque(true);
+        }
+
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            if (isSelected) {
+                setForeground(table.getSelectionForeground());
+                setBackground(table.getSelectionBackground());
+            } else {
+                setForeground(Color.blue);
+                setBackground(UIManager.getColor("Button.background"));
+            }
+            setText((value == null) ? "" : value.toString());
+            return this;
+        }
+    }
+    
+   
+    private static class myHeaderRenderer implements TableCellRenderer {
+      DefaultTableCellRenderer renderer;
+      int horAlignment;
+      public myHeaderRenderer(JTable table, int horizontalAlignment) {
+        horAlignment = horizontalAlignment;
+        renderer = (DefaultTableCellRenderer)table.getTableHeader()
+            .getDefaultRenderer();
+      }
+      public Component getTableCellRendererComponent(JTable table, Object value,
+          boolean isSelected, boolean hasFocus, int row, int col) {
+        Component c = renderer.getTableCellRendererComponent(table, value,
+          isSelected, hasFocus, row, col);
+        JLabel label = (JLabel)c;
+        label.setHorizontalAlignment(horAlignment);
+        return label;
+      }
+}
+
+    
+    
+    /**
+     * Creates new form ScrapReportPanel
+     */
+    public print1099() {
+        initComponents();
+        setLanguageTags(this);
+    }
+
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                    
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break;
+    
+                case "getBrowseViewDet":
+                    message = getBrowseViewDet(key);
+                    break;    
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+            if (this.action.equals("getBrowseViewDet")) {
+                done_getBrowseViewDet();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
+    public void setLanguageTags(Object myobj) {
+      // lblaccount.setText(labels.getString("LedgerAcctMstrPanel.labels.lblaccount"));
+      
+       JPanel panel = null;
+        JTabbedPane tabpane = null;
+        JScrollPane scrollpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else if (myobj instanceof JScrollPane) {
+           scrollpane = (JScrollPane) myobj;    
+        } else {
+            return;
+        }
+       Component[] components = panel.getComponents();
+       for (Component component : components) {
+           //bsmf.MainFrame.show(component.getClass().getTypeName() + "/" + component.getAccessibleContext().getAccessibleName() + "/" + component.getName());
+                if (component instanceof JPanel) {
+                    if (tags.containsKey(this.getClass().getSimpleName() + ".panel." + component.getName())) {
+                       ((JPanel) component).setBorder(BorderFactory.createTitledBorder(tags.getString(this.getClass().getSimpleName() +".panel." + component.getName())));
+                    } 
+                    setLanguageTags((JPanel) component);
+                }
+                if (component instanceof JLabel ) {
+                    if (tags.containsKey(this.getClass().getSimpleName() + ".label." + component.getName())) {
+                       ((JLabel) component).setText(tags.getString(this.getClass().getSimpleName() +".label." + component.getName()));
+                    }
+                }
+                if (component instanceof JButton ) {
+                    if (tags.containsKey("global.button." + component.getName())) {
+                       ((JButton) component).setText(tags.getString("global.button." + component.getName()));
+                    }
+                }
+                if (component instanceof JCheckBox) {
+                    if (tags.containsKey(this.getClass().getSimpleName() + ".label." + component.getName())) {
+                       ((JCheckBox) component).setText(tags.getString(this.getClass().getSimpleName() +".label." + component.getName()));
+                    } 
+                }
+                if (component instanceof JRadioButton) {
+                    if (tags.containsKey(this.getClass().getSimpleName() + ".label." + component.getName())) {
+                       ((JRadioButton) component).setText(tags.getString(this.getClass().getSimpleName() +".label." + component.getName()));
+                    } 
+                }
+       }
+    }
+    
+    public void disableAll() {
+       btdetail.setEnabled(false);
+       btRun.setEnabled(false);
+       btprint.setEnabled(false);
+       ddyear.setEnabled(false);
+       ddvendfrom.setEnabled(false);
+       ddvendto.setEnabled(false);
+       tablepanel.setEnabled(false);
+    }
+    
+    public void enableAll() {
+      btdetail.setEnabled(true);
+       btRun.setEnabled(true);
+       btprint.setEnabled(true);
+       ddyear.setEnabled(true);
+       ddvendfrom.setEnabled(true);
+       ddvendto.setEnabled(true);
+       tablepanel.setEnabled(true); 
+    }
+     
+    public String[] getInitialization() {
+        java.util.Date now = new java.util.Date();
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "vendors");
+        
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        lbltotlines.setText("0");
+        lbltotamount.setText("0");
+        lblfromacct.setText("");
+        lbltoacct.setText("");
+        
+        
+        
+        mymodel.setNumRows(0);
+        tablereport.setModel(mymodel);
+        tabledetail.setModel(modeldetail);
+        
+        tablereport.getTableHeader().setReorderingAllowed(false);
+        tabledetail.getTableHeader().setReorderingAllowed(false);
+        btdetail.setEnabled(false);
+        detailpanel.setVisible(false);
+        
+        tabledetail.getColumnModel().getColumn(3).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency))); 
+       
+          tablereport.setModel(mymodel);
+         tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));    
+        //  tablereport.getColumnModel().getColumn(0).setCellRenderer(new ButtonRenderer());
+         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+        
+        
+        for (int i = 0 ; i < tablereport.getColumnCount(); i++) { 
+              
+                   if (i == 8) {
+                 tablereport.getTableHeader().getColumnModel().getColumn(i)
+                 .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.RIGHT));
+                  } else {
+                  tablereport.getTableHeader().getColumnModel().getColumn(i)
+                 .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.LEFT));    
+                  }
+              
+        }
+
+        
+        ddsite.removeAllItems();
+        
+        
+       
+        
+        
+        
+        
+        for (String[] s : initDataSets) {
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            if (s[0].equals("vendors")) {
+              ddvendfrom.addItem(s[1]); 
+              ddvendto.addItem(s[1]);
+            }
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+        }
+        
+        
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultSite);
+        }
+        
+        ddvendfrom.setSelectedIndex(0);
+        ddvendto.setSelectedIndex(ddvendto.getItemCount() - 1);
+        
+       // accounts = fglData.getGLAcctListRangeWCurrTypeDesc(ddacctfrom.getSelectedItem().toString(), ddacctto.getSelectedItem().toString());
+        
+    }
+    
+    public void initvars(String[] arg) {
+        isLoad = true;
+        java.util.Date now = new java.util.Date();
+        DateFormat dfyear = new SimpleDateFormat("yyyy");
+        ddyear.removeAllItems();
+        ArrayList<String> years = getGLCalYearsRange();
+        for (String y : years) {
+            ddyear.addItem(y);
+        }
+        ddyear.setSelectedItem(bsNumber(dfyear.format(now)));
+       
+        isLoad = false;
+        executeTask("dataInit", null);
+    }
+    
+    public String[] getBrowseView() {
+        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getVendPaymentsByYear"});
+        list.add(new String[]{"param1",ddyear.getSelectedItem().toString()});
+        list.add(new String[]{"param4",ddsite.getSelectedItem().toString()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServVDR"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getAccountBalanceView")};
+            }
+        } else {
+            jsonString = fapData.getVendPaymentsByYear(new String[]{
+                ddyear.getSelectedItem().toString(),
+                ddvendfrom.getSelectedItem().toString(),
+                ddvendto.getSelectedItem().toString(),
+                ddsite.getSelectedItem().toString()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getBalanceSheetView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+       
+          tablereport.setModel(mymodel);
+          tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));    
+        //  tablereport.getColumnModel().getColumn(0).setCellRenderer(new ButtonRenderer());
+         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+      
+        
+        for (int i = 0 ; i < tablereport.getColumnCount(); i++) { 
+             
+                   if ( i == 8) {
+                 tablereport.getTableHeader().getColumnModel().getColumn(i)
+                 .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.RIGHT));
+                  } else {
+                  tablereport.getTableHeader().getColumnModel().getColumn(i)
+                 .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.LEFT));    
+                  }
+              
+        }
+        
+        int i = 0;
+        double totalamount = 0;
+        mymodel.setNumRows(0);
+        if (roData != null) {
+            
+             // drop column 16
+      Object[][] newdata = null;
+      
+          newdata = roData;
+      
+        
+       if (newdata != null) {
+        for (Object[] rowData : newdata) {
+            
+            
+            totalamount = totalamount + bsParseDouble(rowData[8].toString());
+            rowData[8] = bsParseDouble(rowData[8].toString());            
+            if (cbzero.isSelected() && bsParseDouble(rowData[8].toString()) == 0) {
+                     continue;
+            }
+            i++;
+            mymodel.addRow(rowData);    
+            
+        }
+       }
+        lbltotlines.setText(bsNumber(i));
+        lbltotamount.setText(currformatDouble(totalamount));
+        
+        }          
+        roData = null;
+    }   
+    
+    public String[] getBrowseViewDet(String[] x) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getAccountBalanceDetView"});
+            list.add(new String[]{"param1", x[0]});
+            list.add(new String[]{"param2", x[1]});
+            list.add(new String[]{"param3", x[2]});
+            list.add(new String[]{"param4", x[3]});
+            list.add(new String[]{"param5", x[4]});
+            list.add(new String[]{"param6", x[5]});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServFIN"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getAccountBalanceDetView(x[0], x[1], x[2], bsParseInt(x[3]), bsParseInt(x[4]), BlueSeerUtils.ConvertStringToBool(x[5])); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getBrowseViewDet() {
+      modeldetail.setNumRows(0);
+      double total = 0.00;
+         
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+               total = total + bsParseDouble(rowData[7].toString());
+               rowData[7] = bsParseDouble(rowData[7].toString());
+                modeldetail.addRow(rowData);
+            } 
+            //lblnet.setText(currformatDouble(total));
+            this.repaint();
+        }
+       }
+       
+       roData = null;
+    }
+    
+    public void lookUpFrame(String ddfield) {
+        
+         luinput.removeActionListener(lual);
+        lual = new ActionListener() {
+        public void actionPerformed(ActionEvent event) {
+       
+            if (lurb1.isSelected()) {  
+             luModel = DTData.getVendBrowseUtil(luinput.getText(),0, "vd_name");
+            } else if (lurb2.isSelected()) {
+             luModel = DTData.getVendBrowseUtil(luinput.getText(),0, "vd_addr");   
+            } else {
+             luModel = DTData.getVendBrowseUtil(luinput.getText(),0, "vd_zip");   
+            }
+        
+        
+        luTable.setModel(luModel);
+        luTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        if (luModel.getRowCount() < 1) {
+            ludialog.setTitle(getMessageTag(1001));
+        } else {
+            ludialog.setTitle(getMessageTag(1002, String.valueOf(luModel.getRowCount())));
+        }
+        }
+        };
+        luinput.addActionListener(lual);
+        
+        luTable.removeMouseListener(luml);
+        luml = new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                JTable target = (JTable)e.getSource();
+                int row = target.getSelectedRow();
+                int column = target.getSelectedColumn();
+                if ( column == 0) {
+                ludialog.dispose();
+                
+                    if (ddfield.equals("from")) {
+                      ddvendfrom.setSelectedItem(target.getValueAt(row,1).toString()); 
+                    } else {
+                      ddvendto.setSelectedItem(target.getValueAt(row,1).toString());   
+                    }
+                }
+            }
+        };
+        luTable.addMouseListener(luml);
+      
+         
+        callDialog(getGlobalColumnTag("name"), 
+                getGlobalColumnTag("id"), 
+                getGlobalColumnTag("zip"));
+        
+    }
+    
+    
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jPanel1 = new javax.swing.JPanel();
+        tablepanel = new javax.swing.JPanel();
+        summarypanel = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tablereport = new javax.swing.JTable();
+        detailpanel = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tabledetail = new javax.swing.JTable();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
+        btRun = new javax.swing.JButton();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        cbzero = new javax.swing.JCheckBox();
+        jLabel2 = new javax.swing.JLabel();
+        ddyear = new javax.swing.JComboBox();
+        ddvendto = new javax.swing.JComboBox();
+        ddvendfrom = new javax.swing.JComboBox();
+        ddsite = new javax.swing.JComboBox();
+        btprint = new javax.swing.JButton();
+        btLookUpVendorFrom = new javax.swing.JButton();
+        lblfromacct = new javax.swing.JLabel();
+        btLookUpVendorTo = new javax.swing.JButton();
+        lbltoacct = new javax.swing.JLabel();
+        btdetail = new javax.swing.JButton();
+        btprint1099 = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel8 = new javax.swing.JLabel();
+        lbltotamount = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        lbltotlines = new javax.swing.JLabel();
+
+        setBackground(new java.awt.Color(0, 102, 204));
+
+        jPanel1.setName("panelmaint"); // NOI18N
+
+        tablepanel.setLayout(new javax.swing.BoxLayout(tablepanel, javax.swing.BoxLayout.LINE_AXIS));
+
+        summarypanel.setLayout(new java.awt.BorderLayout());
+
+        tablereport.setAutoCreateRowSorter(true);
+        tablereport.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        tablereport.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tablereportMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(tablereport);
+
+        summarypanel.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+
+        tablepanel.add(summarypanel);
+
+        detailpanel.setLayout(new java.awt.BorderLayout());
+
+        tabledetail.setAutoCreateRowSorter(true);
+        tabledetail.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane2.setViewportView(tabledetail);
+
+        detailpanel.add(jScrollPane2, java.awt.BorderLayout.CENTER);
+
+        tablepanel.add(detailpanel);
+
+        jLabel4.setText("To Vendor");
+        jLabel4.setName("lbltoacct"); // NOI18N
+
+        btRun.setText("Run");
+        btRun.setName("btrun"); // NOI18N
+        btRun.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btRunActionPerformed(evt);
+            }
+        });
+
+        jLabel5.setText("Site");
+        jLabel5.setName("lblsite"); // NOI18N
+
+        jLabel1.setText("From Vendor");
+        jLabel1.setName("lblfromacct"); // NOI18N
+
+        cbzero.setText("Supress Zeros");
+        cbzero.setName("cbsuppresszeros"); // NOI18N
+
+        jLabel2.setText("Year");
+        jLabel2.setName("lblyear"); // NOI18N
+
+        ddyear.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                ddyearItemStateChanged(evt);
+            }
+        });
+
+        btprint.setText("Print/PDF");
+        btprint.setName("btprintpdf"); // NOI18N
+        btprint.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btprintActionPerformed(evt);
+            }
+        });
+
+        btLookUpVendorFrom.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/find.png"))); // NOI18N
+        btLookUpVendorFrom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btLookUpVendorFromActionPerformed(evt);
+            }
+        });
+
+        btLookUpVendorTo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/find.png"))); // NOI18N
+        btLookUpVendorTo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btLookUpVendorToActionPerformed(evt);
+            }
+        });
+
+        btdetail.setText("Hide Detail");
+        btdetail.setName("bthidedetail"); // NOI18N
+        btdetail.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btdetailActionPerformed(evt);
+            }
+        });
+
+        btprint1099.setText("Print 1099");
+        btprint1099.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btprint1099ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(48, 48, 48)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(ddyear, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel4))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ddvendfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addGap(44, 44, 44)
+                        .addComponent(ddvendto, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btLookUpVendorFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btLookUpVendorTo, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(lblfromacct, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel5))
+                    .addComponent(lbltoacct, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(btRun)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btdetail)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btprint)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btprint1099))
+                    .addComponent(cbzero))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblfromacct, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jLabel1)
+                                .addComponent(ddvendfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(ddyear, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel2)
+                                .addComponent(btRun)
+                                .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel5)
+                                .addComponent(btprint)
+                                .addComponent(btdetail)
+                                .addComponent(btprint1099)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel4)
+                            .addComponent(ddvendto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lbltoacct, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(cbzero, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(btLookUpVendorFrom)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btLookUpVendorTo)))
+                .addGap(36, 36, 36))
+        );
+
+        jLabel8.setText("Total Amount");
+        jLabel8.setName("lblactivity"); // NOI18N
+
+        lbltotamount.setText("0");
+
+        jLabel7.setText("Total Lines");
+        jLabel7.setName("lblbegbalance"); // NOI18N
+
+        lbltotlines.setText("0");
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(28, 28, 28)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel8, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lbltotlines, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lbltotamount, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(19, Short.MAX_VALUE))
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lbltotlines, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel7))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lbltotamount, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel8))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 25, Short.MAX_VALUE)
+                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(tablepanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(tablepanel, javax.swing.GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
+       executeTask("getBrowseView", null);
+    }//GEN-LAST:event_btRunActionPerformed
+
+    private void tablereportMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablereportMouseClicked
+        
+        int row = tablereport.rowAtPoint(evt.getPoint());
+        int col = tablereport.columnAtPoint(evt.getPoint());
+        if ( col == 0) {
+           
+                executeTask("getBrowseViewDet", new String[]{tablereport.getValueAt(row, 1).toString(),
+                "", // cc
+                tablereport.getValueAt(row, 5).toString(),
+                ddyear.getSelectedItem().toString(),
+                "false"});
+           
+            
+            btdetail.setEnabled(true);
+            detailpanel.setVisible(true);
+              
+        }
+    }//GEN-LAST:event_tablereportMouseClicked
+
+    private void ddyearItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ddyearItemStateChanged
+       if (! isLoad) {
+      
+       }
+    }//GEN-LAST:event_ddyearItemStateChanged
+
+    private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
+        OVData.printJTableToJasper("Generate 1099", tablereport, "print1099.jasper" );
+    }//GEN-LAST:event_btprintActionPerformed
+
+    private void btLookUpVendorFromActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btLookUpVendorFromActionPerformed
+        lookUpFrame("from");
+    }//GEN-LAST:event_btLookUpVendorFromActionPerformed
+
+    private void btLookUpVendorToActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btLookUpVendorToActionPerformed
+        lookUpFrame("to");
+    }//GEN-LAST:event_btLookUpVendorToActionPerformed
+
+    private void btdetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdetailActionPerformed
+        detailpanel.setVisible(false);
+        btdetail.setEnabled(false);
+    }//GEN-LAST:event_btdetailActionPerformed
+
+    private void btprint1099ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprint1099ActionPerformed
+        mymodel.addRow(new Object[][]{});
+        int[] rows = tablereport.getSelectedRows();
+        String name = "";
+        String year = ddyear.getSelectedItem().toString();
+        site_mstr sm = admData.getSiteMstr(new String[]{defaultSite});
+        vd_mstr vd = null;
+        String amount = "0.00";
+        String payerinfo = sm.site_desc() + "\n" + sm.site_line1() + "\n" + sm.site_city() + ", " + sm.site_state() + " " + sm.site_zip();
+        for (int i : rows) {
+            vd = venData.getVendMstr(new String[]{tablereport.getValueAt(i, 1).toString()});
+            amount = tablereport.getValueAt(i, 8).toString();
+            break;
+        }
+        try {
+                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+                HashMap hm = new HashMap();
+                String logo = getSiteLogo(ddsite.getSelectedItem().toString());
+                Path imagepath = FileSystems.getDefault().getPath(cleanDirString(getSystemImageDirectory()) + logo);
+                hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+                hm.put("year", year);
+                hm.put("name", vd.vd_name()); 
+                hm.put("payerinfo", payerinfo);
+                hm.put("payer_tin", name);
+                hm.put("recipient_tin", vd.vd_taxid());
+                hm.put("addr", vd.vd_line1());
+                hm.put("csz", vd.vd_city() + ", " + vd.vd_state() + " " + vd.vd_zip());
+                hm.put("compensation", amount);
+               // res = st.executeQuery("select shd_id, sh_cust, shd_po, shd_item, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, cm_city, cm_state, cm_zip, concat(cm_city, \" \", cm_state, \" \", cm_zip) as st_citystatezip, site_desc from ship_det inner join ship_mstr on sh_id = shd_id inner join cm_mstr on cm_code = sh_cust inner join site_mstr on site_site = sh_site where shd_id = '1848' ");
+               // JRResultSetDataSource jasperReports = new JRResultSetDataSource(res);
+               
+               
+                Path template = FileSystems.getDefault().getPath(cleanDirString(getSystemJasperDirectory()) + "print1099.jasper");
+               
+                 
+                JasperPrint jasperPrint = JasperFillManager.fillReport(template.toString(), hm, new JRTableModelDataSource(mymodel) );
+               // JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/is.pdf");
+         
+            JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+            jasperViewer.setVisible(true);
+          
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+    }//GEN-LAST:event_btprint1099ActionPerformed
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btLookUpVendorFrom;
+    private javax.swing.JButton btLookUpVendorTo;
+    private javax.swing.JButton btRun;
+    private javax.swing.JButton btdetail;
+    private javax.swing.JButton btprint;
+    private javax.swing.JButton btprint1099;
+    private javax.swing.JCheckBox cbzero;
+    private javax.swing.JComboBox ddsite;
+    private javax.swing.JComboBox ddvendfrom;
+    private javax.swing.JComboBox ddvendto;
+    private javax.swing.JComboBox ddyear;
+    private javax.swing.JPanel detailpanel;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel lblfromacct;
+    private javax.swing.JLabel lbltoacct;
+    private javax.swing.JLabel lbltotamount;
+    private javax.swing.JLabel lbltotlines;
+    private javax.swing.JPanel summarypanel;
+    private javax.swing.JTable tabledetail;
+    private javax.swing.JPanel tablepanel;
+    private javax.swing.JTable tablereport;
+    // End of variables declaration//GEN-END:variables
+}

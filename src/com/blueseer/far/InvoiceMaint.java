@@ -672,7 +672,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
                 
                 // rules:  if payment already applied, you cannot undo
                  int c = 0;
-                  res = st.executeQuery("select ard_id from ard_mstr inner join ar_mstr on ar_nbr = ard_id and ar_type = 'P' where ard_ref = " + "'" + x[0] + "'" + ";");
+                  res = st.executeQuery("select ard_nbr from ard_mstr inner join ar_mstr on ar_nbr = ard_nbr and ar_type = 'P' where ard_ref = " + "'" + x[0] + "'" + ";");
                 while (res.next()) {
                       c++;
                 }

@@ -16666,7 +16666,7 @@ return mystring;
                         + ";");
                          
                       st.executeUpdate("insert into ard_mstr "
-                            + "(ard_id, ard_cust, ard_ref, ard_line, ard_date, ard_amt, ard_amt_tax, ard_base_amt, ard_base_amt_tax, ard_curr, ard_base_curr, ard_acct, ard_cc ) "
+                            + "(ard_nbr, ard_cust, ard_ref, ard_line, ard_date, ard_amt, ard_amt_tax, ard_base_amt, ard_base_amt_tax, ard_curr, ard_base_curr, ard_acct, ard_cc ) "
                             + " values ( " + "'" + arnbr + "'" + ","
                                 + "'" + cust + "'" + ","
                             + "'" + shipper + "'" + ","
@@ -16898,7 +16898,7 @@ return mystring;
                         + ";");
                          
                       st.executeUpdate("insert into ard_mstr "
-                            + "(ard_id, ard_cust, ard_ref, ard_line, ard_date, ard_amt, ard_amt_tax, ard_base_amt, ard_base_amt_tax, ard_curr, ard_base_curr, ard_acct, ard_cc ) "
+                            + "(ard_nbr, ard_cust, ard_ref, ard_line, ard_date, ard_amt, ard_amt_tax, ard_base_amt, ard_base_amt_tax, ard_curr, ard_base_curr, ard_acct, ard_cc ) "
                             + " values ( " + "'" + arnbr + "'" + ","
                                 + "'" + cust + "'" + ","
                             + "'" + shipper + "'" + ","
@@ -17268,7 +17268,7 @@ return mystring;
                 
                  // lets get original ar_mstr and ar_det info and update with applied amount
                     res = st.executeQuery("select ar_amt, ar_base_amt, ar_curr, ar_base_curr, ar_open_amt, ar_applied, ard_ref, ard_amt, ard_base_amt from ar_mstr inner join ard_mstr on ar_nbr = ard_ref " +
-                                    " where ard_id = " + "'" + batch + "'"
+                                    " where ard_nbr = " + "'" + batch + "'"
                             );
                     
                      ArrayList ardref = new ArrayList();

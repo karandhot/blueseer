@@ -61,6 +61,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import javax.swing.JTable;
+import org.json.JSONArray;
 
 /**
  *
@@ -882,6 +883,72 @@ public class fapData {
         }
         
        }
+    
+    public static String getVendPaymentsByYear(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                             
+                if (bsmf.MainFrame.dbtype.equals("sqlite")) {
+                 res = st.executeQuery("SELECT vd_addr, vd_name, vd_line1, vd_city, vd_state, vd_zip, vd_curr, sum(ap_amt) as total, strftime('%Y', ap_effdate)  " +
+                        " from ap_mstr inner join vd_mstr on vd_addr = ap_vend where strftime('%Y', ap_effdate) = " + "'" + keys[0] + "'" +
+                        " and ap_vend >= " + "'" + keys[1] + "'" +
+                        " and ap_vend <= "+ "'" + keys[2] + "'" +
+                        " and ap_type = 'C' " +         
+                        " and vd_site = " + "'" + keys[3] + "'" +        
+                        " group by vd_addr, strftime('%Y', ap_effdate) ;");   
+                } else {
+                res = st.executeQuery("SELECT vd_addr, vd_name, vd_line1, vd_city, vd_state, vd_zip, vd_curr, sum(ap_amt) as total, year(ap_effdate)  " +
+                        " from ap_mstr inner join vd_mstr on vd_addr = ap_vend where year(ap_effdate) = " + "'" + keys[0] + "'" +
+                        " and ap_vend >= " + "'" + keys[1] + "'" +
+                        " and ap_vend <= "+ "'" + keys[2] + "'" +
+                        " and ap_type = 'C' " +           
+                        " and vd_site = " + "'" + keys[3] + "'" +        
+                        " group by vd_addr, year(ap_effdate) ;");
+                }
+                
+                
+                    while (res.next()) {
+                   
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("vd_addr"));
+                        rowArray.put(res.getString("vd_name"));
+                        rowArray.put(res.getString("vd_line1"));
+                        rowArray.put(res.getString("vd_city"));
+                        rowArray.put(res.getString("vd_state"));
+                        rowArray.put(res.getString("vd_zip"));
+                        rowArray.put(res.getString("vd_curr"));
+                        rowArray.put(currformatDouble(bsParseDouble(res.getString("total"))));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
     
     
     public static String getVoucherStatus(String nbr) {

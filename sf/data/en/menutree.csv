@@ -186,7 +186,8 @@ APMenu,VoucherBrowse,2,JMenuItem,Voucher Browse,,,,1,1
 APMenu,PaymentMaint,3,JMenuItem,Payment Maintenance,,,,1,1
 APMenu,APAgingView,4,JMenuItem,AP Aging View,,,,1,1
 APMenu,APRptPicker,5,JMenuItem,AP Report Selector,,,,1,1
-APMenu,APControl,6,JMenuItem,AP Control,,,,1,1
+APMenu,print1099,6,JMenuItem,1099 Report/Print,,,,1,1
+APMenu,APControl,7,JMenuItem,AP Control,,,,1,1
 Inventory,ProdCodeMaint,1,JMenuItem,Product Code Maintenance,,,,1,1
 Inventory,ProdCodeBrowse,2,JMenuItem,Product Code Browse,,1,,1,1
 Inventory,WareHouseMaint,3,JMenuItem,Warehouse Maintenance,,,,1,1

@@ -444,7 +444,7 @@ public class ARAgingView extends javax.swing.JPanel {
                 if (bsmf.MainFrame.dbtype.equals("sqlite")) {
                  res = st.executeQuery("SELECT a.ar_cust, b.ar_duedate as 'b.ar_duedate', a.ar_nbr, a.ar_ref, ard_ref, a.ar_type, a.ar_effdate, a.ar_amt, ard_amt " +
                         " FROM  ar_mstr a " +
-                        " inner join ard_mstr on ard_id = a.ar_nbr " +
+                        " inner join ard_mstr on ard_nbr = a.ar_nbr " +
                         " inner join ar_mstr b on b.ar_nbr = ard_ref and b.ar_type = 'I' " +
                         " where a.ar_cust = " + "'" + cust + "'" + 
                         " AND a.ar_type = 'P' " +
@@ -453,7 +453,7 @@ public class ARAgingView extends javax.swing.JPanel {
                 } else {
                    res = st.executeQuery("SELECT a.ar_cust, b.ar_duedate as 'b.ar_duedate', a.ar_nbr, a.ar_ref, ard_ref, a.ar_type, a.ar_effdate, a.ar_amt, ard_amt " +
                         " FROM  ar_mstr a " +
-                        " inner join ard_mstr on ard_id = a.ar_nbr " +
+                        " inner join ard_mstr on ard_nbr = a.ar_nbr " +
                         " inner join ar_mstr b on b.ar_nbr = ard_ref and b.ar_type = 'I' " +
                         " where a.ar_cust = " + "'" + cust + "'" + 
                         " AND a.ar_type = 'P' " +

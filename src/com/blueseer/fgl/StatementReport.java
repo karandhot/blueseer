@@ -87,6 +87,7 @@ import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.OVData.getSiteLogo;
+import static com.blueseer.utl.OVData.getSystemImageDirectory;
 import static com.blueseer.utl.OVData.getSystemJasperDirectory;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -1212,8 +1213,9 @@ public class StatementReport extends javax.swing.JPanel {
                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
                 HashMap hm = new HashMap();
                 String logo = getSiteLogo(ddsite.getSelectedItem().toString());
+                Path imagepath = FileSystems.getDefault().getPath(cleanDirString(getSystemImageDirectory()) + logo);
                 hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
-                hm.put("imagepath", "images/" + logo);
+                hm.put("imagepath", imagepath.toString());
                 hm.put("ReportTitle", ddprofile.getSelectedItem().toString());
                 hm.put("daterange", datelabel.getText());
                 hm.put("yearandperiod", ddyear.getSelectedItem().toString() + "   " + ddperfrom.getSelectedItem().toString() + " to " + ddperto.getSelectedItem().toString());

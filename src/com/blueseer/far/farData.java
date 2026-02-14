@@ -158,19 +158,19 @@ public class farData {
                                  
     private static int _addArdMstr(ard_mstr x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
         int rows = 0;
-        String sqlSelect = "select * from ard_mstr where ard_id = ? and ard_line = ?";
-        String sqlInsert = "insert into ard_mstr (ard_id, ard_line, ard_cust, ard_ref, ard_date, "
+        String sqlSelect = "select * from ard_mstr where ard_nbr = ? and ard_line = ?";
+        String sqlInsert = "insert into ard_mstr (ard_nbr, ard_line, ard_cust, ard_ref, ard_date, "
                         + " ard_amt, ard_amt_tax, ard_base_amt, ard_base_amt_tax, ard_curr, ard_base_curr, " 
                         + " ard_acct, ard_cc ) "
                         + " values (?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
        
           ps = con.prepareStatement(sqlSelect); 
-          ps.setString(1, x.ard_id);
+          ps.setString(1, x.ard_nbr);
           ps.setInt(2, x.ard_line);
           res = ps.executeQuery();
           ps = con.prepareStatement(sqlInsert);  
             if (! res.isBeforeFirst()) {
-            ps.setString(1, x.ard_id);
+            ps.setString(1, x.ard_nbr);
             ps.setInt(2, x.ard_line);
             ps.setString(3, x.ard_cust);
             ps.setString(4, x.ard_ref);
@@ -383,14 +383,14 @@ public class farData {
         ArrayList<ard_mstr> list = new ArrayList<ard_mstr>();
         ard_mstr r = null;
         String[] m = new String[2];
-        String sql = "select * from ard_mstr where ard_id = ? ;";
+        String sql = "select * from ard_mstr where ard_nbr = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
         ps.setString(1, x[0]);
              try (ResultSet res = ps.executeQuery();) {
                     while(res.next()) {
                     m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
-                    r = new ard_mstr(m, res.getString("ard_id"), res.getInt("ard_line"), res.getString("ard_cust"),
+                    r = new ard_mstr(m, res.getString("ard_nbr"), res.getInt("ard_line"), res.getString("ard_cust"),
                     res.getString("ard_ref"), res.getString("ard_date"), res.getDouble("ard_amt"), 
                     res.getDouble("ard_amt_tax"), res.getDouble("ard_base_amt"),res.getDouble("ard_base_amt_tax"), 
                     res.getString("ard_curr"), res.getString("ard_base_curr"), res.getString("ard_acct"), 
@@ -409,7 +409,7 @@ public class farData {
         ArrayList<ard_mstr> list = new ArrayList<ard_mstr>();
         ard_mstr r = null;
         String[] m = new String[2];
-        String sqlSelect = "select * from ard_mstr where ard_id = ?";
+        String sqlSelect = "select * from ard_mstr where ard_nbr = ?";
           ps = con.prepareStatement(sqlSelect); 
           ps.setString(1, x[0]);
           res = ps.executeQuery();
@@ -419,7 +419,7 @@ public class farData {
             } else {
                 while(res.next()) {
                     m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
-                    r = new ard_mstr(m, res.getString("ard_id"), res.getInt("ard_line"), res.getString("ard_cust"),
+                    r = new ard_mstr(m, res.getString("ard_nbr"), res.getInt("ard_line"), res.getString("ard_cust"),
                     res.getString("ard_ref"), res.getString("ard_date"), res.getDouble("ard_amt"), 
                     res.getDouble("ard_amt_tax"), res.getDouble("ard_base_amt"),res.getDouble("ard_base_amt_tax"), 
                     res.getString("ard_curr"), res.getString("ard_base_curr"), res.getString("ard_acct"), 
@@ -660,7 +660,7 @@ public class farData {
         }
     }
     
-    public record ard_mstr(String[] m, String ard_id, int ard_line, String ard_cust, String ard_ref, 
+    public record ard_mstr(String[] m, String ard_nbr, int ard_line, String ard_cust, String ard_ref, 
         String ard_date, double ard_amt, double ard_amt_tax, 
         double ard_base_amt, double ard_base_amt_tax, String ard_curr, String ard_base_curr, 
         String ard_acct, String ard_cc) {

@@ -96,8 +96,8 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                 String aracct = "";
                 String arcc = "";
                 String arbank = "";
-                double actamt = 0.00;
-                double control = 0.00;
+                double controlamt = 0.00;
+                double paymentamt = 0.00;
                 double baseamt = 0.00;
                 double rcvamt = 0.00;
                 String curr = "";
@@ -107,19 +107,22 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
     // global datatablemodel declarations 
     javax.swing.table.DefaultTableModel referencemodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
             new String[]{
-                getGlobalColumnTag("reference"), 
-                getGlobalColumnTag("type"), 
-                getGlobalColumnTag("duedate"), 
+                getGlobalColumnTag("reference"),
+                getGlobalColumnTag("discdate"),
+                getGlobalColumnTag("duedate"),                
                 getGlobalColumnTag("amount"), 
                 getGlobalColumnTag("applied"), 
                 getGlobalColumnTag("open"), 
                 getGlobalColumnTag("tax"), 
+                getGlobalColumnTag("termsdiscamount"),
                 getGlobalColumnTag("currency")});
     javax.swing.table.DefaultTableModel armodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
             new String[]{
                 getGlobalColumnTag("reference"), 
                 getGlobalColumnTag("amount"), 
                 getGlobalColumnTag("tax"), 
+                getGlobalColumnTag("termsdiscamount"),
+                getGlobalColumnTag("termsdiscdate"),
                 getGlobalColumnTag("currency")
             });
                 
@@ -322,8 +325,8 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
          aracct = "";
          arcc = "";
          arbank = "";
-         actamt = 0.00;
-         control = 0.00;
+         controlamt = 0.00;
+         paymentamt = 0.00;
          rcvamt = 0.00;
         
          basecurr = OVData.getDefaultCurrency();
@@ -333,12 +336,12 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
         lbmessage.setForeground(Color.blue);
                 
         tbrmks.setText("");
-        tbcontrolamt.setText("0");
-        tbcontrolamt.setBackground(Color.white);
+        tbpayamount.setText("0");
+        tbpayamount.setBackground(Color.white);
         tbcheck.setText("");
-        tbactualamt.setText("0");
-        tbactualamt.setBackground(Color.white);
-        tbactualamt.setEditable(false);
+        tbcontrolamt.setText("0");
+        tbcontrolamt.setBackground(bsmf.MainFrame.nonEditableColor);
+        tbcontrolamt.setEditable(false);
         tbrefamt.setText("0");
         referencemodel.setRowCount(0);
         armodel.setRowCount(0);
@@ -351,7 +354,8 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
         
         java.util.Date now = new java.util.Date();
         dcdate.setDate(now);
-              
+        dcpaydate.setDate(now);      
+        
         ddcust.removeAllItems();
         ArrayList mycust = cusData.getcustmstrlist();
         for (int i = 0; i < mycust.size(); i++) {
@@ -401,8 +405,8 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                    tbkey.setEditable(false);
                    tbkey.setForeground(Color.blue);
                    
-                   tbactualamt.setText(currformatDouble(actamt));
-                   tbcontrolamt.setText(currformatDouble(actamt));
+                   tbcontrolamt.setText(currformatDouble(controlamt));
+                   tbpayamount.setText(currformatDouble(controlamt));
         } else {
            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};  
                    tbkey.setForeground(Color.red); 
@@ -455,9 +459,9 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                     bsmf.MainFrame.show(getMessageTag(1130));
                     return b;
                 }
-                 if ( ! currformatDouble(control).equals(currformatDouble(actamt)) || control == 0.00 || actamt == 0.00 ) {
+                 if ( ! currformatDouble(paymentamt).equals(currformatDouble(controlamt)) || paymentamt == 0.00 || controlamt == 0.00 ) {
                     b = false;
-                    bsmf.MainFrame.show(getMessageTag(1039,String.valueOf(control)));
+                    bsmf.MainFrame.show(getMessageTag(1039,String.valueOf(paymentamt)));
                     return b;
                 }
                 
@@ -536,17 +540,19 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                      ddcurr.setSelectedItem(res.getString("ar_curr"));
                 }
                 
-                res = st.executeQuery("select * from ard_mstr where ard_id = " + "'" + x[0] + "'" + ";");
+                res = st.executeQuery("select * from ard_mstr where ard_nbr = " + "'" + x[0] + "'" + ";");
                 while (res.next()) {
                   // "Reference", "AmountToApply", "TaxAmount", "Curr"
                      armodel.addRow(new Object[] { res.getString("ard_ref"),
                                               res.getString("ard_amt"),
                                               res.getString("ard_amt_tax"),
+                                              res.getString("ard_termsdisc_amt"),
+                                              res.getString("ard_discdate"),
                                               res.getString("ard_curr")
                                               });
                  
                   
-                  actamt += res.getDouble("ard_amt");
+                  controlamt += res.getDouble("ard_amt");
                 d++;
                 }
                
@@ -572,15 +578,15 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
         java.util.Date now = new java.util.Date(); 
         
                 if (basecurr.toUpperCase().equals(ddcurr.getSelectedItem().toString().toUpperCase())) {
-                  baseamt = actamt;  
+                  baseamt = controlamt;  
                 } else {
-                  baseamt = OVData.getExchangeBaseValue(basecurr, ddcurr.getSelectedItem().toString(), actamt);
+                  baseamt = OVData.getExchangeBaseValue(basecurr, ddcurr.getSelectedItem().toString(), controlamt);
                 } 
         ar_mstr x = new ar_mstr(null, 
                 null, // ar_id auto-generated
                 tbkey.getText(),
                 ddcust.getSelectedItem().toString(),
-                actamt,
+                controlamt,
                 baseamt,
                 "P",
                 ddcurr.getSelectedItem().toString(),
@@ -725,12 +731,13 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                         " AND ar_status = 'o' " + ";");
                 while (res.next()) {
                   referencemodel.addRow(new Object[]{res.getString("ar_nbr"), 
-                      res.getString("ar_type"), 
+                      res.getString("ar_discdate"), 
                       res.getString("ar_duedate"), 
                       currformatDouble(res.getDouble("ar_amt")), 
                       res.getDouble("ar_applied"), 
                       currformatDouble(res.getDouble("ar_open_amt")),
                       currformatDouble(res.getDouble("ar_amt_tax")),
+                      currformatDouble(res.getDouble("ar_termsdisc_amt")),
                       res.getString("ar_curr")});
                   
                   rcvamt += res.getDouble("ar_open_amt");
@@ -830,22 +837,22 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
         double matltax = 0;
         double totaltax = 0;
         
-        actamt = 0;
+        controlamt = 0;
          for (int j = 0; j < ardet.getRowCount(); j++) {
-             actamt += bsParseDouble(ardet.getModel().getValueAt(j,1).toString());
+             controlamt += bsParseDouble(ardet.getModel().getValueAt(j,1).toString());
          }
          
           if (ardet.getRowCount() >= 1) {
              ddcurr.setEnabled(false);
            }
-         if (control == actamt && control != 0.00 ) {
+         if (paymentamt == controlamt && paymentamt != 0.00 ) {
+             tbpayamount.setBackground(Color.green);
              tbcontrolamt.setBackground(Color.green);
-             tbactualamt.setBackground(Color.green);
          } else {
-            tbcontrolamt.setBackground(Color.white); 
-            tbactualamt.setBackground(Color.white);
+            tbpayamount.setBackground(Color.white); 
+            tbcontrolamt.setBackground(Color.white);
          }
-        tbactualamt.setText(currformatDouble(actamt));
+        tbcontrolamt.setText(currformatDouble(controlamt));
         
     }
     
@@ -865,7 +872,7 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
         tbkey = new javax.swing.JTextField();
         jLabel24 = new javax.swing.JLabel();
         btnew = new javax.swing.JButton();
-        tbcontrolamt = new javax.swing.JTextField();
+        tbpayamount = new javax.swing.JTextField();
         jLabel36 = new javax.swing.JLabel();
         btadditem = new javax.swing.JButton();
         btadd = new javax.swing.JButton();
@@ -880,7 +887,7 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
         referencedet = new javax.swing.JTable();
         tbcheck = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        tbactualamt = new javax.swing.JTextField();
+        tbcontrolamt = new javax.swing.JTextField();
         btaddall = new javax.swing.JButton();
         tbrefamt = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
@@ -895,6 +902,8 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
         jLabel5 = new javax.swing.JLabel();
         btclear = new javax.swing.JButton();
         btlookup = new javax.swing.JButton();
+        dcpaydate = new com.toedter.calendar.JDateChooser();
+        jLabel6 = new javax.swing.JLabel();
 
         jLabel1.setText("jLabel1");
 
@@ -920,12 +929,12 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
             }
         });
 
-        tbcontrolamt.addFocusListener(new java.awt.event.FocusAdapter() {
+        tbpayamount.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
-                tbcontrolamtFocusGained(evt);
+                tbpayamountFocusGained(evt);
             }
             public void focusLost(java.awt.event.FocusEvent evt) {
-                tbcontrolamtFocusLost(evt);
+                tbpayamountFocusLost(evt);
             }
         });
 
@@ -977,10 +986,10 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
 
         dcdate.setDateFormatString("yyyy-MM-dd");
 
-        jLabel27.setText("Control Amt");
+        jLabel27.setText("Payment Amt");
         jLabel27.setName("lblcontrol"); // NOI18N
 
-        jLabel35.setText("EffDate");
+        jLabel35.setText("Effective Date");
         jLabel35.setName("lbleffdate"); // NOI18N
 
         referencedet.setModel(new javax.swing.table.DefaultTableModel(
@@ -1031,7 +1040,7 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
         jLabel38.setText("Currency");
         jLabel38.setName("lblcurrency"); // NOI18N
 
-        jLabel5.setText("ActualAmt");
+        jLabel5.setText("Control Amt");
         jLabel5.setName("lblactual"); // NOI18N
 
         btclear.setText("Clear");
@@ -1048,6 +1057,10 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                 btlookupActionPerformed(evt);
             }
         });
+
+        dcpaydate.setDateFormatString("yyyy-MM-dd");
+
+        jLabel6.setText("Payment Date");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -1108,18 +1121,21 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                     .addComponent(jLabel27, javax.swing.GroupLayout.Alignment.TRAILING)
                                                     .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.TRAILING)
-                                                    .addComponent(jLabel35, javax.swing.GroupLayout.Alignment.TRAILING))
+                                                    .addComponent(jLabel35, javax.swing.GroupLayout.Alignment.TRAILING)
+                                                    .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING))
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(dcdate, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                     .addGroup(jPanel1Layout.createSequentialGroup()
                                                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                            .addComponent(tbactualamt)
-                                                            .addComponent(tbcontrolamt, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE))
+                                                            .addComponent(tbcontrolamt)
+                                                            .addComponent(tbpayamount, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE))
                                                         .addGap(10, 10, 10)
                                                         .addComponent(jLabel2)
                                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(tbcheck, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                        .addComponent(tbcheck, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                                        .addComponent(dcpaydate, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                                                        .addComponent(dcdate, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                                                 .addGap(22, 22, 22)))
                                         .addGroup(jPanel1Layout.createSequentialGroup()
                                             .addComponent(lbmessage, javax.swing.GroupLayout.PREFERRED_SIZE, 307, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1129,7 +1145,7 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -1151,29 +1167,33 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(ddcurr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel38)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                            .addComponent(jLabel38))
+                        .addGap(18, 24, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(lbmessage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(tbcontrolamt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbpayamount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel27)
                             .addComponent(tbcheck, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel2))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                            .addComponent(tbactualamt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tbcontrolamt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel5))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(dcdate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel35))
-                        .addGap(9, 9, 9)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(5, 5, 5)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(dcpaydate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel6))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(tbrmks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(22, 22, 22)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbrefamt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3)
@@ -1210,7 +1230,8 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
            armodel.addRow(new Object[] { referencedet.getModel().getValueAt(i, 0),
                                               referencedet.getModel().getValueAt(i, 5),
                                               referencedet.getModel().getValueAt(i, 6),
-                                              referencedet.getModel().getValueAt(i, 7)
+                                              referencedet.getModel().getValueAt(i, 7),
+                                              referencedet.getModel().getValueAt(i, 8)
                                               });
         }
         
@@ -1243,31 +1264,32 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
         int[] rows = ardet.getSelectedRows();
         for (int i : rows) {
             bsmf.MainFrame.show(getMessageTag(1031,String.valueOf(i)));
-             actamt -= bsParseDouble(ardet.getModel().getValueAt(i,1).toString());
+             controlamt -= bsParseDouble(ardet.getModel().getValueAt(i,1).toString());
             ((javax.swing.table.DefaultTableModel) ardet.getModel()).removeRow(i);
         }
-        tbactualamt.setText(String.valueOf(actamt));
+        tbcontrolamt.setText(String.valueOf(controlamt));
     }//GEN-LAST:event_btdeleteitemActionPerformed
 
     private void btaddallActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddallActionPerformed
           for (int i = 0; i < referencedet.getRowCount(); i++) {
-            actamt += bsParseDouble(referencedet.getModel().getValueAt(i,5).toString());
+            controlamt += bsParseDouble(referencedet.getModel().getValueAt(i,5).toString());
             
            armodel.addRow(new Object[] { referencedet.getModel().getValueAt(i, 0),
                                               referencedet.getModel().getValueAt(i, 5),
                                               referencedet.getModel().getValueAt(i, 6),
-                                              referencedet.getModel().getValueAt(i, 7)
+                                              referencedet.getModel().getValueAt(i, 7),
+                                              referencedet.getModel().getValueAt(i, 8)
                                               });
         }
         
-       if (control == actamt && control != 0.00 ) {
+       if (paymentamt == controlamt && paymentamt != 0.00 ) {
+             tbpayamount.setBackground(Color.green);
              tbcontrolamt.setBackground(Color.green);
-             tbactualamt.setBackground(Color.green);
          } else {
-            tbcontrolamt.setBackground(Color.white); 
-            tbactualamt.setBackground(Color.white);
+            tbpayamount.setBackground(Color.white); 
+            tbcontrolamt.setBackground(Color.white);
          }
-        tbactualamt.setText(currformatDouble(actamt));
+        tbcontrolamt.setText(currformatDouble(controlamt));
     }//GEN-LAST:event_btaddallActionPerformed
 
     private void ddsiteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddsiteActionPerformed
@@ -1281,40 +1303,40 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
         }
     }//GEN-LAST:event_ddcurrActionPerformed
 
-    private void tbcontrolamtFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbcontrolamtFocusGained
-       if (tbcontrolamt.getText().equals("0")) {
-            tbcontrolamt.setText("");
+    private void tbpayamountFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbpayamountFocusGained
+       if (tbpayamount.getText().equals("0")) {
+            tbpayamount.setText("");
         }
-    }//GEN-LAST:event_tbcontrolamtFocusGained
+    }//GEN-LAST:event_tbpayamountFocusGained
 
-    private void tbcontrolamtFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbcontrolamtFocusLost
-           String x = BlueSeerUtils.bsformat("", tbcontrolamt.getText(), "2");
+    private void tbpayamountFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbpayamountFocusLost
+           String x = BlueSeerUtils.bsformat("", tbpayamount.getText(), "2");
         if (x.equals("error")) {
-            tbcontrolamt.setText("");
-            tbcontrolamt.setBackground(Color.yellow);
+            tbpayamount.setText("");
+            tbpayamount.setBackground(Color.yellow);
             bsmf.MainFrame.show(getMessageTag(1000));
-            tbcontrolamt.requestFocus();
+            tbpayamount.requestFocus();
         } else {
-            tbcontrolamt.setText(x);
-            tbcontrolamt.setBackground(Color.white);
+            tbpayamount.setText(x);
+            tbpayamount.setBackground(Color.white);
         }
         
-        if (! tbcontrolamt.getText().isEmpty()) {
-            control = bsParseDouble(tbcontrolamt.getText());
+        if (! tbpayamount.getText().isEmpty()) {
+            paymentamt = bsParseDouble(tbpayamount.getText());
         } else {
-            tbcontrolamt.setText("0.00");
-            control = 0.00;
+            tbpayamount.setText("0.00");
+            paymentamt = 0.00;
         }
         
-       if (control == actamt && control != 0.00 ) {
+       if (paymentamt == controlamt && paymentamt != 0.00 ) {
+             tbpayamount.setBackground(Color.green);
              tbcontrolamt.setBackground(Color.green);
-             tbactualamt.setBackground(Color.green);
          } else {
-            tbcontrolamt.setBackground(Color.white); 
-            tbactualamt.setBackground(Color.white);
+            tbpayamount.setBackground(Color.white); 
+            tbcontrolamt.setBackground(Color.white);
          }
        
-    }//GEN-LAST:event_tbcontrolamtFocusLost
+    }//GEN-LAST:event_tbpayamountFocusLost
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
         BlueSeerUtils.messagereset();
@@ -1339,6 +1361,7 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
     private javax.swing.JButton btlookup;
     private javax.swing.JButton btnew;
     private com.toedter.calendar.JDateChooser dcdate;
+    private com.toedter.calendar.JDateChooser dcpaydate;
     private javax.swing.JComboBox<String> ddcurr;
     private javax.swing.JComboBox ddcust;
     private javax.swing.JComboBox ddsite;
@@ -1353,16 +1376,17 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
     private javax.swing.JLabel jLabel38;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JLabel lbcust;
     private javax.swing.JLabel lbmessage;
     private javax.swing.JTable referencedet;
-    private javax.swing.JTextField tbactualamt;
     private javax.swing.JTextField tbcheck;
     private javax.swing.JTextField tbcontrolamt;
     private javax.swing.JTextField tbkey;
+    private javax.swing.JTextField tbpayamount;
     private javax.swing.JTextField tbrefamt;
     private javax.swing.JTextField tbrmks;
     // End of variables declaration//GEN-END:variables

@@ -911,7 +911,7 @@ public class CashTran extends javax.swing.JPanel {
                
                         for (int j = 0; j < detailtable1.getRowCount(); j++) {
                             st.executeUpdate("insert into ard_mstr "
-                                + "(ard_id, ard_cust, ard_ref, ard_line, ard_date, ard_amt, ard_amt_tax, ard_acct, ard_cc ) "
+                                + "(ard_nbr, ard_cust, ard_ref, ard_line, ard_date, ard_amt, ard_amt_tax, ard_acct, ard_cc ) "
                                 + " values ( " + "'" + batchnbr + "'" + ","
                                     + "'" + entity + "'" + ","
                                 + "'" + shipperid + "'" + ","

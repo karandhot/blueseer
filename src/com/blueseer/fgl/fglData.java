@@ -4317,8 +4317,8 @@ public class fglData {
                     String thisdesc = "AR Memo";
                     String gldoc = setGLRecNbr("AR");
                     
-                    res = st.executeQuery("select ar_type, ard_acct, ard_cc, ard_id, ard_amt, ard_base_amt, ard_curr, ard_base_curr, ar_ref, ard_ref, ar_site, ar_acct, ar_cc from ard_mstr " +
-                               " inner join ar_mstr on ar_nbr = ard_id  where ard_id = " + "'" + batchnbr + "'" +";");
+                    res = st.executeQuery("select ar_type, ard_acct, ard_cc, ard_nbr, ard_amt, ard_base_amt, ard_curr, ard_base_curr, ar_ref, ard_ref, ar_site, ar_acct, ar_cc from ard_mstr " +
+                               " inner join ar_mstr on ar_nbr = ard_nbr  where ard_nbr = " + "'" + batchnbr + "'" +";");
                    
                     while (res.next()) {
                      // if CM credit cust acct and debit cash
@@ -4342,7 +4342,7 @@ public class fglData {
                     curr.add(res.getString("ard_curr"));
                     basecurr.add(res.getString("ard_base_curr"));
                     site.add(res.getString("ar_site"));
-                    ref.add(res.getString("ard_id"));
+                    ref.add(res.getString("ard_nbr"));
                     type.add(thistype);
                     desc.add("Memo " + res.getString("ard_ref"));
                     doc.add(gldoc);
@@ -4421,10 +4421,10 @@ public class fglData {
                     
                   
                    
-                       res = st.executeQuery("select ard_id, ard_amt, ard_base_amt, ard_curr, ard_base_curr, ard_amt_tax, ard_base_amt_tax, ar_ref, ard_ref, ar_site, bk_acct, cm_ar_acct, cm_ar_cc from ard_mstr " +
-                               " inner join ar_mstr on ar_nbr = ard_id " +
+                       res = st.executeQuery("select ard_nbr, ard_amt, ard_base_amt, ard_curr, ard_base_curr, ard_amt_tax, ard_base_amt_tax, ar_ref, ard_ref, ar_site, bk_acct, cm_ar_acct, cm_ar_cc from ard_mstr " +
+                               " inner join ar_mstr on ar_nbr = ard_nbr " +
                                " inner join bk_mstr on bk_id = ar_bank " +
-                               " inner join cm_mstr on cm_code = ar_cust where ard_id = " + "'" + batchnbr + "'" +";");
+                               " inner join cm_mstr on cm_code = ar_cust where ard_nbr = " + "'" + batchnbr + "'" +";");
                    
                     while (res.next()) {
                      // credit AR Acct and debit cash account

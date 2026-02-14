@@ -3375,6 +3375,15 @@ public class admData {
                                lines.add(s);
                             }
                         }
+                        if (sd.equals("vendors")) {
+                            res = st.executeQuery("select vd_addr from vd_mstr order by vd_addr ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "vendors";
+                               s[1] = res.getString("vd_addr");
+                               lines.add(s);
+                            }
+                        }
                         if (sd.equals("icprofiles")) {
                             res = st.executeQuery("select distinct glic_profile from glic_def ;");
                             while (res.next()) {
