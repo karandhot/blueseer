@@ -61,5 +61,35 @@ alter table po_ctrl add column poc_freightcc varchar(30) not null default '';
 alter table po_ctrl add column poc_serviceacct varchar(12) not null default '';
 alter table po_ctrl add column poc_servicecc varchar(30) not null default '';
 
+alter table ar_mstr add column ar_termsdisc_amt decimal(14,5) not null default '0';
+alter table ar_mstr add column ar_termsdisc_pct decimal(14,2) not null default '0';
+alter table ar_mstr add column ar_termsdisc_days int(3) not null default '0';
+
+alter table ard_mstr change column ard_id ard_nbr varchar(11) not null default '';
+
+create table "glic_meta" (
+"glicm_id varchar(30) not null default '',
+"glicm_type varchar(80) not null default '',
+"glicm_key varchar(80) not null default '',
+"glicm_value varchar(200) not null default ''
+);
+
 alter table glic_def add column glic_profile varchar(100) not null default '' first;
+alter table glic_def add column glic_summarize tinyint(1) not null default '0';
+alter table glic_def add column glic_flipsign tinyint(1) not null default '0';
+alter table glic_def add column glic_enabled tinyint(1) not null default '0';
+alter table glic_def add column glic_suppzerodet tinyint(1) not null default '0';
+alter table glic_def add column glic_suppzerosum tinyint(1) not null default '0';
+alter table glic_def add column glic_passive tinyint(1) not null default '0';
+alter table glic_def add column glic_begbal tinyint(1) not null default '0';
+alter table glic_def add column glic_activity tinyint(1) not null default '0';
+alter table glic_def add column glic_endbal tinyint(1) not null default '0';
+alter table glic_def add column glic_expression varchar(200) not null default '';
+
 alter table glic_accts add column glicd_profile varchar(100) not null default '' first;
+
+
+
+
+
+
