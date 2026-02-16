@@ -540,14 +540,14 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                      ddcurr.setSelectedItem(res.getString("ar_curr"));
                 }
                 
-                res = st.executeQuery("select * from ard_mstr where ard_nbr = " + "'" + x[0] + "'" + ";");
+                res = st.executeQuery("select * from ard_mstr inner join ar_mstr on ar_nbr = ard_nbr and ar_type = 'I' where ard_nbr = " + "'" + x[0] + "'" + ";");
                 while (res.next()) {
                   // "Reference", "AmountToApply", "TaxAmount", "Curr"
                      armodel.addRow(new Object[] { res.getString("ard_ref"),
                                               res.getString("ard_amt"),
                                               res.getString("ard_amt_tax"),
-                                              res.getString("ard_termsdisc_amt"),
-                                              res.getString("ard_discdate"),
+                                              res.getString("ar_termsdisc_amt"),
+                                              res.getString("ar_discdate"),
                                               res.getString("ard_curr")
                                               });
                  
@@ -612,8 +612,10 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                 setDateDB(null), //ar_invdate
                 setDateDB(null), //ar_duedate
                 setDateDB(null), //ar_discdate
-                "0" //ar_reverse
-                );
+                "0", //ar_reverse
+                0, // termsdisc amt
+                0, // termsdisc pct
+                0); // termsdisc days
         return x;
     }
    
@@ -627,7 +629,8 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
             double basetaxamt_d = 0;
             boolean completeAllocation = true;
             for (int j = 0; j < ardet.getRowCount(); j++) {
-                        amt_d = bsParseDouble(ardet.getValueAt(j, 1).toString());
+                        amt_d = bsParseDouble(ardet.getValueAt(j, 1).toString()) -
+                                bsParseDouble(ardet.getValueAt(j, 3).toString()); // less early terms discount amount
                         taxamt_d = bsParseDouble(ardet.getValueAt(j, 2).toString());
                          if (basecurr.toUpperCase().equals(ddcurr.getSelectedItem().toString().toUpperCase())) {
                          baseamt_d = amt_d;
@@ -641,7 +644,7 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                             (j + 1),    
                             ddcust.getSelectedItem().toString(),
                             ardet.getValueAt(j, 0).toString(),
-                            setDateDB(dcdate.getDate()),
+                            setDateDB(dcpaydate.getDate()),
                             amt_d,
                             taxamt_d,
                             baseamt_d,     
@@ -649,7 +652,8 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                             ddcurr.getSelectedItem().toString(),
                             basecurr,
                             aracct,
-                            arcc
+                            arcc,
+                            bsParseDouble(ardet.getValueAt(j, 3).toString())
                             ); 
                     list.add(x);
                     }
@@ -839,7 +843,13 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
         
         controlamt = 0;
          for (int j = 0; j < ardet.getRowCount(); j++) {
-             controlamt += bsParseDouble(ardet.getModel().getValueAt(j,1).toString());
+             if (dcpaydate.getDate() != null &&
+                 (ardet.getModel().getValueAt(j,4) != null && ! ardet.getModel().getValueAt(j,4).toString().equals("null") && ! ardet.getModel().getValueAt(j,4).toString().isBlank())  &&    
+                 dcpaydate.getDate().before(parseDate(ardet.getModel().getValueAt(j,4).toString()))) {
+                controlamt += (bsParseDouble(ardet.getModel().getValueAt(j,1).toString()) + bsParseDouble(ardet.getModel().getValueAt(j,2).toString()) - bsParseDouble(ardet.getModel().getValueAt(j,3).toString()));
+             } else {
+                controlamt += (bsParseDouble(ardet.getModel().getValueAt(j,1).toString()) + bsParseDouble(ardet.getModel().getValueAt(j,2).toString())); 
+             }
          }
          
           if (ardet.getRowCount() >= 1) {
@@ -1231,6 +1241,7 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                                               referencedet.getModel().getValueAt(i, 5),
                                               referencedet.getModel().getValueAt(i, 6),
                                               referencedet.getModel().getValueAt(i, 7),
+                                              referencedet.getModel().getValueAt(i, 1),
                                               referencedet.getModel().getValueAt(i, 8)
                                               });
         }
@@ -1278,6 +1289,7 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                                               referencedet.getModel().getValueAt(i, 5),
                                               referencedet.getModel().getValueAt(i, 6),
                                               referencedet.getModel().getValueAt(i, 7),
+                                              referencedet.getModel().getValueAt(i, 1),
                                               referencedet.getModel().getValueAt(i, 8)
                                               });
         }

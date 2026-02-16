@@ -72,6 +72,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.bsformat;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
+import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDoubleUS;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
@@ -86,6 +87,7 @@ import static com.blueseer.utl.BlueSeerUtils.jsonToDouble;
 import static com.blueseer.utl.BlueSeerUtils.jsonToHashMapStringInteger;
 import static com.blueseer.utl.BlueSeerUtils.jsonToInt;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
+import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPostByteR;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
@@ -16495,6 +16497,71 @@ return mystring;
            return duedate;           
        }
     
+    public static String[] getTermsResults(Date effdate, String terms) {
+           String[] r = null;  // duedate, discdate, discpct, discdays
+           Date duedate = new Date();
+           Date discdate = null;
+           double discpct = 0.00;
+           int discdays = 0;
+           DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+           LocalDate localeffdate = effdate.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+           
+           try{
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try{
+                res = st.executeQuery("select * from cust_term where cut_code = " + "'" + terms + "'" + " ;");
+               while (res.next()) {
+                    if (res.getString("cut_code").equals("EOM")) {
+                     localeffdate = localeffdate.withDayOfMonth(
+                                localeffdate.getMonth().length(localeffdate.isLeapYear()));   
+                     duedate = Date.from(localeffdate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                    } else if (res.getString("cut_code").equals("FOM")) {
+                      localeffdate = localeffdate.withMonth(localeffdate.getMonthValue() + 1)
+                                                 .withDayOfMonth(1);
+                      duedate = Date.from(localeffdate.atStartOfDay(ZoneId.systemDefault()).toInstant());  
+                    } else {
+                    duedate = DateUtils.addDays(effdate,res.getInt("cut_days"));
+                    }
+                    
+                    // discount terms info
+                    if (res.getInt("cut_discdays") > 0) {
+                       discdate = DateUtils.addDays(effdate,res.getInt("cut_discdays")); 
+                       discpct = res.getDouble("cut_discpercent");
+                       discdays = res.getInt("cut_discdays");
+                    }
+                }
+               r = new String[]{setDateDB(duedate), setDateDB(discdate), bsNumber(discpct), bsNumber(discdays)};
+               
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+            } finally {
+            if (res != null) {
+                res.close();
+            }
+            if (st != null) {
+                st.close();
+            }
+            con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+              
+           return r;           
+       }
+    
     public static void AREntry(String type, String shipper, Date effdate, Connection bscon) throws SQLException {
            
             DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
@@ -16513,6 +16580,10 @@ return mystring;
                     String basecurr = "";
                     String bank = "";
                     Date duedate = new Date();
+                    Date discdate = null;
+                    int discdays = 0;
+                    double termsdiscamt = 0.00;
+                    double termsdiscpct = 0.00;
                     double amt = 0.00;
                     double baseamt = 0.00;
                     double taxamt = 0.00;
@@ -16554,7 +16625,19 @@ return mystring;
                     //..summary tax will ONLY be at summary level...it will not be baked into line level
                     // ...summary level tax cannot be reported at line level
                     taxamt += shpData.getTaxAmtApplicableByShipper(shipper, amt); 
-                    duedate = getDueDateFromTerms(effdate, terms);
+                   //  duedate = getDueDateFromTerms(effdate, terms);
+                    String[] tr =  getTermsResults(effdate, terms); // duedate, discdate, discpct, discdays
+                    if (tr.length == 4) {
+                    duedate = parseDate(tr[0]);
+                    discdate = parseDate(tr[1]);
+                    termsdiscpct = bsParseDouble(tr[2]);
+                    discdays = bsParseInt(tr[3]);
+                    }
+                    
+                    // calc terms disc amt
+                    if (termsdiscpct > 0) {
+                    termsdiscamt = (termsdiscpct / 100) * (amt + taxamt);
+                    }
                     
                     bank = OVData.getBankCodeOfCust(cust);
                     if (bank.isEmpty()) {
@@ -16577,8 +16660,9 @@ return mystring;
                          st.executeUpdate("insert into ar_mstr "
                         + "(ar_cust, ar_nbr, ar_amt, ar_base_amt, ar_curr, ar_base_curr, " 
                         + " ar_amt_tax, ar_base_amt_tax, ar_open_amt, ar_type, ar_ref, ar_rmks, "
-                        + "ar_entdate, ar_effdate, ar_duedate, ar_acct, ar_cc, "
-                        + "ar_terms, ar_tax_code, ar_bank, ar_site, ar_status) "
+                        + " ar_entdate, ar_effdate, ar_duedate, ar_discdate, ar_acct, ar_cc, "
+                        + " ar_terms, ar_tax_code, ar_bank, ar_site, ar_status, " 
+                        + " ar_termsdisc_amt, ar_termsdisc_pct, ar_termsdisc_days ) "
                         + " values ( " + "'" + cust + "'" + ","
                         + "'" + shipper + "'" + ","
                         + "'" + currformatDoubleUS(amt + taxamt) + "'" + ","
@@ -16588,19 +16672,23 @@ return mystring;
                         + "'" + currformatDoubleUS(taxamt) + "'" + ","
                         + "'" + currformatDoubleUS(basetaxamt) + "'" + ","        
                         + "'" + currformatDoubleUS(amt + taxamt) + "'" + "," // open_amount.....should this be base or foreign ?  currently it's foreign
-                        + "'" + "I" + "'" + ","
+                        + "'" + type + "'" + ","
                         + "'" + ref + "'" + ","
                         + "'" + rmks + "'" + ","
                         + "'" + setDateDB(now) + "'" + ","
                         + "'" + setDateDB(effdate) + "'" + ","
                         + "'" + setDateDB(duedate) + "'" + ","
+                        + "'" + setDateDB(discdate) + "'" + ","        
                         + "'" + acct + "'" + ","
                         + "'" + cc + "'" + ","
                         + "'" + terms + "'" + ","
                         + "'" + taxcode + "'" + ","
                         + "'" + bank + "'" + ","
                         + "'" + site + "'" + ","
-                        + "'" + "o" + "'" 
+                        + "'" + "o" + "'" + ","
+                        + "'" + currformatDoubleUS(termsdiscamt) + "'" + ","
+                        + "'" + currformatDoubleUS(termsdiscpct) + "'" + ","
+                        + "'" + discdays + "'"                
                         + ")"
                         + ";");
                     if (taxamt > 0) {
@@ -16941,185 +17029,6 @@ return mystring;
         }
            return m;
        }
-           
-    public static boolean AREntry(String shipper, Date effdate) {
-            boolean myerror = false;  // Set myerror to true for any captured problem...otherwise return false
-             DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-            java.util.Date now = new java.util.Date();
-            
-           
-           try {
-
-            
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                    String cust = "";
-                    String ref = "";
-                    String rmks = "";
-                    String acct = "";
-                    String cc = "";
-                    String terms = "";
-                    String site = "";
-                    String taxcode = "";
-                    String curr = "";
-                    String basecurr = "";
-                    String bank = "";
-                    
-                    Date duedate = new Date();
-                            
-                    double amt = 0.00;
-                    double baseamt = 0.00;
-                    double taxamt = 0.00;
-                    double basetaxamt = 0.00;
-                    
-                    double matltax = 0.00;
-                   
-                   
-                    res = st.executeQuery("select * from ship_det where shd_id = " + "'" + shipper + "'" +";");
-                    while (res.next()) {
-                  
-                    amt += (res.getDouble("shd_qty") * res.getDouble("shd_netprice"));
-                    matltax += OVData.getTaxAmtApplicableByItem(res.getString("shd_item"),res.getDouble("shd_qty") * res.getDouble("shd_netprice")); // line level matl tax
-                    }
-                    res.close();
-                    
-
-                    // lets retrieve any summary charges from orders associated with this shipment.
-                    res = st.executeQuery("select * from shs_det where shs_nbr = " + "'" + shipper + "'" + 
-                            " and shs_type = 'charge' " +               
-                            ";");
-                    while (res.next()) {
-                    amt += res.getDouble("shs_amt");
-                    }
-                    res.close();
-                    
-                   
-                    
-                    
-                    res = st.executeQuery("select * from ship_mstr where sh_id = " + "'" + shipper + "'" +";");
-                    while (res.next()) {
-                     cust = res.getString("sh_cust");
-                     ref = res.getString("sh_ref");
-                     rmks = res.getString("sh_rmks");
-                     acct = res.getString("sh_ar_acct");
-                     cc = res.getString("sh_ar_cc");
-                     terms = res.getString("sh_cust_terms");
-                     taxcode = res.getString("sh_taxcode");
-                     site = res.getString("sh_site");
-                     curr = res.getString("sh_curr");
-                    }
-                    res.close();
-                    
-                   
-                    
-                    
-                    
-                    
-                    // line matl tax versus order level tax....material Tax will be at line level..
-                    //..summary tax will ONLY be at summary level...it will not be baked into line level
-                    // ...summary level tax cannot be reported at line level
-                    taxamt += shpData.getTaxAmtApplicableByShipper(shipper, amt);  
-                  
-                    
-                    
-                    
-                    duedate = getDueDateFromTerms(effdate, terms);
-                    if (duedate == null) {
-                        myerror = true;
-                    }
-                    
-                    bank = OVData.getBankCodeOfCust(cust);
-                    if (bank.isEmpty()) {
-                        bank = OVData.getDefaultARBank();
-                    }
-                    
-                    
-                    // let's handle the currency exchange...if any
-                    basecurr = OVData.getDefaultCurrency();
-                    
-                    
-                    if (curr.toUpperCase().equals(basecurr.toUpperCase())) {
-                        baseamt = amt;
-                        basetaxamt = taxamt;
-                    } else {
-                        baseamt = OVData.getExchangeBaseValue(basecurr, curr, amt);
-                        basetaxamt = OVData.getExchangeBaseValue(basecurr, curr, taxamt);
-                    }
-                    
-                  
-                    
-                    if (! myerror)
-                         st.executeUpdate("insert into ar_mstr "
-                        + "(ar_cust, ar_nbr, ar_amt, ar_base_amt, ar_curr, ar_base_curr, ar_amt_tax, ar_base_amt_tax, ar_open_amt, ar_type, ar_ref, ar_rmks, "
-                        + "ar_entdate, ar_effdate, ar_duedate, ar_acct, ar_cc, "
-                        + "ar_terms, ar_tax_code, ar_bank, ar_site, ar_status) "
-                        + " values ( " + "'" + cust + "'" + ","
-                        + "'" + shipper + "'" + ","
-                        + "'" + currformatDoubleUS(amt + taxamt) + "'" + ","
-                        + "'" + currformatDoubleUS(baseamt + basetaxamt) + "'" + ","   
-                        + "'" + curr + "'" + ","   
-                        + "'" + basecurr + "'" + ","        
-                        + "'" + currformatDoubleUS(taxamt) + "'" + ","
-                        + "'" + currformatDoubleUS(basetaxamt) + "'" + ","        
-                        + "'" + currformatDoubleUS(amt + taxamt) + "'" + "," // open_amount.....should this be base or foreign ?  currently it's foreign
-                        + "'" + "I" + "'" + ","
-                        + "'" + ref + "'" + ","
-                        + "'" + rmks + "'" + ","
-                        + "'" + setDateDB(now) + "'" + ","
-                        + "'" + setDateDB(effdate) + "'" + ","
-                        + "'" + setDateDB(duedate) + "'" + ","
-                        + "'" + acct + "'" + ","
-                        + "'" + cc + "'" + ","
-                        + "'" + terms + "'" + ","
-                        + "'" + taxcode + "'" + ","
-                        + "'" + bank + "'" + ","
-                        + "'" + site + "'" + ","
-                        + "'" + "o" + "'" 
-                        + ")"
-                        + ";");
-                    
-                  
-                    
-                    if (taxamt > 0) {
-                      ArrayList<String[]> taxelements = OVData.getTaxPercentElementsApplicableByTaxCode(taxcode);
-                          for (String[] elements : taxelements) {
-                                  st.executeUpdate("insert into art_tax "
-                                + "(art_nbr, art_desc, art_type, art_amt, art_percent ) "
-                                + " values ( " + "'" + shipper + "'" + ","
-                                + "'" + elements[0] + "'" + ","
-                                + "'" + elements[2] + "'" + ","
-                                + "'" + currformatDoubleUS(amt * ( bsParseDouble(elements[1]) / 100 )) + "'" + ","   // amount is currently 'foreign' ...not base
-                                + "'" + elements[1] + "'" 
-                                + ")"
-                                + ";");
-                          }
-                    }
-         
-            } catch (SQLException s) {
-                myerror = true;
-                MainFrame.bslog(s);
-            } finally {
-            if (res != null) {
-                res.close();
-            }
-            if (st != null) {
-                st.close();
-            }
-            con.close();
-        }
-        } catch (Exception e) {
-            myerror = true;
-            MainFrame.bslog(e);
-        }
-           return myerror;
-       }
        
     public static boolean AREntryRV(String shipper, Date effdate) {
             boolean myerror = false;  // Set myerror to true for any captured problem...otherwise return false
@@ -17267,7 +17176,9 @@ return mystring;
             try {
                 
                  // lets get original ar_mstr and ar_det info and update with applied amount
-                    res = st.executeQuery("select ar_amt, ar_base_amt, ar_curr, ar_base_curr, ar_open_amt, ar_applied, ard_ref, ard_amt, ard_base_amt from ar_mstr inner join ard_mstr on ar_nbr = ard_ref " +
+                    res = st.executeQuery("select ar_amt, ar_base_amt, ar_curr, ar_base_curr, " +
+                            " ar_open_amt, ar_applied, ard_ref, ard_amt, ard_base_amt, ard_deduction " +
+                            " from ar_mstr inner join ard_mstr on ar_nbr = ard_ref " +
                                     " where ard_nbr = " + "'" + batch + "'"
                             );
                     
@@ -17280,8 +17191,8 @@ return mystring;
                     while (res.next()) {
                         ardref.add(res.getString("ard_ref"));
                         newamt.add(res.getDouble("ard_amt") + res.getDouble("ar_applied"));
-                        openamt.add(res.getDouble("ar_amt") - res.getDouble("ar_applied") - res.getDouble("ard_amt"));
-                        if ( (res.getDouble("ard_amt") + res.getDouble("ar_applied")) >= res.getDouble("ar_amt") ) {
+                        openamt.add(res.getDouble("ar_amt") - res.getDouble("ar_applied") - res.getDouble("ard_amt") - res.getDouble("ard_deduction"));
+                        if ( (res.getDouble("ard_amt") + res.getDouble("ar_applied") + res.getDouble("ard_deduction")) >= res.getDouble("ar_amt") ) {
                          status.add("c");
                         } else {
                          status.add("o");
@@ -17289,8 +17200,8 @@ return mystring;
                     }
                     
                      for (int j = 0; j < ardref.size(); j++) {
-                    st.executeUpdate("update ar_mstr set ar_applied = " + "'" + bsParseDouble(newamt.get(j).toString()) + "'" + "," +
-                            " ar_open_amt = " + "'" + bsParseDouble(openamt.get(j).toString()) + "'" + "," +
+                    st.executeUpdate("update ar_mstr set ar_applied = " + "'" + currformatDouble(bsParseDouble(newamt.get(j).toString())) + "'" + "," +
+                            " ar_open_amt = " + "'" + currformatDouble(bsParseDouble(openamt.get(j).toString())) + "'" + "," +
                             " ar_status = " + "'" + status.get(j) + "'" +
                             " where ar_nbr = " + "'" + ardref.get(j) + "'" + 
                             " and ar_type = 'I' "

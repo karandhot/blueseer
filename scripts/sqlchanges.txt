@@ -66,6 +66,7 @@ alter table ar_mstr add column ar_termsdisc_pct decimal(14,2) not null default '
 alter table ar_mstr add column ar_termsdisc_days int(3) not null default '0';
 
 alter table ard_mstr change column ard_id ard_nbr varchar(11) not null default '';
+alter table ard_mstr add column ard_deduction decimal(12,5) not null default '0';
 
 create table "glic_meta" (
 "glicm_id varchar(30) not null default '',

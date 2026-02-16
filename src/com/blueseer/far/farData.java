@@ -114,8 +114,9 @@ public class farData {
                         + "ar_status, ar_bank, ar_site, "
                         + "ar_amt_tax, ar_base_amt_tax, ar_amt_disc, ar_base_amt_disc, " 
                         + "ar_open_amt, ar_applied, ar_terms, ar_tax_code, " 
-                        + " ar_invdate,  ar_duedate,  ar_discdate,  ar_reverse ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                        + " ar_invdate,  ar_duedate,  ar_discdate,  ar_reverse, " 
+                        + " ar_termsdisc_amt, ar_termsdisc_pct, ar_termsdisc_days ) " 
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
        
           ps = con.prepareStatement(sqlSelect); 
           ps.setString(1, x.ar_nbr);
@@ -151,6 +152,9 @@ public class farData {
             ps.setString(27, x.ar_duedate);
             ps.setString(28, x.ar_discdate);
             ps.setString(29, x.ar_reverse);
+            ps.setDouble(30, x.ar_termsdisc_amt);
+            ps.setDouble(31, x.ar_termsdisc_pct);
+            ps.setInt(32, x.ar_termsdisc_days);
             rows = ps.executeUpdate();
             } 
             return rows;
@@ -161,8 +165,8 @@ public class farData {
         String sqlSelect = "select * from ard_mstr where ard_nbr = ? and ard_line = ?";
         String sqlInsert = "insert into ard_mstr (ard_nbr, ard_line, ard_cust, ard_ref, ard_date, "
                         + " ard_amt, ard_amt_tax, ard_base_amt, ard_base_amt_tax, ard_curr, ard_base_curr, " 
-                        + " ard_acct, ard_cc ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                        + " ard_acct, ard_cc, ard_deduction ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
        
           ps = con.prepareStatement(sqlSelect); 
           ps.setString(1, x.ard_nbr);
@@ -183,6 +187,7 @@ public class farData {
             ps.setString(11, x.ard_base_curr);
             ps.setString(12, x.ard_acct);
             ps.setString(13, x.ard_cc);
+            ps.setDouble(14, x.ard_deduction);
             rows = ps.executeUpdate();
             } 
             return rows;
@@ -338,7 +343,8 @@ public class farData {
                                 res.getDouble("ar_amt_tax"), res.getDouble("ar_base_amt_tax"), res.getDouble("ar_amt_disc"),
                                 res.getDouble("ar_base_amt_disc"), res.getDouble("ar_open_amt"), res.getString("ar_applied"),
                                 res.getString("ar_terms"), res.getString("ar_tax_code"), res.getString("ar_invdate"), 
-                                res.getString("ar_duedate"), res.getString("ar_discdate"), res.getString("ar_reverse"));
+                                res.getString("ar_duedate"), res.getString("ar_discdate"), res.getString("ar_reverse"),
+                                res.getDouble("ar_termsdisc_amt"), res.getDouble("ar_termsdisc_amt"), res.getInt("ar_termsdisc_days"));
                     }
                 }
             }
@@ -372,7 +378,8 @@ public class farData {
                                 res.getDouble("ar_amt_tax"), res.getDouble("ar_base_amt_tax"), res.getDouble("ar_amt_disc"),
                                 res.getDouble("ar_base_amt_disc"), res.getDouble("ar_open_amt"), res.getString("ar_applied"),
                                 res.getString("ar_terms"), res.getString("ar_tax_code"), res.getString("ar_invdate"), 
-                                res.getString("ar_duedate"), res.getString("ar_discdate"), res.getString("ar_reverse"));
+                                res.getString("ar_duedate"), res.getString("ar_discdate"), res.getString("ar_reverse"),
+                                res.getDouble("ar_termsdisc_amt"), res.getDouble("ar_termsdisc_amt"), res.getInt("ar_termsdisc_days"));
                 }
             }
             return r;
@@ -394,7 +401,7 @@ public class farData {
                     res.getString("ard_ref"), res.getString("ard_date"), res.getDouble("ard_amt"), 
                     res.getDouble("ard_amt_tax"), res.getDouble("ard_base_amt"),res.getDouble("ard_base_amt_tax"), 
                     res.getString("ard_curr"), res.getString("ard_base_curr"), res.getString("ard_acct"), 
-                    res.getString("ard_cc") );
+                    res.getString("ard_cc"), res.getDouble("ard_deduction") );
                     list.add(r);
                     }
                 
@@ -423,7 +430,7 @@ public class farData {
                     res.getString("ard_ref"), res.getString("ard_date"), res.getDouble("ard_amt"), 
                     res.getDouble("ard_amt_tax"), res.getDouble("ard_base_amt"),res.getDouble("ard_base_amt_tax"), 
                     res.getString("ard_curr"), res.getString("ard_base_curr"), res.getString("ard_acct"), 
-                    res.getString("ard_cc") );
+                    res.getString("ard_cc"), res.getDouble("ard_deduction") );
                     list.add(r);
                     }
             }
@@ -652,21 +659,23 @@ public class farData {
         String ar_status, String ar_bank, String ar_site, 
         double ar_amt_tax, double ar_base_amt_tax, double ar_amt_disc, double ar_base_amt_disc, 
         double ar_open_amt, String ar_applied, String ar_terms, String ar_tax_code,
-        String ar_invdate, String ar_duedate, String ar_discdate, String ar_reverse) {
+        String ar_invdate, String ar_duedate, String ar_discdate, String ar_reverse,
+        double ar_termsdisc_amt, double ar_termsdisc_pct, int ar_termsdisc_days) {
         public ar_mstr(String[] m) {
             this(m, "", "", "", 0, 0, "", "", "", "", "",
                     "", "", "", "", "", "", "", "", 0, 0,
-                    0, 0, 0, "", "", "", "", "", "", "");
+                    0, 0, 0, "", "", "", "", "", "", "",
+                    0, 0, 0);
         }
     }
     
     public record ard_mstr(String[] m, String ard_nbr, int ard_line, String ard_cust, String ard_ref, 
         String ard_date, double ard_amt, double ard_amt_tax, 
         double ard_base_amt, double ard_base_amt_tax, String ard_curr, String ard_base_curr, 
-        String ard_acct, String ard_cc) {
+        String ard_acct, String ard_cc, double ard_deduction) {
         public ard_mstr(String[] m) {
             this(m, "", 0, "", "", "", 0, 0, 0, 0, "",
-                    "", "", "" );
+                    "", "", "", 0 );
         }
     }
     

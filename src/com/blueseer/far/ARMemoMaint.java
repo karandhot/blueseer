@@ -573,8 +573,11 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
                 setDateDB(null), //ar_invdate
                 setDateDB(null), //ar_duedate
                 setDateDB(null), //ar_discdate
-                "0" //ar_reverse
-                );
+                "0", //ar_reverse
+                0, // termsdisc amt
+                0, // termsdisc pct
+                0); // termsdisc days
+                
         return x;
     }
    
@@ -607,7 +610,8 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
                             ddcurr.getSelectedItem().toString(),
                             basecurr,
                             ardet.getValueAt(j, 1).toString(),
-                            ardet.getValueAt(j, 2).toString()
+                            ardet.getValueAt(j, 2).toString(),
+                            0 // to be revisited
                             ); 
                     list.add(x);
                     }

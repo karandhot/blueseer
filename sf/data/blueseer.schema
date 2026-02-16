@@ -293,7 +293,9 @@ CREATE TABLE IF NOT EXISTS `ard_mstr` (
   `ard_curr` varchar(3) NOT NULL DEFAULT '',
   `ard_base_curr` varchar(3) NOT NULL DEFAULT '',
   `ard_acct` varchar(12) NOT NULL DEFAULT '0',
-  `ard_cc` varchar(4) NOT NULL DEFAULT '0') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `ard_cc` varchar(4) NOT NULL DEFAULT '0',
+  `ard_deduction` decimal(12,5) NOT NULL DEFAULT '0.00000'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `bk_mstr` (
   `bk_id` varchar(30) NOT NULL  DEFAULT '',
   `bk_site` varchar(10) NOT NULL  DEFAULT '',
