@@ -529,7 +529,7 @@ public class SiteMaint extends javax.swing.JPanel implements IBlueSeerCtl {
         }
                 
                 
-        if (tbkey.getText().equals(OVData.getDefaultSite()) && x.toString().equals("delete") ) {
+        if (tbkey.getText().equals(defaultSite) && x.toString().equals("delete") ) {
             bsmf.MainFrame.show(getMessageTag(1171));
             tbkey.requestFocus();
             return false;
