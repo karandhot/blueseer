@@ -50,6 +50,7 @@ import static com.blueseer.fgl.fglData.getGLCalForPeriod;
 import static com.blueseer.fgl.fglData.getGLCalForPeriodRange;
 import static com.blueseer.fgl.fglData.getGLCalYearsRange;
 import static com.blueseer.fgl.fglData.getGLCtrl;
+import static com.blueseer.fgl.fglData.getTaxDet;
 import static com.blueseer.fgl.fglData.updateAcctMstr;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
@@ -287,6 +288,15 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     case "getExcMstr" : {
       String base = request.getHeader("base"); 
       ArrayList<exc_mstr> emlist = getExcMstr(base);
+      ObjectMapper objectMapper = new ObjectMapper();
+      String r = objectMapper.writeValueAsString(emlist);
+      response.getWriter().print(r);
+      break;
+    }
+    
+    case "getTaxDet" : {
+      String param1 = request.getHeader("param1"); 
+      ArrayList<fglData.taxd_mstr> emlist = getTaxDet(param1);
       ObjectMapper objectMapper = new ObjectMapper();
       String r = objectMapper.writeValueAsString(emlist);
       response.getWriter().print(r);

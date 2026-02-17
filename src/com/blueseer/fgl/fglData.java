@@ -1205,6 +1205,25 @@ public class fglData {
         taxd_mstr r = null;
         String[] m = new String[2];
         ArrayList<taxd_mstr> list = new ArrayList<taxd_mstr>();
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> params = new ArrayList<String[]>();
+            params.add(new String[]{"id","getTaxDet"});
+            params.add(new String[]{"param1",code});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(params, "", null, "dataServFIN");
+                list = objectMapper.readValue(returnstring, ArrayList.class); 
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new taxd_mstr(m);
+               list.add(r);
+            }
+        }
+        
+        
         String sql = "select * from taxd_mstr where taxd_parentcode = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
