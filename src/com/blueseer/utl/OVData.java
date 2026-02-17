@@ -224,7 +224,7 @@ import org.json.JSONObject;
 public class OVData { 
     
    public static String major = "7.0"; 
-   public static String minor = "93";
+   public static String minor = "94";
     
    public static String[] states = {"AB","AL","AK","AZ","AR","BC","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","MB","ME","MD","MA","MI","MN","MS","MO","MT","NE","NL","NV","NH","NJ","NL","NM","NY","NC","ND","NS","OH","OK","ON","OR","PA","PE","QC","RI","SC","SD","SE","TN","TX","UT","VT","VA","WA","WV","WI","WY" };
    public static String[] countries = {"Afghanistan","Albania","Algeria","Andorra","Angola","Antigua & Deps","Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina","Burundi","Cambodia","Cameroon","Canada","Cape Verde","Central African Rep","Chad","Chile","China","Colombia","Comoros","Congo","Congo {Democratic Rep}","Costa Rica","Croatia","Cuba","Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","East Timor","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland {Republic}","Israel","Italy","Ivory Coast","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Korea North","Korea South","Kosovo","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Macedonia","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar, {Burma}","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","Norway","Oman","Pakistan","Palau","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russian Federation","Rwanda","St Kitts & Nevis","St Lucia","Saint Vincent & the Grenadines","Samoa","San Marino","Sao Tome & Principe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","Spain","Sri Lanka","Sudan","Suriname","Swaziland","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Togo","Tonga","Trinidad & Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom", "USA","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe" }; 
@@ -18460,7 +18460,7 @@ return mystring;
     }    
     
     //example remote NO RETURN
-    public static void printInvoiceRemote(String key, String keytype, boolean display) {
+    public static String printInvoiceRemote(String key, String keytype, boolean display) {
         
         String jsonString = null;
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
@@ -18472,11 +18472,14 @@ return mystring;
                 jsonString = sendServerPost(list, "", null, "dataServSHP"); 
             } catch (IOException ex) {
                 bslog(ex);
-                return;
+                return "";
             }
         } else {
             jsonString = getInvoicePrintData(key, keytype); 
-        }        
+        }  
+        
+        Path rfile = null; // returned path of filename if display = false ...file auto dropped into sys temp directory
+        
         Object[][] rData = jsonToData(jsonString);
         
         List<Object[]> list = new ArrayList<>();
@@ -18591,12 +18594,14 @@ return mystring;
                 jasperViewer.setFitPageZoomRatio();
                 
         } else {
-           JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");  
+           rfile = FileSystems.getDefault().getPath(cleanDirString(OVData.getSystemTempDirectory()) + "invoice." + invoice + "." + Long.toHexString(System.currentTimeMillis()) + ".pdf");  
+           JasperExportManager.exportReportToPdfFile(jasperPrint, rfile.toString());  
          }
          
        } catch (JRException ex) {
            MainFrame.bslog(ex);
        }
+     return rfile.toString();
     }    
     
     public static void printShipperRemote(String shipper, String keytype) {
@@ -21167,11 +21172,10 @@ MainFrame.bslog(e);
 	  }
 	    }
      
-    public static String[] sendInvoice(String invoice, String site) {
-        String[] m = new String[]{"0","email transmitted"};
+    public static String[] sendInvoice(String invoice, String site, String filename) {
+        String[] m = new String[]{"0","sendInvoice"};
         printInvoice(invoice, false);
         String siteinfo[] = admData.getSiteAddressInfo(site);
-        String filename = "temp/ivprt.pdf";
         String subject = "Automated communication from " + siteinfo[1];
         String body = "This is an automated delivery for invoice number: " + invoice + "." + "\n";
         body += "The attachment contains the details of the invoice in pdf format.";
@@ -21186,17 +21190,18 @@ MainFrame.bslog(e);
         
         String custEmail = "";
         custEmail = cusData.getCustEmailByInvoice(invoice);
-        File file = new File("temp/ivprt.pdf");
+        File file = new File(filename);
         if (file.exists()) {
             if (custEmail == null || custEmail.isEmpty()) {
                m[0] = "1";
-               m[1] = "customer email not defined";
+               m[1] = " (OVdata.sendInvoice) customer email not defined (invoice/filename/email):  " + invoice + "/" + filename + "/" + custEmail;
             } else {
                sendEmail(custEmail, subject, body, filename); 
+               m = new String[]{"0"," (OVdata.sendInvoice) invoice attachment transmitted (invoice/filename/email):  " + invoice + "/" + filename + "/" + custEmail}; 
             }
         } else {
             m[0] = "1";
-            m[1] = "unable to locate attachment file";
+            m[1] = " (OVdata.sendInvoice) unable to locate attachment file (invoice/filename/email):  " + invoice + "/" + filename + "/" + custEmail;
         }
         return m;
         

@@ -243,7 +243,10 @@ public class InvoiceBrowse extends javax.swing.JPanel {
                        message = getDetail(this.key[1]);  
                     }
                     if (this.key[0].equals("sendInvoice")) {
-                       message = OVData.sendInvoice(this.key[1], this.key[3]);   
+                       String rfile = OVData.printInvoiceRemote(this.key[1], "shipper", false);
+                        if (rfile != null && !rfile.isBlank()) {
+                        message = OVData.sendInvoice(this.key[1], this.key[3], rfile);
+                        }
                     }
                     break;
                 default:

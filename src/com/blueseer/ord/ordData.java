@@ -72,6 +72,7 @@ import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.getSysMetaValue;
+import static com.blueseer.utl.OVData.printInvoiceRemote;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -3781,7 +3782,7 @@ public class ordData {
                 "" // kvpair    
                 );
         shd.add(x);
-        amt += Double.valueOf(bdline.billd_netprice() * bdline.billd_qty());
+        amt += bdline.billd_netprice() * bdline.billd_qty();
         }      
        
         bscon.setAutoCommit(false);    
@@ -3791,8 +3792,7 @@ public class ordData {
         m = _confirmShipperTransaction("bill", String.valueOf(shipperid), new java.util.Date(), bscon);
         bslog(m[0] + " " + m[1]);
         
-       // now have xstart and xend...bill it
-       // create bill_tran along with ship_mstr, ship_det ....then call autoinvoice
+      
        bill_tran bt = new bill_tran(null, 
                 "", // primary key
                 bm.bill_nbr(), 
@@ -3830,10 +3830,15 @@ public class ordData {
         
         bscon.commit();
        
+        // email invoice
+        String rfile = OVData.printInvoiceRemote(String.valueOf(shipperid), "shipper", false);
+          if (rfile != null && ! rfile.isBlank()) {
+           m = OVData.sendInvoice(String.valueOf(shipperid), bm.bill_site(), rfile);
+           System.out.println("billing: "  + m[1]);
+          }
         } catch (SQLException e) {
            try {
                  bscon.rollback();
-                 m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordError};
              } catch (SQLException rb) {
                  MainFrame.bslog(rb);
              } 

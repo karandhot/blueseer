@@ -344,7 +344,7 @@ public class farData {
                                 res.getDouble("ar_base_amt_disc"), res.getDouble("ar_open_amt"), res.getString("ar_applied"),
                                 res.getString("ar_terms"), res.getString("ar_tax_code"), res.getString("ar_invdate"), 
                                 res.getString("ar_duedate"), res.getString("ar_discdate"), res.getString("ar_reverse"),
-                                res.getDouble("ar_termsdisc_amt"), res.getDouble("ar_termsdisc_amt"), res.getInt("ar_termsdisc_days"));
+                                res.getDouble("ar_termsdisc_amt"), res.getDouble("ar_termsdisc_pct"), res.getInt("ar_termsdisc_days"));
                     }
                 }
             }
@@ -379,7 +379,7 @@ public class farData {
                                 res.getDouble("ar_base_amt_disc"), res.getDouble("ar_open_amt"), res.getString("ar_applied"),
                                 res.getString("ar_terms"), res.getString("ar_tax_code"), res.getString("ar_invdate"), 
                                 res.getString("ar_duedate"), res.getString("ar_discdate"), res.getString("ar_reverse"),
-                                res.getDouble("ar_termsdisc_amt"), res.getDouble("ar_termsdisc_amt"), res.getInt("ar_termsdisc_days"));
+                                res.getDouble("ar_termsdisc_amt"), res.getDouble("ar_termsdisc_pct"), res.getInt("ar_termsdisc_days"));
                 }
             }
             return r;

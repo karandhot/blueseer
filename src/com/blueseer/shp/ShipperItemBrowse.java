@@ -213,7 +213,10 @@ public class ShipperItemBrowse extends javax.swing.JPanel {
         @Override
         public String[] doInBackground() throws Exception {
             String[] message = new String[2];
-            message = OVData.sendInvoice(key, site); 
+            String rfile = OVData.printInvoiceRemote(key, "shipper", false);
+            if (rfile != null && !rfile.isBlank()) {
+            message = OVData.sendInvoice(key, site, rfile);
+            }
             return message;
         }
  

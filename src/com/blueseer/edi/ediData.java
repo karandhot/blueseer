@@ -7759,7 +7759,7 @@ public class ediData {
            return r;  
         }
         
-        sendEmail(smtpfrom, smtpto, smtpsubject, "", filepath.toString());
+        sendEmail(smtpfrom, smtpto, smtpsubject, "", filepath);
         try {
             if (deletefile) {
                 Files.delete(vfilepath);
