@@ -16580,7 +16580,7 @@ return mystring;
                     String basecurr = "";
                     String bank = "";
                     Date duedate = new Date();
-                    Date discdate = null;
+                    Date discdate = new Date();
                     int discdays = 0;
                     double termsdiscamt = 0.00;
                     double termsdiscpct = 0.00;
@@ -16657,6 +16657,7 @@ return mystring;
                         basetaxamt = OVData.getExchangeBaseValue(basecurr, curr, taxamt);
                     }
                     if (type.equals("I")) {
+                        System.out.println("HERE: " + discdate);
                          st.executeUpdate("insert into ar_mstr "
                         + "(ar_cust, ar_nbr, ar_amt, ar_base_amt, ar_curr, ar_base_curr, " 
                         + " ar_amt_tax, ar_base_amt_tax, ar_open_amt, ar_type, ar_ref, ar_rmks, "
