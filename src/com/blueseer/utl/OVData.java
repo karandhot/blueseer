@@ -21177,7 +21177,7 @@ MainFrame.bslog(e);
      
     public static String[] sendInvoice(String invoice, String site, String filename) {
         String[] m = new String[]{"0","sendInvoice"};
-        printInvoice(invoice, false);
+       // printInvoice(invoice, false);
         String siteinfo[] = admData.getSiteAddressInfo(site);
         String subject = "Automated communication from " + siteinfo[1];
         String body = "This is an automated delivery for invoice number: " + invoice + "." + "\n";
