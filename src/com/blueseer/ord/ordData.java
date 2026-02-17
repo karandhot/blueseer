@@ -3648,6 +3648,18 @@ public class ordData {
     }
     
     public static String billTransAll() {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "billTransAll"});
+            try {
+                return sendServerPost(list, "", null, "dataServORD");
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        }
+        
         ArrayList<String> bills = new ArrayList<String>();
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         try{

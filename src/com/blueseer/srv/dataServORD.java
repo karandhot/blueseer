@@ -31,6 +31,7 @@ import com.blueseer.ord.ordData;
 import static com.blueseer.ord.ordData.addUpdateORCtrl;
 import static com.blueseer.ord.ordData.addUpdateSOMeta;
 import static com.blueseer.ord.ordData.applyOrderChange;
+import static com.blueseer.ord.ordData.billTransAll;
 import static com.blueseer.ord.ordData.deleteSOMeta;
 import static com.blueseer.ord.ordData.getBillBrowseView;
 import static com.blueseer.ord.ordData.getBillDet;
@@ -621,6 +622,10 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(doubleToJson(getSVOrderTotalTax(request.getHeader("param1"))));  
             break;
         }
+        
+        case "billTransAll" :        
+            response.getWriter().print(billTransAll());
+            break; 
         
         case "applyOrderChange" :
             ordData.applyOrderChange(request.getHeader("param1"), request.getHeader("param2"));

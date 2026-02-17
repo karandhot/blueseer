@@ -294,7 +294,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getSysMetaDataArray" :        
             response.getWriter().print(ArrayListStringArrayToJson(getSysMetaData(request.getHeader("param1"))));
-            break; 
+            break;
+            
+        case "getSysMetaData2Param" :        
+            response.getWriter().print(ArrayListStringArrayToJson(getSysMetaData(request.getHeader("param1"), request.getHeader("param2"))));
+            break;    
             
         case "getMenuRecs" :        
             response.getWriter().print(ArrayListStringArrayToJson(getMenuRecs()));

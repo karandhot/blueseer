@@ -23713,7 +23713,19 @@ return mylist;
     }   
     
     public static ArrayList<String[]> getSysMetaData(String id, String type) {
-           ArrayList<String[]> myarray = new ArrayList<String[]>();
+         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getSysMetaData2Param"});
+            list.add(new String[]{"param1",  id});
+            list.add(new String[]{"param2",  type});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+         ArrayList<String[]> myarray = new ArrayList<String[]>();
          try{
             
             Connection con = null;
