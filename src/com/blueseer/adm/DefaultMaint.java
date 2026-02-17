@@ -36,10 +36,12 @@ import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.checkLength;
 import com.blueseer.utl.BlueSeerUtils.dbaction;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import com.blueseer.utl.IBlueSeerCtl;
 import com.blueseer.utl.IBlueSeerc;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.canUpdate;
 import java.awt.Component;
+import java.util.ArrayList;
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -55,7 +57,7 @@ import javax.swing.SwingWorker;
  *
  * @author vaughnte
  */
-public class DefaultMaint extends javax.swing.JPanel implements IBlueSeerc {
+public class DefaultMaint extends javax.swing.JPanel implements IBlueSeerCtl {
 
    
                 
@@ -68,6 +70,10 @@ public class DefaultMaint extends javax.swing.JPanel implements IBlueSeerc {
     // global variable declarations
         boolean isLoad = false;
         public static ov_mstr x = null;
+        ArrayList<String[]> initDataSets = null;
+        String defaultSite = "";
+        String defaultCurrency = "";
+        boolean canUpdate = false;
     
     // interface functions implemented
     public void executeTask(dbaction x, String[] y) { 
@@ -129,9 +135,22 @@ public class DefaultMaint extends javax.swing.JPanel implements IBlueSeerc {
        
     }
    
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
-        
+        if (init) {
+       initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
+       for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+        }
+       }
        isLoad = false;
     }
     
@@ -192,7 +211,7 @@ public class DefaultMaint extends javax.swing.JPanel implements IBlueSeerc {
     public boolean validateInput(dbaction x) {
         
         
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -269,8 +288,12 @@ public class DefaultMaint extends javax.swing.JPanel implements IBlueSeerc {
     }
     
     public void initvars(String[] arg) {
-            setComponentDefaultValues();
-            executeTask(dbaction.get, new String[]{""}); // blank key passed as table is single rec control
+       if (initDataSets == null) {
+        setComponentDefaultValues(true);
+       } else {
+        setComponentDefaultValues(false);   
+       }
+        executeTask(dbaction.get, new String[]{""}); // blank key passed as table is single rec control
     }
     
     public String[] updateRecord(String[] x) {

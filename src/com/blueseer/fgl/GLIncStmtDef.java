@@ -423,7 +423,7 @@ public class GLIncStmtDef extends javax.swing.JPanel  {
     }
     
     public boolean validateInput(dbaction x) {
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }

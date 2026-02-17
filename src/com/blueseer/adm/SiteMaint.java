@@ -48,6 +48,7 @@ import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import com.blueseer.utl.DTData;
+import com.blueseer.utl.IBlueSeerCtl;
 import com.blueseer.utl.IBlueSeerT;
 import static com.blueseer.utl.OVData.canUpdate;
 import java.awt.Color;
@@ -75,12 +76,15 @@ import javax.swing.SwingWorker;
  *
  * @author vaughnte
  */
-public class SiteMaint extends javax.swing.JPanel {
+public class SiteMaint extends javax.swing.JPanel implements IBlueSeerCtl {
 
     // global variable declarations
                 boolean isLoad = false;
                 public static site_mstr x = null;
-                ArrayList<String[]> initDataSet = null;
+                ArrayList<String[]> initDataSets = null;
+                String defaultSite = "";
+                String defaultCurrency = "";
+                boolean canUpdate = false;
                 
    // global datatablemodel declarations    
         
@@ -268,7 +272,7 @@ public class SiteMaint extends javax.swing.JPanel {
     public void setComponentDefaultValues(boolean init) {
        isLoad = true;
        if (init) {
-       initDataSet = admData.getSiteInit(this.getClass().getName(), bsmf.MainFrame.userid);
+       initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "states,countries");
        }
         tbkey.setText("");
         tbdesc.setText("");
@@ -296,12 +300,21 @@ public class SiteMaint extends javax.swing.JPanel {
         
         ddstate.removeAllItems();
         ddcountry.removeAllItems();
-        for (String[] s : initDataSet) {
+        for (String[] s : initDataSets) {
             if (s[0].equals("countries")) {
               ddcountry.addItem(s[1]);  
             }
             if (s[0].equals("states")) {
               ddstate.addItem(s[1]);    
+            }
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
             }
         }
         
@@ -349,7 +362,7 @@ public class SiteMaint extends javax.swing.JPanel {
     
     public boolean validateInput(dbaction x) {
         
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -528,7 +541,7 @@ public class SiteMaint extends javax.swing.JPanel {
     
     public void initvars(String[] arg) {
        setPanelComponentState(this, false); 
-       if (initDataSet == null) {
+       if (initDataSets == null) {
         setComponentDefaultValues(true);
        } else {
         setComponentDefaultValues(false);   
