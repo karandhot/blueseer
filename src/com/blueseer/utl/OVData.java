@@ -16657,7 +16657,7 @@ return mystring;
                         basetaxamt = OVData.getExchangeBaseValue(basecurr, curr, taxamt);
                     }
                     if (type.equals("I")) {
-                        System.out.println("HERE: " + discdate);
+                        bsmf.MainFrame.show("HERE: " + discdate);
                          st.executeUpdate("insert into ar_mstr "
                         + "(ar_cust, ar_nbr, ar_amt, ar_base_amt, ar_curr, ar_base_curr, " 
                         + " ar_amt_tax, ar_base_amt_tax, ar_open_amt, ar_type, ar_ref, ar_rmks, "
@@ -18480,7 +18480,7 @@ return mystring;
         }  
         
         Path rfile = null; // returned path of filename if display = false ...file auto dropped into sys temp directory
-        
+        String r = "";
         Object[][] rData = jsonToData(jsonString);
         
         List<Object[]> list = new ArrayList<>();
@@ -18602,7 +18602,10 @@ return mystring;
        } catch (JRException ex) {
            MainFrame.bslog(ex);
        }
-     return rfile.toString();
+        if (rfile != null) {
+            r = rfile.toString();
+        }
+     return r;
     }    
     
     public static void printShipperRemote(String shipper, String keytype) {
