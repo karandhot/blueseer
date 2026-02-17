@@ -16657,8 +16657,7 @@ return mystring;
                         basetaxamt = OVData.getExchangeBaseValue(basecurr, curr, taxamt);
                     }
                     if (type.equals("I")) {
-                        bsmf.MainFrame.show("HERE: " + discdate);
-                         st.executeUpdate("insert into ar_mstr "
+                        st.executeUpdate("insert into ar_mstr "
                         + "(ar_cust, ar_nbr, ar_amt, ar_base_amt, ar_curr, ar_base_curr, " 
                         + " ar_amt_tax, ar_base_amt_tax, ar_open_amt, ar_type, ar_ref, ar_rmks, "
                         + " ar_entdate, ar_effdate, ar_duedate, ar_discdate, ar_acct, ar_cc, "
@@ -16679,7 +16678,7 @@ return mystring;
                         + "'" + setDateDB(now) + "'" + ","
                         + "'" + setDateDB(effdate) + "'" + ","
                         + "'" + setDateDB(duedate) + "'" + ","
-                        + "'" + setDateDB(discdate) + "'" + ","        
+                        +  setDateDB(discdate) + ","        
                         + "'" + acct + "'" + ","
                         + "'" + cc + "'" + ","
                         + "'" + terms + "'" + ","
