@@ -3679,6 +3679,7 @@ public class ordData {
           //  Statement st = con.createStatement();
             String sql = "SELECT bill_nbr from bill_mstr " +
                    " where bill_acctstatus <> 'closed' " +
+                   " and bill_autobill = '1' " + 
                    " and bill_nextbilldate <= " + "'" + today + "'" +
                    " order by bill_nbr;";
             ps = con.prepareStatement(sql);
