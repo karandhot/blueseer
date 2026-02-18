@@ -3527,7 +3527,8 @@ CREATE TABLE "bill_mstr" (
   "bill_frequencytype" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
   "bill_group" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
   "bill_category" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
-  "bill_terms" varchar(10) NOT NULL COLLATE NOCASE DEFAULT ''
+  "bill_terms" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
+  "bill_autobill" tinyint(1) NOT NULL DEFAULT '0'
 );
 CREATE TABLE "bill_det" (
   "billd_nbr" varchar(8) NOT NULL COLLATE NOCASE DEFAULT '',

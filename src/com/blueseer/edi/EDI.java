@@ -3766,7 +3766,7 @@ public class EDI {
             String to = OVData.getSysMetaValue("system", "emailrecipient", "order");
             String[] creds = getSMTPCredentials();
             if (! to.isBlank() && ! creds[1].isBlank()) {
-                sendEmail(to,"Sales Order Entry Event", "A new sales order has been created for PO: " + e.po, "");
+                sendEmail(to,"Sales Order Entry Event", "A new sales order has been created for PO: " + e.po, "", false);
                // Session sessionmail = setEmailSession();
                // sendEmailwSession(sessionmail, creds[1], to, "Sales Order Entry Event", "A new sales order has been created for PO: " + e.po, "");
             }
@@ -3844,7 +3844,7 @@ public class EDI {
             String to = OVData.getSysMetaValue("system", "emailrecipient", "orderchange");
             String[] creds = getSMTPCredentials();
             if (! to.isBlank() && ! creds[1].isBlank()) {
-                sendEmail(to,"Sales Order Entry Event", "A new sales order change has been created for PO: " + e.po, "");
+                sendEmail(to,"Sales Order Entry Event", "A new sales order change has been created for PO: " + e.po, "", false);
                // Session sessionmail = setEmailSession();
                // sendEmailwSession(sessionmail, creds[1], to, "Sales Order Entry Event", "A new sales order has been created for PO: " + e.po, "");
             }

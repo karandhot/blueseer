@@ -998,7 +998,7 @@ public class ReqMaint extends javax.swing.JPanel implements IBlueSeer {
                      String subject = "Requisition is Approved";
                      String body = "Requisition number " + myid + " is approved. \n";
                      body += "Your PO number is " + mypo;
-                     OVData.sendEmail(res.getString("user_email"), subject, body, "");
+                     OVData.sendEmail(res.getString("user_email"), subject, body, "", false);
                  }
                
            }
@@ -1267,7 +1267,7 @@ public class ReqMaint extends javax.swing.JPanel implements IBlueSeer {
                      String requestor = "Requestor = " + res.getString("req_name");
                      String amount = "Amount = " + res.getString("req_amt");
                      body = body + "\n" + requestor + "\n" + amount;
-                     OVData.sendEmail(res.getString("user_email"), subject, body, "");
+                     OVData.sendEmail(res.getString("user_email"), subject, body, "", false);
                      }
                  }
                  

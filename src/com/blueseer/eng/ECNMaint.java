@@ -971,7 +971,7 @@ public class ECNMaint extends javax.swing.JPanel implements IBlueSeerT  {
                      String amount = "Task = " + res.getString("ecnt_task");
                      body = body + "\n" + requestor + "\n" + amount;
                      if (! res.getString("user_email").isEmpty())
-                     OVData.sendEmail(res.getString("user_email"), subject, body, "");
+                     OVData.sendEmail(res.getString("user_email"), subject, body, "", false);
                  }
                  
                  }
@@ -1059,7 +1059,7 @@ public class ECNMaint extends javax.swing.JPanel implements IBlueSeerT  {
                      body += "Part Number: " + res.getString("ecn_item") + "\n";
                      
                      if (! res.getString("user_email").isEmpty())
-                     OVData.sendEmail(res.getString("user_email"), subject, body, "");
+                     OVData.sendEmail(res.getString("user_email"), subject, body, "", false);
                  }
                
            }

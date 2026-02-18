@@ -20951,7 +20951,7 @@ MainFrame.bslog(e);
  }
     
     
-    public static void sendEmail(String to, String subject, String body, String filename) {
+    public static void sendEmail(String to, String subject, String body, String filename, boolean bccfrom) {
 
   // Strings that contain from, to, subject, body and file path to the attachment
 
@@ -20981,6 +20981,9 @@ MainFrame.bslog(e);
 
   //  message.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
     message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+    if (bccfrom) {
+      message.setRecipients(Message.RecipientType.BCC, InternetAddress.parse(from));  
+    }
     
     message.setSubject(subject);
 
@@ -21226,10 +21229,11 @@ MainFrame.bslog(e);
         String siteinfo[] = admData.getSiteAddressInfo(site);
         String subject = "Automated communication from " + siteinfo[1];
         String body = "This is an automated delivery for invoice number: " + invoice + "." + "\n";
-        body += "The attachment contains the details of the invoice in pdf format.";
+        body += "A PDF attachment is provided with the details of the invoice and service period.";
         body += "\n\n";
         body += "Thank you, \n";
         body += "\n\n";
+        body += "BlueSeer ERP and EDI Services" + "\n";
         body += siteinfo[1] + "\n";
         body += siteinfo[2] + "\n";
         body += siteinfo[5] + ", " + siteinfo[6] + " " + siteinfo[7] + "\n";
@@ -21244,7 +21248,7 @@ MainFrame.bslog(e);
                m[0] = "1";
                m[1] = " (OVdata.sendInvoice) customer email not defined (invoice/filename/email):  " + invoice + "/" + filename + "/" + custEmail;
             } else {
-               sendEmail(custEmail, subject, body, filename); 
+               sendEmail(custEmail, subject, body, filename, true); 
                m = new String[]{"0"," (OVdata.sendInvoice) invoice attachment transmitted (invoice/filename/email):  " + invoice + "/" + filename + "/" + custEmail}; 
             }
         } else {

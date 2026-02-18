@@ -307,7 +307,7 @@ MainFrame.bslog(e);
     private void testmailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testmailActionPerformed
         String[] creds = getSMTPCredentials();
         if (! creds[1].isBlank()) {
-            sendEmail("support@blueseer.com","BlueSeer test","this is a test mail transmission", "");
+            sendEmail("support@blueseer.com","BlueSeer test","this is a test mail transmission", "", false);
         }  
     }//GEN-LAST:event_testmailActionPerformed
 

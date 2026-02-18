@@ -7149,7 +7149,7 @@ public class ediData {
             if (! to.isBlank()) {
               String[] creds = getSMTPCredentials();
               if (! creds[1].isBlank()) {
-                 sendEmail(to, "BlueSeer WorkFlow Error: " + wkf.wkf_id(), statusmessg, "");
+                 sendEmail(to, "BlueSeer WorkFlow Error: " + wkf.wkf_id(), statusmessg, "", false);
               }
             }       
         }
@@ -8024,7 +8024,7 @@ public class ediData {
                 
                 if (count > 0 && sendmail.equals("1")) {
                     if (! to.isBlank() && ! creds[1].isBlank()) {
-                      sendEmail(to, " BlueSeer sysmail wkfaction_ftpToTranslate: ", r[1], "");
+                      sendEmail(to, " BlueSeer sysmail wkfaction_ftpToTranslate: ", r[1], "", false);
                     }
                 }
             

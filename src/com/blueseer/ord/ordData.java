@@ -3024,8 +3024,8 @@ public class ordData {
                     " bill_termdate, bill_lastbilldate, bill_nextbilldate," +
                     " bill_acctstatus, bill_orderstatus, bill_rmks, bill_ref," +
                     " bill_type, bill_servicetype, bill_subtype, bill_billingtype, " +
-                    " bill_frequencytype, bill_group, bill_category, bill_terms ) "
-                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+                    " bill_frequencytype, bill_group, bill_category, bill_terms, bill_autobill ) "
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
        
           ps = con.prepareStatement(sqlSelect); 
           ps.setString(1, x.bill_nbr);
@@ -3052,6 +3052,7 @@ public class ordData {
             ps.setString(18, x.bill_group);
             ps.setString(19, x.bill_category);
             ps.setString(20, x.bill_terms);
+            ps.setString(21, x.bill_autobill);
             rows = ps.executeUpdate();
             } 
             return rows;
@@ -3064,10 +3065,10 @@ public class ordData {
                     " bill_termdate = ?, bill_nextbilldate = ?, " +
                     " bill_acctstatus = ?, bill_orderstatus = ?, bill_rmks = ?, bill_ref = ?," +
                     " bill_type = ?, bill_servicetype = ?, bill_subtype = ?, bill_billingtype = ?, " +
-                    " bill_frequencytype = ?, bill_group = ?, bill_category = ?, bill_terms = ? " +
+                    " bill_frequencytype = ?, bill_group = ?, bill_category = ?, bill_terms = ?, bill_autobill = ? " +
                  " where bill_nbr = ? ; ";
 	ps = con.prepareStatement(sql) ;
-            ps.setString(19, x.bill_nbr);
+            ps.setString(20, x.bill_nbr);
             ps.setString(1, x.bill_cust);
             ps.setString(2, x.bill_site);
             ps.setString(3, x.bill_servicedate);
@@ -3086,6 +3087,7 @@ public class ordData {
             ps.setString(16, x.bill_group);
             ps.setString(17, x.bill_category);
             ps.setString(18, x.bill_terms);
+            ps.setString(19, x.bill_autobill);
             rows = ps.executeUpdate();
         return rows;
     }
@@ -3364,7 +3366,8 @@ public class ordData {
                             res.getString("bill_frequencytype"),
                             res.getString("bill_group"),
                             res.getString("bill_category"),
-                            res.getString("bill_terms"));
+                            res.getString("bill_terms"),
+                            res.getString("bill_autobill"));
                     }
                 }
             } 
@@ -3410,7 +3413,8 @@ public class ordData {
                             res.getString("bill_frequencytype"),
                             res.getString("bill_group"),
                             res.getString("bill_category"),
-                            res.getString("bill_terms"));
+                            res.getString("bill_terms"),
+                            res.getString("bill_autobill"));
                     }
             }
             return r;
@@ -8628,10 +8632,11 @@ public class ordData {
         String bill_termdate, String bill_lastbilldate, String bill_nextbilldate, 
         String bill_acctstatus, String bill_orderstatus, String bill_rmks, String bill_ref, 
         String bill_type, String bill_servicetype, String bill_subtype, String bill_billingtype,
-        String bill_frequencytype, String bill_group, String bill_category, String bill_terms )  {
+        String bill_frequencytype, String bill_group, String bill_category, String bill_terms, String bill_autobill )  {
         public bill_mstr(String[] m) {
             this (m, "", "", "", "", "", "", "", "", "", "",
-                     "", "", "", "", "", "", "", "", "", "");
+                     "", "", "", "", "", "", "", "", "", "",
+                     "");
         }        
     }
     public record bill_det(String[] m, String billd_nbr, int billd_line, String billd_item,

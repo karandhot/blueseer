@@ -4231,7 +4231,7 @@ public class EDData {
                     for (Map.Entry<String, String> sitekey : lhm.entrySet()) {
                         to = OVData.getSysMetaValue("system", "edimail", sitekey.getKey());
                         if (! to.isBlank() && ! creds[1].isBlank()) {
-                          sendEmail(to, "BlueSeer EDI transaction event(s) for entity: " + getSiteName(sitekey.getKey()), sitekey.getValue(), "");
+                          sendEmail(to, "BlueSeer EDI transaction event(s) for entity: " + getSiteName(sitekey.getKey()), sitekey.getValue(), "", false);
                         }
                     }
                    }
@@ -4263,7 +4263,7 @@ public class EDData {
                     if (! to.isBlank() && ! creds[1].isBlank()) {
                       String body = "ClientID: " + "\t" + clientid + "\n" +
                                     "ErrorMessg: " + "\t" + s[1] + "\n";
-                      sendEmail(to, "BlueSeer FTP Error ", body, "");
+                      sendEmail(to, "BlueSeer FTP Error ", body, "", false);
                     }
                     break;
                 }
@@ -4289,7 +4289,7 @@ public class EDData {
                                     "GS#: " + "\t" + c[5] + "\n" +
                                     "File: " + "\t" + c[6] + "\n" +
                                     "ErrorMessg: " + "\t" + s[1] + "\n";
-                      sendEmail(to, "BlueSeer EDI translation Error ", body, "");
+                      sendEmail(to, "BlueSeer EDI translation Error ", body, "", false);
                     }
                     break;
                 }
@@ -4313,7 +4313,7 @@ public class EDData {
                                     "GS#: " + "\t" + c[5] + "\n" +
                                     "File: " + "\t" + c[6] + "\n" +
                                     "ErrorMessg: " + "\t" + errormessage + "\n";
-                      sendEmail(to, "BlueSeer EDI translation Error ", body, "");
+                      sendEmail(to, "BlueSeer EDI translation Error ", body, "", false);
                     }
         }
     }
@@ -4336,7 +4336,7 @@ public class EDData {
                                     "GS#: " + "\t" + c[5] + "\n" +
                                     "File: " + "\t" + c[6] + "\n" +
                                     "ErrorMessg: " + "\t" + s[1] + "\n";
-                      sendEmail(to, "BlueSeer EDI translation Error ", body, "");
+                      sendEmail(to, "BlueSeer EDI translation Error ", body, "", false);
                     }
                     break;
                 }
@@ -4536,7 +4536,7 @@ public class EDData {
             if (! to.isBlank()) {
               String[] creds = getSMTPCredentials();
               if (! creds[1].isBlank()) {
-                 sendEmail(to, "BlueSeer AS2 Server Error: " + c[1], c[4], "");
+                 sendEmail(to, "BlueSeer AS2 Server Error: " + c[1], c[4], "", false);
               }
             }       
           }
@@ -4610,7 +4610,7 @@ public class EDData {
             if (! to.isBlank()) {
               String[] creds = getSMTPCredentials();
               if (! creds[1].isBlank()) {
-                 sendEmail(to, "BlueSeer AS2 Server Error: " + as2id, errorMessage, "");
+                 sendEmail(to, "BlueSeer AS2 Server Error: " + as2id, errorMessage, "", false);
               }
             }       
           }

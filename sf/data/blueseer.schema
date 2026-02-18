@@ -3090,7 +3090,8 @@ CREATE TABLE IF NOT EXISTS `bill_mstr` (
   `bill_frequencytype` varchar(30) NOT NULL  DEFAULT '',
   `bill_group` varchar(30) NOT NULL  DEFAULT '',
   `bill_category` varchar(30) NOT NULL  DEFAULT '',
-  `bill_terms` varchar(10) NOT NULL  DEFAULT ''
+  `bill_terms` varchar(10) NOT NULL  DEFAULT '',
+  `bill_autobill` tinyint(1) NOT NULL  DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS `bill_det` (
   `billd_nbr` varchar(8) NOT NULL,
