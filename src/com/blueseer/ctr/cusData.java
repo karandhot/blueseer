@@ -752,6 +752,18 @@ public class cusData {
     }
      
     public static String[] addTermsMstr(cust_term x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addTermsMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServCUS"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlSelect = "select * from cust_term where cut_code = ?";
         String sqlInsert = "insert into cust_term (cut_code, cut_desc, cut_days, cut_discdays, cut_discpercent, " +
@@ -785,6 +797,18 @@ public class cusData {
     }
         
     public static String[] updateTermsMstr(cust_term x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateTermsMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServCUS"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sql = "update cust_term set cut_desc = ?, cut_days = ?, cut_discdays = ?, " +
                 " cut_discpercent = ?, cut_mfi = ?, cut_mfimonth = ?, cut_mfiday = ? where cut_code = ? ";
@@ -808,7 +832,19 @@ public class cusData {
     }
     
     public static String[] deleteTermsMstr(cust_term x) { 
-       String[] m = new String[2];
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteTermsMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServCUS"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
         String sql = "delete from cust_term where cut_code = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql)) {

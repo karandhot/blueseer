@@ -7861,7 +7861,18 @@ public class OVData {
            }
      
     public static String getCodeDescByCode(String key) {
-       String mystring = "";
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getCodeDescByCode"});
+            list.add(new String[]{"param1", key});
+            try {
+                return sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        }
+        String mystring = "";
         try{
             
             Connection con = null;
@@ -7896,7 +7907,18 @@ public class OVData {
     }
     
     public static String getCodeKeyByCode(String code) {
-       String mystring = "";
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getCodeKeyByCode"});
+            list.add(new String[]{"param1", code});
+            try {
+                return sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        }
+        String mystring = "";
         try{
             
            Connection con = null;
@@ -7931,7 +7953,19 @@ public class OVData {
     }
     
     public static String getCodeValueByCodeKey(String code, String key) {
-       String mystring = "";
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getCodeValueByCodeKey"});
+            list.add(new String[]{"param1", code});
+            list.add(new String[]{"param2", key});
+            try {
+                return sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        } 
+        String mystring = "";
         try{
             
             Connection con = null;
@@ -7969,7 +8003,18 @@ public class OVData {
     }
     
     public static String getCodeValueByCode(String code) {
-       String mystring = "";
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getCodeValueByCode"});
+            list.add(new String[]{"param1", code});
+            try {
+                return sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        }
+        String mystring = "";
         try{
             
             Connection con = null;

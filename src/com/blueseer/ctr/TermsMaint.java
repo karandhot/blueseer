@@ -28,6 +28,7 @@ package com.blueseer.ctr;
 
 import bsmf.MainFrame;
 import static bsmf.MainFrame.tags;
+import com.blueseer.adm.admData;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.adm.admData.addChangeLog;
@@ -59,6 +60,7 @@ import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerT;
+import com.blueseer.utl.IBlueSeerV;
 import static com.blueseer.utl.OVData.canUpdate;
 import java.awt.Color;
 import java.awt.Component;
@@ -85,11 +87,15 @@ import javax.swing.SwingWorker;
  *
  * @author vaughnte
  */
-public class TermsMaint extends javax.swing.JPanel implements IBlueSeerT { 
+public class TermsMaint extends javax.swing.JPanel implements IBlueSeerV { 
 
     // global variable declarations
                 boolean isLoad = false;
-    private static cust_term x = null;
+                private static cust_term x = null;
+                ArrayList<String[]> initDataSets = null;
+                String defaultSite = "";
+                String defaultCurrency = "";
+                boolean canUpdate = false;
     // global datatablemodel declarations    
                 
     public TermsMaint() {
@@ -276,8 +282,11 @@ public class TermsMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     @Override
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
+       if (init) {
+       initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
+       }
        
        cbsystemcode.setEnabled(false);
        
@@ -301,13 +310,25 @@ public class TermsMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
         ddmfiday.setSelectedIndex(0);
         
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+        }
+        
        isLoad = false;
     }
     
     @Override
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btdelete.setEnabled(false);
@@ -338,7 +359,7 @@ public class TermsMaint extends javax.swing.JPanel implements IBlueSeerT {
     @Override
     public boolean validateInput(BlueSeerUtils.dbaction x) {
         
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -391,7 +412,7 @@ public class TermsMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues((initDataSets == null));
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         
@@ -820,6 +841,7 @@ public class TermsMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
         BlueSeerUtils.messagereset();
+        initDataSets = null;
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 

@@ -30,11 +30,13 @@ import static com.blueseer.ctr.cusData.addCMCDet;
 import static com.blueseer.ctr.cusData.addCMSDet;
 import static com.blueseer.ctr.cusData.addCprMstr;
 import static com.blueseer.ctr.cusData.addCustMstrMass;
+import static com.blueseer.ctr.cusData.addTermsMstr;
 import static com.blueseer.ctr.cusData.addUpdateCMCtrl;
 import static com.blueseer.ctr.cusData.deleteCMCDet;
 import static com.blueseer.ctr.cusData.deleteCMSDet;
 import static com.blueseer.ctr.cusData.deleteCprMstr;
 import static com.blueseer.ctr.cusData.deleteCustMstr;
+import static com.blueseer.ctr.cusData.deleteTermsMstr;
 import static com.blueseer.ctr.cusData.getCMCDet;
 import static com.blueseer.ctr.cusData.getCMCtrl;
 import static com.blueseer.ctr.cusData.getCMSDet;
@@ -46,11 +48,13 @@ import static com.blueseer.ctr.cusData.getCustLabel;
 import static com.blueseer.ctr.cusData.getCustMstr;
 import static com.blueseer.ctr.cusData.getCustShipSet;
 import static com.blueseer.ctr.cusData.getDiscountRecsByCust;
+import static com.blueseer.ctr.cusData.getTermsMstr;
 import static com.blueseer.ctr.cusData.getcustshipmstrlist;
 import static com.blueseer.ctr.cusData.updateCMCDet;
 import static com.blueseer.ctr.cusData.updateCMSDet;
 import static com.blueseer.ctr.cusData.updateCprMstr;
 import static com.blueseer.ctr.cusData.updateCustMstr;
+import static com.blueseer.ctr.cusData.updateTermsMstr;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
 import static com.blueseer.inv.invData.getLocationListByWarehouse;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
@@ -407,6 +411,53 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                };     
         response.getWriter().print(getCustBrowseView(x));  
         break;
+        }
+        
+        case "addTermsMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cust_term x = objectMapper.readValue(sb.toString(), cusData.cust_term.class);            
+            response.getWriter().print(arrayToJson(addTermsMstr(x)));
+            break;
+          }
+        
+        case "updateTermsMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cust_term x = objectMapper.readValue(sb.toString(), cusData.cust_term.class);            
+            response.getWriter().print(arrayToJson(updateTermsMstr(x)));
+            break;
+          }
+        
+        case "deleteTermsMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cust_term x = objectMapper.readValue(sb.toString(), cusData.cust_term.class);            
+            response.getWriter().print(arrayToJson(deleteTermsMstr(x)));
+            break;
+          }
+        
+        case "getTermsMstr" :  {      
+            cusData.cust_term cpr = getTermsMstr(new String[]{request.getHeader("param1")});
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(cpr);
+            response.getWriter().print(r);
+            break;  
         }
         
         

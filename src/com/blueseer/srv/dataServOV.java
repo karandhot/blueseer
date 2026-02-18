@@ -51,8 +51,12 @@ import static com.blueseer.utl.OVData.createPlanFromServiceOrder;
 import static com.blueseer.utl.OVData.deleteMenuToAllUsers;
 import static com.blueseer.utl.OVData.deleteMenuToUser;
 import static com.blueseer.utl.OVData.deleteSysMeta;
+import static com.blueseer.utl.OVData.getCodeDescByCode;
+import static com.blueseer.utl.OVData.getCodeKeyByCode;
 import static com.blueseer.utl.OVData.getCodeMstrKeyList;
 import static com.blueseer.utl.OVData.getCodeMstrValueList;
+import static com.blueseer.utl.OVData.getCodeValueByCode;
+import static com.blueseer.utl.OVData.getCodeValueByCodeKey;
 import static com.blueseer.utl.OVData.getExchangeRate;
 import static com.blueseer.utl.OVData.getMenuRecs;
 import static com.blueseer.utl.OVData.getMenusAsTree;
@@ -307,6 +311,22 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "getSysMetaValue" :        
             response.getWriter().print(getSysMetaValue(request.getHeader("param1"),request.getHeader("param2"),request.getHeader("param3")));
             break; 
+            
+        case "getCodeValueByCodeKey" :        
+            response.getWriter().print(getCodeValueByCodeKey(request.getHeader("param1"),request.getHeader("param2")));
+            break;    
+            
+        case "getCodeDescByCode" :        
+            response.getWriter().print(getCodeDescByCode(request.getHeader("param1")));
+            break; 
+        
+        case "getCodeKeyByCode" :        
+            response.getWriter().print(getCodeKeyByCode(request.getHeader("param1")));
+            break; 
+           
+        case "getCodeValueByCode" :        
+            response.getWriter().print(getCodeValueByCode(request.getHeader("param1")));
+            break;     
             
         case "getExchangeRate" :        
             response.getWriter().print(getExchangeRate(request.getHeader("param1"),request.getHeader("param2")));

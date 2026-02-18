@@ -541,11 +541,7 @@ public class SiteMaint extends javax.swing.JPanel implements IBlueSeerCtl {
     
     public void initvars(String[] arg) {
        setPanelComponentState(this, false); 
-       if (initDataSets == null) {
-        setComponentDefaultValues(true);
-       } else {
-        setComponentDefaultValues(false);   
-       }
+       setComponentDefaultValues((initDataSets == null));
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         if (arg != null && arg.length > 0) {
