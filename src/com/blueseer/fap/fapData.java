@@ -902,7 +902,9 @@ public class fapData {
                         " from ap_mstr inner join vd_mstr on vd_addr = ap_vend where strftime('%Y', ap_effdate) = " + "'" + keys[0] + "'" +
                         " and ap_vend >= " + "'" + keys[1] + "'" +
                         " and ap_vend <= "+ "'" + keys[2] + "'" +
-                        " and ap_type = 'C' " +         
+                        " and ap_type = 'c' " +   
+                        " and ap_status <> 'void' " +        
+                        " and vd_1099 = '1' " +         
                         " and vd_site = " + "'" + keys[3] + "'" +        
                         " group by vd_addr, strftime('%Y', ap_effdate) ;");   
                 } else {
@@ -910,7 +912,9 @@ public class fapData {
                         " from ap_mstr inner join vd_mstr on vd_addr = ap_vend where year(ap_effdate) = " + "'" + keys[0] + "'" +
                         " and ap_vend >= " + "'" + keys[1] + "'" +
                         " and ap_vend <= "+ "'" + keys[2] + "'" +
-                        " and ap_type = 'C' " +           
+                        " and ap_type = 'c' " + 
+                        " and ap_status <> 'void' " +        
+                        " and vd_1099 = '1' " +        
                         " and vd_site = " + "'" + keys[3] + "'" +        
                         " group by vd_addr, vd_name, vd_line1, vd_city, vd_state, vd_zip, vd_curr, year(ap_effdate) ;");
                 }
