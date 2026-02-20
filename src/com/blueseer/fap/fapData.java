@@ -912,7 +912,7 @@ public class fapData {
                         " and ap_vend <= "+ "'" + keys[2] + "'" +
                         " and ap_type = 'C' " +           
                         " and vd_site = " + "'" + keys[3] + "'" +        
-                        " group by vd_addr, year(ap_effdate) ;");
+                        " group by vd_addr, vd_name, vd_line1, vd_city, vd_state, vd_zip, vd_curr, total, year(ap_effdate) ;");
                 }
                 
                 
