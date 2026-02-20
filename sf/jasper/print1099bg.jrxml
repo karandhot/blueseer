@@ -77,8 +77,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$P{recipient_tin}]]></textFieldExpression>
 			</textField>
-			<textField pattern="$#,##0.00;($#,##0.00)">
-				<reportElement x="295" y="121" width="91" height="20" uuid="43c7324e-326b-4d36-a233-d800714f816e"/>
+			<textField pattern="#,##0.00;(#,##0.00)">
+				<reportElement x="302" y="121" width="91" height="20" uuid="43c7324e-326b-4d36-a233-d800714f816e"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
@@ -133,8 +133,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$P{recipient_tin}]]></textFieldExpression>
 			</textField>
-			<textField pattern="$#,##0.00;($#,##0.00)">
-				<reportElement x="291" y="397" width="91" height="20" uuid="2e3b1386-3da9-4d76-9818-42e011a6c674"/>
+			<textField pattern="#,##0.00;(#,##0.00)">
+				<reportElement x="298" y="397" width="91" height="20" uuid="2e3b1386-3da9-4d76-9818-42e011a6c674"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
@@ -189,8 +189,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$P{recipient_tin}]]></textFieldExpression>
 			</textField>
-			<textField pattern="$#,##0.00;($#,##0.00)">
-				<reportElement x="291" y="671" width="91" height="20" uuid="b46abc6c-4ea2-48af-b682-c40e3c0eddd6"/>
+			<textField pattern="#,##0.00;(#,##0.00)">
+				<reportElement x="298" y="671" width="91" height="20" uuid="b46abc6c-4ea2-48af-b682-c40e3c0eddd6"/>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
