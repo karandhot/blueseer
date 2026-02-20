@@ -3747,7 +3747,7 @@ public class EDI {
         }
         
         // add order notes info to so_meta
-        addUpdateSOMetaNotes(String.valueOf(sonbr), e.getNotes().toArray(new String[0]));
+        addUpdateSOMetaNotes(String.valueOf(sonbr), "ordernotes", e.getNotes().toArray(new String[0]));
         
         
        

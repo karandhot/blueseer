@@ -113,6 +113,7 @@ import static com.blueseer.utl.BlueSeerUtils.timediff;
 import static com.blueseer.utl.BlueSeerUtils.xZero;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerT;
+import com.blueseer.utl.IBlueSeerV;
 import static com.blueseer.utl.OVData.getPackQtyForItem;
 import static com.blueseer.utl.OVData.getSysMetaValue;
 import static com.blueseer.utl.OVData.isValidOrder;
@@ -171,12 +172,12 @@ import javax.swing.table.TableColumnModel;
  *
  * @author vaughnte
  */
-public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
+public class OrderMaint extends javax.swing.JPanel implements IBlueSeerV {
 
     // global variable declarations
                 boolean isLoad = false;
                 Object[][] rData;
-                ArrayList<String[]> initDataSets = new ArrayList<>();
+                ArrayList<String[]> initDataSets = null;
                 String terms = "";
                 String aracct = "";
                 String arcc = "";
@@ -327,7 +328,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
             
              switch(this.type) {
                 case "init":
-                    message = getInitialization();
+                    message = getInitialization(); // not getting called...need to remove or consider thread option
                     break; 
                 case "add":
                     message = addRecord(key);
@@ -557,11 +558,12 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
        }
     }
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
         
         
-        
+        if (init) {
         initDataSets = ordData.getSalesOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        }
         
         clearShipAddress();
         
@@ -825,7 +827,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void newAction(String x) {
         isLoad = true;
         setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btinvoice.setEnabled(false);
         btmail.setEnabled(false);
@@ -1038,7 +1040,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
        jTabbedPane1.add(getClassLabelTag("notes", this.getClass().getSimpleName()), panelNotes);
        setPanelComponentState(this, false); 
        
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
        
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
@@ -1069,7 +1071,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void done_Initialization() {
         isLoad = true;
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         isLoad = false;
         
     }
@@ -1419,9 +1421,9 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         lual = new ActionListener() {
         public void actionPerformed(ActionEvent event) {
         if (lurb1.isSelected()) {  
-         luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_code");
+         luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_name");
         } else if (lurb2.isSelected()) {
-         luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_name");   
+         luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_code");   
         } else {
          luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_zip");   
         }
@@ -1451,8 +1453,8 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         luTable.addMouseListener(luml);
       
         
-        callDialog(getClassLabelTag("lblcode", this.getClass().getSimpleName()), 
-                getClassLabelTag("lblname", this.getClass().getSimpleName()),
+        callDialog(getClassLabelTag("lblname", this.getClass().getSimpleName()), 
+                getClassLabelTag("lblcode", this.getClass().getSimpleName()),
                 getClassLabelTag("lblzip", this.getClass().getSimpleName())); 
         
         
@@ -4544,7 +4546,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         int index = sourceTabbedPane.getSelectedIndex();
             if (index == 4) {
                 tanotes.setText("");
-                ArrayList<String> notes = getSOMetaNotes(tbkey.getText());
+                ArrayList<String> notes = getSOMetaNotes(tbkey.getText(), "ordernotes");
                 for (String n : notes) {
                     tanotes.append(n);
                     tanotes.append("\n");
@@ -4800,7 +4802,7 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerT {
         if (text != null && ! text.isBlank()) {
             x = text.split("\n");
         }
-        addUpdateSOMetaNotes(tbkey.getText(), x);  
+        addUpdateSOMetaNotes(tbkey.getText(), "ordernotes", x);  
     }//GEN-LAST:event_btnotesActionPerformed
 
     private void btitemkvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btitemkvActionPerformed

@@ -4507,8 +4507,22 @@ public class ordData {
         return m;
     }
     
-    public static void addUpdateSOMetaNotes(String id, String[] values) {  //used primarily for order notes where key is counter
-        
+    public static void addUpdateSOMetaNotes(String id, String notetype, String[] values) {  //used primarily for order notes where key is counter
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            String valuesString = String.join("=_=", values);
+            list.add(new String[]{"id", "addUpdateSOMetaNotes"});
+            list.add(new String[]{"param1", id});
+            list.add(new String[]{"param2", notetype});
+            list.add(new String[]{"param3", valuesString});
+            try {
+               sendServerPost(list, "", null, "dataServORD");
+               return;
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        } 
         
         if (values != null) {
         try {
@@ -4528,7 +4542,7 @@ public class ordData {
                 // delete old order notes if available
                 st.executeUpdate("delete from so_meta "
                             + " where som_id = " + "'" + id + "'" + " and "
-                            + " som_type = 'ordernotes' " 
+                            + " som_type = " + "'" + notetype + "'"  
                             + ";");
               
 
@@ -4543,7 +4557,7 @@ public class ordData {
                     }
                 st.executeUpdate("insert into so_meta (som_id, som_type, som_key, som_value) values ( "
                         + "'" + id + "'" + ","
-                        + "'" + "ordernotes" + "'" + ","
+                        + "'" + notetype + "'" + ","
                         + "'" + String.valueOf(i) + "'" + ","
                         + "'" + s + "'" + ")"
                         + ";");
@@ -4569,12 +4583,13 @@ public class ordData {
     }
     }
 
-    public static ArrayList<String> getSOMetaNotes(String id) {
+    public static ArrayList<String> getSOMetaNotes(String id, String notetype) {
         
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id", "getSOMetaNotes"});
             list.add(new String[]{"param1", id});
+            list.add(new String[]{"param2", notetype});
             try {
                 return jsonToArrayListString(sendServerPost(list, "", null, "dataServORD"));
             } catch (IOException ex) {
@@ -4597,7 +4612,9 @@ public class ordData {
             try{
                                 
                 res = st.executeQuery("select * from so_meta " +
-                        " where som_id = " + "'" + id + "'" + " and som_type = 'ordernotes' order by som_key;");
+                        " where som_id = " + "'" + id + "'" +
+                        " and som_type = " + "'" + notetype + "'" +
+                        " order by som_key;");
                 while (res.next()) {
                     r.add(res.getString("som_value"));
                 }

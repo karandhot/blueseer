@@ -99,6 +99,7 @@ import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.sendServerRequest;
 import com.blueseer.utl.DTData;
 import static com.blueseer.utl.OVData.getSiteLogo;
+import static com.blueseer.utl.OVData.getSysMetaValue;
 import static com.blueseer.utl.OVData.getSystemImageDirectory;
 import static com.blueseer.utl.OVData.getSystemJasperDirectory;
 import com.blueseer.vdr.venData;
@@ -389,7 +390,8 @@ public class print1099 extends javax.swing.JPanel {
         lblfromacct.setText("");
         lbltoacct.setText("");
         
-        
+        cbzero.setSelected(false);
+        cbbg.setSelected(false);
         
         mymodel.setNumRows(0);
         tablereport.setModel(mymodel);
@@ -692,6 +694,7 @@ public class print1099 extends javax.swing.JPanel {
         lbltoacct = new javax.swing.JLabel();
         btdetail = new javax.swing.JButton();
         btprint1099 = new javax.swing.JButton();
+        cbbg = new javax.swing.JCheckBox();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         lbltotamount = new javax.swing.JLabel();
@@ -815,6 +818,8 @@ public class print1099 extends javax.swing.JPanel {
             }
         });
 
+        cbbg.setText("include background image");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -848,17 +853,20 @@ public class print1099 extends javax.swing.JPanel {
                     .addComponent(lbltoacct, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cbbg)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(btRun)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(btRun))
+                            .addComponent(cbzero))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btdetail)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btprint)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btprint1099))
-                    .addComponent(cbzero))
+                        .addComponent(btprint1099)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
@@ -882,15 +890,20 @@ public class print1099 extends javax.swing.JPanel {
                                 .addComponent(btprint1099)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel4)
-                            .addComponent(ddvendto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(lbltoacct, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(cbzero, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(cbzero, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel4)
+                                    .addComponent(ddvendto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(0, 0, Short.MAX_VALUE))))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(btLookUpVendorFrom)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btLookUpVendorTo)))
-                .addGap(36, 36, 36))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbbg)
+                .addGap(10, 10, 10))
         );
 
         jLabel8.setText("Total Amount");
@@ -1016,38 +1029,66 @@ public class print1099 extends javax.swing.JPanel {
     }//GEN-LAST:event_btdetailActionPerformed
 
     private void btprint1099ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprint1099ActionPerformed
-        mymodel.addRow(new Object[][]{});
         int[] rows = tablereport.getSelectedRows();
-        String name = "";
+        
+        if (rows.length < 1) {
+            bsmf.MainFrame.show("No rows selected");
+            return;
+        }
+        if (rows.length > 1) {
+            bsmf.MainFrame.show("Only one row can be selected");
+            return;
+        }
+        
+        
+        String jasperfile = getSysMetaValue("system", "ap", "1099jasper");
+        if (jasperfile.isBlank()) {
+            jasperfile = "print1099bg.jasper";
+        }
+        String bg1099 = getSysMetaValue("system", "ap", "1099image");        
+        if (bg1099.isBlank()) {
+            bg1099 = "bg1099_alt.png";
+        }
+        Path imagepath = FileSystems.getDefault().getPath(cleanDirString(getSystemJasperDirectory()) + bg1099);
+        if (! cbbg.isSelected()) {
+            imagepath = null;
+        }
+        
+        String payer_tin = getSysMetaValue("system", "ap", "payer_tin");
         String year = ddyear.getSelectedItem().toString();
         site_mstr sm = admData.getSiteMstr(new String[]{defaultSite});
         vd_mstr vd = null;
-        String amount = "0.00";
+        double amount = 0.00;
         String payerinfo = sm.site_desc() + "\n" + sm.site_line1() + "\n" + sm.site_city() + ", " + sm.site_state() + " " + sm.site_zip();
         for (int i : rows) {
             vd = venData.getVendMstr(new String[]{tablereport.getValueAt(i, 1).toString()});
-            amount = tablereport.getValueAt(i, 8).toString();
+            amount = bsParseDouble(tablereport.getValueAt(i, 8).toString());
+            
+            Object[] rowData = new Object[mymodel.getColumnCount()];
+            for (int j = 0; j < mymodel.getColumnCount(); j++) {
+                rowData[j] = mymodel.getValueAt(i, j);
+            }
+           
+            
             break;
         }
         try {
                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
                 HashMap hm = new HashMap();
-                String logo = getSiteLogo(ddsite.getSelectedItem().toString());
-                Path imagepath = FileSystems.getDefault().getPath(cleanDirString(getSystemImageDirectory()) + logo);
+                
                 hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
                 hm.put("year", year);
                 hm.put("name", vd.vd_name()); 
                 hm.put("payerinfo", payerinfo);
-                hm.put("payer_tin", name);
+                hm.put("payer_tin", payer_tin);
                 hm.put("recipient_tin", vd.vd_taxid());
                 hm.put("addr", vd.vd_line1());
                 hm.put("csz", vd.vd_city() + ", " + vd.vd_state() + " " + vd.vd_zip());
                 hm.put("compensation", amount);
-               // res = st.executeQuery("select shd_id, sh_cust, shd_po, shd_item, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, cm_city, cm_state, cm_zip, concat(cm_city, \" \", cm_state, \" \", cm_zip) as st_citystatezip, site_desc from ship_det inner join ship_mstr on sh_id = shd_id inner join cm_mstr on cm_code = sh_cust inner join site_mstr on site_site = sh_site where shd_id = '1848' ");
-               // JRResultSetDataSource jasperReports = new JRResultSetDataSource(res);
+                hm.put("bgimage", (imagepath == null) ? imagepath : imagepath.toString());
+             
                
-               
-                Path template = FileSystems.getDefault().getPath(cleanDirString(getSystemJasperDirectory()) + "print1099.jasper");
+                Path template = FileSystems.getDefault().getPath(cleanDirString(getSystemJasperDirectory()) + jasperfile);
                
                  
                 JasperPrint jasperPrint = JasperFillManager.fillReport(template.toString(), hm, new JRTableModelDataSource(mymodel) );
@@ -1069,6 +1110,7 @@ public class print1099 extends javax.swing.JPanel {
     private javax.swing.JButton btdetail;
     private javax.swing.JButton btprint;
     private javax.swing.JButton btprint1099;
+    private javax.swing.JCheckBox cbbg;
     private javax.swing.JCheckBox cbzero;
     private javax.swing.JComboBox ddsite;
     private javax.swing.JComboBox ddvendfrom;

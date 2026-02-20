@@ -66,6 +66,7 @@ import com.blueseer.ctr.cusData.cm_mstr;
 import static com.blueseer.ctr.cusData.getCustMstr;
 import com.blueseer.inv.invData;
 import static com.blueseer.ord.ordData.addBillingTransaction;
+import static com.blueseer.ord.ordData.addUpdateSOMetaNotes;
 import com.blueseer.ord.ordData.bill_det;
 import com.blueseer.ord.ordData.bill_mstr;
 import com.blueseer.ord.ordData.bill_sac;
@@ -74,6 +75,7 @@ import static com.blueseer.ord.ordData.getBillDet;
 import static com.blueseer.ord.ordData.getBillLines;
 import static com.blueseer.ord.ordData.getBillMstr;
 import static com.blueseer.ord.ordData.getBillSAC;
+import static com.blueseer.ord.ordData.getSOMetaNotes;
 import static com.blueseer.ord.ordData.updateBillingTransaction;
 
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
@@ -82,14 +84,25 @@ import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.callChangeDialog;
+import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.clog;
+import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.logChange;
+import static com.blueseer.utl.BlueSeerUtils.luModel;
+import static com.blueseer.utl.BlueSeerUtils.luTable;
+import static com.blueseer.utl.BlueSeerUtils.lual;
+import static com.blueseer.utl.BlueSeerUtils.ludialog;
+import static com.blueseer.utl.BlueSeerUtils.luinput;
+import static com.blueseer.utl.BlueSeerUtils.luml;
+import static com.blueseer.utl.BlueSeerUtils.lurb1;
+import static com.blueseer.utl.BlueSeerUtils.lurb2;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
+import com.blueseer.utl.IBlueSeerV;
 import java.awt.Color;
 import java.awt.Component;
 import java.sql.Connection;
@@ -115,7 +128,7 @@ import javax.swing.event.TableModelEvent;
  *
  * @author vaughnte
  */
-public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
+public class BillMaint extends javax.swing.JPanel implements IBlueSeerV {
                 
                  // global variable declarations
                 boolean isLoad = false;
@@ -125,7 +138,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
                 public static cm_mstr cm = null;
                 public static ArrayList<bill_det> billdetlist = null;
                 public static ArrayList<bill_sac> saclist = null;
-                ArrayList<String[]> initDataSets = new ArrayList<>();
+                ArrayList<String[]> initDataSets = null;
                 String defaultSite = "";
                 String defaultCurrency = "";
                 boolean canupdate = false;
@@ -380,10 +393,12 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
         isLoad = true;
         
+        if (init) {
         initDataSets = ordData.getBillingInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        }
         
         tbkey.setText("");
       
@@ -391,6 +406,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
        jTabbedPane1.add(getClassLabelTag("main", this.getClass().getSimpleName()), jPanelMain);
        jTabbedPane1.add(getClassLabelTag("sactax", this.getClass().getSimpleName()), jPanelCharges);
        jTabbedPane1.add(getClassLabelTag("attachments", this.getClass().getSimpleName()), panelAttachment);
+       jTabbedPane1.add(getClassLabelTag("notes", this.getClass().getSimpleName()), panelNotes);
         
         attachmentmodel.setNumRows(0);
         tableattachment.setModel(attachmentmodel);
@@ -401,19 +417,23 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
         lbmessage.setText("");
         lbmessage.setForeground(Color.blue);
         
+        tanotes.setText("");
         tarmks.setText("");
         tbtermdate.setText("");
+        
         tblastbillingdate.setText("");
+        tblastbillingdate.setEditable(false);
+        tblastbillingdate.setBackground(bsmf.MainFrame.nonEditableColor);
         
         cbautobill.setSelected(false);
         
-        tblastbillingdate.setEditable(false);
+        
         tbitemservice.setText("");
         lblitemdesc.setText("");
         tbqty.setText("");
         tbprice.setText("");
         tbactualamt.setText("0");
-        tbactualamt.setBackground(Color.white);
+        tbactualamt.setBackground(bsmf.MainFrame.nonEditableColor);
         tbactualamt.setEditable(false);
        
         tbsacdesc.setText("");
@@ -434,11 +454,14 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
         dcbillingstartdate.setDate(now);
         dcnextdate.setDate(now);
         
+        tbterms.setText("");
+        tbterms.setBackground(bsmf.MainFrame.nonEditableColor);
+        tbterms.setEditable(false);
         
         ddcust.removeAllItems();
         ddsite.removeAllItems();
         dduom.removeAllItems();
-        ddterms.removeAllItems();
+        
         ddtype.removeAllItems();
         
         for (String[] s : initDataSets) {
@@ -457,9 +480,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
             if (s[0].equals("uoms")) {
               dduom.addItem(s[1]); 
             }
-            if (s[0].equals("terms")) {
-              ddterms.addItem(s[1]); 
-            }
+            
             if (s[0].equals("customers")) {
               ddcust.addItem(s[1]); 
             }
@@ -477,8 +498,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         dduom.insertItemAt("", 0);
         dduom.setSelectedIndex(0);
-        ddterms.insertItemAt("", 0);
-        ddterms.setSelectedIndex(0);
+        
         
         ddsactype.removeAllItems();
         ddsactype.addItem("charge");
@@ -496,6 +516,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddacctstatus.addItem(getGlobalProgTag("open"));
         ddacctstatus.addItem(getGlobalProgTag("delinquent"));
         
+        ddtype.insertItemAt("", 0);
         ddtype.setSelectedIndex(0);
         
        isLoad = false;
@@ -503,7 +524,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btnew.setEnabled(false);
         btprint.setEnabled(false);
@@ -527,6 +548,8 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
                    tbkey.setEditable(false);
                    tbkey.setForeground(Color.blue);
                    btadd.setEnabled(false);
+                   btLookUpBillTo.setEnabled(false);
+                   ddcust.setEnabled(false);
                    if (ddacctstatus.getSelectedItem().toString().compareTo(getGlobalProgTag("closed")) == 0) {
                              lbmessage.setText(getMessageTag(1097));
                              lbmessage.setForeground(Color.blue);
@@ -573,7 +596,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btclear.setEnabled(true);
         btlookup.setEnabled(true);
@@ -721,7 +744,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
                 ddbillingfrequency.getSelectedItem().toString(),
                 "", // group
                 "", //category
-                ddterms.getSelectedItem().toString(),
+                tbterms.getText(),
                 BlueSeerUtils.boolToString(cbautobill.isSelected())
         ); 
         return x;  
@@ -854,6 +877,51 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
         
     }
 
+    public void lookUpFrameBillTo() {
+        
+        luinput.removeActionListener(lual);
+        lual = new ActionListener() {
+        public void actionPerformed(ActionEvent event) {
+        if (lurb1.isSelected()) {  
+         luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_name");
+        } else if (lurb2.isSelected()) {
+         luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_code");   
+        } else {
+         luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_zip");   
+        }
+        luTable.setModel(luModel);
+        luTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        if (luModel.getRowCount() < 1) {
+            ludialog.setTitle(getMessageTag(1001));
+        } else {
+            ludialog.setTitle(getMessageTag(1002, String.valueOf(luModel.getRowCount())));
+        }
+        }
+        };
+        luinput.addActionListener(lual);
+        
+        luTable.removeMouseListener(luml);
+        luml = new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                JTable target = (JTable)e.getSource();
+                int row = target.getSelectedRow();
+                int column = target.getSelectedColumn();
+                if ( column == 0) {
+                ludialog.dispose();
+                ddcust.setSelectedItem(target.getValueAt(row,1).toString());
+                }
+            }
+        };
+        luTable.addMouseListener(luml);
+      
+        
+        callDialog(getClassLabelTag("lblname", this.getClass().getSimpleName()), 
+                getClassLabelTag("lblcode", this.getClass().getSimpleName()),
+                getClassLabelTag("lblzip", this.getClass().getSimpleName())); 
+        
+        
+    }
+ 
     public void updateForm() throws ParseException {
         isLoad = true;
         tbkey.setText(bsNumber(x.bill_nbr()));
@@ -865,7 +933,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddbillingfrequency.setSelectedItem(x.bill_frequencytype());
         dcservicedate.setDate(parseDate(x.bill_servicedate()));
         dcbillingstartdate.setDate(parseDate(x.bill_billingdate()));
-        ddterms.setSelectedItem(x.bill_terms());
+        tbterms.setText(x.bill_terms());
         ddorderstatus.setSelectedItem(x.bill_orderstatus());
         tarmks.setText(x.bill_rmks());
         tbtermdate.setText(x.bill_termdate());
@@ -933,7 +1001,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void setcustomervariables(String cust) {
         cm_mstr cm = getCustMstr(new String[]{cust});
         lbcustomer.setText(cm.cm_name());
-        ddterms.setSelectedItem(cm.cm_terms());
+        tbterms.setText(cm.cm_terms());
     }
       
     public void summarize() {
@@ -1060,7 +1128,6 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
         btprint = new javax.swing.JButton();
         dduom = new javax.swing.JComboBox<>();
         jLabel14 = new javax.swing.JLabel();
-        ddterms = new javax.swing.JComboBox<>();
         jLabel15 = new javax.swing.JLabel();
         ddorderstatus = new javax.swing.JComboBox<>();
         jLabel16 = new javax.swing.JLabel();
@@ -1071,6 +1138,8 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel18 = new javax.swing.JLabel();
         dcnextdate = new com.toedter.calendar.JDateChooser();
         cbautobill = new javax.swing.JCheckBox();
+        tbterms = new javax.swing.JTextField();
+        btLookUpBillTo = new javax.swing.JButton();
         jPanelCharges = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         sactable = new javax.swing.JTable();
@@ -1090,8 +1159,18 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
         btdeleteattachment = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         tableattachment = new javax.swing.JTable();
+        panelNotes = new javax.swing.JPanel();
+        btnotes = new javax.swing.JButton();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        tanotes = new javax.swing.JTextArea();
 
         setBackground(new java.awt.Color(0, 102, 204));
+
+        jTabbedPane1.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jTabbedPane1StateChanged(evt);
+            }
+        });
         add(jTabbedPane1);
 
         jPanelMain.setName("panelmain"); // NOI18N
@@ -1320,6 +1399,14 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
 
         cbautobill.setText("Auto Bill");
 
+        btLookUpBillTo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/find.png"))); // NOI18N
+        btLookUpBillTo.setToolTipText("lookup");
+        btLookUpBillTo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btLookUpBillToActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanelMainLayout = new javax.swing.GroupLayout(jPanelMain);
         jPanelMain.setLayout(jPanelMainLayout);
         jPanelMainLayout.setHorizontalGroup(
@@ -1353,15 +1440,18 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(btlookup, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btchangelog, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(btchangelog, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(jPanelMainLayout.createSequentialGroup()
+                                        .addComponent(ddcust, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btLookUpBillTo, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanelMainLayout.createSequentialGroup()
                                         .addComponent(btnew)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(btclear))
-                                    .addGroup(jPanelMainLayout.createSequentialGroup()
-                                        .addComponent(ddcust, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(lbcustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 205, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addComponent(lbcustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(lbmessage, javax.swing.GroupLayout.PREFERRED_SIZE, 374, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanelMainLayout.createSequentialGroup()
@@ -1395,15 +1485,15 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
                                     .addGroup(jPanelMainLayout.createSequentialGroup()
                                         .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                             .addComponent(tbtermdate, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(dcservicedate, javax.swing.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)
-                                            .addComponent(dcbillingstartdate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 108, Short.MAX_VALUE)
+                                            .addComponent(dcservicedate, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(dcbillingstartdate, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGap(108, 108, 108)
                                         .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                             .addComponent(jLabel11, javax.swing.GroupLayout.Alignment.TRAILING)
                                             .addComponent(jLabel12, javax.swing.GroupLayout.Alignment.TRAILING)
                                             .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.TRAILING)))
                                     .addGroup(jPanelMainLayout.createSequentialGroup()
-                                        .addComponent(ddterms, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(tbterms, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(jLabel18)))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1458,7 +1548,8 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
                             .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(ddcust, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(jLabel36))
-                            .addComponent(lbcustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(lbcustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btLookUpBillTo)))
                     .addComponent(lbmessage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1495,12 +1586,12 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(dcnextdate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(ddterms, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel15)
                     .addComponent(ddorderstatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel16)
                     .addComponent(tblastbillingdate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel18))
+                    .addComponent(jLabel18)
+                    .addComponent(tbterms, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbautobill)
                 .addGap(7, 7, 7)
@@ -1695,11 +1786,9 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addComponent(btaddattachment)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btdeleteattachment)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 446, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 439, Short.MAX_VALUE)
                         .addComponent(labelmessage, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(panelAttachmentLayout.createSequentialGroup()
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                    .addComponent(jScrollPane3))
                 .addContainerGap())
         );
         panelAttachmentLayout.setVerticalGroup(
@@ -1712,11 +1801,48 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addComponent(btaddattachment)
                         .addComponent(btdeleteattachment)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(157, 157, 157))
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         add(panelAttachment);
+
+        panelNotes.setBorder(javax.swing.BorderFactory.createTitledBorder("Notes Panel"));
+        panelNotes.setName("panelAttachment"); // NOI18N
+        panelNotes.setPreferredSize(new java.awt.Dimension(974, 560));
+
+        btnotes.setText("Update Notes");
+        btnotes.setName("btnotes"); // NOI18N
+        btnotes.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnotesActionPerformed(evt);
+            }
+        });
+
+        tanotes.setColumns(20);
+        tanotes.setRows(5);
+        tanotes.setName("panelnotes"); // NOI18N
+        jScrollPane4.setViewportView(tanotes);
+
+        javax.swing.GroupLayout panelNotesLayout = new javax.swing.GroupLayout(panelNotes);
+        panelNotes.setLayout(panelNotesLayout);
+        panelNotesLayout.setHorizontalGroup(
+            panelNotesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelNotesLayout.createSequentialGroup()
+                .addComponent(btnotes)
+                .addContainerGap(862, Short.MAX_VALUE))
+            .addComponent(jScrollPane4)
+        );
+        panelNotesLayout.setVerticalGroup(
+            panelNotesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelNotesLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(btnotes)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE))
+        );
+
+        add(panelNotes);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnewActionPerformed
@@ -1825,6 +1951,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
         BlueSeerUtils.messagereset();
+        initDataSets = null;
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 
@@ -1942,7 +2069,36 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
     }//GEN-LAST:event_tableattachmentMouseClicked
 
+    private void btnotesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnotesActionPerformed
+        String[] x = null;
+        String text = tanotes.getText();
+        if (text != null && ! text.isBlank()) {
+            x = text.split("\n");
+        }
+        addUpdateSOMetaNotes(tbkey.getText(), "billnotes", x);
+    }//GEN-LAST:event_btnotesActionPerformed
+
+    private void jTabbedPane1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane1StateChanged
+        if (! isLoad) {
+        JTabbedPane sourceTabbedPane = (JTabbedPane) evt.getSource();
+        int index = sourceTabbedPane.getSelectedIndex();
+            if (index == 3) {
+                tanotes.setText("");
+                ArrayList<String> notes = getSOMetaNotes(tbkey.getText(), "billnotes");
+                for (String n : notes) {
+                    tanotes.append(n);
+                    tanotes.append("\n");
+                }
+            }
+        }
+    }//GEN-LAST:event_jTabbedPane1StateChanged
+
+    private void btLookUpBillToActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btLookUpBillToActionPerformed
+        lookUpFrameBillTo();
+    }//GEN-LAST:event_btLookUpBillToActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btLookUpBillTo;
     private javax.swing.JButton btLookUpItemDesc;
     private javax.swing.JButton btadd;
     private javax.swing.JButton btaddattachment;
@@ -1954,6 +2110,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JButton btdeleteitem;
     private javax.swing.JButton btlookup;
     private javax.swing.JButton btnew;
+    private javax.swing.JButton btnotes;
     private javax.swing.JButton btprint;
     private javax.swing.JButton btsacadd;
     private javax.swing.JButton btsacdelete;
@@ -1970,7 +2127,6 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JComboBox<String> ddsacamttype;
     private javax.swing.JComboBox<String> ddsactype;
     private javax.swing.JComboBox ddsite;
-    private javax.swing.JComboBox<String> ddterms;
     private javax.swing.JComboBox<String> ddtype;
     private javax.swing.JComboBox<String> dduom;
     private javax.swing.JTable detailtable;
@@ -2004,6 +2160,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel labelmessage;
@@ -2011,9 +2168,11 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JLabel lblitemdesc;
     private javax.swing.JLabel lbmessage;
     private javax.swing.JPanel panelAttachment;
+    private javax.swing.JPanel panelNotes;
     private javax.swing.JLabel percentlabel;
     private javax.swing.JTable sactable;
     private javax.swing.JTable tableattachment;
+    private javax.swing.JTextArea tanotes;
     private javax.swing.JTextArea tarmks;
     private javax.swing.JTextField tbactualamt;
     private javax.swing.JTextField tbitemservice;
@@ -2024,6 +2183,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JTextField tbsacamt;
     private javax.swing.JTextField tbsacdesc;
     private javax.swing.JTextField tbtermdate;
+    private javax.swing.JTextField tbterms;
     private javax.swing.JTextField tbtotdisc;
     private javax.swing.JTextField tbtottax;
     // End of variables declaration//GEN-END:variables

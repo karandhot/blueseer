@@ -21234,8 +21234,8 @@ MainFrame.bslog(e);
         body += "Thank you, \n";
         body += "\n\n";
         body += "BlueSeer ERP and EDI Services" + "\n";
+        body += "www.blueseer.com" + "\n";
         body += siteinfo[1] + "\n";
-        body += siteinfo[2] + "\n";
         body += siteinfo[5] + ", " + siteinfo[6] + " " + siteinfo[7] + "\n";
         body += siteinfo[8] + "\n";
         

@@ -345,7 +345,7 @@ public class venData {
                 + "vd_disc_code = ?, vd_tax_code = ?, vd_misc = ?, "
                 + "vd_ap_acct = ?, vd_ap_cc = ?, vd_bank = ?, vd_curr = ?, " 
                 + "vd_remarks = ?, vd_phone = ?, vd_email = ?, vd_is850export = ?, vd_type = ?, vd_site = ?, "
-                + "vd taxid = ?, vd_taxexempt = ?, vd_1099 = ? "
+                + "vd_taxid = ?, vd_taxexempt = ?, vd_1099 = ? "
                 + " where vd_addr = ? ; ";
         ps = con.prepareStatement(sql);
         ps.setString(35, x.vd_addr);

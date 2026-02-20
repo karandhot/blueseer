@@ -510,7 +510,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             break;    
             
         case "getSOMetaNotes" :
-            response.getWriter().print(ArrayListStringToJson(ordData.getSOMetaNotes(request.getHeader("param1"))));  
+            response.getWriter().print(ArrayListStringToJson(ordData.getSOMetaNotes(request.getHeader("param1"), request.getHeader("param2"))));  
             break;    
             
         case "getOrderLineInfo" :
@@ -645,6 +645,11 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             
         case "updateOrderStatusByPO" :
             ordData.updateOrderStatusByPO(request.getHeader("param1"), request.getHeader("param2"));
+            break;  
+            
+        case "addUpdateSOMetaNotes" :
+            String[] notelines = request.getHeader("param3").split("=_=", -1);
+            ordData.addUpdateSOMetaNotes(request.getHeader("param1"), request.getHeader("param2"), notelines);
             break;    
             
         case "addUpdateSOMeta" : 
