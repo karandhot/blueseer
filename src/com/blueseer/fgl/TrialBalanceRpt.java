@@ -103,8 +103,11 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
                             getGlobalColumnTag("currency"),
                             getGlobalColumnTag("description"),
                             getGlobalColumnTag("site"),
+                            getGlobalColumnTag("beginbalance"), 
+                            getGlobalColumnTag("activity"), 
                             getGlobalColumnTag("debits"),
-                            getGlobalColumnTag("credits")})
+                            getGlobalColumnTag("credits"),
+                            getGlobalColumnTag("endbalance")})
             {
                       @Override  
                       public Class getColumnClass(int col) {  
@@ -122,9 +125,11 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
                             getGlobalColumnTag("currency"),
                             getGlobalColumnTag("description"),
                             getGlobalColumnTag("site"), 
-                            getGlobalColumnTag("costcenter"), 
+                            getGlobalColumnTag("beginbalance"), 
+                            getGlobalColumnTag("activity"), 
                             getGlobalColumnTag("debits"),
-                            getGlobalColumnTag("credits")})
+                            getGlobalColumnTag("credits"),
+                            getGlobalColumnTag("endbalance")})
             {
                       @Override  
                       public Class getColumnClass(int col) {  
@@ -729,15 +734,22 @@ try {
                  
           if (cbcc.isSelected()) {    
               tablereport.setModel(mymodelCC);
-          tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-          tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        //  tablereport.getColumnModel().getColumn(0).setCellRenderer(new ButtonRenderer());
+              tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+         
+         //  tablereport.getColumnModel().getColumn(0).setCellRenderer(new ButtonRenderer());
          tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
           } else {
               tablereport.setModel(mymodel);
-          tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-          tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency()))); 
-        //  tablereport.getColumnModel().getColumn(0).setCellRenderer(new ButtonRenderer());
+              tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+         
          tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
           }
           
@@ -752,7 +764,7 @@ try {
                  .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.LEFT));    
                   }
               } else {
-                   if (i == 6 || i == 7 ) {
+                   if (i >= 6 && i <= 10) {
                  tablereport.getTableHeader().getColumnModel().getColumn(i)
                  .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.RIGHT));
                   } else {
@@ -854,16 +866,22 @@ try {
                     mymodel.addRow(new Object[]{BlueSeerUtils.clickbasket, acctid, accttype, acctcurr,
                                 acctdesc,
                                 site,
+                                bsParseDouble(currformatDouble(begbal)),
+                                bsParseDouble(currformatDouble(activity)),
                                 bsParseDouble(currformatDouble(endbal)),
-                                0
+                                0,
+                                bsParseDouble(currformatDouble(endbal))
                             });
                 } else {
                     totalcredits = totalcredits + endbal;
                     mymodel.addRow(new Object[]{BlueSeerUtils.clickbasket, acctid, accttype, acctcurr,
                                 acctdesc,
                                 site,
+                                bsParseDouble(currformatDouble(begbal)),
+                                bsParseDouble(currformatDouble(activity)),
                                 0,
-                                bsParseDouble(currformatDouble(-1 * endbal))
+                                bsParseDouble(currformatDouble(-1 * endbal)),
+                                bsParseDouble(currformatDouble(endbal))
                             });
                 }
                

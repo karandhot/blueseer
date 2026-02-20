@@ -1012,7 +1012,9 @@ public class print1099 extends javax.swing.JPanel {
     }//GEN-LAST:event_ddyearItemStateChanged
 
     private void btprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btprintActionPerformed
-        OVData.printJTableToJasper("Generate 1099", tablereport, "print1099.jasper" );
+        if (tablereport != null && mymodel.getRowCount() > 0) {
+            OVData.printJTableToJasper("1099 Report", tablereport, "genericJTableL8.jasper" );
+        }
     }//GEN-LAST:event_btprintActionPerformed
 
     private void btLookUpVendorFromActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btLookUpVendorFromActionPerformed
