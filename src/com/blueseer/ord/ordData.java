@@ -3710,11 +3710,11 @@ public class ordData {
     }
     
     public static void _billTrans(bill_mstr bm, ArrayList<bill_det> bd, Connection bscon) throws SQLException {
-        // check if we already have a billing record...if so...bale
+        
         if (bm.bill_nextbilldate().isBlank()) {
             return;
         }
-        
+        // check if we already have a billing record...if so...bale
         if (getBillTranByDate(bm.bill_nbr(), parseDateLD(bm.bill_nextbilldate())) != null) {
            return;   // tran record already created...bale
         } 
@@ -3725,23 +3725,27 @@ public class ordData {
         String usage = "";
         double amt = 0.00;
         LocalDate now = LocalDate.now();
-      //  bill_mstr bm = getBillMstr(new String[]{bill});
-        
-        // if here...we need to bill it
+    
         // get last tran record...if any
        String[] lasttran = getBillTranLast(bm.bill_nbr());  // id, invoice nbr, start, end
        
-       if (lasttran == null) {
-           xstart = parseDateLD(bm.bill_servicedate());
+     //  if (lasttran == null) {
+       //    xstart = parseDateLD(bm.bill_servicedate());
            //xend = now.withDayOfMonth(now.lengthOfMonth());
-           xend = now;
-       } else {
+       //    xend = xstart.plusMonths(1);
+     //  } else {
          //  xstart = parseDateLD(lasttran[3]).plusDays(1);
          //  xend = xstart.plusDays(xstart.lengthOfMonth()); // total for year should sum to 365 or 366
+         
+          // !!! this billing method only bills for service of the previous month prior to billing execution...does not retro bill
            int day = parseDateLD(bm.bill_servicedate()).getDayOfMonth();
            xstart = now.withDayOfMonth(day).minusMonths(1); 
-           xend = xstart.plusMonths(1); // total for year should sum to 365 or 366
-       }
+           xend = xstart.plusMonths(1);
+           // Current bill date must be >= period end date
+           if (xend.isAfter(now)) {
+               return;
+           }
+    //   }
         
        int shipperid = OVData.getNextNbr("shipper", bscon);
        

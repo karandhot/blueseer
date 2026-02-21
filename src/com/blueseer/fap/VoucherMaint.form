@@ -81,35 +81,36 @@
                                   <Component id="jLabel9" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="tbitemservice" min="-2" pref="291" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Group type="102" attributes="0">
-                                      <Component id="ddacct" min="-2" pref="146" max="-2" attributes="0"/>
+                                      <Component id="tbitemservice" min="-2" pref="291" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="lbacct" min="-2" pref="141" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
-                              <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Group type="102" alignment="1" attributes="0">
                                       <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="tbqty" min="-2" pref="68" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" attributes="0">
+                                      <Component id="tbacct" min="-2" pref="112" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="btLookUpAccount" min="-2" pref="25" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="lbacct" min="-2" pref="198" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                      <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
                                       <Component id="tbprice" min="-2" pref="68" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
                                       <Component id="btadditem" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="btdeleteitem" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="ddcc" min="-2" pref="102" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="250" max="-2" attributes="0"/>
-                                  </Group>
+                                  <Component id="ddcc" min="-2" pref="102" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
@@ -179,11 +180,13 @@
                                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                               <Component id="btaddall" min="-2" max="-2" attributes="0"/>
                                           </Group>
-                                          <Component id="ddsite" alignment="0" min="-2" pref="98" max="-2" attributes="0"/>
-                                          <Component id="tbcheck" alignment="0" min="-2" pref="98" max="-2" attributes="0"/>
-                                          <Component id="ddpo" min="-2" pref="117" max="-2" attributes="0"/>
                                           <Group type="102" attributes="0">
-                                              <Component id="tbrmks" min="-2" pref="205" max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="ddsite" alignment="0" min="-2" pref="98" max="-2" attributes="0"/>
+                                                  <Component id="tbcheck" alignment="0" min="-2" pref="98" max="-2" attributes="0"/>
+                                                  <Component id="ddpo" min="-2" pref="117" max="-2" attributes="0"/>
+                                                  <Component id="tbrmks" min="-2" pref="205" max="-2" attributes="0"/>
+                                              </Group>
                                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                           </Group>
                                       </Group>
@@ -279,27 +282,32 @@
                       <Component id="jLabel14" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="jScrollPane8" min="-2" pref="106" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="btdeleteitem" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="btadditem" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="tbitemservice" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jLabel5" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="tbprice" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="tbqty" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jLabel7" alignment="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="lbacct" alignment="0" min="-2" pref="20" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="jLabel8" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel9" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="ddacct" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="ddcc" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="1" attributes="0">
+                      <Group type="102" attributes="0">
+                          <Component id="jScrollPane8" min="-2" pref="106" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="btdeleteitem" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="btadditem" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="tbitemservice" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel5" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="tbprice" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="tbqty" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel7" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="lbacct" alignment="0" min="-2" pref="20" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="jLabel8" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jLabel9" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="ddcc" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="tbacct" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
                       </Group>
+                      <Component id="btLookUpAccount" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
                   <Component id="jScrollPane7" min="-2" pref="111" max="-2" attributes="0"/>
@@ -575,7 +583,7 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel9">
           <Properties>
-            <Property name="text" type="java.lang.String" value="ExpenseAcct"/>
+            <Property name="text" type="java.lang.String" value="Expense Account"/>
             <Property name="name" type="java.lang.String" value="lblacct" noResource="true"/>
           </Properties>
         </Component>
@@ -614,19 +622,6 @@
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btclearActionPerformed"/>
           </Events>
-        </Component>
-        <Component class="javax.swing.JComboBox" name="ddacct">
-          <Properties>
-            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="0"/>
-            </Property>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ddacctActionPerformed"/>
-          </Events>
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
-          </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="lbacct">
         </Component>
@@ -700,6 +695,18 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Service Charge"/>
           </Properties>
+        </Component>
+        <Component class="javax.swing.JButton" name="btLookUpAccount">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/images/find.png"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btLookUpAccountActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JTextField" name="tbacct">
         </Component>
       </SubComponents>
     </Container>
