@@ -455,6 +455,20 @@ public class venData {
     public static vd_mstr getVendMstr(String[] x) {
         vd_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getVendMstr"});
+            list.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServVDR");
+                r = objectMapper.readValue(returnstring, vd_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         String sql = "select * from vd_mstr where vd_addr = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {

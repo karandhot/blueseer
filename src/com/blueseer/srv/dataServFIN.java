@@ -426,6 +426,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(arrayToJson(fglData.getGLAcctDescType(request.getHeader("param1"))));   
             break; 
             
+    case "deleteGLIC" : 
+            response.getWriter().print(arrayToJson(fglData.deleteGLIC(request.getHeader("param1"))));   
+            break;        
+            
     case "getGLAcctDesc" : 
             response.getWriter().print(fglData.getGLAcctDesc(request.getHeader("param1")));   
             break;         

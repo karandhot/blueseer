@@ -26,14 +26,9 @@ SOFTWARE.
 package com.blueseer.fgl;
 
 import bsmf.MainFrame;
-import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.defaultDecimalSeparator;
 import static bsmf.MainFrame.dfdate;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
 import com.blueseer.adm.admData;
 import static com.blueseer.adm.admData.addCodeMstr;
 import static com.blueseer.fap.fapData.VouchAndPayTransaction;
@@ -42,6 +37,7 @@ import static com.blueseer.fap.fapData.VoucherTransaction;
 import com.blueseer.fap.fapData.ap_mstr;
 import static com.blueseer.fap.fapData.getAPVoucherSet;
 import com.blueseer.fap.fapData.vod_mstr;
+import static com.blueseer.fgl.fglData.getGLAcctDesc;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
@@ -50,7 +46,6 @@ import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import com.blueseer.utl.BlueSeerUtils.dbaction;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
-import static com.blueseer.utl.BlueSeerUtils.getGlobalLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.luModel;
 import static com.blueseer.utl.BlueSeerUtils.luTable;
@@ -59,29 +54,22 @@ import static com.blueseer.utl.BlueSeerUtils.ludialog;
 import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
-import static com.blueseer.utl.BlueSeerUtils.lurb2;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
-import static com.blueseer.utl.BlueSeerUtils.setDateFormat;
-import static com.blueseer.utl.BlueSeerUtils.setDateFormatNull;
 import com.blueseer.utl.DTData;
-import com.blueseer.utl.IBlueSeerT;
 import com.blueseer.utl.IBlueSeerV;
 import com.blueseer.utl.OVData;
-import static com.blueseer.utl.OVData.canUpdate;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import static com.blueseer.utl.OVData.getCodeValueByCodeKey;
+
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import com.blueseer.vdr.venData;
+import static com.blueseer.vdr.venData.getVendMstr;
+import com.blueseer.vdr.venData.vd_mstr;
 import java.awt.Color;
 import java.awt.Component;
-import java.sql.Connection;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -756,47 +744,13 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerV {
     
     // additional functions
     public void setvendorvariables(String vendor) {
-        
-        try {
-     
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;int i = 0;
-            int d = 0;
-            String uniqpo = null;
-            try {
-                res = st.executeQuery("select vd_name, vd_curr, vd_ap_acct, vd_ap_cc, vd_terms, vd_bank from vd_mstr where vd_addr = " + "'" + vendor + "'" + ";");
-                while (res.next()) {
-                    i++;
-                   apacct = res.getString("vd_ap_acct");
-                   apcc = res.getString("vd_ap_cc");
-                   apcurr = res.getString("vd_curr");
-                   terms = res.getString("vd_terms");
-                   apbank = res.getString("vd_bank");
-                   lbvendor.setText(res.getString("vd_name"));
-                   
-                }
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+       vd_mstr vd = getVendMstr(new String[]{vendor});
+       apacct = vd.vd_ap_acct();
+       apcc = vd.vd_ap_cc();
+       apcurr = vd.vd_curr();
+       terms = vd.vd_terms();
+       apbank = vd.vd_bank();
+       lbvendor.setText(vd.vd_name());
     }
    
     public void profileButtonEnable() {
@@ -1285,38 +1239,8 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerV {
     }//GEN-LAST:event_ddsiteActionPerformed
 
     private void ddacctActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddacctActionPerformed
-        if (ddacct.getSelectedItem() != null && ! isLoad )
-        try {
-            
-        
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                res = st.executeQuery("select ac_desc from ac_mstr where ac_id = " + "'" + ddacct.getSelectedItem().toString() + "'" + ";");
-                while (res.next()) {
-                    lbacct.setText(res.getString("ac_desc"));
-                }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+        if (ddacct.getSelectedItem() != null && ! isLoad ) {
+            lbacct.setText(getGLAcctDesc(ddacct.getSelectedItem().toString()));
         }
     }//GEN-LAST:event_ddacctActionPerformed
 
@@ -1397,56 +1321,27 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerV {
     }//GEN-LAST:event_btaddprofileActionPerformed
 
     private void ddprofileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddprofileActionPerformed
-         if (ddprofile.getSelectedItem() != null && ! ddprofile.getSelectedItem().toString().isEmpty() && ! isLoad )
-        try {
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            String values = "";
-            try {
-                res = st.executeQuery("select code_key, code_value from code_mstr where code_code = " + "'" + this.getClass().getSimpleName() + "'" + 
-                        " and code_key = " + "'" + ddprofile.getSelectedItem().toString() + "'" + ";");
-                while (res.next()) {
-                    tbitemservice.setText(res.getString("code_key"));
-                    values = res.getString("code_value");
-                }
-                String[] s = values.split(":", -1);
+        if (ddprofile.getSelectedItem() != null && ! ddprofile.getSelectedItem().toString().isEmpty() && ! isLoad ) {
+             String values = getCodeValueByCodeKey(this.getClass().getSimpleName(),ddprofile.getSelectedItem().toString() );
+             String[] s = values.split(":", -1);
                 ddsite.setSelectedItem(s[0]);
                 ddvend.setSelectedItem(s[1]);
                 ddacct.setSelectedItem(s[2]);
                 ddcc.setSelectedItem(s[3]);
                 tbqty.setText(s[4]);
                 tbprice.setText(s[5]);
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+                tbitemservice.setText(ddprofile.getSelectedItem().toString());
         }
+       
          
-          if (ddprofile.getSelectedItem() != null && ddprofile.getSelectedItem().toString().isEmpty() && ! isLoad ) {
+        if (ddprofile.getSelectedItem() != null && ddprofile.getSelectedItem().toString().isEmpty() && ! isLoad ) {
             ddsite.setSelectedIndex(0);
             ddvend.setSelectedIndex(0);
             ddacct.setSelectedIndex(0);
             ddcc.setSelectedIndex(0);
             tbqty.setText("");
             tbprice.setText("");  
-          }
+        }
         
          
          

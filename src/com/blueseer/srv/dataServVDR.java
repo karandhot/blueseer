@@ -34,8 +34,13 @@ import static com.blueseer.adm.admData.updateSiteMstr;
 
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import com.blueseer.vdr.venData;
+import static com.blueseer.vdr.venData.addVendMstr;
 import static com.blueseer.vdr.venData.addVendMstrMass;
+import static com.blueseer.vdr.venData.deleteVendMstr;
 import static com.blueseer.vdr.venData.getVendBrowseView;
+import static com.blueseer.vdr.venData.getVendMstr;
+import static com.blueseer.vdr.venData.updateVendMstr;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -81,9 +86,8 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     String id = request.getHeader("id");
     
     switch (id) {
-        
-     
-        case "addVendMstrMass" : { 
+                
+        case "addVendMstr" : { 
             String line;
             StringBuilder sb = new StringBuilder();  
             BufferedReader reader = request.getReader();  // as string
@@ -91,25 +95,12 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             sb.append(line);
             } 
             ObjectMapper objectMapper = new ObjectMapper();
-            ArrayList<String> sdarray = objectMapper.readValue(sb.toString(), ArrayList.class);
-            response.getWriter().print(arrayToJson(addVendMstrMass(sdarray, request.getHeader("param1"))));
-            break;
-          }
-        
-        case "addSiteMstr" : { 
-            String line;
-            StringBuilder sb = new StringBuilder();  
-            BufferedReader reader = request.getReader();  // as string
-            while ((line = reader.readLine()) != null) {  
-            sb.append(line);
-            } 
-            ObjectMapper objectMapper = new ObjectMapper();
-            admData.site_mstr x = objectMapper.readValue(sb.toString(), admData.site_mstr.class);            
-            response.getWriter().print(arrayToJson(addSiteMstr(x)));
+            venData.vd_mstr x = objectMapper.readValue(sb.toString(), venData.vd_mstr.class);            
+            response.getWriter().print(arrayToJson(addVendMstr(x)));
             break;
           }
            
-        case "updateSiteMstr" : { 
+        case "updateVendMstr" : { 
             String line;
             StringBuilder sb = new StringBuilder();  
             BufferedReader reader = request.getReader();  // as string
@@ -117,12 +108,12 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             sb.append(line);
             } 
             ObjectMapper objectMapper = new ObjectMapper();
-            admData.site_mstr x = objectMapper.readValue(sb.toString(), admData.site_mstr.class);            
-            response.getWriter().print(arrayToJson(updateSiteMstr(x)));
+            venData.vd_mstr x = objectMapper.readValue(sb.toString(), venData.vd_mstr.class);            
+            response.getWriter().print(arrayToJson(updateVendMstr(x)));
             break;
           }
         
-        case "deleteSiteMstr" : { 
+        case "deleteVendMstr" : { 
             String line;
             StringBuilder sb = new StringBuilder();  
             BufferedReader reader = request.getReader();  // as string
@@ -130,14 +121,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             sb.append(line);
             } 
             ObjectMapper objectMapper = new ObjectMapper();
-            admData.site_mstr x = objectMapper.readValue(sb.toString(), admData.site_mstr.class);            
-            response.getWriter().print(arrayToJson(deleteSiteMstr(x)));
+            venData.vd_mstr x = objectMapper.readValue(sb.toString(), venData.vd_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteVendMstr(x)));
             break;
           }
         
-        case "getSiteMstr" : { 
+        case "getVendMstr" : { 
             String[] key = new String[]{request.getHeader("param1")}; 
-            admData.site_mstr x = getSiteMstr(key);
+            venData.vd_mstr x = getVendMstr(key);
             ObjectMapper objectMapper = new ObjectMapper();
             String r = objectMapper.writeValueAsString(x);
             response.getWriter().print(r);
