@@ -6189,7 +6189,21 @@ public class fglData {
 }
 
     public static String getGLAcctDesc(String acct) {
-  String myreturn = "";
+    
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getGLAcctDesc"});
+            list.add(new String[]{"param1", acct});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                return sendServerPost(list, "", null, "dataServFIN");
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+    }    
+    
+        String myreturn = "";
     try{
 
             Connection con = null;
@@ -6225,7 +6239,19 @@ public class fglData {
 }
 
     public static String[] getGLAcctDescType(String acct) {
-  String[] r = new String[2];
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getGLAcctDescType"});
+            list.add(new String[]{"param1", acct});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+    }
+    String[] r = new String[2];
     try{
 
             Connection con = null;

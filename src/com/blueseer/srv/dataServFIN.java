@@ -422,6 +422,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(arrayToJson(fglData.getGLCalForDate(BlueSeerUtils.parseDate(request.getHeader("param1")))));   
             break;
             
+    case "getGLAcctDescType" : 
+            response.getWriter().print(arrayToJson(fglData.getGLAcctDescType(request.getHeader("param1"))));   
+            break; 
+            
+    case "getGLAcctDesc" : 
+            response.getWriter().print(fglData.getGLAcctDesc(request.getHeader("param1")));   
+            break;         
+            
     case "getGLCalForPeriod" : {
       response.getWriter().print(ArrayListStringToJson(getGLCalForPeriod(bsParseInt(request.getHeader("param1")), bsParseInt(request.getHeader("param2")))));
       break;
