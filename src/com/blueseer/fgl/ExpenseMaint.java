@@ -37,8 +37,10 @@ import static bsmf.MainFrame.user;
 import com.blueseer.adm.admData;
 import static com.blueseer.adm.admData.addCodeMstr;
 import static com.blueseer.fap.fapData.VouchAndPayTransaction;
+import com.blueseer.fap.fapData.VoucherAP;
 import static com.blueseer.fap.fapData.VoucherTransaction;
 import com.blueseer.fap.fapData.ap_mstr;
+import static com.blueseer.fap.fapData.getAPVoucherSet;
 import com.blueseer.fap.fapData.vod_mstr;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
@@ -64,6 +66,7 @@ import static com.blueseer.utl.BlueSeerUtils.setDateFormat;
 import static com.blueseer.utl.BlueSeerUtils.setDateFormatNull;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerT;
+import com.blueseer.utl.IBlueSeerV;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.canUpdate;
 import java.sql.DriverManager;
@@ -96,7 +99,7 @@ import javax.swing.SwingWorker;
  *
  * @author vaughnte
  */
-public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerT {
+public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerV {
                 
                  // global variable declarations
                 boolean isLoad = false;
@@ -110,6 +113,14 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerT {
                 double control = 0.00;
                 double rcvamt = 0.00;
                 int voucherline = 0;
+                boolean canUpdate = false;
+                boolean isAutoPost = false;
+                ArrayList<String[]> initDataSets = null;
+                String defaultSite = "";
+                String defaultCurrency = "";
+                String defaultCC = "";
+                public static ap_mstr ap = null;
+                public static ArrayList<vod_mstr> vodlist = null;
                
     
     // global datatablemodel declarations       
@@ -188,9 +199,8 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerT {
             BlueSeerUtils.endTask(message);
            if (this.type.equals("delete")) {
              initvars(null);  
-           } else if (this.type.equals("get") && message[0].equals("1")) {
-             tbkey.requestFocus();
-           } else if (this.type.equals("get") && message[0].equals("0")) {
+           } else if (this.type.equals("get")) {
+             updateForm(); 
              tbkey.requestFocus();
            } else {
              initvars(null);  
@@ -317,8 +327,13 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
         isLoad = true;
+        
+        if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "depts,vendors,accounts");
+        }
+        
         tbkey.setText("");
       
          terms = "";
@@ -332,7 +347,7 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         cbprofile.setSelected(false);
         btaddprofile.setEnabled(false);
-        basecurr = OVData.getDefaultCurrency();
+       
          
         lbvendor.setText("");
         lbmessage.setText("");
@@ -358,7 +373,7 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerT {
         dcdate.setEnabled(true);
         dcdate.setDate(now);
         
-       ddprofile.removeAllItems();
+        ddprofile.removeAllItems();
         ArrayList<String> profiles = OVData.getCodeMstrKeyList(this.getClass().getSimpleName());
         for (int i = 0; i < profiles.size(); i++) {
             ddprofile.addItem(profiles.get(i)); 
@@ -366,44 +381,59 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddprofile.insertItemAt("", 0);
         ddprofile.setSelectedIndex(0);
         
-        
         ddvend.removeAllItems();
-        ArrayList myvend = venData.getVendMstrList();
-        for (int i = 0; i < myvend.size(); i++) {
-            ddvend.addItem(myvend.get(i));
+        ddsite.removeAllItems();
+        ddacct.removeAllItems();
+        ddcc.removeAllItems();
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              basecurr = s[1];  
+            }
+            
+            if (s[0].equals("autopost")) {
+              isAutoPost = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            
+            if (s[0].equals("cc")) {
+              defaultCC = s[1];  
+            }
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("vendors")) {
+              ddvend.addItem(s[1]); 
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("accounts")) {
+                ddacct.addItem(s[1]);
+            }
         }
+        
+        
+       
+        
+        
+        
+        
         ddvend.insertItemAt("", 0);
         ddvend.setSelectedIndex(0);
-          
-        ddsite.removeAllItems();
-        ArrayList mylist = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (int i = 0; i < mylist.size(); i++) {
-            ddsite.addItem(mylist.get(i));
-        }
-        ddsite.setSelectedItem(OVData.getDefaultSite());
-        
-           ddacct.removeAllItems();
-       // ArrayList<String> myaccts = fglData.getGLAcctListByType("E");
-        ArrayList<String> myaccts = fglData.getGLAcctList();
-        for (String code : myaccts) {
-            ddacct.addItem(code);
-        }
-       // ddacct.setSelectedItem(OVData.getCodeKeyByCode("sys_def_acct_exp"));
-        
-        
-           ddcc.removeAllItems();
-        ArrayList<String> mycc = fglData.getGLCCList();
-        for (String code : mycc) {
-            ddcc.addItem(code);
-        }
-        ddcc.setSelectedItem(OVData.getDefaultCC());
+        ddsite.setSelectedItem(defaultSite);
+        ddcc.setSelectedItem(defaultCC);
       
        isLoad = false;
     }
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btnew.setEnabled(false);
         tbkey.setEditable(true);
@@ -433,7 +463,7 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public boolean validateInput(dbaction x) {
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -507,7 +537,7 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btclear.setEnabled(true);
         btlookup.setEnabled(true);
@@ -520,8 +550,7 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerT {
             tbkey.requestFocus();
         }
     }
-    
-    
+       
     public String[] addRecord(String[] x) {
      String[] m = null;
      
@@ -531,7 +560,7 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerT {
        m =  VoucherTransaction("Expense" , createDetRecord(), createRecord(), false); 
      }      
       // autopost
-        if (OVData.isAutoPost()) {
+        if (isAutoPost) {
             fglData.PostGL();
         } 
      return m;
@@ -550,68 +579,10 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerT {
      }
       
     public String[] getRecord(String[] x) {
-       String[] m = new String[2];
-       
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                actamt = 0.00;
-                res = st.executeQuery("select * from ap_mstr where ap_nbr = " + "'" + x[0] + "'" + ";");
-                while (res.next()) {
-                  i++;
-                     tbkey.setText(res.getString("ap_nbr"));
-                     dcdate.setDate(parseDate(res.getString("ap_effdate")));
-                     tbcheck.setText(res.getString("ap_check"));
-                     tbrmks.setText(res.getString("ap_rmks"));
-                     ddvend.setSelectedItem(res.getString("ap_vend"));
-                     ddsite.setSelectedItem(res.getString("ap_site"));
-                }
-                
-                res = st.executeQuery("select * from vod_mstr where vod_id = " + "'" + x[0] + "'" + ";");
-                while (res.next()) {
-                //  "PO", "Line", "Part", "Qty", "Price", "RecvID", "RecvLine", "Acct", "CC"
-                     expensemodel.addRow(new Object[] { res.getString("vod_id"),
-                                              res.getString("vod_rvdline"),
-                                              res.getString("vod_item"),
-                                              res.getString("vod_qty").replace('.',defaultDecimalSeparator),
-                                              res.getString("vod_voprice").replace('.',defaultDecimalSeparator),
-                                              res.getString("vod_rvdid"),
-                                              res.getString("vod_rvdline"),
-                                              res.getString("vod_expense_acct"),
-                                              res.getString("vod_expense_cc"),
-                                              res.getString("vod_po")
-                                              });
-                 
-                  
-                  actamt += res.getDouble("vod_voprice");
-               
-                }
-               
-                if (i > 0)
-                m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordSQLError};  
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordConnError};  
-        }
-      return m;
+       VoucherAP vap = getAPVoucherSet(x);
+       ap = vap.ap();
+       vodlist = vap.vod();
+       return vap.m();
     }
     
     public ap_mstr createRecord() {
@@ -671,6 +642,32 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerT {
         return list;   
     }
     
+    public void updateForm() {
+        
+        tbkey.setText(ap.ap_nbr());
+         dcdate.setDate(parseDate(ap.ap_effdate()));
+         tbcheck.setText(ap.ap_check());
+         tbrmks.setText(ap.ap_rmks());
+         ddvend.setSelectedItem(ap.ap_vend());
+         ddsite.setSelectedItem(ap.ap_site());
+        
+        for (vod_mstr vod : vodlist) { 
+        expensemodel.addRow(new Object[] { 
+          vod.vod_id(),
+          vod.vod_rvdline(),
+          vod.vod_item(),
+          vod.vod_qty(),
+          vod.vod_voprice(),
+          vod.vod_rvdid(),
+          vod.vod_rvdline(),
+          vod.vod_expense_acct(),
+          vod.vod_expense_cc(),
+          vod.vod_po() 
+          });
+         actamt += vod.vod_voprice();        
+        }          
+                     
+    }
     
     public void lookUpFrame() {
         
@@ -1366,6 +1363,7 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
         BlueSeerUtils.messagereset();
+        initDataSets = null;
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 

@@ -183,6 +183,24 @@ public class fapData {
     }
     
     public static String[] VouchAndPayTransaction(String ctype, ArrayList<vod_mstr> vod, ap_mstr ap, boolean Void) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","VouchAndPayTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(ctype);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(vod);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(ap);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(Void);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFAP"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -388,8 +406,92 @@ public class fapData {
     return m;
     }
     
+    public static VoucherAP getAPVoucherSet(String[] x ) {
+        VoucherAP r = null;
+        String[] m = new String[2];
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getAPVoucherSet"});
+            list.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServFAP");
+                r = objectMapper.readValue(returnstring, VoucherAP.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        Connection bscon = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            
+            if (ds != null) {
+              bscon = ds.getConnection();
+            } else {
+              bscon = DriverManager.getConnection(url + db, user, pass);  
+            }
+            
+            ap_mstr ap = _getAPMstr(x, bscon, ps, res);
+            ArrayList<vod_mstr> vod = _getVodMstr(x, bscon, ps, res);
+            
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+            r = new VoucherAP(m, ap, vod);
+            
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+             r = new VoucherAP(m);
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return r;
+    }
+    
     
     public static String[] VoucherTransaction(String ctype, ArrayList<vod_mstr> vod, ap_mstr ap, boolean Void) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","VoucherTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(ctype);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(vod);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(ap);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(Void);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFAP"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -695,6 +797,54 @@ public class fapData {
             rows = ps.executeUpdate();
             } 
             return rows;
+    }
+    
+    private static ap_mstr _getAPMstr(String[] x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        ap_mstr r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from ap_mstr where ap_nbr = ?";
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x[0]);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new ap_mstr(m);
+            } else {
+                while(res.next()) {
+                    m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                    r = new ap_mstr(m, 
+                                res.getString("ap_id"), 
+                                res.getString("ap_vend"),
+                                res.getString("ap_nbr"), 
+                                res.getDouble("ap_amt"),
+                                res.getDouble("ap_base_amt"), 
+                                res.getString("ap_effdate"),
+                                res.getString("ap_entdate"), 
+                                res.getString("ap_duedate"),
+                                res.getString("ap_type"), 
+                                res.getString("ap_rmks"),
+                                res.getString("ap_ref"), 
+                                res.getString("ap_terms"),
+                                res.getString("ap_acct"),
+                                res.getString("ap_cc"),
+                                res.getString("ap_applied"),
+                                res.getString("ap_status"),
+                                res.getString("ap_bank"),
+                                res.getString("ap_curr"),
+                                res.getString("ap_base_curr"), 
+                                res.getString("ap_check"),
+                                res.getString("ap_batch"),
+                                res.getString("ap_site"),
+                                res.getString("ap_subtype"),
+                                res.getString("ap_entrytype"),
+                                res.getString("ap_approved"),
+                                res.getString("ap_approver"),
+                                res.getDouble("ap_amt_tax"),
+                                res.getDouble("ap_amt_sac")
+                            );
+                }
+            }
+            return r;
     }
     
     public static ArrayList<vod_mstr> _getVodMstr(String[] x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
@@ -1274,6 +1424,12 @@ public class fapData {
         public vod_mstr(String[]m) {
             this(m, "", "", 0, "", 0, 0, "", "", "", "",
                     "", "", 0, "" );
+        }
+    }
+    
+    public record VoucherAP(String[] m, ap_mstr ap, ArrayList<vod_mstr> vod) {
+        public VoucherAP(String[] m) {
+            this (m, null, null);
         }
     }
     

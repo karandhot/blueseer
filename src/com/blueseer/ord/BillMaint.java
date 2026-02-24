@@ -141,7 +141,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerV {
                 ArrayList<String[]> initDataSets = null;
                 String defaultSite = "";
                 String defaultCurrency = "";
-                boolean canupdate = false;
+                boolean canUpdate = false;
                 
                
     
@@ -469,7 +469,7 @@ public class BillMaint extends javax.swing.JPanel implements IBlueSeerV {
               defaultCurrency = s[1];  
             }
             if (s[0].equals("canupdate")) {
-              canupdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
             }
             if (s[0].equals("sites")) {
               ddsite.addItem(s[1]); 

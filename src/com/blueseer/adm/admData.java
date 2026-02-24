@@ -3343,7 +3343,7 @@ public class admData {
                }
             }
             
-            res = st.executeQuery("select ov_site, ov_currency from ov_mstr;" );
+            res = st.executeQuery("select ov_site, ov_currency, ov_cc, ov_wh from ov_mstr;" );
             while (res.next()) {
                String[] s = new String[2];
                s[0] = "currency";
@@ -3353,7 +3353,23 @@ public class admData {
                s[0] = "site";
                s[1] = res.getString("ov_site");
                lines.add(s);
+               s = new String[2];
+               s[0] = "cc";
+               s[1] = res.getString("ov_cc");
+               lines.add(s);
+               s = new String[2];
+               s[0] = "wh";
+               s[1] = res.getString("ov_wh");
+               lines.add(s);
             }
+            
+            res = st.executeQuery("select gl_autopost from gl_ctrl;");
+                while (res.next()) {
+                   String[] s = new String[2];
+                   s[0] = "autopost";
+                   s[1] = res.getString("gl_autopost");
+                   lines.add(s);
+                }
             
             res = st.executeQuery("select * from ov_ctrl;" );
             while (res.next()) {
