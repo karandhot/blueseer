@@ -221,7 +221,7 @@ public class fglData {
             }
         }
         String[] m = new String[2];
-        String sql = "delete from gl_tran where glt_ref = ?; ";
+        String sql = "delete from gl_tran where glt_doc = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql)) {
         ps.setString(1, x);

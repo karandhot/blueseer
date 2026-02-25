@@ -277,6 +277,7 @@ public class GLTranMaint extends javax.swing.JPanel {
             }
             if (s[0].equals("accounts")) {
                 ddacct.addItem(s[1]);
+                ddacct2.addItem(s[1]);
             }
             if (s[0].equals("depts")) {
                 ddcc.addItem(s[1]);
@@ -313,7 +314,7 @@ public class GLTranMaint extends javax.swing.JPanel {
         String[] m = new String[2];
         if (x[0].equals("0")) {
                    setPanelComponentState(this, true);
-                   btadd.setEnabled(false);
+                   btsubmit.setEnabled(false);
         } else {
                    tbref.setForeground(Color.red); 
         }
@@ -602,16 +603,9 @@ public class GLTranMaint extends javax.swing.JPanel {
      }
         
     public String[] deleteRecord(String[] x) {
-        String[] m = new String[2];
-        boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
-        if (proceed) {
-         m = deleteGL(tbref.getText()); 
-         initvars(null);
-        } else {
-           m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordCanceled}; 
-        }
-       
-        
+        String[] m;
+        m = deleteGL(x[0]); 
+        initvars(null);
         return m;  
      }
 
@@ -633,8 +627,6 @@ public class GLTranMaint extends javax.swing.JPanel {
         btclear.setEnabled(true);
         btlookup.setEnabled(true);
         btcopy.setEnabled(false);
-        
-        executeTask(BlueSeerUtils.dbaction.get,arg);
         
         if (arg != null && arg.length > 1) {
              executeTask(BlueSeerUtils.dbaction.get,arg);
@@ -1429,10 +1421,15 @@ public class GLTranMaint extends javax.swing.JPanel {
     }//GEN-LAST:event_btsubmitActionPerformed
 
     private void btdeleteALLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteALLActionPerformed
-            boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
-            if (proceed) {
-               deleteGL(tbref.getText());
-            }
+        boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
+        if (! proceed) {
+            return;
+        }
+        if (! validateInput(BlueSeerUtils.dbaction.delete)) {
+           return;
+        }
+        setPanelComponentState(this, false);
+        executeTask(BlueSeerUtils.dbaction.delete, new String[]{tbref.getText()});    
     }//GEN-LAST:event_btdeleteALLActionPerformed
 
     private void btaddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddActionPerformed
