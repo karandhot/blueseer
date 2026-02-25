@@ -1454,16 +1454,7 @@ public class GLTranMaint extends javax.swing.JPanel {
             tbamt.requestFocus();
             return;
          }
-       
-        if (! fglData.isAcctNumberValid(ddacct.getSelectedItem().toString()) ) {
-            bsmf.MainFrame.show(getMessageTag(1026));
-            return;
-        }
-        if (! fglData.isCostCenterValid(ddcc.getSelectedItem().toString()) ) {
-            bsmf.MainFrame.show(getMessageTag(1048));
-            return;
-        }
-        
+               
         if (effdate.getDate() == null || ! BlueSeerUtils.isValidDateStr(BlueSeerUtils.mysqlDateFormat.format(effdate.getDate())) ) {
             bsmf.MainFrame.show(getMessageTag(1033, "effective date"));
             return;
