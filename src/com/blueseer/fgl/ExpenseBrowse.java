@@ -365,11 +365,11 @@ public class ExpenseBrowse extends javax.swing.JPanel {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
         ArrayList<String[]> list = new ArrayList<>();
         list.add(new String[]{"id","getExpenseBrowseView"});
-        list.add(new String[]{"fromdate",dfdate.format(dcFrom.getDate())});
-        list.add(new String[]{"todate",dfdate.format(dcTo.getDate())});
-        list.add(new String[]{"fromvend",ddfromvend.getSelectedItem().toString()});
-        list.add(new String[]{"tovend",ddtovend.getSelectedItem().toString()});
-        list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});
+        list.add(new String[]{"param3",ddfromvend.getSelectedItem().toString()});
+        list.add(new String[]{"param4",ddtovend.getSelectedItem().toString()});
+        list.add(new String[]{"param5",ddsite.getSelectedItem().toString()});
         
         try {
                 jsonString = sendServerPost(list, "", null, "dataServFIN"); 
