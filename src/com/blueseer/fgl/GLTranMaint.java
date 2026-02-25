@@ -177,16 +177,7 @@ public class GLTranMaint extends javax.swing.JPanel {
         }
         labeltotal.setText(bsFormatDouble(amt));
     }
-    
-    public void clearinput() {
-       ddacct.setSelectedIndex(0);
-       ddacct2.setSelectedIndex(0);
-       ddcc.setSelectedIndex(0);
-       // tbdesc.setText("");
-        tbamt.setText("");
-        ddacct.requestFocus();
-    }
-    
+        
     class SomeRenderer extends DefaultTableCellRenderer {
         
     public Component getTableCellRendererComponent(JTable table,
@@ -308,137 +299,34 @@ public class GLTranMaint extends javax.swing.JPanel {
        isLoad = false;
     }
     
+    public void newAction(String x) {
+        setPanelComponentState(this, true);
+        setComponentDefaultValues(false);
+        BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
+        btnew.setEnabled(false);
+        ddtype.setSelectedIndex(0);      
+        btcopy.setEnabled(false);
+        btdeleteALL.setEnabled(false);
+    }
     
-    public void clearAll() {
-        isLoad = true;
-        java.util.Date now = new java.util.Date();
-       DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-       effdate.setDate(now);
-       dateentered.setText(dfdate.format(now));
-       lblmessage.setText("");
-       lblmessage.setForeground(Color.black);
-       tbref.setText("");
-       tbcontrolamt.setText("");
-       tbamt.setText("");
-       tbcontrolamt.setBackground(Color.white);
-       tbamt.setBackground(Color.white);
-       tbdesc.setBackground(Color.white);
-       tbdesc.setText("");
-       labeltotal.setText("0.00");
-       type = ""; 
-       
-       tbuserid.setText("");
-       tbuserid.setEditable(false);
-       tbuserid.setBackground(bsmf.MainFrame.nonEditableColor);
-       tbuserid.setText(bsmf.MainFrame.userid);
-       
-       
-       tbref.setEditable(false);
-       tbref.setBackground(bsmf.MainFrame.nonEditableColor);
-       dateentered.setEditable(false);
-       dateentered.setBackground(bsmf.MainFrame.nonEditableColor);
-       
-       transtable.setModel(transmodel);
-       transmodel.setNumRows(0);
-       transtable.getColumnModel().getColumn(4).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-       transtable.getTableHeader().setReorderingAllowed(false);
-       
-       ddsite.removeAllItems();
-        ArrayList sites = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (Object site : sites) {
-            ddsite.addItem(site);
+    public void setAction(String[] x) {
+        String[] m = new String[2];
+        if (x[0].equals("0")) {
+                   setPanelComponentState(this, true);
+                   btadd.setEnabled(false);
+        } else {
+                   tbref.setForeground(Color.red); 
         }
-        ddsite.setSelectedItem(OVData.getDefaultSite());
-        
-        ddacct.removeAllItems();
-        ddacct2.removeAllItems();
-        ArrayList<String> myacct = fglData.getGLAcctList();
-        for (int i = 0; i < myacct.size(); i++) {
-            ddacct.addItem(myacct.get(i));
-            ddacct2.addItem(myacct.get(i));
-        }
-            ddacct.setSelectedIndex(0);
-            ddacct2.setSelectedIndex(0);
-        
-        ddcc.removeAllItems();
-        fglData.getGLCCList().stream().forEach((s) -> ddcc.addItem(s));
-        ddcc.setSelectedItem(OVData.getDefaultCC());
-       
-        
-        ddcurr.removeAllItems();
-        fglData.getCurrlist().stream().forEach((s) -> ddcurr.addItem(s));
-        ddcurr.setSelectedItem(OVData.getDefaultCurrency());
-        
-        
-       ddsite.setSelectedItem(OVData.getDefaultSite());
-       isLoad = false;
        
     }
     
-    public void enableAll() {
-       isLoad = true;
-       btnew.setEnabled(true);
-       btlookup.setEnabled(true);
-       btLookUpAccount.setEnabled(true);
-       btLookUpAccount2.setEnabled(true);
-       btdeleteALL.setEnabled(true);
-       btsubmit.setEnabled(true);
-       btclear.setEnabled(true);
-       btadd.setEnabled(true);
-       btdelete.setEnabled(true);
-       btupdate.setEnabled(true);
-       btflip.setEnabled(true);
-       ddtype.setSelectedIndex(0);
-       ddtype.setEnabled(true); 
-       ddsite.setEnabled(true);
-       ddcurr.setEnabled(true);
-       ddacct.setEnabled(true);
-       ddacct2.setEnabled(true);
-       ddcc.setEnabled(true);
-       tbamt.setEnabled(true);
-       tbdesc.setEnabled(true);
-       effdate.setEnabled(true);
-       transtable.setEnabled(true);
-       tbcontrolamt.setEnabled(true);
-       dateentered.setEnabled(true);
-       tbuserid.setEnabled(true);
-       tbref.setEnabled(true);
-       isLoad = false;
-      
+    public void clearinput() {
+        ddacct.setSelectedIndex(0);
+        ddacct2.setSelectedIndex(0);
+        tbamt.setText("0");
+        tbdesc.setText("");
     }
-    
-    public void disableAll() {
-       isLoad = true;
-       btnew.setEnabled(false);
-       btlookup.setEnabled(false);
-       btLookUpAccount.setEnabled(false);
-       btLookUpAccount2.setEnabled(false);
-       btdeleteALL.setEnabled(false);
-       btflip.setEnabled(false);
-       btsubmit.setEnabled(false);
-       btadd.setEnabled(false);
-       btdelete.setEnabled(false);
-       btupdate.setEnabled(false);
-       btclear.setEnabled(false);
-       ddtype.setSelectedIndex(0);
-       ddtype.setEnabled(false);
-       dateentered.setEnabled(false);
-       tbuserid.setEnabled(false);
-       tbref.setEnabled(false);
-       ddsite.setEnabled(false);
-       ddcurr.setEnabled(false);
-       ddacct.setEnabled(false);
-       ddacct2.setEnabled(false);
-       ddcc.setEnabled(false);
-       tbamt.setEnabled(false);
-       tbdesc.setEnabled(false);
-       effdate.setEnabled(false);
-       transtable.setEnabled(false);
-       tbcontrolamt.setEnabled(false);
-       isLoad = false;
        
-    }
-        
     public void setLanguageTags(Object myobj) {
       // lblaccount.setText(labels.getString("LedgerAcctMstrPanel.labels.lblaccount"));
       
@@ -1021,13 +909,7 @@ public class GLTranMaint extends javax.swing.JPanel {
                     
                     transtable.setModel(transmodel);
                     tallyamount();
-                    clearinput();
-                    disableAll();
-                    btdeleteALL.setEnabled(true);
-                    transtable.setEnabled(true);
-                    btnew.setEnabled(true);
-                    btlookup.setEnabled(true);
-                    btclear.setEnabled(true);
+                    setAction(new String[]{"0",""});
         }
                      
     }
@@ -1642,22 +1524,7 @@ public class GLTranMaint extends javax.swing.JPanel {
     }//GEN-LAST:event_btdeleteActionPerformed
 
     private void btnewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnewActionPerformed
-        clearAll();
-        enableAll();
-        /*
-        
-       if (! ddtype.getSelectedItem().toString().equals("reversing")) {
-       type = "JL";
-       tbref.setText(fglData.setGLRecNbr("JL"));
-       } else {
-       type = "RV";
-       tbref.setText(fglData.setGLRecNbr("RV"));    
-       }
-       */
-       ddtype.setSelectedIndex(0);      
-       btcopy.setEnabled(false);
-       btdeleteALL.setEnabled(false);
-       
+        newAction("");
     }//GEN-LAST:event_btnewActionPerformed
 
     private void ddacctActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddacctActionPerformed
@@ -1721,11 +1588,9 @@ public class GLTranMaint extends javax.swing.JPanel {
     }//GEN-LAST:event_ddacct2ActionPerformed
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
-        clearAll();
-       disableAll();
-       
-       btnew.setEnabled(true);
-       btlookup.setEnabled(true);
+      BlueSeerUtils.messagereset();
+        initDataSets = null;
+        initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 
     private void tbdescFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbdescFocusLost
@@ -1754,7 +1619,6 @@ public class GLTranMaint extends javax.swing.JPanel {
     private void btcopyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcopyActionPerformed
        
             setRef();
-            enableAll();
             tbref.setBackground(Color.yellow);
             for (int i = 0; i < transtable.getRowCount(); i++) {
                 transtable.setValueAt(tbref.getText(),i, 5 );
