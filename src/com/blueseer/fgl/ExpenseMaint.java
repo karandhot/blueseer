@@ -60,7 +60,6 @@ import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerV;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.getCodeValueByCodeKey;
-
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -402,6 +401,9 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerV {
             }
             if (s[0].equals("accounts")) {
                 ddacct.addItem(s[1]);
+            }
+            if (s[0].equals("depts")) {
+                ddcc.addItem(s[1]);
             }
         }
         

@@ -31,10 +31,7 @@ import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import java.awt.Color;
 import java.awt.Component;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,8 +50,14 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import static com.blueseer.fgl.fglData.addGL;
 import static com.blueseer.fgl.fglData.deleteGL;
+import static com.blueseer.fgl.fglData.getGLAcctDesc;
+import static com.blueseer.fgl.fglData.getGLCCDesc;
+import static com.blueseer.fgl.fglData.getGLHist;
+import static com.blueseer.fgl.fglData.getGLTran;
+import com.blueseer.fgl.fglData.gl_hist;
 import com.blueseer.fgl.fglData.gl_tran;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatInt;
@@ -89,7 +92,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.Map;
@@ -122,6 +124,14 @@ public class GLTranMaint extends javax.swing.JPanel {
     double positiveamt = 0;
     String type = "";
     boolean isLoad = false;
+    boolean canUpdate = false;
+    boolean isAutoPost = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String defaultCC = "";
+    ArrayList<gl_tran> gltlist = null;
+    ArrayList<gl_hist> glhlist = null;
     
     public static javax.swing.table.DefaultTableModel lookUpModel = null;
                 public static JTable lookUpTable = new JTable();
@@ -206,6 +216,98 @@ public class GLTranMaint extends javax.swing.JPanel {
 
     }
 
+    public void setComponentDefaultValues(boolean init) {
+        isLoad = true;
+        
+        if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "depts,accounts,currencies");
+        }
+        
+         java.util.Date now = new java.util.Date();
+       DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+       effdate.setDate(now);
+       dateentered.setText(dfdate.format(now));
+       lblmessage.setText("");
+       lblmessage.setForeground(Color.black);
+       tbref.setText("");
+       tbcontrolamt.setText("");
+       tbamt.setText("");
+       tbcontrolamt.setBackground(Color.white);
+       tbamt.setBackground(Color.white);
+       tbdesc.setBackground(Color.white);
+       tbdesc.setText("");
+       labeltotal.setText("0.00");
+       type = ""; 
+       
+       tbuserid.setText("");
+       tbuserid.setEditable(false);
+       tbuserid.setBackground(bsmf.MainFrame.nonEditableColor);
+       tbuserid.setText(bsmf.MainFrame.userid);
+       
+       
+       tbref.setEditable(false);
+       tbref.setBackground(bsmf.MainFrame.nonEditableColor);
+       dateentered.setEditable(false);
+       dateentered.setBackground(bsmf.MainFrame.nonEditableColor);
+       
+       
+       
+      
+        
+        ddsite.removeAllItems();
+        ddacct.removeAllItems();
+        ddacct2.removeAllItems();
+        ddcc.removeAllItems();
+        ddcurr.removeAllItems();
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            
+            if (s[0].equals("autopost")) {
+              isAutoPost = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            
+            if (s[0].equals("cc")) {
+              defaultCC = s[1];  
+            }
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("accounts")) {
+                ddacct.addItem(s[1]);
+            }
+            if (s[0].equals("depts")) {
+                ddcc.addItem(s[1]);
+            }
+            if (s[0].equals("currencies")) {
+                ddcurr.addItem(s[1]);
+            }
+        }
+        
+       transtable.setModel(transmodel);
+       transmodel.setNumRows(0);
+       transtable.getColumnModel().getColumn(4).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+       transtable.getTableHeader().setReorderingAllowed(false);
+       
+        
+        ddsite.setSelectedItem(defaultSite);
+        ddcc.setSelectedItem(defaultCC);
+        ddcurr.setSelectedItem(defaultCurrency);
+      
+       isLoad = false;
+    }
+    
     
     public void clearAll() {
         isLoad = true;
@@ -336,130 +438,7 @@ public class GLTranMaint extends javax.swing.JPanel {
        isLoad = false;
        
     }
-    
-    public void getGLHist(String docid) {
-        try {
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                res = st.executeQuery("SELECT * " +
-                        " FROM  gl_hist where glh_doc = " + "'" + docid + "'" +
-                        "  ;");
-                
-                while (res.next()) {
-                    i++;
-                    tbref.setText(res.getString("glh_doc"));
-                    dateentered.setText(res.getString("glh_entdate"));
-                    
-                    transmodel.addRow(new Object[]{transmodel.getRowCount() + 1,
-                    res.getString("glh_acct"),
-                    res.getString("glh_cc"),
-                    res.getString("glh_desc"),
-                    currformat(res.getString("glh_amt")),
-                    res.getString("glh_doc"),
-                    res.getString("glh_ref"),
-                    res.getString("glh_type")
-                    });
-                }
-                
-                if (i > 0) {
-                    
-                    transtable.setModel(transmodel);
-                    tallyamount();
-                    clearinput();
-                    disableAll();
-                    btdeleteALL.setEnabled(false);
-                    transtable.setEnabled(true);
-                    btnew.setEnabled(true);
-                    btlookup.setEnabled(true);
-                    btclear.setEnabled(true);
-                }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }
-    
-    public void getGLTran(String docid) {
-        try {
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                res = st.executeQuery("SELECT * " +
-                        " FROM  gl_tran where glt_doc = " + "'" + docid + "'" +
-                        "  ;");
-                
-                while (res.next()) {
-                    i++;
-                    tbref.setText(res.getString("glt_doc"));
-                    dateentered.setText(res.getString("glt_entdate"));
-                    
-                    transmodel.addRow(new Object[]{transmodel.getRowCount() + 1,
-                    res.getString("glt_acct"),
-                    res.getString("glt_cc"),
-                    res.getString("glt_desc"),
-                    currformat(res.getString("glt_amt")),
-                    res.getString("glt_doc"),
-                    res.getString("glt_ref"),
-                    res.getString("glt_type")
-                    });
-                }
-                
-                if (i > 0) {
-                    
-                    transtable.setModel(transmodel);
-                    tallyamount();
-                    clearinput();
-                    disableAll();
-                    btdeleteALL.setEnabled(true);
-                    transtable.setEnabled(true);
-                    btnew.setEnabled(true);
-                    btlookup.setEnabled(true);
-                    btclear.setEnabled(true);
-                }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }
-    
-    
+        
     public void setLanguageTags(Object myobj) {
       // lblaccount.setText(labels.getString("LedgerAcctMstrPanel.labels.lblaccount"));
       
@@ -534,6 +513,9 @@ public class GLTranMaint extends javax.swing.JPanel {
                 case "delete":
                     message = deleteRecord(key);    
                     break;
+                case "get":
+                    message = getRecord(key);    
+                    break;    
                 default:
                     message = new String[]{"1", "unknown action"};
             }
@@ -546,7 +528,12 @@ public class GLTranMaint extends javax.swing.JPanel {
             try {
             String[] message = get();
             BlueSeerUtils.endTask(message);
-            initvars(null);
+               if (this.type.equals("get")) {
+                 updateForm(key[1]); // key[1] should contain gl_tran or gl_hist...indicating what type of key is in key[0]
+                 tbref.requestFocus();
+               } else {
+                 initvars(null);  
+               }
             } catch (Exception e) {
                 MainFrame.bslog(e);
             } 
@@ -739,27 +726,41 @@ public class GLTranMaint extends javax.swing.JPanel {
         
         return m;  
      }
-        
+
+    public String[] getRecord(String[] x) {
+       if (x.length > 1 && x[1].equals("gl_tran")) { 
+       gltlist = getGLTran(x); 
+       }
+       if (x.length > 1 && ! x[1].equals("gl_tran")) { 
+       glhlist = getGLHist(x); 
+       }
+       return new String[]{"0",""};
+    }    
+    
     public void initvars(String[] arg) {
        
-       clearAll();
-       disableAll();
-       
-       btnew.setEnabled(true);
-       btlookup.setEnabled(true);
-       btcopy.setEnabled(false);
+       setPanelComponentState(this, false); 
+       setComponentDefaultValues(initDataSets == null);
+        btnew.setEnabled(true);
+        btclear.setEnabled(true);
+        btlookup.setEnabled(true);
+        btcopy.setEnabled(false);
+        
+        executeTask(BlueSeerUtils.dbaction.get,arg);
+        
         if (arg != null && arg.length > 1) {
+             executeTask(BlueSeerUtils.dbaction.get,arg);
+             btcopy.setEnabled(true);
              if (arg[1].equals("gl_tran")) {
               lblmessage.setText("Unposted Transactions");
               lblmessage.setForeground(Color.red);
-              getGLTran(arg[0]);
+              //getGLTran(arg[0]);
              } else {
               lblmessage.setText("Posted Transactions");
               lblmessage.setForeground(Color.blue);
-              getGLHist(arg[0]);    
+              //getGLHist(arg[0]);
              }
-             btcopy.setEnabled(true);
-         }  
+         } 
     }
     
     public ArrayList<gl_tran> createRecord() {
@@ -978,6 +979,59 @@ public class GLTranMaint extends javax.swing.JPanel {
         
     }
 
+    public void updateForm(String x) {
+                
+        int i = 0;
+        if (x.equals("gl_tran")) {
+        for (gl_tran glt : gltlist) { 
+                    if (i == 0) {
+                    tbref.setText(glt.glt_doc());
+                    dateentered.setText(glt.glt_entdate());
+                    }
+                    transmodel.addRow(new Object[]{transmodel.getRowCount() + 1,
+                    glt.glt_acct(),
+                    glt.glt_cc(),
+                    glt.glt_desc(),
+                    currformatDouble(glt.glt_amt()),
+                    glt.glt_doc(), 
+                    glt.glt_ref(),
+                    glt.glt_type()
+                    });
+          i++;          
+        }
+        } else {
+          for (gl_hist glh : glhlist) { 
+                    if (i == 0) {
+                    tbref.setText(glh.glh_doc());
+                    dateentered.setText(glh.glh_entdate());
+                    }
+                    transmodel.addRow(new Object[]{transmodel.getRowCount() + 1,
+                    glh.glh_acct(),
+                    glh.glh_cc(),
+                    glh.glh_desc(),
+                    currformatDouble(glh.glh_amt()),
+                    glh.glh_doc(), 
+                    glh.glh_ref(),
+                    glh.glh_type()
+                    });
+          i++;          
+        }  
+        }
+        if (i > 0) {
+                    
+                    transtable.setModel(transmodel);
+                    tallyamount();
+                    clearinput();
+                    disableAll();
+                    btdeleteALL.setEnabled(true);
+                    transtable.setEnabled(true);
+                    btnew.setEnabled(true);
+                    btlookup.setEnabled(true);
+                    btclear.setEnabled(true);
+        }
+                     
+    }
+    
     public void setRef() {
         if (! isLoad) {
         if (ddtype.getSelectedItem().toString().equals("simple")) {
@@ -1494,44 +1548,9 @@ public class GLTranMaint extends javax.swing.JPanel {
 
     private void btdeleteALLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteALLActionPerformed
             boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
-            /*
-            if (! tbref.getText().toString().startsWith("JL")) {
-                proceed = false;
-                bsmf.MainFrame.show(getMessageTag(1044));
+            if (proceed) {
+               deleteGL(tbref.getText());
             }
-            */
-        if (proceed) {
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            try {
-              
-                   int i = st.executeUpdate("delete from gl_tran where glt_ref = " + "'" + tbref.getText() + "'" + ";");
-                    if (i > 0) {
-                    bsmf.MainFrame.show(getMessageTag(1045, String.valueOf(i)));
-                    initvars(null);
-                    } else {
-                     bsmf.MainFrame.show(getMessageTag(1047));   
-                    }
-                } catch (SQLException s) {
-                    MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-        }
     }//GEN-LAST:event_btdeleteALLActionPerformed
 
     private void btaddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddActionPerformed
@@ -1642,72 +1661,14 @@ public class GLTranMaint extends javax.swing.JPanel {
     }//GEN-LAST:event_btnewActionPerformed
 
     private void ddacctActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddacctActionPerformed
-        if (! isLoad && ddacct.getSelectedItem() != null ) {
-        try {
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                res = st.executeQuery("select ac_desc from ac_mstr where ac_id = " + "'" + ddacct.getSelectedItem().toString() + "'" + ";");
-                while (res.next()) {
-                    lbacctname.setText(res.getString("ac_desc"));
-                }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        if (ddacct.getSelectedItem() != null && ! isLoad ) {
+            lbacctname.setText(getGLAcctDesc(ddacct.getSelectedItem().toString()));
         }
     }//GEN-LAST:event_ddacctActionPerformed
 
     private void ddccActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddccActionPerformed
-       if (ddcc.getSelectedItem() != null )
-        try {
-            
-        
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                res = st.executeQuery("select dept_desc from dept_mstr where dept_id = " + "'" + ddcc.getSelectedItem().toString() + "'" + ";");
-                while (res.next()) {
-                    lbccname.setText(res.getString("dept_desc"));
-                }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+       if (ddcc.getSelectedItem() != null && ! isLoad ) {
+            lbccname.setText(getGLCCDesc(ddcc.getSelectedItem().toString()));
         }
     }//GEN-LAST:event_ddccActionPerformed
 
@@ -1754,36 +1715,8 @@ public class GLTranMaint extends javax.swing.JPanel {
     }//GEN-LAST:event_ddtypeActionPerformed
 
     private void ddacct2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddacct2ActionPerformed
-         if (! isLoad && ddacct2.getSelectedItem() != null ) {
-        try {
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                res = st.executeQuery("select ac_desc from ac_mstr where ac_id = " + "'" + ddacct2.getSelectedItem().toString() + "'" + ";");
-                while (res.next()) {
-                    lbacctname2.setText(res.getString("ac_desc"));
-                }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        if (ddacct2.getSelectedItem() != null && ! isLoad ) {
+            lbacctname2.setText(getGLAcctDesc(ddacct2.getSelectedItem().toString()));
         }
     }//GEN-LAST:event_ddacct2ActionPerformed
 

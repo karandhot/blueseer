@@ -36,7 +36,9 @@ import static com.blueseer.far.farData.getARMstr;
 import com.blueseer.fgl.fglData;
 import com.blueseer.fgl.fglData.AcctMstr;
 import static com.blueseer.fgl.fglData.addAcctMstr;
+import static com.blueseer.fgl.fglData.addGL;
 import static com.blueseer.fgl.fglData.deleteAcctMstr;
+import static com.blueseer.fgl.fglData.deleteGL;
 import com.blueseer.fgl.fglData.exc_mstr;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAcctMstr;
@@ -50,6 +52,8 @@ import static com.blueseer.fgl.fglData.getGLCalForPeriod;
 import static com.blueseer.fgl.fglData.getGLCalForPeriodRange;
 import static com.blueseer.fgl.fglData.getGLCalYearsRange;
 import static com.blueseer.fgl.fglData.getGLCtrl;
+import static com.blueseer.fgl.fglData.getGLHist;
+import static com.blueseer.fgl.fglData.getGLTran;
 import static com.blueseer.fgl.fglData.getTaxDet;
 import static com.blueseer.fgl.fglData.updateAcctMstr;
 import com.blueseer.utl.BlueSeerUtils;
@@ -64,6 +68,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -312,6 +317,67 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       break;
     }
     
+    case "addGLpair" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      fglData.gl_pair x = objectMapper.readValue(sb.toString(), fglData.gl_pair.class);            
+      response.getWriter().print(arrayToJson(addGL(x)));
+      break;
+    }
+    
+    case "addGLtran" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      fglData.gl_tran x = objectMapper.readValue(sb.toString(), fglData.gl_tran.class);            
+      response.getWriter().print(arrayToJson(addGL(x)));
+      break;
+    }
+    
+    case "addGLtrans" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      fglData.gl_tran[] x = objectMapper.readValue(sb.toString(), fglData.gl_tran[].class);   
+      ArrayList<fglData.gl_tran> list = new ArrayList<fglData.gl_tran>(Arrays.asList(x));       
+      response.getWriter().print(arrayToJson(addGL(list)));
+      break;
+    }
+    
+    case "getGLTran" : {       
+        ArrayList<fglData.gl_tran> xd = getGLTran(new String[]{request.getHeader("param1")});
+        ObjectMapper omsd = new ObjectMapper(); 
+        String rsd = omsd.writeValueAsString(xd);
+        response.getWriter().print(rsd);
+        break;
+        } 
+    
+    case "getGLHist" : {       
+        ArrayList<fglData.gl_hist> xd = getGLHist(new String[]{request.getHeader("param1")});
+        ObjectMapper omsd = new ObjectMapper(); 
+        String rsd = omsd.writeValueAsString(xd);
+        response.getWriter().print(rsd);
+        break;
+        } 
+    
+    case "deleteGL" : {
+            response.getWriter().print(arrayToJson(deleteGL(request.getHeader("param1"))));  
+            break;
+        }
+    
     case "getInvoiceBrowseView" : { 
       response.getWriter().print(fglData.getInvoiceBrowseView(request.getHeader("param1"), 
                     request.getHeader("param2"),
@@ -432,7 +498,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
     case "getGLAcctDesc" : 
             response.getWriter().print(fglData.getGLAcctDesc(request.getHeader("param1")));   
-            break;         
+            break;    
+            
+   case "getGLCCDesc" : 
+            response.getWriter().print(fglData.getGLCCDesc(request.getHeader("param1")));   
+            break;             
             
     case "getGLCalForPeriod" : {
       response.getWriter().print(ArrayListStringToJson(getGLCalForPeriod(bsParseInt(request.getHeader("param1")), bsParseInt(request.getHeader("param2")))));

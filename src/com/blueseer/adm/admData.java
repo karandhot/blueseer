@@ -2971,7 +2971,7 @@ public class admData {
        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id","deleteFTPAttrMstr"});
-            list.add(new String[]{"parm1",x});
+            list.add(new String[]{"param1",x});
             try {
                 return jsonToStringArray(sendServerPost(list, "", null, "dataServADM"));
             } catch (IOException ex) {
@@ -3461,6 +3461,15 @@ public class admData {
                                String[] s = new String[2];
                                s[0] = "countries";
                                s[1] = res.getString("code_key");
+                               lines.add(s);
+                            }
+                        }
+                        if (sd.equals("currencies")) {
+                            res = st.executeQuery("select cur_id from cur_mstr ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "currencies";
+                               s[1] = res.getString("cur_id");
                                lines.add(s);
                             }
                         }
