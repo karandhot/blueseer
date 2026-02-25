@@ -3057,7 +3057,6 @@ public class invData {
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -3095,7 +3094,6 @@ public class invData {
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -3431,7 +3429,6 @@ public class invData {
                 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                 if (res != null) {
                     res.close();
@@ -3517,7 +3514,6 @@ public class invData {
                 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                 if (res != null) {
                     res.close();
@@ -6132,7 +6128,6 @@ public class invData {
        }
         catch (SQLException s){
             MainFrame.bslog(s);
-             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
         } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -6186,7 +6181,6 @@ public class invData {
        }
         catch (SQLException s){
             MainFrame.bslog(s);
-             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
         } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -6242,7 +6236,6 @@ public class invData {
        }
         catch (SQLException s){
             MainFrame.bslog(s);
-             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
         } finally {
                if (res != null) res.close();
                if (st != null) st.close();

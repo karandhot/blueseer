@@ -289,7 +289,7 @@ public class OVData {
            }
             catch (SQLException s){
                MainFrame.bslog(s);
-               bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+               
             } finally {
                 if (res != null) res.close();
                 if (ps != null) ps.close();
@@ -2036,7 +2036,7 @@ public class OVData {
                 }
 
             } catch (SQLException s) {
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                bslog(s);
             } finally {
                 if (res != null) {
                     res.close();
@@ -2239,7 +2239,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
                 if (res != null) {
                     res.close();
@@ -2355,7 +2355,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
             } finally {
                 if (res != null) {
@@ -2429,7 +2429,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
             } finally {
                 if (res != null) {
@@ -2653,7 +2653,7 @@ public class OVData {
 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
                 if (res != null) {
                     res.close();
@@ -2698,7 +2698,7 @@ public class OVData {
 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
                 if (res != null) {
                     res.close();
@@ -2756,7 +2756,7 @@ public class OVData {
 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
                 if (res != null) {
                     res.close();
@@ -2817,7 +2817,7 @@ public class OVData {
 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
                 if (res != null) {
                     res.close();
@@ -2861,7 +2861,7 @@ public class OVData {
 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
                 if (res != null) {
                     res.close();
@@ -2905,7 +2905,7 @@ public class OVData {
 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
                 if (res != null) {
                     res.close();
@@ -2970,7 +2970,7 @@ public class OVData {
 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
                 if (res != null) {
                     res.close();
@@ -3021,7 +3021,7 @@ public class OVData {
 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
                 if (res != null) {
                     res.close();
@@ -3072,7 +3072,7 @@ public class OVData {
 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
                 if (res != null) {
                     res.close();
@@ -3123,7 +3123,7 @@ public class OVData {
 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
                 if (res != null) {
                     res.close();
@@ -4468,7 +4468,7 @@ public class OVData {
 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
                 if (res != null) {
                     res.close();
@@ -4614,7 +4614,7 @@ public class OVData {
 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
                 if (res != null) {
                     res.close();
@@ -4671,7 +4671,7 @@ public class OVData {
 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
                 if (res != null) {
                     res.close();
@@ -4745,7 +4745,7 @@ public class OVData {
                 }
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
                 if (res != null) {
                     res.close();
@@ -4784,7 +4784,7 @@ public class OVData {
 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
                 if (res != null) {
                     res.close();
@@ -4917,7 +4917,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
            } finally {
                if (res != null) res.close();
@@ -4973,7 +4973,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
            } finally {
                if (res != null) res.close();
@@ -5069,7 +5069,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
             } finally {
                if (res != null) res.close();
@@ -5144,7 +5144,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
            } finally {
                if (res != null) res.close();
@@ -5207,7 +5207,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
            } finally {
                if (res != null) res.close();
@@ -5260,7 +5260,7 @@ public class OVData {
             }
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
             } finally {
                if (st != null) st.close();
@@ -5321,9 +5321,7 @@ public class OVData {
         
         if (! isError) {
             isError = OVData.UpdateInventoryDiscrete(ld[1], ld[2], ld[3], ld[11], ld[12], "", qty); 
-        } else {
-            bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-        }
+        } 
         
        
         if (! isError) {
@@ -5486,7 +5484,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
             } finally {
                if (res != null) res.close();
@@ -5585,7 +5583,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = false;
             } finally {
                if (res != null) res.close();
@@ -5651,7 +5649,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
             } finally {
                if (res != null) res.close();
@@ -5737,7 +5735,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
             } finally {
                 if (res != null) {
@@ -5805,7 +5803,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
            } finally {
                if (res != null) res.close();
@@ -5868,7 +5866,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
            } finally {
                if (res != null) res.close();
@@ -6043,7 +6041,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
            } finally {
                if (res != null) res.close();
@@ -6218,7 +6216,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
            } finally {
                if (res != null) res.close();
@@ -6344,7 +6342,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = false;
            } finally {
                if (res != null) res.close();
@@ -6481,7 +6479,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = false;
            } finally {
                if (res != null) res.close();
@@ -6539,7 +6537,7 @@ public class OVData {
                    }
             } catch (Exception s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = false;
            } finally {
                if (res != null) res.close();
@@ -6596,7 +6594,7 @@ public class OVData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
            } finally {
                if (res != null) res.close();
@@ -6866,7 +6864,7 @@ public class OVData {
        }
         catch (SQLException s){ 
             MainFrame.bslog(s);
-            bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            
         } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -7009,7 +7007,7 @@ public class OVData {
        }
         catch (SQLException s){
             MainFrame.bslog(s);
-            bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            
         } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -7146,7 +7144,7 @@ public class OVData {
        }
         catch (SQLException s){
             MainFrame.bslog(s);
-             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+             
         } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -7284,7 +7282,7 @@ public class OVData {
        }
         catch (SQLException s){
             MainFrame.bslog(s);
-             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+             
         } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -7364,7 +7362,7 @@ public class OVData {
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -7414,7 +7412,7 @@ public class OVData {
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -7449,7 +7447,7 @@ public class OVData {
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -7519,7 +7517,7 @@ public class OVData {
 
            }
             catch (SQLException s){
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 bslog(s);
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -7553,7 +7551,7 @@ public class OVData {
 
            }
             catch (SQLException s){
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 bslog(s);
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -7988,7 +7986,7 @@ public class OVData {
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -8036,7 +8034,6 @@ public class OVData {
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -9239,7 +9236,7 @@ public class OVData {
 
        }
         catch (SQLException s){
-             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+             bslog(s);
         } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -9592,7 +9589,6 @@ public class OVData {
 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -9652,7 +9648,6 @@ public class OVData {
 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -9883,7 +9878,7 @@ return outvalue;
 
        }
         catch (SQLException s){
-             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+             bslog(s);
         } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -10248,7 +10243,6 @@ return outvalue;
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -10293,7 +10287,6 @@ return outvalue;
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -10349,7 +10342,6 @@ return outvalue;
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -10384,7 +10376,6 @@ return outvalue;
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -10420,7 +10411,6 @@ return outvalue;
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -10474,7 +10464,6 @@ return outvalue;
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -10515,7 +10504,6 @@ return outvalue;
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -10554,7 +10542,7 @@ return outvalue;
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -10591,7 +10579,7 @@ return outvalue;
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -10628,7 +10616,7 @@ return outvalue;
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -10888,7 +10876,7 @@ return outvalue;
        }
         catch (SQLException s){
             MainFrame.bslog(s);
-             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+             
         } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -10925,7 +10913,7 @@ return outvalue;
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -11006,7 +10994,7 @@ return outvalue;
                
            }
             catch (SQLException s){
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 bslog(s);
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -11041,7 +11029,7 @@ return outvalue;
 
        }
         catch (SQLException s){
-             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+             bslog(s);
         } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -12855,7 +12843,7 @@ return isgood;
 
    }
     catch (SQLException s){
-         bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+         bslog(s);
     } finally {
        if (res != null) res.close();
        if (st != null) st.close();
@@ -13621,7 +13609,7 @@ public static ArrayList rollCost(String item) {
        }
         catch (SQLException s){
             MainFrame.bslog(s);
-             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+             
         } finally {
             if (res != null) res.close();
             if (res2 != null) res2.close();
@@ -13736,7 +13724,7 @@ public static Double simulateCost(String site, String item, String opvar,
        }
         catch (SQLException s){
             MainFrame.bslog(s);
-             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+             
         } finally {
             if (res != null) res.close();
             if (res2 != null) res2.close();
@@ -15490,7 +15478,7 @@ return mystring;
              } catch (SQLException s) {
                 // con.rollback();
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
             if (st != null) st.close();
             con.close();
@@ -15855,7 +15843,7 @@ return mystring;
              } catch (SQLException s) {
                 // con.rollback();
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
             if (st != null) st.close();
             con.close();
@@ -17443,7 +17431,7 @@ return mystring;
               }
            } // if proceed
         } catch (SQLException s) {
-            bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            bslog(s);
         } finally {
             if (res != null) {
                 res.close();
@@ -17809,7 +17797,7 @@ return mystring;
                
            }
             catch (SQLException s){
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 bslog(s);
             }
             con.close();
         }
@@ -17845,7 +17833,7 @@ return mystring;
            }
             catch (SQLException s){
                 s.printStackTrace();
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 
             }
             con.close();
         }
@@ -17999,7 +17987,7 @@ return mystring;
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -18124,7 +18112,7 @@ return mystring;
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -23131,7 +23119,7 @@ MainFrame.bslog(e);
 
             } catch (SQLException s) {
                 s.printStackTrace();
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
             } finally {
                 if (res != null) {
                     res.close();
@@ -23683,7 +23671,7 @@ return mylist;
                
            }
             catch (SQLException s){
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 bslog(s);
             } finally {
                 if (res != null) {
                     res.close();
@@ -23750,7 +23738,7 @@ return mylist;
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -23801,7 +23789,7 @@ return mylist;
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -23850,7 +23838,7 @@ return mylist;
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -23905,7 +23893,7 @@ return mylist;
            }
             catch (SQLException s){
                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 
             } finally {
                if (res != null) res.close();
                if (st != null) st.close();
@@ -24256,7 +24244,7 @@ return mylist;
                     
                 } catch (SQLException s) {
                     MainFrame.bslog(s);
-                    bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                    
                 } finally {
                     if (res != null) {
                         res.close();

@@ -26,6 +26,7 @@ SOFTWARE.
 package com.blueseer.eng;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.driver;
 import static bsmf.MainFrame.ds;
@@ -1056,7 +1057,7 @@ public class engData {
 
        }
         catch (SQLException s){
-             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+             bslog(s);
         } finally {
                 if (res != null) {
                     res.close();

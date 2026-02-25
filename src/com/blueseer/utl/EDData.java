@@ -144,7 +144,7 @@ public class EDData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
            } finally {
                if (res != null) res.close();
@@ -195,7 +195,7 @@ public class EDData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
            } finally {
                if (res != null) res.close();
@@ -260,7 +260,7 @@ public class EDData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
            } finally {
                if (res != null) res.close();
@@ -338,7 +338,7 @@ public class EDData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
            } finally {
                if (res != null) res.close();
@@ -405,7 +405,7 @@ public class EDData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
            } finally {
                if (res != null) res.close();
@@ -500,7 +500,7 @@ public class EDData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
            } finally {
                if (res != null) res.close();
@@ -586,7 +586,7 @@ public class EDData {
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                
                 myreturn = true;
            } finally {
                if (res != null) res.close();

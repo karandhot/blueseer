@@ -267,7 +267,6 @@ public class prdData {
                 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                 if (res != null) {
                     res.close();
@@ -318,7 +317,6 @@ public class prdData {
                 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                 if (res != null) {
                     res.close();
@@ -389,7 +387,6 @@ public class prdData {
                 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
             } finally {
                 if (res != null) {
                     res.close();
@@ -789,7 +786,6 @@ public class prdData {
                     int i = st.executeUpdate("delete from plan_opdet where plod_id = " + "'" + id + "'" + " ;");
                 } catch (SQLException s) {
                     MainFrame.bslog(s);
-                    bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
                 } finally {
                     if (res != null) {
                         res.close();

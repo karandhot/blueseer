@@ -1037,7 +1037,7 @@ public class lblData {
                
            }
             catch (SQLException s){
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                 bslog(s);
             } finally {
                 if (res != null) {
                     res.close();
