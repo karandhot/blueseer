@@ -27,58 +27,32 @@ SOFTWARE.
 package com.blueseer.fgl;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.FileDialog;
-import java.awt.Font;
-import java.awt.Frame;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
-import static bsmf.MainFrame.checkperms;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.driver;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.mydialog;
-import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import static com.blueseer.fap.fapData.getAPExpenseByAcct;
+import static com.blueseer.fap.fapData.getAPExpenseByVendor;
 import com.blueseer.utl.BlueSeerUtils;
-import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
-import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
-import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
-import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.getTitleTag;
-import com.blueseer.vdr.venData;
-import java.sql.Connection;
-import java.text.DecimalFormatSymbols;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import java.text.NumberFormat;
-import java.util.Calendar;
-import java.util.Enumeration;
-import java.util.GregorianCalendar;
-import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -86,20 +60,13 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.table.TableColumn;
+import javax.swing.SwingWorker;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.CategoryLabelPositions;
-import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.labels.PieSectionLabelGenerator;
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
-import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PiePlot;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.category.CategoryItemRenderer;
-import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 
 /**
@@ -108,6 +75,12 @@ import org.jfree.data.general.DefaultPieDataset;
  */
 public class ExpenseBrowse extends javax.swing.JPanel {
  
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultsite = "";
+    String defaultcurrency = "";
+    
      String chartfilepath = OVData.getSystemTempDirectory() + "/" + "chartexpinc.jpg";
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("id"), 
@@ -161,75 +134,30 @@ public class ExpenseBrowse extends javax.swing.JPanel {
     }
 
     public void chartExpense() {
-         try {
-          
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        ArrayList<String[]> data = new ArrayList<>();
+        if (cbchart.isSelected()) {
+            data = getAPExpenseByAcct(dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate()),
+                ddfromvend.getSelectedItem().toString(),
+                ddtovend.getSelectedItem().toString(),
+                ddsite.getSelectedItem().toString());
+        } else {
+            data = getAPExpenseByVendor(dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate()),
+                ddfromvend.getSelectedItem().toString(),
+                ddtovend.getSelectedItem().toString(),
+                ddsite.getSelectedItem().toString()); 
+        }
+        
+        for (String[] r : data) {
+            double amt = bsParseDouble(r[1]);
+            if (amt < 0) {
+                amt = amt * -1;
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                java.util.Date now = new java.util.Date();
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");       
-                  Calendar cal = new GregorianCalendar();
-                  cal.set(Calendar.DAY_OF_YEAR, 1);
-                  java.util.Date firstday = cal.getTime();
-                 
-                if (cbchart.isSelected()) {
-                 res = st.executeQuery("select vod_expense_acct, sum(vod_voprice * vod_qty) as 'sum' from ap_mstr " +
-                             //  " ap_ref, ap_effdate, ap_duedate, ap_amt, ap_base_amt,  " +
-                             //  " ap_status, ap_curr, vod_item, vod_expense_acct " +
-                             //  " inner join vd_mstr on vd_addr = ap_vend " +
-                               " inner join vod_mstr on vod_id = ap_nbr " + 
-                               " where ap_vend >= " + "'" + ddfromvend.getSelectedItem().toString() + "'" +
-                               " and ap_vend <= " + "'" + ddtovend.getSelectedItem().toString() + "'" +
-                               " and ap_effdate >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                               " and ap_effdate <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                               " and ap_type = 'E' " +
-                               " and ap_status = 'c' " +
-                               " group by vod_expense_acct " +
-                               ";");   
-                }  else {
-                res = st.executeQuery("select ap_vend, sum(vod_voprice * vod_qty) as 'sum' from ap_mstr " +
-                             //  " ap_ref, ap_effdate, ap_duedate, ap_amt, ap_base_amt,  " +
-                             //  " ap_status, ap_curr, vod_item, vod_expense_acct " +
-                             //  " inner join vd_mstr on vd_addr = ap_vend " +
-                               " inner join vod_mstr on vod_id = ap_nbr " + 
-                               " where ap_vend >= " + "'" + ddfromvend.getSelectedItem().toString() + "'" +
-                               " and ap_vend <= " + "'" + ddtovend.getSelectedItem().toString() + "'" +
-                               " and ap_effdate >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                               " and ap_effdate <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                               " and ap_type = 'E' " +
-                               " and ap_status = 'c' " +
-                               " group by ap_vend " +
-                               ";");
-                }
-             
-                DefaultPieDataset dataset = new DefaultPieDataset();
-               
-                String xvar = "";
-                while (res.next()) {
-                    if (cbchart.isSelected()) {
-                        if (res.getString("vod_expense_acct") == null || res.getString("vod_expense_acct").isEmpty()) {
-                        xvar = "Unassigned";
-                        } else {
-                        xvar = res.getString("vod_expense_acct");   
-                        } 
-                    } else {
-                        if (res.getString("ap_vend") == null || res.getString("ap_vend").isEmpty()) {
-                        xvar = "Unassigned";
-                        } else {
-                        xvar = res.getString("ap_vend");   
-                        } 
-                    }
-                    
-                    Double amt = res.getDouble("sum");
-                    if (amt < 0) {amt = amt * -1;}
-                  dataset.setValue(xvar, amt);
-                }
+            dataset.setValue(r[0], amt);
+        }
         
         String title = getTitleTag(5027);
         if (cbchart.isSelected()) {
@@ -237,11 +165,6 @@ public class ExpenseBrowse extends javax.swing.JPanel {
         }        
         JFreeChart chart = ChartFactory.createPieChart(title, dataset, false, false, false);
         PiePlot plot = (PiePlot) chart.getPlot();
-      //  plot.setSectionPaint(KEY1, Color.green);
-      //  plot.setSectionPaint(KEY2, Color.red);
-     //   plot.setExplodePercent(KEY1, 0.10);
-        //plot.setSimpleLabels(true);
-
         PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(
             "{0}: {1} ({2})", NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
         plot.setLabelGenerator(gen);
@@ -256,24 +179,7 @@ public class ExpenseBrowse extends javax.swing.JPanel {
         myicon.getImage().flush();   
         this.pielabel.setIcon(myicon);
         this.repaint();
-       
-       // bsmf.MainFrame.show("your chart is complete...go to chartview");
-                
-              } catch (SQLException s) {
-                  MainFrame.bslog(s);
-                  bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        
     }
        
     public void setLanguageTags(Object myobj) {
@@ -323,10 +229,93 @@ public class ExpenseBrowse extends javax.swing.JPanel {
        }
     }
     
-    
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
     
     public void initvars(String[] arg) {
-        chartpanel.setVisible(false);
+        
+        executeTask("dataInit", null);
+       
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "vendors");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        
+         chartpanel.setVisible(false);
         bthidechart.setEnabled(false);
         btchart.setEnabled(true);
         java.util.Date now = new java.util.Date();
@@ -340,24 +329,92 @@ public class ExpenseBrowse extends javax.swing.JPanel {
        //  tablereport.getColumnModel().getColumn(0).setCellRenderer(new GLAcctBalRpt3.ButtonRenderer());
          tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
         
-         ArrayList myvend = venData.getVendMstrList();
+         
         ddfromvend.removeAllItems();
         ddtovend.removeAllItems();
-        for (int i = 0; i < myvend.size(); i++) {
-            ddfromvend.addItem(myvend.get(i));
-            ddtovend.addItem(myvend.get(i));
-        }
-        ddfromvend.setSelectedIndex(0);
-        ddtovend.setSelectedIndex(ddfromvend.getItemCount() - 1);
-        
         ddsite.removeAllItems();
-        ArrayList<String> mylist = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (int i = 0; i < mylist.size(); i++) {
-            ddsite.addItem(mylist.get(i));
-        }
-        ddsite.setSelectedItem(OVData.getDefaultSite());
         
+        for (String[] s : initDataSets) {
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultsite = s[1]; 
+            }
+            if (s[0].equals("vendors")) {
+              ddfromvend.addItem(s[1]); 
+              ddtovend.addItem(s[1]); 
+            }
+            if (s[0].equals("currency")) {
+              defaultcurrency = s[1]; 
+            }
+        }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+       
+        ddfromvend.setSelectedIndex(0);
+        ddtovend.setSelectedIndex(ddfromvend.getItemCount() - 1); 
     }
+    
+    public String[] getBrowseView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(new String[]{"id","getExpenseBrowseView"});
+        list.add(new String[]{"fromdate",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"todate",dfdate.format(dcTo.getDate())});
+        list.add(new String[]{"fromvend",ddfromvend.getSelectedItem().toString()});
+        list.add(new String[]{"tovend",ddtovend.getSelectedItem().toString()});
+        list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServFIN"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getExpenseBrowseView")};
+            }
+        } else {
+            jsonString = fglData.getExpenseBrowseView(new String[]{
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate()),
+                ddfromvend.getSelectedItem().toString(),
+                ddtovend.getSelectedItem().toString(),
+                ddsite.getSelectedItem().toString()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getExpenseBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+       
+        int i = 0;
+        double amt = 0;
+        mymodel.setNumRows(0);
+        if (roData != null) {
+        for (Object[] rowData : roData) {
+            amt = amt + bsParseDouble(roData[i][5].toString());
+            roData[i][5] = bsParseDouble(roData[i][5].toString());
+            i++;
+            mymodel.addRow(rowData);
+        }
+        }
+        
+        roData = null;
+    }   
+    
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -567,71 +624,7 @@ public class ExpenseBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-        try {
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                   
-                 mymodel.setNumRows(0);
-                tablereport.setModel(mymodel);
-                tablereport.getColumnModel().getColumn(5).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                 
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-
-                     
-                res = st.executeQuery("select ap_nbr, ap_vend, vd_name, ap_type, " +
-                               " ap_ref, ap_effdate, ap_duedate, (vod_voprice * vod_qty) as amt,  " +
-                               " ap_status, ap_curr, vod_item, vod_expense_acct " +
-                               " from ap_mstr inner join vd_mstr on vd_addr = ap_vend " +
-                               " inner join vod_mstr on vod_id = ap_nbr " + 
-                               " where ap_vend >= " + "'" + ddfromvend.getSelectedItem().toString() + "'" +
-                               " and ap_vend <= " + "'" + ddtovend.getSelectedItem().toString() + "'" +
-                               " and ap_effdate >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                               " and ap_effdate <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                               " and ap_type = 'E' " +
-                               " and ap_status = 'c' " +
-                               " and ap_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +
-                               ";");
-                               
-                    while (res.next()) {
-                        mymodel.addRow(new Object[] {
-                            bsNumber(res.getString("ap_nbr")),
-                            res.getString("ap_vend"),
-                            res.getString("vd_name"),
-                            res.getString("ap_ref"),
-                            getDateDB(res.getString("ap_effdate")),
-                            bsParseDouble(currformatDouble(res.getDouble("amt"))),
-                            res.getString("vod_item"),
-                            res.getString("ap_status"),
-                            res.getString("ap_curr"),
-                            res.getString("vod_expense_acct")
-                        });
-                    }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-  
-       
+        executeTask("getBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void bthidechartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bthidechartActionPerformed
@@ -655,7 +648,6 @@ public class ExpenseBrowse extends javax.swing.JPanel {
     }//GEN-LAST:event_cbchartActionPerformed
 
     private void tbprintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbprintActionPerformed
-
         if (tablereport != null && mymodel.getRowCount() > 0) {
             OVData.printJTableToJasper("Expense Report", tablereport, "genericJTableL10.jasper" );
             /*

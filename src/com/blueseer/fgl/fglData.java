@@ -2726,6 +2726,67 @@ public class fglData {
        return jsonarray.toString(); 
     }
     
+    public static String getExpenseBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                    res = st.executeQuery("select ap_nbr, ap_vend, vd_name, ap_type, " +
+                               " ap_ref, ap_effdate, ap_duedate, (vod_voprice * vod_qty) as amt,  " +
+                               " ap_status, ap_curr, vod_item, vod_expense_acct " +
+                               " from ap_mstr inner join vd_mstr on vd_addr = ap_vend " +
+                               " inner join vod_mstr on vod_id = ap_nbr " + 
+                               " where ap_vend >= " + "'" + keys[2] + "'" +
+                               " and ap_vend <= " + "'" + keys[3] + "'" +
+                               " and ap_effdate >= " + "'" + keys[0] + "'" +
+                               " and ap_effdate <= " + "'" + keys[1] + "'" +
+                               " and ap_type <> 'V' " +
+                               " and ap_status = 'c' " +
+                               " and ap_site = " + "'" + keys[4] + "'" +
+                               ";");
+                    
+                    while (res.next()) {                  
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("ap_nbr"));
+                        rowArray.put(res.getString("ap_vend"));
+                        rowArray.put(res.getString("vd_name"));
+                        rowArray.put(res.getString("ap_ref"));
+                        rowArray.put(res.getString("ap_effdate"));
+                        rowArray.put(bsNumber(res.getDouble("amt")));
+                        rowArray.put(res.getString("vod_item"));
+                        rowArray.put(res.getString("ap_status"));
+                        rowArray.put(res.getString("ap_curr"));
+                        rowArray.put(res.getString("vod_expense_acct"));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
      
     public static void exportInvoiceCSV(ArrayList<String> list) {
      FileDialog fDialog;

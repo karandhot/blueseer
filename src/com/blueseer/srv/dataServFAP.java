@@ -27,6 +27,8 @@ package com.blueseer.srv;
 
 
 import com.blueseer.fap.fapData;
+import static com.blueseer.fap.fapData.getAPExpenseByAcct;
+import static com.blueseer.fap.fapData.getAPExpenseByVendor;
 import static com.blueseer.fap.fapData.getAPVoucherSet;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import com.blueseer.ord.ordData;
@@ -178,7 +180,27 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(r);
             break; 
         }
-           
+         
+        case "getAPExpenseByVendor" : {
+            response.getWriter().print(ArrayListStringArrayToJson(getAPExpenseByVendor(request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5"))));
+            break;
+        }
+        
+        case "getAPExpenseByAcct" : {
+            response.getWriter().print(ArrayListStringArrayToJson(getAPExpenseByAcct(request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5"))));
+            break;
+        }
+        
+        
+        
         default:
         response.getWriter().print("no switch case exists in dataServFAP for id: " + id);
         System.out.println("no switch case exists in dataServFAP for id: " + id);    

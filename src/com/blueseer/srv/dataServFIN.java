@@ -378,6 +378,15 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
         }
     
+    case "getExpenseBrowseView" : { 
+      response.getWriter().print(fglData.getExpenseBrowseView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5")})); 
+      break;
+    } 
+    
     case "getInvoiceBrowseView" : { 
       response.getWriter().print(fglData.getInvoiceBrowseView(request.getHeader("param1"), 
                     request.getHeader("param2"),

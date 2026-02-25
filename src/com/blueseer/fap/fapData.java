@@ -42,6 +42,7 @@ import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDoubleUS;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
@@ -902,6 +903,136 @@ public class fapData {
     }
      
     // misc
+    public static ArrayList<String[]> getAPExpenseByVendor(String fromdate, String todate, String fromvend, String tovend, String site) {
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getAPExpenseByVendor"});
+            list.add(new String[]{"param1", fromdate});
+            list.add(new String[]{"param2", todate});
+            list.add(new String[]{"param3", fromvend});
+            list.add(new String[]{"param4", tovend});
+            list.add(new String[]{"param5", site});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServFAP"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+    }
+    ArrayList<String[]> myarray = new ArrayList();
+
+    try{
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+            res = st.executeQuery("select ap_vend, sum(vod_voprice * vod_qty) as 'sum' from ap_mstr " +
+                             //  " ap_ref, ap_effdate, ap_duedate, ap_amt, ap_base_amt,  " +
+                             //  " ap_status, ap_curr, vod_item, vod_expense_acct " +
+                             //  " inner join vd_mstr on vd_addr = ap_vend " +
+                               " inner join vod_mstr on vod_id = ap_nbr " + 
+                               " where ap_vend >= " + "'" + fromvend + "'" +
+                               " and ap_vend <= " + "'" + tovend + "'" +
+                               " and ap_effdate >= " + "'" + fromdate + "'" +
+                               " and ap_effdate <= " + "'" + todate + "'" +
+                               " and ap_type <> 'V' " +
+                               " and ap_status = 'c' " +
+                               " group by ap_vend " +
+                               ";");
+           while (res.next()) {
+               String[] x = new String[2];
+               x[0] = res.getString("ap_vend");
+               x[1] = res.getString("sum");
+                myarray.add(x);
+            }
+
+       }
+        catch (SQLException s){
+             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    return myarray;
+
+}
+
+    public static ArrayList<String[]> getAPExpenseByAcct(String fromdate, String todate, String fromvend, String tovend, String site) {
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getAPExpenseByAcct"});
+            list.add(new String[]{"param1", fromdate});
+            list.add(new String[]{"param2", todate});
+            list.add(new String[]{"param3", fromvend});
+            list.add(new String[]{"param4", tovend});
+            list.add(new String[]{"param5", site});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServFAP"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+    }
+    ArrayList<String[]> myarray = new ArrayList();
+
+    try{
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+            res = st.executeQuery("select vod_expense_acct, sum(vod_voprice * vod_qty) as 'sum' from ap_mstr " +
+                             //  " ap_ref, ap_effdate, ap_duedate, ap_amt, ap_base_amt,  " +
+                             //  " ap_status, ap_curr, vod_item, vod_expense_acct " +
+                             //  " inner join vd_mstr on vd_addr = ap_vend " +
+                               " inner join vod_mstr on vod_id = ap_nbr " + 
+                               " where ap_vend >= " + "'" + fromvend + "'" +
+                               " and ap_vend <= " + "'" + tovend + "'" +
+                               " and ap_effdate >= " + "'" + fromdate + "'" +
+                               " and ap_effdate <= " + "'" + todate + "'" +
+                               " and ap_type <> 'V' " +
+                               " and ap_status = 'c' " +
+                               " group by vod_expense_acct " +
+                               ";");
+           while (res.next()) {
+               String[] x = new String[2];
+               x[0] = res.getString("vod_expense_acct");
+               x[1] = res.getString("sum");
+                myarray.add(x);
+            }
+
+       }
+        catch (SQLException s){
+             bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    return myarray;
+
+}
+
     public static String[] getPOsummaryChargesTaxes(String po) {
         String[] r = new String[]{"0", "0", "0"}; // gross, tax, sac
         double taxamt = 0.00;
