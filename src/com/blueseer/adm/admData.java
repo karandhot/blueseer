@@ -3400,6 +3400,15 @@ public class admData {
                                lines.add(s);
                             }
                         }
+                        if (sd.equals("customers")) {
+                            res = st.executeQuery("select cm_code from cm_mstr order by cm_code ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "customers";
+                               s[1] = res.getString("cm_code");
+                               lines.add(s);
+                            }
+                        }
                         if (sd.equals("icprofiles")) {
                             res = st.executeQuery("select distinct glic_profile from glic_def ;");
                             while (res.next()) {

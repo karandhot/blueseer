@@ -32,7 +32,12 @@ import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.ctr.cusData;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
+import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
@@ -48,6 +53,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
+import org.json.JSONArray;
 
 /**
  *
@@ -586,6 +592,329 @@ public class farData {
     
     
     // misc functions
+    public static String getARAgingView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                double dol = 0;
+                double qty = 0;
+                 ArrayList custs = cusData.getcustmstrlistBetween(keys[0], keys[1]);
+                 String custname = "";
+                 for (int j = 0; j < custs.size(); j++) {
+                 custname = cusData.getCustName(custs.get(j).toString());
+                 // init for new cust
+                 i = 0;
+                 
+                 if (bsmf.MainFrame.dbtype.equals("sqlite")) {
+                     res = st.executeQuery("SELECT ar_cust, cm_name, " +
+                        " sum(case when ar_duedate > date() then ar_open_amt else 0 end) as '0', " +
+                        " sum(case when ar_duedate <= date() and ar_duedate > date() - date(date(), '+30 day') then ar_open_amt else 0 end) as '30', " +
+                        " sum(case when ar_duedate <= date() - date(date(), '+30 day') and ar_duedate > date(date(), '+60 day') then ar_open_amt else 0 end) as '60', " +
+                        " sum(case when ar_duedate <= date() - date(date(), '+60 day') and ar_duedate > date(date(), '+90 day') then ar_open_amt else 0 end) as '90', " +
+                        " sum(case when ar_duedate <= date() - date(date(), '+90 day') then ar_open_amt else 0 end) as '90p' " +
+                        " FROM  ar_mstr " +
+                        " inner join cm_mstr on cm_code = ar_cust " +
+                        " where ar_cust = " + "'" + custs.get(j) + "'" + 
+                        " AND ar_status = 'o' " +
+                        " AND ar_site = " + "'" + keys[2] + "'" +
+                         " group by ar_cust, cm_name order by ar_cust;");
+                 }  else {
+                 res = st.executeQuery("SELECT ar_cust, cm_name, " +
+                        " sum(case when ar_duedate > curdate() then ar_open_amt else 0 end) as '0', " +
+                        " sum(case when ar_duedate <= curdate() and ar_duedate > curdate() - interval 30 day then ar_open_amt else 0 end) as '30', " +
+                        " sum(case when ar_duedate <= curdate() - interval 30 day and ar_duedate > curdate() - interval 60 day then ar_open_amt else 0 end) as '60', " +
+                        " sum(case when ar_duedate <= curdate() - interval 60 day and ar_duedate > curdate() - interval 90 day then ar_open_amt else 0 end) as '90', " +
+                        " sum(case when ar_duedate <= curdate() - interval 90 day then ar_open_amt else 0 end) as '90p' " +
+                        " FROM  ar_mstr " +
+                        " inner join cm_mstr on cm_code = ar_cust " +
+                         " where ar_cust = " + "'" + custs.get(j) + "'" + 
+                        " AND ar_status = 'o' " +
+                        " AND ar_site = " + "'" + keys[2] + "'" +         
+                         " group by ar_cust, cm_name order by ar_cust;");
+                 }
+                  while (res.next()) {
+                   dol = dol + (res.getDouble("0") + res.getDouble("30") + res.getDouble("60") + res.getDouble("90") + res.getDouble("90p") );
+                   qty = qty + 0;
+                    i++;
+                        
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("ar_cust"));
+                        rowArray.put(custname);
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("0"))));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("30"))));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("60"))));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("90"))));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("90p"))));
+                        jsonarray.put(rowArray);
+                        
+                }
+                 
+                   if (i == 0) {
+                       JSONArray rowArray = new JSONArray(); 
+                       rowArray.put("detail");
+                        rowArray.put(custs.get(j));
+                        rowArray.put(custname);
+                        rowArray.put(0);
+                        rowArray.put(0);
+                        rowArray.put(0);
+                        rowArray.put(0);
+                        rowArray.put(0);
+                        jsonarray.put(rowArray);
+                  }
+                  
+                  
+                  
+             } // for each customer in range
+                  
+                   
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getARAgingDetailView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                 
+                 if (bsmf.MainFrame.dbtype.equals("sqlite")) {
+                 res = st.executeQuery("SELECT ar_cust, ar_rmks, ar_type, ar_nbr, ar_effdate, ar_duedate, " +
+                        " case when ar_duedate > date() then ar_open_amt else 0 end as '0', " +
+                        " case when ar_duedate <= date() and ar_duedate > date() - date(date(), '+30 day') then ar_open_amt else 0 end as '30', " +
+                        " case when ar_duedate <= date() - date(date(), '+30 day') and ar_duedate > date(date(), '+60 day') then ar_open_amt else 0 end as '60', " +
+                        " case when ar_duedate <= date() - date(date(), '+60 day') and ar_duedate > date(date(), '+90 day') then ar_open_amt else 0 end as '90', " +
+                        " case when ar_duedate <= date() - date(date(), '+90 day') then ar_open_amt else 0 end as '90p' " +
+                        " FROM  ar_mstr " +
+                        " where ar_cust = " + "'" + keys[0] + "'" + 
+                        " AND ar_status = 'o' " +
+                        " AND ar_site = " + "'" + keys[1] + "'" +        
+                         " order by ar_cust, ar_nbr ;"); 
+                 } else {
+                 res = st.executeQuery("SELECT ar_cust, ar_rmks, ar_type, ar_nbr, ar_effdate, ar_duedate, " +
+                        " case when ar_duedate > curdate() then ar_open_amt else 0 end as '0', " +
+                        " case when ar_duedate <= curdate() and ar_duedate > curdate() - interval 30 day then ar_open_amt else 0 end as '30', " +
+                        " case when ar_duedate <= curdate() - interval 30 day and ar_duedate > curdate() - interval 60 day then ar_open_amt else 0 end as '60', " +
+                        " case when ar_duedate <= curdate() - interval 60 day and ar_duedate > curdate() - interval 90 day then ar_open_amt else 0 end as '90', " +
+                        " case when ar_duedate <= curdate() - interval 90 day then ar_open_amt else 0 end as '90p' " +
+                        " FROM  ar_mstr " +
+                        " where ar_cust = " + "'" + keys[0] + "'" + 
+                        " AND ar_status = 'o' " +
+                        " AND ar_site = " + "'" + keys[1] + "'" +        
+                         " order by ar_cust, ar_nbr ;");     
+                 }
+                  while (res.next()) {
+                  
+                        
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("ar_nbr"));
+                        rowArray.put(res.getString("ar_rmks"));
+                        rowArray.put(res.getString("ar_type"));
+                        rowArray.put(getDateDB(res.getString("ar_effdate")));
+                        rowArray.put(getDateDB(res.getString("ar_duedate")));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("0"))));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("30")))); 
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("60"))));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("90"))));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("90p"))));
+                        jsonarray.put(rowArray);
+                        
+                }
+                  
+            
+                  
+                   
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getARAgingPaymentView(String cust) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                 
+                 if (bsmf.MainFrame.dbtype.equals("sqlite")) {
+                 res = st.executeQuery("SELECT a.ar_cust, b.ar_duedate as 'b.ar_duedate', a.ar_nbr, a.ar_ref, ard_ref, a.ar_type, a.ar_effdate, a.ar_amt, ard_amt " +
+                        " FROM  ar_mstr a " +
+                        " inner join ard_mstr on ard_nbr = a.ar_nbr " +
+                        " inner join ar_mstr b on b.ar_nbr = ard_ref and b.ar_type = 'I' " +
+                        " where a.ar_cust = " + "'" + cust + "'" + 
+                        " AND a.ar_type = 'P' " +
+                        " AND a.ar_effdate >= date() - date(date(), '-90 day') " +
+                         " order by a.ar_effdate desc ;");        
+                } else {
+                   res = st.executeQuery("SELECT a.ar_cust, b.ar_duedate as 'b.ar_duedate', a.ar_nbr, a.ar_ref, ard_ref, a.ar_type, a.ar_effdate, a.ar_amt, ard_amt " +
+                        " FROM  ar_mstr a " +
+                        " inner join ard_mstr on ard_nbr = a.ar_nbr " +
+                        " inner join ar_mstr b on b.ar_nbr = ard_ref and b.ar_type = 'I' " +
+                        " where a.ar_cust = " + "'" + cust + "'" + 
+                        " AND a.ar_type = 'P' " +
+                        " AND a.ar_effdate >= curdate() - interval 90 day " +
+                         " order by a.ar_effdate desc ;");    
+                }
+                  while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("ar_nbr"));
+                        rowArray.put(res.getString("ard_ref"));                        
+                        rowArray.put(getDateDB(res.getString("ar_effdate")));
+                        rowArray.put(getDateDB(res.getString("b.ar_duedate")));
+                        rowArray.put(res.getString("ar_type"));
+                        rowArray.put(res.getString("ar_ref"));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("ard_amt"))));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("ar_amt")))); 
+                        jsonarray.put(rowArray);
+                }
+                  
+            
+                  
+                   
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getARAgingExport(String cust) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                 
+                 if (bsmf.MainFrame.dbtype.equals("sqlite")) {
+                 res = st.executeQuery("SELECT ar_cust, ar_nbr, ar_type, ar_effdate, ar_duedate, sh_po, " +
+                        " case when ar_duedate > date() then ar_open_amt else 0 end as '0', " +
+                        " case when ar_duedate <= date() and ar_duedate > date() - date(date(), '+30 day') then ar_open_amt else 0 end as '30', " +
+                        " case when ar_duedate <= date() - date(date(), '+30 day') and ar_duedate > date(date(), '+60 day') then ar_open_amt else 0 end as '60', " +
+                        " case when ar_duedate <= date() - date(date(), '+60 day') and ar_duedate > date(date(), '+90 day') then ar_open_amt else 0 end as '90', " +
+                        " case when ar_duedate <= date() - date(date(), '+90 day') then ar_open_amt else 0 end as '90p' " +
+                        " FROM  ar_mstr " +
+                        " where ar_cust = " + "'" + cust + "'" + 
+                        " AND ar_status = 'o' " +   
+                         " order by ar_cust, ar_nbr ;"); 
+                 } else {
+                 res = st.executeQuery("SELECT ar_cust, ar_nbr, ar_type, ar_effdate, ar_duedate, sh_po, " +
+                        " case when ar_duedate > curdate() then ar_open_amt else 0 end as '0', " +
+                        " case when ar_duedate <= curdate() and ar_duedate > curdate() - interval 30 day then ar_open_amt else 0 end as '30', " +
+                        " case when ar_duedate <= curdate() - interval 30 day and ar_duedate > curdate() - interval 60 day then ar_open_amt else 0 end as '60', " +
+                        " case when ar_duedate <= curdate() - interval 60 day and ar_duedate > curdate() - interval 90 day then ar_open_amt else 0 end as '90', " +
+                        " case when ar_duedate <= curdate() - interval 90 day then ar_open_amt else 0 end as '90p' " +
+                        " FROM  ar_mstr " +
+                        " where ar_cust = " + "'" + cust + "'" + 
+                        " AND ar_status = 'o' " +      
+                         " order by ar_cust, ar_nbr ;");     
+                 }
+                  while (res.next()) {
+                  
+                        
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("ar_cust"));
+                        rowArray.put(res.getString("ar_nbr"));
+                        rowArray.put(res.getString("sh_po"));
+                        rowArray.put(getDateDB(res.getString("ar_effdate")));
+                        rowArray.put(getDateDB(res.getString("ar_duedate")));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("0"))));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("30")))); 
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("60"))));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("90"))));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("90p"))));
+                        jsonarray.put(rowArray);
+                        
+                }
+                  
+            
+                  
+                   
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
     
     public static void _updateCustAR(String cust, Connection bscon) throws SQLException {
            

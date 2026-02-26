@@ -28,6 +28,7 @@ package com.blueseer.srv;
 
 import com.blueseer.fap.fapData;
 import static com.blueseer.fap.fapData.getAPVoucherSet;
+import com.blueseer.far.farData;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import com.blueseer.ord.ordData;
 import static com.blueseer.ord.ordData.addUpdateORCtrl;
@@ -178,7 +179,25 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(r);
             break; 
         }
-           
+        
+        case "getARAgingView" : { 
+        response.getWriter().print(farData.getARAgingView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3")})); 
+        break;
+        } 
+        
+        case "getARAgingDetailView" : { 
+        response.getWriter().print(farData.getARAgingDetailView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2")})); 
+        break;
+        } 
+        
+        case "getARAgingPaymentView" : { 
+        response.getWriter().print(farData.getARAgingPaymentView(request.getHeader("param1"))); 
+        break;
+        } 
+        
         default:
         response.getWriter().print("no switch case exists in dataServFAP for id: " + id);
         System.out.println("no switch case exists in dataServFAP for id: " + id);    

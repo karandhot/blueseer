@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.far;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.checkperms;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.defaultDecimalSeparator;
@@ -36,7 +37,9 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import com.blueseer.ctr.cusData;
+import com.blueseer.fgl.fglData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
@@ -46,6 +49,8 @@ import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.OVData;
 import java.awt.Color;
 import java.awt.Component;
@@ -87,6 +92,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -101,6 +107,12 @@ public class ARAgingView extends javax.swing.JPanel {
     
     String selectedCustomer = "";
     String selectedCustomerName = "";
+    boolean isLoad = false;
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultsite = "";
+    String defaultCurrency = "";
  
      MyTableModel modelsummary = new ARAgingView.MyTableModel(new Object[][]{},
                         new String[]{
@@ -296,207 +308,91 @@ public class ARAgingView extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
-    
-    public void getdetail(String cust) {
+    public void executeTask(String x, String[] y) { 
       
-         modeldetail.setNumRows(0);
-         modelpayment.setNumRows(0);
-         double total = 0.00;
-          
-          tabledetail.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-          tabledetail.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-          tabledetail.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-          tabledetail.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-          tabledetail.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-                int i = 0;
-                String blanket = "";
-                double dol = 0.00;
-                int qty = 0;
-                
-                
-                 if (bsmf.MainFrame.dbtype.equals("sqlite")) {
-                 res = st.executeQuery("SELECT ar_cust, ar_rmks, ar_type, ar_nbr, ar_effdate, ar_duedate, " +
-                        " case when ar_duedate > date() then ar_open_amt else 0 end as '0', " +
-                        " case when ar_duedate <= date() and ar_duedate > date() - date(date(), '+30 day') then ar_open_amt else 0 end as '30', " +
-                        " case when ar_duedate <= date() - date(date(), '+30 day') and ar_duedate > date(date(), '+60 day') then ar_open_amt else 0 end as '60', " +
-                        " case when ar_duedate <= date() - date(date(), '+60 day') and ar_duedate > date(date(), '+90 day') then ar_open_amt else 0 end as '90', " +
-                        " case when ar_duedate <= date() - date(date(), '+90 day') then ar_open_amt else 0 end as '90p' " +
-                        " FROM  ar_mstr " +
-                        " where ar_cust = " + "'" + cust + "'" + 
-                        " AND ar_status = 'o' " +
-                        " AND ar_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +        
-                         " order by ar_cust, ar_nbr ;"); 
-                 } else {
-                 res = st.executeQuery("SELECT ar_cust, ar_rmks, ar_type, ar_nbr, ar_effdate, ar_duedate, " +
-                        " case when ar_duedate > curdate() then ar_open_amt else 0 end as '0', " +
-                        " case when ar_duedate <= curdate() and ar_duedate > curdate() - interval 30 day then ar_open_amt else 0 end as '30', " +
-                        " case when ar_duedate <= curdate() - interval 30 day and ar_duedate > curdate() - interval 60 day then ar_open_amt else 0 end as '60', " +
-                        " case when ar_duedate <= curdate() - interval 60 day and ar_duedate > curdate() - interval 90 day then ar_open_amt else 0 end as '90', " +
-                        " case when ar_duedate <= curdate() - interval 90 day then ar_open_amt else 0 end as '90p' " +
-                        " FROM  ar_mstr " +
-                        " where ar_cust = " + "'" + cust + "'" + 
-                        " AND ar_status = 'o' " +
-                        " AND ar_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +        
-                         " order by ar_cust, ar_nbr ;");     
-                 }
-                 
-                /*
-                if (bsmf.MainFrame.dbtype.equals("sqlite")) {
-                 res = st.executeQuery("SELECT ar_cust, ar_rmks, ar_type, ar_nbr, ar_effdate, ar_duedate, " +
-                        " sum(case when ar_duedate > date() then ar_open_amt else 0 end) as '0', " +
-                        " sum(case when ar_duedate <= date() and ar_duedate > date() - date(date(), '+30 day') then ar_open_amt else 0 end) as '30', " +
-                        " sum(case when ar_duedate <= date() - date(date(), '+30 day') and ar_duedate > date(date(), '+60 day') then ar_open_amt else 0 end) as '60', " +
-                        " sum(case when ar_duedate <= date() - date(date(), '+60 day') and ar_duedate > date(date(), '+90 day') then ar_open_amt else 0 end) as '90', " +
-                        " sum(case when ar_duedate <= date() - date(date(), '+90 day') then ar_open_amt else 0 end) as '90p' " +
-                        " FROM  ar_mstr " +
-                        " where ar_cust = " + "'" + cust + "'" + 
-                        " AND ar_status = 'o' " +
-                         " order by ar_cust, ar_nbr ;"); 
-                 } else {
-                 res = st.executeQuery("SELECT ar_cust, ar_rmks, ar_type, ar_nbr, ar_effdate, ar_duedate, " +
-                        " sum(case when ar_duedate > curdate() then ar_open_amt else 0 end) as '0', " +
-                        " sum(case when ar_duedate <= curdate() and ar_duedate > curdate() - interval 30 day then ar_open_amt else 0 end) as '30', " +
-                        " sum(case when ar_duedate <= curdate() - interval 30 day and ar_duedate > curdate() - interval 60 day then ar_open_amt else 0 end) as '60', " +
-                        " sum(case when ar_duedate <= curdate() - interval 60 day and ar_duedate > curdate() - interval 90 day then ar_open_amt else 0 end) as '90', " +
-                        " sum(case when ar_duedate <= curdate() - interval 90 day then ar_open_amt else 0 end) as '90p' " +
-                        " FROM  ar_mstr " +
-                        " where ar_cust = " + "'" + cust + "'" + 
-                        " AND ar_status = 'o' " +
-                         " order by ar_cust, ar_nbr ;");     
-                 }
-                */
-                
-                
-                 
-                while (res.next()) {
-                   dol = dol + (res.getDouble("0") + res.getDouble("30") + res.getDouble("60") + res.getDouble("90") + res.getDouble("90p") );
-                   qty = qty + 0;
-                    i++;
-                        modeldetail.addRow(new Object[]{
-                            BlueSeerUtils.clickflag,
-                            res.getString("ar_nbr"),
-                            res.getString("ar_rmks"),
-                            res.getString("ar_type"),
-                            getDateDB(res.getString("ar_effdate")),
-                            getDateDB(res.getString("ar_duedate")),
-                            bsParseDouble(currformatDouble(res.getDouble("0"))),
-                            bsParseDouble(currformatDouble(res.getDouble("30"))),
-                            bsParseDouble(currformatDouble(res.getDouble("60"))),
-                            bsParseDouble(currformatDouble(res.getDouble("90"))),
-                            bsParseDouble(currformatDouble(res.getDouble("90p")))
-                            });
-                   }
-                
-                tabledetail.setModel(modeldetail);
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
-    }
-    
-    public void getpayment(String cust) {
-      
-         modelpayment.setNumRows(0);
-         double total = 0.00;
+        class Task extends SwingWorker<String[], Void> {
          
-          tablepayment.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-          tablepayment.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
                 
-                int i = 0;
-                String blanket = "";
-                double dol = 0.00;
-                int qty = 0;
-                if (bsmf.MainFrame.dbtype.equals("sqlite")) {
-                 res = st.executeQuery("SELECT a.ar_cust, b.ar_duedate as 'b.ar_duedate', a.ar_nbr, a.ar_ref, ard_ref, a.ar_type, a.ar_effdate, a.ar_amt, ard_amt " +
-                        " FROM  ar_mstr a " +
-                        " inner join ard_mstr on ard_nbr = a.ar_nbr " +
-                        " inner join ar_mstr b on b.ar_nbr = ard_ref and b.ar_type = 'I' " +
-                        " where a.ar_cust = " + "'" + cust + "'" + 
-                        " AND a.ar_type = 'P' " +
-                        " AND a.ar_effdate >= date() - date(date(), '-90 day') " +
-                         " order by a.ar_effdate desc ;");        
-                } else {
-                   res = st.executeQuery("SELECT a.ar_cust, b.ar_duedate as 'b.ar_duedate', a.ar_nbr, a.ar_ref, ard_ref, a.ar_type, a.ar_effdate, a.ar_amt, ard_amt " +
-                        " FROM  ar_mstr a " +
-                        " inner join ard_mstr on ard_nbr = a.ar_nbr " +
-                        " inner join ar_mstr b on b.ar_nbr = ard_ref and b.ar_type = 'I' " +
-                        " where a.ar_cust = " + "'" + cust + "'" + 
-                        " AND a.ar_type = 'P' " +
-                        " AND a.ar_effdate >= curdate() - interval 90 day " +
-                         " order by a.ar_effdate desc ;");    
-                }
-                String ponbr = ""; 
-                while (res.next()) {
-                    dol = dol + (res.getDouble("ar_amt"));
-                    qty = qty + 0;
-                    i++;
-                   
-                        modelpayment.addRow(new Object[]{
-                            res.getString("ar_nbr"),
-                            res.getString("ard_ref"),
-                            getDateDB(res.getString("ar_effdate")),
-                            getDateDB(res.getString("b.ar_duedate")),
-                            res.getString("ar_type"),
-                            res.getString("ar_ref"),
-                            bsParseDouble(currformatDouble(res.getDouble("ard_amt"))),
-                            bsParseDouble(currformatDouble(res.getDouble("ar_amt")))
-                            });
-                   }
-               
-               
-                
-                tablepayment.setModel(modelpayment);
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                case "getBrowseDetView":
+                    message = getBrowseDetView(key[0]);
+                    break;  
+                    
+                case "getBrowsePaymentView":
+                    message = getBrowsePaymentView(key[0]);
+                    break;    
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
             }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+            
+            
+            
+            
+            return message;
         }
-
-    }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+            if (this.action.equals("getBrowseDetView")) {
+                done_getBrowseDetView();
+            }
+            
+            if (this.action.equals("getBrowsePaymentView")) {
+                done_getBrowsePaymentView();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
       
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -542,53 +438,292 @@ public class ARAgingView extends javax.swing.JPanel {
     }
       
     public void initvars(String[] arg) {
+        executeTask("dataInit", null); 
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "customers");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        
+        isLoad = true;
+        
         modelsummary.setRowCount(0);
-         java.util.Date now = new java.util.Date();
+        java.util.Date now = new java.util.Date();
        
          
-          modelsummary.setNumRows(0);
+        modelsummary.setNumRows(0);
         modeldetail.setNumRows(0);
         tablesummary.setModel(modelsummary);
         tabledetail.setModel(modeldetail);
-          tablepayment.setModel(modelpayment);
-          
-     //    tablesummary.getColumnModel().getColumn(0).setCellRenderer(new ARAgingView.ButtonRenderer());
-         tablesummary.getColumnModel().getColumn(0).setMaxWidth(100);
+        tablepayment.setModel(modelpayment);
          
-         tablesummary.getTableHeader().setReorderingAllowed(false);
-         tabledetail.getTableHeader().setReorderingAllowed(false);
-         tablepayment.getTableHeader().setReorderingAllowed(false);
+        tabledetail.getTableHeader().setReorderingAllowed(false);
+        tablepayment.getTableHeader().setReorderingAllowed(false);
          
-         detailpanel.setVisible(false);
-         btdetail.setEnabled(false);
-         btexport.setEnabled(false);
-         btcsv.setEnabled(false);
-         btpdf.setEnabled(false);
+        detailpanel.setVisible(false);
+        btdetail.setEnabled(false);
+        btexport.setEnabled(false);
+        btcsv.setEnabled(false);
+        btpdf.setEnabled(false);
          
-         cbpaymentpanel.setEnabled(false);
-         cbpaymentpanel.setSelected(false);
-         paymentpanel.setVisible(false);
+        cbpaymentpanel.setEnabled(false);
+        cbpaymentpanel.setSelected(false);
+        paymentpanel.setVisible(false);
          
         ddfromcust.removeAllItems();
         ddtocust.removeAllItems();
-        ArrayList mycusts = cusData.getcustmstrlist();
-        for (int i = 0; i < mycusts.size(); i++) {
-            ddfromcust.addItem(mycusts.get(i));
-        }
-        for (int i = 0; i < mycusts.size(); i++) {
-            ddtocust.addItem(mycusts.get(i));
-        } 
-        ddtocust.setSelectedIndex(ddtocust.getItemCount() - 1);
+        
+        
         
         ddsite.removeAllItems();
-        ArrayList<String> sites = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (int i = 0; i < sites.size(); i++) {
-            ddsite.addItem(sites.get(i));
-        }
-        ddsite.setSelectedItem(OVData.getDefaultSite());
         
-         
+        
+        for (String[] s : initDataSets) {
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultsite = s[1]; 
+            }
+            if (s[0].equals("customers")) {
+              ddfromcust.addItem(s[1]); 
+              ddtocust.addItem(s[1]); 
+            }
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+        }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
+       
+        ddfromcust.setSelectedIndex(0);
+        ddtocust.setSelectedIndex(ddfromcust.getItemCount() - 1); 
+        
+        tablesummary.getColumnModel().getColumn(0).setMaxWidth(100);
+        tablesummary.getTableHeader().setReorderingAllowed(false);
+        tablesummary.getColumnModel().getColumn(0).setMaxWidth(100);
+        tablesummary.getColumnModel().getColumn(3).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tablesummary.getColumnModel().getColumn(4).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tablesummary.getColumnModel().getColumn(5).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tablesummary.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tablesummary.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+
+        tabledetail.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tabledetail.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tabledetail.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tabledetail.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tabledetail.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        
+        isLoad = false;
+        
     }
+    
+    public String[] getBrowseView() {
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(new String[]{"id","getARAgingView"});
+        list.add(new String[]{"param1",ddfromcust.getSelectedItem().toString()});
+        list.add(new String[]{"param2",ddtocust.getSelectedItem().toString()});
+        list.add(new String[]{"param3",ddsite.getSelectedItem().toString()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServFAR"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getExpenseBrowseView")};
+            }
+        } else {
+            jsonString = farData.getARAgingView(new String[]{
+                ddfromcust.getSelectedItem().toString(),
+                ddtocust.getSelectedItem().toString(),
+                ddsite.getSelectedItem().toString()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getExpenseBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+       
+        int i = 0;
+        double amt = 0;
+        modelsummary.setNumRows(0);
+        if (roData != null) {
+        for (Object[] rowData : roData) {
+            roData[i][3] = bsParseDouble(roData[i][3].toString());
+            roData[i][4] = bsParseDouble(roData[i][4].toString());
+            roData[i][5] = bsParseDouble(roData[i][5].toString());
+            roData[i][6] = bsParseDouble(roData[i][6].toString());
+            roData[i][7] = bsParseDouble(roData[i][7].toString());
+            amt = amt + (bsParseDouble(roData[i][3].toString()) + bsParseDouble(roData[i][4].toString()) + bsParseDouble(roData[i][5].toString()) + bsParseDouble(roData[i][6].toString()) + bsParseDouble(roData[i][7].toString()));
+            i++;
+            modelsummary.addRow(rowData);
+        }
+        }
+        
+        labelcount.setText(String.valueOf(i));
+        labeldollar.setText(String.valueOf(currformatDouble(amt)));
+        
+        roData = null;
+    }   
+    
+    public String[] getBrowseDetView(String cust) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getARAgingDetailView"});
+            list.add(new String[]{"param1", cust});
+            list.add(new String[]{"param2", ddsite.getSelectedItem().toString()});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServFAR"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = farData.getARAgingDetailView(new String[]{cust, ddsite.getSelectedItem().toString()}); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getBrowseDetView() {
+      modeldetail.setNumRows(0);
+         double totalsales = 0;
+         double totalqty = 0;
+       int i = 0;  
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+                roData[i][6] = bsParseDouble(roData[i][6].toString());
+                roData[i][7] = bsParseDouble(roData[i][7].toString());
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                roData[i][9] = bsParseDouble(roData[i][9].toString());
+                roData[i][10] = bsParseDouble(roData[i][10].toString());
+                modeldetail.addRow(rowData);
+                i++;
+            } 
+        }
+       }
+       roData = null;
+    }
+    
+    public String[] getBrowsePaymentView(String cust) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getARAgingPaymentView"});
+            list.add(new String[]{"param1", cust});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServFAR"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = farData.getARAgingPaymentView(cust); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getBrowsePaymentView() {
+      modelpayment.setNumRows(0);
+         double totalsales = 0;
+         double totalqty = 0;
+       int i = 0;  
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+                roData[i][6] = bsParseDouble(roData[i][6].toString());
+                roData[i][7] = bsParseDouble(roData[i][7].toString());
+                modelpayment.addRow(rowData);
+                i++;
+            } 
+        }
+       }
+       roData = null;
+    }
+    
+    public void getExportView(String cust) {
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(new String[]{"id","getARAgingExport"});
+        list.add(new String[]{"param1",cust});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServFAR"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = farData.getARAgingExport(cust);
+        }
+      
+      if (jsonString == null) {
+        Object[][] expData = jsonToData(jsonString);
+        FileDialog fDialog;
+        fDialog = new FileDialog(new Frame(), "Save", FileDialog.SAVE);
+        fDialog.setVisible(true);
+        //fDialog.setFile("data.csv");
+        String path = fDialog.getDirectory() + fDialog.getFile();
+        File f = new File(path);
+        BufferedWriter output;
+
+            try {
+                output = new BufferedWriter(new FileWriter(f));
+                String myheader = "Cust,Inv,PO,Invdate,DueDate,0,30,60,90,90+";
+                output.write(myheader + '\n');
+                int i = 0;
+                String newstring = "";
+                if (expData.length > 0) {
+                    for (Object[] rowData : expData) {
+                    expData[i][6] = bsParseDouble(expData[i][6].toString());
+                    expData[i][7] = bsParseDouble(expData[i][7].toString());
+                    modelpayment.addRow(rowData);
+                    i++;
+
+                    newstring = expData[i][0].toString() + "," + expData[i][1].toString() + "," + expData[i][2].toString() + "," +
+                    expData[i][3].toString() + "," + expData[i][4].toString() + "," + expData[i][5].toString() + "," +
+                    expData[i][6].toString() + "," + expData[i][7].toString() + "," + expData[i][8].toString() + "," + expData[i][9].toString() ;
+                    output.write(newstring + '\n');
+                    } 
+                }         
+                           
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+                
+                
+      }
+        
+      
+    }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -898,138 +1033,7 @@ public class ARAgingView extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-        modelsummary.setNumRows(0);
-    
-try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int qty = 0;
-                
-                int i = 0;
-               
-                tablesummary.setModel(modelsummary);
-                 
-             //   Enumeration<TableColumn> en = tablelabel.getColumnModel().getColumns();
-              //   while (en.hasMoreElements()) {
-             //        TableColumn tc = en.nextElement();
-             //        tc.setCellRenderer(new LabelBrowsePanel.SomeRenderer());
-             //    }
-              //    tablesummary.getColumnModel().getColumn(0).setCellRenderer(new ARAgingView.ButtonRenderer());
-                  tablesummary.getColumnModel().getColumn(0).setMaxWidth(100);
-                  tablesummary.getColumnModel().getColumn(3).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                  tablesummary.getColumnModel().getColumn(4).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                  tablesummary.getColumnModel().getColumn(5).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                  tablesummary.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                  tablesummary.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                // TableColumnModel tcm = tablescrap.getColumnModel();
-               // tcm.getColumn(3).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));  
-                
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-
-              
-                double dol = 0;
-                String fromcust = "";
-                String tocust = "";
-                String fromcode = "";
-                String tocode = "";
-                
-                if (ddfromcust.getSelectedItem().toString().isEmpty()) {
-                    fromcust = bsmf.MainFrame.lowchar;
-                } else {
-                    fromcust = ddfromcust.getSelectedItem().toString();
-                }
-                 if (ddtocust.getSelectedItem().toString().isEmpty()) {
-                    tocust = bsmf.MainFrame.hichar;
-                } else {
-                    tocust = ddtocust.getSelectedItem().toString();
-                }
-                 
-                 
-                ArrayList custs = cusData.getcustmstrlistBetween(fromcust, tocust);
-                 String custname = "";
-                 for (int j = 0; j < custs.size(); j++) {
-                 custname = cusData.getCustName(custs.get(j).toString());
-                 // init for new cust
-                 i = 0;
-                 
-                 if (bsmf.MainFrame.dbtype.equals("sqlite")) {
-                     res = st.executeQuery("SELECT ar_cust, cm_name, " +
-                        " sum(case when ar_duedate > date() then ar_open_amt else 0 end) as '0', " +
-                        " sum(case when ar_duedate <= date() and ar_duedate > date() - date(date(), '+30 day') then ar_open_amt else 0 end) as '30', " +
-                        " sum(case when ar_duedate <= date() - date(date(), '+30 day') and ar_duedate > date(date(), '+60 day') then ar_open_amt else 0 end) as '60', " +
-                        " sum(case when ar_duedate <= date() - date(date(), '+60 day') and ar_duedate > date(date(), '+90 day') then ar_open_amt else 0 end) as '90', " +
-                        " sum(case when ar_duedate <= date() - date(date(), '+90 day') then ar_open_amt else 0 end) as '90p' " +
-                        " FROM  ar_mstr " +
-                        " inner join cm_mstr on cm_code = ar_cust " +
-                        " where ar_cust = " + "'" + custs.get(j) + "'" + 
-                        " AND ar_status = 'o' " +
-                        " AND ar_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +
-                         " group by ar_cust, cm_name order by ar_cust;");
-                 }  else {
-                 res = st.executeQuery("SELECT ar_cust, cm_name, " +
-                        " sum(case when ar_duedate > curdate() then ar_open_amt else 0 end) as '0', " +
-                        " sum(case when ar_duedate <= curdate() and ar_duedate > curdate() - interval 30 day then ar_open_amt else 0 end) as '30', " +
-                        " sum(case when ar_duedate <= curdate() - interval 30 day and ar_duedate > curdate() - interval 60 day then ar_open_amt else 0 end) as '60', " +
-                        " sum(case when ar_duedate <= curdate() - interval 60 day and ar_duedate > curdate() - interval 90 day then ar_open_amt else 0 end) as '90', " +
-                        " sum(case when ar_duedate <= curdate() - interval 90 day then ar_open_amt else 0 end) as '90p' " +
-                        " FROM  ar_mstr " +
-                        " inner join cm_mstr on cm_code = ar_cust " +
-                         " where ar_cust = " + "'" + custs.get(j) + "'" + 
-                        " AND ar_status = 'o' " +
-                        " AND ar_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +         
-                         " group by ar_cust, cm_name order by ar_cust;");
-                 }
-                  while (res.next()) {
-                   dol = dol + (res.getDouble("0") + res.getDouble("30") + res.getDouble("60") + res.getDouble("90") + res.getDouble("90p") );
-                   qty = qty + 0;
-                    i++;
-                        modelsummary.addRow(new Object[]{
-                            BlueSeerUtils.clickbasket,
-                            res.getString("ar_cust"),
-                            custname,
-                            bsParseDouble(currformatDouble(res.getDouble("0"))),
-                            bsParseDouble(currformatDouble(res.getDouble("30"))),
-                            bsParseDouble(currformatDouble(res.getDouble("60"))),
-                            bsParseDouble(currformatDouble(res.getDouble("90"))),
-                            bsParseDouble(currformatDouble(res.getDouble("90p")))
-                            });
-                }
-                 
-                   if (i == 0) {
-                      // create record with zero fields
-                       modelsummary.addRow(new Object[]{
-                                BlueSeerUtils.clickbasket,
-                                custs.get(j),custname,
-                                0,0,0,0,0
-                            });
-                  }
-                  
-                  
-                  
-             } // for each customer in range
-                 
-                labelcount.setText(String.valueOf(i));
-                labeldollar.setText(String.valueOf(currformatDouble(dol)));
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
+        executeTask("getBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void tablesummaryMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablesummaryMouseClicked
@@ -1042,8 +1046,8 @@ try {
         selectedCustomerName = tablesummary.getValueAt(row, 2).toString();
         
         if ( col == 0) {
-            
-            getdetail(selectedCustomer);
+            executeTask("getBrowseDetView", new String[]{selectedCustomer});
+           // getdetail(selectedCustomer);
             btdetail.setEnabled(true);
             detailpanel.setVisible(true);
             btexport.setEnabled(true);
@@ -1067,7 +1071,8 @@ try {
     private void cbpaymentpanelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbpaymentpanelActionPerformed
         if (cbpaymentpanel.isSelected()) {
            if (! selectedCustomer.isEmpty()) {
-           getpayment(selectedCustomer);
+          // getpayment(selectedCustomer);
+           executeTask("getBrowsePaymentView", new String[]{selectedCustomer});
             paymentpanel.setVisible(true);
            }
        } else {
@@ -1076,120 +1081,7 @@ try {
     }//GEN-LAST:event_cbpaymentpanelActionPerformed
 
     private void btexportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btexportActionPerformed
-        try {
-                FileDialog fDialog;
-                fDialog = new FileDialog(new Frame(), "Save", FileDialog.SAVE);
-                fDialog.setVisible(true);
-                //fDialog.setFile("data.csv");
-                String path = fDialog.getDirectory() + fDialog.getFile();
-                File f = new File(path);
-                BufferedWriter output;
-                
-                output = new BufferedWriter(new FileWriter(f));
-                String myheader = "";
-        
-        
-        try {                                         
-            
-            String fromcust = "";
-            String tocust = "";
-           
-            
-            if (ddfromcust.getSelectedItem().toString().isEmpty()) {
-                fromcust = bsmf.MainFrame.lowchar;
-            } else {
-                fromcust = ddfromcust.getSelectedItem().toString();
-            }
-            if (ddtocust.getSelectedItem().toString().isEmpty()) {
-                tocust = bsmf.MainFrame.hichar;
-            } else {
-                tocust = ddtocust.getSelectedItem().toString();
-            }
-          
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-               String newstring = "";
-               ArrayList custs = new ArrayList();
-               
-               custs.add(selectedCustomer);
-                 
-                 for (int j = 0; j < custs.size(); j++) {
-                 
-                 if (bsmf.MainFrame.dbtype.equals("sqlite")) {
-                     res = st.executeQuery("SELECT ar_cust, ar_nbr, ar_type, ar_effdate, ar_duedate, sh_po, " +
-                        " case when ar_duedate > date() then ar_open_amt else 0 end as '0', " +
-                        " case when ar_duedate <= date() and ar_duedate > date() - date(date(), '+30 day') then ar_open_amt else 0 end as '30', " +
-                        " case when ar_duedate <= date() - date(date(), '+30 day') and ar_duedate > date(date(), '+60 day') then ar_open_amt else 0 end as '60', " +
-                        " case when ar_duedate <= date() - date(date(), '+60 day') and ar_duedate > date(date(), '+90 day') then ar_open_amt else 0 end as '90', " +
-                        " case when ar_duedate <= date() - date(date(), '+90 day') then ar_open_amt else 0 end as '90p' " +
-                        " FROM  ar_mstr left outer join ship_mstr on sh_id = ar_nbr " +
-                        " where ar_cust = " + "'" + custs.get(j) + "'" + 
-                        " AND ar_status = 'o' " +
-                        " order by ar_cust, ar_nbr ;");   
-                 }  else {
-                 res = st.executeQuery("SELECT ar_cust, ar_nbr, ar_type, ar_effdate, ar_duedate, sh_po, " +
-                        " case when ar_duedate > curdate() then ar_open_amt else 0 end as '0', " +
-                        " case when ar_duedate <= curdate() and ar_duedate > curdate() - interval 30 day then ar_open_amt else 0 end as '30', " +
-                        " case when ar_duedate <= curdate() - interval 30 day and ar_duedate > curdate() - interval 60 day then ar_open_amt else 0 end as '60', " +
-                        " case when ar_duedate <= curdate() - interval 60 day and ar_duedate > curdate() - interval 90 day then ar_open_amt else 0 end as '90', " +
-                        " case when ar_duedate <= curdate() - interval 90 day then ar_open_amt else 0 end as '90p' " +
-                        " FROM  ar_mstr left outer join ship_mstr on sh_id = ar_nbr " +
-                         " where ar_cust = " + "'" + custs.get(j) + "'" + 
-                        " AND ar_status = 'o' " +
-                        " order by ar_cust, ar_nbr ;");   
-                 }
-                 int i = 0;
-                myheader = "Cust,Inv,PO,Invdate,DueDate,0,30,60,90,90+";
-                output.write(myheader + '\n');
-                  while (res.next()) {
-                      // put this in place because sqlite is returning one null record when there are no ar_mstr records to pull...because of sum() function
-                      // if ar_cust is null...I am assuming I tripped this sqlite issue...so break and get out before updating i counter
-                      if (res.getString("ar_cust") == null) {
-                          break;
-                      }
-                      i++;
-                     
-                     newstring = res.getString("ar_cust") + "," + res.getString("ar_nbr") + "," + res.getString("sh_po") + "," +
-                             res.getString("ar_effdate") + "," + res.getString("ar_duedate") + "," + res.getString("0") + "," +
-                            res.getString("30") + "," + res.getString("60") + "," + res.getString("90") + "," + res.getString("90p") ;
-                           output.write(newstring + '\n');
-                   }
-                   if (i == 0) {
-                      // create record with zero fields
-                      newstring = custs.get(j) + ",none,none,none,none,0,0,0,0,0";
-                      output.write(newstring + '\n');
-                  }
-                  
-                 
-                  
-             } // for each customer in range
-            
-            
-            
-          } catch (SQLException s) {
-              MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-                
-         
-             output.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+        getExportView(selectedCustomer);
     }//GEN-LAST:event_btexportActionPerformed
 
     private void btcsvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcsvActionPerformed
