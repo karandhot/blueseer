@@ -114,8 +114,8 @@ public class ARControl extends javax.swing.JPanel implements IBlueSeerc {
             if (this.type.equals("get")) {
              updateForm(); 
            } else {
-             initvars(null);  
              setAction(message);
+             initvars(null);               
            }
             
             } catch (Exception e) {

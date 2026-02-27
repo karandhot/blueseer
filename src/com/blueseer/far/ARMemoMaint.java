@@ -413,6 +413,8 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerV {
        ddcurr.setSelectedItem(defaultCurrency);
         
        isLoad = false;
+       
+       ddcust.setSelectedIndex(0); // outside of isLoad to trigger meta variable assignments
     }
     
     public void newAction(String x) {
