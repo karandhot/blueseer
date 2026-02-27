@@ -683,7 +683,7 @@ public class ARAgingView extends javax.swing.JPanel {
             jsonString = farData.getARAgingExport(cust);
         }
       
-      if (jsonString == null) {
+      if (jsonString != null) {
         Object[][] expData = jsonToData(jsonString);
         FileDialog fDialog;
         fDialog = new FileDialog(new Frame(), "Save", FileDialog.SAVE);
@@ -703,15 +703,14 @@ public class ARAgingView extends javax.swing.JPanel {
                     for (Object[] rowData : expData) {
                     expData[i][6] = bsParseDouble(expData[i][6].toString());
                     expData[i][7] = bsParseDouble(expData[i][7].toString());
-                    modelpayment.addRow(rowData);
-                    i++;
-
                     newstring = expData[i][0].toString() + "," + expData[i][1].toString() + "," + expData[i][2].toString() + "," +
                     expData[i][3].toString() + "," + expData[i][4].toString() + "," + expData[i][5].toString() + "," +
                     expData[i][6].toString() + "," + expData[i][7].toString() + "," + expData[i][8].toString() + "," + expData[i][9].toString() ;
                     output.write(newstring + '\n');
+                    i++;
                     } 
-                }         
+                }    
+                output.close();
                            
             } catch (IOException ex) {
                 bslog(ex);
@@ -851,18 +850,17 @@ public class ARAgingView extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btexport)
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(btRun)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btdetail)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbpaymentpanel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btcsv)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btpdf)))
+                .addComponent(btRun)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btdetail)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbpaymentpanel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btcsv)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btpdf)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btexport)
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -877,16 +875,16 @@ public class ARAgingView extends javax.swing.JPanel {
                         .addComponent(btcsv)
                         .addComponent(btpdf)
                         .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel1))
+                        .addComponent(jLabel1)
+                        .addComponent(btexport))
                     .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(ddfromcust, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel2)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(ddtocust, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3)
-                    .addComponent(btexport))
-                .addContainerGap(18, Short.MAX_VALUE))
+                    .addComponent(jLabel3))
+                .addContainerGap(19, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);

@@ -860,7 +860,7 @@ public class farData {
                         " case when ar_duedate <= date() - date(date(), '+30 day') and ar_duedate > date(date(), '+60 day') then ar_open_amt else 0 end as '60', " +
                         " case when ar_duedate <= date() - date(date(), '+60 day') and ar_duedate > date(date(), '+90 day') then ar_open_amt else 0 end as '90', " +
                         " case when ar_duedate <= date() - date(date(), '+90 day') then ar_open_amt else 0 end as '90p' " +
-                        " FROM  ar_mstr " +
+                        " FROM  ar_mstr left outer join ship_mstr on sh_id = ar_nbr  " +
                         " where ar_cust = " + "'" + cust + "'" + 
                         " AND ar_status = 'o' " +   
                          " order by ar_cust, ar_nbr ;"); 
@@ -871,7 +871,7 @@ public class farData {
                         " case when ar_duedate <= curdate() - interval 30 day and ar_duedate > curdate() - interval 60 day then ar_open_amt else 0 end as '60', " +
                         " case when ar_duedate <= curdate() - interval 60 day and ar_duedate > curdate() - interval 90 day then ar_open_amt else 0 end as '90', " +
                         " case when ar_duedate <= curdate() - interval 90 day then ar_open_amt else 0 end as '90p' " +
-                        " FROM  ar_mstr " +
+                        " FROM  ar_mstr left outer join ship_mstr on sh_id = ar_nbr  " +
                         " where ar_cust = " + "'" + cust + "'" + 
                         " AND ar_status = 'o' " +      
                          " order by ar_cust, ar_nbr ;");     
