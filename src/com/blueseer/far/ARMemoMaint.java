@@ -344,7 +344,7 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerV {
        isLoad = true;
        
        if (init) {
-        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "terms,customers");
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "terms,customers,currencies");
         }
        
         actamt = 0;
@@ -373,6 +373,7 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerV {
        ddsite.removeAllItems();
        ddterms.removeAllItems();
        ddcust.removeAllItems();
+       ddcurr.removeAllItems();
         
        for (String[] s : initDataSets) {
             if (s[0].equals("currency")) {
@@ -390,7 +391,9 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerV {
             if (s[0].equals("cc")) {
               defaultCC = s[1];  
             }
-            
+            if (s[0].equals("currencies")) {
+              ddcurr.addItem(s[1]); 
+            }
             if (s[0].equals("sites")) {
               ddsite.addItem(s[1]); 
             }
@@ -405,7 +408,9 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerV {
             }
            
         }
-        
+       
+       ddsite.setSelectedItem(defaultSite);
+       ddcurr.setSelectedItem(defaultCurrency);
         
        isLoad = false;
     }
