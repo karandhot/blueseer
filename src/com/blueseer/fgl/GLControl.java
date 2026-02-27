@@ -192,9 +192,9 @@ public class GLControl extends javax.swing.JPanel implements IBlueSeerc {
     public void setAction(String[] x) {
         String[] m = new String[2];
         if (x[0].equals("0")) {
-            bsmf.MainFrame.show(BlueSeerUtils.updateRecordSuccess); 
+            bsmf.MainFrame.show(getMessageTag(1007)); 
         } else {
-            bsmf.MainFrame.show(BlueSeerUtils.updateRecordError);  
+            bsmf.MainFrame.show(getMessageTag(1012));  
         }
     }
     
