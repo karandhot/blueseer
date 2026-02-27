@@ -4660,7 +4660,7 @@ public class fglData {
                     
                   
                    
-                       res = st.executeQuery("select ard_nbr, ard_amt, ard_base_amt, ard_curr, ard_base_curr, ard_amt_tax, ard_base_amt_tax, ar_ref, ard_ref, ar_site, bk_acct, cm_ar_acct, cm_ar_cc from ard_mstr " +
+                    res = st.executeQuery("select ard_nbr, ard_amt, ard_base_amt, ard_curr, ard_base_curr, ard_amt_tax, ard_base_amt_tax, ar_ref, ard_ref, ar_site, bk_acct, cm_ar_acct, cm_ar_cc from ard_mstr " +
                                " inner join ar_mstr on ar_nbr = ard_nbr " +
                                " inner join bk_mstr on bk_id = ar_bank " +
                                " inner join cm_mstr on cm_code = ar_cust where ard_nbr = " + "'" + batchnbr + "'" +";");
@@ -4700,6 +4700,7 @@ public class fglData {
                         artaxcode = res2.getString("ar_tax_code");
                     }
                     res2.close();
+                    
                     if ( k > 0 ) {
                         // order level tax
                         if (taxamt > 0 && basetaxamt > 0) {
@@ -4757,7 +4758,6 @@ public class fglData {
                         }
                     }
                     res3.close();
-                    st3.close();
                     if (gainloss != 0.00 && isForeign) {
                                     acct_cr.add(res.getString("cm_ar_acct"));
                                     acct_dr.add(OVData.getDefaultForeignCurrRealAcct());
@@ -4777,18 +4777,19 @@ public class fglData {
                     
                     
                     // need to do discounts ..credit sales, debit disc, debit AR (-$4.00, $.02, $3.98)
-                    }
+                    } // while st res
                     res.close();
                     
-                    
-                    
-                    
+                    st.close();
+                    st2.close();
+                    st3.close();
                     
                     
                      // process the arrays into glEntry
                     for (int j = 0; j < acct_cr.size(); j++) {
                       glEntry(acct_cr.get(j).toString(), cc_cr.get(j).toString(), acct_dr.get(j).toString(), cc_dr.get(j).toString(), setDateDB(effdate), cost.get(j), basecost.get(j), curr.get(j).toString(), basecurr.get(j).toString(), ref.get(j).toString(), site.get(j).toString(), type.get(j).toString(), desc.get(j).toString(), doc.get(j).toString());  
                     }
+                    
            }
             catch (SQLException s){
                  MainFrame.bslog(s);
@@ -5099,6 +5100,181 @@ public class fglData {
             st.close();
             st2.close();
                     
+    }
+    
+    public static void _glEntryFromARPayment(String batchnbr, Date effdate, Connection bscon) throws SQLException {
+                Statement st = bscon.createStatement();
+                Statement st2 = bscon.createStatement();
+                Statement st3 = bscon.createStatement();
+                ResultSet res = null;
+                ResultSet res2 = null;
+                ResultSet res3 = null;
+                
+               
+                
+               java.util.Date now = new java.util.Date();
+                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+                DateFormat dftime = new SimpleDateFormat("HH:mm:ss");
+                String mydate = dfdate.format(now);
+                
+                // added SQLITE adjustment here...create arraylist of entries for glentry instead of inline
+                    ArrayList acct_cr = new ArrayList();
+                    ArrayList ref =  new ArrayList();
+                    ArrayList doc =  new ArrayList();
+                    ArrayList desc =   new ArrayList();
+                    ArrayList type =   new ArrayList();
+                    ArrayList cc_cr =   new ArrayList();
+                    ArrayList acct_dr =   new ArrayList();
+                    ArrayList cc_dr =   new ArrayList();
+                    ArrayList site =   new ArrayList();
+                    ArrayList<Double> cost =  new ArrayList();   
+                    ArrayList<Double> basecost =  new ArrayList(); 
+                    ArrayList curr =  new ArrayList(); 
+                    ArrayList basecurr =  new ArrayList(); 
+                    
+                    
+                    String thistype = "AR-Payment";
+                    String thisdesc = "";
+                    String gldoc = fglData.setGLRecNbr("AR");
+                
+                   double net = 0.00;
+                   double netbase = 0.00;
+                   double amt = 0.00;
+                   double baseamt = 0.00;
+                    
+                  
+                   
+                       res = st.executeQuery("select ard_nbr, ard_amt, ard_base_amt, ard_curr, ard_base_curr, ard_amt_tax, ard_base_amt_tax, ar_ref, ard_ref, ar_site, bk_acct, cm_ar_acct, cm_ar_cc from ard_mstr " +
+                               " inner join ar_mstr on ar_nbr = ard_nbr " +
+                               " inner join bk_mstr on bk_id = ar_bank " +
+                               " inner join cm_mstr on cm_code = ar_cust where ard_nbr = " + "'" + batchnbr + "'" +";");
+                   
+                    while (res.next()) {
+                     // credit AR Acct and debit cash account
+                     thisdesc = "Cust Check: " + res.getString("ar_ref");
+                     amt = res.getDouble("ard_amt");
+                     baseamt = res.getDouble("ard_base_amt");
+                     net = res.getDouble("ard_amt") - res.getDouble("ard_amt_tax"); // credit AR for sales less tax
+                     netbase = res.getDouble("ard_base_amt") - res.getDouble("ard_base_amt_tax"); // credit AR for sales less tax
+                     acct_cr.add(res.getString("cm_ar_acct"));
+                    acct_dr.add(res.getString("bk_acct"));
+                    cc_cr.add(res.getString("cm_ar_cc"));
+                    cc_dr.add(res.getString("cm_ar_cc"));
+                    cost.add(net);  // credit AR for sales less tax
+                    basecost.add(netbase);  // credit AR for sales less tax
+                    curr.add(res.getString("ard_curr"));
+                    basecurr.add(res.getString("ard_base_curr"));
+                    site.add(res.getString("ar_site"));
+                    ref.add(res.getString("ard_ref"));
+                    type.add(thistype);
+                    desc.add(thisdesc);
+                    doc.add(gldoc);
+                                       
+                    
+                    // now lets do any taxes
+                    res2 = st2.executeQuery("select ar_tax_code, ar_amt_tax, ar_base_amt_tax from ar_mstr where ar_nbr = " + "'" + res.getString("ard_ref") + "'" + ";");
+                    int k = 0;
+                    String artaxcode = "";
+                    Double taxamt = 0.00;
+                    Double basetaxamt = 0.00;
+                    while (res2.next()) {
+                        k++;
+                        taxamt = res2.getDouble("ar_amt_tax");
+                        basetaxamt = res2.getDouble("ar_base_amt_tax");
+                        artaxcode = res2.getString("ar_tax_code");
+                    }
+                    res2.close();
+                    if ( k > 0 ) {
+                        // order level tax
+                        if (taxamt > 0 && basetaxamt > 0) {
+                            if (! artaxcode.isEmpty()) {
+                                 ArrayList<String[]> taxelements = OVData.getTaxPercentElementsApplicableByTaxCode(artaxcode);
+                              for (String[] elements : taxelements) {
+                                    // tax entries
+                                    acct_cr.add(OVData.getDefaultTaxAcctByType(elements[2]));
+                                    acct_dr.add(res.getString("bk_acct"));
+                                    cc_cr.add(OVData.getDefaultTaxCCByType(elements[2]));
+                                    cc_dr.add(res.getString("cm_ar_cc"));
+                                    cost.add(( net * ( bsParseDouble(elements[1]) / 100 )));  // credit AR for sales less tax
+                                    basecost.add(( netbase * ( bsParseDouble(elements[1]) / 100 )));  // credit AR for sales less tax
+                                    curr.add(res.getString("ard_curr"));
+                                    basecurr.add(res.getString("ard_base_curr"));
+                                    site.add(res.getString("ar_site"));
+                                    ref.add(res.getString("ard_ref"));
+                                    type.add(thistype);
+                                    desc.add(thisdesc);
+                                    doc.add(gldoc);
+
+                              }
+                            }
+                        }
+                        // item level tax
+                        String[] taxinfo = getARTaxMaterialOnly(res.getString("ard_ref"));
+                        acct_cr.add(OVData.getDefaultTaxAcctByType(taxinfo[2]));
+                        acct_dr.add(res.getString("bk_acct"));
+                        cc_cr.add(OVData.getDefaultTaxCCByType(taxinfo[2]));
+                        cc_dr.add(res.getString("cm_ar_cc"));
+                        cost.add(bsParseDouble(taxinfo[3]));  // problem here...need art_base_amt as well as art_amt...an issue only for material tax with regard to currency.
+                        basecost.add(bsParseDouble(taxinfo[3]));  // base and non-base currency material tax is the same...needs to be addresssed.
+                        curr.add(res.getString("ard_curr"));
+                        basecurr.add(res.getString("ard_base_curr"));
+                        site.add(res.getString("ar_site"));
+                        ref.add(res.getString("ard_ref"));
+                        type.add(thistype);
+                        desc.add(thisdesc); 
+                        doc.add(gldoc);
+                        
+                    }
+                    
+                     // now lets do foreign currency gain/loss for any closed invoices
+                    res3 = st3.executeQuery("select ar_curr, ar_base_curr, ar_amt, ar_base_amt, ar_status from ar_mstr " +
+                            " where ar_nbr = " + "'" + res.getString("ard_ref") + "'" + 
+                            " and ar_type = 'I' " + 
+                            " and ar_status = 'c' " +         
+                            ";");
+                    Double gainloss = 0.00;
+                    boolean isForeign = true;
+                    while (res3.next()) {
+                        gainloss = res3.getDouble("ar_base_amt") - baseamt;
+                        if (res3.getString("ar_curr").toUpperCase().equals(res3.getString("ar_base_curr").toUpperCase())) {
+                            isForeign = false;
+                        }
+                    }
+                    res3.close();
+                    if (gainloss != 0.00 && isForeign) {
+                                    acct_cr.add(res.getString("cm_ar_acct"));
+                                    acct_dr.add(OVData.getDefaultForeignCurrRealAcct());
+                                    cc_cr.add(res.getString("cm_ar_cc"));
+                                    cc_dr.add(res.getString("cm_ar_cc"));
+                                    cost.add(gainloss);  
+                                    basecost.add(gainloss); 
+                                    curr.add(res.getString("ard_curr"));
+                                    basecurr.add(res.getString("ard_base_curr"));
+                                    site.add(res.getString("ar_site"));
+                                    ref.add(res.getString("ard_ref"));
+                                    type.add(thistype);
+                                    desc.add(thisdesc);
+                                    doc.add(gldoc);
+                    }
+                    
+                    
+                    
+                    // need to do discounts ..credit sales, debit disc, debit AR (-$4.00, $.02, $3.98)
+                    }
+                    res.close();
+                    
+                    st.close();
+                    st2.close();
+                    st3.close();
+                    
+                    
+                    
+                    
+                    
+                     // process the arrays into glEntry
+                    for (int j = 0; j < acct_cr.size(); j++) {
+                      glEntryXP(bscon, acct_cr.get(j).toString(), cc_cr.get(j).toString(), acct_dr.get(j).toString(), cc_dr.get(j).toString(), setDateDB(effdate), cost.get(j), basecost.get(j), curr.get(j).toString(), basecurr.get(j).toString(), ref.get(j).toString(), site.get(j).toString(), type.get(j).toString(), desc.get(j).toString(), doc.get(j).toString());  
+                    }
     }
     
     

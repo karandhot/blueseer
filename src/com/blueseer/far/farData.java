@@ -33,6 +33,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
+import static com.blueseer.fgl.fglData._glEntryFromARPayment;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
@@ -200,6 +201,22 @@ public class farData {
     }
      
     public static String[] addArTransaction(ArrayList<ard_mstr> ard, ar_mstr ar) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addArTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(ard);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(ar);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFAR"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -217,6 +234,8 @@ public class farData {
             }
            
             _updateCustAR(ar.ar_cust(), bscon);
+            _updateARopen(ar.ar_nbr(), bscon);
+            _glEntryFromARPayment(ar.ar_nbr(), new java.util.Date(), bscon);
                     
             bscon.commit();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
@@ -259,6 +278,22 @@ public class farData {
     public static ARSet getARMstrSet(String[] x ) {
         ARSet r = null;
         String[] m = new String[2];
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getARMstrSet"});
+            list.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServFAR");
+                r = objectMapper.readValue(returnstring, ARSet.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
         Connection bscon = null;
         PreparedStatement ps = null;
         ResultSet res = null;
@@ -915,6 +950,180 @@ public class farData {
         return jsonarray.toString(); 
     }
     
+    public static String getARReferencesView(String cust, String curr) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                 
+                res = st.executeQuery("select * from ar_mstr where ar_cust = " + "'" + cust + "'" +
+                        " AND ar_curr = " + "'" + curr + "'" + 
+                        " AND ar_status = 'o' " + ";");
+                
+                  while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("ar_nbr"));
+                        rowArray.put(getDateDB(res.getString("ar_discdate")));
+                        rowArray.put(getDateDB(res.getString("ar_duedate")));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("ar_amt")))); 
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("ar_applied"))));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("ar_open_amt"))));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("ar_amt_tax"))));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("ar_termsdisc_amt"))));
+                        rowArray.put(res.getString("ar_curr"));
+                        jsonarray.put(rowArray);
+                }
+                  
+            
+                  
+                   
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getARTransactionsView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                 
+                if (keys[4].equals("ALL")) {
+                     res = st.executeQuery("SELECT * " +
+                        " FROM  ar_mstr " +
+                        " where ar_cust >= " + "'" + keys[0] + "'" + 
+                        " AND ar_cust <= " + "'" + keys[1] + "'" + 
+                        " AND ar_effdate >= " + "'" + keys[2] + "'" + 
+                        " AND ar_effdate <= " + "'" + keys[3] + "'" + 
+                         " order by ar_cust;");    
+                 } else {
+                     res = st.executeQuery("SELECT * " +
+                        " FROM  ar_mstr " +
+                        " where ar_cust >= " + "'" + keys[0] + "'" + 
+                        " AND ar_cust <= " + "'" + keys[1] + "'" + 
+                        " AND ar_effdate >= " + "'" + keys[2] + "'" + 
+                        " AND ar_effdate <= " + "'" + keys[3] + "'" + 
+                        " AND ar_type = " + "'" + keys[4] + "'" +
+                         " order by ar_cust;");    
+                 }
+               
+                  while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("ar_id"));
+                        rowArray.put(res.getString("ar_nbr"));
+                        rowArray.put(res.getString("ar_cust"));
+                        rowArray.put(res.getString("ar_type"));
+                        rowArray.put(getDateDB(res.getString("ar_effdate")));
+                        rowArray.put(res.getString("ar_status"));
+                        rowArray.put(res.getString("ar_ref"));
+                        rowArray.put(res.getString("ar_rmks"));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("ar_amt")))); 
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("ar_applied"))));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("ar_open_amt")))); 
+                        jsonarray.put(rowArray);
+                }
+                  
+            
+                  
+                   
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getARTransactionsDetView(String id) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                 
+                res = st.executeQuery("SELECT * " +
+                        " FROM  ard_mstr " +
+                        " where ard_nbr = " + "'" +id + "'" + 
+                         " order by ard_line;"); 
+              
+                  while (res.next()) {
+                        JSONArray rowArray = new JSONArray();
+                        rowArray.put(res.getString("ard_nbr"));
+                        rowArray.put(res.getString("ard_cust"));
+                        rowArray.put(res.getString("ard_ref"));
+                        rowArray.put(res.getString("ard_line"));
+                        rowArray.put(res.getString("ard_date"));
+                        rowArray.put(res.getString("ard_acct"));
+                        rowArray.put(res.getString("ard_cc"));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("ard_amt")))); 
+                        jsonarray.put(rowArray);
+                }
+                  
+            
+                  
+                   
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
     
     public static void _updateCustAR(String cust, Connection bscon) throws SQLException {
            
@@ -951,6 +1160,51 @@ public class farData {
         st.close();
            
     }
+    
+    public static void _updateARopen(String batch, Connection bscon) throws SQLException {
+           
+        Statement st = bscon.createStatement();
+        ResultSet res;
+                
+        
+         res = st.executeQuery("select ar_amt, ar_base_amt, ar_curr, ar_base_curr, " +
+                            " ar_open_amt, ar_applied, ard_ref, ard_amt, ard_base_amt, ard_deduction " +
+                            " from ar_mstr inner join ard_mstr on ar_nbr = ard_ref " +
+                                    " where ard_nbr = " + "'" + batch + "'"
+                            );
+                    
+                     ArrayList ardref = new ArrayList();
+                    ArrayList newamt = new ArrayList();
+                    ArrayList openamt = new ArrayList();
+                    ArrayList status = new ArrayList();
+                    ArrayList gainloss = new ArrayList();
+                    
+                    while (res.next()) {
+                        ardref.add(res.getString("ard_ref"));
+                        newamt.add(res.getDouble("ard_amt") + res.getDouble("ar_applied"));
+                        openamt.add(res.getDouble("ar_amt") - res.getDouble("ar_applied") - res.getDouble("ard_amt") - res.getDouble("ard_deduction"));
+                        if ( (res.getDouble("ard_amt") + res.getDouble("ar_applied") + res.getDouble("ard_deduction")) >= res.getDouble("ar_amt") ) {
+                         status.add("c");
+                        } else {
+                         status.add("o");
+                        }
+                    }
+                    
+                     for (int j = 0; j < ardref.size(); j++) {
+                    st.executeUpdate("update ar_mstr set ar_applied = " + "'" + currformatDouble(bsParseDouble(newamt.get(j).toString())) + "'" + "," +
+                            " ar_open_amt = " + "'" + currformatDouble(bsParseDouble(openamt.get(j).toString())) + "'" + "," +
+                            " ar_status = " + "'" + status.get(j) + "'" +
+                            " where ar_nbr = " + "'" + ardref.get(j) + "'" + 
+                            " and ar_type = 'I' "
+                            );
+                     }
+       
+        
+        res.close();
+        st.close();
+           
+    }
+    
     
     public static String[] getARTaxMaterialOnly(String ref) {
            // get AR tax info

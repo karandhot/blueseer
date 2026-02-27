@@ -26,6 +26,7 @@ SOFTWARE.
 package com.blueseer.far;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.defaultDecimalSeparator;
 import static bsmf.MainFrame.ds;
@@ -33,19 +34,26 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags; 
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import com.blueseer.ctr.cusData;
+import com.blueseer.ctr.cusData.cm_mstr;
 import static com.blueseer.ctr.cusData.getCustInfo;
+import static com.blueseer.ctr.cusData.getCustMstr;
 import static com.blueseer.far.farData.addArTransaction;
 import com.blueseer.far.farData.ar_mstr;
 import com.blueseer.far.farData.ard_mstr;
+import static com.blueseer.far.farData.getARMstr;
+import static com.blueseer.far.farData.getARMstrSet;
 import com.blueseer.fgl.fglData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
+import com.blueseer.utl.BlueSeerUtils.dbaction;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.luModel;
 import static com.blueseer.utl.BlueSeerUtils.luTable;
 import static com.blueseer.utl.BlueSeerUtils.lual;
@@ -54,15 +62,13 @@ import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeer;
+import com.blueseer.utl.IBlueSeerV;
 import com.blueseer.utl.OVData;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Connection;
+
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -70,6 +76,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.Color;
 import java.awt.Component;
+import java.io.IOException;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -88,7 +95,7 @@ import javax.swing.event.TableModelEvent;
  *
  * @author vaughnte
  */
-public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
+public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeerV {
 
     // global variable declarations
                 boolean isLoad = false;
@@ -100,8 +107,13 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                 double paymentamt = 0.00;
                 double baseamt = 0.00;
                 double rcvamt = 0.00;
-                String curr = "";
-                String basecurr = "";
+                farData.ARSet arset = null;
+                Object[][] roData;
+                ArrayList<String[]> initDataSets = null;
+                String defaultSite = "";
+                String defaultCurrency = "";
+                boolean isAutoPost = false;
+                boolean canUpdate = false;
                 
     
     // global datatablemodel declarations 
@@ -142,23 +154,24 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
     }
    
     // interface functions implemented
-    public void executeTask(String x, String[] y) { 
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
       
         class Task extends SwingWorker<String[], Void> {
        
           String type = "";
           String[] key = null;
           
-          public Task(String type, String[] key) { 
-              this.type = type;
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
               this.key = key;
-          } 
+          }
            
         @Override
         public String[] doInBackground() throws Exception {
             String[] message = new String[2];
             message[0] = "";
             message[1] = "";
+            
             
             
              switch(this.type) {
@@ -174,6 +187,11 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                 case "get":
                     message = getRecord(key);    
                     break;    
+                case "run":
+                    if (key[0].equals("getARReferencesView")) {
+                    message = getARReferencesView(key[1], key[2]);
+                    }
+                    break;     
                 default:
                     message = new String[]{"1", "unknown action"};
             }
@@ -189,16 +207,18 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
             BlueSeerUtils.endTask(message);
            if (this.type.equals("delete")) {
              initvars(null);  
-           } else if (this.type.equals("get") && message[0].equals("1")) {
-             tbkey.requestFocus();
-           } else if (this.type.equals("get") && message[0].equals("0")) {
-             tbkey.requestFocus();
-           } else {
-             initvars(null);  
-           }
+           } 
            
+           if (this.type.equals("get")) {
+             updateForm();
+             tbkey.requestFocus();
+           } 
+           
+           if (this.type.equals("run") && key[0].equals("getARReferencesView")) {
+             done_getARReferencesView();
+           }            
             
-            } catch (Exception e) {
+           } catch (Exception e) {
                 MainFrame.bslog(e);
             } 
            
@@ -318,8 +338,13 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
        }
     }
      
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
+        
+        if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "customers,currencies");
+        }
+        
         tbkey.setText("");
          terms = "";
          aracct = "";
@@ -329,7 +354,6 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
          paymentamt = 0.00;
          rcvamt = 0.00;
         
-         basecurr = OVData.getDefaultCurrency();
          
         lbcust.setText("");
         lbmessage.setText("");
@@ -357,26 +381,45 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
         dcpaydate.setDate(now);      
         
         ddcust.removeAllItems();
-        ArrayList mycust = cusData.getcustmstrlist();
-        for (int i = 0; i < mycust.size(); i++) {
-            ddcust.addItem(mycust.get(i));
+        ddsite.removeAllItems();
+        ddcurr.removeAllItems();
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            
+            if (s[0].equals("autopost")) {
+              isAutoPost = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("customers")) {
+              ddcust.addItem(s[1]); 
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("currencies")) {
+                ddcurr.addItem(s[1]);
+            }
+            
         }
+        
+        
         ddcust.insertItemAt("", 0);
         ddcust.setSelectedIndex(0);
           
-        ddsite.removeAllItems();
-        ArrayList mylist = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (int i = 0; i < mylist.size(); i++) {
-            ddsite.addItem(mylist.get(i));
-        }
-        ddsite.setSelectedItem(OVData.getDefaultSite());
         
-        ddcurr.removeAllItems();
-        ArrayList<String> curr = fglData.getCurrlist();
-        for (int i = 0; i < curr.size(); i++) {
-            ddcurr.addItem(curr.get(i));
-        }
-        ddcurr.setSelectedItem(OVData.getDefaultCurrency());
+       
+        ddsite.setSelectedItem(defaultSite);
+        ddcurr.setSelectedItem(defaultCurrency);
         
         
        isLoad = false;
@@ -384,7 +427,7 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btnew.setEnabled(false);
         tbkey.setEditable(true);
@@ -396,10 +439,10 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
         tbkey.requestFocus();
     }
     
-    public String[] setAction(int i) {
-        String[] m = new String[2];
-        if (i > 0) {
-            m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};  
+    public void setAction(String[] x) {
+        
+        if (x[0].equals("0")) {
+             
                    setPanelComponentState(this, true);
                    btadd.setEnabled(false);
                    tbkey.setEditable(false);
@@ -408,13 +451,12 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                    tbcontrolamt.setText(currformatDouble(controlamt));
                    tbpayamount.setText(currformatDouble(controlamt));
         } else {
-           m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};  
+           
                    tbkey.setForeground(Color.red); 
         }
-        return m;
     }
     
-    public boolean validateInput(String x) {
+    public boolean validateInput(BlueSeerUtils.dbaction x) {
         boolean b = true;
                 if (ddsite.getSelectedItem() == null || ddsite.getSelectedItem().toString().isEmpty()) {
                     b = false;
@@ -474,12 +516,12 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         
         if (arg != null && arg.length > 0) {
-            executeTask("get",arg);
+            executeTask(BlueSeerUtils.dbaction.get,arg);
         } else {
             tbkey.setEnabled(true);
             tbkey.setEditable(true);
@@ -489,12 +531,9 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
     
     public String[] addRecord(String[] x) {
         String[] m = addArTransaction(createDetRecord(), createRecord());
-        boolean error = OVData.ARUpdate(tbkey.getText());
-        if (! error)
-        error = fglData.glEntryFromARPayment(tbkey.getText(), dcdate.getDate());
-        
+     
          // autopost
-        if (OVData.isAutoPost()) {
+        if (isAutoPost) {
             fglData.PostGL();
         } 
         
@@ -512,75 +551,43 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
      }
       
     public String[] getRecord(String[] x) {
-       String[] m = new String[2];
-        
-       try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-                int i = 0;
-                int d = 0;
-                res = st.executeQuery("select * from ar_mstr where ar_nbr = " + "'" + x[0] + "'" + ";");
-                while (res.next()) {
+       arset = getARMstrSet(x);
+       return arset.m();
+    }
+    
+    public void updateForm() {
+        tbkey.setText(arset.ar().ar_nbr());
+         dcdate.setDate(parseDate(arset.ar().ar_effdate()));
+         tbcheck.setText(arset.ar().ar_ref());
+         tbrmks.setText(arset.ar().ar_rmks());
+         ddcust.setSelectedItem(arset.ar().ar_cust());
+         ddsite.setSelectedItem(arset.ar().ar_site());
+         ddcurr.setSelectedItem(arset.ar().ar_curr());
+         
+        for (ard_mstr ard : arset.ard()) {
                   // "Reference", "AmountToApply", "TaxAmount", "Curr"
-                  i++;
-                     tbkey.setText(res.getString("ar_nbr"));
-                     dcdate.setDate(parseDate(res.getString("ar_effdate")));
-                     tbcheck.setText(res.getString("ar_ref"));
-                     tbrmks.setText(res.getString("ar_rmks"));
-                     ddcust.setSelectedItem(res.getString("ar_cust"));
-                     ddsite.setSelectedItem(res.getString("ar_site"));
-                     ddcurr.setSelectedItem(res.getString("ar_curr"));
-                }
-                
-                res = st.executeQuery("select * from ard_mstr inner join ar_mstr on ar_nbr = ard_nbr and ar_type = 'I' where ard_nbr = " + "'" + x[0] + "'" + ";");
-                while (res.next()) {
-                  // "Reference", "AmountToApply", "TaxAmount", "Curr"
-                     armodel.addRow(new Object[] { res.getString("ard_ref"),
-                                              res.getString("ard_amt"),
-                                              res.getString("ard_amt_tax"),
-                                              res.getString("ar_termsdisc_amt"),
-                                              res.getString("ar_discdate"),
-                                              res.getString("ard_curr")
+                     armodel.addRow(new Object[] { ard.ard_ref(),
+                                              ard.ard_amt(),
+                                              ard.ard_amt_tax(),
+                                              arset.ar().ar_termsdisc_amt(),
+                                              arset.ar().ar_discdate(),
+                                              ard.ard_curr()
                                               });
                  
                   
-                  controlamt += res.getDouble("ard_amt");
-                d++;
+                  controlamt += ard.ard_amt();
                 }
-               
-                // set Action if Record found (i > 0)
-                m = setAction(i);
                 
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordSQLError};  
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordConnError};  
-        }
-      return m;
+                
     }
     
     public ar_mstr createRecord() { 
         java.util.Date now = new java.util.Date(); 
         
-                if (basecurr.toUpperCase().equals(ddcurr.getSelectedItem().toString().toUpperCase())) {
+                if (defaultCurrency.toUpperCase().equals(ddcurr.getSelectedItem().toString().toUpperCase())) {
                   baseamt = controlamt;  
                 } else {
-                  baseamt = OVData.getExchangeBaseValue(basecurr, ddcurr.getSelectedItem().toString(), controlamt);
+                  baseamt = OVData.getExchangeBaseValue(defaultCurrency, ddcurr.getSelectedItem().toString(), controlamt);
                 } 
         ar_mstr x = new ar_mstr(null, 
                 null, // ar_id auto-generated
@@ -590,7 +597,7 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                 baseamt,
                 "P",
                 ddcurr.getSelectedItem().toString(),
-                basecurr,
+                defaultCurrency,
                 tbcheck.getText(),
                 tbrmks.getText(),
                 setDateDB(now),
@@ -632,12 +639,12 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                         amt_d = bsParseDouble(ardet.getValueAt(j, 1).toString()) -
                                 bsParseDouble(ardet.getValueAt(j, 3).toString()); // less early terms discount amount
                         taxamt_d = bsParseDouble(ardet.getValueAt(j, 2).toString());
-                         if (basecurr.toUpperCase().equals(ddcurr.getSelectedItem().toString().toUpperCase())) {
+                         if (defaultCurrency.toUpperCase().equals(ddcurr.getSelectedItem().toString().toUpperCase())) {
                          baseamt_d = amt_d;
                          basetaxamt_d = taxamt_d;
                          } else {
-                         baseamt_d = OVData.getExchangeBaseValue(basecurr, ddcurr.getSelectedItem().toString(), amt_d);
-                         basetaxamt_d = OVData.getExchangeBaseValue(basecurr, ddcurr.getSelectedItem().toString(), taxamt_d);
+                         baseamt_d = OVData.getExchangeBaseValue(defaultCurrency, ddcurr.getSelectedItem().toString(), amt_d);
+                         basetaxamt_d = OVData.getExchangeBaseValue(defaultCurrency, ddcurr.getSelectedItem().toString(), taxamt_d);
                          }
                         ard_mstr x = new ard_mstr(null,  
                             tbkey.getText(), 
@@ -650,7 +657,7 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
                             baseamt_d,     
                             basetaxamt_d,
                             ddcurr.getSelectedItem().toString(),
-                            basecurr,
+                            defaultCurrency,
                             aracct,
                             arcc,
                             bsParseDouble(ardet.getValueAt(j, 3).toString())
@@ -713,125 +720,52 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
             arbank = custinfo[3];
        
     }
+    
+    public String[] getARReferencesView(String cust, String curr) {
       
-    public void getreferences(String cust) {
-        referencemodel.setRowCount(0);
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            int i = 0;
-            int d = 0;
-            String uniqpo = null;
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getARReferencesView"});
+            list.add(new String[]{"param1", cust});
+            list.add(new String[]{"param2", curr});
             try {
-                rcvamt = 0.00;
-                res = st.executeQuery("select * from ar_mstr where ar_cust = " + "'" + cust + "'" +
-                        " AND ar_curr = " + "'" + curr + "'" + 
-                        " AND ar_status = 'o' " + ";");
-                while (res.next()) {
-                  referencemodel.addRow(new Object[]{res.getString("ar_nbr"), 
-                      res.getString("ar_discdate"), 
-                      res.getString("ar_duedate"), 
-                      currformatDouble(res.getDouble("ar_amt")), 
-                      res.getDouble("ar_applied"), 
-                      currformatDouble(res.getDouble("ar_open_amt")),
-                      currformatDouble(res.getDouble("ar_amt_tax")),
-                      currformatDouble(res.getDouble("ar_termsdisc_amt")),
-                      res.getString("ar_curr")});
-                  
-                  rcvamt += res.getDouble("ar_open_amt");
-                d++;
-                }
-                tbrefamt.setText(currformatDouble(rcvamt));
-                referencedet.setModel(referencemodel);
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+                jsonString = sendServerPost(list, "", null, "dataServFAR"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
             }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        } else {
+            jsonString = farData.getARReferencesView(cust, curr); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
     }
-           
-    public void setstatus(javax.swing.JTable mytable) {
-            try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-             
-             String sonbr = null;
-             int i = 0;
-             int qty = 0;
-             boolean iscomplete = true;
-             String sodstatus = "";
-             
-        // find the sod record for each line / So pair
-        for (int j = 0; j < mytable.getRowCount(); j++) {
-               //    mytable.getModel().getValueAt(j, 0);  
-             i = 0;
-             String thispart = mytable.getModel().getValueAt(j, 0).toString();
-             String thisorder = mytable.getModel().getValueAt(j, 1).toString();
-             String thispo = mytable.getModel().getValueAt(j, 2).toString();
-             double thisrecvqty = Double.valueOf(mytable.getModel().getValueAt(j, 3).toString());
-             String thislinestatus = "";
-             double thisrecvpedtotal = 0;
-            
-             try {
-            
-                 /* ok....let's get the current state of this line item on the sales order */
-                 res = st.executeQuery("select * from sod_det where sod_nbr = " + "'" + thisorder + "'" + 
-                                     " AND sod_item = " + "'" + thispart + "'" + ";");
-               while (res.next()) {     
-                 i++;
-                   if (Double.valueOf(res.getString("sod_recvped_qty") + thisrecvqty) < Double.valueOf(res.getString("sod_ord_qty")) ) {
-                   thislinestatus = "Partial"; 
-                   }
-                   if (Double.valueOf(res.getString("sod_recvped_qty") + thisrecvqty) >= Double.valueOf(res.getString("sod_ord_qty")) ) {
-                   thislinestatus = "Shipped"; 
-                   }
-                   thisrecvpedtotal = thisrecvqty + Double.valueOf(res.getString("sod_recvped_qty"));
-                   
-                }
-                 
-                 /* ok...now lets update the status of this sod_det line item */
-                 st.executeUpdate("update sod_det set sod_recvped_qty = " + "'" + thisrecvpedtotal + "'" + 
-                                  "," + " sod_status = " + "'" + thislinestatus + "'" +
-                                  " where sod_nbr = " + "'" + thisorder + "'" + 
-                                  " and sod_item = " + "'" + thispart + "'" + 
-                                  " and sod_po = " + "'" + thispo + "'" +
-                     ";");
-                 
-             } catch (SQLException s) {
-                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-             } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-             }
-         }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+    
+    public void done_getARReferencesView() {
+      referencemodel.setNumRows(0);
+       double openamt = 0;
+       int i = 0;  
+       
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+                roData[i][3] = bsParseDouble(roData[i][3].toString());
+                roData[i][4] = bsParseDouble(roData[i][4].toString());
+                roData[i][5] = bsParseDouble(roData[i][5].toString());
+                roData[i][6] = bsParseDouble(roData[i][6].toString());
+                roData[i][7] = bsParseDouble(roData[i][7].toString());
+                openamt += bsParseDouble(roData[i][5].toString());
+                referencemodel.addRow(rowData);
+                i++;
+            } 
         }
+       }
+       tbrefamt.setText(currformatDouble(openamt));
+       referencedet.setModel(referencemodel);
+       roData = null;
     }
     
     public void sumdollars() {
@@ -1251,11 +1185,11 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
     }//GEN-LAST:event_btadditemActionPerformed
 
     private void btaddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddActionPerformed
-       if (! validateInput("addRecord")) {
+       if (! validateInput(dbaction.add)) {
            return;
        }
         setPanelComponentState(this, false);
-        executeTask("add", new String[]{tbkey.getText()});
+        executeTask(dbaction.add, new String[]{tbkey.getText()});
     }//GEN-LAST:event_btaddActionPerformed
 
     private void ddcustActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddcustActionPerformed
@@ -1263,11 +1197,23 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
         referencemodel.setRowCount(0);
         armodel.setRowCount(0);
         lbcust.setText("");
+        
         if ( ddcust.getSelectedItem() != null && ! ddcust.getSelectedItem().toString().isEmpty()  && ! isLoad) {
-        ddcurr.setSelectedItem(cusData.getCustCurrency(ddcust.getSelectedItem().toString()));
-        lbcust.setText(cusData.getCustName(ddcust.getSelectedItem().toString()));
-        getreferences(ddcust.getSelectedItem().toString());
-        setcustvariables(ddcust.getSelectedItem().toString());
+            cm_mstr cm = getCustMstr(new String[]{ddcust.getSelectedItem().toString()});   
+            // stop ddcurr event from repeating execution that will occur below
+            isLoad = true;
+            ddcurr.setSelectedItem(cm.cm_curr());
+            isLoad = false;
+            
+            lbcust.setText(cm.cm_name());
+            aracct = cm.cm_ar_acct();
+            arcc = cm.cm_ar_cc();
+            terms = cm.cm_terms();
+            arbank = cm.cm_bank();
+        //getreferences(ddcust.getSelectedItem().toString());
+        
+        executeTask(dbaction.run, new String[]{"getARReferencesView", ddcust.getSelectedItem().toString(), ddcurr.getSelectedItem().toString()});
+        
         }
     }//GEN-LAST:event_ddcustActionPerformed
 
@@ -1310,8 +1256,9 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
 
     private void ddcurrActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddcurrActionPerformed
         if (ddcust.getSelectedItem() != null &&  ddcurr.getSelectedItem() != null && ! isLoad ) {
-        curr = ddcurr.getSelectedItem().toString();
-        getreferences(ddcust.getSelectedItem().toString());
+        
+        //getreferences(ddcust.getSelectedItem().toString());
+        executeTask(dbaction.run, new String[]{"getARReferencesView", ddcust.getSelectedItem().toString(), ddcurr.getSelectedItem().toString()});
         }
     }//GEN-LAST:event_ddcurrActionPerformed
 
@@ -1352,11 +1299,12 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeer {
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
         BlueSeerUtils.messagereset();
+        initDataSets = null;
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 
     private void tbkeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbkeyActionPerformed
-        executeTask("get", new String[]{tbkey.getText()});
+        executeTask(dbaction.get, new String[]{tbkey.getText()});
     }//GEN-LAST:event_tbkeyActionPerformed
 
     private void btlookupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupActionPerformed

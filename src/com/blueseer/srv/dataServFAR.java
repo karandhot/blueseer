@@ -29,6 +29,7 @@ package com.blueseer.srv;
 import com.blueseer.fap.fapData;
 import static com.blueseer.fap.fapData.getAPVoucherSet;
 import com.blueseer.far.farData;
+import static com.blueseer.far.farData.getARMstrSet;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import com.blueseer.ord.ordData;
 import static com.blueseer.ord.ordData.addUpdateORCtrl;
@@ -134,7 +135,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
     String id = request.getHeader("id"); 
     
     switch (id) {
-        case "VoucherTransaction" : {
+        case "addArTransaction" : {
             String line;
             StringBuilder sb = new StringBuilder();  
             BufferedReader reader = request.getReader();  // as string
@@ -144,12 +145,10 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             reader.close();
             ObjectMapper om = new ObjectMapper();
             String[] ca = sb.toString().split("=_=", -1);
-            String ctype = ca[0];
-            fapData.vod_mstr[] sdarray = om.readValue(ca[1], fapData.vod_mstr[].class);
-            ArrayList<fapData.vod_mstr> vodlist = new ArrayList<fapData.vod_mstr>(Arrays.asList(sdarray)); 
-            fapData.ap_mstr ap = om.readValue(ca[2], fapData.ap_mstr.class); 
-            Boolean isvoid = Boolean.valueOf(ca[3]);
-            response.getWriter().print(arrayToJson(fapData.VoucherTransaction(ctype, vodlist, ap, isvoid))); 
+            farData.ard_mstr[] sdarray = om.readValue(ca[0], farData.ard_mstr[].class);
+            ArrayList<farData.ard_mstr> ardlist = new ArrayList<farData.ard_mstr>(Arrays.asList(sdarray));  
+            farData.ar_mstr ar = om.readValue(ca[1], farData.ar_mstr.class); 
+            response.getWriter().print(arrayToJson(farData.addArTransaction(ardlist, ar))); 
             break;
             }
         
@@ -172,8 +171,8 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             break;
             }
        
-        case "getAPVoucherSet" : {       
-            fapData.VoucherAP shset = getAPVoucherSet(new String[]{request.getHeader("param1")});
+        case "getARMstrSet" : {       
+            farData.ARSet shset = getARMstrSet(new String[]{request.getHeader("param1")});
             ObjectMapper om_shset = new ObjectMapper(); 
             String r = om_shset.writeValueAsString(shset);
             response.getWriter().print(r);
@@ -197,6 +196,25 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         response.getWriter().print(farData.getARAgingPaymentView(request.getHeader("param1"))); 
         break;
         } 
+        
+        case "getARReferencesView" : { 
+        response.getWriter().print(farData.getARReferencesView(request.getHeader("param1"), request.getHeader("param2")));  
+        break;
+        }
+        
+        case "getARTransactionsView" : { 
+        response.getWriter().print(farData.getARTransactionsView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5")})); 
+        break;
+        } 
+        
+        case "getARTransactionsDetView" : { 
+        response.getWriter().print(farData.getARTransactionsDetView(request.getHeader("param1"))); 
+        break;
+        }
         
         default:
         response.getWriter().print("no switch case exists in dataServFAP for id: " + id);
