@@ -3482,6 +3482,15 @@ public class admData {
                                lines.add(s);
                             }
                         }
+                        if (sd.equals("terms")) {
+                            res = st.executeQuery("select cut_code from cust_term ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "terms";
+                               s[1] = res.getString("cut_code");
+                               lines.add(s);
+                            }
+                        }
                         
                         
                 }

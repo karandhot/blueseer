@@ -30,27 +30,15 @@ import com.blueseer.utl.BlueSeerUtils;
 import com.blueseer.utl.OVData;
 import java.awt.Color;
 import java.awt.Component;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Connection;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.defaultDecimalSeparator;
-import static bsmf.MainFrame.driver;
 import static bsmf.MainFrame.tags;
-import com.blueseer.ctr.cusData;
-import static com.blueseer.ctr.cusData.getCustInfo;
+import com.blueseer.adm.admData;
+import com.blueseer.ctr.cusData.cm_mstr;
+import static com.blueseer.ctr.cusData.getCustMstr;
 import com.blueseer.far.farData.ARSet;
 import static com.blueseer.far.farData.addArTransaction;
 import com.blueseer.far.farData.ar_mstr;
@@ -73,13 +61,11 @@ import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.DTData;
-import com.blueseer.utl.IBlueSeerT;
+import com.blueseer.utl.IBlueSeerV;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -96,7 +82,7 @@ import javax.swing.event.TableModelEvent;
  *
  * @author vaughnte
  */
-public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
+public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerV {
 
      // global variable declarations
     public static ar_mstr ar = null;
@@ -111,9 +97,14 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
                 double control = 0.00;
                 double baseamt = 0.00;
                 double rcvamt = 0.00;
-                String curr = "";
-                String basecurr = "";
                 String type = "";
+                boolean canUpdate = false;
+                boolean isAutoPost = false;
+                ArrayList<String[]> initDataSets = null;
+                String defaultSite = "";
+                String defaultCurrency = "";
+                String defaultCC = "";
+                
     
     /**
      * Creates new form UserMaintPanel
@@ -349,8 +340,13 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
        }
     }
      
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
+       
+       if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "terms,customers");
+        }
+       
         actamt = 0;
        java.util.Date now = new java.util.Date();
        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
@@ -369,37 +365,46 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
        tbacct.setText("");
        btnew.setEnabled(true);
        
-       basecurr = OVData.getDefaultCurrency();
+       
        ardet.setModel(armodel);
       
        type = "";
        
-        ddsite.removeAllItems();
-        ArrayList mylist = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (int i = 0; i < mylist.size(); i++) {
-            ddsite.addItem(mylist.get(i));
-        }
-        
-        ddterms.removeAllItems();
-        ArrayList custterms = cusData.gettermsmstrlist();
-        for (int i = 0; i < custterms.size(); i++) {
-            ddterms.addItem(custterms.get(i));
-        }
-       
-       
-       ddcust.setEnabled(true);
+       ddsite.removeAllItems();
+       ddterms.removeAllItems();
        ddcust.removeAllItems();
-        ArrayList mycusts = cusData.getcustmstrlist();
-        for (int i = 0; i < mycusts.size(); i++) {
-            ddcust.addItem(mycusts.get(i));
-        }
         
-       ddcurr.removeAllItems();
-        ArrayList<String> curr = fglData.getCurrlist();
-        for (int i = 0; i < curr.size(); i++) {
-            ddcurr.addItem(curr.get(i));
+       for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            
+            if (s[0].equals("autopost")) {
+              isAutoPost = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            
+            if (s[0].equals("cc")) {
+              defaultCC = s[1];  
+            }
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("customers")) {
+              ddcust.addItem(s[1]); 
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("terms")) {
+                ddterms.addItem(s[1]);
+            }
+           
         }
-        ddcurr.setSelectedItem(OVData.getDefaultCurrency());
         
         
        isLoad = false;
@@ -407,7 +412,7 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btnew.setEnabled(false);
         tbkey.setEditable(true);
@@ -492,7 +497,7 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         
@@ -506,13 +511,10 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public String[] addRecord(String[] x) {
-        String[] m = addArTransaction(createDetRecord(), createRecord());
-        boolean error = OVData.ARUpdate(tbkey.getText());
-        if (! error) {
-            error = fglData.glEntryFromARMemo(tbkey.getText(), dcdate.getDate());
-        }
+        String[] m = addArTransaction("ARMemo", createDetRecord(), createRecord());        
+        
          // autopost
-        if (OVData.isAutoPost()) {
+        if (isAutoPost) {
             fglData.PostGL();
         } 
         return m;
@@ -537,11 +539,12 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public farData.ar_mstr createRecord() { 
         java.util.Date now = new java.util.Date(); 
-        
-                if (basecurr.toUpperCase().equals(ddcurr.getSelectedItem().toString().toUpperCase())) {
+                double exchrate = bsParseDouble(OVData.getExchangeRate(defaultCurrency, ddcurr.getSelectedItem().toString()));
+                
+                if (defaultCurrency.toUpperCase().equals(ddcurr.getSelectedItem().toString().toUpperCase())) {
                   baseamt = actamt;  
                 } else {
-                  baseamt = OVData.getExchangeBaseValue(basecurr, ddcurr.getSelectedItem().toString(), actamt);
+                  baseamt = actamt / exchrate;
                 } 
         farData.ar_mstr x = new farData.ar_mstr(null, 
                 null, // ar_id auto-generated
@@ -551,7 +554,7 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
                 baseamt,
                 ddtype.getSelectedItem().toString().substring(0,1),
                 ddcurr.getSelectedItem().toString(),
-                basecurr,
+                defaultCurrency,
                 tbref.getText(),
                 tbrmks.getText(),
                 setDateDB(now),
@@ -583,7 +586,7 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
    
     public ArrayList<farData.ard_mstr> createDetRecord() {
         ArrayList<farData.ard_mstr> list = new ArrayList<farData.ard_mstr>();
-        
+        double exchrate = bsParseDouble(OVData.getExchangeRate(defaultCurrency, ddcurr.getSelectedItem().toString()));
             
             double amt_d = 0;
             double taxamt_d = 0;
@@ -592,10 +595,10 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
             boolean completeAllocation = true;
             for (int j = 0; j < ardet.getRowCount(); j++) {
                         amt_d = bsParseDouble(ardet.getValueAt(j, 4).toString());
-                         if (basecurr.toUpperCase().equals(ddcurr.getSelectedItem().toString().toUpperCase())) {
+                         if (defaultCurrency.toUpperCase().equals(ddcurr.getSelectedItem().toString().toUpperCase())) {
                          baseamt_d = amt_d;
                          } else {
-                         baseamt_d = OVData.getExchangeBaseValue(basecurr, ddcurr.getSelectedItem().toString(), amt_d);
+                         baseamt_d = amt_d / exchrate;
                          }
                         farData.ard_mstr x = new farData.ard_mstr(null,  
                             tbkey.getText(), 
@@ -608,7 +611,7 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
                             baseamt_d,     
                             basetaxamt_d,
                             ddcurr.getSelectedItem().toString(),
-                            basecurr,
+                            defaultCurrency,
                             ardet.getValueAt(j, 1).toString(),
                             ardet.getValueAt(j, 2).toString(),
                             0 // to be revisited
@@ -730,20 +733,7 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     // custom
-    public void getBilltoInfo(String cust) {
-        
-         // aracct, arcc, currency, bank, terms, carrier, onhold, site
-            String[] custinfo = getCustInfo(cust);
-            aracct = custinfo[0];
-            arcc = custinfo[1];
-            terms = custinfo[4];
-            arbank = custinfo[3];
-            tbhdracct.setText(custinfo[0]);
-            tbhdrcc.setText(custinfo[1]);
-            ddterms.setSelectedItem(custinfo[4]);
-            
-        
-    }
+    
     
    
     
@@ -1259,11 +1249,11 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
             tbdesc.requestFocus();
             canproceed = false;
         }
-        if (! fglData.isAcctNumberValid(tbacct.getText()) ) {
+        if (! OVData.isValidGLAcct(tbacct.getText()) ) {
             bsmf.MainFrame.show(getMessageTag(1026));
             canproceed = false;
         }
-        if (! fglData.isCostCenterValid(tbcc.getText()) ) {
+        if (! OVData.isValidGLcc(tbcc.getText()) ) {
             bsmf.MainFrame.show(getMessageTag(1026));
             canproceed = false;
         }
@@ -1308,8 +1298,16 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btnewActionPerformed
 
     private void ddcustActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddcustActionPerformed
-       if (ddcust.getSelectedItem() != null)
-        getBilltoInfo(ddcust.getSelectedItem().toString());
+       if (! isLoad && ddcust.getSelectedItem() != null) {
+        cm_mstr cm = getCustMstr(new String[]{ddcust.getSelectedItem().toString()});
+        aracct = cm.cm_ar_acct();
+        arcc = cm.cm_ar_cc();
+        terms = cm.cm_terms();
+        arbank = cm.cm_bank();
+        tbhdracct.setText(cm.cm_ar_acct());
+        tbhdrcc.setText(cm.cm_ar_cc());
+        ddterms.setSelectedItem(cm.cm_terms());
+       }
     }//GEN-LAST:event_ddcustActionPerformed
 
     private void btlookupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupActionPerformed
@@ -1318,6 +1316,7 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
         BlueSeerUtils.messagereset();
+        initDataSets = null;
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 

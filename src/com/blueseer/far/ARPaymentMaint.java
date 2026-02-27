@@ -530,7 +530,7 @@ public class ARPaymentMaint extends javax.swing.JPanel implements IBlueSeerV {
     }
     
     public String[] addRecord(String[] x) {
-        String[] m = addArTransaction(createDetRecord(), createRecord());
+        String[] m = addArTransaction("ARPayment", createDetRecord(), createRecord());
      
          // autopost
         if (isAutoPost) {

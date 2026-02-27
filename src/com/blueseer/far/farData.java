@@ -33,6 +33,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
+import static com.blueseer.fgl.fglData._glEntryFromARMemo;
 import static com.blueseer.fgl.fglData._glEntryFromARPayment;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
@@ -200,7 +201,7 @@ public class farData {
             return rows;
     }
      
-    public static String[] addArTransaction(ArrayList<ard_mstr> ard, ar_mstr ar) {
+    public static String[] addArTransaction(String artype, ArrayList<ard_mstr> ard, ar_mstr ar) {
         
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
@@ -235,8 +236,12 @@ public class farData {
            
             _updateCustAR(ar.ar_cust(), bscon);
             _updateARopen(ar.ar_nbr(), bscon);
-            _glEntryFromARPayment(ar.ar_nbr(), new java.util.Date(), bscon);
-                    
+            if (artype.equals("ARPayment")) {
+              _glEntryFromARPayment(ar.ar_nbr(), new java.util.Date(), bscon);
+            }
+            if (artype.equals("ARMemo")) {
+              _glEntryFromARMemo(ar.ar_nbr(), new java.util.Date(), bscon);
+            }
             bscon.commit();
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
         } catch (SQLException s) {

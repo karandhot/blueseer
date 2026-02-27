@@ -57,6 +57,7 @@ import static com.blueseer.utl.OVData.getCodeMstrKeyList;
 import static com.blueseer.utl.OVData.getCodeMstrValueList;
 import static com.blueseer.utl.OVData.getCodeValueByCode;
 import static com.blueseer.utl.OVData.getCodeValueByCodeKey;
+import static com.blueseer.utl.OVData.getExchangeBaseValue;
 import static com.blueseer.utl.OVData.getExchangeRate;
 import static com.blueseer.utl.OVData.getMenuRecs;
 import static com.blueseer.utl.OVData.getMenusAsTree;
@@ -339,6 +340,13 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "getNextNbr" : 
             response.getWriter().print(intToJson(getNextNbr(request.getHeader("param1")))); 
             break;
+            
+        case "getExchangeBaseValue" : {
+            response.getWriter().print(doubleToJson(getExchangeBaseValue(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    bsParseDouble(request.getHeader("param3"))))); 
+            break;    
+        }
         
         case "addUpdateSysMeta" : {
         response.getWriter().println(boolToJson(addUpdateSysMeta(request.getHeader("param1"), 

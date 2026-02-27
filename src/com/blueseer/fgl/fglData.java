@@ -5277,6 +5277,71 @@ public class fglData {
                     }
     }
     
+    public static void _glEntryFromARMemo(String batchnbr, Date effdate, Connection bscon) throws SQLException {
+                Statement st = bscon.createStatement();
+                ResultSet res = null;
+                java.util.Date now = new java.util.Date();
+                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+                DateFormat dftime = new SimpleDateFormat("HH:mm:ss");
+                String mydate = dfdate.format(now);
+                
+                    // added SQLITE adjustment here...create arraylist of entries for glentry instead of inline
+                    ArrayList acct_cr = new ArrayList();
+                    ArrayList ref =  new ArrayList();
+                    ArrayList doc =  new ArrayList();
+                    ArrayList desc =   new ArrayList();
+                    ArrayList type =   new ArrayList();
+                    ArrayList cc_cr =   new ArrayList();
+                    ArrayList acct_dr =   new ArrayList();
+                    ArrayList cc_dr =   new ArrayList();
+                    ArrayList site =   new ArrayList();
+                    ArrayList<Double> cost =  new ArrayList(); 
+                    ArrayList<Double> basecost =  new ArrayList(); 
+                    ArrayList curr =  new ArrayList(); 
+                    ArrayList basecurr =  new ArrayList(); 
+                   
+                    String thistype = "";
+                    String thisdesc = "AR Memo";
+                    String gldoc = setGLRecNbr("AR");
+                    
+                    res = st.executeQuery("select ar_type, ard_acct, ard_cc, ard_nbr, ard_amt, ard_base_amt, ard_curr, ard_base_curr, ar_ref, ard_ref, ar_site, ar_acct, ar_cc from ard_mstr " +
+                               " inner join ar_mstr on ar_nbr = ard_nbr  where ard_nbr = " + "'" + batchnbr + "'" +";");
+                   
+                    while (res.next()) {
+                     // if CM credit cust acct and debit cash
+                     // if DM debit cust acct and credit cash
+                    if (res.getString("ar_type").equals("C")) {
+                        thistype = "AR-MEMO-CM";
+                       acct_cr.add(res.getString("ard_acct"));
+                       acct_dr.add(res.getString("ar_acct"));
+                       cc_cr.add(res.getString("ard_cc"));
+                       cc_dr.add(res.getString("ar_cc")); 
+                    } else {
+                        thistype = "AR-MEMO-DM";
+                       acct_cr.add(res.getString("ar_acct"));
+                       acct_dr.add(res.getString("ard_acct"));
+                       cc_cr.add(res.getString("ar_cc"));
+                       cc_dr.add(res.getString("ard_cc"));  
+                    }
+                    
+                    cost.add(res.getDouble("ard_amt"));
+                    basecost.add(res.getDouble("ard_base_amt"));
+                    curr.add(res.getString("ard_curr"));
+                    basecurr.add(res.getString("ard_base_curr"));
+                    site.add(res.getString("ar_site"));
+                    ref.add(res.getString("ard_nbr"));
+                    type.add(thistype);
+                    desc.add("Memo " + res.getString("ard_ref"));
+                    doc.add(gldoc);
+                    
+                    // need to do discounts ..credit sales, debit disc, debit AR (-$4.00, $.02, $3.98)
+                    }
+                    
+                     for (int j = 0; j < acct_cr.size(); j++) {
+                      glEntryXP(bscon, acct_cr.get(j).toString(), cc_cr.get(j).toString(), acct_dr.get(j).toString(), cc_dr.get(j).toString(), setDateDB(effdate), cost.get(j), basecost.get(j), curr.get(j).toString(), basecurr.get(j).toString(), ref.get(j).toString(), site.get(j).toString(), type.get(j).toString(), desc.get(j).toString(), doc.get(j).toString());  
+                    } 
+    }
+    
     
     public static void _glEntryFromShipper(String shipper, Date effdate, Connection bscon) throws SQLException {
         

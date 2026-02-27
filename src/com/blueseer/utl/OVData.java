@@ -9782,7 +9782,7 @@ public static String getExchangeRate(String base, String foreign) {
             }
         } 
     
-    String myitem = "";
+    String myitem = "1";
    try{
 
   Connection con = null;
@@ -9819,8 +9819,23 @@ return myitem;
 }
 
     public static double getExchangeBaseValue(String base, String foreign, double invalue) {
-   double outvalue = invalue;
- try{
+    
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getExchangeBaseValue"});
+            list.add(new String[]{"param1", base});
+            list.add(new String[]{"param2", foreign}); 
+            list.add(new String[]{"param3", bsNumber(invalue)}); 
+            try {
+                return jsonToDouble(sendServerPost(list, "", null, "dataServOV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0;
+            }
+        }     
+        
+    double outvalue = invalue;
+    try{
 
    Connection con = null;
             if (ds != null) {

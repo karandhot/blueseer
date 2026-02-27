@@ -145,32 +145,14 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             reader.close();
             ObjectMapper om = new ObjectMapper();
             String[] ca = sb.toString().split("=_=", -1);
-            farData.ard_mstr[] sdarray = om.readValue(ca[0], farData.ard_mstr[].class);
+            String artype = ca[0];
+            farData.ard_mstr[] sdarray = om.readValue(ca[1], farData.ard_mstr[].class);
             ArrayList<farData.ard_mstr> ardlist = new ArrayList<farData.ard_mstr>(Arrays.asList(sdarray));  
-            farData.ar_mstr ar = om.readValue(ca[1], farData.ar_mstr.class); 
-            response.getWriter().print(arrayToJson(farData.addArTransaction(ardlist, ar))); 
+            farData.ar_mstr ar = om.readValue(ca[2], farData.ar_mstr.class); 
+            response.getWriter().print(arrayToJson(farData.addArTransaction(artype, ardlist, ar))); 
             break;
             }
-        
-        case "VouchAndPayTransaction" : {
-            String line;
-            StringBuilder sb = new StringBuilder();  
-            BufferedReader reader = request.getReader();  // as string
-            while ((line = reader.readLine()) != null) {  
-            sb.append(line);
-            } 
-            reader.close();
-            ObjectMapper om = new ObjectMapper();
-            String[] ca = sb.toString().split("=_=", -1);
-            String ctype = ca[0];
-            fapData.vod_mstr[] sdarray = om.readValue(ca[1], fapData.vod_mstr[].class);
-            ArrayList<fapData.vod_mstr> vodlist = new ArrayList<fapData.vod_mstr>(Arrays.asList(sdarray)); 
-            fapData.ap_mstr ap = om.readValue(ca[2], fapData.ap_mstr.class); 
-            Boolean isvoid = Boolean.valueOf(ca[3]);
-            response.getWriter().print(arrayToJson(fapData.VouchAndPayTransaction(ctype, vodlist, ap, isvoid))); 
-            break;
-            }
-       
+                
         case "getARMstrSet" : {       
             farData.ARSet shset = getARMstrSet(new String[]{request.getHeader("param1")});
             ObjectMapper om_shset = new ObjectMapper(); 
