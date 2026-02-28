@@ -3437,6 +3437,15 @@ public class admData {
                                lines.add(s);
                             }
                         }
+                        if (sd.equals("demdtoplan")) {
+                            res = st.executeQuery("select demdtoplan from inv_ctrl;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "demdtoplan";
+                               s[1] = res.getString("demdtoplan");
+                               lines.add(s);
+                            }
+                        }
                         if (sd.equals("employees")) {
                             res = st.executeQuery("select emp_nbr from emp_mstr order by emp_nbr ;");
                             while (res.next()) {

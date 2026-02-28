@@ -48,6 +48,7 @@ import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerT;
+import com.blueseer.utl.IBlueSeerV;
 import static com.blueseer.utl.OVData.canUpdate;
 import java.awt.Color;
 import java.awt.Component;
@@ -73,15 +74,16 @@ import javax.swing.SwingWorker;
  *
  * @author vaughnte
  */
-public class LocationMaint extends javax.swing.JPanel implements IBlueSeerT {
+public class LocationMaint extends javax.swing.JPanel implements IBlueSeerV {
 
     // global variable declarations
                 boolean isLoad = false;
                 private static loc_mstr x = null;
-                ArrayList<String[]> initDataSets = new ArrayList<>();
+                boolean canUpdate = false;
+                boolean isAutoPost = false;
+                ArrayList<String[]> initDataSets = null;
                 String defaultSite = "";
                 String defaultCurrency = "";
-                boolean canupdate = false;
     
    // global datatablemodel declarations    
                 
@@ -269,15 +271,16 @@ public class LocationMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
-        tbkey.setText("");
-        tbdesc.setText("");
-         cbactive.setSelected(false);
-         
-        String defaultsite = "";
-        ArrayList<String[]> initDataSets = invData.getLocationMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
-        
+       tbkey.setText("");
+       tbdesc.setText("");
+       cbactive.setSelected(false);
+       
+        if (init) {
+          initDataSets = invData.getLocationMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        }
+       
        
         ddsite.removeAllItems();
         ddwh.removeAllItems();
@@ -289,7 +292,7 @@ public class LocationMaint extends javax.swing.JPanel implements IBlueSeerT {
               ddsite.addItem(s[1]); 
             }
             if (s[0].equals("site")) {
-              defaultsite = s[1]; 
+              defaultSite = s[1]; 
             }
             if (s[0].equals("warehouses")) {
               ddwh.addItem(s[1]);  
@@ -298,20 +301,20 @@ public class LocationMaint extends javax.swing.JPanel implements IBlueSeerT {
               defaultCurrency = s[1];  
             }
             if (s[0].equals("canupdate")) {
-              canupdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
             }       
            
         }
         ddwh.insertItemAt("", 0);
         ddwh.setSelectedIndex(0);
-        ddsite.setSelectedItem(defaultsite);
+        ddsite.setSelectedItem(defaultSite);
        
        isLoad = false;
     }
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btdelete.setEnabled(false);
@@ -339,7 +342,7 @@ public class LocationMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public boolean validateInput(dbaction x) {
         
-        if (! canupdate) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -379,7 +382,7 @@ public class LocationMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         
@@ -686,6 +689,7 @@ public class LocationMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
         BlueSeerUtils.messagereset();
+        initDataSets = null;
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 

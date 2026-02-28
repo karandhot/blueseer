@@ -48,6 +48,7 @@ import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerT;
+import com.blueseer.utl.IBlueSeerV;
 import static com.blueseer.utl.OVData.canUpdate;
 import java.awt.Color;
 import java.awt.Component;
@@ -73,12 +74,17 @@ import javax.swing.SwingWorker;
  *
  * @author vaughnte
  */
-public class WareHouseMaint extends javax.swing.JPanel implements IBlueSeerT {
+public class WareHouseMaint extends javax.swing.JPanel implements IBlueSeerV {
 
     
     // global variable declarations
                 boolean isLoad = false;
                 private static wh_mstr x = null;
+                boolean canUpdate = false;
+                boolean isAutoPost = false;
+                ArrayList<String[]> initDataSets = null;
+                String defaultSite = "";
+                String defaultCurrency = "";
     
    // global datatablemodel declarations    
                 
@@ -266,7 +272,7 @@ public class WareHouseMaint extends javax.swing.JPanel implements IBlueSeerT {
        }
     }
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
          tbkey.setText("");
         tbname.setText("");
@@ -280,7 +286,9 @@ public class WareHouseMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbmunicipality.setText("");
         
         String defaultsite = "";
-        ArrayList<String[]> initDataSets = invData.getWareHouseMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (init) {
+          initDataSets = invData.getWareHouseMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        }
         
         ddstate.removeAllItems();
         ddcountry.removeAllItems();
@@ -314,7 +322,7 @@ public class WareHouseMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btdelete.setEnabled(false);
@@ -342,7 +350,7 @@ public class WareHouseMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public boolean validateInput(dbaction x) {
        
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate ) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -375,7 +383,7 @@ public class WareHouseMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         
@@ -790,6 +798,7 @@ public class WareHouseMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
         BlueSeerUtils.messagereset();
+        initDataSets = null;
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 

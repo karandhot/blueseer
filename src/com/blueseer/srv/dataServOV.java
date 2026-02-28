@@ -47,7 +47,11 @@ import static com.blueseer.utl.OVData.addMenuToUser;
 import static com.blueseer.utl.OVData.addSysMetaDataNoUnique;
 import static com.blueseer.utl.OVData.addUpdateSysMeta;
 import static com.blueseer.utl.OVData.copyUserPerms;
+import static com.blueseer.utl.OVData.createMRPByLevel;
+import static com.blueseer.utl.OVData.createMRPZeroLevel;
+import static com.blueseer.utl.OVData.createPlanFromDemand;
 import static com.blueseer.utl.OVData.createPlanFromServiceOrder;
+import static com.blueseer.utl.OVData.deleteAllMRP;
 import static com.blueseer.utl.OVData.deleteMenuToAllUsers;
 import static com.blueseer.utl.OVData.deleteMenuToUser;
 import static com.blueseer.utl.OVData.deleteSysMeta;
@@ -62,6 +66,7 @@ import static com.blueseer.utl.OVData.getExchangeRate;
 import static com.blueseer.utl.OVData.getMenuRecs;
 import static com.blueseer.utl.OVData.getMenusAsTree;
 import static com.blueseer.utl.OVData.getMenusOfUsersListArray;
+import static com.blueseer.utl.OVData.getNextLevelpsmstr;
 import static com.blueseer.utl.OVData.getNextNbr;
 import static com.blueseer.utl.OVData.getOperationsByItem;
 import static com.blueseer.utl.OVData.getProdLineInvAcct;
@@ -74,6 +79,7 @@ import static com.blueseer.utl.OVData.getTaxPercentElementsApplicableByItem;
 import static com.blueseer.utl.OVData.getUsersOfMenusList;
 import static com.blueseer.utl.OVData.getmenutree;
 import static com.blueseer.utl.OVData.getpsmstrcompSerialized;
+import static com.blueseer.utl.OVData.getzerolevelpsmstr;
 import static com.blueseer.utl.OVData.isAutoPost;
 import static com.blueseer.utl.OVData.isGLPeriodClosed;
 import static com.blueseer.utl.OVData.isValidBank;
@@ -268,6 +274,22 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
         }
         
+        case "updateItemlevel" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            ArrayList<String> al = om.readValue(ca[0], new TypeReference<ArrayList<String>>() {});
+            int level = bsParseInt(ca[1]);
+            OVData.updateItemlevel(al, level);    
+            break;
+        }
+        
         case "getCodeMstrValueList" :        
             response.getWriter().print(ArrayListStringToJson(getCodeMstrValueList(request.getHeader("code"))));
             break;
@@ -341,12 +363,47 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(intToJson(getNextNbr(request.getHeader("param1")))); 
             break;
             
+        case "deleteAllMRP" : {
+            response.getWriter().print(intToJson(deleteAllMRP(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3")))); 
+            break;    
+        }
+        
+        case "createMRPByLevel" : {
+            response.getWriter().print(intToJson(createMRPByLevel(bsParseInt(request.getHeader("param1")),
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4")))); 
+            break;    
+        }
+        
+        case "createMRPZeroLevel" : {
+            response.getWriter().print(intToJson(createMRPZeroLevel(request.getHeader("param1")))); 
+            break;    
+        }
+        
+        case "createPlanFromDemand" : {
+            response.getWriter().print(intToJson(createPlanFromDemand(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3")))); 
+            break;    
+        }
+            
         case "getExchangeBaseValue" : {
             response.getWriter().print(doubleToJson(getExchangeBaseValue(request.getHeader("param1"),
                     request.getHeader("param2"),
                     bsParseDouble(request.getHeader("param3"))))); 
             break;    
         }
+        
+        case "getzerolevelpsmstr" :        
+            response.getWriter().print(ArrayListStringToJson(getzerolevelpsmstr()));
+            break;
+            
+        case "getNextLevelpsmstr" :        
+            response.getWriter().print(ArrayListStringToJson(getNextLevelpsmstr(BlueSeerUtils.bsParseInt(request.getHeader("param1")))));
+            break;    
         
         case "addUpdateSysMeta" : {
         response.getWriter().println(boolToJson(addUpdateSysMeta(request.getHeader("param1"), 

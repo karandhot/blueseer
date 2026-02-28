@@ -39,6 +39,7 @@ import com.blueseer.adm.admData;
 import static com.blueseer.adm.admData.addOrUpdateCodeMstr;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import java.awt.Color;
 import java.awt.Component;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -57,6 +58,14 @@ import javax.swing.JTabbedPane;
  */
 public class ItemLevelMaint extends javax.swing.JPanel {
 
+    boolean isLoad = false;
+    boolean canUpdate = false;
+    boolean isAutoPost = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    boolean demdtoplan = false;
+    
     /**
      * Creates new form ItemLevelMaint
      */
@@ -109,19 +118,51 @@ public class ItemLevelMaint extends javax.swing.JPanel {
        }
     }
     
-    
-    public void initvars(String[] arg) {
+    public void setComponentDefaultValues(boolean init) {
+       isLoad = true;
+       
+       if (init) {
+          initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "demdtoplan");
+        }
+       
         btlevel.setEnabled(true);
         btmrp.setEnabled(true);
-        ddsite.removeAllItems();
-        ArrayList<String>  mylist = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (String code : mylist) {
-            ddsite.addItem(code);
-        }
-        ddsite.setSelectedItem(OVData.getDefaultSite());
+        
         tbfromitem.setText("");
         tbtoitem.setText("");
         talog.setText("");
+        
+         ddsite.removeAllItems();
+         for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            
+            if (s[0].equals("autopost")) {
+              isAutoPost = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+           
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            
+            if (s[0].equals("demdtoplan")) {
+              demdtoplan = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+        }
+         
+        ddsite.setSelectedItem(defaultSite);
+        
+       isLoad = false;
+    }
+    
+    
+    public void initvars(String[] arg) {
+        
     }
    
        class TaskItemLevel extends SwingWorker<Void, Void> {
@@ -142,30 +183,8 @@ public class ItemLevelMaint extends javax.swing.JPanel {
             } else {
                 break;
             }
-        }
-
-           /* 
-            Random random = new Random();
-            int progress = 0;
-            //Initialize progress property.
-            setProgress(0);
-            //Sleep for at least one second to simulate "startup".
-            try {
-                Thread.sleep(1000 + random.nextInt(2000));
-            } catch (InterruptedException ignore) {}
-            while (progress < 100) {
-                //Sleep for up to one second.
-                try {
-                    Thread.sleep(random.nextInt(1000));
-                } catch (InterruptedException ignore) {}
-                //Make random progress.
-                progress += random.nextInt(10);
-                setProgress(Math.min(progress, 100));
-            }
-            
-            */
-            
-            return null;
+        }  
+        return null;
            
         }
  
@@ -218,29 +237,10 @@ public class ItemLevelMaint extends javax.swing.JPanel {
             talog.append("MRP Level: " + String.valueOf(i) + " Rows: " + String.valueOf(rows) + "\n");
         }
 
-        if (OVData.isInvCtrlDemdToPlan())
-        OVData.createPlanFromDemand(ddsite.getSelectedItem().toString(), "", "");
-        
-           /* 
-            Random random = new Random();
-            int progress = 0;
-            //Initialize progress property.
-            setProgress(0);
-            //Sleep for at least one second to simulate "startup".
-            try {
-                Thread.sleep(1000 + random.nextInt(2000));
-            } catch (InterruptedException ignore) {}
-            while (progress < 100) {
-                //Sleep for up to one second.
-                try {
-                    Thread.sleep(random.nextInt(1000));
-                } catch (InterruptedException ignore) {}
-                //Make random progress.
-                progress += random.nextInt(10);
-                setProgress(Math.min(progress, 100));
-            }
-            
-            */
+        if (demdtoplan) {
+         int c = OVData.createPlanFromDemand(ddsite.getSelectedItem().toString(), "", "");
+          talog.append("DemdToPlan is true: " + String.valueOf(c) + " Plan Orders created " + "\n");
+        }
             
             return null;
            
@@ -250,10 +250,7 @@ public class ItemLevelMaint extends javax.swing.JPanel {
          * Executed in event dispatch thread
          */
         public void done() {
-           // Toolkit.getDefaultToolkit().beep();
-           // MainProgressBar.setVisible(false);
-           // setperms(bsmf.MainFrame.userid);
-          //  reinitpanels2("BackGroundPanel", "BackGroundPanel", false, "");
+         
             bsmf.MainFrame.show(getMessageTag(1065));
             
             MainProgressBar.setVisible(false);
@@ -396,7 +393,7 @@ public class ItemLevelMaint extends javax.swing.JPanel {
        // bind_tree("4048");
         btlevel.setEnabled(false);
         btmrp.setEnabled(false);
-         MainProgressBar.setVisible(true);
+        MainProgressBar.setVisible(true);
         MainProgressBar.setIndeterminate(true);
         
         ItemLevelMaint.TaskItemLevel taskitemlevel = new ItemLevelMaint.TaskItemLevel();

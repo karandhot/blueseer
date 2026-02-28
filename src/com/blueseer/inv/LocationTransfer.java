@@ -31,6 +31,8 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.inv.invData.getInMstr;
+import com.blueseer.inv.invData.in_mstr;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
@@ -54,13 +56,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
@@ -79,10 +75,11 @@ import javax.swing.JTable;
  */
 public class LocationTransfer extends javax.swing.JPanel {
                 boolean isLoad = false;
-                ArrayList<String[]> initDataSets = new ArrayList<>();
+                boolean canUpdate = false;
+                boolean isAutoPost = false;
+                ArrayList<String[]> initDataSets = null;
                 String defaultSite = "";
                 String defaultCurrency = "";
-                boolean canupdate = false;
     
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                     new String[]{
@@ -98,60 +95,6 @@ public class LocationTransfer extends javax.swing.JPanel {
         initComponents();
         setLanguageTags(this);
     }
-
-    
-    public void getlocqty(String parentpart) {
-        try {
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-               
-
-                int i = 0;
-
-                
-                mymodel.setRowCount(0);
-                tablelocqty.setModel(mymodel);
-                            
-                // ReportPanel.TableReport.getColumn("CallID").setCellRenderer(new ButtonRenderer());
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
-
-               res = st.executeQuery("SELECT in_site, in_loc, in_wh, in_qoh, in_date  " +
-                        " FROM  in_mstr  " +
-                        " where in_item = " + "'" + parentpart.toString() + "'" + 
-                        " order by in_loc ;");
-
-                while (res.next()) {
-                    i++;
-                    mymodel.addRow(new Object[]{
-                                res.getString("in_site"),
-                                res.getString("in_wh"),
-                                res.getString("in_loc"),
-                                res.getInt("in_qoh")
-                            });
-              
-                }
-                
-            } catch (SQLException s) {
-                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-             
-             
-         }
     
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
@@ -197,10 +140,12 @@ public class LocationTransfer extends javax.swing.JPanel {
        }
     }
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
         
-        ArrayList<String[]> initDataSets = invData.getLocationMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (init) {
+            initDataSets = invData.getLocationMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        }
         
         mymodel.setRowCount(0);
         tablelocqty.setModel(mymodel);
@@ -239,7 +184,7 @@ public class LocationTransfer extends javax.swing.JPanel {
               defaultCurrency = s[1];  
             }
             if (s[0].equals("canupdate")) {
-              canupdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
             }       
            
         }
@@ -255,7 +200,7 @@ public class LocationTransfer extends javax.swing.JPanel {
     
     
     public void initvars(String[] arg) {
-        setComponentDefaultValues();        
+        setComponentDefaultValues(initDataSets == null);        
     }
    
     public void lookUpFrameItemDesc() {
@@ -264,9 +209,9 @@ public class LocationTransfer extends javax.swing.JPanel {
         lual = new ActionListener() {
         public void actionPerformed(ActionEvent event) {
         if (lurb1.isSelected()) {  
-         luModel = DTData.getItemDescBrowseBySite(luinput.getText(), "it_item", OVData.getDefaultSite());
+         luModel = DTData.getItemDescBrowseBySite(luinput.getText(), "it_item", defaultSite);
         } else {
-         luModel = DTData.getItemDescBrowseBySite(luinput.getText(), "it_desc", OVData.getDefaultSite());   
+         luModel = DTData.getItemDescBrowseBySite(luinput.getText(), "it_desc", defaultSite);   
         }
         luTable.setModel(luModel);
         luTable.getColumnModel().getColumn(0).setMaxWidth(50);
@@ -616,24 +561,29 @@ public class LocationTransfer extends javax.swing.JPanel {
         
         
         
-        if (ddlocfrom.getSelectedItem() != null)
+        if (ddlocfrom.getSelectedItem() != null) {
         locfrom = ddlocfrom.getSelectedItem().toString();
+        }
         
-        if (ddlocto.getSelectedItem() != null)
+        if (ddlocto.getSelectedItem() != null) {
         locto = ddlocto.getSelectedItem().toString();
+        }
         
-        if (ddwhfrom.getSelectedItem() != null)
+        if (ddwhfrom.getSelectedItem() != null) {
         whfrom = ddwhfrom.getSelectedItem().toString();
+        }
         
-        if (ddwhto.getSelectedItem() != null)
+        if (ddwhto.getSelectedItem() != null) {
         whto = ddwhto.getSelectedItem().toString();
+        }
         
-        if (ddsitefrom.getSelectedItem() != null)
+        if (ddsitefrom.getSelectedItem() != null) {
         sitefrom = ddsitefrom.getSelectedItem().toString();
+        }
         
-        if (ddsiteto.getSelectedItem() != null)
+        if (ddsiteto.getSelectedItem() != null) {
         siteto = ddsiteto.getSelectedItem().toString();
-        
+        }
         
         qty = Double.valueOf(tbqty.getText());
         
@@ -650,15 +600,7 @@ public class LocationTransfer extends javax.swing.JPanel {
             tbitem.requestFocus();
             return;
         }
-        /*
-        if (qty > invData.getItemQtyByWarehouseAndLocation(tbitem.getText(), sitefrom, whfrom, locfrom) ) {
-            proceed = false;
-            bsmf.MainFrame.show(getMessageTag(1074));
-            tbqty.requestFocus();
-            return;
-        }
-        */
-        if (proceed) {    
+            if (proceed) {    
             //Date effdate, String part, int qty, String type, double price, double cost, String site, 
             //  String loc, String cust, String nbr, String order, int line, String po, String terms, String lot, String rmks, 
             //  String ref, String acct, String cc, String jobnbr, String serial, String program, String userid
@@ -728,7 +670,16 @@ public class LocationTransfer extends javax.swing.JPanel {
                 tbitem.requestFocus();
             } else {
               tbitem.setBackground(Color.white);
-              getlocqty(tbitem.getText());
+              ArrayList<in_mstr> inm = getInMstr(new String[]{tbitem.getText()});
+              mymodel.setRowCount(0);
+              for (in_mstr in : inm) {
+                  mymodel.addRow(new Object[]{
+                                in.in_site(),
+                                in.in_wh(),
+                                in.in_loc(),
+                                in.in_qoh()
+                            });
+              }
              }
         }
     }//GEN-LAST:event_tbitemFocusLost

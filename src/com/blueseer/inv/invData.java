@@ -2685,6 +2685,38 @@ public class invData {
     return rows;
     }
     
+    public static ArrayList<in_mstr> getInMstr(String[] x) {
+        ArrayList<in_mstr> r = new ArrayList<in_mstr>();
+        String[] m = new String[2];
+        String sql = "select * from in_mstr where in_item = ? order by in_loc;";
+        
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());   
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, x[0]);
+        
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r.add(new in_mstr(m, res.getString("in_item"), res.getDouble("in_qoh"),
+                        res.getString("in_date"), res.getString("in_loc"), 
+                        res.getString("in_wh"), res.getString("in_site"),
+                        res.getString("in_serial"), res.getString("in_expire"),
+                        res.getString("in_userid"), res.getString("in_prog")));
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getClassName() + "." + Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               
+        }
+        return r;
+    }
+  
+    
     public static tran_mstr getTranMstr(String id) {
         tran_mstr r = null;
         String[] m = new String[2];
@@ -4698,7 +4730,7 @@ public class invData {
 
         }
 
-    public static ArrayList getBOMInit(String item, String site, String bomid) {
+    public static ArrayList getBOMInit(String item, String site, String bomid, String userid) {
                ArrayList myarray = new ArrayList();
              try{
                 Connection con = null;
@@ -4714,7 +4746,7 @@ public class invData {
             String[] sites = null;
             boolean allsites = false;
             String bomrouting = "";
-            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + bsmf.MainFrame.userid + "'" + ";");
+            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + userid + "'" + ";");
             while (res.next()) {
               if (res.getString("user_allowedsites").equals("*")) {
                   allsites = true;
@@ -4868,7 +4900,6 @@ public class invData {
             return myarray;
 
         }
-
     
     public static ArrayList<String[]> getWareHouseMaintInit(String panelClassName, String userid) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
@@ -4912,7 +4943,7 @@ public class invData {
             
             String[] sites = null;
             boolean allsites = false;
-            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + bsmf.MainFrame.userid + "'" + ";");
+            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + userid + "'" + ";");
             while (res.next()) {
               if (res.getString("user_allowedsites").equals("*")) {
                   allsites = true;
@@ -5036,7 +5067,7 @@ public class invData {
             
             String[] sites = null;
             boolean allsites = false;
-            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + bsmf.MainFrame.userid + "'" + ";");
+            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + userid + "'" + ";");
             while (res.next()) {
               if (res.getString("user_allowedsites").equals("*")) {
                   allsites = true;

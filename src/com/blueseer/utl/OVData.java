@@ -3455,9 +3455,18 @@ public class OVData {
         return myarray;
 
     }
-
     
-    public static ArrayList getzerolevelpsmstr() {
+    public static ArrayList<String> getzerolevelpsmstr() {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getzerolevelpsmstr"});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServOV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         ArrayList<String> myarray = new ArrayList<String>();
         ArrayList<String> mylist = new ArrayList<String>();
 
@@ -3511,8 +3520,20 @@ public class OVData {
     }
 
     public static void setzerolevelpsmstr() {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "setzerolevelpsmstr"});
+            try {
+                sendServerPost(list, "", null, "dataServOV"); 
+                return;
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        }
+        
         ArrayList<String> myarray = new ArrayList<String>();
-        ArrayList<String> mylist = new ArrayList<String>();
+        
 
         try {
             
@@ -3543,7 +3564,7 @@ public class OVData {
                         i++;
                     }
                     if (i == 0) {
-                        mylist.add(myitem);
+                        //mylist.add(myitem);
                         st.executeUpdate(
                                 " update item_mstr set it_level = " + "'" + '0' + "'"
                                 + " where it_item = " + "'" + myitem + "'" + ";");
@@ -3569,7 +3590,20 @@ public class OVData {
 
     }
 
-    public static ArrayList getNextLevelpsmstr(int level) {
+    public static ArrayList<String> getNextLevelpsmstr(int level) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getNextLevelpsmstr"});
+            list.add(new String[]{"param1", bsNumber(level)});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServOV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
         ArrayList<String> myarray = new ArrayList<String>();
         try {
             
@@ -3617,6 +3651,21 @@ public class OVData {
 
     public static void updateItemlevel(ArrayList list, int level) {
 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> xlist = new ArrayList<>();
+            xlist.add(new String[]{"id","updateItemlevel"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(list);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(level);
+                sendServerPost(xlist, jsonString, null, "dataServOV");
+                return;
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        } 
+        
         try {
             
             Connection con = null;
@@ -3651,6 +3700,20 @@ public class OVData {
     }
 
     public static int createMRPByLevel(int level, String site, String fromitem, String toitem) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "createMRPByLevel"});
+            list.add(new String[]{"param1", bsNumber(level)});
+            list.add(new String[]{"param2", site});
+            list.add(new String[]{"param3", fromitem});
+            list.add(new String[]{"param4", toitem});
+            try {
+                return jsonToInt(sendServerPost(list, "", null, "dataServOV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0;
+            }
+        }
         int rows = 0;
         String sql = "";
         if (dbtype.equals("sqlite")) {
@@ -3692,6 +3755,17 @@ public class OVData {
 
    
     public static int createMRPZeroLevel(String site) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "createMRPZeroLevel"});
+            list.add(new String[]{"param1", site});
+            try {
+                return jsonToInt(sendServerPost(list, "", null, "dataServOV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0;
+            }
+        }
         int rows = 0;
         String sql = " insert into mrp_mstr (mrp_item, mrp_qty, mrp_date, mrp_ref, mrp_type, mrp_line, mrp_site ) "
                         + " select sod_item, (sod_ord_qty - sod_shipped_qty), sod_due_date, sod_nbr, 'demand', sod_line, sod_site from sod_det "
@@ -3709,6 +3783,20 @@ public class OVData {
     }
 
     public static int deleteAllMRP(String site, String fromitem, String toitem) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "deleteAllMRP"});
+            list.add(new String[]{"param1", site});
+            list.add(new String[]{"param2", fromitem});
+            list.add(new String[]{"param3", toitem});
+            try {
+                return jsonToInt(sendServerPost(list, "", null, "dataServOV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0;
+            }
+        }
+        
         int rows = 0;
         String sql = " delete from mrp_mstr where mrp_site = ? " 
                         + " AND mrp_item >= ? "
@@ -22756,6 +22844,20 @@ MainFrame.bslog(e);
 
     public static int createPlanFromDemand(String site, String fromorder, String toorder) {
 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "createPlanFromDemand"});
+            list.add(new String[]{"param1", site});
+            list.add(new String[]{"param2", fromorder});
+            list.add(new String[]{"param3", toorder});
+            try {
+                return jsonToInt(sendServerPost(list, "", null, "dataServOV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0;
+            }
+        }
+        
     int recnumber = 0;
     
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd");

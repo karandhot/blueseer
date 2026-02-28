@@ -564,12 +564,7 @@ public class BOMMaint extends javax.swing.JPanel {
     public String[] getRecord(String[] key) {
           
         // init data
-        if (key.length > 1 && ! key[1].isEmpty()) {
-         initdata = invData.getBOMInit(key[0], site, key[1]);
-        } else {
-         initdata = invData.getBOMInit(key[0], site, key[1]);   
-        } 
-        
+        initdata = invData.getBOMInit(key[0], site, key[1], bsmf.MainFrame.userid);
         
         // lets first determine if there are any BOMs default or alternates
        // BomID = OVData.getDefaultBomID(key[0]);

@@ -34,6 +34,7 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import static com.blueseer.inv.invData.addPLMstr;
 import static com.blueseer.inv.invData.deletePLMstr;
 import static com.blueseer.inv.invData.getPLMstr;
@@ -55,6 +56,7 @@ import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeer;
 import com.blueseer.utl.IBlueSeerT;
+import com.blueseer.utl.IBlueSeerV;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -85,12 +87,16 @@ import javax.swing.SwingWorker;
  *
  * @author vaughnte
  */
-public class ProdCodeMaint extends javax.swing.JPanel implements IBlueSeerT {
+public class ProdCodeMaint extends javax.swing.JPanel implements IBlueSeerV {
 
    // global variable declarations
                 boolean isLoad = false;
                 private static pl_mstr x = null;
-    
+                boolean canUpdate = false;
+                boolean isAutoPost = false;
+                ArrayList<String[]> initDataSets = null;
+                String defaultSite = "";
+                String defaultCurrency = "";
    // global datatablemodel declarations    s new form ProdCodeMaintPanel
      
                 
@@ -277,8 +283,13 @@ public class ProdCodeMaint extends javax.swing.JPanel implements IBlueSeerT {
        }
     }
         
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
+       
+       if (init) {
+          initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
+        }
+       
        tbkey.setBackground(Color.white);
         tbkey.setText("");
          tbdesc.setText("");
@@ -309,13 +320,31 @@ public class ProdCodeMaint extends javax.swing.JPanel implements IBlueSeerT {
          tboutusgvaracct.setText("");
          tboutratevaracct.setText("");
          tbtbd.setText("");
+         
+         for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            
+            if (s[0].equals("autopost")) {
+              isAutoPost = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+           
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+        }
         
        isLoad = false;
     }
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btdelete.setEnabled(false);
@@ -501,7 +530,7 @@ public class ProdCodeMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         
@@ -1151,6 +1180,7 @@ public class ProdCodeMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
         BlueSeerUtils.messagereset();
+        initDataSets = null;
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 
