@@ -3491,6 +3491,17 @@ public class admData {
                                lines.add(s);
                             }
                         }
+                        
+                        if (sd.equals("printers")) {
+                            res = st.executeQuery("select prt_id from prt_mstr order by prt_id;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "printers";
+                               s[1] = res.getString("prt_id");
+                               lines.add(s);
+                            }
+                        }
+                        
                         if (sd.equals("terms")) {
                             res = st.executeQuery("select cut_code from cust_term ;");
                             while (res.next()) {

@@ -40,6 +40,8 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.adm.admData;
+import static com.blueseer.adm.admData.getPrtMstr;
+import com.blueseer.adm.admData.prt_mstr;
 import com.blueseer.ctr.cusData;
 import static com.blueseer.edi.EDI.getFileContentBytes;
 import static com.blueseer.edi.EDI.writeFile;
@@ -20662,16 +20664,13 @@ MainFrame.bslog(e);
       }
       
     public static void printLabelStream(String text, String printer) throws IOException, PrintException {
-          
-          String[] prt = OVData.getPrinterInfo(printer);
-            if (prt[2].equals("DirectToIP") && prt[1].isEmpty()) {
-                prt[1] = "9100";
-            }
-          
-          if (prt[2].equals("DirectToIP")) {
+          prt_mstr prt = getPrtMstr(new String[]{printer});
+          String port = (prt.prt_port().isBlank()) ? "9100" : prt.prt_port();
+                    
+          if (prt.prt_type().equals("DirectToIP")) {
             Socket soc;
             DataOutputStream dos;
-             soc = new Socket(prt[0], Integer.parseInt(prt[1]));
+             soc = new Socket(prt.prt_ip(), Integer.parseInt(port)); 
                     dos = new DataOutputStream(soc.getOutputStream());
                     dos.writeBytes(text);
 
@@ -20679,7 +20678,7 @@ MainFrame.bslog(e);
              soc.close();
             }
             
-            if (prt[2].equals("NetworkShare")) {
+            if (prt.prt_type().equals("NetworkShare")) {
             PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
              pras.add(new Copies(1));
              InputStream stream = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
@@ -20689,7 +20688,7 @@ MainFrame.bslog(e);
               
                 for (int index = 0; service == null && index < services.length; index++) {
                  //   System.out.println("printers: " + services[index].getName());
-                    if (services[index].getName().equalsIgnoreCase(prt[0])) {
+                    if (services[index].getName().equalsIgnoreCase(prt.prt_ip())) {
                         service = services[index];
                     }
                 }

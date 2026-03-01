@@ -86,7 +86,20 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     String id = request.getHeader("id");
     
     switch (id) {
-                
+             
+        case "addVendMstrMass" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            ArrayList<String> sdarray = objectMapper.readValue(sb.toString(), ArrayList.class);
+            response.getWriter().print(arrayToJson(addVendMstrMass(sdarray, request.getHeader("param1"))));
+            break;
+        }
+        
         case "addVendMstr" : { 
             String line;
             StringBuilder sb = new StringBuilder();  

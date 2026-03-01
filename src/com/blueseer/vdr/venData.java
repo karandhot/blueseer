@@ -57,6 +57,19 @@ public class venData {
    
      // add customer master customer master table only
     public static String[] addVendMstr(vd_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> xlist = new ArrayList<String[]>();
+            xlist.add(new String[]{"id","addVendMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(xlist, jsonString, null, "dataServVDR"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         if (x == null) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordError};
@@ -104,8 +117,7 @@ public class venData {
         }
     return m;
     }
-    
-   
+       
     public static String[] addVendMstrMass(ArrayList<String> vendlist, String delim) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
@@ -174,8 +186,7 @@ public class venData {
         }
     return m;
     }
-    
-    
+        
     private static int _addVendMstr(vd_mstr x, Connection con, PreparedStatement ps, ResultSet res, boolean addupdate) throws SQLException {
         int rows = 0;
         String sqlSelect = "select * from vd_mstr where vd_addr = ?";
@@ -286,6 +297,18 @@ public class venData {
     }
      
     public static String[] updateVendMstr(vd_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> xlist = new ArrayList<String[]>();
+            xlist.add(new String[]{"id","updateVendMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(xlist, jsonString, null, "dataServVDR"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         if (x == null) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordError};
@@ -388,6 +411,18 @@ public class venData {
     }
     
     public static String[] deleteVendMstr(vd_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> xlist = new ArrayList<String[]>();
+            xlist.add(new String[]{"id","deleteVendMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(xlist, jsonString, null, "dataServVDR"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         if (x == null) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
