@@ -39,6 +39,7 @@ import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.doubleToJson;
 import static com.blueseer.utl.BlueSeerUtils.intToJson;
+import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.UpdateInventoryLocationTransfer;
 import static com.blueseer.utl.OVData.addItemCostRec;
@@ -76,6 +77,7 @@ import static com.blueseer.utl.OVData.getSystemAttachmentDirectory;
 import static com.blueseer.utl.OVData.getTableInfo;
 import static com.blueseer.utl.OVData.getTaxAmtApplicableByItem;
 import static com.blueseer.utl.OVData.getTaxPercentElementsApplicableByItem;
+import static com.blueseer.utl.OVData.getTermsResults;
 import static com.blueseer.utl.OVData.getUsersOfMenusList;
 import static com.blueseer.utl.OVData.getmenutree;
 import static com.blueseer.utl.OVData.getpsmstrcompSerialized;
@@ -423,7 +425,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         case "sourceOrder" :
             response.getWriter().print(arrayToJson(sourceOrder(bsParseInt(request.getHeader("param1")))));
-        break;  
+        break; 
+        
+        case "getTermsResults" :
+            response.getWriter().print(arrayToJson(getTermsResults(parseDate(request.getHeader("param1")), request.getHeader("param2"))));
+        break; 
             
             
         case "isAutoPost" : {

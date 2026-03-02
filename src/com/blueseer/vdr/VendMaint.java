@@ -53,6 +53,7 @@ import static com.blueseer.utl.BlueSeerUtils.lurb2;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeer;
 import com.blueseer.utl.IBlueSeerT;
+import com.blueseer.utl.IBlueSeerV;
 import static com.blueseer.utl.OVData.canUpdate;
 import static com.blueseer.vdr.venData.addVDSDet;
 import static com.blueseer.vdr.venData.addVendMstr;
@@ -95,13 +96,20 @@ import javax.swing.SwingWorker;
  *
  * @author vaughnte
  */
-public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
+public class VendMaint extends javax.swing.JPanel implements IBlueSeerV {
 
      
     // global variable declarations
                 boolean isLoad = false;
                 public static vd_mstr k = null;
                 public static String vdtype = "";
+                boolean canUpdate = false;
+                boolean isAutoPost = false;
+                ArrayList<String[]> initDataSets = null;
+                String defaultSite = "";
+                String defaultCurrency = "";
+                boolean autovend = false;
+                String defaultAPAcct = "";
                 
    // global datatablemodel declarations  
     javax.swing.table.DefaultTableModel contactmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -314,12 +322,17 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
        }
     }
         
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
        
        vdtype = "";
        k = null;
-               
+       
+       if (init) {
+           initDataSets = venData.getVendMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
+       }
+       
+       
        jTabbedPane1.removeAll();
         jTabbedPane1.add("Main", mainPanel);
         jTabbedPane1.add("Locations", shiptoPanel);
@@ -368,11 +381,82 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
        
         
         ddstate.removeAllItems();
-        ArrayList states = OVData.getCodeMstrKeyList("state");
-        for (int i = 0; i < states.size(); i++) {
-            ddstate.addItem(states.get(i).toString());
-            ddshipstate.addItem(states.get(i).toString());
+        ddcountry.removeAllItems();
+        ddcountry.addItem("");
+        ddsite.removeAllItems();
+        ddcarrier.removeAllItems();
+        ddterms.removeAllItems();
+        ddcurr.removeAllItems();
+        ddbank.removeAllItems();
+        ddaccount.removeAllItems();
+        ddcc.removeAllItems();
+        ddtaxcode.removeAllItems();
+        
+       
+       
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+          
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            
+            if (s[0].equals("currencies")) {
+              ddcurr.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("taxcodes")) {
+              ddtaxcode.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("terms")) {
+              ddterms.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("autovend")) {
+              autovend = BlueSeerUtils.ConvertStringToBool(s[1]); 
+            }
+            
+            if (s[0].equals("accounts")) {
+              ddaccount.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("depts")) {
+              ddcc.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("banks")) {
+              ddbank.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("carriers")) {
+              ddcarrier.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("states")) {
+              ddstate.addItem(s[1]); 
+              ddshipstate.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("countries")) {
+              ddcountry.addItem(s[1]);
+              ddshipcountry.addItem(s[1]);
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("apacct")) {
+              defaultAPAcct = s[1]; 
+            }
+            
         }
+        
         if (ddstate.getItemCount() > 0) {
            ddstate.setSelectedIndex(0); 
         }
@@ -380,77 +464,25 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
            ddshipstate.setSelectedIndex(0); 
         }
         
-    
-        ddcountry.removeAllItems();
-        ddcountry.addItem("");
-        OVData.getCodeMstrKeyList("country").stream().forEach((s) -> ddcountry.addItem(s));  
+        if (ddbank.getItemCount() > 0) {
+        ddbank.setSelectedIndex(0);
+        }
+        if (ddcarrier.getItemCount() > 0) {
+        ddcarrier.setSelectedIndex(0);
+         }
+        if (ddterms.getItemCount() > 0) {
+        ddterms.setSelectedIndex(0);
+        }
+        if (ddstate.getItemCount() > 0) {
+        ddstate.setSelectedIndex(0);
+        }
+        
         ddcountry.setSelectedIndex(0);
-       
-        ddsite.removeAllItems();
-        ArrayList<String> sites = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (String code : sites) {
-            ddsite.addItem(code);
-        }
-        ddsite.setSelectedItem(OVData.getDefaultSite());
-       
-       ddcarrier.removeAllItems();
-        ArrayList myscac = OVData.getfreightlist();   
-        for (int i = 0; i < myscac.size(); i++) {
-            ddcarrier.addItem(myscac.get(i));
-        }
-        
-       ddterms.removeAllItems();
-        ArrayList custterms = cusData.gettermsmstrlist();
-        for (int i = 0; i < custterms.size(); i++) {
-            ddterms.addItem(custterms.get(i));
-        }
-        
-        ddcurr.removeAllItems();
-        ArrayList<String> curr = fglData.getCurrlist();
-        for (int i = 0; i < curr.size(); i++) {
-            ddcurr.addItem(curr.get(i));
-        }
-        ddcurr.setSelectedItem(OVData.getDefaultCurrency());
-        
-        ddbank.removeAllItems();
-        ArrayList bank = OVData.getbanklist();
-        for (int i = 0; i < bank.size(); i++) {
-            ddbank.addItem(bank.get(i));
-        }
-        
-         ddaccount.removeAllItems();
-        ArrayList accounts = fglData.getGLAcctList();
-        for (int i = 0; i < accounts.size(); i++) {
-            ddaccount.addItem(accounts.get(i).toString());
-        }
-        ddaccount.setSelectedItem(OVData.getDefaultAPAcct());
-        
-        ddcc.removeAllItems();
-        ArrayList ccs = fglData.getGLCCList();
-        for (int i = 0; i < ccs.size(); i++) {
-            ddcc.addItem(ccs.get(i).toString());
-        }
-        
-        ddtaxcode.removeAllItems();
-        ArrayList<String> taxcodes = OVData.gettaxcodelist();
-        for (int i = 0; i < taxcodes.size(); i++) {
-            ddtaxcode.addItem(taxcodes.get(i));
-        }
+        ddsite.setSelectedItem(defaultSite);
+        ddcurr.setSelectedItem(defaultCurrency);
+        ddaccount.setSelectedItem(defaultAPAcct);
         ddtaxcode.insertItemAt("", 0);
         ddtaxcode.setSelectedIndex(0);
-       
-        if (ddbank.getItemCount() > 0)
-        ddbank.setSelectedIndex(0);
-         if (ddcarrier.getItemCount() > 0)
-        ddcarrier.setSelectedIndex(0);
-        if (ddterms.getItemCount() > 0)
-        ddterms.setSelectedIndex(0);
-        if (ddstate.getItemCount() > 0)
-        ddstate.setSelectedIndex(0);
-        
-        
-        
-        
         // contacts
          tbcontactname.setText("");
         tbphone.setText("");
@@ -462,7 +494,7 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btdelete.setEnabled(false);
@@ -490,7 +522,7 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
      
     public boolean validateInput(dbaction x) {
        
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -612,7 +644,7 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
        setPanelComponentState(shiptoPanel, false); 
        setPanelComponentState(contactPanel, false);  
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
       
@@ -2204,7 +2236,8 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
         BlueSeerUtils.messagereset();
-        initvars(null);
+        initDataSets = null;
+        initvars(null); 
     }//GEN-LAST:event_btclearActionPerformed
 
     private void btlookupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupActionPerformed

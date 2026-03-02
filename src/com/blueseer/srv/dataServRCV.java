@@ -26,8 +26,22 @@ SOFTWARE.
 package com.blueseer.srv;
 
 
+import com.blueseer.fap.fapData;
+import com.blueseer.pur.purData;
+import static com.blueseer.pur.purData.getPOMstrSet;
+import com.blueseer.rcv.rcvData;
+import static com.blueseer.rcv.rcvData.getReceiverLines;
+import static com.blueseer.rcv.rcvData.getReceiverMstrSet;
+import static com.blueseer.rcv.rcvData.getReceiversFromPO;
+import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
+import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -70,12 +84,67 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     
     switch (id) {
         
-     
+        case "addReceiverTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            rcvData.recv_det[] rdarray = om.readValue(ca[0], rcvData.recv_det[].class);
+            ArrayList<rcvData.recv_det> rvdlist = new ArrayList<rcvData.recv_det>(Arrays.asList(rdarray)); 
+            rcvData.recv_mstr rv = om.readValue(ca[1], rcvData.recv_mstr.class); 
+            fapData.ap_mstr ap = om.readValue(ca[2], fapData.ap_mstr.class);
+            fapData.vod_mstr[] sdarray = om.readValue(ca[3], fapData.vod_mstr[].class);
+            ArrayList<fapData.vod_mstr> vodlist = new ArrayList<fapData.vod_mstr>(Arrays.asList(sdarray)); 
+            response.getWriter().print(arrayToJson(rcvData.addReceiverTransaction(rvdlist, rv, ap, vodlist))); 
+            break;
+            }
         
+        case "updateReceiverTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            String key = ca[0];
+            ArrayList<String> badlist = om.readValue(ca[1], ArrayList.class);
+            rcvData.recv_det[] rdarray = om.readValue(ca[0], rcvData.recv_det[].class);
+            ArrayList<rcvData.recv_det> rvdlist = new ArrayList<rcvData.recv_det>(Arrays.asList(rdarray)); 
+            rcvData.recv_mstr rv = om.readValue(ca[1], rcvData.recv_mstr.class); 
+            response.getWriter().print(arrayToJson(rcvData.updateReceiverTransaction(key, badlist, rvdlist, rv))); 
+            break;
+            }
+        
+        case "getReceiverMstrSet" : {       
+        rcvData.Receiver rcv = getReceiverMstrSet(new String[]{request.getHeader("param1")});
+        ObjectMapper objectMapper = new ObjectMapper();
+        String r = objectMapper.writeValueAsString(rcv);
+        response.getWriter().print(r);
+        break;
+        }
+        
+        case "getReceiversFromPO" : {
+            response.getWriter().print(ArrayListStringToJson(getReceiversFromPO(request.getHeader("param1"), 
+                    request.getHeader("param2"))));  
+            break;
+        }
+        
+        case "getReceiverLines" : {
+            response.getWriter().print(ArrayListStringToJson(getReceiverLines(request.getHeader("param1"))));  
+            break;
+        }
         
         default:
-        response.getWriter().print("no switch case exists in dataServADM for id: " + id);
-        System.out.println("no switch case exists in dataServADM for id: " + id);    
+        response.getWriter().print("no switch case exists in dataServRCV for id: " + id);
+        System.out.println("no switch case exists in dataServRCV for id: " + id);    
             
     }
     

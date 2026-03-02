@@ -34,6 +34,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.fgl.fglData;
+import static com.blueseer.rcv.rcvData._updateReceiverLinesByVoucher;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
@@ -513,6 +514,12 @@ public class fapData {
                 }
             } 
             
+            // update receiver lines
+            for (vod_mstr z : vod) {
+            _updateReceiverLinesByVoucher(z, ctype, Void, bscon);
+            }
+            
+            // gl entries
             if (ctype.equals("Receipt")) {
             fglData._glEntryFromVoucher(ap, bscon, Void); 
             } else {
@@ -1034,6 +1041,18 @@ public class fapData {
 }
 
     public static String[] getPOsummaryChargesTaxes(String po) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getPOsummaryChargesTaxes"});
+            list.add(new String[]{"param1", po});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServFAP"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        } 
+        
         String[] r = new String[]{"0", "0", "0"}; // gross, tax, sac
         double taxamt = 0.00;
         double sacamt = 0.00;
@@ -1108,7 +1127,21 @@ public class fapData {
     }
     
     public static void updateAPVoucherStatus(String nbr, String status) {
-            try{
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateAPVoucherStatus"});
+            list.add(new String[]{"param1",nbr});
+            list.add(new String[]{"param2",status});
+            try {
+                sendServerPost(list, "", null, "dataServFAP");
+                return;
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        }   
+        
+        try{
             Connection con = null;
             if (ds != null) {
               con = ds.getConnection();

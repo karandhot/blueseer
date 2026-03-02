@@ -35,23 +35,30 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import com.blueseer.fap.fapData.VoucherAP;
 import static com.blueseer.fap.fapData.VoucherTransaction;
 import static com.blueseer.fap.fapData.approveAPVoucher;
+import static com.blueseer.fap.fapData.getAPVoucherSet;
 import static com.blueseer.fap.fapData.getPOsummaryChargesTaxes;
 import static com.blueseer.fap.fapData.updateAPVoucherStatus;
+import com.blueseer.fap.fapData.vod_mstr;
 
 import com.blueseer.fgl.fglData;
+import static com.blueseer.pur.purData.getPOListByVend;
+import com.blueseer.pur.purData.po_mstr;
+import com.blueseer.rcv.rcvData;
+import com.blueseer.rcv.rcvData.Receiver;
+import static com.blueseer.rcv.rcvData.getReceiverMstrSet;
+import static com.blueseer.rcv.rcvData.getReceiversFromPO;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
-import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
-import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
-import static com.blueseer.utl.BlueSeerUtils.getGlobalLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.luModel;
@@ -63,16 +70,10 @@ import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
-import static com.blueseer.utl.BlueSeerUtils.setDateFormat;
-import static com.blueseer.utl.BlueSeerUtils.setDateFormatNull;
 import com.blueseer.utl.DTData;
-import com.blueseer.utl.IBlueSeerT;
-import static com.blueseer.utl.OVData.canUpdate;
-import static com.blueseer.utl.OVData.getSystemAttachmentDirectory;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import com.blueseer.utl.IBlueSeerV;
+import static com.blueseer.utl.OVData.getTermsResults;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -80,37 +81,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import com.blueseer.vdr.venData;
+import static com.blueseer.vdr.venData.getVendMstr;
+import com.blueseer.vdr.venData.vd_mstr;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.sql.Connection;
-import java.util.Date;
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.SwingWorker;
 import javax.swing.event.TableModelEvent;
@@ -120,21 +104,26 @@ import javax.swing.event.TableModelEvent;
  *
  * @author vaughnte
  */
-public class VoucherMaint extends javax.swing.JPanel implements IBlueSeerT {
+public class VoucherMaint extends javax.swing.JPanel implements IBlueSeerV {
 
                 boolean isLoad = false;
-                String terms = "";
-                String apacct = "";
-                String apcc = "";
-                String apbank = "";
+                
                 double actamt = 0;
                 double control = 0.00;
                 double baseamt = 0;
                 double rcvamt = 0;
                 int voucherline = 0;
-                String curr = "";
-                String basecurr = "";
-             
+                boolean canUpdate = false;
+                boolean isAutoPost = false;
+                ArrayList<String[]> initDataSets = null;
+                String defaultSite = "";
+                String defaultCurrency = "";
+                String defaultCC = "";
+                public static vd_mstr vd = null;
+                public static po_mstr po = null;
+                VoucherAP vapset = null;
+                
+                
              javax.swing.table.DefaultTableModel attachmentmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("select"), 
                 getGlobalColumnTag("file")})
@@ -200,10 +189,15 @@ public class VoucherMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
    
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
         
         
-       isLoad = true; 
+        isLoad = true; 
+       
+        if (init) {
+          initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "depts,vendors");
+        }
+       
        
        jTabbedPane1.removeAll();
        jTabbedPane1.add("Main", jPanel1);
@@ -217,15 +211,10 @@ public class VoucherMaint extends javax.swing.JPanel implements IBlueSeerT {
         java.util.Date now = new java.util.Date();
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
         DateFormat dftime = new SimpleDateFormat("HH:mm:ss");
-        String clockdate = dfdate.format(now);
-        String clocktime = dftime.format(now);
+        
                
-                dcdate.setDate(now);
-         basecurr = OVData.getDefaultCurrency();
-         terms = "";
-         apacct = "";
-         apcc = "";
-         apbank = "";
+        dcdate.setDate(now);
+         
          actamt = 0;
          rcvamt = 0;
          tbkey.setText("");
@@ -271,26 +260,47 @@ public class VoucherMaint extends javax.swing.JPanel implements IBlueSeerT {
         tbacct.setText("");
         
         ddcc.removeAllItems();
-        ArrayList<String> mycc = fglData.getGLCCList();
-        for (String code : mycc) {
-            ddcc.addItem(code);
-        }
-        ddcc.setSelectedItem(OVData.getDefaultCC());
-        
-        
         ddvend.removeAllItems();
-        ArrayList myvend = venData.getVendMstrList();
-        for (int i = 0; i < myvend.size(); i++) {
-            ddvend.addItem(myvend.get(i));
-        }
-            ddvend.insertItemAt("", 0);
-            ddvend.setSelectedIndex(0);
+        ddsite.removeAllItems();
         
-          ddsite.removeAllItems();
-        ArrayList<String> mylist = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (String code : mylist) {
-            ddsite.addItem(code);
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            
+            if (s[0].equals("autopost")) {
+              isAutoPost = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            
+            if (s[0].equals("cc")) {
+              defaultCC = s[1];  
+            }
+            
+            if (s[0].equals("vendors")) {
+              ddvend.addItem(s[1]);  
+            }
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]);  
+            }
+            
+            if (s[0].equals("depts")) {
+              ddcc.addItem(s[1]);  
+            }
+           
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
         }
+        
+        ddvend.insertItemAt("", 0);
+        ddvend.setSelectedIndex(0);
+        ddcc.setSelectedItem(defaultCC);
+        ddsite.setSelectedItem(defaultSite);
         
         ddstatus.removeAllItems();
         ddstatus.addItem(getGlobalProgTag("open"));
@@ -303,7 +313,7 @@ public class VoucherMaint extends javax.swing.JPanel implements IBlueSeerT {
          
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btnew.setEnabled(false);
         btvoid.setEnabled(false);
@@ -355,7 +365,7 @@ public class VoucherMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public boolean validateInput(BlueSeerUtils.dbaction x) {
        
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -390,21 +400,7 @@ public class VoucherMaint extends javax.swing.JPanel implements IBlueSeerT {
                     return b;
                 }
                 
-                 if (apbank.isEmpty()) {
-                    b = false;
-                    bsmf.MainFrame.show(getMessageTag(1024, "bank"));
-                    return b;
-                }
-                if (apcc.isEmpty()) {
-                    b = false;
-                    bsmf.MainFrame.show(getMessageTag(1024, "CC"));
-                    return b;
-                }
-                if (apacct.isEmpty()) {
-                    b = false;
-                    bsmf.MainFrame.show(getMessageTag(1024, "APAccount"));
-                    return b;
-                }
+                
                  if ( ! currformatDouble(control).equals(currformatDouble(actamt)) || control == 0.00 || actamt == 0.00 ) {
                     b = false;
                     bsmf.MainFrame.show(getMessageTag(1039,String.valueOf(control + " / " + actamt)));
@@ -595,7 +591,7 @@ public class VoucherMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         
@@ -611,9 +607,8 @@ public class VoucherMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public String[] addRecord(String[] x) {
      String[] m = VoucherTransaction(ddtype.getSelectedItem().toString() , createDetRecord(), createRecord(), false);
-     updateReceivers(); 
       // autopost
-        if (OVData.isAutoPost()) {
+        if (isAutoPost) {
             fglData.PostGL();
         } 
      return m;
@@ -627,101 +622,18 @@ public class VoucherMaint extends javax.swing.JPanel implements IBlueSeerT {
     public String[] deleteRecord(String[] x) {
      // same function used for add...but with 'true' for void as last parameter
      String[] m = VoucherTransaction(ddtype.getSelectedItem().toString() , createDetRecord(), createRecord(), true);
-     updateReceiversVoid(); 
      updateAPVoucherStatus(tbkey.getText(), "x");
      return m;
      }
       
     public String[] getRecord(String[] x) {
-       String[] m = new String[2];
-       
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                actamt = 0.00;
-                res = st.executeQuery("select * from ap_mstr where ap_nbr = " + "'" + x[0] + "'" + ";");
-                while (res.next()) {
-                  i++;
-                     tbkey.setText(res.getString("ap_nbr"));
-                     dcdate.setDate(parseDate(res.getString("ap_effdate")));
-                     tbinvoice.setText(res.getString("ap_ref"));
-                     tbrmks.setText(res.getString("ap_rmks"));
-                     ddvend.setSelectedItem(res.getString("ap_vend"));
-                     ddsite.setSelectedItem(res.getString("ap_site"));
-                     ddtype.setSelectedItem(res.getString("ap_subtype"));
-                     cbapproved.setSelected(BlueSeerUtils.ConvertIntegerToBool(res.getInt("ap_approved")));
-                     if (res.getString("ap_status").equals("c")) { 
-                     ddstatus.setSelectedItem(getGlobalProgTag("closed"));
-                     }
-                     if (res.getString("ap_status").equals("o")) { 
-                     ddstatus.setSelectedItem(getGlobalProgTag("open"));
-                     }
-                     if (res.getString("ap_status").equals("x")) { 
-                     ddstatus.setSelectedItem(getGlobalProgTag("void"));
-                     }
-                }
-                
-                if (ddstatus.getSelectedItem().toString().equals(getGlobalProgTag("closed"))) {
-                   res = st.executeQuery("select * from apd_mstr where apd_nbr = " + "'" + x[0] + "'" + ";"); 
-                   while (res.next()) {
-                     tbcheck.setText(res.getString("apd_check"));
-                   }
-                }
-                
-                
-                res = st.executeQuery("select * from vod_mstr where vod_id = " + "'" + x[0] + "'" + ";");
-                while (res.next()) {
-                   
-                //  "PO", "Line", "Part", "Qty", "Price", "RecvID", "RecvLine", "Acct", "CC"
-                     vouchermodel.addRow(new Object[] { res.getString("vod_id"),
-                                              res.getString("vod_rvdline"),
-                                              res.getString("vod_item"),
-                                              res.getString("vod_qty").replace('.',defaultDecimalSeparator),
-                                              res.getString("vod_voprice").replace('.',defaultDecimalSeparator),
-                                              res.getString("vod_rvdid"),
-                                              res.getString("vod_rvdline"),
-                                              res.getString("vod_expense_acct"),
-                                              res.getString("vod_expense_cc")
-                                              });
-                 
-                  
-                  actamt += (res.getDouble("vod_qty") * res.getDouble("vod_voprice"));
-               
-                }
-                
-                
-               
-                getAttachments(tbkey.getText());
-                
-                if (i > 0)
-                m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
-                setAction(m);
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordSQLError};  
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordConnError};   
-        }
-      return m;
+       vapset = getAPVoucherSet(x);
+       return vapset.m();
     }
     
     public fapData.ap_mstr createRecord() {
         int batchid = OVData.getNextNbr("batch");
+        String[] tr = getTermsResults(dcdate.getDate(), vd.vd_terms());
         String po = "";
         for (int j = 0; j < voucherdet.getRowCount(); j++) {
             po = voucherdet.getValueAt(j, 0).toString(); // assumes one PO on invoice to be vouched
@@ -730,7 +642,7 @@ public class VoucherMaint extends javax.swing.JPanel implements IBlueSeerT {
         // add SAC charges or discounts
              //   String[] d = getPOsummaryChargesTaxes(po); // summary = grossamt, taxamt, sacamt ...initialized as 0,0,0
              //   actamt +=  bsParseDouble(d[1]) + bsParseDouble(d[2]);
-        
+       
         fapData.ap_mstr x = new fapData.ap_mstr(null, 
                 "", //ap_id
                 ddvend.getSelectedItem().toString(), // ap_vend, 
@@ -739,18 +651,18 @@ public class VoucherMaint extends javax.swing.JPanel implements IBlueSeerT {
                 actamt, // ap_base_amt
                 setDateDB(dcdate.getDate()), // ap_effdate
                 setDateDB(dcdate.getDate()), // ap_entdate
-                setDateDB(OVData.getDueDateFromTerms(dcdate.getDate(), terms)), // ap_duedate         
+                setDateDB(parseDate(tr[0])), // ap_duedate         
                 "V", // ap_type
                 tbrmks.getText(), //ap_rmks
                 tbinvoice.getText(), //ap_ref
-                terms, //ap_terms
-                apacct, //ap_acct
-                apcc, //ap_cc
+                vd.vd_terms(), //ap_terms
+                vd.vd_ap_acct(), //ap_acct
+                vd.vd_ap_cc(), //ap_cc
                 "0", //ap_applied
                 "o", //ap_status
-                apbank, //ap_bank
-                curr, //ap_curr
-                basecurr, //ap_base_curr
+                vd.vd_bank(), //ap_bank
+                vd.vd_curr(), //ap_curr
+                defaultCurrency, //ap_base_curr
                 tbkey.getText(), //ap_check // in this case voucher number is reference field
                 String.valueOf(batchid), //ap_batch
                 ddsite.getSelectedItem().toString(), //ap_site
@@ -881,311 +793,45 @@ public class VoucherMaint extends javax.swing.JPanel implements IBlueSeerT {
         }
     }
    
+    public void updateForm() {
+        tbkey.setText(vapset.ap().ap_nbr());
+         dcdate.setDate(parseDate(vapset.ap().ap_effdate()));
+         tbinvoice.setText(vapset.ap().ap_ref());
+         tbrmks.setText(vapset.ap().ap_rmks());
+         ddvend.setSelectedItem(vapset.ap().ap_vend());
+         ddsite.setSelectedItem(vapset.ap().ap_site());
+         ddtype.setSelectedItem(vapset.ap().ap_subtype());
+         cbapproved.setSelected(BlueSeerUtils.ConvertStringToBool(vapset.ap().ap_approved()));
+         if (vapset.ap().ap_status().equals("c")) { 
+         ddstatus.setSelectedItem(getGlobalProgTag("closed"));
+         }
+         if (vapset.ap().ap_status().equals("o")) { 
+         ddstatus.setSelectedItem(getGlobalProgTag("open"));
+         }
+         if (vapset.ap().ap_status().equals("x")) { 
+         ddstatus.setSelectedItem(getGlobalProgTag("void"));
+         }
+                     actamt = 0.00;
+                     for (vod_mstr vod : vapset.vod()) {
+                     vouchermodel.addRow(new Object[] { vod.vod_id(),
+                                              vod.vod_rvdline(),
+                                              vod.vod_item(),
+                                              vod.vod_qty(),
+                                              vod.vod_voprice(),
+                                              vod.vod_rvdid(),
+                                              vod.vod_rvdline(),
+                                              vod.vod_expense_acct(),
+                                              vod.vod_expense_cc()
+                                              });
+                         actamt += (vod.vod_qty() * vod.vod_voprice());
+                     }
+                     
+                  getAttachments(tbkey.getText());
+                  
+                  setAction(vapset.m());
+    }
     
     // misc functions
-    
-    public void reinitreceivervariables(String myreceiver) {
-       
-        tbkey.setText(myreceiver);
-        if (myreceiver.compareTo("") == 0) {
-            btadd.setEnabled(true);
-
-        } else {
-            btadd.setEnabled(false);
-        }
-
-
-        tbkey.setEnabled(true);
-        tbkey.setText(myreceiver);
-      
-        tbcontrolamt.setText("");
-        receiverdet.setModel(receivermodel);
-        voucherdet.setModel(vouchermodel);
-        receivermodel.setRowCount(0);
-        vouchermodel.setRowCount(0);
-       
-       
-
-     //   cobCustNameSM.removeAllItems();
-        
-    }
-      
-    public void setvendorvariables(String vendor) {
-        
-        try {
-     
-            int i = 0;
-            int d = 0;
-            String uniqpo = null;
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-
-                res = st.executeQuery("select vd_ap_acct, vd_ap_cc, vd_terms, vd_bank, vd_curr from vd_mstr where vd_addr = " + "'" + vendor + "'" + ";");
-                while (res.next()) {
-                    i++;
-                   apacct = res.getString("vd_ap_acct");
-                   apcc = res.getString("vd_ap_cc");
-                   terms = res.getString("vd_terms");
-                   apbank = res.getString("vd_bank");
-                   curr = res.getString("vd_curr");
-                }
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }
-      
-    public void getreceiverinfo(String myreceiver) {
-        
-        try {
-             int i = 0;
-            int d = 0;
-            String uniqpo = null;
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                rcvamt = 0;
-                res = st.executeQuery("select * from recv_det inner join recv_mstr on rv_id = rvd_id where rvd_id = " + "'" + myreceiver + "'" + ";");
-                while (res.next()) {
-                    // "Part", "PO", "Line", "Qty", "listprice", "disc", "netprice", "loc", "serial", "lot", "RecvID", "RecvLine", "Acct", "CC"
-                  receivermodel.addRow(new Object[]{res.getString("rvd_item"), res.getString("rvd_po"), 
-                      res.getString("rvd_poline"), bsFormatDouble((res.getDouble("rvd_qty") - res.getDouble("rvd_voqty"))).replace('.',defaultDecimalSeparator), res.getString("rvd_listprice").replace('.',defaultDecimalSeparator),
-                   res.getString("rvd_disc").replace('.',defaultDecimalSeparator), res.getString("rvd_netprice").replace('.',defaultDecimalSeparator), res.getString("rvd_loc"),
-                  res.getString("rvd_serial"), res.getString("rvd_lot"), res.getString("rvd_id"), res.getString("rvd_rline"),
-                  res.getString("rv_ap_acct"), res.getString("rv_ap_cc")});
-                  rcvamt += res.getDouble("rvd_netprice") * res.getDouble("rvd_qty");
-               
-                d++;
-                }
-                tbrecvamt.setText(currformatDouble(rcvamt).replace('.',defaultDecimalSeparator));
-                receiverdet.setModel(receivermodel);
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }
-
-    public void getvoucherinfo(String voucher) {
-        
-        try {
-             int i = 0;
-            int d = 0;
-            String uniqpo = null;
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                rcvamt = 0;
-                res = st.executeQuery("select * from vod_mstr inner join ap_mstr on ap_nbr = vod_id inner join recv_det on rvd_id = vod_rvdid and rvd_poline = vod_rvdline " +
-                        " where vod_id = " + "'" + voucher + "'" + ";");
-                while (res.next()) {
-                  vouchermodel.addRow(new Object[]{res.getString("rvd_po"), 
-                      res.getString("vod_rvdline"), res.getString("vod_item"), res.getString("vod_qty").replace('.',defaultDecimalSeparator), res.getString("vod_voprice").replace('.',defaultDecimalSeparator),
-                   res.getString("vod_rvdid"), res.getString("vod_rvdline"), res.getString("vod_expense_acct"),
-                  res.getString("vod_expense_cc") }) ;
-                d++;
-                }
-                if (d > 0) {
-                   tbkey.setEnabled(false);
-                    btnew.setEnabled(false);
-                }
-                tbkey.setText(voucher);
-                tbrecvamt.setText(currformatDouble(rcvamt));
-                receiverdet.setModel(receivermodel);
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }
-      
-    public void updateReceivers() {
-        
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            double amt = 0;
-            try {
-                for (int j = 0; j < voucherdet.getRowCount(); j++) {
-                amt = bsParseDouble(voucherdet.getValueAt(j, 3).toString());   
-                double voqty = 0;
-                double rvqty = 0;
-                double rvdvoqty = 0;
-                String status = "0";
-                
-                res = st.executeQuery("select rvd_voqty, rvd_qty from recv_det " 
-                         + " where rvd_id = " + "'" + voucherdet.getValueAt(j, 5).toString() + "'"
-                        + " AND rvd_rline = " + "'" + voucherdet.getValueAt(j, 6).toString() + "'"
-                        );
-                while (res.next()) {
-                    voqty = res.getDouble("rvd_voqty");
-                    rvqty = res.getDouble("rvd_qty");
-                    if ((voqty + amt) >= rvqty) {
-                        status = "1";
-                    }     
-                }
-                res.close();        
-                        
-                   rvdvoqty = voqty + amt;
-                   
-                        if (ddtype.getSelectedItem().toString().equals("Receipt")) {
-                           if (bsmf.MainFrame.dbtype.equals("sqlite")) { 
-                            st.executeUpdate("update recv_det  "
-                            + " set rvd_voqty =  " + "'" + currformatDouble(rvdvoqty).replace(defaultDecimalSeparator, '.') + "'" + ","
-                            + " rvd_status = " + "'" + status + "'"
-                            + " where rvd_id = " + "'" + voucherdet.getValueAt(j, 5).toString() + "'"
-                            + " AND rvd_rline = " + "'" + voucherdet.getValueAt(j, 6).toString() + "'"
-                            );
-                           } else {
-                            st.executeUpdate("update recv_det as r1 inner join recv_det as r2 "
-                            + " set r1.rvd_voqty = r2.rvd_voqty + " +  "'" + currformatDouble(amt).replace(defaultDecimalSeparator, '.') + "'" + ","
-                            + " r1.rvd_status = case when r1.rvd_qty <= ( r2.rvd_voqty + " + "'" + currformatDouble(amt).replace(defaultDecimalSeparator, '.') + "'" +  ") then '1' else '0' end " 
-                            + " where r1.rvd_id = " + "'" + voucherdet.getValueAt(j, 5).toString() + "'"
-                            + " AND r1.rvd_rline = " + "'" + voucherdet.getValueAt(j, 6).toString() + "'"
-                            + " AND r2.rvd_id = " + "'" + voucherdet.getValueAt(j, 5).toString() + "'"
-                            + " AND r2.rvd_rline = " + "'" + voucherdet.getValueAt(j, 6).toString() + "'"
-                            );   
-                           }
-                        }
-                     }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }
-    
-    public void updateReceiversVoid() {
-        
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            double amt = 0;
-            try {
-                for (int j = 0; j < voucherdet.getRowCount(); j++) {
-                amt = bsParseDouble(voucherdet.getValueAt(j, 3).toString());   
-                double voqty = 0;
-                double rvqty = 0;
-                double rvdvoqty = 0;
-                String status = "0";
-                
-                res = st.executeQuery("select rvd_voqty, rvd_qty from recv_det " 
-                         + " where rvd_id = " + "'" + voucherdet.getValueAt(j, 5).toString() + "'"
-                        + " AND rvd_rline = " + "'" + voucherdet.getValueAt(j, 6).toString() + "'"
-                        );
-                while (res.next()) {
-                    voqty = res.getDouble("rvd_voqty");
-                    rvqty = res.getDouble("rvd_qty");
-                   // if ((voqty + amt) >= rvqty) {
-                   //     status = "1";
-                    //}     
-                }
-                res.close();        
-                        
-                   rvdvoqty = voqty - amt; // back it out with subtraction
-                   
-                        if (ddtype.getSelectedItem().toString().equals("Receipt")) {
-                          st.executeUpdate("update recv_det  "
-                            + " set rvd_voqty =  " + "'" + currformatDouble(rvdvoqty).replace(defaultDecimalSeparator, '.') + "'" + ","
-                            + " rvd_status = " + "'" + status + "'"
-                            + " where rvd_id = " + "'" + voucherdet.getValueAt(j, 5).toString() + "'"
-                            + " AND rvd_rline = " + "'" + voucherdet.getValueAt(j, 6).toString() + "'"
-                            );
-                        }
-                     }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }
     
     public void sumdollars() {
         double dol = 0;
@@ -1918,49 +1564,23 @@ public class VoucherMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void ddvendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddvendActionPerformed
        
-      if (! isLoad) { 
+      if (! isLoad && ddvend.getSelectedItem() != null && ! ddvend.getSelectedItem().toString().isEmpty()) { 
            ddreceiver.removeAllItems();
            ddpo.removeAllItems();
            receivermodel.setRowCount(0);
         
-        if (ddvend.getSelectedItem() != null && ! ddvend.getSelectedItem().toString().isEmpty() )
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        
+            vd = getVendMstr(new String[]{ddvend.getSelectedItem().toString()});
+            ArrayList<String> polist = getPOListByVend(ddvend.getSelectedItem().toString());
+            isLoad = true;
+            for (String po : polist) {
+                ddpo.addItem(po);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                res = st.executeQuery("select vd_name from vd_mstr where vd_addr = " + "'" + ddvend.getSelectedItem().toString() + "'" + ";");
-                while (res.next()) {
-                    lbvendor.setText(res.getString("vd_name"));
-                }
-                res = st.executeQuery("select po_nbr from po_mstr where po_vend = " + "'" + ddvend.getSelectedItem().toString() + "'" + ";");
-                while (res.next()) {
-                    ddpo.addItem(res.getString("po_nbr"));
-                }
-                ddpo.insertItemAt("", 0);
-                ddpo.setSelectedIndex(0);
-                setvendorvariables(ddvend.getSelectedItem().toString());
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-      }// not isLoad
+            ddpo.insertItemAt("", 0);
+            ddpo.setSelectedIndex(0);
+            isLoad = false;
+           
+      }
     }//GEN-LAST:event_ddvendActionPerformed
 
     private void btdeleteitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteitemActionPerformed
@@ -1975,61 +1595,58 @@ public class VoucherMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btdeleteitemActionPerformed
 
     private void ddreceiverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddreceiverActionPerformed
-       if (ddreceiver.getSelectedItem() == null)
-           return;
+        if ( ddreceiver.getItemCount() != 0 && ! ddreceiver.getSelectedItem().toString().isEmpty()) {
+            receivermodel.setRowCount(0);
+            rcvamt = 0;
+            
+            Receiver rcvset = getReceiverMstrSet(new String[]{ddreceiver.getSelectedItem().toString()});
+            for (rcvData.recv_det rvd : rcvset.rvd()) {
+               receivermodel.addRow(new Object[]{rvd.rvd_item(), 
+                   rvd.rvd_po(),
+                   rvd.rvd_poline(), 
+                   bsFormatDouble((rvd.rvd_qty() - rvd.rvd_voqty())), 
+                   rvd.rvd_listprice(),
+                   rvd.rvd_disc(), 
+                   rvd.rvd_netprice(), 
+                   rvd.rvd_loc(),
+                   rvd.rvd_serial(), 
+                   rvd.rvd_lot(), 
+                   rvd.rvd_id(), 
+                   rvd.rvd_rline(),
+                   rcvset.rv().rv_ap_acct(), 
+                   rcvset.rv().rv_ap_cc()});
+               
+                  rcvamt += rvd.rvd_netprice() * rvd.rvd_qty(); 
+            }
+            tbrecvamt.setText(currformatDouble(rcvamt).replace('.',defaultDecimalSeparator));
+                
+            
+        }
        
-        receivermodel.setRowCount(0);
-       if ( ddreceiver.getItemCount() != 0 && ! ddreceiver.getSelectedItem().toString().isEmpty())
-       getreceiverinfo(ddreceiver.getSelectedItem().toString());
     }//GEN-LAST:event_ddreceiverActionPerformed
 
     private void ddpoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddpoActionPerformed
-       if (ddpo.getSelectedItem() == null) {
-           return;
+       if (! isLoad && ddpo.getSelectedItem() != null && ! ddpo.getSelectedItem().toString().isBlank()) {
+           
+           // purchaseOrder poset = getPOMstrSet(new String[]{ddpo.getSelectedItem().toString()});
+            String[] d = getPOsummaryChargesTaxes(ddpo.getSelectedItem().toString()); // summary = grossamt, taxamt, sacamt ...initialized as 0,0,0
+            tbtax.setText(currformatDouble(bsParseDouble(d[1])));
+            tbservice.setText(currformatDouble(bsParseDouble(d[2])));
+            
+            // get receivers
+            ddreceiver.removeAllItems();
+            receivermodel.setRowCount(0);
+            ArrayList<String> list = getReceiversFromPO(ddpo.getSelectedItem().toString(), "0");
+            isLoad = true;
+            for (String s : list) {
+               ddreceiver.addItem(s); 
+            }            
+            ddreceiver.insertItemAt("", 0);
+            ddreceiver.setSelectedIndex(0);
+            isLoad = false;
+            
        }
-       
-       String[] d = getPOsummaryChargesTaxes(ddpo.getSelectedItem().toString()); // summary = grossamt, taxamt, sacamt ...initialized as 0,0,0
-       tbtax.setText(currformatDouble(bsParseDouble(d[1])));
-       tbservice.setText(currformatDouble(bsParseDouble(d[2])));
-        ddreceiver.removeAllItems();
-        receivermodel.setRowCount(0);
-   //    if (! ddvend.getSelectedItem().toString().isEmpty() && ! ddpo.getSelectedItem().toString().isEmpty() && ! ddpo.equals(null) && ! ddvend.equals(null))
-        if ( ddpo.getSelectedItem() != null)
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                res = st.executeQuery("select distinct(rvd_id) from recv_det inner join recv_mstr on " +
-                        " rvd_id = rv_id where rv_vend = " + "'" + ddvend.getSelectedItem().toString() + "'" + 
-                        " and rvd_po = " + "'" + ddpo.getSelectedItem().toString() + "'" + " and rvd_status = '0' " + ";");
-                while (res.next()) {
-                    ddreceiver.addItem(res.getString("rvd_id"));
-                }
-                ddreceiver.insertItemAt("", 0);
-                ddreceiver.setSelectedIndex(0);
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+   
     }//GEN-LAST:event_ddpoActionPerformed
 
     private void btaddallActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddallActionPerformed
@@ -2076,6 +1693,7 @@ public class VoucherMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
          BlueSeerUtils.messagereset();
+         initDataSets = null;
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 

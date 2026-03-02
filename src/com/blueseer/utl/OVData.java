@@ -16635,7 +16635,19 @@ return mystring;
            return duedate;           
        }
     
-    public static String[] getTermsResults(Date effdate, String terms) {
+    public static String[] getTermsResults(Date effdate, String terms) { // duedate, discdate, discpct, discdays
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getTermsResults"});
+            list.add(new String[]{"param1",  setDateDB(effdate)});
+            list.add(new String[]{"param2",  terms});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
            String[] r = null;  // duedate, discdate, discpct, discdays
            Date duedate = new Date();
            Date discdate = null;

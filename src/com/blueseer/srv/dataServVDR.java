@@ -31,6 +31,7 @@ import static com.blueseer.adm.admData.addSiteMstr;
 import static com.blueseer.adm.admData.deleteSiteMstr;
 import static com.blueseer.adm.admData.getSiteMstr;
 import static com.blueseer.adm.admData.updateSiteMstr;
+import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
@@ -158,7 +159,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         break;
         }
         
-         
+        case "getVendMaintInit" : {
+            response.getWriter().print(ArrayListStringArrayToJson(venData.getVendMaintInit(request.getHeader("param1"), request.getHeader("param2"))));
+            break;
+        } 
         
         default:
         response.getWriter().print("no switch case exists in dataServADM for id: " + id);

@@ -26,7 +26,12 @@ SOFTWARE.
 package com.blueseer.srv;
 
 
+import com.blueseer.pur.purData;
+import static com.blueseer.pur.purData.getPOListByVend;
+import static com.blueseer.pur.purData.getPOMstrSet;
+import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
@@ -70,12 +75,25 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     
     switch (id) {
         
-     
+        case "getPOListByVend" : {       
+            response.getWriter().print(ArrayListStringToJson(getPOListByVend(request.getHeader("param1"))));
+            break; 
+        }
+            
+        case "getPOMstrSet" : {       
+        purData.purchaseOrder pos = getPOMstrSet(new String[]{request.getHeader("param1")});
+        ObjectMapper objectMapper = new ObjectMapper();
+        String r = objectMapper.writeValueAsString(pos);
+        response.getWriter().print(r);
+        break;
+        }
+        
+        
         
         
         default:
-        response.getWriter().print("no switch case exists in dataServADM for id: " + id);
-        System.out.println("no switch case exists in dataServADM for id: " + id);    
+        response.getWriter().print("no switch case exists in dataServPUR for id: " + id);
+        System.out.println("no switch case exists in dataServPUR for id: " + id);    
             
     }
     

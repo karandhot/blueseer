@@ -30,6 +30,8 @@ import com.blueseer.fap.fapData;
 import static com.blueseer.fap.fapData.getAPExpenseByAcct;
 import static com.blueseer.fap.fapData.getAPExpenseByVendor;
 import static com.blueseer.fap.fapData.getAPVoucherSet;
+import static com.blueseer.fap.fapData.getPOsummaryChargesTaxes;
+import static com.blueseer.fap.fapData.updateAPVoucherStatus;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import com.blueseer.ord.ordData;
 import static com.blueseer.ord.ordData.addUpdateORCtrl;
@@ -199,7 +201,15 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             break;
         }
         
+        case "getPOsummaryChargesTaxes" : {
+            response.getWriter().print(arrayToJson(getPOsummaryChargesTaxes(request.getHeader("param1"))));   
+            break;
+        }
         
+        case "updateAPVoucherStatus" : { 
+            updateAPVoucherStatus(request.getHeader("param1"), request.getHeader("param2"));
+            break;  
+        }
         
         default:
         response.getWriter().print("no switch case exists in dataServFAP for id: " + id);

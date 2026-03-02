@@ -28,6 +28,7 @@ package com.blueseer.pur;
 import com.blueseer.ord.*;
 import com.blueseer.inv.*;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.dbtype;
 import static bsmf.MainFrame.defaultDecimalSeparator;
@@ -43,6 +44,10 @@ import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -551,6 +556,22 @@ public class purData {
     public static purchaseOrder getPOMstrSet(String[] x ) {
         purchaseOrder r = null;
         String[] m = new String[2];
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getPOMstrSet"});
+            list.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServPUR");
+                r = objectMapper.readValue(returnstring, purchaseOrder.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
         Connection bscon = null;
         PreparedStatement ps = null;
         ResultSet res = null;
@@ -1444,7 +1465,7 @@ public class purData {
        return jsonarray.toString(); 
     }
     
-    public static ArrayList<String[]> getPurchaseOrderInit() {
+    public static ArrayList<String[]> getPurchaseOrderInit(String panelClassName, String userid) {
         String defaultsite = "";
         ArrayList<String[]> lines = new ArrayList<String[]>();
         try{
@@ -1461,7 +1482,7 @@ public class purData {
         // states, warehouses, locations, customers, taxcodes, carriers, statuses    
             String[] sites = null;
             boolean allsites = false;
-            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + bsmf.MainFrame.userid + "'" + ";");
+            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + userid + "'" + ";");
             while (res.next()) {
               if (res.getString("user_allowedsites").equals("*")) {
                   allsites = true;
@@ -1469,6 +1490,37 @@ public class purData {
                   sites = res.getString("user_allowedsites").split(",");
               }
             }
+            
+            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + userid + "'" + 
+                    " AND menu_panel = " + "'" + panelClassName + "'" +
+                    ";");
+           while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "canupdate";
+               s[1] = "0";
+               if (res.getString("perm_readonly").equals("0")) {
+                 s[1] = "1";
+               }
+               
+               lines.add(s);
+           }
+           
+           String conditionalsite = "";
+           res = st.executeQuery("select user_allowedsites, user_site from  " +
+                        "  user_mstr where user_id = " + "'" + userid + "'" + ";" );
+               while (res.next()) {
+                    if (res.getString("user_allowedsites").equals("*")) {
+                      conditionalsite = "all";
+                    } else {
+                      conditionalsite = res.getString("user_site");
+                    }
+               }
+               String[] sx = new String[2];
+               sx[0] = "conditionalsite";
+               sx[1] = conditionalsite;
+               lines.add(sx);
+               
+             
             res = st.executeQuery("select site_site from site_mstr;");
             while (res.next()) {
                if (allsites || Arrays.stream(sites).anyMatch(res.getString("site_site")::equals)) {
@@ -1479,7 +1531,7 @@ public class purData {
                }
             }
             
-            res = st.executeQuery("select ov_site, ov_currency from ov_mstr;" );
+            res = st.executeQuery("select ov_site, ov_currency, ov_cc, ov_wh from ov_mstr;" );
             while (res.next()) {
                String[] s = new String[2];
                s[0] = "currency";
@@ -1489,8 +1541,23 @@ public class purData {
                s[0] = "site";
                s[1] = res.getString("ov_site");
                lines.add(s);
-               defaultsite = s[1];
+               s = new String[2];
+               s[0] = "cc";
+               s[1] = res.getString("ov_cc");
+               lines.add(s);
+               s = new String[2];
+               s[0] = "wh";
+               s[1] = res.getString("ov_wh");
+               lines.add(s);
             }
+            
+            res = st.executeQuery("select gl_autopost from gl_ctrl;");
+                while (res.next()) {
+                   String[] s = new String[2];
+                   s[0] = "autopost";
+                   s[1] = res.getString("gl_autopost");
+                   lines.add(s);
+                }
             
             res = st.executeQuery("select * from ov_ctrl;" );
             while (res.next()) {
@@ -1710,6 +1777,52 @@ public class purData {
     }
         return lines;
     }
+    
+    public static ArrayList<String> getPOListByVend(String vendor) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getPOListByVend"});
+            list.add(new String[]{"param1",  vendor});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServPUR"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        
+        ArrayList<String> lines = new ArrayList<String>();
+        try{
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+            ResultSet res = null;
+        try{
+           res = st.executeQuery("SELECT po_nbr from po_mstr " +
+                   " where po_vend = " + "'" + vendor + "'" + ";");
+                        while (res.next()) {
+                          lines.add(res.getString("po_nbr"));
+                        }
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+            if (res != null) res.close();
+            if (st != null) st.close();
+            con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+        return lines;
+    }
+    
     
     public static String[] getPOMstrHeaderEDI(String order) {
         String[] x = new String[10];
@@ -2145,87 +2258,6 @@ public class purData {
     }
     return ordertotal + charge + tax;
 
-    }
-    
-    public static void updateReceivers(ArrayList<vod_mstr> vodlist, String ctype) { 
-        
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            double amt = 0;
-            boolean closereceiver = true;
-            try {
-                for (vod_mstr vod : vodlist) {
-                amt = vod.vod_qty();   
-                double voqty = 0;
-                double rvqty = 0;
-                double rvdvoqty = 0;
-                String status = "0";
-                
-                res = st.executeQuery("select rvd_voqty, rvd_qty from recv_det " 
-                         + " where rvd_id = " + "'" + vod.vod_rvdid() + "'"
-                        + " AND rvd_rline = " + "'" + vod.vod_rvdline() + "'"
-                        );
-                while (res.next()) {
-                    voqty = res.getDouble("rvd_voqty");
-                    rvqty = res.getDouble("rvd_qty");
-                    if ((voqty + amt) >= rvqty) {
-                        status = "1";
-                    } else {
-                        closereceiver = false;
-                    }    
-                }
-                res.close();        
-                        
-                   rvdvoqty = voqty + amt;
-                   
-                        if (ctype.equals("Receipt")) {
-                           if (bsmf.MainFrame.dbtype.equals("sqlite")) { 
-                            st.executeUpdate("update recv_det  "
-                            + " set rvd_voqty =  " + "'" + currformatDouble(rvdvoqty).replace(defaultDecimalSeparator, '.') + "'" + ","
-                            + " rvd_status = " + "'" + status + "'"
-                            + " where rvd_id = " + "'" + vod.vod_rvdid() + "'"
-                            + " AND rvd_rline = " + "'" + vod.vod_rvdline() + "'"
-                            );
-                           } else {
-                            st.executeUpdate("update recv_det as r1 inner join recv_det as r2 "
-                            + " set r1.rvd_voqty = r2.rvd_voqty + " +  "'" + currformatDouble(amt).replace(defaultDecimalSeparator, '.') + "'" + ","
-                            + " r1.rvd_status = case when r1.rvd_qty <= ( r2.rvd_voqty + " + "'" + currformatDouble(amt).replace(defaultDecimalSeparator, '.') + "'" +  ") then '1' else '0' end " 
-                            + " where r1.rvd_id = " + "'" + vod.vod_rvdid() + "'"
-                            + " AND r1.rvd_rline = " + "'" + vod.vod_rvdline() + "'"
-                            + " AND r2.rvd_id = " + "'" + vod.vod_rvdid() + "'"
-                            + " AND r2.rvd_rline = " + "'" + vod.vod_rvdline() + "'"
-                            );   
-                           }
-                        }
-                     }
-                
-                if (closereceiver) {
-                    st.executeUpdate("update recv_mstr set rv_status = '1' " 
-                            + " where rv_id = " + "'" + vodlist.get(0).vod_rvdid() + "'"
-                            );
-                }
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
     }
     
     

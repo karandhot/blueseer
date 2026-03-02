@@ -127,13 +127,14 @@ public class InvoiceMaint extends javax.swing.JPanel {
 
      // global variable declarations
                 boolean isLoad = false;
-                boolean canupdate = false;
+                boolean canUpdate = false;
+                boolean isAutoPost = false;
+                ArrayList<String[]> initDataSets = null;
+                String defaultSite = "";
+                String defaultCurrency = "";
                 int ordercount = 0;
-                String basecurr = "USD";
-                String defaultsite = "";
                 String status = "";
                 Object[][] rData;
-                ArrayList<String[]> initDataSets = new ArrayList<>();
                  public static ship_mstr sh = null;
                 public static ArrayList<ship_det> shdlist = null;
                 public static ArrayList<shs_det> shslist = null;
@@ -368,10 +369,12 @@ public class InvoiceMaint extends javax.swing.JPanel {
        }
     }
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
         
+       if (init) {
        initDataSets = ordData.getSalesOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
+       }
        
        jTabbedPane1.removeAll();
        jTabbedPane1.add("Main", panelMain);
@@ -415,16 +418,16 @@ public class InvoiceMaint extends javax.swing.JPanel {
         
         for (String[] s : initDataSets) {
             if (s[0].equals("currency")) {
-              basecurr = s[1];  
+              defaultCurrency = s[1];  
             }
             if (s[0].equals("canupdate")) {
-              canupdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
             }
             if (s[0].equals("sites")) {
               ddsite.addItem(s[1]); 
             }
             if (s[0].equals("site")) {
-              defaultsite = s[1]; 
+              defaultSite = s[1]; 
             }
             if (s[0].equals("currencies")) {
               ddcurr.addItem(s[1]); 
@@ -434,7 +437,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
             }
         }
         
-        ddsite.setSelectedItem(defaultsite);
+        ddsite.setSelectedItem(defaultSite);
         ddcurr.insertItemAt("", 0);
         ddcurr.setSelectedIndex(0);
         
@@ -455,7 +458,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btclear.setEnabled(false);
@@ -500,7 +503,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
     
     public boolean validateInput(String x) {
         
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -528,7 +531,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btclear.setEnabled(true);
         btlookup.setEnabled(true);
         
@@ -555,7 +558,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
     
     public void done_Initialization() {
         isLoad = true;
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         isLoad = false;
         
     }
@@ -1657,6 +1660,7 @@ public class InvoiceMaint extends javax.swing.JPanel {
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
         BlueSeerUtils.messagereset();
+        initDataSets = null;
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 

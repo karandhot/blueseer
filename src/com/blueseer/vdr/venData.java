@@ -36,6 +36,7 @@ import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,6 +48,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import org.json.JSONArray;
 
 /**
@@ -539,6 +541,38 @@ public class venData {
         return r;
     }
     
+    public static vd_mstr _getVendMstr(String code, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        
+        vd_mstr r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from vd_mstr where vd_addr = ? ;";
+          ps = con.prepareStatement(sqlSelect); 
+           ps.setString(1, code);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new vd_mstr(m);
+            } else {
+                while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                      r = new vd_mstr(m, res.getString("vd_addr"), res.getString("vd_site"), res.getString("vd_name"), 
+                                res.getString("vd_line1"), res.getString("vd_line2"),
+                    res.getString("vd_line3"), res.getString("vd_city"), res.getString("vd_state"), 
+                    res.getString("vd_zip"), res.getString("vd_country"), res.getString("vd_dateadd"), 
+                    res.getString("vd_datemod"), res.getString("vd_usermod"), res.getString("vd_group"), 
+                    res.getString("vd_market"), res.getString("vd_buyer"), res.getString("vd_terms"), 
+                    res.getString("vd_shipvia"), res.getString("vd_price_code"), res.getString("vd_disc_code"), 
+                    res.getString("vd_tax_code"), res.getString("vd_ap_acct"), res.getString("vd_ap_cc"), 
+                    res.getString("vd_remarks"), res.getString("vd_freight_type"), res.getString("vd_bank"), 
+                    res.getString("vd_curr"), res.getString("vd_misc"), res.getString("vd_phone"), 
+                    res.getString("vd_email"), res.getString("vd_is850export"), res.getString("vd_type"),
+                    res.getString("vd_taxid"), res.getString("vd_taxexempt"), res.getString("vd_1099")
+                    );
+                    }
+            }
+            return r;
+    }
+    
     
      // vds_det Vendor Shipto Table
     public static String[] addVDSDet(vds_det x) {
@@ -820,6 +854,30 @@ public class venData {
         return list;
     }
     
+    public static ArrayList<vds_det> _getVDSDet(String code, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        ArrayList<vds_det> list = new ArrayList<vds_det>();
+        vds_det r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from vds_det where vds_code = ? ;";
+          ps = con.prepareStatement(sqlSelect); 
+           ps.setString(1, code);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new vds_det(m);
+            } else {
+                while(res.next()) {
+                    m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                    r = new vds_det(m, res.getString("vds_code"), res.getString("vds_shipto"), res.getString("vds_name"), res.getString("vds_line1"), res.getString("vds_line2"),
+                    res.getString("vds_line3"), res.getString("vds_city"), res.getString("vds_state"), res.getString("vds_zip"),
+                    res.getString("vds_country"), res.getString("vds_type") 
+                    );
+                    list.add(r);
+                }
+            }
+            return list;
+    }
+    
    
     
     
@@ -1046,9 +1104,283 @@ public class venData {
         return r;
     }
     
+    public static VendShipSet getVendShipSet(String[] x ) {
+        VendShipSet r = null;
+        String[] m;
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getVendShipSet"});
+            list.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServCUS");
+                r = objectMapper.readValue(returnstring, VendShipSet.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        
+        Connection bscon = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            
+            if (ds != null) {
+              bscon = ds.getConnection();
+            } else {
+              bscon = DriverManager.getConnection(url + db, user, pass);  
+            }
+            
+            vd_mstr vd = _getVendMstr(x[0], bscon, ps, res);
+            ArrayList<vds_det> vdslist = _getVDSDet(x[0], bscon, ps, res );
+            
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+            r = new VendShipSet(m, vd, vdslist);
+            
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+             r = new VendShipSet(m);
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return r;
+    }
+     
     
     
     // misc
+    
+    public static ArrayList<String[]> getVendMaintInit(String panelClassName, String userid) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getVendMaintInit"});
+            list.add(new String[]{"param1", panelClassName});
+            list.add(new String[]{"param2", userid});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServVDR"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+         
+         String defaultsite = "";
+        ArrayList<String[]> lines = new ArrayList<String[]>();
+        try{
+        Connection con = null;
+        if (ds != null) {
+        con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+      
+            String[] sites = null;
+            boolean allsites = false;
+            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + userid + "'" + ";");
+            while (res.next()) {
+              if (res.getString("user_allowedsites").equals("*")) {
+                  allsites = true;
+              } else {
+                  sites = res.getString("user_allowedsites").split(",");
+              }
+            }
+            
+            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + userid + "'" + 
+                    " AND menu_panel = " + "'" + panelClassName + "'" +
+                    ";");
+           while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "canupdate";
+               s[1] = "0";
+               if (res.getString("perm_readonly").equals("0")) {
+                 s[1] = "1";
+               }
+               
+               lines.add(s);
+           }
+            
+            res = st.executeQuery("select site_site from site_mstr;");
+            while (res.next()) {
+               if (allsites || Arrays.stream(sites).anyMatch(res.getString("site_site")::equals)) {
+                 String[] s = new String[2];
+                 s[0] = "sites";
+                 s[1] = res.getString("site_site");
+                 lines.add(s);
+               }
+            }
+            
+            res = st.executeQuery("select ov_site, ov_currency from ov_mstr;" );
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "currency";
+               s[1] = res.getString("ov_currency");
+               lines.add(s);
+               s = new String[2];
+               s[0] = "site";
+               s[1] = res.getString("ov_site");
+               lines.add(s);
+               defaultsite = s[1];
+            }
+            
+            res = st.executeQuery("select * from ov_ctrl;" );
+            while (res.next()) {
+               lines.add(new String[]{"jasperdir", res.getString("ov_jasper_directory")});
+               lines.add(new String[]{"imagedir", res.getString("ov_image_directory")});
+               lines.add(new String[]{"tempdir", res.getString("ov_temp_directory")});
+               lines.add(new String[]{"labeldir", res.getString("ov_label_directory")});
+               lines.add(new String[]{"edidir", res.getString("ov_edi_directory")});
+            }
+            
+            
+            res = st.executeQuery("select cur_id from cur_mstr ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "currencies";
+               s[1] = res.getString("cur_id");
+               lines.add(s);
+            }
+            
+             res = st.executeQuery("select bk_id from bk_mstr order by bk_id ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "banks";
+               s[1] = res.getString("bk_id");
+               lines.add(s);
+            }
+            
+             res = st.executeQuery("select cut_code from cust_term order by cut_code ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "terms";
+               s[1] = res.getString("cut_code");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select ac_id from ac_mstr order by ac_id;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "accounts";
+               s[1] = res.getString("ac_id");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select dept_id from dept_mstr order by dept_id ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "depts";
+               s[1] = res.getString("dept_id");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select tax_code from tax_mstr order by tax_code  ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "taxcodes";
+               s[1] = res.getString("tax_code");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select lblz_code from label_zebra order by lblz_code ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "labels";
+               s[1] = res.getString("lblz_code");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select code_key from code_mstr where code_code = 'country' order by code_key ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "countries";
+               s[1] = res.getString("code_key");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select code_key from code_mstr where code_code = 'state' order by code_key ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "states";
+               s[1] = res.getString("code_key");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select car_id from car_mstr order by car_id;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "carriers";
+               s[1] = res.getString("car_id");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select vdc_autovend from vd_ctrl;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "autovend";
+               s[1] = res.getString("vdc_autovend");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select apc_apacct from ap_ctrl;;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "apacct";
+               s[1] = res.getString("apc_apacct");
+               lines.add(s);
+            }
+            
+            /*
+             res = st.executeQuery("select car_id from car_mstr order by car_id;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "freight";
+               s[1] = res.getString("car_id");
+               lines.add(s);
+            }
+            */
+            
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+        return lines;
+    }
+    
     
     public static String getVendBrowseView(String[] keys) {
         JSONArray jsonarray = new JSONArray();
@@ -1669,6 +2001,11 @@ return myitem;
         }
     }
   
+    public record VendShipSet(String[] m, vd_mstr vd, ArrayList<vds_det> vdslist) {
+        public VendShipSet(String[] m) {
+            this (m, null, null);
+        }
+    }
     public record vds_det(String[] m, String vds_code, String vds_shipto, 
         String vds_name, String vds_line1, String vds_line2,
         String vds_line3, String vds_city, String vds_state, 

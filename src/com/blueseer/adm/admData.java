@@ -3446,6 +3446,27 @@ public class admData {
                                lines.add(s);
                             }
                         }
+                        
+                        if (sd.equals("apc_autovoucher")) {
+                            res = st.executeQuery("select apc_autovoucher from ap_ctrl;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "apc_autovoucher";
+                               s[1] = res.getString("apc_autovoucher");
+                               lines.add(s);
+                            }
+                        }
+                        
+                        if (sd.equals("serialize")) {
+                            res = st.executeQuery("select serialize from inv_ctrl;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "serialize";
+                               s[1] = res.getString("serialize");
+                               lines.add(s);
+                            }
+                        }
+                        
                         if (sd.equals("employees")) {
                             res = st.executeQuery("select emp_nbr from emp_mstr order by emp_nbr ;");
                             while (res.next()) {
@@ -3508,6 +3529,26 @@ public class admData {
                                String[] s = new String[2];
                                s[0] = "terms";
                                s[1] = res.getString("cut_code");
+                               lines.add(s);
+                            }
+                        }
+                        
+                        if (sd.equals("warehouses")) {
+                            res = st.executeQuery("select wh_id from wh_mstr ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "warehouses";
+                               s[1] = res.getString("wh_id");
+                               lines.add(s);
+                            }
+                        }
+                        
+                        if (sd.equals("locations")) {
+                            res = st.executeQuery("select loc_loc from loc_mstr;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "locations";
+                               s[1] = res.getString("loc_loc");
                                lines.add(s);
                             }
                         }

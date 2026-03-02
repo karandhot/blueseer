@@ -26,7 +26,9 @@ SOFTWARE.
 package com.blueseer.rcv;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
+import static bsmf.MainFrame.defaultDecimalSeparator;
 import static bsmf.MainFrame.driver;
 import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
@@ -47,11 +49,17 @@ import static com.blueseer.pur.purData._updateItemCurrPriceFromReceiver;
 import static com.blueseer.pur.purData._updatePOFromReceiver;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
+import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.OVData;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Connection;
@@ -139,6 +147,23 @@ public class rcvData {
    
     public static String[] addReceiverTransaction(ArrayList<recv_det> rvd, recv_mstr rv, ap_mstr ap, ArrayList<vod_mstr> vod) {
         // if auto-vouchering....ap and vod should not be null...otherwise pass null,null as 3rd,4th parameter
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addReceiverTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(rvd);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(rv);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(ap);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(vod);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServRCV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -176,6 +201,11 @@ public class rcvData {
                  _addAPMstr(ap, bscon, ps, res);  
                 for (vod_mstr z : vod) {
                     _addVODMstr(z, bscon, ps, res);
+                }
+                
+                // update receiver lines
+                for (vod_mstr z : vod) {
+                _updateReceiverLinesByVoucher(z, ap.ap_subtype(), false, bscon);
                 }
             
                 if (ap.ap_subtype().equals("Receipt")) {
@@ -327,6 +357,52 @@ public class rcvData {
      
      }
     
+    public static String[] deleteRecvMstr(String[] x) {
+        String[] m = new String[2];
+        if (x == null) {
+            return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
+        }
+        Connection con = null;
+        try { 
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            if (! isReceived(x[0], con)) {
+                _deleteRecvMstr(x, con);  
+                m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+            } else {
+                m = new String[] {BlueSeerUtils.SuccessBit, "Receiver has activity...cannot delete"};
+            }
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
+        } finally {
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+    
+    private static void _deleteRecvMstr(String[] x, Connection con) throws SQLException { 
+        PreparedStatement ps = null; 
+        String sql = "delete from recv_mstr where rv_id = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x[0]);
+        ps.executeUpdate();
+        sql = "delete from recv_det where rvd_id = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x[0]);
+        ps.executeUpdate();
+        ps.close();
+    }
+    
     
     private static int _updateRecvMstr(recv_mstr x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
         int rows = 0;
@@ -406,6 +482,22 @@ public class rcvData {
     }
     
     public static String[] updateReceiverTransaction(String x, ArrayList<String> lines, ArrayList<recv_det> rvd, recv_mstr rv) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateReceiverTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(lines);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(rvd);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(rv);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServRCV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -471,9 +563,73 @@ public class rcvData {
         ps.executeUpdate();
     }
     
+    public static void _updateReceiverLinesByVoucher(vod_mstr x, String ctype, boolean isVoid, Connection bscon) throws SQLException { 
+        Statement st = bscon.createStatement();
+        ResultSet res = null;
+        double prevvoqty = 0;
+        double rvqty = 0;
+        String status = "";
+        double rvdvoqty = 0;
+        
+        res = st.executeQuery("select rvd_voqty, rvd_qty from recv_det " 
+                         + " where rvd_id = " + "'" + x.vod_rvdid() + "'"
+                        + " AND rvd_rline = " + "'" + x.vod_rvdline() + "'"
+                        );
+                while (res.next()) {
+                    prevvoqty = res.getDouble("rvd_voqty");
+                    rvqty = res.getDouble("rvd_qty");
+                    if ((prevvoqty + x.vod_qty()) >= rvqty) {
+                        status = "1";
+                    }     
+                }
+                if (isVoid) {
+                    rvdvoqty = prevvoqty - x.vod_qty();
+                    status = "0";
+                } else {
+                    rvdvoqty = prevvoqty + x.vod_qty();
+                }
+                
+                if (ctype.equals("Receipt")) {
+                           if (bsmf.MainFrame.dbtype.equals("sqlite")) { 
+                            st.executeUpdate("update recv_det  "
+                            + " set rvd_voqty =  " + "'" + currformatDouble(rvdvoqty).replace(defaultDecimalSeparator, '.') + "'" + ","
+                            + " rvd_status = " + "'" + status + "'"
+                            + " where rvd_id = " + "'" + x.vod_rvdid() + "'"
+                            + " AND rvd_rline = " + "'" + x.vod_rvdline() + "'"
+                            );
+                           } else {
+                            st.executeUpdate("update recv_det as r1 inner join recv_det as r2 "
+                            + " set r1.rvd_voqty = r2.rvd_voqty + " +  "'" + currformatDouble(x.vod_qty()).replace(defaultDecimalSeparator, '.') + "'" + ","
+                            + " r1.rvd_status = case when r1.rvd_qty <= ( r2.rvd_voqty + " + "'" + currformatDouble(x.vod_qty()).replace(defaultDecimalSeparator, '.') + "'" +  ") then '1' else '0' end " 
+                            + " where r1.rvd_id = " + "'" + x.vod_rvdid() + "'"
+                            + " AND r1.rvd_rline = " + "'" + x.vod_rvdline() + "'"
+                            + " AND r2.rvd_id = " + "'" + x.vod_rvdid() + "'"
+                            + " AND r2.rvd_rline = " + "'" + x.vod_rvdline() + "'"
+                            );   
+                           }
+                        }
+                
+    }
+    
     public static Receiver getReceiverMstrSet(String[] x ) {
         Receiver r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getReceiverMstrSet"});
+            list.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServPUR");
+                r = objectMapper.readValue(returnstring, Receiver.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        
         Connection bscon = null;
         PreparedStatement ps = null;
         ResultSet res = null;
@@ -680,6 +836,61 @@ public class rcvData {
         return lines;
     }
     
+    public static ArrayList<String> getReceiversFromPO(String po, String status) { // status 0 = open, status 1 = closed, status 'all' = all
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getReceiversFromPO"});
+            list.add(new String[]{"param1", po});
+            list.add(new String[]{"param2", status});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServRCV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+    }
+        ArrayList<String> lines = new ArrayList<String>();
+        try{
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+            if (status.toLowerCase().equals("all")) {
+             res = st.executeQuery("select distinct(rvd_id) from recv_det inner join recv_mstr on " +
+                        " rvd_id = rv_id where " +
+                        " rvd_po = " + "'" + po + "'" + ";");   
+            } else {
+            res = st.executeQuery("select distinct(rvd_id) from recv_det inner join recv_mstr on " +
+                        " rvd_id = rv_id where " +
+                        " rvd_po = " + "'" + po + "'" + 
+                        " and rvd_status = " + "'" + status + "'" + ";");
+            }             
+            while (res.next()) {
+                lines.add(res.getString("rvd_id"));
+            }
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+        return lines;
+    }
     
     
     public static boolean isReceived(String x) {
@@ -724,8 +935,51 @@ public class rcvData {
         
     }
     
+    public static boolean isReceived(String x, Connection bscon) throws SQLException {
+           boolean r = false;
+         
+            Statement st = bscon.createStatement();
+            ResultSet res = null;
+            try{
+                
+                res = st.executeQuery("select rvd_id, rvd_rline, rvd_item from recv_det where rvd_id = " + "'" + x + "'" + 
+                                      " and rvd_voqty > 0 " + ";");
+                int i = 0;
+                while (res.next()) {
+                    i++;              
+                }
+                if (i > 0)
+                    r = true;
+               
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+            }
+        
+        return r;
+        
+    }
+    
     public static ArrayList<String> getReceiverLines(String x) {
         ArrayList<String> lines = new ArrayList<String>();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getReceiverLines"});
+            list.add(new String[]{"param1", x});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServRCV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         try{
         Connection con = null;
             if (ds != null) {

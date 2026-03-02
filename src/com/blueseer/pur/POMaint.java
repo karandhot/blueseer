@@ -37,6 +37,7 @@ import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.adm.admData;
+import static com.blueseer.adm.admData.getSiteMstr;
 import com.blueseer.adm.admData.site_mstr;
 import com.blueseer.fgl.fglData;
 import com.blueseer.inv.invData;
@@ -89,6 +90,7 @@ import static com.blueseer.utl.BlueSeerUtils.priceformat;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerT;
+import com.blueseer.utl.IBlueSeerV;
 import static com.blueseer.utl.OVData.canUpdate;
 import static com.blueseer.utl.OVData.isValidOrder;
 import static com.blueseer.utl.OVData.isValidPO;
@@ -112,7 +114,10 @@ import javax.swing.JTable;
 import javax.swing.SwingWorker;
 import javax.swing.event.TableModelEvent;
 import com.blueseer.vdr.venData;
+import com.blueseer.vdr.venData.VendShipSet;
+import static com.blueseer.vdr.venData.getVendShipSet;
 import com.blueseer.vdr.venData.vd_mstr;
+import com.blueseer.vdr.venData.vds_det;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -136,16 +141,17 @@ import javax.swing.JScrollPane;
  *
  * @author vaughnte
  */
-public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
+public class POMaint extends javax.swing.JPanel implements IBlueSeerV {
 
     // global variable declarations
+    boolean canUpdate = false;
+    boolean isAutoPost = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String defaultCC = "";
      boolean editmode = false;
      boolean isLoad = false;
-     String curr = "";
-     String basecurr = OVData.getDefaultCurrency();
-     String terms = "";
-     String acct = "";
-     String cc = "";
      String blanket = "";
      String status = "";
      boolean venditemonly = true;  
@@ -389,11 +395,11 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
        }
     }
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
         
         isLoad = true;
         
-        ArrayList<String[]> initDataSets = purData.getPurchaseOrderInit();
+        initDataSets = purData.getPurchaseOrderInit(this.getClass().getName(), bsmf.MainFrame.userid);
         
         jTabbedPane1.removeAll();
         jTabbedPane1.add("Main", panelMain);
@@ -474,12 +480,20 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddship.removeAllItems();
         dditemship.removeAllItems();
         ddtax.removeAllItems();
-        String defaultsite = null;
         
         
         for (String[] s : initDataSets) {
+            
             if (s[0].equals("currency")) {
-              basecurr = s[1];  
+              defaultCurrency = s[1];  
+            }
+            
+            if (s[0].equals("autopost")) {
+              isAutoPost = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            
+            if (s[0].equals("canupdate")) {
+              canUpdate =  bsmf.MainFrame.ConvertStringToBool(s[1]); 
             }
           
             if (s[0].equals("venditemonly")) {
@@ -499,7 +513,7 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
               ddsite.addItem(s[1]); 
             }
             if (s[0].equals("site")) {
-              defaultsite = s[1]; 
+              defaultSite = s[1]; 
             }
             if (s[0].equals("currencies")) {
               ddcurr.addItem(s[1]); 
@@ -527,7 +541,7 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
             
         }
         
-        ddsite.setSelectedItem(defaultsite);
+        ddsite.setSelectedItem(defaultSite);
         ddtax.insertItemAt("", 0);
         ddtax.setSelectedIndex(0);
         ddcurr.insertItemAt("", 0);
@@ -562,7 +576,7 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
        setPanelComponentState(this, false); 
        
        
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         
@@ -578,7 +592,7 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
   
     public void newAction(String x) {
         setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btcopy.setEnabled(false);
@@ -732,12 +746,12 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
                 ddstatus.getSelectedItem().toString(),
                 userid.getText(),
                 ddtype.getSelectedItem().toString(), // type
-                curr,
-                terms,
+                vd.vd_curr(),
+                vd.vd_terms(),
                 ddsite.getSelectedItem().toString(),
                 tbbuyer.getText(),  
-                acct,
-                cc, 
+                vd.vd_ap_acct(),
+                vd.vd_ap_cc(), 
                 shipto, 
                 ddedistatus.getSelectedItem().toString(),
                 String.valueOf(BlueSeerUtils.boolToInt(cbconfirm.isSelected())),
@@ -852,7 +866,7 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public boolean validateInput(dbaction x) {
        
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -910,18 +924,6 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
                     return false;
                 }
                 
-                terms = venData.getVendTerms(ddvend.getSelectedItem().toString()); 
-                cc = venData.getVendAPCC(ddvend.getSelectedItem().toString());
-                acct = venData.getVendAPAcct(ddvend.getSelectedItem().toString());
-                curr = ddcurr.getSelectedItem().toString();
-                
-                if (terms == null   || acct == null   || cc == null || curr == null ||
-                        terms.isEmpty() || acct.isEmpty() || cc.isEmpty() || curr.isEmpty()
-                         ) {
-                        bsmf.MainFrame.show(getMessageTag(1090));
-                        return false;
-                    }   
-                
                 if (orddet.getRowCount() == 0) {
                     bsmf.MainFrame.show(getMessageTag(1089));
                     return false;
@@ -929,10 +931,10 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
                 
                 
                  // lets check for foreign currency with no exchange rate
-            if (! curr.toUpperCase().equals(basecurr.toUpperCase())) {
-            if (OVData.getExchangeRate(basecurr, curr).isEmpty()) {
-                bsmf.MainFrame.show(getMessageTag(1091, curr + "/" + basecurr));
-                return false;
+            if (! vd.vd_curr().toUpperCase().equals(defaultCurrency.toUpperCase())) {
+            if (OVData.getExchangeRate(defaultCurrency, vd.vd_curr()).isEmpty()) {
+                bsmf.MainFrame.show(getMessageTag(1091, vd.vd_curr() + "/" + defaultCurrency));
+                return false; 
             }
             }
                 
@@ -1614,62 +1616,47 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void vendChangeEvent(String mykey) {
         
         // reset
-        lbvend.setText("");
-        ddshipvia.setSelectedIndex(0);
-        ddcurr.setSelectedIndex(0);
         clearShipTo();
+        VendShipSet vdset = getVendShipSet(new String[]{ddvend.getSelectedItem().toString()});
+        site_mstr sm = getSiteMstr(new String[]{ddsite.getSelectedItem().toString()});
+        vd = vdset.vd();
+        lbvend.setText(vd.vd_name());
+        ddshipvia.setSelectedItem(vd.vd_shipvia());
+        ddcurr.setSelectedItem(vd.vd_curr());
+        if (vd.vd_is850export().equals("1")) {
+            ddedistatus.setSelectedItem("pending");
+        } else {
+            ddedistatus.setSelectedItem("N/A");
+        }
+        
+        isLoad = true;
         ddship.removeAllItems();
         dditemship.removeAllItems();
-        
-        vd = venData.getVendMstr(new String[]{ddvend.getSelectedItem().toString()});
-        
-         ArrayList<String> mylist = venData.getVendShipList(ddvend.getSelectedItem().toString(), "ShipTo");
-            for (int i = 0; i < mylist.size(); i++) {
-                ddship.addItem(mylist.get(i));
-                dditemship.addItem(mylist.get(i));
-            }
-            ddship.insertItemAt("",0);
-            dditemship.insertItemAt("",0);
-      try {
-           Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
+        for (vds_det vds : vdset.vdslist()) {
+            ddship.addItem(vds.vds_shipto());
+            dditemship.addItem(vds.vds_shipto());
         }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-               
-                res = st.executeQuery("select * from vd_mstr where vd_addr = " + "'" + ddvend.getSelectedItem().toString() + "'" + ";");
-                while (res.next()) {
-                    lbvend.setText(res.getString("vd_name"));
-                    ddshipvia.setSelectedItem(res.getString("vd_shipvia"));
-                    ddcurr.setSelectedItem(res.getString("vd_curr"));
-                    curr = ddcurr.getSelectedItem().toString();
-                    if (res.getString("vd_is850export").equals("1")) {
-                        ddedistatus.setSelectedItem("pending");
-                    } else {
-                        ddedistatus.setSelectedItem("N/A");
-                    }
-                }
-                
-              
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        ddship.insertItemAt("",0);
+        dditemship.insertItemAt("",0);
+        
+        
+        tbshipcode.setText(sm.site_site());
+        tbshipname.setText(sm.site_desc());
+        tbshipline1.setText(sm.site_line1());
+        tbshipline2.setText(sm.site_line2());
+        tbshipcity.setText(sm.site_city());
+        tbshipzip.setText(sm.site_zip());
+        tbshipcontact.setText(sm.site_sqename());
+        tbshipphone.setText(sm.site_phone());
+        tbshipemail.setText(sm.site_sqeemail());
+        ddshipstate.setSelectedItem(sm.site_state());
+        ddshipcountry.setSelectedItem(sm.site_country());
+        lbshipto.setText("ship to site");
+        dditemship.setSelectedItem(tbshipcode.getText());
+        isLoad = false;
+        
+       
+        
     }
     
     public void retotal() {
@@ -1703,115 +1690,6 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
          
     }
    
-    public void loadShipToAddress() {
-        try {
-                        Connection con = null;
-                        if (ds != null) {
-                          con = ds.getConnection();
-                        } else {
-                          con = DriverManager.getConnection(url + db, user, pass);  
-                        }
-                        Statement st = con.createStatement();
-                        ResultSet res = null;
-                        try {
-                            
-                            if (ddship.getSelectedItem().toString().isBlank()) {
-                              res = st.executeQuery("select * from site_mstr where site_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + ";");
-                            while (res.next()) {
-                                tbshipcode.setText(res.getString("site_site"));
-                                tbshipname.setText(res.getString("site_desc"));
-                                tbshipline1.setText(res.getString("site_line1"));
-                                tbshipline2.setText(res.getString("site_line2"));
-                                tbshipcity.setText(res.getString("site_city"));
-                                tbshipzip.setText(res.getString("site_zip"));
-                                tbshipcontact.setText(res.getString("site_sqename"));
-                                tbshipphone.setText(res.getString("site_phone"));
-                                tbshipemail.setText(res.getString("site_sqeemail"));
-                                ddshipstate.setSelectedItem(res.getString("site_state"));
-                                ddshipcountry.setSelectedItem(res.getString("site_country"));
-                                lbshipto.setText("ship to site");
-                            }  
-                            } else {
-                            res = st.executeQuery("select * from vds_det where vds_code = " + "'" + ddvend.getSelectedItem().toString() + "'" +
-                                    " AND vds_shipto = " + "'" + ddship.getSelectedItem().toString() + "'" + ";");
-                            while (res.next()) {
-                                tbshipcode.setText(res.getString("vds_shipto"));
-                                tbshipname.setText(res.getString("vds_name"));
-                                tbshipline1.setText(res.getString("vds_line1"));
-                                tbshipline2.setText(res.getString("vds_line2"));
-                                tbshipcity.setText(res.getString("vds_city"));
-                                tbshipzip.setText(res.getString("vds_zip"));
-                                tbshipcontact.setText(res.getString("vds_contact"));
-                                tbshipphone.setText(res.getString("vds_phone"));
-                                tbshipemail.setText(res.getString("vds_email"));
-                                ddshipstate.setSelectedItem(res.getString("vds_state"));
-                                ddshipcountry.setSelectedItem(res.getString("vds_country"));
-                                lbshipto.setText(res.getString("vds_name"));
-                            }
-                        }
-                        dditemship.setSelectedItem(ddship.getSelectedItem().toString());
-                        } catch (SQLException s) {
-                            MainFrame.bslog(s);
-                        } finally {
-                            if (res != null) {
-                                res.close();
-                            }
-                            if (st != null) {
-                                st.close();
-                            }
-                            con.close();
-                        }
-                    } catch (Exception e) {
-                        MainFrame.bslog(e);
-                    }
-    }
-   
-    public void loadShipToAddressInitialize() {
-        try {
-                        Connection con = null;
-                        if (ds != null) {
-                          con = ds.getConnection();
-                        } else {
-                          con = DriverManager.getConnection(url + db, user, pass);  
-                        }
-                        Statement st = con.createStatement();
-                        ResultSet res = null;
-                        try {
-                            
-                           
-                              res = st.executeQuery("select * from site_mstr where site_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + ";");
-                            while (res.next()) {
-                                tbshipcode.setText(res.getString("site_site"));
-                                tbshipname.setText(res.getString("site_desc"));
-                                tbshipline1.setText(res.getString("site_line1"));
-                                tbshipline2.setText(res.getString("site_line2"));
-                                tbshipcity.setText(res.getString("site_city"));
-                                tbshipzip.setText(res.getString("site_zip"));
-                                tbshipcontact.setText(res.getString("site_sqename"));
-                                tbshipphone.setText(res.getString("site_phone"));
-                                tbshipemail.setText(res.getString("site_sqeemail"));
-                                ddshipstate.setSelectedItem(res.getString("site_state"));
-                                ddshipcountry.setSelectedItem(res.getString("site_country"));
-                                lbshipto.setText("ship to site");
-                            }  
-                           
-                        dditemship.setSelectedItem(tbshipcode.getText());
-                        } catch (SQLException s) {
-                            MainFrame.bslog(s);
-                        } finally {
-                            if (res != null) {
-                                res.close();
-                            }
-                            if (st != null) {
-                                st.close();
-                            }
-                            con.close();
-                        }
-                    } catch (Exception e) {
-                        MainFrame.bslog(e);
-                    }
-    }
-    
     public boolean isMultiShip() {
         Set<String> shiptos = new LinkedHashSet<String>();
         boolean isMultiShip = false;
@@ -3234,7 +3112,6 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
                 jTabbedPane1.setEnabledAt(1, true);
                 jTabbedPane1.setEnabledAt(2, true);
                 vendChangeEvent(ddvend.getSelectedItem().toString());
-                loadShipToAddressInitialize();
             } // if ddvend has a list
         }
     }//GEN-LAST:event_ddvendActionPerformed
@@ -3262,7 +3139,23 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
     private void ddshipActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddshipActionPerformed
         if (! isLoad && ddsite.getSelectedItem() != null && ddvend.getSelectedItem() != null && ddship.getItemCount() > 0)  {
             clearShipAddress();
-            loadShipToAddress();                    
+            site_mstr sm = getSiteMstr(new String[]{ddsite.getSelectedItem().toString()});
+            isLoad = true;
+            tbshipcode.setText(sm.site_site());
+            tbshipname.setText(sm.site_desc());
+            tbshipline1.setText(sm.site_line1());
+            tbshipline2.setText(sm.site_line2());
+            tbshipcity.setText(sm.site_city());
+            tbshipzip.setText(sm.site_zip());
+            tbshipcontact.setText(sm.site_sqename());
+            tbshipphone.setText(sm.site_phone());
+            tbshipemail.setText(sm.site_sqeemail());
+            ddshipstate.setSelectedItem(sm.site_state());
+            ddshipcountry.setSelectedItem(sm.site_country());
+            lbshipto.setText("ship to site");
+            dditemship.setSelectedItem(tbshipcode.getText());
+            isLoad = false;
+                                
         }
     }//GEN-LAST:event_ddshipActionPerformed
 
@@ -3365,14 +3258,7 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_tableattachmentMouseClicked
 
     private void ddsiteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddsiteActionPerformed
-        if (! isLoad && ddsite.getSelectedItem() != null) {
-          //  ArrayList<String> items = new ArrayList<String>();
-          //  if (OVData.isRawItemOnly()) {
-          //      items = invData.getItemMasterRawListBySite(ddsite.getSelectedItem().toString()); 
-          //  } else {
-          //      items = invData.getItemMasterListBySite(ddsite.getSelectedItem().toString()); 
-          //  }
-        }
+        
     }//GEN-LAST:event_ddsiteActionPerformed
 
     private void tbitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbitemActionPerformed
