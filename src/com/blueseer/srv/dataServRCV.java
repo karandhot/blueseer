@@ -142,6 +142,47 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
         }
         
+        case "getReceiverBrowseView" : { 
+        response.getWriter().print(rcvData.getReceiverBrowseView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5")})); 
+        break;
+        } 
+        
+        case "getReceiverDetailView" : { 
+        response.getWriter().print(rcvData.getReceiverDetailView(new String[]{request.getHeader("param1")})); 
+        break;
+        } 
+        
+        case "getReceiverByPOBrowseView" : { 
+        response.getWriter().print(rcvData.getReceiverByPOBrowseView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5")})); 
+        break;
+        } 
+        
+        case "getReceiverByPODetailView" : { 
+        response.getWriter().print(rcvData.getReceiverByPODetailView(new String[]{request.getHeader("param1"), request.getHeader("param2")})); 
+        break;
+        } 
+        
+        case "getReceiverByItemBrowseView" : { 
+        response.getWriter().print(rcvData.getReceiverByItemBrowseView(new String[]{
+            request.getHeader("param1"), 
+            request.getHeader("param2"),
+            request.getHeader("param3"),
+            request.getHeader("param4"),
+            request.getHeader("param5"),
+            request.getHeader("param6"),
+            request.getHeader("param7"),
+            request.getHeader("param8")})); 
+        break;
+        } 
+        
         default:
         response.getWriter().print("no switch case exists in dataServRCV for id: " + id);
         System.out.println("no switch case exists in dataServRCV for id: " + id);    

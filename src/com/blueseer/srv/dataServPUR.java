@@ -88,6 +88,31 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         break;
         }
         
+        case "getPOBrowseView" : { 
+        response.getWriter().print(purData.getPOBrowseView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5")})); 
+        break;
+        } 
+        
+        case "getPODetailView" : { 
+        response.getWriter().print(purData.getPODetailView(new String[]{request.getHeader("param1")})); 
+        break;
+        } 
+        
+        case "getPOItemBrowseView" : { 
+        response.getWriter().print(purData.getPOItemBrowseView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5"),
+                    request.getHeader("param6"),
+                    request.getHeader("param7"),
+                    request.getHeader("param8")})); 
+        break;
+        } 
         
         
         

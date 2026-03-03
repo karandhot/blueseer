@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.rcv;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static bsmf.MainFrame.checkperms;
@@ -69,12 +70,16 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import com.blueseer.far.farData;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.vdr.venData;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
@@ -86,6 +91,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 
 /**
  *
@@ -93,6 +99,13 @@ import javax.swing.JTabbedPane;
  */
 public class RecvBrowse extends javax.swing.JPanel {
  
+    boolean isLoad = false;
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultsite = "";
+    String defaultCurrency = "";
+    
      public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
      
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -166,52 +179,83 @@ public class RecvBrowse extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
-     public void getdetail(String rvid) {
+    public void executeTask(String x, String[] y) { 
       
-         modeldetail.setNumRows(0);
-         double total = 0;
-        
-        try {
-
-            Class.forName(bsmf.MainFrame.driver).newInstance();
-            bsmf.MainFrame.con = DriverManager.getConnection(bsmf.MainFrame.url + bsmf.MainFrame.db, bsmf.MainFrame.user, bsmf.MainFrame.pass);
-            try {
-                Statement st = bsmf.MainFrame.con.createStatement();
-                ResultSet res = null;
-                int i = 0;
-                String blanket = "";
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
                 
-                res = st.executeQuery("select rvd_id, rvd_po, rvd_poline, rvd_item, rvd_packingslip, rvd_date, rvd_netprice, rvd_qty, rvd_voqty " +
-                        " from recv_det " +
-                        " where rvd_id = " + "'" + rvid + "'" + ";");
-                while (res.next()) {
-                   modeldetail.addRow(new Object[]{ 
-                      res.getString("rvd_id"), 
-                       res.getString("rvd_po"),
-                       res.getString("rvd_poline"),
-                       res.getString("rvd_item"),
-                       res.getString("rvd_packingslip"),
-                       getDateDB(res.getString("rvd_date")),
-                       bsParseDouble(currformatDouble(res.getDouble("rvd_netprice"))),
-                      bsNumber(res.getInt("rvd_qty")), 
-                      bsNumber(res.getInt("rvd_voqty"))});
-                }
-               
-              
-                tabledetail.setModel(modeldetail);
-                 tabledetail.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                case "getBrowseDetView":
+                    message = getBrowseDetView(key[0]);
+                    break; 
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
             }
-            bsmf.MainFrame.con.close();
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+            
+            
+            
+            
+            return message;
         }
-
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+            if (this.action.equals("getBrowseDetView")) {
+                done_getBrowseDetView();
+            }            
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
     }
+    
     
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
@@ -258,7 +302,21 @@ public class RecvBrowse extends javax.swing.JPanel {
     }
     
     public void initvars(String[] arg) {
-     
+     executeTask("dataInit", null); 
+    }
+        
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "vendors");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        
+        isLoad = true;
         
         java.util.Date now = new java.util.Date();
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
@@ -268,50 +326,143 @@ public class RecvBrowse extends javax.swing.JPanel {
         mymodel.setNumRows(0);
         modeldetail.setNumRows(0);
         tablereport.setModel(mymodel);
-        tabledetail.setModel(modeldetail);
         
-           tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-           tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
-         
-       
-          
-         
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
-        
-        
-        
+               
         
         btdetail.setEnabled(false);
         detailpanel.setVisible(false);
         
         ddsite.removeAllItems();
-        ArrayList sites = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (Object site : sites) {
-            ddsite.addItem(site);
-        }
-        
         ddvendfrom.removeAllItems();
-        ArrayList vends = venData.getVendMstrListMinusCarrier();
-        for (Object vend : vends) {
-            ddvendfrom.addItem(vend);
-        }
         ddvendto.removeAllItems();
-        for (Object vend : vends) {
-            ddvendto.addItem(vend);
+        
+        for (String[] s : initDataSets) {
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultsite = s[1]; 
+            }
+            if (s[0].equals("vendors")) {
+              ddvendfrom.addItem(s[1]); 
+              ddvendto.addItem(s[1]); 
+            }
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+        }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
         }
         
-        
-         if (ddvendfrom.getItemCount() > 0)
+        if (ddvendfrom.getItemCount() > 0) {
         ddvendfrom.setSelectedIndex(0);
+        }
         
-        if (ddvendto.getItemCount() > 0)
+        if (ddvendto.getItemCount() > 0) {
         ddvendto.setSelectedIndex(ddvendto.getItemCount() - 1);
+        }
         
+        tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+       tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
+       tabledetail.setModel(modeldetail);
+       tabledetail.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+          
         
-          
-          
+        isLoad = false;
+        
     }
+    
+    public String[] getBrowseView() {
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(new String[]{"id","getReceiverBrowseView"});
+        list.add(new String[]{"param1",ddvendfrom.getSelectedItem().toString()});
+        list.add(new String[]{"param2",ddvendto.getSelectedItem().toString()});
+        list.add(new String[]{"param3",tbfromreceiver.getText()});
+        list.add(new String[]{"param4",tbtoreceiver.getText()});
+        list.add(new String[]{"param5",ddsite.getSelectedItem().toString()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServRCV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getReceiverBrowseView")};
+            }
+        } else {
+            jsonString = rcvData.getReceiverBrowseView(new String[]{
+                ddvendfrom.getSelectedItem().toString(),
+                ddvendto.getSelectedItem().toString(),
+                tbfromreceiver.getText(),
+                tbtoreceiver.getText(),
+                ddsite.getSelectedItem().toString()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getExpenseBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+       
+        int i = 0;
+        mymodel.setNumRows(0);
+        if (roData != null) {
+        for (Object[] rowData : roData) {
+            mymodel.addRow(rowData);
+            i++;
+        }
+        }
+        roData = null;
+    }   
+    
+    public String[] getBrowseDetView(String id) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getReceiverDetailView"});
+            list.add(new String[]{"param1", id});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServRCV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = rcvData.getReceiverDetailView(new String[]{id}); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getBrowseDetView() {
+      modeldetail.setNumRows(0);
+       int i = 0;  
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+                roData[i][6] = bsParseDouble(roData[i][6].toString());
+                roData[i][7] = bsParseDouble(roData[i][7].toString());
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                modeldetail.addRow(rowData);
+                i++;
+            } 
+        }
+       }
+       roData = null;
+    }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -340,8 +491,8 @@ public class RecvBrowse extends javax.swing.JPanel {
         ddvendfrom = new javax.swing.JComboBox();
         ddsite = new javax.swing.JComboBox();
         jLabel6 = new javax.swing.JLabel();
-        tbfrompo = new javax.swing.JTextField();
-        tbtopo = new javax.swing.JTextField();
+        tbfromreceiver = new javax.swing.JTextField();
+        tbtoreceiver = new javax.swing.JTextField();
         btprint = new javax.swing.JButton();
         tbcsv = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
@@ -458,8 +609,8 @@ public class RecvBrowse extends javax.swing.JPanel {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(tbtopo, javax.swing.GroupLayout.DEFAULT_SIZE, 94, Short.MAX_VALUE)
-                            .addComponent(tbfrompo))
+                            .addComponent(tbtoreceiver, javax.swing.GroupLayout.DEFAULT_SIZE, 94, Short.MAX_VALUE)
+                            .addComponent(tbfromreceiver))
                         .addGap(18, 18, 18)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -493,7 +644,7 @@ public class RecvBrowse extends javax.swing.JPanel {
                     .addComponent(btdetail)
                     .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5)
-                    .addComponent(tbfrompo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tbfromreceiver, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6)
                     .addComponent(btprint)
                     .addComponent(tbcsv))
@@ -503,7 +654,7 @@ public class RecvBrowse extends javax.swing.JPanel {
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(ddvendto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel3)
-                        .addComponent(tbtopo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(tbtoreceiver, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -556,91 +707,7 @@ public class RecvBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-    
-try {
-            Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                DecimalFormat df = new DecimalFormat("#0.00", new DecimalFormatSymbols(Locale.US));
-                int i = 0;
-               
-               mymodel.setNumRows(0);
-        
-            
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                
-                 String pofrom = tbfrompo.getText();
-                 String poto = tbtopo.getText();
-                 
-                 if (pofrom.isEmpty()) {
-                     pofrom = bsmf.MainFrame.lownbr;
-                 }
-                  if (poto.isEmpty()) {
-                     poto = bsmf.MainFrame.hinbr;
-                 }
-                  
-                 String vendfrom = "";
-                 String vendto = "";
-                 if (ddvendfrom.getSelectedItem() != null)
-                     vendfrom = ddvendfrom.getSelectedItem().toString();
-                 
-                 if (ddvendto.getSelectedItem() != null)
-                     vendto = ddvendto.getSelectedItem().toString();
-                      
-                  
-                 
-         //     new String[]{"Detail", "PO", "Vend", "Line", "Part", "Type", "Status", "OrdQty", "RecvQty"});   
-             res = st.executeQuery("select rv_id, rv_vend, rv_packingslip, rv_recvdate, rv_status, rv_ref, rv_rmks " +
-                         " from recv_mstr where " +
-                         " rv_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " + 
-                        " rv_vend >= " + "'" + vendfrom + "'" + " AND " +
-                        " rv_vend <= " + "'" + vendto + "'" + " AND " +
-                     " rv_id >= " + "'" + pofrom + "'" + " AND " +
-                        " rv_id <= " + "'" + poto + "'" + 
-                        " order by rv_id ;");
-                     
-                  
-                
-                       while (res.next()) {
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, BlueSeerUtils.clickbasket, 
-                        res.getString("rv_id"),
-                        res.getString("rv_vend"),
-                        res.getString("rv_packingslip"),
-                        getDateDB(res.getString("rv_recvdate")),
-                        res.getString("rv_status"),
-                        res.getString("rv_ref"),
-                        res.getString("rv_rmks")
-                    });
-               
-             
-                   
-                } // while   
-                    
-                 
-        
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
+     executeTask("getBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btdetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdetailActionPerformed
@@ -653,7 +720,7 @@ try {
         int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
         if ( col == 1) {
-                getdetail(tablereport.getValueAt(row, 2).toString());
+                executeTask("getBrowseDetView", new String[]{tablereport.getValueAt(row, 2).toString()});
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
               
@@ -663,7 +730,6 @@ try {
                if (! checkperms(mypanel)) { return; }
               String[] args = new String[]{tablereport.getValueAt(row, 2).toString()};
                reinitpanels(mypanel, true, args);
-              
         }
     }//GEN-LAST:event_tablereportMouseClicked
 
@@ -700,7 +766,7 @@ try {
     private javax.swing.JPanel tablepanel;
     private javax.swing.JTable tablereport;
     private javax.swing.JButton tbcsv;
-    private javax.swing.JTextField tbfrompo;
-    private javax.swing.JTextField tbtopo;
+    private javax.swing.JTextField tbfromreceiver;
+    private javax.swing.JTextField tbtoreceiver;
     // End of variables declaration//GEN-END:variables
 }

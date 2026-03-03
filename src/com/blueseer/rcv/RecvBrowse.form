@@ -190,8 +190,8 @@
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                  <Component id="tbtopo" pref="94" max="32767" attributes="0"/>
-                                  <Component id="tbfrompo" max="32767" attributes="0"/>
+                                  <Component id="tbtoreceiver" pref="94" max="32767" attributes="0"/>
+                                  <Component id="tbfromreceiver" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -231,7 +231,7 @@
                           <Component id="btdetail" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="ddsite" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel5" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="tbfrompo" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="tbfromreceiver" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="btprint" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="tbcsv" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -242,7 +242,7 @@
                           <Group type="103" alignment="0" groupAlignment="3" attributes="0">
                               <Component id="ddvendto" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="tbtopo" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="tbtoreceiver" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="32767" attributes="0"/>
@@ -320,9 +320,9 @@
                 <Property name="name" type="java.lang.String" value="lblfromreceiver" noResource="true"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JTextField" name="tbfrompo">
+            <Component class="javax.swing.JTextField" name="tbfromreceiver">
             </Component>
-            <Component class="javax.swing.JTextField" name="tbtopo">
+            <Component class="javax.swing.JTextField" name="tbtoreceiver">
             </Component>
             <Component class="javax.swing.JButton" name="btprint">
               <Properties>

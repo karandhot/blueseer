@@ -30,6 +30,7 @@ import com.blueseer.shp.*;
 import com.blueseer.far.*;
 import com.blueseer.shp.*;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static bsmf.MainFrame.checkperms;
@@ -70,6 +71,7 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDoubleZ;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
@@ -80,7 +82,9 @@ import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import static com.blueseer.utl.BlueSeerUtils.setDateFormat;
 import static com.blueseer.utl.BlueSeerUtils.setDateFormatNull;
@@ -111,6 +115,12 @@ import net.sf.jasperreports.view.JasperViewer;
 public class RecvItemBrowse extends javax.swing.JPanel {
  
     boolean sending = false;
+    boolean isLoad = false;
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultsite = "";
+    String defaultCurrency = "";
     
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("select"), 
@@ -125,9 +135,11 @@ public class RecvItemBrowse extends javax.swing.JPanel {
             {
                       @Override  
                       public Class getColumnClass(int col) {  
-                        if (col == 0)       
-                            return ImageIcon.class;  
-                        else return String.class;  //other columns accept String values  
+                        if (col == 0) {      
+                            return ImageIcon.class;
+                        }else if (col == 8) {
+                            return Double.class;
+                        } else return String.class;  
                       }
                       
                       @Override
@@ -194,6 +206,75 @@ public class RecvItemBrowse extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }     
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
     
     public void executeTask(String x, int y, String w) { 
       
@@ -284,7 +365,7 @@ public class RecvItemBrowse extends javax.swing.JPanel {
     }
      
     public void clearAll() {
-         tbtotqty.setText("0");
+        tbtotqty.setText("0");
         tbtotlines.setText("0");
        
         tbfromitem.setText("");
@@ -306,24 +387,111 @@ public class RecvItemBrowse extends javax.swing.JPanel {
     }
     
     public void initvars(String[] arg) {
+      executeTask("dataInit", null);
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "vendors");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
         
+        isLoad = true;
         detailpanel.setVisible(false);
-        
-        
-        tbtotqty.setText("0");
-        tbtotlines.setText("0");
-       
         clearAll();
         
-               
+        mymodel.setNumRows(0);       
         tablereport.setModel(mymodel);
-        tablereport.getTableHeader().setReorderingAllowed(false);
-        tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
         
+        java.util.Date now = new java.util.Date();
+        dcfrom.setDate(now);
+        dcto.setDate(now);
+         
+       tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+        
+        
+        for (String[] s : initDataSets) {
+            
+            
+            if (s[0].equals("site")) {
+              defaultsite = s[1]; 
+            }
+           
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+        }
+        
+        tablereport.getTableHeader().setReorderingAllowed(false);
+        tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
+        
+        isLoad = false;
+        
     }
+    
+    public String[] getBrowseView() {
+        String jsonString = null; 
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(new String[]{"id","getReceiverByItemBrowseView"});
+        list.add(new String[]{"param1",tbfromnbr.getText()});
+        list.add(new String[]{"param2",tbtonbr.getText()});
+        list.add(new String[]{"param3",tbfromitem.getText()});
+        list.add(new String[]{"param4",tbtoitem.getText()});
+        list.add(new String[]{"param5",dfdate.format(dcfrom.getDate())});
+        list.add(new String[]{"param6",dfdate.format(dcto.getDate())});
+        list.add(new String[]{"param7",tbfromvend.getText()});
+        list.add(new String[]{"param8",tbtovend.getText()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServRCV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getReceiverByPOBrowseView")};
+            }
+        } else {
+            jsonString = rcvData.getReceiverByItemBrowseView(new String[]{
+                tbfromnbr.getText(),
+                tbtonbr.getText(),
+                tbfromitem.getText(),
+                tbtoitem.getText(),
+                dfdate.format(dcfrom.getDate()),
+                dfdate.format(dcto.getDate()),
+                tbfromvend.getText(),
+                tbtovend.getText()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getExpenseBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+       
+        int i = 0;
+        mymodel.setNumRows(0);
+        if (roData != null) {
+        for (Object[] rowData : roData) {
+            roData[i][7] = bsParseDouble(roData[i][7].toString());
+            roData[i][8] = bsParseDouble(roData[i][8].toString());
+            mymodel.addRow(rowData);
+            i++;
+        }
+        }
+        roData = null;
+    }   
     
     
     /**
@@ -643,106 +811,7 @@ public class RecvItemBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                
-                mymodel.setNumRows(0);
-                 
-              //  tablereport.getColumnModel().getColumn(10).setCellRenderer(new InvoiceBrowsePanel.SomeRenderer());
-                
-                 double totsales = 0;
-                 double totqty = 0;
-                 
-            
-                // String site = ddsite.getSelectedItem().toString(); 
-                                  
-                 String nbrfrom = tbfromnbr.getText();
-                 String nbrto = tbtonbr.getText();
-                 String vendto = tbtovend.getText();
-                 String vendfrom = tbfromvend.getText();
-                 String itemfrom = tbfromitem.getText();
-                 String itemto = tbtoitem.getText();                
-                 
-                 if (nbrfrom.isEmpty()) {
-                     nbrfrom = "0";
-                 }
-                 if (nbrto.isEmpty()) {
-                     nbrto = "ZZZZZZZZ";
-                 }
-                 if (vendfrom.isEmpty()) {
-                     vendfrom = "0";
-                 }
-                 if (vendto.isEmpty()) {
-                     vendto = "ZZZZZZZZ";
-                 }
-                 if (itemfrom.isEmpty()) {
-                     itemfrom = "0";
-                 }
-                 if (itemto.isEmpty()) {
-                     itemto = "ZZZZZZZZ";
-                 }
-                                   
-                  res = st.executeQuery("select rvd_item, rvd_po, rvd_date, rvd_qty, rvd_netprice, rvd_serial, rv_vend, rvd_id, rv_id from recv_det " +
-                        " inner join recv_mstr on rv_id = rvd_id where " +
-                        " rvd_po >= " + "'" + nbrfrom + "'" + " AND " +
-                        " rvd_po <= " + "'" + nbrto + "'" + " AND " +
-                        " rvd_item >= " + "'" + itemfrom + "'" + " AND " +
-                        " rvd_item <= " + "'" + itemto + "'" + " AND " +        
-                        " rvd_date >= " + "'" + setDateDB(dcfrom.getDate()) + "'" + " AND " +
-                        " rvd_date <= " + "'" + setDateDB(dcto.getDate()) + "'" + " AND " +
-                        " rv_vend >= " + "'" + vendfrom + "'" + " AND " +
-                        " rv_vend <= " + "'" + vendto + "'" + 
-                        " order by rvd_date desc;");
-                 
-                       int i = 0;
-                       while (res.next()) {
-                         i++;  
-                         totqty = totqty + res.getDouble("rvd_qty");
-                        
-                         mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, 
-                                bsNumber(res.getString("rvd_id")),
-                                res.getString("rvd_po"),
-                                res.getString("rv_vend"),
-                                getDateDB(res.getString("rvd_date")),
-                                res.getString("rvd_item"),
-                                res.getString("rvd_serial"),
-                                bsNumber(res.getDouble("rvd_qty")),
-                                bsParseDouble(currformatDouble(res.getDouble("rvd_netprice")))
-                            });
-                                
-                       }
-              
-                tbtotqty.setText(currformatDouble(totqty));
-                tbtotlines.setText(String.valueOf(i));
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
+        executeTask("getBrowseView", null);  
     }//GEN-LAST:event_btRunActionPerformed
 
     private void tablereportMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablereportMouseClicked
@@ -751,10 +820,17 @@ public class RecvItemBrowse extends javax.swing.JPanel {
         int col = tablereport.columnAtPoint(evt.getPoint());
        
         if ( col == 0) {
-                String mypanel = "POMaintMenu";
+               
+             String mypanel = "ReceiverMaintMenu";
+               if (! checkperms(mypanel)) { return; }
+              String[] args = new String[]{tablereport.getValueAt(row, 1).toString()};
+               reinitpanels(mypanel, true, args);
+               /*
+               String mypanel = "POMaintMenu";
                if (! checkperms(mypanel)) { return; }
                String[] args = new String[]{bsNumberToUS(tablereport.getValueAt(row, 2).toString())};
                reinitpanels(mypanel, true, args);
+               */
         }
     }//GEN-LAST:event_tablereportMouseClicked
 

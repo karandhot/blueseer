@@ -39,13 +39,16 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.fap.fapData.vod_mstr;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
+import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.sql.DriverManager;
@@ -1338,6 +1341,210 @@ public class purData {
     
     
     // miscellaneous SQL queries
+    
+    public static String getPOBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                double dol = 0;
+                double qty = 0;
+                 
+                
+                 // init for new cust
+                i = 0;
+                
+                
+                keys[0] = (keys[0].isBlank()) ? bsmf.MainFrame.lowchar : keys[0];
+                keys[1] = (keys[1].isBlank()) ? bsmf.MainFrame.hichar : keys[1];                
+                keys[2] = (keys[2].isBlank()) ? bsmf.MainFrame.lowchar : keys[2];
+                keys[3] = (keys[3].isBlank()) ? bsmf.MainFrame.hichar : keys[3];
+                
+                res = st.executeQuery("select po_nbr, po_vend, vd_name, po_ord_date, po_due_date, po_type, po_status, " +
+                      " sum(pod_ord_qty * pod_netprice) as totdol, sum(pod_ord_qty) as totqty, " +
+                      " (select sum(case when pom_type = 'discount' and pom_amttype = 'percent' then pom_amt else '0' end) from po_meta where pom_nbr = po_nbr) as 'discountpercent', " +
+                        " (select sum(case when pom_type = 'charge' then pom_amt else '0' end) from po_meta where pom_nbr = po_nbr) as 'charge'," + 
+                        " (select sum(case when pom_type = 'tax' and pom_amttype = 'percent' then pom_amt end) from po_meta where pom_nbr = po_nbr)as 'taxpercent', " +
+                        " (select sum(case when pom_type = 'tax' and pom_amttype = 'amount' then pom_amt end) from po_meta where pom_nbr = po_nbr) as 'taxcharge' " +
+                         " from po_mstr inner join pod_mstr on pod_nbr = po_nbr inner join vd_mstr on vd_addr = po_vend where " +
+                        " po_site = " + "'" + keys[4] + "'" + " AND " +
+                        " po_vend >= " + "'" + keys[2] + "'" + " AND " +        
+                        " po_vend <= " + "'" + keys[3] + "'" + " AND " +
+                        " po_nbr >= " + "'" + keys[0] + "'" + " AND " +
+                        " po_nbr <= " + "'" + keys[1] + "'" + 
+                        " group by po_nbr, po_vend, vd_name, po_ord_date, po_due_date, po_type, po_status ;");
+                
+                while (res.next()) {
+                        i++;
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("po_nbr"));
+                        rowArray.put(res.getString("po_vend"));
+                        rowArray.put(res.getString("vd_name"));
+                        rowArray.put(getDateDB(res.getString("po_ord_date")));
+                        rowArray.put(res.getString("po_type"));
+                        rowArray.put(res.getString("po_status"));
+                        rowArray.put(currformatDouble(res.getDouble("totdol")));
+                        rowArray.put(res.getDouble("totqty"));
+                        rowArray.put(currformatDouble(res.getDouble("discountpercent")));
+                        rowArray.put(currformatDouble(res.getDouble("charge")));
+                        rowArray.put(currformatDouble(res.getDouble("taxpercent")));
+                        rowArray.put(currformatDouble(res.getDouble("taxcharge")));
+                        jsonarray.put(rowArray);
+                        
+                } 
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getPODetailView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                 
+                 res = st.executeQuery("select pod_nbr, pod_item, pod_netprice, pod_ord_qty, pod_rcvd_qty, pod_status from pod_mstr " +
+                        " where pod_nbr = " + "'" + keys[0] + "'" +  ";");
+                
+                 while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("pod_nbr"));
+                        rowArray.put(res.getString("pod_item"));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("pod_netprice"))));
+                        rowArray.put(bsNumber(res.getDouble("pod_ord_qty")));
+                        rowArray.put(bsNumber(res.getDouble("pod_rcvd_qty")));
+                        rowArray.put(res.getString("pod_status"));
+                        jsonarray.put(rowArray);
+                        
+                }
+                  
+            
+                  
+                   
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getPOItemBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+               
+                 
+                
+                 // init for new cust
+                i = 0;
+                
+                
+                keys[0] = (keys[0].isBlank()) ? bsmf.MainFrame.lowchar : keys[0];
+                keys[1] = (keys[1].isBlank()) ? bsmf.MainFrame.hichar : keys[1];                
+                keys[2] = (keys[2].isBlank()) ? bsmf.MainFrame.lowchar : keys[2];
+                keys[3] = (keys[3].isBlank()) ? bsmf.MainFrame.hichar : keys[3];
+                keys[6] = (keys[6].isBlank()) ? bsmf.MainFrame.lowchar : keys[6];
+                keys[7] = (keys[7].isBlank()) ? bsmf.MainFrame.hichar : keys[7];
+                
+                res = st.executeQuery("select pod_item, pod_nbr, pod_ord_date, pod_ord_qty, pod_rcvd_qty, pod_netprice, po_vend, vd_name from pod_mstr " +
+                        " inner join po_mstr on po_nbr = pod_nbr " +
+                        " inner join vd_mstr on vd_addr = po_vend where " +
+                        " pod_nbr >= " + "'" + keys[0] + "'" + " AND " +
+                        " pod_nbr <= " + "'" + keys[1] + "'" + " AND " +
+                        " pod_item >= " + "'" + keys[2] + "'" + " AND " +
+                        " pod_item <= " + "'" + keys[3] + "'" + " AND " +        
+                        " pod_ord_date >= " + "'" + keys[4] + "'" + " AND " +
+                        " pod_ord_date <= " + "'" + keys[5] + "'" + " AND " +
+                        " po_vend >= " + "'" + keys[6] + "'" + " AND " +
+                        " po_vend <= " + "'" + keys[7] + "'" + 
+                        " order by pod_nbr desc;");
+               
+                while (res.next()) {
+                        i++;
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("pod_nbr"));
+                        rowArray.put(res.getString("po_vend"));
+                        rowArray.put(res.getString("vd_name"));
+                        rowArray.put(getDateDB(res.getString("pod_ord_date")));
+                        rowArray.put(res.getString("pod_item"));
+                        rowArray.put(bsNumber(res.getDouble("pod_ord_qty")));
+                        rowArray.put(bsNumber(res.getDouble("pod_rcvd_qty")));
+                        rowArray.put(currformatDouble(res.getDouble("pod_netprice")));                       
+                        jsonarray.put(rowArray);
+                        
+                } 
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    
     public static String getPOPrintData(String order) {
         JSONArray jsonarray = new JSONArray();
         try {

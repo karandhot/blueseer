@@ -48,6 +48,7 @@ import static com.blueseer.inv.invData._updateInventoryBalance;
 import static com.blueseer.pur.purData._updateItemCurrPriceFromReceiver;
 import static com.blueseer.pur.purData._updatePOFromReceiver;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
@@ -71,6 +72,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import org.json.JSONArray;
 import org.threeten.bp.LocalDate;
 
 /**
@@ -890,6 +892,315 @@ public class rcvData {
         MainFrame.bslog(e);
     }
         return lines;
+    }
+    
+    public static String getReceiverBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                double dol = 0;
+                double qty = 0;
+                 
+                
+                 // init for new cust
+                i = 0;
+                
+                keys[2] = (keys[2].isBlank()) ? bsmf.MainFrame.lowchar : keys[2];
+                keys[3] = (keys[3].isBlank()) ? bsmf.MainFrame.hichar : keys[3];
+                
+                res = st.executeQuery("select rv_id, rv_vend, rv_packingslip, rv_recvdate, rv_status, rv_ref, rv_rmks " +
+                         " from recv_mstr where " +
+                         " rv_site = " + "'" + keys[4] + "'" + " AND " + 
+                        " rv_vend >= " + "'" + keys[0] + "'" + " AND " +
+                        " rv_vend <= " + "'" + keys[1] + "'" + " AND " +
+                        " rv_id >= " + "'" + keys[2] + "'" + " AND " +
+                        " rv_id <= " + "'" + keys[3] + "'" + 
+                        " order by rv_id ;");
+                  while (res.next()) {
+                        i++;
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("rv_id"));
+                        rowArray.put(res.getString("rv_vend"));
+                        rowArray.put(res.getString("rv_packingslip"));
+                        rowArray.put(getDateDB(res.getString("rv_recvdate")));
+                        rowArray.put(res.getString("rv_status"));
+                        rowArray.put(res.getString("rv_ref"));
+                        rowArray.put(res.getString("rv_rmks"));
+                        jsonarray.put(rowArray);
+                        
+                } 
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getReceiverDetailView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                 
+                 res = st.executeQuery("select rvd_id, rvd_po, rvd_poline, rvd_item, rvd_packingslip, rvd_date, rvd_netprice, rvd_qty, rvd_voqty " +
+                        " from recv_det " +
+                        " where rvd_id = " + "'" + keys[0] + "'" + ";");
+                  while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("rvd_id"));
+                        rowArray.put(res.getString("rvd_po"));
+                        rowArray.put(res.getString("rvd_poline"));
+                        rowArray.put(res.getString("rvd_item"));
+                        rowArray.put(res.getString("rvd_packingslip"));
+                        rowArray.put(getDateDB(res.getString("rvd_date")));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("rvd_netprice"))));
+                        rowArray.put(bsNumber(res.getDouble("rvd_qty")));
+                        rowArray.put(bsNumber(res.getDouble("rvd_voqty")));
+                        jsonarray.put(rowArray);
+                        
+                }
+                  
+            
+                  
+                   
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getReceiverByPOBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                double dol = 0;
+                double qty = 0;
+                 
+                
+                 // init for new cust
+                i = 0;
+                
+                keys[2] = (keys[2].isBlank()) ? bsmf.MainFrame.lowchar : keys[2];
+                keys[3] = (keys[3].isBlank()) ? bsmf.MainFrame.hichar : keys[3];
+                
+                res = st.executeQuery("select po_nbr, po_vend, pod_line, po_type, po_status, pod_item, " +
+                      " pod_ord_qty, pod_rcvd_qty, pod_netprice " +
+                         " from po_mstr inner join pod_mstr on pod_nbr = po_nbr where " +
+                        " po_site = " + "'" + keys[4] + "'" + " AND " + 
+                        " po_vend >= " + "'" + keys[0] + "'" + " AND " +
+                        " po_vend <= " + "'" + keys[1] + "'" + " AND " +
+                     " po_nbr >= " + "'" + keys[2] + "'" + " AND " +
+                        " po_nbr <= " + "'" + keys[3] + "'" + 
+                        " order by po_nbr ;");
+                
+                  while (res.next()) {
+                        i++;
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("po_nbr"));
+                        rowArray.put(res.getString("po_vend"));
+                        rowArray.put(res.getString("pod_line"));
+                        rowArray.put(res.getString("pod_item"));
+                        rowArray.put(res.getString("po_type"));
+                        rowArray.put(res.getString("po_status"));
+                        rowArray.put(bsNumber(res.getDouble("pod_ord_qty")));
+                        rowArray.put(bsNumber(res.getDouble("pod_rcvd_qty")));
+                        jsonarray.put(rowArray);
+                        
+                } 
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getReceiverByPODetailView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                 
+                 res = st.executeQuery("select rvd_id, rvd_poline, rvd_item, rvd_packingslip, rvd_date, rvd_netprice, rvd_qty, rvd_voqty " +
+                        " from recv_det " +
+                        " where rvd_po = " + "'" + keys[0] + "'" +
+                        " AND rvd_poline = " + "'" + keys[1] + "'" + ";");
+                  while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("rvd_id"));
+                        rowArray.put(res.getString("rvd_poline"));
+                        rowArray.put(res.getString("rvd_item"));
+                        rowArray.put(res.getString("rvd_packingslip"));
+                        rowArray.put(res.getString("rvd_date"));
+                        rowArray.put(bsNumber(currformatDouble(res.getDouble("rvd_netprice"))));
+                        rowArray.put(bsNumber(res.getDouble("rvd_qty")));
+                        rowArray.put(bsNumber(res.getDouble("rvd_voqty")));
+                        jsonarray.put(rowArray);
+                        
+                }
+                  
+            
+                  
+                   
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getReceiverByItemBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                double dol = 0;
+                double qty = 0;
+                 
+                
+                 // init for new cust
+                i = 0;
+                
+                keys[0] = (keys[0].isBlank()) ? bsmf.MainFrame.lowchar : keys[0];
+                keys[1] = (keys[1].isBlank()) ? bsmf.MainFrame.hichar : keys[1];
+                keys[2] = (keys[2].isBlank()) ? bsmf.MainFrame.lowchar : keys[2];
+                keys[3] = (keys[3].isBlank()) ? bsmf.MainFrame.hichar : keys[3];
+                keys[6] = (keys[6].isBlank()) ? bsmf.MainFrame.lowchar : keys[6];
+                keys[7] = (keys[7].isBlank()) ? bsmf.MainFrame.hichar : keys[7];
+                
+                res = st.executeQuery("select rvd_item, rvd_po, rvd_date, rvd_qty, rvd_netprice, rvd_serial, rv_vend, rvd_id, rv_id from recv_det " +
+                        " inner join recv_mstr on rv_id = rvd_id where " +
+                        " rvd_po >= " + "'" + keys[0] + "'" + " AND " +
+                        " rvd_po <= " + "'" + keys[1] + "'" + " AND " +
+                        " rvd_item >= " + "'" + keys[2] + "'" + " AND " +
+                        " rvd_item <= " + "'" + keys[3] + "'" + " AND " +        
+                        " rvd_date >= " + "'" + keys[4] + "'" + " AND " +
+                        " rvd_date <= " + "'" + keys[5] + "'" + " AND " +
+                        " rv_vend >= " + "'" + keys[6] + "'" + " AND " +
+                        " rv_vend <= " + "'" + keys[7] + "'" + 
+                        " order by rvd_date desc;");
+                  while (res.next()) {
+                        i++;
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("rvd_id"));
+                        rowArray.put(res.getString("rvd_po"));
+                        rowArray.put(res.getString("rv_vend"));
+                        rowArray.put(res.getString("rvd_date"));
+                        rowArray.put(res.getString("rvd_item"));
+                        rowArray.put(res.getString("rvd_serial"));
+                        rowArray.put(bsNumber(res.getDouble("rvd_qty")));
+                        rowArray.put(currformatDouble(res.getDouble("rvd_netprice")));
+                        jsonarray.put(rowArray);
+                        
+                } 
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
     }
     
     
