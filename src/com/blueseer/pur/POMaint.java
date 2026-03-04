@@ -46,6 +46,7 @@ import com.blueseer.ord.ordData;
 import static com.blueseer.pur.purData.addPOAddr;
 import static com.blueseer.pur.purData.addPOTransaction;
 import static com.blueseer.pur.purData.deletePOAddr;
+import static com.blueseer.pur.purData.deletePOMstr;
 import static com.blueseer.pur.purData.getPOAddr;
 import static com.blueseer.pur.purData.getPODet;
 import static com.blueseer.pur.purData.getPOLines;
@@ -645,58 +646,11 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerV {
       
     public String[] deleteRecord(String[] x) {
         String[] m = new String[2];
-        boolean proceed = bsmf.MainFrame.warn(getMessageTag(1004));
+        boolean proceed = bsmf.MainFrame.warn("Are you sure?");
         if (proceed) {
-                   try {
-
-                    Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
+            m = deletePOMstr(x[0]);
         }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
- 
-                        // if this PO has 'any' line items already received then bale...cannot delete
-                        res = st.executeQuery("select pod_nbr from pod_mstr where pod_nbr = " + "'" + x[0] + "'" + 
-                                              " and pod_rcvd_qty > 0 " + ";");
-                        int z = 0;
-                        while (res.next()) {
-                            z++;
-                        }
-                        if (z > 0) {
-                           return m = new String[] {"1","cannot delete PO...some lines already received"};
-                        }
-                        
-                        
-                        
-                        st.executeUpdate("delete from pod_mstr where pod_nbr = " + "'" + tbkey.getText() + "'" + ";");   
-                        st.executeUpdate("delete from po_meta where pom_nbr = " + "'" + tbkey.getText() + "'" + ";");   
-                        int i = st.executeUpdate("delete from po_mstr where po_nbr = " + "'" + tbkey.getText() + "'" + ";");
-                            if (i > 0) {
-                                m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
-                            }
-                        } catch (SQLException s) {
-                            MainFrame.bslog(s);
-                        m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordSQLError}; 
-                    } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-                } catch (Exception e) {
-                    MainFrame.bslog(e);
-                }
-        } else {
-           m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordCanceled};  
-        }
-           return m;
+        return m;
     }
     
     public String[] updateRecord(String[] x) {

@@ -167,6 +167,25 @@ public class purData {
     }
             
     public static String[] addPOTransaction(ArrayList<pod_mstr> pod, po_addr poa, po_mstr po, ArrayList<po_tax> pot, ArrayList<pod_tax> potd, ArrayList<po_meta> pom) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addPOTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(pod);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(poa);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(po);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(pot);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(potd);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(pom);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServPUR"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -394,6 +413,26 @@ public class purData {
     }
         
     public static String[] updatePOTransaction(String x, ArrayList<String> lines, ArrayList<pod_mstr> pod, po_addr poa, po_mstr po, ArrayList<po_tax> pot, ArrayList<pod_tax> potd, ArrayList<po_meta> pom) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updatePOTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(lines);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(pod);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(poa);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(po);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(pot);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(potd);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(pom);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServPUR"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         Connection bscon = null;
         PreparedStatement ps = null;
@@ -487,6 +526,47 @@ public class purData {
             } else {
               con = DriverManager.getConnection(url + db, user, pass);  
             }
+            _deletePOMstr(x.po_nbr(), con);  // add po_addr 
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
+        } finally {
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+    
+    public static String[] deletePOMstr(String x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "deletePOMstr"});
+            list.add(new String[]{"param1", x});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServPUR"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        } 
+        
+        String[] m = new String[2];
+        if (x == null || x.isBlank()) {
+            return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
+        }
+        Connection con = null;
+        try { 
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
             _deletePOMstr(x, con);  // add po_addr
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
         } catch (SQLException s) {
@@ -503,6 +583,7 @@ public class purData {
         }
     return m;
     }
+    
     
     public static String[] deletePOLines(String x, ArrayList<String> lines) {
         String[] m = new String[2];
@@ -546,15 +627,31 @@ public class purData {
     }
     
     
-    private static void _deletePOMstr(po_mstr x, Connection con) throws SQLException { 
+    private static void _deletePOMstr(String x, Connection con) throws SQLException { 
         PreparedStatement ps = null; 
         String sql = "delete from po_mstr where po_nbr = ?; ";
         ps = con.prepareStatement(sql);
-        ps.setString(1, x.po_nbr);
+        ps.setString(1, x);
         ps.executeUpdate();
         sql = "delete from pod_mstr where pod_nbr = ?; ";
         ps = con.prepareStatement(sql);
-        ps.setString(1, x.po_nbr);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        sql = "delete from po_addr where poa_nbr = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        sql = "delete from po_tax where pot_nbr = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        sql = "delete from pod_tax where podt_nbr = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        sql = "delete from po_meta where pom_nbr = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
         ps.executeUpdate();
         ps.close();
     }
@@ -633,6 +730,20 @@ public class purData {
     public static po_mstr getPOMstr(String[] x) {
         po_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getPOMstr"});
+            list.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServPUR");
+                r = objectMapper.readValue(returnstring, po_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         String sql = "select * from po_mstr where po_nbr = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {

@@ -28,6 +28,7 @@ package com.blueseer.srv;
 
 import com.blueseer.pur.purData;
 import static com.blueseer.pur.purData.getPOListByVend;
+import static com.blueseer.pur.purData.getPOMstr;
 import static com.blueseer.pur.purData.getPOMstrSet;
 import static com.blueseer.pur.purData.getPurchaseOrderInit;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
@@ -35,7 +36,10 @@ import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -78,11 +82,75 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     
     switch (id) {
         
+        case "addPOTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            purData.pod_mstr[] sdarray = om.readValue(ca[0],  purData.pod_mstr[].class);
+            ArrayList<purData.pod_mstr> sdlist = new ArrayList<purData.pod_mstr>(Arrays.asList(sdarray)); 
+            purData.po_addr poa = om.readValue(ca[1], purData.po_addr.class); 
+            purData.po_mstr po = om.readValue(ca[2], purData.po_mstr.class); 
+            purData.po_tax[] starray = om.readValue(ca[3], purData.po_tax[].class);
+            ArrayList<purData.po_tax> potlist = new ArrayList<purData.po_tax>(Arrays.asList(starray));
+            purData.pod_tax[] sodtarray = om.readValue(ca[4], purData.pod_tax[].class);
+            ArrayList<purData.pod_tax> podtlist = new ArrayList<purData.pod_tax>(Arrays.asList(sodtarray));   
+            purData.po_meta[] sosdarray = om.readValue(ca[5], purData.po_meta[].class);
+            ArrayList<purData.po_meta> pomlist = new ArrayList<purData.po_meta>(Arrays.asList(sosdarray)); 
+            response.getWriter().print(arrayToJson(purData.addPOTransaction(sdlist, poa, po,potlist, podtlist, pomlist))); 
+            break;
+            }
+        
+        case "updatePOTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            String key = ca[0];
+            ArrayList<String> badlist = om.readValue(ca[1], ArrayList.class);
+            purData.pod_mstr[] sdarray = om.readValue(ca[2],  purData.pod_mstr[].class);
+            ArrayList<purData.pod_mstr> sdlist = new ArrayList<purData.pod_mstr>(Arrays.asList(sdarray)); 
+            purData.po_addr poa = om.readValue(ca[3], purData.po_addr.class); 
+            purData.po_mstr po = om.readValue(ca[4], purData.po_mstr.class); 
+            purData.po_tax[] starray = om.readValue(ca[5], purData.po_tax[].class);
+            ArrayList<purData.po_tax> potlist = new ArrayList<purData.po_tax>(Arrays.asList(starray));
+            purData.pod_tax[] sodtarray = om.readValue(ca[6], purData.pod_tax[].class);
+            ArrayList<purData.pod_tax> podtlist = new ArrayList<purData.pod_tax>(Arrays.asList(sodtarray));   
+            purData.po_meta[] sosdarray = om.readValue(ca[7], purData.po_meta[].class);
+            ArrayList<purData.po_meta> pomlist = new ArrayList<purData.po_meta>(Arrays.asList(sosdarray)); 
+            response.getWriter().print(arrayToJson(purData.updatePOTransaction(key, badlist, sdlist, poa, po,potlist, podtlist, pomlist))); 
+            break;
+            }
+        
         case "getPOListByVend" : {       
             response.getWriter().print(ArrayListStringToJson(getPOListByVend(request.getHeader("param1"))));
             break; 
         }
-            
+         
+        case "deletePOMstr" : {
+            response.getWriter().print(arrayToJson(purData.deletePOMstr(request.getHeader("param1")
+                    )));  
+            break; 
+        }
+         
+        case "getPOMstr" : {       
+        purData.po_mstr po = getPOMstr(new String[]{request.getHeader("param1")});
+        ObjectMapper objectMapper = new ObjectMapper();
+        String r = objectMapper.writeValueAsString(po);
+        response.getWriter().print(r);
+        break;
+        }
+        
         case "getPOMstrSet" : {       
         purData.purchaseOrder pos = getPOMstrSet(new String[]{request.getHeader("param1")});
         ObjectMapper objectMapper = new ObjectMapper();
