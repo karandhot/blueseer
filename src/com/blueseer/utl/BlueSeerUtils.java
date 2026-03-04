@@ -3296,7 +3296,7 @@ public class BlueSeerUtils {
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String,Integer> x = null;
         try {
-            x = objectMapper.readValue(jsonstring, Map.class);
+            x = objectMapper.readValue(jsonstring, new TypeReference<HashMap<String,Integer>>() {});
         } catch (JsonProcessingException ex) {
             bslog(ex);
         }
@@ -3307,7 +3307,7 @@ public class BlueSeerUtils {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String,String> x = null;
         try {
-            x = objectMapper.readValue(jsonstring, HashMap.class);
+            x = objectMapper.readValue(jsonstring, new TypeReference<HashMap<String,String>>() {});
         } catch (JsonProcessingException ex) {
             bslog(ex);
         }
@@ -3318,7 +3318,7 @@ public class BlueSeerUtils {
         ObjectMapper objectMapper = new ObjectMapper();
         HashMap<String,String[]> x = null;
         try {
-            x = objectMapper.readValue(jsonstring, HashMap.class);
+            x = objectMapper.readValue(jsonstring, new TypeReference<HashMap<String,String[]>>() {});
         } catch (JsonProcessingException ex) {
             bslog(ex);
         }

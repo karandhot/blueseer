@@ -1462,31 +1462,29 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerV {
         if (! tbitem.getText().isBlank()) {
           
             for (HashMap.Entry<String, String[]> entry : hm.entrySet()) {
-           // String[] det = invData.getItemDetail(ddpart.getSelectedItem().toString());
-            if (entry.getKey().equals("itemdata") && entry.getValue() != null) {
-                System.out.println("HERE: " + entry.getValue().getClass().getName());
-            String[] det = (String[]) entry.getValue();
-            if (! det[0].isBlank()) {
-            i++;
-            }
-            discount.setText("0");
-            listprice.setText("0");
-            netprice.setText("0");
-            qtyshipped.setText("0");
-            tbdesc.setText(det[1]);
-            dduom.setSelectedItem(det[2]); // triggers setPrice
-            tbitem.setForeground(Color.blue);
-            vendnumber.setForeground(Color.blue);
-           // vendnumber.setEditable(false);
-            tbdesc.setForeground(Color.blue);
-            tbdesc.setEditable(false);
-            }
-            
-            if (entry.getKey().equals("itemvend")) {
-                if (entry.getValue() != null && ! entry.getValue()[0].isBlank()) {
-                 vendnumber.setText(entry.getValue()[0]);
+                if (entry.getKey().equals("itemdata") && entry.getValue() != null) {
+                    String[] det = entry.getValue();
+                    if (! det[0].isBlank()) {
+                    i++;
+                    }
+                    discount.setText("0");
+                    listprice.setText("0");
+                    netprice.setText("0");
+                    qtyshipped.setText("0");
+                    tbdesc.setText(det[1]);
+                    dduom.setSelectedItem(det[2]); // triggers setPrice
+                    tbitem.setForeground(Color.blue);
+                    vendnumber.setForeground(Color.blue);
+                   // vendnumber.setEditable(false);
+                    tbdesc.setForeground(Color.blue);
+                    tbdesc.setEditable(false);
                 }
-            }
+            
+                if (entry.getKey().equals("itemvend")) {
+                    if (entry.getValue() != null && entry.getValue().length > 0 && ! entry.getValue()[0].isBlank()) {
+                     vendnumber.setText(entry.getValue()[0]);
+                    }
+                }
                          
             } // for each entry
             
