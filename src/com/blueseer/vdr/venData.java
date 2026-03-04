@@ -88,19 +88,22 @@ public class venData {
               con = DriverManager.getConnection(url + db, user, pass);  
             }
             int rows = _addVendMstr(x, con, ps, res, false);  
-            _deleteVDCDetAll(x.vd_addr(), con, ps, res);    // delete cmc_det
             
-            for (String[] s : contacts) {  
-            vdc_det z = new vdc_det(null, 
-                s[0],
-                x.vd_addr(),
-                s[1],
-                s[2],
-                s[3],
-                s[4],
-                s[5]
-                );
-            _addVDCDet(z, con, ps, res); 
+            if (contacts != null) {
+                _deleteVDCDetAll(x.vd_addr(), con, ps, res);    // delete cmc_det
+
+                for (String[] s : contacts) {  
+                vdc_det z = new vdc_det(null, 
+                    s[0],
+                    x.vd_addr(),
+                    s[1],
+                    s[2],
+                    s[3],
+                    s[4],
+                    s[5]
+                    );
+                _addVDCDet(z, con, ps, res); 
+                }
             }
             if (rows > 0) {
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};

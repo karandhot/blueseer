@@ -395,7 +395,7 @@ public class CarrierMaint extends javax.swing.JPanel implements IBlueSeerT {
     public String[] addRecord(String[] x) {
      String[] m = addCarrierMstr(createRecord());
         // add to vendor master as well
-        addVendMstr(createVendorRecord());
+        addVendMstr(createVendorRecord(), null);
      
          return m;
      }

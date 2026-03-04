@@ -141,19 +141,20 @@ public class cusData {
             }
             con.setAutoCommit(false);
             _addCustMstr(cm, con, ps, res, false);  // add cm_mstr
-            _deleteCMCDetAll(cm.cm_code, con, ps, res);    // delete cmc_det
-            
-            for (String[] s : list) {  
-            cmc_det z = new cmc_det(null, 
-                s[0],
-                cm.cm_code,
-                s[1],
-                s[2],
-                s[3],
-                s[4],
-                s[5]
-                );
-            _addCMCDet(z, con, ps, res);  // add cmc_det
+            if (list != null) {
+                _deleteCMCDetAll(cm.cm_code, con, ps, res);    // delete cmc_det
+                for (String[] s : list) {  
+                cmc_det z = new cmc_det(null, 
+                    s[0],
+                    cm.cm_code,
+                    s[1],
+                    s[2],
+                    s[3],
+                    s[4],
+                    s[5]
+                    );
+                _addCMCDet(z, con, ps, res);  // add cmc_det
+                }
             }
             _addCMSDet(cms, con, ps, res, false);  // add cms_det
             con.commit();
