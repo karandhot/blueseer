@@ -36,12 +36,16 @@ import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import com.blueseer.vdr.venData;
+import static com.blueseer.vdr.venData.addVDCDet;
 import static com.blueseer.vdr.venData.addVendMstr;
 import static com.blueseer.vdr.venData.addVendMstrMass;
+import static com.blueseer.vdr.venData.deleteVDCDet;
 import static com.blueseer.vdr.venData.deleteVendMstr;
+import static com.blueseer.vdr.venData.getVDCDet;
 import static com.blueseer.vdr.venData.getVendBrowseView;
 import static com.blueseer.vdr.venData.getVendMstr;
 import static com.blueseer.vdr.venData.getVendShipSet;
+import static com.blueseer.vdr.venData.updateVDCDet;
 import static com.blueseer.vdr.venData.updateVendMstr;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
@@ -110,8 +114,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             sb.append(line);
             } 
             ObjectMapper objectMapper = new ObjectMapper();
-            venData.vd_mstr x = objectMapper.readValue(sb.toString(), venData.vd_mstr.class);            
-            response.getWriter().print(arrayToJson(addVendMstr(x)));
+            String[] ca = sb.toString().split("=_=", -1);
+            venData.vd_mstr x = objectMapper.readValue(ca[0], venData.vd_mstr.class);   
+            ArrayList<String[]> list = objectMapper.readValue(ca[1], ArrayList.class); 
+            response.getWriter().print(arrayToJson(addVendMstr(x, list)));
             break;
           }
            
@@ -172,6 +178,55 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(r);
             break;  
         }
+        
+        case "addVDCDet" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            venData.vdc_det x = objectMapper.readValue(sb.toString(), venData.vdc_det.class);            
+            response.getWriter().print(arrayToJson(addVDCDet(x)));
+            break;
+          }
+        
+        case "updateVDCDet" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            venData.vdc_det x = objectMapper.readValue(sb.toString(), venData.vdc_det.class);            
+            response.getWriter().print(arrayToJson(updateVDCDet(x)));
+            break;
+          }
+        
+        case "deleteVDCDet" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            venData.vdc_det x = objectMapper.readValue(sb.toString(), venData.vdc_det.class);            
+            response.getWriter().print(arrayToJson(deleteVDCDet(x)));
+            break;
+          }
+        
+        case "getVDCDets" : { 
+            ArrayList<venData.vdc_det> x = getVDCDet(request.getHeader("param1"));
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        
         
         default:
         response.getWriter().print("");

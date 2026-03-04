@@ -39,6 +39,7 @@ import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.sql.Connection;
@@ -58,13 +59,14 @@ import org.json.JSONArray;
 public class venData {
    
      // add customer master customer master table only
-    public static String[] addVendMstr(vd_mstr x) {
+    public static String[] addVendMstr(vd_mstr x, ArrayList<String[]> contacts) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> xlist = new ArrayList<String[]>();
             xlist.add(new String[]{"id","addVendMstr"});
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 String jsonString = objectMapper.writeValueAsString(x);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(contacts);
                 return jsonToStringArray(sendServerPost(xlist, jsonString, null, "dataServVDR"));
             } catch (IOException ex) {
                 bslog(ex);
@@ -86,6 +88,20 @@ public class venData {
               con = DriverManager.getConnection(url + db, user, pass);  
             }
             int rows = _addVendMstr(x, con, ps, res, false);  
+            _deleteVDCDetAll(x.vd_addr(), con, ps, res);    // delete cmc_det
+            
+            for (String[] s : contacts) {  
+            vdc_det z = new vdc_det(null, 
+                s[0],
+                x.vd_addr(),
+                s[1],
+                s[2],
+                s[3],
+                s[4],
+                s[5]
+                );
+            _addVDCDet(z, con, ps, res); 
+            }
             if (rows > 0) {
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
             } else {
@@ -878,7 +894,328 @@ public class venData {
             return list;
     }
     
-   
+    // vdc_det Vendor Contact table
+    public static String[] addVDCDet(vdc_det x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addVDCDet"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServCUS"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
+        if (x == null) {
+            return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordError};
+        }
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            _addVDCDet(x, con, ps, res);  // add cms_det
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordError};
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+    
+    private static void _addVDCDet(vdc_det x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        if (x == null) return;
+        String sqlInsert = "insert into vdc_det (vdc_code, vdc_type, vdc_name, " 
+                        + "vdc_phone, vdc_fax, vdc_email ) "
+                        + " values (?,?,?,?,?,?); "; 
+            ps = con.prepareStatement(sqlInsert);
+            ps.setString(1, x.vdc_code);
+            ps.setString(2, x.vdc_type);
+            ps.setString(3, x.vdc_name);
+            ps.setString(4, x.vdc_phone);
+            ps.setString(5, x.vdc_fax);
+            ps.setString(6, x.vdc_email);
+            int rows = ps.executeUpdate();
+            
+    }
+    
+    public static String[] updateVDCDet(vdc_det x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateVDCDet"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServVDR"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
+        if (x == null) {
+            return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordError};
+        }
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            _updateVDCDet(x, con, ps, res);  // add cms_det 
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordError};
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+    
+    private static int _updateVDCDet(vdc_det x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        int rows = 0;
+        String sql = "update vdc_det set " 
+                + " vdc_type = ?, vdc_name = ?, vdc_phone = ?, "
+                + "vdc_fax = ?, vdc_email = ? "
+                + " where vdc_code = ? and vdc_id = ? ; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(6, x.vdc_code);
+        ps.setString(7, x.vdc_id);
+            ps.setString(1, x.vdc_type);
+            ps.setString(2, x.vdc_name);
+            ps.setString(3, x.vdc_phone);
+            ps.setString(4, x.vdc_fax);
+            ps.setString(5, x.vdc_email);
+            rows = ps.executeUpdate();
+        return rows;
+    }
+        
+    public static String[] deleteVDCDet(vdc_det x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteVDCDet"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServVDR"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
+        if (x == null) {
+            return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
+        }
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            _deleteVDCDet(x.vdc_id, x.vdc_code, con, ps, res);  // add cms_det
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+           
+    private static void _deleteVDCDet(String x, String y, Connection con, PreparedStatement ps, ResultSet res) throws SQLException { 
+        
+        String sql = "delete from vdc_det where vdc_id = ? and vdc_code = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.setString(2, y);
+        ps.executeUpdate();
+    }
+    
+    private static void _deleteVDCDetAll(String x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException { 
+        
+        
+        String sql = "delete from vdc_det where vdc_code = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.executeUpdate();
+        
+        
+    }
+    
+    public static vdc_det getVDCDet(String id, String code) {
+        vdc_det r = null;
+        String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getVDCDet"});
+            list.add(new String[]{"param1",id});
+            list.add(new String[]{"param2",code});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServVDR");
+                r = objectMapper.readValue(returnstring, vdc_det.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new vdc_det(m);
+                return r;
+            }
+        }
+        String sql = "select * from vdc_det where vdc_id = ? and vdc_code = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, id);
+        ps.setString(2, code);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new vdc_det(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new vdc_det(m, res.getString("vdc_id"), res.getString("vdc_code"), 
+                        res.getString("vdc_type"), res.getString("vdc_name"),
+                        res.getString("vdc_phone"), res.getString("vdc_fax"), res.getString("vdc_email")                    
+                    ); 
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new vdc_det(m);
+               
+        }
+        return r;
+    }
+    
+    public static ArrayList<vdc_det> getVDCDet(String code) {
+        vdc_det r = null;
+        String[] m = new String[2];
+        ArrayList<vdc_det> list = new ArrayList<vdc_det>();
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<>();
+            paramlist.add(new String[]{"id","getVDCDets"});
+            paramlist.add(new String[]{"param1",code});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServVDR");
+                list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<vdc_det>>() {});
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+                return list;
+            }
+        }
+        
+        String sql = "select * from vdc_det where vdc_code = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, code);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new vdc_det(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new vdc_det(m, res.getString("vdc_id"), res.getString("vdc_code"), 
+                        res.getString("vdc_type"), res.getString("vdc_name"),
+                        res.getString("vdc_phone"), res.getString("vdc_fax"), res.getString("vdc_email")                    
+                    );
+                        list.add(r);
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new vdc_det(m);
+               list.add(r);
+        }
+        return list;
+    }
+    
     
     
     public static String[] addUpdateVDCtrl(vd_ctrl x) {
@@ -1984,6 +2321,13 @@ return myitem;
      public record vd_ctrl (String[] m, String vdc_autovend) {
         public vd_ctrl(String[] m) {
             this(m,"");
+        }
+    } 
+     
+    public record vdc_det(String[] m, String vdc_id, String vdc_code, String vdc_type, String vdc_name, 
+    String vdc_phone, String vdc_fax, String vdc_email) {
+        public vdc_det(String[] m) {
+            this(m,"","","","","","","");
         }
     } 
     

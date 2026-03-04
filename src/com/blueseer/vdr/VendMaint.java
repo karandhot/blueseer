@@ -55,14 +55,19 @@ import com.blueseer.utl.IBlueSeer;
 import com.blueseer.utl.IBlueSeerT;
 import com.blueseer.utl.IBlueSeerV;
 import static com.blueseer.utl.OVData.canUpdate;
+import static com.blueseer.vdr.venData.addVDCDet;
 import static com.blueseer.vdr.venData.addVDSDet;
 import static com.blueseer.vdr.venData.addVendMstr;
+import static com.blueseer.vdr.venData.deleteVDCDet;
 import static com.blueseer.vdr.venData.deleteVendMstr;
+import static com.blueseer.vdr.venData.getVDCDet;
 import static com.blueseer.vdr.venData.getVDSDet;
 import static com.blueseer.vdr.venData.getVendMstr;
+import static com.blueseer.vdr.venData.updateVDCDet;
 import static com.blueseer.vdr.venData.updateVDSDet;
 import static com.blueseer.vdr.venData.updateVendMstr;
 import com.blueseer.vdr.venData.vd_mstr;
+import com.blueseer.vdr.venData.vdc_det;
 import com.blueseer.vdr.venData.vds_det;
 import java.awt.Color;
 import java.awt.Component;
@@ -666,7 +671,8 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerV {
      }
     
     public String[] addRecord(String[] key) {
-        String[] m = addVendMstr(createRecord());
+        ArrayList<String[]> contacts = tableToArrayList();
+        String[] m = addVendMstr(createRecord(), contacts);
         return m;   
     }
     
@@ -761,6 +767,19 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerV {
                 ddshiptype.getSelectedItem().toString() // type
                 );
         }
+        return x;
+    }
+    
+    public vdc_det createVDCDet(String id) {
+        venData.vdc_det x = new venData.vdc_det(null, 
+                id,
+                tbkey.getText(),
+                ddcontacttype.getSelectedItem().toString(),
+                tbcontactname.getText(),
+                tbphone.getText(),
+                tbfax.getText(),
+                tbemail.getText()
+                );
         return x;
     }
     
@@ -892,6 +911,22 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerV {
     
     
     // custom functions
+    public ArrayList<String[]> tableToArrayList() {
+        ArrayList<String[]> list = new ArrayList<String[]>();
+         for (int j = 0; j < contacttable.getRowCount(); j++) {
+             String[] s = new String[]{
+                 contacttable.getValueAt(j, 0).toString(),
+                 contacttable.getValueAt(j, 1).toString(),
+                 contacttable.getValueAt(j, 2).toString(),
+                 contacttable.getValueAt(j, 3).toString(),
+                 contacttable.getValueAt(j, 4).toString(),
+                 contacttable.getValueAt(j, 5).toString()};
+             list.add(s);
+         }
+        
+        return list;
+    }
+    
     public boolean validateInputShipTo(dbaction action) {
         
         if (! canUpdate(this.getClass().getName())) {
@@ -1020,143 +1055,20 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerV {
     }
     
     public void addContact(String vend) {
-        try {
-
-           Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                boolean proceed = true;
-                int i = 0;
-
-                if (proceed) {
-                    st.executeUpdate("insert into vdc_det "
-                        + "(vdc_code, vdc_type, vdc_name, vdc_phone, vdc_fax, "
-                            + "vdc_email ) "
-                            + " values ( " + "'" + vend + "'" + ","
-                            + "'" + ddcontacttype.getSelectedItem().toString() + "'" + ","
-                            + "'" + tbcontactname.getText().replace("'", "") + "'" + ","
-                            + "'" + tbphone.getText().replace("'", "") + "'" + ","
-                            + "'" + tbfax.getText().replace("'", "") + "'" + ","
-                            + "'" + tbemail.getText().replace("'", "") + "'"                           
-                            + ")"
-                            + ";");
-        
-                   
-                    BlueSeerUtils.message(new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess});
-                    
-                  
-                    
-                } // if proceed
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                BlueSeerUtils.message(new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordSQLError});
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        String[] m = addVDCDet(createVDCDet(""));
+        bsmf.MainFrame.show(m[1]);
     }
     
     public void editContact(String vend, String z) {
-        try {
-
-           Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                boolean proceed = true;
-                int i = 0;
-
-                if (proceed) {
-                    st.executeUpdate("update vdc_det set "
-                            + "vdc_type = " + "'" + ddcontacttype.getSelectedItem().toString() + "'" + ","
-                            + "vdc_name = " + "'" + tbcontactname.getText().replace("'", "") + "'" + ","
-                            + "vdc_phone = " + "'" + tbphone.getText().replace("'", "") + "'" + ","
-                            + "vdc_fax = " +  "'" + tbfax.getText().replace("'", "") + "'" + ","
-                            + "vdc_email = " + "'" + tbemail.getText().replace("'", "") + "'"                           
-                            + " where vdc_code = " + "'" + vend + "'"
-                            + " and vdc_id = " + "'" + z + "'" 
-                            + ";");
-        
-                   
-                   BlueSeerUtils.message(new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess});
-                    
-                  
-                    
-                } // if proceed
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                BlueSeerUtils.message(new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordSQLError});
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        String[] m = updateVDCDet(createVDCDet(z));
+        bsmf.MainFrame.show(m[1]);
     }
     
     public void deleteContact(String vend, String z) {
-        try {
-
-           Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                boolean proceed = true;
-                int i = 0;
-
-                if (proceed) {
-                    st.executeUpdate("delete from vdc_det where vdc_id = " + "'" + z + "'"
-                            + " AND vdc_code = " + "'" + vend + "'"
-                            + ";");
-                    BlueSeerUtils.message(new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess});
-                } // if proceed
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                BlueSeerUtils.message(new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordSQLError});
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+       String[] m = deleteVDCDet(createVDCDet(z));
+        bsmf.MainFrame.show(m[1]);
     }
-   
+    
     public void clearAllContacts() {
          tbcontactname.setText("");
         tbphone.setText("");
@@ -1166,38 +1078,15 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerV {
             
     public void refreshContactTable(String vend) {
       contactmodel.setRowCount(0);
-       try {
-            
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                res = st.executeQuery("select * from vdc_det where vdc_code = " + "'" + vend + "'" + ";");
-                while (res.next()) {
-                    contactmodel.addRow(new Object[]{res.getString("vdc_id"), res.getString("vdc_type"), res.getString("vdc_name"), res.getString("vdc_phone"), res.getString("vdc_fax"), res.getString("vdc_email") }); 
-                }
-                contacttable.setModel(contactmodel);
-                
-                 } catch (SQLException s) {
-                MainFrame.bslog(s);
-                BlueSeerUtils.message(new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordSQLError});
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+      ArrayList<vdc_det> k = getVDCDet(tbkey.getText());
+      for (vdc_det vdc : k) {
+          contactmodel.addRow(new Object[]{vdc.vdc_id(), 
+              vdc.vdc_type(), 
+              vdc.vdc_name(), 
+              vdc.vdc_phone(), 
+              vdc.vdc_fax(), 
+              vdc.vdc_email() }); 
+      }
        
      }
     
