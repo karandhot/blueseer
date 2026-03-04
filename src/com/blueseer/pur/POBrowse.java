@@ -406,10 +406,10 @@ public class POBrowse extends javax.swing.JPanel {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
         ArrayList<String[]> list = new ArrayList<>();
         list.add(new String[]{"id","getPOBrowseView"});
-        list.add(new String[]{"param3",tbfrompo.getText()});
-        list.add(new String[]{"param4",tbtopo.getText()});
-        list.add(new String[]{"param1",ddvendfrom.getSelectedItem().toString()});
-        list.add(new String[]{"param2",ddvendto.getSelectedItem().toString()});
+        list.add(new String[]{"param1",tbfrompo.getText()});
+        list.add(new String[]{"param2",tbtopo.getText()});
+        list.add(new String[]{"param3",ddvendfrom.getSelectedItem().toString()});
+        list.add(new String[]{"param4",ddvendto.getSelectedItem().toString()});
         list.add(new String[]{"param5",ddsite.getSelectedItem().toString()});
         
         try {
