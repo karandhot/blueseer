@@ -1460,7 +1460,7 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerV {
         int i = 0;
         if (! tbitem.getText().isBlank()) {
           
-            for (Map.Entry<String, String[]> entry : hm.entrySet()) {
+            for (HashMap.Entry<String, String[]> entry : hm.entrySet()) {
            // String[] det = invData.getItemDetail(ddpart.getSelectedItem().toString());
             if (entry.getKey().equals("itemdata") && entry.getValue() != null) {
             String[] det = entry.getValue();
