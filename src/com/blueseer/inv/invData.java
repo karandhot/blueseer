@@ -6680,7 +6680,9 @@ public class invData {
             list.add(new String[]{"param3", entity});
             list.add(new String[]{"param4", type}); 
             try {
-                return jsonToHashMapStringStringArr(sendServerPost(list, "", null, "dataServINV"));
+                String jsonString = sendServerPost(list, "", null, "dataServINV");
+                System.out.println("HERE: " + jsonString);
+                return jsonToHashMapStringStringArr(jsonString);
             } catch (IOException ex) { 
                 bslog(ex);
                 return null;
