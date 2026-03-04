@@ -47,6 +47,7 @@ import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -1673,6 +1674,19 @@ public class purData {
     }
     
     public static ArrayList<String[]> getPurchaseOrderInit(String panelClassName, String userid) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getPurchaseOrderInit"});
+            list.add(new String[]{"param1", panelClassName});
+            list.add(new String[]{"param2", userid});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServPUR"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        
         String defaultsite = "";
         ArrayList<String[]> lines = new ArrayList<String[]>();
         try{

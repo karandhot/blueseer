@@ -29,6 +29,8 @@ package com.blueseer.srv;
 import com.blueseer.pur.purData;
 import static com.blueseer.pur.purData.getPOListByVend;
 import static com.blueseer.pur.purData.getPOMstrSet;
+import static com.blueseer.pur.purData.getPurchaseOrderInit;
+import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -114,7 +116,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         break;
         } 
         
-        
+        case "getPurchaseOrderInit" : { 
+            response.getWriter().print(ArrayListStringArrayToJson(getPurchaseOrderInit(request.getHeader("param1"), request.getHeader("param2"))));
+            break;  
+        }
         
         default:
         response.getWriter().print("");
