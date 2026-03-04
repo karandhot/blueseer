@@ -463,8 +463,8 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         
         default:
-        response.getWriter().print("no switch case exists in dataServOV for id: " + id);
-        System.out.println("no switch case exists in dataServOV for id: " + id);    
+        response.getWriter().print("");
+        System.out.println("no switch case exists in dataServCUS for id: " + id);    
             
     }    
        

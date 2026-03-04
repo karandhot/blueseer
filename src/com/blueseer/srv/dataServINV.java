@@ -839,7 +839,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
           }
         
         default:
-        response.getWriter().print("no switch case exists in dataServINV for id: " + id);
+        response.getWriter().print("");
         System.out.println("no switch case exists in dataServINV for id: " + id);    
             
     }    

@@ -855,7 +855,7 @@ case "getFreightRejectionCodeDTData" :
             break;
             
         default:
-        response.getWriter().print("no switch case exists in dataServDT for id: " + id);
+        response.getWriter().print("");
         System.out.println("no switch case exists in dataServDT for id: " + id);
     }
        

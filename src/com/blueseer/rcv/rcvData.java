@@ -622,7 +622,7 @@ public class rcvData {
             list.add(new String[]{"param1",  x[0]});
             ObjectMapper objectMapper = new ObjectMapper();
             try {
-                String returnstring = sendServerPost(list, "", null, "dataServPUR");
+                String returnstring = sendServerPost(list, "", null, "dataServRCV");
                 r = objectMapper.readValue(returnstring, Receiver.class); 
                 return r;
             } catch (IOException ex) {

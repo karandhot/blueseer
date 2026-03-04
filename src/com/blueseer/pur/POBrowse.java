@@ -413,7 +413,7 @@ public class POBrowse extends javax.swing.JPanel {
         list.add(new String[]{"param5",ddsite.getSelectedItem().toString()});
         
         try {
-                jsonString = sendServerPost(list, "", null, "dataServRCV"); 
+                jsonString = sendServerPost(list, "", null, "dataServPUR"); 
             } catch (IOException ex) {
                 bslog(ex);
                 return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getPOBrowseView")};

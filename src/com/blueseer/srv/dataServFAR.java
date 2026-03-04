@@ -204,8 +204,8 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         }
         
         default:
-        response.getWriter().print("no switch case exists in dataServFAR for id: " + id);
-        System.out.println("no switch case exists in dataServFAP for id: " + id);    
+        response.getWriter().print("");
+        System.out.println("no switch case exists in dataServFAR for id: " + id);    
             
     }   
     

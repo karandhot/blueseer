@@ -135,7 +135,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break; 
         
         default:
-        response.getWriter().print("no switch case exists in dataServLBL for id: " + id);
+        response.getWriter().print("");
         System.out.println("no switch case exists in dataServLBL for id: " + id);    
             
     }
