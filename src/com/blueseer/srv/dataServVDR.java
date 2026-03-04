@@ -41,6 +41,7 @@ import static com.blueseer.vdr.venData.addVendMstrMass;
 import static com.blueseer.vdr.venData.deleteVendMstr;
 import static com.blueseer.vdr.venData.getVendBrowseView;
 import static com.blueseer.vdr.venData.getVendMstr;
+import static com.blueseer.vdr.venData.getVendShipSet;
 import static com.blueseer.vdr.venData.updateVendMstr;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
@@ -163,6 +164,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(ArrayListStringArrayToJson(venData.getVendMaintInit(request.getHeader("param1"), request.getHeader("param2"))));
             break;
         } 
+        
+        case "getVendShipSet" :  {      
+            venData.VendShipSet vd = getVendShipSet(new String[]{request.getHeader("param1"), request.getHeader("param2")});
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(vd);
+            response.getWriter().print(r);
+            break;  
+        }
         
         default:
         response.getWriter().print("");
