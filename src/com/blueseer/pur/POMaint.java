@@ -1294,17 +1294,38 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerV {
             return false;
         }
         
-        if (OVData.isValidItem(tbitem.getText()) && ! OVData.isValidUOMConversion(tbitem.getText(), ddsite.getSelectedItem().toString(), dduom.getSelectedItem().toString())) {
-                bsmf.MainFrame.show(getMessageTag(1026));
-                dduom.requestFocus();
-                return false;
+        if (tbitem.getText().isBlank()) {
+            bsmf.MainFrame.show(getMessageTag(1081));
+            tbitem.requestFocus();
+            return false;
         }
-        if (OVData.isValidItem(tbitem.getText()) && ! OVData.isBaseUOMOfItem(tbitem.getText(), ddsite.getSelectedItem().toString(), dduom.getSelectedItem().toString()) && ! OVData.isValidVendPriceRecordExists(ddvend.getSelectedItem().toString(),tbitem.getText(),dduom.getSelectedItem().toString(),ddcurr.getSelectedItem().toString())) {
-                bsmf.MainFrame.show(getMessageTag(1094)); 
-                dduom.requestFocus();
-                return false;
+        
+     String[] v = purData.validatePODetail(tbkey.getText(),  // returns boolean, tagnbr
+                ddvend.getSelectedItem().toString(), 
+                tbitem.getText(), 
+                qtyshipped.getText(), 
+                ddsite.getSelectedItem().toString(), 
+                dduom.getSelectedItem().toString(),
+                ddcurr.getSelectedItem().toString());
+        
+         
+        if (v[1].equals("1092")) {
+            bsmf.MainFrame.show(getMessageTag(Integer.parseInt(v[1]))); 
+            qtyshipped.requestFocus();
+            return false;
         }
-      return true;   
+        if (v[1].equals("1093")) {
+            bsmf.MainFrame.show(getMessageTag(Integer.parseInt(v[1]))); 
+            dduom.requestFocus();
+            return false;
+        }
+        if (v[1].equals("1094")) {
+            bsmf.MainFrame.show(getMessageTag(Integer.parseInt(v[1]))); 
+            dduom.requestFocus();
+            return false;
+        }
+        
+      return true;    
     }
    
     public boolean validateInputShipTo(dbaction action) {
@@ -3014,7 +3035,8 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerV {
         }
         
         for (int i : rows) {
-            if (orddet.getValueAt(i, 11).toString().equals(getGlobalProgTag("closed")) || orddet.getValueAt(i, 11).toString().equals(getGlobalProgTag("partial"))) {
+            if (orddet.getValueAt(i, 11).toString().equals(getGlobalProgTag("closed")) || 
+                    orddet.getValueAt(i, 11).toString().equals(getGlobalProgTag("partial"))) {
                 bsmf.MainFrame.show(getMessageTag(1088));
                 return;
             } else if (! orddet.getValueAt(i, 1).toString().equals(tbitem.getText())) {

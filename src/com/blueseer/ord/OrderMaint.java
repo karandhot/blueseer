@@ -2045,30 +2045,30 @@ public class OrderMaint extends javax.swing.JPanel implements IBlueSeerV {
             ddbom.insertItemAt("", 0);
             
             for (Map.Entry<String, String[]> entry : hm.entrySet()) {
-           // String[] det = invData.getItemDetail(ddpart.getSelectedItem().toString());
-            if (entry.getKey().equals("itemdata")) {
-            String[] det = entry.getValue();
-            if (! det[0].isBlank()) {
-            i++;
-            }
-            discount.setText("0");
-            listprice.setText("0");
-            netprice.setText("0");
-            qtyshipped.setText("0");
-            tbdesc.setText(det[1]);
-            dduom.setSelectedItem(det[2]);   // triggers setprice
-            tbitem.setForeground(Color.blue);
-            custnumber.setForeground(Color.blue);
-            //custnumber.setEditable(false);
-            tbdesc.setForeground(Color.blue);
-            //tbdesc.setEditable(false);
-            }
-            
-            if (entry.getKey().equals("itemcust")) {
-                if (entry.getValue() != null && ! entry.getValue()[0].isBlank()) {
-                  custnumber.setText(entry.getValue()[0].toString());
+           
+                if (entry.getKey().equals("itemdata") && entry.getValue() != null) {
+                    String[] det = entry.getValue();
+                    if (! det[0].isBlank()) {
+                    i++;
+                    }
+                    discount.setText("0");
+                    listprice.setText("0");
+                    netprice.setText("0");
+                    qtyshipped.setText("0");
+                    tbdesc.setText(det[1]);
+                    dduom.setSelectedItem(det[2]);   // triggers setprice
+                    tbitem.setForeground(Color.blue);
+                    custnumber.setForeground(Color.blue);
+                    //custnumber.setEditable(false);
+                    tbdesc.setForeground(Color.blue);
+                    //tbdesc.setEditable(false);
                 }
-            }
+            
+                if (entry.getKey().equals("itemcust")) {
+                    if (entry.getValue() != null && entry.getValue().length > 0 && ! entry.getValue()[0].isBlank()) {
+                      custnumber.setText(entry.getValue()[0]);
+                    }
+                }
             
             
             // do BOM alternates

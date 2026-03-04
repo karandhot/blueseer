@@ -32,6 +32,7 @@ import static com.blueseer.pur.purData.getPOMstrSet;
 import static com.blueseer.pur.purData.getPurchaseOrderInit;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
+import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -119,6 +120,18 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "getPurchaseOrderInit" : { 
             response.getWriter().print(ArrayListStringArrayToJson(getPurchaseOrderInit(request.getHeader("param1"), request.getHeader("param2"))));
             break;  
+        }
+        
+        case "validatePODetail" : {
+            response.getWriter().print(arrayToJson(purData.validatePODetail(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5"),
+                    request.getHeader("param6"),
+                    request.getHeader("param7")
+                    )));  
+            break;
         }
         
         default:

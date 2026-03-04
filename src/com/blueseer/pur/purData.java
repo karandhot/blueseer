@@ -48,8 +48,10 @@ import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
+import com.blueseer.utl.OVData;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.sql.DriverManager;
@@ -1342,6 +1344,37 @@ public class purData {
     
     
     // miscellaneous SQL queries
+    public static String[] validatePODetail(String key, String vend, String item, String qty, String site, String uom, String curr) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "validatePODetail"});
+            list.add(new String[]{"param1", key});
+            list.add(new String[]{"param2", vend});
+            list.add(new String[]{"param3", item});
+            list.add(new String[]{"param4", qty});
+            list.add(new String[]{"param5", site});
+            list.add(new String[]{"param6", uom});
+            list.add(new String[]{"param7", curr});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServPUR"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        if (OVData.isValidItem(item) && ! OVData.isValidUOMConversion(item, site, uom)) {
+                return new String[]{"0", "1093"};
+        }
+        if (OVData.isValidItem(item)
+                && OVData.getSysMetaValue("system", "ordercontrol", "uom_pricing").equals("1")
+                && ! OVData.isBaseUOMOfItem(item, site, uom) 
+                && ! OVData.isValidVendPriceRecordExists(vend,item,uom,curr)) {
+                return new String[]{"0", "1094"};
+        }
+        return new String[]{"1", "0"}; // true
+    }
+    
     
     public static String getPOBrowseView(String[] keys) {
         JSONArray jsonarray = new JSONArray();
