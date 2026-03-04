@@ -125,6 +125,7 @@ import java.awt.event.MouseEvent;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -1463,7 +1464,8 @@ public class POMaint extends javax.swing.JPanel implements IBlueSeerV {
             for (HashMap.Entry<String, String[]> entry : hm.entrySet()) {
            // String[] det = invData.getItemDetail(ddpart.getSelectedItem().toString());
             if (entry.getKey().equals("itemdata") && entry.getValue() != null) {
-            String[] det = entry.getValue();
+                System.out.println("HERE: " + entry.getValue().getClass().getName());
+            String[] det = (String[]) entry.getValue();
             if (! det[0].isBlank()) {
             i++;
             }
