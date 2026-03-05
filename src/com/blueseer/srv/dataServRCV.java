@@ -86,6 +86,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         case "addReceiverTransaction" : {
             String line;
+            ArrayList<fapData.vod_mstr> vodlist = null;
             StringBuilder sb = new StringBuilder();  
             BufferedReader reader = request.getReader();  // as string
             while ((line = reader.readLine()) != null) {  
@@ -98,8 +99,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             ArrayList<rcvData.recv_det> rvdlist = new ArrayList<rcvData.recv_det>(Arrays.asList(rdarray)); 
             rcvData.recv_mstr rv = om.readValue(ca[1], rcvData.recv_mstr.class); 
             fapData.ap_mstr ap = om.readValue(ca[2], fapData.ap_mstr.class);
-            fapData.vod_mstr[] sdarray = om.readValue(ca[3], fapData.vod_mstr[].class);
-            ArrayList<fapData.vod_mstr> vodlist = new ArrayList<fapData.vod_mstr>(Arrays.asList(sdarray)); 
+            fapData.vod_mstr[] vodarray = om.readValue(ca[3], fapData.vod_mstr[].class);
+            if (vodarray != null) {
+                vodlist = new ArrayList<fapData.vod_mstr>(Arrays.asList(vodarray));
+            }
             response.getWriter().print(arrayToJson(rcvData.addReceiverTransaction(rvdlist, rv, ap, vodlist))); 
             break;
             }
