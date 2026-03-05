@@ -27,6 +27,7 @@ package com.blueseer.srv;
 
 
 import com.blueseer.pur.purData;
+import static com.blueseer.pur.purData.getPODet;
 import static com.blueseer.pur.purData.getPOListByVend;
 import static com.blueseer.pur.purData.getPOMstr;
 import static com.blueseer.pur.purData.getPOMstrSet;
@@ -150,6 +151,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         response.getWriter().print(r);
         break;
         }
+        
+        case "getPODet" : { 
+            ArrayList<purData.pod_mstr> x = getPODet(new String[]{request.getHeader("param1")}); 
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
         
         case "getPOMstrSet" : {       
         purData.purchaseOrder pos = getPOMstrSet(new String[]{request.getHeader("param1")});

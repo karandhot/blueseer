@@ -52,6 +52,7 @@ import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.OVData;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.sql.DriverManager;
@@ -801,6 +802,21 @@ public class purData {
     public static ArrayList<pod_mstr> getPODet(String[] x) {
         ArrayList<pod_mstr> list = new ArrayList<pod_mstr>();
         pod_mstr r = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<>();
+            paramlist.add(new String[]{"id","getPODet"});
+            paramlist.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServPUR");
+                list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<pod_mstr>>() {});
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+                return list;
+            }
+        }
+        
         String[] m = new String[2];
         String sql = "select * from pod_mstr where pod_nbr = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
