@@ -136,6 +136,7 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerV {
     // global variable declarations
                 boolean isLoad = false;
                 public static recv_mstr rv = null;
+                public static vd_mstr vd = null;
                 public static ArrayList<recv_det> rvdlist = null;
                 public static ArrayList<pod_mstr> podlist = null;
                 boolean canUpdate = false;
@@ -539,6 +540,7 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerV {
                    setPanelComponentState(this, true);
                    btadd.setEnabled(false);
                    tbkey.setEditable(false);
+                   ddvend.setEnabled(false);
                    cbautovoucher.setSelected(false);
                    cbautovoucher.setEnabled(false);
                    tbkey.setForeground(Color.blue);
@@ -578,6 +580,7 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerV {
       Receiver z = getReceiverMstrSet(key);
       rv = z.rv();
       rvdlist = z.rvd();
+      vd = z.vd();
       return z.m();
     }
 
@@ -586,7 +589,9 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerV {
      
      if (cbautovoucher.isSelected()) {
       String vonbr = String.valueOf(OVData.getNextNbr("voucher")); 
-      vd_mstr vd = getVendMstr(new String[]{ddvend.getSelectedItem().toString()});
+        if (vd == null) {
+        vd = getVendMstr(new String[]{ddvend.getSelectedItem().toString()});
+        }
       ArrayList<vod_mstr> vodlist = createVodMstr(vonbr, vd);
       ap_mstr ap = createAPMstr(vonbr, vd);
         m = addReceiverTransaction(createDetRecord(), createRecord(), ap, vodlist);
@@ -636,7 +641,6 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerV {
     
     public recv_mstr createRecord() {
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-        String[] v = getVendInfo(ddvend.getSelectedItem().toString());
         recv_mstr x = new recv_mstr(null, 
                 tbkey.getText(),
                 ddvend.getSelectedItem().toString(),
@@ -644,9 +648,9 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerV {
                 "", // status
                 tbpackingslip.getText(),
                 bsmf.MainFrame.userid.toString(),
-                v[1],
-                v[2],
-                v[5],
+                vd.vd_ap_acct(),
+                vd.vd_ap_cc(),
+                vd.vd_terms(),
                 ddsite.getSelectedItem().toString(),
                 "", // confdate
                 "", // ref
@@ -937,7 +941,7 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerV {
                 "o", //ap_status
                 v.vd_bank(), //ap_bank
                 v.vd_curr(), //ap_curr
-                OVData.getDefaultCurrency(), //ap_base_curr
+                defaultCurrency, //ap_base_curr
                 vonbr, //ap_check // in this case voucher number is reference field
                 String.valueOf(batchid), //ap_batch
                 ddsite.getSelectedItem().toString(), //ap_site
@@ -1627,7 +1631,7 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerV {
       
         if (! isLoad && ddvend.getSelectedItem() != null && ! ddvend.getSelectedItem().toString().isEmpty()) { 
            ddpo.removeAllItems();
-            vd_mstr vd = getVendMstr(new String[]{ddvend.getSelectedItem().toString()});
+            vd = getVendMstr(new String[]{ddvend.getSelectedItem().toString()});
             ArrayList<String> polist = getPOListByVend(ddvend.getSelectedItem().toString());
             isLoad = true;
             for (String po : polist) {

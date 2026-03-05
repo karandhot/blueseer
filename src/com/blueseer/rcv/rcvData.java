@@ -59,6 +59,8 @@ import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.OVData;
+import static com.blueseer.vdr.venData._getVendMstr;
+import com.blueseer.vdr.venData.vd_mstr;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -645,10 +647,10 @@ public class rcvData {
             
             recv_mstr rv = _getReceiverMstr(x, bscon, ps, res);
             ArrayList<recv_det> rvd = _getReceiverDet(x, bscon, ps, res);
-            
+            vd_mstr vd = _getVendMstr(x[0], bscon, ps, res);
             
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
-            r = new Receiver(m, rv, rvd);
+            r = new Receiver(m, rv, rvd, vd);
             
         } catch (SQLException s) {
              MainFrame.bslog(s);
@@ -1325,9 +1327,9 @@ public class rcvData {
         return lines;
     }
     
-    public record Receiver(String[] m, recv_mstr rv, ArrayList<recv_det> rvd) {
+    public record Receiver(String[] m, recv_mstr rv, ArrayList<recv_det> rvd, vd_mstr vd) {
         public Receiver(String[] m) {
-            this (m, null, null);
+            this (m, null, null, null);
         }
     }
     
