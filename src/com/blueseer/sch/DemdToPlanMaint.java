@@ -34,6 +34,8 @@ import javax.swing.SwingWorker;
 import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.setperms;
 import static bsmf.MainFrame.tags;
+import com.blueseer.adm.admData;
+import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import java.awt.Component;
 import java.util.ArrayList;
@@ -53,6 +55,12 @@ import javax.swing.JTabbedPane;
  */
 public class DemdToPlanMaint extends javax.swing.JPanel {
 
+    boolean canUpdate = false;
+    boolean isAutoPost = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String defaultCC = "";
     
     /**
      * Creates new form PostGLPanel
@@ -120,11 +128,34 @@ public class DemdToPlanMaint extends javax.swing.JPanel {
         tborderto.setText("");
         
         ddsite.removeAllItems();
-        ArrayList<String> mylist = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (String code : mylist) {
-            ddsite.addItem(code);
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            
+            if (s[0].equals("autopost")) {
+              isAutoPost = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            
+            if (s[0].equals("cc")) {
+              defaultCC = s[1];  
+            }
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
         }
-        ddsite.setSelectedItem(OVData.getDefaultSite());
+        
+        ddsite.setSelectedItem(defaultSite);
         
         
     }

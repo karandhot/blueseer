@@ -147,7 +147,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             String[] ca = sb.toString().split("=_=", -1);
             String artype = ca[0];
             farData.ard_mstr[] sdarray = om.readValue(ca[1], farData.ard_mstr[].class);
-            ArrayList<farData.ard_mstr> ardlist = new ArrayList<farData.ard_mstr>(Arrays.asList(sdarray));  
+            ArrayList<farData.ard_mstr> ardlist = (sdarray == null) ? null :new ArrayList<farData.ard_mstr>(Arrays.asList(sdarray));  
             farData.ar_mstr ar = om.readValue(ca[2], farData.ar_mstr.class); 
             response.getWriter().print(arrayToJson(farData.addArTransaction(artype, ardlist, ar))); 
             break;

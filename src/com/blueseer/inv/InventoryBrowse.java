@@ -384,7 +384,7 @@ public class InventoryBrowse extends javax.swing.JPanel {
         String jsonString = null; 
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
         ArrayList<String[]> list = new ArrayList<String[]>();
-        list.add(new String[]{"id","getItemBrowseView"});
+        list.add(new String[]{"id","getInvBrowseView"});
         list.add(new String[]{"fromitem",fromitem});
         list.add(new String[]{"toitem",toitem});
         list.add(new String[]{"site",ddsite.getSelectedItem().toString()});

@@ -15351,7 +15351,7 @@ return mystring;
                 _bom = OVData.getDefaultBomID(_part);
             }  
               /* now lets filter the type and hit the appropriate conditional followup */
-           if (_type == "ISS-PRD") {
+            if (_type == "ISS-PRD") {
                   /* let's first load the tran_hist */
                   
                   
@@ -15451,11 +15451,7 @@ return mystring;
                      OVData.wip_to_fg(_part, _site, cost, _date, _ref, "RCT-FG", _remarks, gldoc); 
                   }
               }
-           
-           
-           
-           
-           
+                      
             if (_type == "ISS-SCRAP") {
                   /* let's first load the tran_hist */
               if (dbtype.equals("sqlite")) {         
@@ -22495,6 +22491,21 @@ MainFrame.bslog(e);
 
     public static int createPlanFromFcst(String fromsite, String tosite, String fromitem, String toitem) {
 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "createPlanFromFcst"});
+            list.add(new String[]{"param1", fromsite});
+            list.add(new String[]{"param2", tosite});
+            list.add(new String[]{"param3", fromitem});
+            list.add(new String[]{"param4", toitem});
+            try {
+                return jsonToInt(sendServerPost(list, "", null, "dataServOV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0;
+            }
+        }
+        
     int recnumber = 0;
 
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd");

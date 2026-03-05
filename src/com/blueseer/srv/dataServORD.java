@@ -142,7 +142,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             ObjectMapper om = new ObjectMapper();
             String[] ca = sb.toString().split("=_=", -1);
             ordData.sod_det[] sdarray = om.readValue(ca[0], ordData.sod_det[].class);
-            ArrayList<ordData.sod_det> sdlist = new ArrayList<ordData.sod_det>(Arrays.asList(sdarray)); 
+            ArrayList<ordData.sod_det> sdlist = (sdarray == null) ? null : new ArrayList<ordData.sod_det>(Arrays.asList(sdarray)); 
             ordData.so_mstr sm = om.readValue(ca[1], ordData.so_mstr.class); 
             ordData.so_tax[] starray = om.readValue(ca[2], ordData.so_tax[].class);
             ArrayList<ordData.so_tax> stlist = new ArrayList<ordData.so_tax>(Arrays.asList(starray));

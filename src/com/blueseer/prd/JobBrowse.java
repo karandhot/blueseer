@@ -126,7 +126,6 @@ import org.jfree.data.general.DefaultPieDataset;
 public class JobBrowse extends javax.swing.JPanel {
  
     
-       // NOTE:  if you change this...you must also adjust APCheckRun...my advise....dont change it
        MasterModel mymodel = new MasterModel(new Object[][]{},
                         new String[]{ 
                             getGlobalColumnTag("select"),

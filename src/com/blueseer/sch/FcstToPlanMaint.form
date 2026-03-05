@@ -55,8 +55,8 @@
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="tbfromsite" alignment="0" min="-2" pref="159" max="-2" attributes="0"/>
                                       <Component id="tbtosite" alignment="0" min="-2" pref="159" max="-2" attributes="0"/>
-                                      <Component id="tbfrompart" alignment="0" min="-2" pref="159" max="-2" attributes="0"/>
-                                      <Component id="tbtopart" alignment="0" min="-2" pref="159" max="-2" attributes="0"/>
+                                      <Component id="tbfromitem" alignment="0" min="-2" pref="159" max="-2" attributes="0"/>
+                                      <Component id="tbtoitem" alignment="0" min="-2" pref="159" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -91,7 +91,7 @@
                           <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
                           <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="tbfrompart" min="-2" max="-2" attributes="0"/>
+                      <Component id="tbfromitem" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
@@ -99,7 +99,7 @@
                           <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
                           <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="tbtopart" min="-2" max="-2" attributes="0"/>
+                      <Component id="tbtoitem" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
                   <Component id="btpost" min="-2" max="-2" attributes="0"/>
@@ -120,21 +120,21 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btpostActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JTextField" name="tbfrompart">
+        <Component class="javax.swing.JTextField" name="tbfromitem">
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel1">
           <Properties>
-            <Property name="text" type="java.lang.String" value="From Part"/>
+            <Property name="text" type="java.lang.String" value="From Item"/>
             <Property name="name" type="java.lang.String" value="lblfromitem" noResource="true"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JProgressBar" name="MainProgressBar">
         </Component>
-        <Component class="javax.swing.JTextField" name="tbtopart">
+        <Component class="javax.swing.JTextField" name="tbtoitem">
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel2">
           <Properties>
-            <Property name="text" type="java.lang.String" value="To Part"/>
+            <Property name="text" type="java.lang.String" value="To Item"/>
             <Property name="name" type="java.lang.String" value="lbltoitem" noResource="true"/>
           </Properties>
         </Component>

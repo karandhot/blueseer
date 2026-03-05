@@ -45,6 +45,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.formatUSC;
 import static com.blueseer.utl.BlueSeerUtils.formatUSZ;
+import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListDouble;
@@ -3259,6 +3260,14 @@ public class invData {
                s[1] = res.getString("dept_id");
                lines.add(s);
             }
+            
+            res = st.executeQuery("select it_item from item_mstr order by it_item ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "items";
+               s[1] = res.getString("it_item");
+               lines.add(s);
+            }
           
             
             res = st.executeQuery("select wh_id from wh_mstr order by wh_id;");
@@ -3541,6 +3550,126 @@ public class invData {
                                 res.getDouble("qoh")   
                             });
                       */ 
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getInvValuationBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+                String[] td = new String[]{"","","","",""};
+                Date now = new Date();
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(now);
+                int thisyear = cal.get(Calendar.YEAR);
+                int thisperiod = cal.get(Calendar.MONTH) + 1;
+
+
+                Date targetdate = dfdate.parse(keys[3]);
+                cal.setTime(targetdate);
+                int targetyear = cal.get(Calendar.YEAR);
+                int targetperiod = cal.get(Calendar.MONTH) + 1;
+
+                // back targetperiod up by 1
+                targetperiod = targetperiod - 1;
+                if (targetperiod < 1) {
+                    targetperiod = 12;
+                    targetyear = targetyear - 1;
+                }
+
+                double actqty = 0.0;
+                double amt = 0.0;
+
+                // if dcdate = today...then reset target period and target year for today
+                boolean isToday = false;
+                if (setDateDB(targetdate).equals(setDateDB(now))) {
+                    targetperiod = thisperiod;
+                    targetyear = thisyear;
+                    isToday = true;
+                } else {
+                    td = fglData.getGLCalForDate(targetdate); // td[2] = startdate of period
+                }
+                
+                /*
+                System.out.println("target date: " + targetdate);
+                System.out.println("target period: " + targetperiod);
+                System.out.println("target year: " + targetyear);
+                System.out.println("start date: " + td[2]);
+                */
+                
+                if (isToday) {
+                 res = st.executeQuery("select it_item, it_code, it_desc, itc_total, " + 
+                      "case when inb_amt is null then '0' else inb_amt end as qty " +
+                      " from item_mstr " +
+                      " inner join item_cost on itc_item = it_item and itc_set = 'standard' and itc_site = it_site " +
+                      " left outer join inb_mstr on inb_item = it_item and " +
+                      " inb_site = it_site " + 
+                      " AND inb_year = " + "'" + targetyear + "'" +
+                      " AND inb_per = " + "'" + targetperiod + "'" +
+                       " where it_item >= " + "'" + keys[0] + "'" +  " AND " 
+                       + " it_item <= " + "'" + keys[1] + "'" +  " AND " 
+                       + " it_site = " + "'" + keys[2] + "'"        
+                       + ";" );
+                 } else {
+                    res = st.executeQuery("select it_item, it_code, it_desc, itc_total, " + 
+                      "case when inb_amt is null then '0' else inb_amt end as qty, " +
+                      " (select tr_qty from tran_mstr where tr_item = it_item and " +
+                            " tr_eff_date >= " + "'" + td[2] + "'" + // td[2] is period start date of targetdate
+                            " and " + " tr_eff_date <= " + "'" + setDateDB(targetdate) + "'"  + ") as trqty " +   
+                      " from item_mstr " +
+                      " inner join item_cost on itc_item = it_item and itc_set = 'standard' and itc_site = it_site " +
+                      " left outer join inb_mstr on inb_item = it_item and " +
+                      " inb_site = it_site " + 
+                      " AND inb_year = " + "'" + targetyear + "'" +
+                      " AND inb_per = " + "'" + targetperiod + "'" +
+                       " where it_item >= " + "'" + keys[0] + "'" +  " AND " 
+                       + " it_item <= " + "'" + keys[1] + "'" +  " AND " 
+                       + " it_site = " + "'" + keys[2] + "'"        
+                       + ";" ); 
+                 }
+                    while (res.next()) {
+                    if (isToday) {
+                      actqty = res.getDouble("qty");
+                    } else {
+                      actqty = (res.getDouble("qty") + res.getDouble("trqty"));  
+                    }
+                    amt = (actqty * res.getDouble("itc_total"));
+                    
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("it_item"));
+                        rowArray.put(res.getString("it_desc"));
+                        rowArray.put(res.getString("it_code"));
+                        rowArray.put(currformatDouble(res.getDouble("itc_total"))); 
+                        rowArray.put(bsNumber(actqty));
+                        rowArray.put(bsNumber(amt));
+                        jsonarray.put(rowArray);
+                   
                 }
                
                 
@@ -6820,7 +6949,19 @@ public class invData {
    
     
     public static String[] getItemDetail(String item) {
-           String[] x = new String[]{"","","","","","","","","","",""};
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getItemDetail"});
+            list.add(new String[]{"param1",  item});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServINV"));  
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }   
+        
+        String[] x = new String[]{"","","","","","","","","","",""};
            int days = 0;
            Calendar caldate = Calendar.getInstance();
            try{

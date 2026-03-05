@@ -55,11 +55,13 @@ import static com.blueseer.inv.invData.getINVCtrl;
 import static com.blueseer.inv.invData.getInvBrowseView;
 import static com.blueseer.inv.invData.getInvMaintInit;
 import static com.blueseer.inv.invData.getInvMaintInit_min;
+import static com.blueseer.inv.invData.getInvValuationBrowseView;
 import static com.blueseer.inv.invData.getInventoryQtyByItem;
 import static com.blueseer.inv.invData.getItemBrowseView;
 import static com.blueseer.inv.invData.getItemCost;
 import static com.blueseer.inv.invData.getItemCostElements;
 import static com.blueseer.inv.invData.getItemDataInit;
+import static com.blueseer.inv.invData.getItemDetail;
 import static com.blueseer.inv.invData.getItemImagesFile;
 import static com.blueseer.inv.invData.getItemMaintInit;
 import static com.blueseer.inv.invData.getItemMasterSchedlist;
@@ -704,6 +706,17 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         break;
         }
         
+        case "getInvValuationBrowseView" : {
+        String[] it = new String[]{
+               request.getHeader("param1"), 
+               request.getHeader("param2"), 
+               request.getHeader("param3"), 
+               request.getHeader("param4")
+               };     
+        response.getWriter().print(getInvValuationBrowseView(it));  
+        break;
+        }
+        
         case "getItemDataInit" : {
             response.getWriter().print(HashMapStringStringArrToJson(getItemDataInit(
                 request.getHeader("param1"),
@@ -732,6 +745,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                 request.getHeader("param4"),
                 request.getHeader("param5"),
                 request.getHeader("param6"))));
+            break;    
+        }
+        
+        case "getItemDetail" : {
+            response.getWriter().print(arrayToJson(getItemDetail(request.getHeader("param1"))));
             break;    
         }
         

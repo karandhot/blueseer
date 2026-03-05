@@ -35,6 +35,7 @@ import static bsmf.MainFrame.setperms;
 import static bsmf.MainFrame.tags;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import java.awt.Component;
+import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -51,6 +52,14 @@ import javax.swing.JTabbedPane;
 public class FcstToPlanMaint extends javax.swing.JPanel {
 
     int numberrecords = 0;
+    boolean canUpdate = false;
+    boolean isAutoPost = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String defaultCC = "";
+    
+    
     /**
      * Creates new form PostGLPanel
      */
@@ -104,10 +113,10 @@ public class FcstToPlanMaint extends javax.swing.JPanel {
     }
     
     public void initvars(String[] args) {
-        tbfrompart.setText("");
-         tbtopart.setText("");
-          tbfromsite.setText("");
-           tbtosite.setText("");
+        tbfromitem.setText("");
+        tbtoitem.setText("");
+        tbfromsite.setText("");
+        tbtosite.setText("");
         btpost.setEnabled(true);
         MainProgressBar.setEnabled(true);
         MainProgressBar.setVisible(true);
@@ -119,33 +128,8 @@ public class FcstToPlanMaint extends javax.swing.JPanel {
          */
         @Override
         public Void doInBackground() {
-            
-       
-       numberrecords = OVData.createPlanFromFcst(tbfromsite.getText(), tbtosite.getText(), tbfrompart.getText(), tbtopart.getText());
-
-           /* 
-            Random random = new Random();
-            int progress = 0;
-            //Initialize progress property.
-            setProgress(0);
-            //Sleep for at least one second to simulate "startup".
-            try {
-                Thread.sleep(1000 + random.nextInt(2000));
-            } catch (InterruptedException ignore) {}
-            while (progress < 100) {
-                //Sleep for up to one second.
-                try {
-                    Thread.sleep(random.nextInt(1000));
-                } catch (InterruptedException ignore) {}
-                //Make random progress.
-                progress += random.nextInt(10);
-                setProgress(Math.min(progress, 100));
-            }
-            
-            */
-            
+            numberrecords = OVData.createPlanFromFcst(tbfromsite.getText(), tbtosite.getText(), tbfromitem.getText(), tbtoitem.getText());
             return null;
-           
         }
  
         /*
@@ -159,6 +143,7 @@ public class FcstToPlanMaint extends javax.swing.JPanel {
             bsmf.MainFrame.show(getMessageTag(1121,String.valueOf(numberrecords)));
             MainProgressBar.setEnabled(false);
             MainProgressBar.setIndeterminate(false);
+            initvars(null);
         }
     }  
     
@@ -174,10 +159,10 @@ public class FcstToPlanMaint extends javax.swing.JPanel {
 
         jPanel1 = new javax.swing.JPanel();
         btpost = new javax.swing.JButton();
-        tbfrompart = new javax.swing.JTextField();
+        tbfromitem = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         MainProgressBar = new javax.swing.JProgressBar();
-        tbtopart = new javax.swing.JTextField();
+        tbtoitem = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         tbfromsite = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
@@ -197,10 +182,10 @@ public class FcstToPlanMaint extends javax.swing.JPanel {
             }
         });
 
-        jLabel1.setText("From Part");
+        jLabel1.setText("From Item");
         jLabel1.setName("lblfromitem"); // NOI18N
 
-        jLabel2.setText("To Part");
+        jLabel2.setText("To Item");
         jLabel2.setName("lbltoitem"); // NOI18N
 
         jLabel3.setText("From Site");
@@ -232,8 +217,8 @@ public class FcstToPlanMaint extends javax.swing.JPanel {
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(tbfromsite, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(tbtosite, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tbfrompart, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tbtopart, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                                    .addComponent(tbfromitem, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(tbtoitem, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE))))))
                 .addContainerGap(31, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -256,13 +241,13 @@ public class FcstToPlanMaint extends javax.swing.JPanel {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addComponent(jLabel1))
-                    .addComponent(tbfrompart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(tbfromitem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(6, 6, 6)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addComponent(jLabel2))
-                    .addComponent(tbtopart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(tbtoitem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(6, 6, 6)
                 .addComponent(btpost)
                 .addGap(6, 6, 6)
@@ -291,9 +276,9 @@ public class FcstToPlanMaint extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JTextField tbfrompart;
+    private javax.swing.JTextField tbfromitem;
     private javax.swing.JTextField tbfromsite;
-    private javax.swing.JTextField tbtopart;
+    private javax.swing.JTextField tbtoitem;
     private javax.swing.JTextField tbtosite;
     // End of variables declaration//GEN-END:variables
 }

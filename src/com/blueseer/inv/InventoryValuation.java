@@ -28,6 +28,7 @@ package com.blueseer.inv;
 
 import com.blueseer.prd.*;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import java.awt.Color;
 import java.awt.Component;
@@ -72,6 +73,8 @@ import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
@@ -87,6 +90,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 import org.threeten.bp.LocalDate;
 
 
@@ -97,6 +101,12 @@ import org.threeten.bp.LocalDate;
  */
 public class InventoryValuation extends javax.swing.JPanel {
  
+    public String rsData; 
+     Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultSite = "";
+    String defaultCurrency = "";
+    
      MyTableModel mymodel = new InventoryValuation.MyTableModel(new Object[][]{},
                         new String[]{
                             getGlobalColumnTag("item"),                             
@@ -238,7 +248,96 @@ public class InventoryValuation extends javax.swing.JPanel {
        }
     }
     
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getInvBrowseView":
+                    message = getInvBrowseView();
+                    break; 
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getInvBrowseView")) {
+                done_getInvBrowseView();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
     public void initvars(String[] arg) {
+        executeTask("dataInit", null);
+    }
+    
+    public void clearAll() {
+        mymodel.setRowCount(0);
+        ddclass.setSelectedIndex(0);
+        ddfromitem.setSelectedIndex(0);
+        ddtoitem.setSelectedIndex(ddtoitem.getItemCount() - 1);
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = invData.getInvMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
         mymodel.setRowCount(0);
         
         java.util.Date now = new java.util.Date();
@@ -254,27 +353,135 @@ public class InventoryValuation extends javax.swing.JPanel {
         
         ArrayList<String> sites = new ArrayList();
         ddsite.removeAllItems();
-        sites = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (String code : sites) {
-            ddsite.addItem(code);
-        }
-        
         ddfromitem.removeAllItems();
         ddtoitem.removeAllItems();
-        ArrayList<String> mycode = invData.getItemMasterAlllist();
-        for (int i = 0; i < mycode.size(); i++) {
-            ddfromitem.addItem(mycode.get(i));
-            ddtoitem.addItem(mycode.get(i));
+        
+        
+        
+        
+        for (String[] s : initDataSets) {
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+            if (s[0].equals("items")) {
+              ddfromitem.addItem(s[1]); 
+              ddtoitem.addItem(s[1]);
+            }
         }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultSite);
+        }
+        
         ddfromitem.insertItemAt("", 0);
         ddtoitem.insertItemAt("", 0);
         ddfromitem.setSelectedIndex(0);
-        ddtoitem.setSelectedIndex(ddtoitem.getItemCount() - 1);
+        ddtoitem.setSelectedIndex(ddtoitem.getItemCount() - 1); 
         
+        mymodel.setRowCount(0);
+        tablereport.setModel(mymodel);
+        /*
+              Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
+                 while (en.hasMoreElements()) {
+                     TableColumn tc = en.nextElement();
+                     if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+                         continue;
+                     }
+                     tc.setCellRenderer(new InventoryValuation.SomeRenderer());
+                 }
+        */         
+        tablereport.getColumnModel().getColumn(3).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency))); 
+        tablereport.getColumnModel().getColumn(5).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency))); 
+                         
+                // tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+                // tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+                // tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
+                
        
-        
-        
     }
+    
+    public String[] getInvBrowseView() {
+        String[] x = new String[2];
+        String fromitem = "";
+        String toitem = "";
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        if (ddfromitem.getSelectedItem() == null || ddfromitem.getSelectedItem().toString().isEmpty()) {
+                    fromitem = bsmf.MainFrame.lowchar;
+        } else {
+            fromitem = ddfromitem.getSelectedItem().toString();
+        }
+         if (ddtoitem.getSelectedItem() == null || ddtoitem.getSelectedItem().toString().isEmpty()) {
+            toitem = bsmf.MainFrame.hichar;
+        } else {
+            toitem = ddtoitem.getSelectedItem().toString();
+        }
+        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getInvValuationBrowseView"});
+        list.add(new String[]{"param1",fromitem});
+        list.add(new String[]{"param2",toitem});
+        list.add(new String[]{"param3",ddsite.getSelectedItem().toString()});
+        list.add(new String[]{"param4",dfdate.format(dcdate.getDate())});
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getOrderBrowseView")};
+            }
+        } else {
+            jsonString = invData.getInvValuationBrowseView(new String[]{fromitem, 
+                toitem,
+                ddsite.getSelectedItem().toString(),
+                dfdate.format(dcdate.getDate())
+            });
+        }
+        
+        
+        roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getInvBrowseView() {
+        
+        int i = 0;
+        double qty = 0.0;
+        double totamt = 0.0;
+        String wh = "";
+        String loc = "";
+        
+        
+        mymodel.setNumRows(0);
+        
+        if (roData != null) {
+        
+        
+        
+        for (Object[] rowData : roData) {
+            roData[i][3] = bsParseDouble(roData[i][3].toString());
+            roData[i][4] = bsParseDouble(roData[i][4].toString());
+            roData[i][5] = bsParseDouble(roData[i][5].toString());
+            totamt = totamt + bsParseDouble(roData[i][5].toString());
+            mymodel.addRow(rowData); 
+            i++;
+        }
+        labelcount.setText(String.valueOf(i));
+        labelamount.setText(currformatDouble(totamt));
+        
+        
+        }          
+        roData = null;
+    }   
+     
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -306,6 +513,7 @@ public class InventoryValuation extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         ddsite = new javax.swing.JComboBox<>();
+        btclear = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -379,6 +587,13 @@ public class InventoryValuation extends javax.swing.JPanel {
         jLabel1.setText("From Item");
         jLabel1.setName("lblfromitem"); // NOI18N
 
+        btclear.setText("Clear");
+        btclear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btclearActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -407,6 +622,8 @@ public class InventoryValuation extends javax.swing.JPanel {
                 .addGap(39, 39, 39)
                 .addComponent(btRun)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btclear)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tbcsv)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btprint)
@@ -427,7 +644,8 @@ public class InventoryValuation extends javax.swing.JPanel {
                             .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel3)
                             .addComponent(tbcsv)
-                            .addComponent(btprint))
+                            .addComponent(btprint)
+                            .addComponent(btclear))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel4)
@@ -480,7 +698,7 @@ public class InventoryValuation extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 1264, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -489,140 +707,7 @@ public class InventoryValuation extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-        
-        String[] td = new String[]{"","","","",""};
-        Date now = new Date();
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(now);
-        int thisyear = cal.get(Calendar.YEAR);
-        int thisperiod = cal.get(Calendar.MONTH) + 1;
-        
-        
-        Date targetdate = dcdate.getDate();
-        cal.setTime(targetdate);
-        int targetyear = cal.get(Calendar.YEAR);
-        int targetperiod = cal.get(Calendar.MONTH) + 1;
-        
-        // back targetperiod up by 1
-        targetperiod = targetperiod - 1;
-        if (targetperiod < 1) {
-            targetperiod = 12;
-            targetyear = targetyear - 1;
-        }
-        
-        
-        // if dcdate = today...then reset target period and target year for today
-        boolean isToday = false;
-        if (setDateDB(targetdate).equals(setDateDB(now))) {
-            targetperiod = thisperiod;
-            targetyear = thisyear;
-            isToday = true;
-        } else {
-            td = fglData.getGLCalForDate(targetdate); // td[2] = startdate of period
-        }
-        
-        System.out.println("target date: " + targetdate);
-        System.out.println("target period: " + targetperiod);
-        System.out.println("target year: " + targetyear);
-        System.out.println("start date: " + td[2]);
-        
-    try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                double totamt = 0;
-                double amt = 0;
-                int i = 0;
-            
-                mymodel.setNumRows(0);
-                tablereport.setModel(mymodel);
-            
-                tablereport.getColumnModel().getColumn(3).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency()))); 
-                tablereport.getColumnModel().getColumn(5).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency()))); 
-                
-              
-                
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-               
-                 if (isToday) {
-                 res = st.executeQuery("select it_item, it_code, it_desc, itc_total, " + 
-                      "case when inb_amt is null then '0' else inb_amt end as qty " +
-                      " from item_mstr " +
-                      " inner join item_cost on itc_item = it_item and itc_set = 'standard' and itc_site = it_site " +
-                      " left outer join inb_mstr on inb_item = it_item and " +
-                      " inb_site = it_site " + 
-                      " AND inb_year = " + "'" + targetyear + "'" +
-                      " AND inb_per = " + "'" + targetperiod + "'" +
-                       " where it_item >= " + "'" + ddfromitem.getSelectedItem().toString() + "'" +  " AND " 
-                       + " it_item <= " + "'" + ddtoitem.getSelectedItem().toString() + "'" +  " AND " 
-                       + " it_site = " + "'" + ddsite.getSelectedItem().toString() + "'"        
-                       + ";" );
-                 } else {
-                    res = st.executeQuery("select it_item, it_code, it_desc, itc_total, " + 
-                      "case when inb_amt is null then '0' else inb_amt end as qty, " +
-                      " (select tr_qty from tran_mstr where tr_item = it_item and " +
-                            " tr_eff_date >= " + "'" + td[2] + "'" + // td[2] is period start date of targetdate
-                            " and " + " tr_eff_date <= " + "'" + setDateDB(targetdate) + "'"  + ") as trqty " +   
-                      " from item_mstr " +
-                      " inner join item_cost on itc_item = it_item and itc_set = 'standard' and itc_site = it_site " +
-                      " left outer join inb_mstr on inb_item = it_item and " +
-                      " inb_site = it_site " + 
-                      " AND inb_year = " + "'" + targetyear + "'" +
-                      " AND inb_per = " + "'" + targetperiod + "'" +
-                       " where it_item >= " + "'" + ddfromitem.getSelectedItem().toString() + "'" +  " AND " 
-                       + " it_item <= " + "'" + ddtoitem.getSelectedItem().toString() + "'" +  " AND " 
-                       + " it_site = " + "'" + ddsite.getSelectedItem().toString() + "'"        
-                       + ";" ); 
-                 }
-                 double actqty = 0;
-                while (res.next()) {
-                   
-                    if (! ddclass.getSelectedItem().toString().isBlank() && ! res.getString("it_code").equals(ddclass.getSelectedItem().toString())) {
-                        continue;
-                    }
-                    if (isToday) {
-                      actqty = res.getDouble("qty");
-                    } else {
-                      actqty = (res.getDouble("qty") + res.getDouble("trqty"));  
-                    }
-                    amt = (actqty * res.getDouble("itc_total"));
-                    totamt += amt;
-                    i++;
-                        mymodel.addRow(new Object[]{
-                                res.getString("it_item"),
-                                res.getString("it_desc"),
-                                res.getString("it_code"),
-                                bsParseDouble(currformatDouble(res.getDouble("itc_total"))),
-                                bsNumber(actqty),
-                                bsParseDouble(currformatDouble(amt))   
-                            });
-                }
-               
-                labelcount.setText(String.valueOf(i));
-                labelamount.setText(currformatDouble(totamt));
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
+       executeTask("getInvBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void tbcsvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbcsvActionPerformed
@@ -634,9 +719,14 @@ public class InventoryValuation extends javax.swing.JPanel {
         OVData.printJTableToJasper("Inventory Valuation Report", tablereport, "genericJTableL6.jasper" );
     }//GEN-LAST:event_btprintActionPerformed
 
+    private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
+       clearAll();
+    }//GEN-LAST:event_btclearActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btRun;
+    private javax.swing.JButton btclear;
     private javax.swing.JButton btprint;
     private com.toedter.calendar.JDateChooser dcdate;
     private javax.swing.JComboBox<String> ddclass;

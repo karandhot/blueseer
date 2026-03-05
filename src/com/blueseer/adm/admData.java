@@ -3485,6 +3485,16 @@ public class admData {
                                lines.add(s);
                             }
                         }
+                        if (sd.equals("cells")) {
+                            res = st.executeQuery("select code_key, code_value from code_mstr where code_code = 'CELL' order by code_key ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "cells";
+                               s[1] = res.getString("code_key");
+                               s[2] = res.getString("code_value");
+                               lines.add(s);
+                            }
+                        }
                         if (sd.equals("states")) {
                             res = st.executeQuery("select code_key from code_mstr where code_code = 'state' order by code_key ;");
                             while (res.next()) {

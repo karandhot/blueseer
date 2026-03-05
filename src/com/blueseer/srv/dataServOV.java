@@ -51,6 +51,7 @@ import static com.blueseer.utl.OVData.copyUserPerms;
 import static com.blueseer.utl.OVData.createMRPByLevel;
 import static com.blueseer.utl.OVData.createMRPZeroLevel;
 import static com.blueseer.utl.OVData.createPlanFromDemand;
+import static com.blueseer.utl.OVData.createPlanFromFcst;
 import static com.blueseer.utl.OVData.createPlanFromServiceOrder;
 import static com.blueseer.utl.OVData.deleteAllMRP;
 import static com.blueseer.utl.OVData.deleteMenuToAllUsers;
@@ -391,7 +392,16 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     request.getHeader("param3")))); 
             break;    
         }
-            
+         
+        case "createPlanFromFcst" : {
+            response.getWriter().print(intToJson(createPlanFromFcst(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4")))); 
+            break;    
+        }
+        
+        
         case "getExchangeBaseValue" : {
             response.getWriter().print(doubleToJson(getExchangeBaseValue(request.getHeader("param1"),
                     request.getHeader("param2"),

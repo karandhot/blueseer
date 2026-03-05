@@ -149,7 +149,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             String[] ca = sb.toString().split("=_=", -1);
             String ctype = ca[0];
             fapData.vod_mstr[] sdarray = om.readValue(ca[1], fapData.vod_mstr[].class);
-            ArrayList<fapData.vod_mstr> vodlist = new ArrayList<fapData.vod_mstr>(Arrays.asList(sdarray)); 
+            ArrayList<fapData.vod_mstr> vodlist = (sdarray == null) ? null : new ArrayList<fapData.vod_mstr>(Arrays.asList(sdarray)); 
             fapData.ap_mstr ap = om.readValue(ca[2], fapData.ap_mstr.class); 
             Boolean isvoid = Boolean.valueOf(ca[3]);
             response.getWriter().print(arrayToJson(fapData.VoucherTransaction(ctype, vodlist, ap, isvoid))); 
@@ -168,7 +168,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             String[] ca = sb.toString().split("=_=", -1);
             String ctype = ca[0];
             fapData.vod_mstr[] sdarray = om.readValue(ca[1], fapData.vod_mstr[].class);
-            ArrayList<fapData.vod_mstr> vodlist = new ArrayList<fapData.vod_mstr>(Arrays.asList(sdarray)); 
+            ArrayList<fapData.vod_mstr> vodlist = (sdarray == null) ? null : new ArrayList<fapData.vod_mstr>(Arrays.asList(sdarray)); 
             fapData.ap_mstr ap = om.readValue(ca[2], fapData.ap_mstr.class); 
             Boolean isvoid = Boolean.valueOf(ca[3]);
             response.getWriter().print(arrayToJson(fapData.VouchAndPayTransaction(ctype, vodlist, ap, isvoid))); 

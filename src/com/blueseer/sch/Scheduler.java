@@ -76,6 +76,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import com.blueseer.hrm.hrmData;
 import static com.blueseer.hrm.hrmData.getEmpFormalNameByID;
 import static com.blueseer.hrm.hrmData.getEmpIDByFormalName;
@@ -108,6 +109,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 import javax.swing.table.TableCellEditor;
 
 /**
@@ -120,7 +122,25 @@ public class Scheduler extends javax.swing.JPanel {
     int currop = 0;
     String curritem = "";
     String currplantype = "";
-    // NOTE:  if you change this...you must also adjust APCheckRun...my advise....dont change it
+    ArrayList<String[]>  cells = new ArrayList<String[]>();  // contains cell and capacity
+    ArrayList<String>  cellsonly = new ArrayList<String>(); 
+    String thisCell = "";
+    double thisCellCapacity = 0;
+    String startdate = "";
+    String enddate = "";
+    String cumstartdate = "";
+    String cumenddate = "";
+    double schtot = 0;
+    double reqtot = 0;
+    double sumOfAllCells = 0;
+    
+    boolean isLoad = false;
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultsite = "";
+    String defaultCurrency = "";
+    
        Scheduler.MyTableModel mymodel = new Scheduler.MyTableModel(new Object[][]{},
                         new String[]{
                             getGlobalColumnTag("select"),
@@ -214,18 +234,9 @@ public class Scheduler extends javax.swing.JPanel {
             };
             
     
-    boolean isLoad = false;
-    ArrayList<String[]>  cells = new ArrayList<String[]>();  // contains cell and capacity
-    ArrayList<String>  cellsonly = new ArrayList<String>(); 
-    String thisCell = "";
-    double thisCellCapacity = 0;
-    String startdate = "";
-    String enddate = "";
-    String cumstartdate = "";
-    String cumenddate = "";
-    double schtot = 0;
-    double reqtot = 0;
-    double sumOfAllCells = 0;
+    
+    
+    
     
    
   class CheckBoxRenderer extends JCheckBox implements TableCellRenderer {
@@ -549,6 +560,67 @@ public class Scheduler extends javax.swing.JPanel {
          
     }
 
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;                
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }        
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
     public void setLanguageTags(Object myobj) {
       // lblaccount.setText(labels.getString("LedgerAcctMstrPanel.labels.lblaccount"));
       
@@ -741,6 +813,19 @@ public class Scheduler extends javax.swing.JPanel {
     }
     
     public void initvars(String[] arg) {
+        executeTask("dataInit", null);
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "cells,cellsum");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
         
         isLoad = true;
         
@@ -793,14 +878,8 @@ public class Scheduler extends javax.swing.JPanel {
                 }
          
         ddsite.removeAllItems();
-        ArrayList<String>  mylist = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (String code : mylist) {
-          ddsite.addItem(code);
-        } 
-         
         ddcellchoice.removeAllItems();
         ddopcell.removeAllItems();
-        cells = OVData.getCodeAndValueMstr("CELL");
         cellsonly.clear();
         sumOfAllCells = 0;
       //  cells = cells_list.toArray(new String[cells_list.size()]);
@@ -812,15 +891,43 @@ public class Scheduler extends javax.swing.JPanel {
            sumOfAllCells += Double.valueOf(code[1]);
           }
         } 
+        
+        
+        
+        for (String[] s : initDataSets) {
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("cells")) {
+                ddcellchoice.addItem(s[1]);
+                ddopcell.addItem(s[1]);
+                cellsonly.add(s[1]);
+                if (s.length > 2 && s[2] != null && ! s[2].isEmpty()) {
+                  sumOfAllCells += Double.valueOf(s[2]);
+                }
+            }
+            if (s[0].equals("site")) {
+              defaultsite = s[1]; 
+            }
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+        }
+        
         cellsonly.add(0, "");
         ddcellchoice.insertItemAt("ALL", 0);
         ddcellchoice.setSelectedIndex(0);
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultsite);
+        }
         
         isLoad = false;
-       
-     
-         
+        
     }
+    
+    
+    
     
     public void getDetail() {
          modeldetail.setRowCount(0);
@@ -1169,6 +1276,7 @@ public class Scheduler extends javax.swing.JPanel {
         btprint = new javax.swing.JButton();
         btupdate = new javax.swing.JButton();
         btvoid = new javax.swing.JButton();
+        btclear = new javax.swing.JButton();
         PanelReport = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         mytable = new javax.swing.JTable();
@@ -1346,16 +1454,11 @@ public class Scheduler extends javax.swing.JPanel {
                                     .addComponent(jLabel6))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(jPanel3Layout.createSequentialGroup()
-                                        .addComponent(labelqtyreqd, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                    .addGroup(jPanel3Layout.createSequentialGroup()
-                                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(labelcount, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(labelqtysched, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(lblThisDateQtySched, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(lblThisDateQtyCapacity, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 153, Short.MAX_VALUE))))
+                                    .addComponent(labelqtyreqd, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(labelcount, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(labelqtysched, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(lblThisDateQtySched, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(lblThisDateQtyCapacity, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(jPanel3Layout.createSequentialGroup()
                                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(jLabel10)
@@ -1368,7 +1471,7 @@ public class Scheduler extends javax.swing.JPanel {
                                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                             .addComponent(topart, javax.swing.GroupLayout.Alignment.LEADING)
                                             .addComponent(frompart, javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(dcfrom, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
+                                            .addComponent(dcfrom, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                             .addComponent(dcto, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(jLabel3)
@@ -1452,6 +1555,13 @@ public class Scheduler extends javax.swing.JPanel {
                 .addGap(18, 18, 18))
         );
 
+        btclear.setText("Clear");
+        btclear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btclearActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -1461,7 +1571,9 @@ public class Scheduler extends javax.swing.JPanel {
                 .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(ddcellchoice, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btclear)
+                .addGap(21, 21, 21))
             .addComponent(jc, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
@@ -1470,7 +1582,8 @@ public class Scheduler extends javax.swing.JPanel {
                 .addGap(5, 5, 5)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(ddcellchoice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4))
+                    .addComponent(jLabel4)
+                    .addComponent(btclear))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jc, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2164,11 +2277,16 @@ public class Scheduler extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btopprintActionPerformed
 
+    private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
+        initvars(null);
+    }//GEN-LAST:event_btclearActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel PanelDetail;
     private javax.swing.JPanel PanelReport;
     private javax.swing.JButton btRun;
+    private javax.swing.JButton btclear;
     private javax.swing.JButton btcommit;
     private javax.swing.JButton bthide;
     private javax.swing.JButton btopprint;

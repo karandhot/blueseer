@@ -25,7 +25,9 @@ SOFTWARE.
  */
 package com.blueseer.prd;
 
+import bsmf.MainFrame;
 import static bsmf.MainFrame.tags;
+import com.blueseer.adm.admData;
 import com.blueseer.inv.invData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
@@ -39,12 +41,17 @@ import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.JViewport;
+import javax.swing.SwingWorker;
 
 /**
  *
@@ -52,6 +59,14 @@ import javax.swing.JTabbedPane;
  */
 public class BackFlushMaint extends javax.swing.JPanel {
 
+    boolean isLoad = false;
+    boolean canUpdate = false;
+    boolean isAutoPost = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String defaultCC = "";
+    
     // table model must be 16 fields in length
      javax.swing.table.DefaultTableModel transmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
             new String[]{
@@ -87,6 +102,72 @@ public class BackFlushMaint extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "submit":
+                    message = submit();
+                    break;
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_submit();
+            }       
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -131,10 +212,102 @@ public class BackFlushMaint extends javax.swing.JPanel {
        }
     }
     
-    public void initvars(String[] arg) {
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        JScrollPane scrollpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else if (myobj instanceof JScrollPane) {
+           scrollpane = (JScrollPane) myobj;    
+        } else {
+            return;
+        }
         
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                if (component instanceof JScrollPane) {
+                    setPanelComponentState((JScrollPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    
+                    component.setEnabled(b);
+                    
+                }
+            }
+            if (scrollpane != null) {
+                scrollpane.setEnabled(b);
+                JViewport viewport = scrollpane.getViewport();
+                Component[] componentspane = viewport.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
+        
+    public void initvars(String[] arg) {
+       executeTask("dataInit", null); 
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "assycells");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        
+        isLoad = true;
+        transtable.setModel(transmodel);
         transmodel.setRowCount(0);
-        ddtype.addItem("WIP-TRAN");
+        ddtype.addItem("ISS-PRD");
         tbuser.setText(bsmf.MainFrame.userid);
         tbuser.setEnabled(false);
         tbsite.setText(OVData.getDefaultSite());
@@ -143,23 +316,91 @@ public class BackFlushMaint extends javax.swing.JPanel {
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM--dd");
         tbdate.setDate(now);
         ddop.removeAllItems();
-        tbpart.setText("");
+        tbitem.setText("");
         tbreference.setText("");
         tbserialno.setText("");
         tbqty.setText("");
         ddcell.removeAllItems();
        
-        ArrayList cells = OVData.getCodeMstr("ASSYCELL");
-    //    ArrayList cells = OVData.getdeptidlist();
-        for (int i = 0; i < cells.size(); i++) {
-            ddcell.addItem(cells.get(i));
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            
+            if (s[0].equals("autopost")) {
+              isAutoPost = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            
+            if (s[0].equals("cc")) {
+              defaultCC = s[1];  
+            }
+            
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("assycells")) {
+                ddcell.addItem(s[1]);
+            }
+            
         }
-        if (ddcell.getItemCount() > 0)
-        ddcell.setSelectedIndex(0);
-       
-       
-       
+        
+        
+        if (ddcell.getItemCount() > 0) {
+          ddcell.setSelectedIndex(0);
+        }
+        
+        isLoad = false;
+        
     }
+    
+    public String[] submit() {
+        String[] r;
+        if (! OVData.loadTranHistByTable(tableToList(), null)) {
+            r = new String[]{"1", getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+        } else {
+            r = new String[]{"0", getMessageTag(1125)};
+        }
+        return r;
+    }
+    
+    public void done_submit() {
+      initvars(null);  
+    }
+    
+    public ArrayList<String[]> tableToList() {
+        ArrayList<String[]> list = new ArrayList<>();
+        for (int j = 0; j < transtable.getRowCount(); j++) {
+            String[] s = new String[]{
+                transtable.getValueAt(j, 0).toString(), 
+                transtable.getValueAt(j, 1).toString(), 
+                transtable.getValueAt(j, 2).toString(), 
+                transtable.getValueAt(j, 3).toString(), 
+                transtable.getValueAt(j, 4).toString(), 
+                transtable.getValueAt(j, 5).toString(), 
+                transtable.getValueAt(j, 6).toString(), 
+                transtable.getValueAt(j, 7).toString(),
+                transtable.getValueAt(j, 8).toString(),
+                transtable.getValueAt(j, 9).toString(),
+                transtable.getValueAt(j, 10).toString(),
+                transtable.getValueAt(j, 11).toString(),  // cell 
+                transtable.getValueAt(j, 12).toString(), // remarks
+                transtable.getValueAt(j, 13).toString(), // packcell
+                transtable.getValueAt(j, 14).toString(), // packdate
+                transtable.getValueAt(j, 15).toString(),  // assydate
+                transtable.getValueAt(j, 16).toString(), // expiredate
+                transtable.getValueAt(j, 17).toString(), 
+                transtable.getValueAt(j, 18).toString(),
+                transtable.getValueAt(j, 19).toString()  
+            };   
+            list.add(s);
+          }
+       return list; 
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -192,7 +433,7 @@ public class BackFlushMaint extends javax.swing.JPanel {
         tbserialno = new javax.swing.JTextField();
         tbreference = new javax.swing.JTextField();
         btdelete = new javax.swing.JButton();
-        tbpart = new javax.swing.JTextField();
+        tbitem = new javax.swing.JTextField();
         ddcell = new javax.swing.JComboBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         transtable = new javax.swing.JTable();
@@ -258,9 +499,9 @@ public class BackFlushMaint extends javax.swing.JPanel {
             }
         });
 
-        tbpart.addFocusListener(new java.awt.event.FocusAdapter() {
+        tbitem.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
-                tbpartFocusLost(evt);
+                tbitemFocusLost(evt);
             }
         });
 
@@ -296,7 +537,7 @@ public class BackFlushMaint extends javax.swing.JPanel {
                                 .addComponent(ddtype, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGap(48, 48, 48))
                             .addComponent(tbserialno)
-                            .addComponent(tbpart)
+                            .addComponent(tbitem)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(tbuser, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -336,7 +577,7 @@ public class BackFlushMaint extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel4)
-                    .addComponent(tbpart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(tbitem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel5)
@@ -426,19 +667,16 @@ public class BackFlushMaint extends javax.swing.JPanel {
     private void btaddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddActionPerformed
         boolean canproceed = true;
         String prodline = "";
-        String[] detail = invData.getItemDetail(tbpart.getText());
+        String[] detail = invData.getItemDetail(tbitem.getText());
         String loc = detail[8];
         String wh = detail[9];
         String expire = detail[10];
-       
-        transtable.setModel(transmodel);
         
         if (! BlueSeerUtils.isParsableToDouble(tbqty.getText()) ) {
             bsmf.MainFrame.show(getMessageTag(1028));
             tbqty.requestFocus();
             return;
         }
-        
         
          if (tbdate.getDate() == null || ! BlueSeerUtils.isValidDateStr(BlueSeerUtils.mysqlDateFormat.format(tbdate.getDate())) ) {
             bsmf.MainFrame.show(getMessageTag(1123));
@@ -448,7 +686,7 @@ public class BackFlushMaint extends javax.swing.JPanel {
         
        
         if (canproceed) {
-            transmodel.addRow(new Object[]{tbpart.getText(), 
+            transmodel.addRow(new Object[]{tbitem.getText(), 
                 ddtype.getSelectedItem(), 
                 ddop.getSelectedItem(), 
                 tbqty.getText(), 
@@ -471,11 +709,11 @@ public class BackFlushMaint extends javax.swing.JPanel {
                 });
         }
         ddop.removeAllItems();
-        tbpart.setText("");
+        tbitem.setText("");
         tbreference.setText("");
         tbserialno.setText("");
         tbqty.setText("");
-        tbpart.requestFocus();
+        tbitem.requestFocus();
     }//GEN-LAST:event_btaddActionPerformed
 
     private void btdeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeleteActionPerformed
@@ -486,33 +724,26 @@ public class BackFlushMaint extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btdeleteActionPerformed
 
-    private void tbpartFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbpartFocusLost
-      if (! tbpart.getText().isEmpty()) {
+    private void tbitemFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbitemFocusLost
+      if (! tbitem.getText().isEmpty()) {
         ddop.removeAllItems();
         boolean goodpart = false;
-       goodpart = OVData.isValidItem(tbpart.getText());
+       goodpart = OVData.isValidItem(tbitem.getText());
        if (! goodpart) {
-           bsmf.MainFrame.show(getMessageTag(1021,tbpart.getText()));
-           tbpart.setForeground(Color.red);
+           bsmf.MainFrame.show(getMessageTag(1021,tbitem.getText()));
+           tbitem.setForeground(Color.red);
        } else {
-           tbpart.setForeground(Color.black);
-        ArrayList myops = OVData.getOperationsByItem(tbpart.getText());
-        for (int i = 0; i < myops.size(); i++) {
-            ddop.addItem(myops.get(i));
-        }
+           tbitem.setForeground(Color.black);
+            ArrayList myops = OVData.getOperationsByItem(tbitem.getText());
+            for (int i = 0; i < myops.size(); i++) {
+                ddop.addItem(myops.get(i));
+            }
        }
       }
-    }//GEN-LAST:event_tbpartFocusLost
+    }//GEN-LAST:event_tbitemFocusLost
 
     private void btsubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btsubmitActionPerformed
-        boolean didLoad = false;
-        
-        if (! OVData.loadTranHistByTable(transtable, null)) {
-            bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-        } else {
-            initvars(null);
-            bsmf.MainFrame.show(getMessageTag(1125));
-        }
+        executeTask("submit", null); 
     }//GEN-LAST:event_btsubmitActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -536,7 +767,7 @@ public class BackFlushMaint extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private com.toedter.calendar.JDateChooser tbdate;
-    private javax.swing.JTextField tbpart;
+    private javax.swing.JTextField tbitem;
     private javax.swing.JTextField tbqty;
     private javax.swing.JTextField tbreference;
     private javax.swing.JTextField tbserialno;

@@ -131,7 +131,7 @@
                                       <EmptySpace min="48" pref="48" max="48" attributes="0"/>
                                   </Group>
                                   <Component id="tbserialno" alignment="0" max="32767" attributes="0"/>
-                                  <Component id="tbpart" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="tbitem" alignment="0" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Component id="tbuser" alignment="0" min="-2" pref="115" max="-2" attributes="0"/>
@@ -185,7 +185,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
-                          <Component id="tbpart" min="-2" max="-2" attributes="0"/>
+                          <Component id="tbitem" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -330,9 +330,9 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btdeleteActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JTextField" name="tbpart">
+            <Component class="javax.swing.JTextField" name="tbitem">
               <Events>
-                <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="tbpartFocusLost"/>
+                <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="tbitemFocusLost"/>
               </Events>
             </Component>
             <Component class="javax.swing.JComboBox" name="ddcell">

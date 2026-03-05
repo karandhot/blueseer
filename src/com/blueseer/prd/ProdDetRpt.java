@@ -635,7 +635,7 @@ try {
                         " AND tr_item <= " + "'" + topart + "'" + 
                          " AND tr_actcell >= " + "'" + fromcell + "'" + 
                         " AND tr_actcell <= " + "'" + tocell + "'" + 
-                        " AND tr_type = 'WIP-TRAN' " + 
+                        " AND tr_type = 'ISS-PRD' " + 
                         " order by tr_id desc ;");    
                  
                 
