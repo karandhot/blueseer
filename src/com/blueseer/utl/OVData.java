@@ -19788,6 +19788,12 @@ return mystring;
         
         int k = 0;
         for (Object[] rowData : rData) {
+            rowData[0] = bsParseInt(rowData[0].toString());
+            rowData[2] = bsParseInt(rowData[2].toString());
+            rowData[3] = bsParseDouble(rowData[3].toString());
+            rowData[9] = bsParseInt(rowData[9].toString());
+            rowData[15] = bsParseInt(rowData[15].toString());
+            rowData[19] = bsParseDouble(rowData[19].toString());
             if (k == 0) {
                // logo = (rowData[39].toString().isBlank()) ? rowData[40].toString() : rowData[39].toString(); // if cm_logo = "" then site_logo
                 jasperdir = rowData[24].toString();

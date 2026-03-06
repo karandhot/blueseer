@@ -3488,7 +3488,7 @@ public class admData {
                         if (sd.equals("cells")) {
                             res = st.executeQuery("select code_key, code_value from code_mstr where code_code = 'CELL' order by code_key ;");
                             while (res.next()) {
-                               String[] s = new String[2];
+                               String[] s = new String[3];
                                s[0] = "cells";
                                s[1] = res.getString("code_key");
                                s[2] = res.getString("code_value");

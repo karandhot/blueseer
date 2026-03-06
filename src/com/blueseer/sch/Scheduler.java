@@ -182,7 +182,7 @@ public class Scheduler extends javax.swing.JPanel {
                       public Class getColumnClass(int col) {  
                         if (col == 7 || col == 8 || col == 9) {
                             return Integer.class;
-                        } else if (col == 4) {
+                        } else if (col == 5) {
                             return Boolean.class;  
                         } else if (col == 0) {
                             return ImageIcon.class;      
@@ -909,7 +909,7 @@ public class Scheduler extends javax.swing.JPanel {
 
                 reqtot = reqtot + bsParseDouble(roData[i][8].toString());
                 schtot = schtot + bsParseDouble(roData[i][7].toString());
-                
+                roData[i][5] = BlueSeerUtils.ConvertStringToBool(roData[i][5].toString()); 
                 roData[i][7] = bsParseDouble(roData[i][7].toString()); // sched
                 roData[i][8] = bsParseDouble(roData[i][8].toString()); // req
                 roData[i][9] = bsParseDouble(roData[i][9].toString()); // comp 
