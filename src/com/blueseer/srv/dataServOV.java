@@ -263,6 +263,21 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
         }
         
+        case "CommitSchedules" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            ArrayList<String[]> al = om.readValue(sb.toString(), new TypeReference<ArrayList<String[]>>() {});
+            response.getWriter().print(intToJson(OVData.CommitSchedules(al, request.getHeader("param1"))));  
+            break;
+        }
+        
+        
         case "TRHistIssDiscrete" : {
             String line;
             StringBuilder sb = new StringBuilder();  

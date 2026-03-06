@@ -692,6 +692,173 @@ public class lblData {
        return jsonarray.toString(); 
     }
     
+    public static String getJobTicketPrintData(String jobid) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                String sqlquery = ""; 
+               
+               sqlquery = "select plan_nbr, plan_item, plan_qty_req, plan_qty_sched, plan_date_due, " +
+                       " plan_date_sched, plan_date_create, plan_order, plan_type, plan_line, " +
+                       " plan_cell, it_item, it_rev, it_desc, it_wf, wf_op, wf_desc, wf_cell, ov_jasper_directory,  " +
+                       " case when wf_assert = 0 then 'no' else 'yes' end as assert, " +
+                       " case when wf_run_hours = 0 then '0' when wf_run_hours = '' then '0' when wf_run_hours is null then '0' else (1 / wf_run_hours) end as runrate, " +
+                       " case when plan_type = 'DEMD' then so_po else 'N/A' end as custpo, " +
+                       " case when plan_type = 'DEMD' then so_cust else 'N/A' end as custcode, " + 
+                       " case when plan_type = 'DEMD' then sod_bom else bom_id end as bomcode, " +
+                       " case when plan_type = 'DEMD' then sod_custitem else 'N/A' end as custitem " +
+                       " FROM plan_mstr inner join item_mstr on it_item = plan_item " +
+                       " inner join ov_ctrl " + 
+                       " left outer join wf_mstr on wf_id = it_wf " +
+                       " left outer join bom_mstr on bom_item = plan_item and bom_primary = '1' and bom_enabled = '1' " +
+                       " left outer join so_mstr on so_nbr = plan_order " +
+                       " left outer join sod_det on sod_nbr = so_nbr and sod_item = plan_item and sod_line = plan_line " +
+                       " where plan_nbr = " + "'" + jobid + "'" + " order by wf_op ;"; 
+               res = st.executeQuery(sqlquery);
+                    int i = 0;
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("plan_nbr")); 
+                        rowArray.put(res.getString("plan_item"));
+                        rowArray.put(res.getString("plan_qty_req"));
+                        rowArray.put(res.getString("plan_qty_sched"));
+                        rowArray.put(res.getString("plan_date_due"));
+                        rowArray.put(res.getString("plan_date_sched"));
+                        rowArray.put(res.getString("plan_date_create"));
+                        rowArray.put(res.getString("plan_order"));
+                        rowArray.put(res.getString("plan_type"));
+                        rowArray.put(res.getString("plan_line")); 
+                        rowArray.put(res.getString("plan_cell")); // 10 zero base
+                        rowArray.put(res.getString("it_item")); 
+                        rowArray.put(res.getString("it_rev")); 
+                        rowArray.put(res.getString("it_desc"));
+                        rowArray.put(res.getString("it_wf"));
+                        rowArray.put(res.getString("wf_op"));
+                        rowArray.put(res.getString("wf_desc"));
+                        rowArray.put(res.getString("wf_cell"));
+                        rowArray.put(res.getString("assert"));  
+                        rowArray.put(res.getString("runrate"));
+                        rowArray.put(res.getString("custpo")); // 20 zero base
+                        rowArray.put(res.getString("custcode"));
+                        rowArray.put(res.getString("bomcode"));
+                        rowArray.put(res.getString("custitem"));
+                        rowArray.put(res.getString("ov_jasper_directory"));
+                        jsonarray.put(rowArray);
+                        i++;
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    public static String getJobOperationPrintData(String jobid, String op) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                String sqlquery = ""; 
+               
+               sqlquery = "select plan_nbr, plan_item, plan_qty_req, plan_qty_sched, plan_date_due, " +
+                       " plan_date_sched, plan_date_create, plan_order, plan_type, plan_line, " +
+                       " plan_cell, plo_operator, plo_operatorname, plo_cell, it_item, it_rev, it_desc, it_wf, wf_op, wf_desc, wf_cell, ov_jasper_directory,  " +
+                       " case when wf_assert = 0 then 'no' else 'yes' end as assert, " +
+                       " case when wf_run_hours = 0 then '0' when wf_run_hours = '' then '0' when wf_run_hours is null then '0' else (1 / wf_run_hours) end as runrate, " +
+                       " case when plan_type = 'DEMD' then so_po else 'N/A' end as custpo, " +
+                       " case when plan_type = 'DEMD' then so_cust else 'N/A' end as custcode, " + 
+                       " case when plan_type = 'DEMD' then sod_bom else bom_id end as bomcode, " +
+                       " case when plan_type = 'DEMD' then sod_custitem else 'N/A' end as custitem " +
+                       " FROM plan_mstr inner join item_mstr on it_item = plan_item " +
+                       " inner join ov_ctrl " + 
+                       " left outer join wf_mstr on wf_id = it_wf " +
+                       " left outer join plan_operation on plo_parent = plan_nbr and plo_op = wf_op " +
+                       " left outer join bom_mstr on bom_item = plan_item and bom_primary = '1' and bom_enabled = '1' " +
+                       " left outer join so_mstr on so_nbr = plan_order " +
+                       " left outer join sod_det on sod_nbr = so_nbr and sod_item = plan_item and sod_line = plan_line " +
+                       " where plan_nbr = " + "'" + jobid + "'" + 
+                       " and wf_op = " + "'" + op + "'" +
+                       " ;"; 
+               res = st.executeQuery(sqlquery);
+                    int i = 0;
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("plan_nbr")); 
+                        rowArray.put(res.getString("plan_item"));
+                        rowArray.put(res.getString("plan_qty_req"));
+                        rowArray.put(res.getString("plan_qty_sched"));
+                        rowArray.put(res.getString("plan_date_due"));
+                        rowArray.put(res.getString("plan_date_sched"));
+                        rowArray.put(res.getString("plan_date_create"));
+                        rowArray.put(res.getString("plan_order"));
+                        rowArray.put(res.getString("plan_type"));
+                        rowArray.put(res.getString("plan_line")); 
+                        rowArray.put(res.getString("plan_cell")); // 10 zero base
+                        rowArray.put(res.getString("it_item")); 
+                        rowArray.put(res.getString("it_rev")); 
+                        rowArray.put(res.getString("it_desc"));
+                        rowArray.put(res.getString("it_wf"));
+                        rowArray.put(res.getString("wf_op"));
+                        rowArray.put(res.getString("wf_desc"));
+                        rowArray.put(res.getString("wf_cell"));
+                        rowArray.put(res.getString("assert"));  
+                        rowArray.put(res.getString("runrate"));
+                        rowArray.put(res.getString("custpo")); // 20 zero base
+                        rowArray.put(res.getString("custcode"));
+                        rowArray.put(res.getString("bomcode"));
+                        rowArray.put(res.getString("custitem"));
+                        rowArray.put(res.getString("ov_jasper_directory"));
+                        rowArray.put(res.getString("plo_operator"));
+                        rowArray.put(res.getString("plo_operatorname"));
+                        rowArray.put(res.getString("plo_cell"));
+                        jsonarray.put(rowArray);
+                        i++;
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    
     public static String CreateLabelMstr(String serialno, String item, String custpart, String serialnostring, 
               String conttype, String qty, String po, String order, String line, String ref, String lot,
               String parent, String parentstring, String addrcode, String addrname, String addr1, String addr2,

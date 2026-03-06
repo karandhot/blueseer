@@ -26,20 +26,15 @@ SOFTWARE.
 package com.blueseer.sch;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.defaultDecimalSeparator;
 import com.blueseer.utl.BlueSeerUtils;
 import com.blueseer.utl.OVData;
-import com.toedter.calendar.DateUtil;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
 
 import java.text.SimpleDateFormat;
@@ -84,25 +79,32 @@ import static com.blueseer.hrm.hrmData.getEmpNameByDept;
 import static com.blueseer.inv.invData.getDeptByItemOperation;
 import static com.blueseer.inv.invData.getInvMetaOperators;
 import static com.blueseer.inv.invData.getItemRouting;
+import com.blueseer.pur.purData;
 import static com.blueseer.sch.schData.getPlanOperation;
+import static com.blueseer.sch.schData.getSummaryByDate;
 import com.blueseer.sch.schData.plan_operation;
 import static com.blueseer.sch.schData.updatePlanOperation;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
+import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import static com.blueseer.utl.BlueSeerUtils.xNull;
 import static com.blueseer.utl.OVData.getSysMetaValue;
+import static com.blueseer.utl.OVData.printJasperJobOperationTicket;
+import static com.blueseer.utl.OVData.printJasperJobTicket;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.sql.Connection;
+import java.io.IOException;
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -539,22 +541,7 @@ public class Scheduler extends javax.swing.JPanel {
    public void propertyChange(PropertyChangeEvent e) {
        int z = (int) e.getNewValue();
        adjustCalendar(z);
-       getDetail();
-       PanelDetail.setVisible(true);
-      /*
-       JPanel jPanel = jc.getDayChooser().getDayPanel();
-       Component[] component = jPanel.getComponents();
-       DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-       Calendar cal = Calendar.getInstance();
-        cal.setTime(jc.getDate());
-        
-        // first day of month
-        cal.set(Calendar.DAY_OF_MONTH, 1);
-        int offset = cal.get(Calendar.DAY_OF_WEEK);
-        int z = (int) e.getNewValue();
-      component[z + 6 + (offset - 1)].setForeground(Color.blue);
-      */
-        //bsmf.MainFrame.show(e.getPropertyName()+ ": " + e.getNewValue() + " " + c.getBackground());
+       executeTask("getBrowseDetView", null);
    }
 });     
          
@@ -584,7 +571,15 @@ public class Scheduler extends javax.swing.JPanel {
             switch(this.action) {
                 case "dataInit":
                     message = getInitialization();
-                    break;                
+                    break;   
+                    
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                case "getBrowseDetView":
+                    message = getBrowseDetView();
+                    break;    
                     
                 default:
                     message = new String[]{"1", "unknown action"};
@@ -606,7 +601,15 @@ public class Scheduler extends javax.swing.JPanel {
             
             if (this.action.equals("dataInit")) {
                     done_Initialization();
-            }        
+            }   
+            
+            if (this.action.equals("getBrowseView")) {
+                    done_getBrowseView();
+            }
+            
+            if (this.action.equals("getBrowseDetView")) {
+                    done_getBrowseDetView();
+            }
             
             } catch (Exception e) {
                 MainFrame.bslog(e);
@@ -666,126 +669,13 @@ public class Scheduler extends javax.swing.JPanel {
                 }
        }
     }
-     
-    public void printtickets(String fromjob, String tojob ) {
         
-       try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            
-                HashMap hm = new HashMap();
-                hm.put("REPORT_TITLE", "CUT TICKET");
-                 hm.put("SUBREPORT_DIR", "jasper/");
-                hm.put("fromjob",  fromjob);
-                hm.put("tojob", tojob);
-                //hm.put("imagepath", "images/avmlogo.png");
-               // res = st.executeQuery("select shd_id, sh_cust, shd_po, shd_item, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, cm_city, cm_state, cm_zip, concat(cm_city, \" \", cm_state, \" \", cm_zip) as st_citystatezip, site_desc from ship_det inner join ship_mstr on sh_id = shd_id inner join cm_mstr on cm_code = sh_cust inner join site_mstr on site_site = sh_site where shd_id = '1848' ");
-               // JRResultSetDataSource jasperReports = new JRResultSetDataSource(res);
-                File mytemplate = new File("jasper/jobticketmulti.jasper");
-                JasperPrint jasperPrint = JasperFillManager.fillReport(mytemplate.getPath(), hm, con );
-              //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/jobticketmulti.pdf");
-         
-            JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
-            jasperViewer.setVisible(true);
-            
-            con.close();
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-        
-    }
-    
     public void printticket(String jobid, String bustitle, String jobtype) {
-        
-       try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            
-              String jasperfile = getSysMetaValue("system", "inventorycontrol", "jasper_job_ticket");  
-              if (jasperfile.isBlank()) {
-                 jasperfile = "jobticket.jasper";
-              }
-              
-              if (jobtype.equals("SRVC")) {
-                  jasperfile = "jobSVticket.jasper";
-                  bustitle = "Job Service Ticket";
-              }
-                
-                HashMap hm = new HashMap();
-                hm.put("BUSINESSTITLE", bustitle);
-                hm.put("REPORT_TITLE", jasperfile);
-                hm.put("SUBREPORT_DIR", "jasper/");
-                hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags); 
-                hm.put("myid",  jobid);
-                //hm.put("imagepath", "images/avmlogo.png");
-               // res = st.executeQuery("select shd_id, sh_cust, shd_po, shd_item, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, cm_city, cm_state, cm_zip, concat(cm_city, \" \", cm_state, \" \", cm_zip) as st_citystatezip, site_desc from ship_det inner join ship_mstr on sh_id = shd_id inner join cm_mstr on cm_code = sh_cust inner join site_mstr on site_site = sh_site where shd_id = '1848' ");
-               // JRResultSetDataSource jasperReports = new JRResultSetDataSource(res);
-                File mytemplate = new File("jasper/" + jasperfile);
-                JasperPrint jasperPrint = JasperFillManager.fillReport(mytemplate.getPath(), hm, con );
-              //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/jobticket.pdf");
-         
-            JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
-            jasperViewer.setVisible(true);
-                
-                
-           con.close();
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-        
+        printJasperJobTicket(jobid, bustitle, jobtype);
     }
     
     public void printOperationTicket(String jobid, String op, String plantype, String bustitle) {
-        
-       try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            
-                String jasperfile = getSysMetaValue("system", "inventorycontrol", "jasper_operation_ticket");  
-                if (jasperfile.isBlank()) {
-                    jasperfile = "operationticket.jasper";
-                }
-                
-                if (plantype.equals("SRVC")) {
-                    jasperfile = "operationSVticket.jasper";
-                }
-                
-                HashMap hm = new HashMap();
-                hm.put("BUSINESSTITLE", bustitle);
-                hm.put("REPORT_TITLE", jasperfile);
-                hm.put("SUBREPORT_DIR", "jasper/");
-                hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags); 
-                hm.put("myid",  jobid);
-                hm.put("myop",  op);
-                hm.put("myidop", jobid + "-" + op);
-                //hm.put("imagepath", "images/avmlogo.png");
-               // res = st.executeQuery("select shd_id, sh_cust, shd_po, shd_item, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, cm_city, cm_state, cm_zip, concat(cm_city, \" \", cm_state, \" \", cm_zip) as st_citystatezip, site_desc from ship_det inner join ship_mstr on sh_id = shd_id inner join cm_mstr on cm_code = sh_cust inner join site_mstr on site_site = sh_site where shd_id = '1848' ");
-               // JRResultSetDataSource jasperReports = new JRResultSetDataSource(res);
-                File mytemplate = new File("jasper/" + jasperfile);
-                JasperPrint jasperPrint = JasperFillManager.fillReport(mytemplate.getPath(), hm, con );
-              //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/jobticket.pdf");
-         
-            JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
-            jasperViewer.setVisible(true);
-                
-                
-           con.close();
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-        
+        printJasperJobOperationTicket(jobid, op, plantype, bustitle);
     }
     
     
@@ -871,9 +761,9 @@ public class Scheduler extends javax.swing.JPanel {
         tableavailable.setModel(modelavailable);
         tableavailable.getTableHeader().setReorderingAllowed(false);
         
-         Enumeration<TableColumn> en = tableavailable.getColumnModel().getColumns();
-                while (en.hasMoreElements()) {
-                    TableColumn tc = en.nextElement();
+         Enumeration<TableColumn> enavail = tableavailable.getColumnModel().getColumns();
+                while (enavail.hasMoreElements()) {
+                    TableColumn tc = enavail.nextElement();
                     tc.setCellRenderer(new Scheduler.AvailableRenderer());
                 }
          
@@ -922,64 +812,184 @@ public class Scheduler extends javax.swing.JPanel {
             ddsite.setSelectedItem(defaultsite);
         }
         
+        
+        CheckBoxRenderer checkBoxRenderer = new CheckBoxRenderer();
+        mytable.getColumnModel().getColumn(5).setCellRenderer(checkBoxRenderer);
+        TableColumn col = mytable.getColumnModel().getColumn(6);
+        col.setCellEditor(new DefaultCellEditor(new JComboBox(cellsonly.toArray(new String[cellsonly.size()]))));                
+        Enumeration<TableColumn> en = mytable.getColumnModel().getColumns(); 
+        while (en.hasMoreElements()) {
+            TableColumn tc = en.nextElement();
+            if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+                 continue;
+             }
+            if (tc.getIdentifier().toString().equals("isSched") ||
+                tc.getIdentifier().toString().equals("Cell") ) {
+                continue;
+            }
+            tc.setCellRenderer(new Scheduler.SomeRenderer());
+        }
+
+        DefaultCellEditor singleClick = (DefaultCellEditor) mytable.getDefaultEditor(mytable.getColumnClass(7));
+        singleClick.setClickCountToStart(1);
+        mytable.setDefaultEditor(mytable.getColumnClass(7), singleClick);
+        
         isLoad = false;
         
     }
     
-    
-    
-    
-    public void getDetail() {
-         modeldetail.setRowCount(0);
-         modelavailable.setRowCount(0);
-         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-      
+    public String[] getBrowseView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(new String[]{"id","getSchedulerBrowseView"});
+        list.add(new String[]{"param1",dfdate.format(dcfrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcto.getDate())});
+        list.add(new String[]{"param3",frompart.getText()});
+        list.add(new String[]{"param4",topart.getText()});
+        list.add(new String[]{"param5",bsmf.MainFrame.lowchar});
+        list.add(new String[]{"param6",bsmf.MainFrame.hichar});
+        list.add(new String[]{"param7",BlueSeerUtils.boolToString(cbsched.isSelected())});
+        
         try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+                jsonString = sendServerPost(list, "", null, "dataServSCH"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getSchedulerBrowseView")};
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;  
-                double totqty = 0;
-                double totcap = 0;
+        } else {
+            jsonString = schData.getSchedulerBrowseView(new String[]{
+                dfdate.format(dcfrom.getDate()),
+                dfdate.format(dcto.getDate()),
+                frompart.getText(),
+                topart.getText(),
+                bsmf.MainFrame.lowchar, // from cell
+                bsmf.MainFrame.hichar,  // to cell
+                BlueSeerUtils.boolToString(cbsched.isSelected())
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getPOBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+       
+        schtot = 0;
+        reqtot = 0;
+
+        labelqtysched.setText("0");
+        labelqtyreqd.setText("0");
+        labelcount.setText("0");
+        mymodel.setNumRows(0);
+        
+        int i = 0;
+        if (roData != null) {
+            for (Object[] rowData : roData) {
                 
-                if (ddcellchoice.getSelectedItem().toString().equals("ALL")) {
-                res = st.executeQuery("SELECT plan_nbr, plan_type, plan_item, plan_qty_req, plan_qty_comp, "
-                        + " plan_qty_sched, plan_date_due, plan_date_sched, plan_status, ifnull(plan_is_sched,0) plan_is_sched, plan_cell, plan_order, plan_line " +
-                        " FROM  plan_mstr " +
-                        " where plan_date_sched = " + "'" + dfdate.format(jc.getDate()) + "'" +
-                        " AND plan_is_sched = " + "'" + "1" + "'"  +
-                        " AND plan_status <> " + "'" + "-1" + "'"  + // void
-                        " order by plan_item, plan_cell;");
-                } else {
-                res = st.executeQuery("SELECT plan_nbr, plan_type, plan_item, plan_qty_req, plan_qty_comp, "
-                        + " plan_qty_sched, plan_date_due, plan_date_sched, plan_status, ifnull(plan_is_sched,0) plan_is_sched, plan_cell, plan_order, plan_line " +
-                        " FROM  plan_mstr " +
-                        " where plan_date_sched = " + "'" + dfdate.format(jc.getDate()) + "'" +
-                        " AND plan_cell = " + "'" + ddcellchoice.getSelectedItem().toString() + "'" +
-                        " AND plan_is_sched = " + "'" + "1" + "'"  +
-                        " AND plan_status <> " + "'" + "-1" + "'"  + // void
-                        " order by plan_item, plan_cell;");    
+                
+                if (rowData[4].toString().equals("SRVC")) {
+                    continue;
                 }
-                while (res.next()) {
-                    totqty += res.getDouble("plan_qty_sched");
-                   modeldetail.addRow(new Object[]{ 
-                      res.getString("plan_nbr"), 
-                       res.getString("plan_item"),
-                       res.getString("plan_type"),
-                       res.getString("plan_cell"),
-                       res.getDouble("plan_qty_sched"),
-                      res.getString("plan_status")});
+
+                if (cbclosed.isSelected() && rowData[13].toString().equals(getGlobalProgTag("closed"))) {
+                    continue;
                 }
+
+                // plan can be voided by setting to -1
+                if (cbclosed.isSelected() && rowData[13].toString().equals(getGlobalProgTag("void"))) {
+                    continue;
+                }
+
+                reqtot = reqtot + bsParseDouble(roData[i][8].toString());
+                schtot = schtot + bsParseDouble(roData[i][7].toString());
                 
+                roData[i][7] = bsParseDouble(roData[i][7].toString()); // sched
+                roData[i][8] = bsParseDouble(roData[i][8].toString()); // req
+                roData[i][9] = bsParseDouble(roData[i][9].toString()); // comp 
                 
-                // now get available
+              //  System.out.println(roData[i][2].toString() + " -> " + roData[i][8].toString() + "/" + roData[i][10].toString() + "/" + roData[i][11].toString());
+                
+               mymodel.addRow(rowData);
+                
+               i++;
+            }
+        }
+        labelqtysched.setText(String.valueOf(schtot));
+        labelqtyreqd.setText(String.valueOf(reqtot));
+        labelcount.setText(String.valueOf(i));
+        adjustCalendar(0);
+        roData = null;
+    }   
+    
+    public String[] getBrowseDetView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(new String[]{"id","getSchedulerDetView"});
+        list.add(new String[]{"param1",dfdate.format(dcfrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcto.getDate())});
+        list.add(new String[]{"param3",frompart.getText()});
+        list.add(new String[]{"param4",topart.getText()});
+        list.add(new String[]{"param5",bsmf.MainFrame.lowchar});
+        list.add(new String[]{"param6",bsmf.MainFrame.hichar});
+        list.add(new String[]{"param7",BlueSeerUtils.boolToString(cbsched.isSelected())});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServSCH"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getSchedulerBrowseView")};
+            }
+        } else {
+            jsonString = schData.getSchedulerDetView(new String[]{
+                dfdate.format(dcfrom.getDate()),
+                dfdate.format(dcto.getDate()),
+                frompart.getText(),
+                topart.getText(),
+                bsmf.MainFrame.lowchar, // from cell
+                bsmf.MainFrame.hichar,  // to cell
+                BlueSeerUtils.boolToString(cbsched.isSelected())
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getPOBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseDetView() {
+       
+        PanelDetail.setVisible(true);
+        modeldetail.setRowCount(0);
+        modelavailable.setRowCount(0);
+        
+        int i = 0;
+        double totqty = 0;
+        double totcap = 0;
+        
+        if (roData != null) {
+            for (Object[] rowData : roData) {
+
+                totqty = totqty + bsParseDouble(roData[i][4].toString());
+                roData[i][4] = bsParseDouble(roData[i][4].toString()); // sched
+               modeldetail.addRow(rowData);
+               i++;
+            }
+        }
+        
+        // now get available
                 double qty = 0;
                 double diff = 0;
                 
@@ -993,12 +1003,12 @@ public class Scheduler extends javax.swing.JPanel {
                         }
                     }
                     
-                    diff = Double.valueOf(cell[1].toString()) - qty;
+                    diff = bsParseDouble(cell[1]) - qty;
                     totcap += diff;
                    
                     modelavailable.addRow(new Object[]{ 
-                      cell[0].toString(), 
-                      cell[1].toString(),
+                      cell[0], 
+                      cell[1],
                        String.valueOf(qty),
                        String.valueOf(diff) });
                     
@@ -1006,145 +1016,54 @@ public class Scheduler extends javax.swing.JPanel {
              
                lblThisDateQtySched.setText(String.valueOf(totqty));
                lblThisDateQtyCapacity.setText(String.valueOf(totcap));
-               // this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
-    }    
+        
+        roData = null;
+    }   
     
-    public void getOperations(int planid, String jobtype) {
+    public String[] getBrowseOpView(String planid) {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(new String[]{"id","getSchedulerOpView"});
+        list.add(new String[]{"param1",planid});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServSCH"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getBrowseOpView")};
+            }
+        } else {
+            jsonString = schData.getSchedulerOpView(new String[]{planid});
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getPOBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseOpView() {
+       
         PanelDetail.setVisible(true);
         panelOp.setVisible(true);
         panelDet.setVisible(false);
-        
         modeloperations.setRowCount(0);
-        //jPanel2.repaint();
-         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-      
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        if (roData != null) {
+            for (Object[] rowData : roData) {
+               modeloperations.addRow(rowData);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            String operatorname = "";
-            try {
-                
-                 res = st.executeQuery("select plo_op, plo_cell, plo_qty, plo_operator, plo_desc from plan_operation " +
-                         " inner join plan_mstr on plan_nbr = plo_parent " +
-                         " inner join item_mstr on it_item = plan_item " +
-                         " inner join wf_mstr on wf_id = it_wf and plo_op = wf_op " +
-                        " where plo_parent = " + "'" + planid + "'" + " order by plo_op ;");   
-                
-                    while (res.next()) {
-                     if (! res.getString("plo_operator").isBlank()) {
-                         operatorname = getEmpFormalNameByID(res.getString("plo_operator"));
-                     } else {
-                       operatorname = "";  
-                     }
-
-                     modeloperations.addRow(new Object[]{ 
-                           res.getString("plo_op"),
-                           res.getString("plo_desc"),
-                           res.getString("plo_cell"),
-                           res.getString("plo_qty"),
-                           operatorname});                       
-                    }
-                
-             
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        } 
-        
-    }
-    
-    public ArrayList<String[]> getSummaryByDate(String fromdate, String todate) {
-        
-        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-        ArrayList<String[]> arr = new ArrayList<String[]>();
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-                if (ddcellchoice.getSelectedItem().toString().equals("ALL")) {
-                res = st.executeQuery("SELECT sum(plan_qty_sched) as 'sum', plan_date_sched, plan_cell " +
-                        " FROM  plan_mstr " +
-                        " where plan_date_sched >= " + "'" + fromdate + "'" +
-                        " AND plan_date_sched <= " + "'" + todate + "'"  +
-                        " AND plan_is_sched = " + "'" + "1" + "'"  +
-                        " AND plan_status <> " + "'" + "-1" + "'"  + // void
-                        " group by plan_date_sched, plan_cell order by plan_date_sched;");
-                } else {
-                   res = st.executeQuery("SELECT sum(plan_qty_sched) as 'sum', plan_date_sched, plan_cell " +
-                        " FROM  plan_mstr " +
-                        " where plan_date_sched >= " + "'" + fromdate + "'" +
-                        " AND plan_date_sched <= " + "'" + todate + "'"  +
-                        " AND plan_is_sched = " + "'" + "1" + "'"  +
-                        " AND plan_status <> " + "'" + "-1" + "'"  + // void
-                        " AND plan_cell = " + "'" + ddcellchoice.getSelectedItem().toString() + "'" +
-                        " group by plan_date_sched, plan_cell order by plan_date_sched;");  
-                }
-                while (res.next()) {
-                    String[] s = new String[]{res.getString("plan_date_sched"), res.getString("plan_cell"),res.getString("sum") };
-                    arr.add(s);
-                }
-
-            } catch (SQLException s) {
-                s.printStackTrace();
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
         }
-
-        return arr;
-    }    
+        ddop.removeAllItems();
+        for (int j = 0; j < tableoperations.getRowCount(); j++) {
+            ddop.addItem(tableoperations.getValueAt(j, 0).toString());
+        }
+        roData = null;
+    } 
     
     public void adjustCalendar(int dateClicked) {
         
@@ -1171,7 +1090,7 @@ public class Scheduler extends javax.swing.JPanel {
         String x = "";
         double sum = 0.00;
         boolean isFull = false;
-        ArrayList<String[]> list = getSummaryByDate(firstday,lastday); // returns date,cell,sum
+        ArrayList<String[]> list = getSummaryByDate(firstday,lastday, ddcellchoice.getSelectedItem().toString()); // returns date,cell,sum
         
         for (int z = 1; z <= cal.getActualMaximum(Calendar.DAY_OF_MONTH); z++) {
             if (z == dateClicked) {
@@ -1850,210 +1769,12 @@ public class Scheduler extends javax.swing.JPanel {
               currplan = Integer.valueOf(mytable.getValueAt(row, 1).toString());
               curritem = mytable.getValueAt(row, 2).toString();
               currplantype = mytable.getValueAt(row, 4).toString();
-              getOperations(Integer.valueOf(mytable.getValueAt(row, 1).toString()), mytable.getValueAt(row, 4).toString());
-              ddop.removeAllItems();
-              for (int j = 0; j < tableoperations.getRowCount(); j++) {
-                  ddop.addItem(tableoperations.getValueAt(j, 0).toString());
-              }
+              executeTask("getBrowseOpView", new String[]{mytable.getValueAt(row, 1).toString()});
         }
     }//GEN-LAST:event_mytableMouseClicked
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-        schtot = 0;
-        reqtot = 0;
-
-        labelqtysched.setText("0");
-        labelqtyreqd.setText("0");
-        labelcount.setText("0");
-
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                double amt = 0;
-
-                 int i = 0;
-                String fpart = "";
-                String tpart = "";
-                String fcell = bsmf.MainFrame.lowchar;
-                String tcell = bsmf.MainFrame.hichar;
-                String status = "";
-
-                if (frompart.getText().isEmpty()) {
-                    fpart = bsmf.MainFrame.lowchar;
-                } else {
-                    fpart = frompart.getText().replace("'", "");
-                }
-                if (topart.getText().isEmpty()) {
-                    tpart = bsmf.MainFrame.hichar;
-                } else {
-                    tpart = topart.getText().replace("'", "");
-                }
-               
-                
-                //  ScrapReportPanel.MyTableModel mymodel = new ScrapReportPanel.MyTableModel(new Object[][]{},
-                    //         new String[]{"Acct", "Description", "Amt"});
-                // tablescrap.setModel(mymodel);
-
-                //  mytable.getColumnModel().getColumn(0).setCellRenderer(new ProdSchedPanel.SomeRenderer());
-
-                CheckBoxRenderer checkBoxRenderer = new CheckBoxRenderer();
-                mytable.getColumnModel().getColumn(5).setCellRenderer(checkBoxRenderer);
-
-                //  ComboBoxRenderer comboBoxRenderer = new ComboBoxRenderer(new String[]{"1","2"});
-                //  mytable.getColumnModel().getColumn(5).setCellRenderer(comboBoxRenderer);
-                
-                TableColumn col = mytable.getColumnModel().getColumn(6);
-               // col.setCellEditor(new ComboBoxEditor(cellsonly.toArray(new String[cellsonly.size()])));
-              //  col.setCellEditor(new TestCellEditor(cellsonly.toArray(new String[cellsonly.size()])));
-              col.setCellEditor(new DefaultCellEditor(new JComboBox(cellsonly.toArray(new String[cellsonly.size()]))));
-             // col.setCellRenderer(new ComboBoxRenderer(cellsonly.toArray(new String[cellsonly.size()])));
-                
-                Enumeration<TableColumn> en = mytable.getColumnModel().getColumns();
-                while (en.hasMoreElements()) {
-                    TableColumn tc = en.nextElement();
-                    if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
-                         continue;
-                     }
-                    if (tc.getIdentifier().toString().equals("isSched") ||
-                        tc.getIdentifier().toString().equals("Cell") ) {
-                        continue;
-                    }
-                    tc.setCellRenderer(new Scheduler.SomeRenderer());
-                }
-
-                //       mytable.getColumn("Update").setCellRenderer(new ProdSchedPanel.ButtonRenderer());
-                //        mytable.getColumn("Print").setCellRenderer(new ProdSchedPanel.ButtonRenderer());
-                //        mytable.getColumn("Void").setCellRenderer(new ProdSchedPanel.ButtonRenderer());
-
-                DefaultCellEditor singleClick = (DefaultCellEditor) mytable.getDefaultEditor(mytable.getColumnClass(7));
-                singleClick.setClickCountToStart(1);
-                mytable.setDefaultEditor(mytable.getColumnClass(7), singleClick);
-                //   DefaultCellEditor singleClick2 = (DefaultCellEditor) mytable.getDefaultEditor(mytable.getColumnClass(5));
-                //  singleClick2.setClickCountToStart(1);
-                //   mytable.setDefaultEditor(mytable.getColumnClass(5), singleClick2);
-
-                //  mytable.setDefaultEditor(mytable.getColumnClass(5), singleClick);
-
-                //    mytable.getColumn("Update").setCellEditor(
-                    //             new ProdSchedPanel.ButtonEditor(new JCheckBox()));
-                //     mytable.getColumn("Print").setCellEditor(
-                    //             new ProdSchedPanel.ButtonEditor(new JCheckBox()));
-                //      mytable.getColumn("Void").setCellEditor(
-                    //              new ProdSchedPanel.ButtonEditor(new JCheckBox()));
-               // mytable.getColumn(getGlobalColumnTag("update")).setMaxWidth(100);
-               // mytable.getColumn(getGlobalColumnTag("print")).setMaxWidth(100);
-               // mytable.getColumn(getGlobalColumnTag("void")).setMaxWidth(100);
-
-                mymodel.setRowCount(0);
-
-                // ReportPanel.TableReport.getColumn("CallID").setCellRenderer(new ButtonRenderer());
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
-
-                // tcm.getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-
-                if (cbsched.isSelected()) {
-                    res = st.executeQuery("SELECT plan_nbr, plan_type, plan_item, plan_qty_req, plan_qty_comp, "
-                      //  + "( select coalesce(sum(pland_qty),0) as qtycomp from pland_mstr where pland_parent = plan_nbr) as qtycomp,"
-                        + " plan_qty_sched, plan_date_due, plan_date_sched, plan_status, ifnull(plan_is_sched,0) plan_is_sched, plan_cell, plan_order, plan_line " +
-                        " FROM  plan_mstr " +
-                        " where plan_date_due >= " + "'" + dfdate.format(dcfrom.getDate()) + "'" +
-                        " AND plan_date_due <= " + "'" + dfdate.format(dcto.getDate()) + "'" +
-                        " AND plan_item >= " + "'" + fpart + "'" +
-                        " AND plan_item <= " + "'" + tpart + "'" +
-                        " AND plan_cell >= " + "'" + fcell + "'" +
-                        " AND plan_cell <= " + "'" + tcell + "'" +
-                        " AND plan_is_sched = " + "'0' "  +
-                        " order by plan_item, plan_date_due;");
-                } else {
-                    res = st.executeQuery("SELECT plan_nbr, plan_item, plan_type, plan_qty_req, plan_qty_comp, "
-                      //  + "( select coalesce(sum(pland_qty),0) as qtycomp from pland_mstr where pland_parent = plan_nbr) as qtycomp,"     
-                        + " plan_qty_sched, plan_date_due, plan_date_sched, plan_status, ifnull(plan_is_sched,0) plan_is_sched, plan_cell, plan_order, plan_line " +
-                        " FROM  plan_mstr " +
-                        " where plan_date_due >= " + "'" + dfdate.format(dcfrom.getDate()) + "'" +
-                        " AND plan_date_due <= " + "'" + dfdate.format(dcto.getDate()) + "'" +
-                        " AND plan_item >= " + "'" + fpart + "'" +
-                        " AND plan_item <= " + "'" + tpart + "'" +
-                        " AND plan_cell >= " + "'" + fcell + "'" +
-                        " AND plan_cell <= " + "'" + tcell + "'" +
-                        " order by plan_item, plan_date_due ;");
-                }
-                while (res.next()) {
-
-                    if (res.getString("plan_type").equals("SRVC")) {
-                        continue;
-                    }
-                    
-                    if (cbclosed.isSelected() && res.getInt("plan_status") == 1) {
-                        continue;
-                    }
-
-                    // plan can be voided by setting to -1
-                    if (cbclosed.isSelected() && res.getInt("plan_status") == -1) {
-                        continue;
-                    }
-                    
-                
-                    i++;
-                    reqtot = reqtot + res.getInt("plan_qty_req");
-                    schtot = schtot + res.getInt("plan_qty_sched");
-                    if (res.getString("plan_status").equals("0")) { status = getGlobalProgTag("open"); }
-                    if (res.getString("plan_status").equals("1")) { status = getGlobalProgTag("closed"); }
-                    if (res.getString("plan_status").equals("-1")) { status = getGlobalProgTag("void"); }
-
-                    mymodel.addRow(new Object[]{
-                        BlueSeerUtils.clickflag, 
-                        res.getString("plan_nbr"),
-                        res.getString("plan_item"),
-                        res.getString("plan_date_due"),
-                        res.getString("plan_type"),
-                        res.getBoolean("plan_is_sched"),
-                        res.getString("plan_cell"),
-                        res.getInt("plan_qty_sched"),
-                        res.getInt("plan_qty_req"),
-                        res.getInt("plan_qty_comp"), 
-                        res.getString("plan_date_sched"),
-                        res.getString("plan_order"),
-                        res.getString("plan_line"),
-                        status
-                    });
-                }
-                labelqtysched.setText(String.valueOf(schtot));
-                labelqtyreqd.setText(String.valueOf(reqtot));
-                labelcount.setText(String.valueOf(i));
-
-        adjustCalendar(0);
-                
-                
-                //    RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(mymodel);
-                //     mytable.setRowSorter(sorter);
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
+        executeTask("getBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btcommitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcommitActionPerformed
@@ -2130,8 +1851,7 @@ public class Scheduler extends javax.swing.JPanel {
                 }
             }
             adjustCalendar(0);
-            getDetail();
-            PanelDetail.setVisible(true);
+            executeTask("getBrowseDetView", null);
         }
     }//GEN-LAST:event_ddcellchoiceActionPerformed
 
@@ -2157,14 +1877,14 @@ public class Scheduler extends javax.swing.JPanel {
                     "" // notes
             );
             updatePlanOperation(x);
-            getOperations(currplan, currplantype);
+            executeTask("getBrowseOpView", new String[]{String.valueOf(currplan)});
         }
     }//GEN-LAST:event_btopupdateActionPerformed
 
     private void tableoperationsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableoperationsMouseClicked
         int row = tableoperations.rowAtPoint(evt.getPoint());
         int col = tableoperations.columnAtPoint(evt.getPoint());
-        currop = Integer.valueOf(tableoperations.getValueAt(row, 0).toString());
+        currop = bsParseInt(tableoperations.getValueAt(row, 0).toString());
         plan_operation x = getPlanOperation(currplan, currop);
        // String dept = getDeptByItemOperation(curritem, currop);
         String routing = getItemRouting(curritem);

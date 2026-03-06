@@ -35,6 +35,7 @@ import static com.blueseer.sch.schData.addPlanOperationTrans;
 import static com.blueseer.sch.schData.getPlanDetHistory;
 import static com.blueseer.sch.schData.getPlanDetTotQtyByOp;
 import static com.blueseer.sch.schData.getPlanMstr;
+import static com.blueseer.sch.schData.getSummaryByDate;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
@@ -131,6 +132,40 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(arrayToJson(addPlanOperationTrans(sdlist)));
             break;
           }
+        
+        case "getSummaryByDate" :  {      
+            response.getWriter().print(ArrayListStringArrayToJson(getSummaryByDate(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3"))));
+            break;
+        }
+        
+        case "getSchedulerBrowseView" : { 
+        response.getWriter().print(schData.getSchedulerBrowseView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5")})); 
+        break;
+        } 
+        
+        case "getSchedulerDetView" : { 
+        response.getWriter().print(schData.getSchedulerDetView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5"),
+                    request.getHeader("param6"),
+                    request.getHeader("param7"),
+                    request.getHeader("param8")})); 
+        break;
+        } 
+        
+        case "getSchedulerOpView" : { 
+        response.getWriter().print(schData.getSchedulerOpView(new String[]{request.getHeader("param1")})); 
+        break;
+        } 
+        
         
         default:
         response.getWriter().print("");

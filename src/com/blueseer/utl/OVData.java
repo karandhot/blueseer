@@ -54,6 +54,7 @@ import com.blueseer.hrm.hrmData;
 import com.blueseer.inv.calcCost;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData._updateInventoryBalance;
+import static com.blueseer.lbl.lblData.getJobTicketPrintData;
 import static com.blueseer.lbl.lblData.getLabelMultiPrintData;
 import static com.blueseer.ord.ordData.getOrderPrintData;
 import static com.blueseer.ord.ordData.getOrderTotalTax;
@@ -14944,6 +14945,20 @@ return mystring;
     /* start of production scheduling */
 
     public static int CommitSchedules(ArrayList<String[]> list, String datesched) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> xlist = new ArrayList<>();
+            xlist.add(new String[]{"id","CommitSchedules"});
+            xlist.add(new String[]{"param1",datesched});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(list);
+                return jsonToInt(sendServerPost(xlist, jsonString, null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0;
+            }
+        } 
+        
         int count = 0;
         try {
 
@@ -19717,6 +19732,170 @@ return mystring;
         hm.put("site_csz", site_csz);
         hm.put("ship_csz", ship_csz);
         hm.put("imagepath", imagepath.toString());
+        hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+        
+        Path template = checkForCustomPath(jasperdir, jasperfile);
+        
+        JasperPrint jasperPrint; 
+        try {
+         jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
+            JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+            jasperViewer.setVisible(true);
+            jasperViewer.setTitle("Viewer");
+            jasperViewer.setIconImage(null);
+            jasperViewer.setFitPageZoomRatio();
+         
+       } catch (JRException ex) {
+           MainFrame.bslog(ex);
+       }
+    }    
+    
+    public static void printJasperJobTicket(String jobid, String bustitle, String jobtype) {
+        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getJobTicketPrintData"});
+            list.add(new String[]{"param1", jobid});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServLBL");
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        } else {
+            jsonString = getJobTicketPrintData(jobid); 
+        }        
+        Object[][] rData = jsonToData(jsonString);
+        
+        List<Object[]> list = new ArrayList<>();
+        String site_csz = "";
+        String ship_csz = "";
+        String logo = "";
+        String imagedir = "";
+        String jasperdir = "";
+        String  now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        
+        String jasperfile = getSysMetaValue("system", "inventorycontrol", "jasper_job_ticket");  
+          if (jasperfile.isBlank()) {
+             jasperfile = "jobticket.jasper";
+          }
+
+          if (jobtype.equals("SRVC")) {
+              jasperfile = "jobSVticket.jasper";
+              bustitle = "Job Service Ticket";
+          }
+        
+        int k = 0;
+        for (Object[] rowData : rData) {
+            if (k == 0) {
+               // logo = (rowData[39].toString().isBlank()) ? rowData[40].toString() : rowData[39].toString(); // if cm_logo = "" then site_logo
+                jasperdir = rowData[24].toString();
+               // imagedir = rowData[41].toString();
+              //  ship_csz = rowData[18].toString() + " " + rowData[19].toString() + " " + rowData[20].toString() + " " + rowData[21].toString();
+              //  site_csz = rowData[25].toString() + " " + rowData[26].toString() + " " + rowData[27].toString() + " " + rowData[28].toString();
+            }
+                list.add(rowData);
+                k++;
+        }
+        
+        String[] rec;
+        String columnnames = "plan_nbr,plan_item,plan_qty_req,plan_qty_sched,plan_date_due," +
+                       "plan_date_sched,plan_date_create,plan_order,plan_type,plan_line," +
+                       "plan_cell,it_item,it_rev,it_desc,it_wf,wf_op,wf_desc,wf_cell," +
+                       "assert,runrate,custpo,custcode,bomcode,custitem,ov_jasper_directory";
+        String[] columnnamesarray = columnnames.split(",", -1);
+        JRDataSource datasource = new ListOfArrayDataSource(list, columnnamesarray);
+        Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
+        HashMap hm = new HashMap();
+        hm.put("BUSINESSTITLE", bustitle);
+        hm.put("REPORT_TITLE", jasperfile);
+        hm.put("SUBREPORT_DIR", "jasper/");
+        hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags); 
+        hm.put("myid",  jobid);
+        
+        Path template = checkForCustomPath(jasperdir, jasperfile);
+        
+        JasperPrint jasperPrint; 
+        try {
+         jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
+            JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+            jasperViewer.setVisible(true);
+            jasperViewer.setTitle("Viewer");
+            jasperViewer.setIconImage(null);
+            jasperViewer.setFitPageZoomRatio();
+         
+       } catch (JRException ex) {
+           MainFrame.bslog(ex);
+       }
+    }    
+    
+    public static void printJasperJobOperationTicket(String jobid, String op, String plantype, String bustitle) {
+        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getJobOperationPrintData"});
+            list.add(new String[]{"param1", jobid});
+            list.add(new String[]{"param2", op});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServLBL");
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        } else {
+            jsonString = getJobTicketPrintData(jobid); 
+        }        
+        Object[][] rData = jsonToData(jsonString);
+        
+        List<Object[]> list = new ArrayList<>();
+        String site_csz = "";
+        String ship_csz = "";
+        String logo = "";
+        String imagedir = "";
+        String jasperdir = "";
+        String  now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        
+        String jasperfile = getSysMetaValue("system", "inventorycontrol", "jasper_operation_ticket");  
+                if (jasperfile.isBlank()) {
+                    jasperfile = "operationticket.jasper";
+                }
+                
+                if (plantype.equals("SRVC")) {
+                    jasperfile = "operationSVticket.jasper";
+                }
+        
+        int k = 0;
+        for (Object[] rowData : rData) {
+            if (k == 0) {
+               // logo = (rowData[39].toString().isBlank()) ? rowData[40].toString() : rowData[39].toString(); // if cm_logo = "" then site_logo
+                jasperdir = rowData[24].toString();
+               // imagedir = rowData[41].toString();
+              //  ship_csz = rowData[18].toString() + " " + rowData[19].toString() + " " + rowData[20].toString() + " " + rowData[21].toString();
+              //  site_csz = rowData[25].toString() + " " + rowData[26].toString() + " " + rowData[27].toString() + " " + rowData[28].toString();
+            }
+                list.add(rowData);
+                k++;
+        }
+        
+        String[] rec;
+        String columnnames = "plan_nbr,plan_item,plan_qty_req,plan_qty_sched,plan_date_due," +
+                       "plan_date_sched,plan_date_create,plan_order,plan_type,plan_line," +
+                       "plan_cell,it_item,it_rev,it_desc,it_wf,wf_op,wf_desc,wf_cell," +
+                       "assert,runrate,custpo,custcode,bomcode,custitem,ov_jasper_directory," +
+                       "plo_operator,plo_operatorname,plo_cell";
+        String[] columnnamesarray = columnnames.split(",", -1);
+        JRDataSource datasource = new ListOfArrayDataSource(list, columnnamesarray);
+        Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
+        HashMap hm = new HashMap();
+        hm.put("BUSINESSTITLE", bustitle);
+        hm.put("REPORT_TITLE", jasperfile);
+        hm.put("SUBREPORT_DIR", "jasper/");
+        hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags); 
+        hm.put("myid",  jobid);
+        hm.put("myop",  op);
+        hm.put("myidop", jobid + "-" + op);
         hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
         
         Path template = checkForCustomPath(jasperdir, jasperfile);

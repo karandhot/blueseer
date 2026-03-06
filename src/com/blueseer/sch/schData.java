@@ -33,7 +33,11 @@ import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.hrm.hrmData.getEmpFormalNameByID;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
+import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
+import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
@@ -49,8 +53,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Objects;
+import org.json.JSONArray;
 
 /**
  *
@@ -443,6 +450,300 @@ public class schData {
     
     
     // misc functions 
+    
+    public static String getSchedulerBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                double dol = 0;
+                double qty = 0;
+                 
+                
+                 // init for new cust
+                i = 0;
+                String status = "";
+                
+                                
+                keys[2] = (keys[2].isBlank()) ? bsmf.MainFrame.lowchar : keys[2];
+                keys[3] = (keys[3].isBlank()) ? bsmf.MainFrame.hichar : keys[3];
+                keys[4] = (keys[4].isBlank()) ? bsmf.MainFrame.lowchar : keys[4];
+                keys[5] = (keys[5].isBlank()) ? bsmf.MainFrame.hichar : keys[5];
+                
+                if (keys[6].equals("1")) {
+                    res = st.executeQuery("SELECT plan_nbr, plan_type, plan_item, plan_qty_req, plan_qty_comp, "
+                      //  + "( select coalesce(sum(pland_qty),0) as qtycomp from pland_mstr where pland_parent = plan_nbr) as qtycomp,"
+                        + " plan_qty_sched, plan_date_due, plan_date_sched, plan_status, ifnull(plan_is_sched,0) plan_is_sched, plan_cell, plan_order, plan_line " +
+                        " FROM  plan_mstr " +
+                        " where plan_date_due >= " + "'" + keys[0] + "'" +
+                        " AND plan_date_due <= " + "'" + keys[1] + "'" +
+                        " AND plan_item >= " + "'" + keys[2] + "'" +
+                        " AND plan_item <= " + "'" + keys[3] + "'" +
+                        " AND plan_cell >= " + "'" + keys[4] + "'" +
+                        " AND plan_cell <= " + "'" + keys[5] + "'" +
+                        " AND plan_is_sched = " + "'0' "  +
+                        " order by plan_item, plan_date_due;");
+                } else {
+                    res = st.executeQuery("SELECT plan_nbr, plan_item, plan_type, plan_qty_req, plan_qty_comp, "
+                      //  + "( select coalesce(sum(pland_qty),0) as qtycomp from pland_mstr where pland_parent = plan_nbr) as qtycomp,"     
+                        + " plan_qty_sched, plan_date_due, plan_date_sched, plan_status, ifnull(plan_is_sched,0) plan_is_sched, plan_cell, plan_order, plan_line " +
+                        " FROM  plan_mstr " +
+                        " where plan_date_due >= " + "'" + keys[0] + "'" +
+                        " AND plan_date_due <= " + "'" + keys[1] + "'" +
+                        " AND plan_item >= " + "'" + keys[2] + "'" +
+                        " AND plan_item <= " + "'" + keys[3] + "'" +
+                        " AND plan_cell >= " + "'" + keys[4] + "'" +
+                        " AND plan_cell <= " + "'" + keys[5] + "'" +
+                        " order by plan_item, plan_date_due ;");
+                }
+                
+                while (res.next()) {
+                        i++;
+                        if (res.getString("plan_status").equals("0")) { status = getGlobalProgTag("open"); }
+                        if (res.getString("plan_status").equals("1")) { status = getGlobalProgTag("closed"); }
+                        if (res.getString("plan_status").equals("-1")) { status = getGlobalProgTag("void"); }
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("plan_nbr"));
+                        rowArray.put(res.getString("plan_item"));
+                        rowArray.put(res.getString("plan_date_due"));
+                        rowArray.put(res.getString("plan_type"));
+                        rowArray.put(res.getString("plan_is_sched"));
+                        rowArray.put(res.getString("plan_cell"));
+                        rowArray.put(bsNumber(res.getDouble("plan_qty_sched")));
+                        rowArray.put(bsNumber(res.getDouble("plan_qty_req")));
+                        rowArray.put(bsNumber(res.getDouble("plan_qty_comp")));
+                        rowArray.put(res.getString("plan_date_sched"));
+                        rowArray.put(res.getString("plan_order"));
+                        rowArray.put(res.getString("plan_line"));
+                        rowArray.put(status);
+                        jsonarray.put(rowArray);
+                        
+                } 
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getSchedulerDetView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                
+                 
+                
+                 // init for new cust
+                i = 0;
+                
+                if (keys[1].equals("ALL")) {
+                res = st.executeQuery("SELECT plan_nbr, plan_type, plan_item, plan_qty_req, plan_qty_comp, "
+                        + " plan_qty_sched, plan_date_due, plan_date_sched, plan_status, ifnull(plan_is_sched,0) plan_is_sched, plan_cell, plan_order, plan_line " +
+                        " FROM  plan_mstr " +
+                        " where plan_date_sched = " + "'" + keys[0] + "'" +
+                        " AND plan_is_sched = " + "'" + "1" + "'"  +
+                        " AND plan_status <> " + "'" + "-1" + "'"  + // void
+                        " order by plan_item, plan_cell;");
+                } else {
+                res = st.executeQuery("SELECT plan_nbr, plan_type, plan_item, plan_qty_req, plan_qty_comp, "
+                        + " plan_qty_sched, plan_date_due, plan_date_sched, plan_status, ifnull(plan_is_sched,0) plan_is_sched, plan_cell, plan_order, plan_line " +
+                        " FROM  plan_mstr " +
+                        " where plan_date_sched = " + "'" + keys[0] + "'" +
+                        " AND plan_cell = " + "'" + keys[1] + "'" +
+                        " AND plan_is_sched = " + "'" + "1" + "'"  +
+                        " AND plan_status <> " + "'" + "-1" + "'"  + // void
+                        " order by plan_item, plan_cell;");    
+                }
+               
+                while (res.next()) {
+                        i++;
+                       
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("plan_nbr"));
+                        rowArray.put(res.getString("plan_item"));
+                        rowArray.put(res.getString("plan_type"));
+                        rowArray.put(res.getString("plan_cell"));
+                        rowArray.put(bsNumber(res.getDouble("plan_qty_sched")));
+                        rowArray.put(res.getString("plan_status"));
+                        jsonarray.put(rowArray);
+                        
+                } 
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getSchedulerOpView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                
+                 
+                
+                 // init for new cust
+                i = 0;
+                
+                res = st.executeQuery("select plo_op, plo_cell, plo_qty, plo_operator, plo_desc, emp_lname, emp_fname " +
+                         " from plan_operation " +
+                         " inner join plan_mstr on plan_nbr = plo_parent " +
+                         " inner join item_mstr on it_item = plan_item " +
+                         " inner join wf_mstr on wf_id = it_wf and plo_op = wf_op " +
+                         " left outer join emp_mstr on emp_nbr = plo_operator " +
+                        " where plo_parent = " + "'" + keys[0] + "'" + " order by plo_op ;");   
+               
+                while (res.next()) {
+                        i++;
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("plo_op"));
+                        rowArray.put(res.getString("plo_desc"));
+                        rowArray.put(res.getString("plo_cell"));
+                        rowArray.put(res.getString("plo_qty"));
+                        rowArray.put(res.getString("emp_lname") + ", " + res.getString("emp_fname"));
+                        jsonarray.put(rowArray);
+                        
+                } 
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    
+    public static ArrayList<String[]> getSummaryByDate(String fromdate, String todate, String cell) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getSummaryByDate"});
+            list.add(new String[]{"param1", fromdate});
+            list.add(new String[]{"param2", todate});
+            list.add(new String[]{"param3", cell});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServSCH"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        ArrayList<String[]> arr = new ArrayList<String[]>();
+        try {
+
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                if (cell.equals("ALL")) {
+                res = st.executeQuery("SELECT sum(plan_qty_sched) as 'sum', plan_date_sched, plan_cell " +
+                        " FROM  plan_mstr " +
+                        " where plan_date_sched >= " + "'" + fromdate + "'" +
+                        " AND plan_date_sched <= " + "'" + todate + "'"  +
+                        " AND plan_is_sched = " + "'" + "1" + "'"  +
+                        " AND plan_status <> " + "'" + "-1" + "'"  + // void
+                        " group by plan_date_sched, plan_cell order by plan_date_sched;");
+                } else {
+                   res = st.executeQuery("SELECT sum(plan_qty_sched) as 'sum', plan_date_sched, plan_cell " +
+                        " FROM  plan_mstr " +
+                        " where plan_date_sched >= " + "'" + fromdate + "'" +
+                        " AND plan_date_sched <= " + "'" + todate + "'"  +
+                        " AND plan_is_sched = " + "'" + "1" + "'"  +
+                        " AND plan_status <> " + "'" + "-1" + "'"  + // void
+                        " AND plan_cell = " + "'" + cell + "'" +
+                        " group by plan_date_sched, plan_cell order by plan_date_sched;");  
+                }
+                while (res.next()) {
+                    String[] s = new String[]{res.getString("plan_date_sched"), res.getString("plan_cell"),res.getString("sum") };
+                    arr.add(s);
+                }
+
+            } catch (SQLException s) {
+                bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+
+        return arr;
+    }    
+    
+    
     public static String getPlanItem(String serialno) {
 
           // From perspective of "has it been scanned...or is there a 1 in lbl_scan which is set when label is scanned

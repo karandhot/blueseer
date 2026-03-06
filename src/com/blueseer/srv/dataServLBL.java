@@ -121,6 +121,16 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(lblData.getLabelMultiPrintData(request.getHeader("param1")));    
             break;   
         }
+        
+        case "getJobTicketPrintData" : {
+            response.getWriter().print(lblData.getJobTicketPrintData(request.getHeader("param1")));    
+            break;   
+        }
+        
+        case "getJobOperationPrintData" : {
+            response.getWriter().print(lblData.getJobOperationPrintData(request.getHeader("param1"), request.getHeader("param2")));    
+            break;   
+        }
             
         case "getLabelZebraMstr" : {       
         lblData.label_zebra lz = getLabelZebraMstr(new String[]{request.getHeader("param1")});
