@@ -87,6 +87,7 @@ public class InventoryMaint extends javax.swing.JPanel {
     boolean isLoad = false;
     String defaultCurrency = "";
     String defaultSite = "";
+    ArrayList<String[]> initDataSets = null;
     item_mstr im = null;
     boolean isSerialized = false;
     
@@ -201,7 +202,7 @@ public class InventoryMaint extends javax.swing.JPanel {
             }
     } 
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
         isLoad = true;
         java.util.Date now = new java.util.Date();
        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
@@ -215,8 +216,9 @@ public class InventoryMaint extends javax.swing.JPanel {
         tbitem.setBackground(Color.white);
         tbqty.setBackground(Color.white);
         
-        ArrayList<String[]> initDataSets = invData.getInvMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
-        
+        if (init) {
+        initDataSets = invData.getInvMaintInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        }
         
         ddtype.requestFocus();
         
@@ -333,7 +335,7 @@ public class InventoryMaint extends javax.swing.JPanel {
         
         
        setPanelComponentState(this, true); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         
     }
     
