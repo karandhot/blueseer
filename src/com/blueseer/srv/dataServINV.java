@@ -55,6 +55,7 @@ import static com.blueseer.inv.invData.getINVCtrl;
 import static com.blueseer.inv.invData.getInvBrowseView;
 import static com.blueseer.inv.invData.getInvMaintInit;
 import static com.blueseer.inv.invData.getInvMaintInit_min;
+import static com.blueseer.inv.invData.getInvMetaOperators;
 import static com.blueseer.inv.invData.getInvValuationBrowseView;
 import static com.blueseer.inv.invData.getInventoryQtyByItem;
 import static com.blueseer.inv.invData.getItemBrowseView;
@@ -67,6 +68,7 @@ import static com.blueseer.inv.invData.getItemMaintInit;
 import static com.blueseer.inv.invData.getItemMasterSchedlist;
 import static com.blueseer.inv.invData.getItemMstr;
 import static com.blueseer.inv.invData.getItemPrice;
+import static com.blueseer.inv.invData.getItemPriceFromCust;
 import static com.blueseer.inv.invData.getItemQOHTotal;
 import static com.blueseer.inv.invData.getItemQtyByWarehouseAndLocation;
 import static com.blueseer.inv.invData.getItemWFOPandDESC;
@@ -596,6 +598,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
         }
         
+        case "getInvMetaOperators" : {       
+            response.getWriter().print(ArrayListStringArrayToJson(getInvMetaOperators(request.getHeader("param1"), request.getHeader("param2"))));
+            break;
+        }
+        
         case "getBOMsByItemSite" : {       
             response.getWriter().print(ArrayListStringArrayToJson(getBOMsByItemSite(request.getHeader("param1"))));
             break;
@@ -855,6 +862,16 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(arrayToJson(addUpdateINVCtrl(x)));
             break;
           }
+        
+        case "getItemPriceFromCust" : {
+            response.getWriter().print(arrayToJson(getItemPriceFromCust(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5"),
+                    request.getHeader("param6"))));  
+            break;
+        }
         
         default:
         response.getWriter().print("");

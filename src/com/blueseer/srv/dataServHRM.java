@@ -26,6 +26,9 @@ SOFTWARE.
 package com.blueseer.srv;
 
 
+import static com.blueseer.hrm.hrmData.getEmpIDByFormalName;
+import static com.blueseer.hrm.hrmData.getEmpNameAll;
+import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import java.io.IOException;
 import java.util.Enumeration;
@@ -70,7 +73,15 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     
     switch (id) {
         
-     
+        case "getEmpNameAll" : {       
+            response.getWriter().print(ArrayListStringArrayToJson(getEmpNameAll()));
+            break;
+        }
+        
+        case "getEmpIDByFormalName" : {       
+            response.getWriter().print(getEmpIDByFormalName(request.getHeader("param1")));
+            break;
+        }
         
         
         default:

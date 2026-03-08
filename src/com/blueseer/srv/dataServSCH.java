@@ -35,9 +35,15 @@ import static com.blueseer.sch.schData.addPlanOperationTrans;
 import static com.blueseer.sch.schData.getPlanDetHistory;
 import static com.blueseer.sch.schData.getPlanDetTotQtyByOp;
 import static com.blueseer.sch.schData.getPlanMstr;
+import static com.blueseer.sch.schData.getPlanOperation;
 import static com.blueseer.sch.schData.getSummaryByDate;
+import static com.blueseer.sch.schData.updatePlanOperation;
+import static com.blueseer.sch.schData.updatePlanOrder;
+import static com.blueseer.sch.schData.updatePlanStatus;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.boolToJson;
+import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.doubleToJson;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -168,6 +174,40 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         break;
         } 
         
+        case "updatePlanStatus" : { 
+            updatePlanStatus(request.getHeader("param1"), request.getHeader("param2"));
+            break;  
+        }
+        
+        case "updatePlanOrder" : {
+            response.getWriter().print(boolToJson(updatePlanOrder(request.getHeader("param1"), 
+                    request.getHeader("param2"), 
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5")))); 
+            break;    
+        }
+        
+        case "updatePlanOperation" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            schData.plan_operation x = objectMapper.readValue(sb.toString(), schData.plan_operation.class);            
+            response.getWriter().print(arrayToJson(updatePlanOperation(x)));
+            break;
+          }
+        
+        case "getPlanOperation" : {       
+        schData.plan_operation po = getPlanOperation(bsParseInt(request.getHeader("param1")), bsParseInt(request.getHeader("param2")));
+        ObjectMapper objectMapper = new ObjectMapper();
+        String r = objectMapper.writeValueAsString(po);
+        response.getWriter().print(r);
+        break;
+        }
         
         default:
         response.getWriter().print("");

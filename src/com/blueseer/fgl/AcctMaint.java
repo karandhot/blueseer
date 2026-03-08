@@ -28,6 +28,7 @@ package com.blueseer.fgl;
 
 import bsmf.MainFrame;
 import static bsmf.MainFrame.tags;
+import com.blueseer.adm.admData;
 import com.blueseer.utl.OVData;
 import java.util.ArrayList;
 import com.blueseer.fgl.fglData.AcctMstr;
@@ -50,6 +51,7 @@ import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerT;
+import com.blueseer.utl.IBlueSeerV;
 import static com.blueseer.utl.OVData.canUpdate;
 import java.awt.Color;
 import java.awt.Component;
@@ -78,14 +80,19 @@ import javax.swing.SwingWorker;
  *
  * @author vaughnte
  */
-public class AcctMaint extends javax.swing.JPanel implements IBlueSeerT  {    
+public class AcctMaint extends javax.swing.JPanel implements IBlueSeerV  {    
 
     
     // global variable declarations
-                boolean isLoad = false;
-                public static AcctMstr x = null;
-                String basecurr = "";
-                boolean canUpdate = false;
+        boolean isLoad = false;
+        boolean canUpdate = false;
+        boolean isAutoPost = false;
+        ArrayList<String[]> initDataSets = null;
+        String defaultSite = "";
+        String defaultCurrency = "";
+        String defaultCC = "";
+
+        public static AcctMstr x = null;
    // global datatablemodel declarations   
    
     public AcctMaint() {
@@ -267,7 +274,7 @@ public class AcctMaint extends javax.swing.JPanel implements IBlueSeerT  {
        }
     }
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
         isLoad = true;
         tbkey.setText("");
         tbdesc.setText("");
@@ -275,11 +282,14 @@ public class AcctMaint extends javax.swing.JPanel implements IBlueSeerT  {
         lbaccountname.setText("");
         cbdisplay.setSelected(false);
         
-        ArrayList<String[]> initDataSets = fglData.getFINInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "currencies");
+        }
+        
         ddcur.removeAllItems();
         for (String[] s : initDataSets) {
             if (s[0].equals("currency")) {
-              basecurr = s[1];  
+              defaultCurrency = s[1];  
             }
             if (s[0].equals("canupdate")) {
               canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
@@ -291,7 +301,7 @@ public class AcctMaint extends javax.swing.JPanel implements IBlueSeerT  {
         }
         
         if (ddcur.getItemCount() > 0) {
-          ddcur.setSelectedItem(basecurr);
+          ddcur.setSelectedItem(defaultCurrency);
         }
         
        isLoad = false;
@@ -299,7 +309,7 @@ public class AcctMaint extends javax.swing.JPanel implements IBlueSeerT  {
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btdelete.setEnabled(false);
@@ -381,12 +391,9 @@ public class AcctMaint extends javax.swing.JPanel implements IBlueSeerT  {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
-      
-       
-        
         if (arg != null && arg.length > 0) {
             executeTask(dbaction.get,arg);
         } else {

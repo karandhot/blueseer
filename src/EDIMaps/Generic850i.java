@@ -149,7 +149,8 @@ public class Generic850i extends com.blueseer.edi.EDIMap {
         }
 
         if (useInternalPrice) {
-        listprice = invData.getItemPriceFromCust(e.getOVBillTo(), item, uom, cusData.getCustCurrency(e.getOVBillTo()),"LIST","0");
+        String[] d = invData.getItemPriceFromCust(e.getOVBillTo(), item, uom, cusData.getCustCurrency(e.getOVBillTo()),"LIST","0");
+        listprice = bsParseDouble(d[0]);
         discount = invData.getItemDiscFromCust(e.getOVBillTo());
         netprice = listprice;
         if (discount != 0) {

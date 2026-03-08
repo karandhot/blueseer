@@ -27,7 +27,6 @@ package com.blueseer.sch;
 
 import bsmf.MainFrame;
 import static bsmf.MainFrame.bslog;
-import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.defaultDecimalSeparator;
 import com.blueseer.utl.BlueSeerUtils;
 import com.blueseer.utl.OVData;
@@ -41,12 +40,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -59,36 +54,19 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import net.sf.jasperreports.engine.JasperExportManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.view.JasperViewer;
-import static bsmf.MainFrame.driver;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.mydialog;
-import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
 import com.blueseer.adm.admData;
 import com.blueseer.hrm.hrmData;
-import static com.blueseer.hrm.hrmData.getEmpFormalNameByID;
 import static com.blueseer.hrm.hrmData.getEmpIDByFormalName;
-import static com.blueseer.hrm.hrmData.getEmpNameByDept;
-import static com.blueseer.inv.invData.getDeptByItemOperation;
 import static com.blueseer.inv.invData.getInvMetaOperators;
 import static com.blueseer.inv.invData.getItemRouting;
-import com.blueseer.pur.purData;
 import static com.blueseer.sch.schData.getPlanOperation;
 import static com.blueseer.sch.schData.getSummaryByDate;
 import com.blueseer.sch.schData.plan_operation;
 import static com.blueseer.sch.schData.updatePlanOperation;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
-import static com.blueseer.utl.BlueSeerUtils.bsNumberToUS;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
-import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
@@ -97,22 +75,17 @@ import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import static com.blueseer.utl.BlueSeerUtils.xNull;
-import static com.blueseer.utl.OVData.getSysMetaValue;
 import static com.blueseer.utl.OVData.printJasperJobOperationTicket;
 import static com.blueseer.utl.OVData.printJasperJobTicket;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingWorker;
-import javax.swing.table.TableCellEditor;
 
 /**
  *
@@ -1766,7 +1739,7 @@ public class Scheduler extends javax.swing.JPanel {
         int col = mytable.columnAtPoint(evt.getPoint());
         
         if ( col == 0) {
-              currplan = Integer.valueOf(mytable.getValueAt(row, 1).toString());
+              currplan = bsParseInt(mytable.getValueAt(row, 1).toString());
               curritem = mytable.getValueAt(row, 2).toString();
               currplantype = mytable.getValueAt(row, 4).toString();
               executeTask("getBrowseOpView", new String[]{mytable.getValueAt(row, 1).toString()});
@@ -1844,7 +1817,7 @@ public class Scheduler extends javax.swing.JPanel {
                     thisCell = x[0];
                   //  bsmf.MainFrame.show(x[0]);
                     if (x[1] != null && ! x[1].isEmpty()) {
-                    thisCellCapacity = Double.valueOf(x[1]);
+                    thisCellCapacity = bsParseDouble(x[1]);
                     } else {
                     thisCellCapacity = 0;    
                     }
@@ -1886,16 +1859,13 @@ public class Scheduler extends javax.swing.JPanel {
         int col = tableoperations.columnAtPoint(evt.getPoint());
         currop = bsParseInt(tableoperations.getValueAt(row, 0).toString());
         plan_operation x = getPlanOperation(currplan, currop);
-       // String dept = getDeptByItemOperation(curritem, currop);
-        String routing = getItemRouting(curritem);
         ArrayList<String> operators = null;
         if ( x.m()[0].equals("0")) {
              // ArrayList<String> operators = getEmpNameByDept(dept);
-              if (currplantype.equals("SRVC")) {
-              // operators = hrmData.getEmpFormalNameByID(OVData.getCodeMstr("OPERATOR"));  
+              if (currplantype.equals("SRVC")) {  
                operators = hrmData.getEmpNameAll();
               } else {
-               operators = getInvMetaOperators(routing, String.valueOf(x.plo_op()));    
+               operators = getInvMetaOperators(curritem, String.valueOf(x.plo_op()));    
               }
               
               ddopoperator.removeAllItems();

@@ -29,12 +29,6 @@ package com.blueseer.ctr;
 import com.blueseer.utl.BlueSeerUtils;
 import com.blueseer.utl.OVData;
 import java.awt.Color;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import javax.swing.DefaultListModel;
 import bsmf.MainFrame; 
@@ -45,13 +39,23 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import static com.blueseer.ctr.cusData.addOrUpdateCprMstr;
+import com.blueseer.ctr.cusData.cm_mstr;
+import com.blueseer.ctr.cusData.cpr_mstr;
+import static com.blueseer.ctr.cusData.deleteCprMstr;
+import static com.blueseer.ctr.cusData.getCprDiscLists;
+import static com.blueseer.ctr.cusData.getCprMstr;
+import static com.blueseer.ctr.cusData.getCprPriceLists;
+import static com.blueseer.ctr.cusData.getCustMstr;
 import com.blueseer.fgl.fglData;
 import com.blueseer.inv.invData;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsformat;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import java.awt.Component;
-import java.sql.Connection;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -60,6 +64,9 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JViewport;
+import javax.swing.SwingWorker;
 
 /**
  *
@@ -67,9 +74,19 @@ import javax.swing.JTabbedPane;
  */
 public class CustPriceMaint extends javax.swing.JPanel {
 
-    DefaultListModel listmodel = new DefaultListModel();
-    DefaultListModel pricelistmodel = new DefaultListModel();
     boolean isLoad = false;
+    boolean canUpdate = false;
+    boolean isAutoPost = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String defaultCC = "";
+      
+    cm_mstr cm = null;
+    
+    DefaultListModel disclistmodel = new DefaultListModel();
+    DefaultListModel pricelistmodel = new DefaultListModel();
+    
     
     /**
      * Creates new form CustXrefMaintPanel
@@ -79,7 +96,132 @@ public class CustPriceMaint extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+       
+          String type = "";
+          String[] key = null;
+          
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
+              this.key = key;
+          } 
+           
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+             switch(this.type) {
+                case "add":
+                    message = addUpdateRecord(key);
+                    break;
+                case "update":
+                    message = addUpdateRecord(key);
+                    break;
+                case "delete":
+                    message = deleteRecord(key);    
+                    break;
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+               if (this.type.equals("get")) {
+                // updateForm();
+                // tbkey.requestFocus();
+               } else {
+                 initvars(null);  
+               }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
     
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        JScrollPane scrollpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else if (myobj instanceof JScrollPane) {
+           scrollpane = (JScrollPane) myobj;    
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                if (component instanceof JLabel || component instanceof JTable ) {
+                     continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                if (component instanceof JScrollPane) {
+                    setPanelComponentState((JScrollPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    
+                    component.setEnabled(b);
+                    
+                }
+            }
+            if (scrollpane != null) {
+                scrollpane.setEnabled(b);
+                JViewport viewport = scrollpane.getViewport();
+                Component[] componentspane = viewport.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
+       
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -123,120 +265,77 @@ public class CustPriceMaint extends javax.swing.JPanel {
                 }
        }
     }
-        
-    public void getCustPriceRecord(String cust, String part, String type, String uom, String curr, String qty) {
-        initvars(null);
-        try {
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                
-                res = st.executeQuery("SELECT * FROM  cpr_mstr where " +
-                    " cpr_cust = " + "'" + cust + "'" + 
-                    " AND cpr_item = " + "'" + part + "'" + 
-                    " AND cpr_uom = " + "'" + uom + "'" + 
-                    " AND cpr_curr = " + "'" + curr + "'" +         
-                    " AND cpr_type = " + "'" + type + "'" +
-                    " AND cpr_volqty = " + "'" + qty + "'" +         
-                        ";") ;
-               
-                        
-                while (res.next()) {
-                    i++;
-                   if (type.equals("LIST") || type.equals("VOLUME")) {
-                    ddcustcode.setSelectedItem(res.getString("cpr_cust"));
-                    dditem.setSelectedItem(res.getString("cpr_item"));
-                    dduom.setSelectedItem(res.getString("cpr_uom"));
-                    ddcurr.setSelectedItem(res.getString("cpr_curr"));
-                    dcexpire.setDate(BlueSeerUtils.parseDate(res.getString("cpr_expire"))); 
-                    tbprice.setText(bsformat("s",res.getString("cpr_price").replace('.',defaultDecimalSeparator),"4"));
-                    tbqty.setText(bsformat("s",res.getString("cpr_volqty").replace('.',defaultDecimalSeparator),"4"));
-                    btUpdate.setEnabled(true);
-                    btDelete.setEnabled(true);
-                    btAdd.setEnabled(false);
-                   } else {
-                    ddcustcode_disc.setSelectedItem(res.getString("cpr_cust"));
-                    tbdisckey.setText(res.getString("cpr_item"));
-                    tbdisc.setText(bsformat("s",res.getString("cpr_disc").replace('.',defaultDecimalSeparator),"4")); 
-                    dcexpiredisc.setDate(BlueSeerUtils.parseDate(res.getString("cpr_expire")));
-                    btupdatedisc.setEnabled(true);
-                    btdeletedisc.setEnabled(true);
-                    btadddisc.setEnabled(false);
-                   } 
-                   
-                }
-               
-               
-                
-                if (i == 0) 
-                    bsmf.MainFrame.show(getMessageTag(1001));
-               
 
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
-    }
-    
-    public void initvars(String[] arg) {
-        
-        
+    public void setComponentDefaultValues(boolean init) {
         isLoad = true;
-         dcexpire.setDate(null);
+        dcexpire.setDate(null);
          dcexpiredisc.setDate(null);
          lbldisccode.setVisible(false);
          lbldisccode.setForeground(Color.red);
-         disclist.setModel(listmodel);
-         
+         disclist.setModel(disclistmodel);
          lblpricecode.setVisible(false);
          lblpricecode.setForeground(Color.red);
          pricelist.setModel(pricelistmodel);
-         
          tbqty.setEnabled(false);
          ddtype.setEnabled(true);
          ddtype.setSelectedIndex(0);
+        lbcust.setText("");
+        lbitem.setText("");
+        lblpricecode.setText("");
+        tbdisc.setText("");
+        tbdisckey.setText("");
+        tbqty.setText("");
+        disclistmodel.removeAllElements();
+        pricelistmodel.removeAllElements();;
+        
          btUpdate.setEnabled(false);
          btDelete.setEnabled(false);
          btAdd.setEnabled(false);
          
-         tbprice.setText("");
-         tbprice.setBackground(Color.WHITE);
          
-        ArrayList mycusts = cusData.getcustmstrlist();
-        ArrayList pricegroups = OVData.getPriceGroupList();
+         
+         tbprice.setText("");
+         tbprice.setBackground(Color.WHITE); 
+        
         ddcustcode.removeAllItems();
         ddcustcode_disc.removeAllItems();
+        dduom.removeAllItems();
+        ddcurr.removeAllItems();
+        dditem.removeAllItems();
         
-        for (int i = 0; i < pricegroups.size(); i++) {
-            ddcustcode.addItem(pricegroups.get(i));
+        if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "currencies,items,customers,pricegroups,uoms");
         }
-        for (int i = 0; i < mycusts.size(); i++) {
-            ddcustcode.addItem(mycusts.get(i));
+        
+        ddcurr.removeAllItems();
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("customers")) {
+              ddcustcode.addItem(s[1]); 
+              ddcustcode_disc.addItem(s[1]); 
+            }
+            if (s[0].equals("pricegroups")) {
+              ddcustcode.addItem(s[1]); 
+              ddcustcode_disc.addItem(s[1]); 
+            }
+            if (s[0].equals("currencies")) {
+              ddcurr.addItem(s[1]); 
+            }
+            if (s[0].equals("items")) {
+              dditem.addItem(s[1]); 
+            }
+            if (s[0].equals("uoms")) {
+              dduom.addItem(s[1]); 
+            }
         }
-        for (int i = 0; i < pricegroups.size(); i++) {
-            ddcustcode_disc.addItem(pricegroups.get(i));
-        }
-        for (int i = 0; i < mycusts.size(); i++) {
-            ddcustcode_disc.addItem(mycusts.get(i));
+        
+        if (ddcurr.getItemCount() > 0) {
+          ddcurr.setSelectedItem(defaultCurrency);
         }
         
         ddcustcode.insertItemAt("", 0);
@@ -245,123 +344,138 @@ public class CustPriceMaint extends javax.swing.JPanel {
         ddcustcode_disc.insertItemAt("", 0);
         ddcustcode_disc.setSelectedIndex(0);
         
-        dduom.removeAllItems();
-        ArrayList<String> mylist = OVData.getUOMList();
-        for (String code : mylist) {
-            dduom.addItem(code);
-        }
-        
         dduom.insertItemAt("", 0);
         dduom.setSelectedIndex(0);
         
-        ddcurr.removeAllItems();
-        ArrayList<String> mycurr = fglData.getCurrlist();
-        for (String code : mycurr) {
-            ddcurr.addItem(code);
-        }
-        ddcurr.setSelectedItem(OVData.getDefaultCurrency());
-        
-        ArrayList mypart = invData.getItemMasterAlllist();
-        dditem.removeAllItems();
-        for (int i = 0; i < mypart.size(); i++) {
-            dditem.addItem(mypart.get(i).toString());
-        }
         dditem.insertItemAt("", 0);
         dditem.setSelectedIndex(0);
        
-        lbcust.setText("");
-        lbitem.setText("");
-        lblpricecode.setText("");
-        tbdisc.setText("");
-        tbdisckey.setText("");
-        tbqty.setText("");
-        listmodel.removeAllElements();
-        pricelistmodel.removeAllElements();;
+        
+        
+       isLoad = false;
+    }
     
+    public void initvars(String[] arg) {
+       // setPanelComponentState(this, false); 
+        setComponentDefaultValues(initDataSets == null);
         
-         if (ddcustcode.getItemCount() > 0) {        
-         setPriceList();
-         }
-         
-         if (ddcustcode_disc.getItemCount() > 0) {
-         updateDiscList();
-         }
+        if (arg != null && arg.length > 0) {
+            executeTask(BlueSeerUtils.dbaction.get,arg);
+        } 
         
-        isLoad = false;
-          
-        if (arg != null && arg.length > 5) {
-            getCustPriceRecord(arg[0], arg[1], arg[2], arg[3], arg[4], arg[5]);
-        }
+       // if (arg != null && arg.length > 5) {
+      //     getCustPriceRecord(arg[0], arg[1], arg[2], arg[3], arg[4], arg[5]);
+      //  }
          
     }
     
-    public void updateDiscList() {
+    public cpr_mstr createRecord() { 
+        String expiredate = null;
+          if (dcexpire.getDate() != null) {
+              expiredate = BlueSeerUtils.setDateFormatNull(dcexpire.getDate());
+          }
+              
+        cpr_mstr x = new cpr_mstr(null, 
+        ddcustcode.getSelectedItem().toString(),
+        dditem.getSelectedItem().toString(),
+        ddtype.getSelectedItem().toString(),
+        dditem.getSelectedItem().toString(),        
+        dduom.getSelectedItem().toString(),
+        ddcurr.getSelectedItem().toString(),
+        bsParseDouble(tbprice.getText()),        
+        bsParseDouble(tbqty.getText()), 
+        expiredate
+                );
+      
+        return x;
+    }
+    
+    public cpr_mstr createDiscountRecord() { 
+        String expiredate = null;
+          if (dcexpiredisc.getDate() != null) {
+              expiredate = BlueSeerUtils.setDateFormatNull(dcexpiredisc.getDate());
+          }
+              
+        cpr_mstr x = new cpr_mstr(null, 
+        ddcustcode_disc.getSelectedItem().toString(),
+        tbdisckey.getText(),
+        "DISCOUNT",
+        tbdisckey.getText(),        
+        "",
+        "",
+        bsParseDouble(tbdisc.getText()),        
+        0, 
+        expiredate
+                );
+      
+        return x;
+    }
+    
+    public cpr_mstr createDeleteRecord() { 
+        String[] z = pricelist.getSelectedValue().toString().split(":",-1); //item, uom, curr, volqty
+        String expiredate = null;
+          if (dcexpire.getDate() != null) {
+              expiredate = "'" + BlueSeerUtils.setDateFormatNull(dcexpire.getDate()) + "'";
+          }
+              
+        cpr_mstr x = new cpr_mstr(null, 
+        ddcustcode.getSelectedItem().toString(),
+        z[0],
+        ddtype.getSelectedItem().toString(),
+        dditem.getSelectedItem().toString(),        
+        z[1],
+        z[2],
+        bsParseDouble(tbprice.getText()),        
+        bsParseDouble((z.length == 4) ? z[3] : "0"), 
+        expiredate
+                );
+      
+        return x;
+    }
+    
+    
+    public String[] addUpdateRecord(String[] key) {
+        String[] m; 
+        if (key[0].equals("discount")) {
+             m = addOrUpdateCprMstr(createDiscountRecord());
+         } else {
+             m = addOrUpdateCprMstr(createRecord());
+         }
+         
+         return m;
+    }
+    
+    public String[] deleteRecord(String[] key) {
+        String[] m = new String[2];
+         m = deleteCprMstr(createDeleteRecord()); 
+         initvars(null);
+         return m;
+    }
+    
+    
+    public void setDiscList() {
    
         if (! isLoad) {
-        listmodel.removeAllElements();
-        String disccode = "";
-        
-        
-        
-        try {
-
-           Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        disclistmodel.removeAllElements();
+        ArrayList<cpr_mstr> cprlist = getCprDiscLists(ddcustcode_disc.getSelectedItem().toString());
+            for (cpr_mstr cpr : cprlist) {
+                  disclistmodel.addElement(cpr.cpr_item());
+                if (! cm.cm_price_code().isBlank()) {
+                    lbldisccode.setText("Belongs to Group " + cm.cm_disc_code());
+                    lbldisccode.setVisible(true); 
+                   } else {
+                    lbldisccode.setVisible(false);  
+                   }
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-             
-              res = st.executeQuery("select cpr_item from cpr_mstr where cpr_cust = " + "'" + 
-                      ddcustcode_disc.getSelectedItem().toString() + "'" +
-                      " and cpr_type = " + "'DISCOUNT'" +
-                      ";");
-               while (res.next()) {
-                      listmodel.addElement(res.getString("cpr_item"));
-               }
-               
-               // check for discount code in cm_mstr
-             
-               res = st.executeQuery("select cm_disc_code from cm_mstr where cm_code = " + "'" + 
-                      ddcustcode_disc.getSelectedItem().toString() + "'" +
-                      ";");
-               while (res.next()) {
-               disccode = res.getString("cm_disc_code") == null ? "" : res.getString("cm_disc_code");
-               }
-               if (! disccode.isEmpty()) {
-                lbldisccode.setText("Belongs to Group " + disccode);
-                lbldisccode.setVisible(true); 
-               } else {
-                lbldisccode.setVisible(false);  
-               }
-               
-              
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
         }
     }
     
     public void setData() {
         if (! isLoad) { 
             if (dditem.getItemCount() > 0 && ddcustcode.getItemCount() > 0 && dduom.getItemCount() > 0 && ddcurr.getItemCount() > 0) {
-            double myprice = invData.getItemPriceFromCust(ddcustcode.getSelectedItem().toString(), dditem.getSelectedItem().toString(), dduom.getSelectedItem().toString(), ddcurr.getSelectedItem().toString(), ddtype.getSelectedItem().toString(), tbqty.getText());
-            lbitem.setText(invData.getItemDesc(dditem.getSelectedItem().toString()));
+            String[] d = invData.getItemPriceFromCust(ddcustcode.getSelectedItem().toString(), dditem.getSelectedItem().toString(), dduom.getSelectedItem().toString(), ddcurr.getSelectedItem().toString(), ddtype.getSelectedItem().toString(), tbqty.getText());
+            double myprice = bsParseDouble(d[0]);
+            lbitem.setText(d[1]);
                 if (myprice == 0) {
                     tbprice.setText("0");
                     btAdd.setEnabled(true);
@@ -382,62 +496,21 @@ public class CustPriceMaint extends javax.swing.JPanel {
      public void setPriceList() {
         if (! isLoad) {
         pricelistmodel.removeAllElements();
-        String pricecode = "";
-        try {
+        ArrayList<cpr_mstr> cprlist = getCprPriceLists(ddcustcode.getSelectedItem().toString());
+            for (cpr_mstr cpr : cprlist) {
+                if (cpr.cpr_type().equals("LIST")) {
+                  pricelistmodel.addElement(cpr.cpr_item() + ":" + cpr.cpr_uom() + ":" + cpr.cpr_curr());
+                } else {
+                  pricelistmodel.addElement(cpr.cpr_item() + ":" + cpr.cpr_uom() + ":" + cpr.cpr_curr() + ":" + cpr.cpr_volqty());    
+                }
 
-           Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+                if (! cm.cm_price_code().isBlank()) {
+                    lblpricecode.setText("Belongs to Group " + cm.cm_price_code());
+                    lblpricecode.setVisible(true); 
+                   } else {
+                    lblpricecode.setVisible(false);  
+                   }
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-             
-              res = st.executeQuery("select cpr_item, cpr_uom, cpr_curr, cpr_volqty, cpr_type from cpr_mstr where cpr_cust = " + "'" + 
-                      ddcustcode.getSelectedItem().toString() + "'" +
-                      " and cpr_type <> " + "'DISCOUNT'" +
-                      " order by cpr_item;");
-               while (res.next()) {
-                      if (res.getString("cpr_type").equals("LIST")) {
-                      pricelistmodel.addElement(res.getString("cpr_item") + ":" + res.getString("cpr_uom") + ":" + res.getString("cpr_curr"));
-                      } else {
-                      pricelistmodel.addElement(res.getString("cpr_item") + ":" + res.getString("cpr_uom") + ":" + res.getString("cpr_curr") + ":" + res.getString("cpr_volqty"));    
-                      }
-                }
-               
-               // check for price code in cm_mstr
-             
-               res = st.executeQuery("select cm_price_code from cm_mstr where cm_code = " + "'" + 
-                      ddcustcode.getSelectedItem().toString() + "'" +
-                      ";");
-               while (res.next()) {
-               pricecode = res.getString("cm_price_code") == null ? "" : res.getString("cm_price_code");
-               }
-               if (! pricecode.isEmpty()) {
-                lblpricecode.setText("Belongs to Group " + pricecode);
-                lblpricecode.setVisible(true); 
-               } else {
-                lblpricecode.setVisible(false);  
-               }
-               
-              
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
         }
     }
     /**
@@ -854,128 +927,24 @@ public class CustPriceMaint extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAddActionPerformed
-        try {
-
-           Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                boolean proceed = true;
-                int i = 0;
-              String qty = "";
-              String expiredate = null;
-              if (dcexpire.getDate() != null) {
-                  expiredate = "'" + BlueSeerUtils.setDateFormatNull(dcexpire.getDate()) + "'";
-              }
-              if (ddtype.getSelectedItem().toString().equals("VOLUME")) {
-                  qty = tbqty.getText().replace(defaultDecimalSeparator, '.');
-                  res = st.executeQuery("select cpr_item from cpr_mstr where cpr_item = " + "'" + 
-                      dditem.getSelectedItem().toString() + "'" +
-                      " and cpr_cust = " + "'" + ddcustcode.getSelectedItem().toString() + "'" +
-                      " and cpr_uom = " + "'" + dduom.getSelectedItem().toString() + "'" +
-                      " and cpr_curr = " + "'" + ddcurr.getSelectedItem().toString() + "'" +  
-                      " and cpr_volqty = " + "'" + qty + "'" +        
-                      " and cpr_type = " + "'" + ddtype.getSelectedItem().toString() + "'" +        
-                      ";");
-              }  else {
-                  qty = "0";
-                  res = st.executeQuery("select cpr_item from cpr_mstr where cpr_item = " + "'" + 
-                      dditem.getSelectedItem().toString() + "'" +
-                      " and cpr_cust = " + "'" + ddcustcode.getSelectedItem().toString() + "'" +
-                      " and cpr_uom = " + "'" + dduom.getSelectedItem().toString() + "'" +
-                      " and cpr_curr = " + "'" + ddcurr.getSelectedItem().toString() + "'" +  
-                      " and cpr_type = " + "'" + ddtype.getSelectedItem().toString() + "'" +        
-                      ";");
-              }
-            
-               while (res.next()) {
-                i++;
-                if (i == 1) 
-                    bsmf.MainFrame.show(getMessageTag(1014));
-                proceed = false;             
-               }
-             
-                if (proceed) {
-                   
-                       st.executeUpdate("insert into cpr_mstr "
-                        + "(cpr_cust, cpr_item, cpr_type, cpr_desc, cpr_uom, cpr_curr, "
-                        + "cpr_price, cpr_volqty, cpr_expire "
-                        + " ) "
-                        + " values ( " + "'" + ddcustcode.getSelectedItem() + "'" + ","
-                        + "'" + dditem.getSelectedItem().toString() + "'" + ","
-                        + "'" + ddtype.getSelectedItem().toString() + "'" + ","
-                        + "'" + dditem.getSelectedItem().toString() + "'" + ","
-                        + "'" + dduom.getSelectedItem().toString() + "'" + ","
-                        + "'" + ddcurr.getSelectedItem().toString() + "'" + ","        
-                        + "'" + tbprice.getText().replace(defaultDecimalSeparator, '.') + "'" + ","   
-                        + "'" + qty + "'" + "," 
-                        + expiredate                             
-                        + ")"
-                        + ";"); 
-                    
-
-                    
-        
-                    bsmf.MainFrame.show(getMessageTag(1007));
-                    initvars(null);
-                    // btQualProbAdd.setEnabled(false);
-                } // if proceed
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        executeTask(BlueSeerUtils.dbaction.add, new String[]{""});
     }//GEN-LAST:event_btAddActionPerformed
 
     private void ddcustcodeItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ddcustcodeItemStateChanged
-       
-      //  price.setText("");
-      //  if (ddpart.getItemCount() > 0) {
-      //  ddpart.setSelectedIndex(0);
-      //  }
-      
-      if (! isLoad) {
+    
+      if (! isLoad && ddcustcode.getSelectedItem() != null && ! ddcustcode.getSelectedItem().toString().isBlank()) {
         btAdd.setEnabled(true);
         btUpdate.setEnabled(false);
         btDelete.setEnabled(false);
-         if (ddcustcode.getItemCount() != 0) {
-              setPriceList();
-              setData();
-              lbcust.setText(cusData.getCustName(ddcustcode.getSelectedItem().toString()));
-         /*
-         String custcode = OVData.getPriceGroupCodeFromCust(ddcustcode.getSelectedItem().toString());
-         if (! custcode.isEmpty()) {
-             lblpricecode.setText("Cust belongs to Price Code " + custcode);
-             lblpricecode.setVisible(true);
-         } else {
-             lblpricecode.setVisible(false);
-         }
-         */
-         }
-      }      
-       // ArrayList mylist = OVData.getPartListFromCustCode(ddcustcode.getSelectedItem().toString());
-      //      for (int i = 0; i < mylist.size(); i++) {
-       //     ddpart.addItem(mylist.get(i));
-       //     }
+        cm = getCustMstr(new String[]{ddcustcode.getSelectedItem().toString()});
+        setPriceList();
+        setData();
+        lbcust.setText(cm.cm_name());
+      }  
     }//GEN-LAST:event_ddcustcodeItemStateChanged
 
     private void btDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btDeleteActionPerformed
-       boolean proceed = true; 
+        boolean proceed; 
         if (pricelist.isSelectionEmpty()) {
             proceed = false;
             bsmf.MainFrame.show(getMessageTag(1081));
@@ -983,134 +952,26 @@ public class CustPriceMaint extends javax.swing.JPanel {
            proceed = bsmf.MainFrame.warn(getMessageTag(1004));
         }
         if (proceed) {
-            String[] z = pricelist.getSelectedValue().toString().split(":",-1);
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            try {
-                   int i = 0;
-                   if (ddtype.getSelectedItem().toString().equals("LIST")) {
-                       i = st.executeUpdate("delete from cpr_mstr where cpr_cust = " + "'" + ddcustcode.getSelectedItem().toString() + "'" + 
-                                            " and cpr_item = " + "'" + z[0].toString() + "'" +
-                                            " and cpr_uom = " + "'" + z[1].toString() + "'" +
-                                            " and cpr_curr = " + "'" + z[2].toString() + "'" +
-                                            " and cpr_type = " + "'" + ddtype.getSelectedItem().toString() + "'" + ";");
-                   } else {
-                        i = st.executeUpdate("delete from cpr_mstr where cpr_cust = " + "'" + ddcustcode.getSelectedItem().toString() + "'" + 
-                                            " and cpr_item = " + "'" + z[0].toString() + "'" +
-                                            " and cpr_uom = " + "'" + z[1].toString() + "'" +
-                                            " and cpr_curr = " + "'" + z[2].toString() + "'" +
-                                            " and cpr_volqty = " + "'" + z[3].toString() + "'" +         
-                                            " and cpr_type = " + "'" + ddtype.getSelectedItem().toString() + "'" + ";");
-                   }
-                   
-                  
-                    if (i > 0) {
-                    bsmf.MainFrame.show(getMessageTag(1009));
-                    initvars(null);
-                    }
-                } catch (SQLException s) {
-                    MainFrame.bslog(s);
-                    bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-        }
+        executeTask(BlueSeerUtils.dbaction.delete, new String[]{""});
+        } 
     }//GEN-LAST:event_btDeleteActionPerformed
 
     private void ddcustcode_discItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_ddcustcode_discItemStateChanged
-      if (ddcustcode_disc.getSelectedItem() != null) {
-        updateDiscList();
+      if (! isLoad && ddcustcode_disc.getSelectedItem() != null && ! ddcustcode_disc.getSelectedItem().toString().isBlank()) {
+        cm = getCustMstr(new String[]{ddcustcode_disc.getSelectedItem().toString()});
+        setDiscList();
         tbdisckey.setText("");
         tbdisc.setText("");
       }
     }//GEN-LAST:event_ddcustcode_discItemStateChanged
 
     private void btadddiscActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btadddiscActionPerformed
-        try {
-
-           Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                boolean proceed = true;
-                int i = 0;
-                
-            
-            
-             
-              res = st.executeQuery("select cpr_item from cpr_mstr where cpr_item = " + "'" + 
-                      tbdisckey.getText().toString() + "'" +
-                      " and cpr_cust = " + "'" + ddcustcode_disc.getSelectedItem().toString() + "'" +
-                      " and cpr_type = " + "'DISCOUNT'" +
-                      ";");
-               while (res.next()) {
-                i++;
-                if (i == 1) 
-                    bsmf.MainFrame.show(getMessageTag(1014));
-                proceed = false;             
-               }
-             
-                if (proceed) {
-                    String expiredate = null;
-                    if (dcexpiredisc.getDate() != null) {
-                        expiredate = "'" + BlueSeerUtils.setDateFormat(dcexpiredisc.getDate()) + "'";
-                    }
-                    st.executeUpdate("insert into cpr_mstr "
-                        + "(cpr_cust, cpr_item, cpr_type, cpr_desc, "
-                        + " cpr_disc, cpr_expire "
-                        + " ) "
-                        + " values ( " + "'" + ddcustcode_disc.getSelectedItem() + "'" + ","
-                        + "'" + tbdisckey.getText().toString() + "'" + ","
-                        + "'DISCOUNT'" + ","
-                        + "'" + tbdisckey.getText().toString() + "'" + ","
-                        + "'" + tbdisc.getText().replace(defaultDecimalSeparator, '.') + "'" + ","
-                        + expiredate         
-                        + ")"
-                        + ";");
-
-                    
         
-                    bsmf.MainFrame.show(getMessageTag(1007));
-                    initvars(null);
-                    // btQualProbAdd.setEnabled(false);
-                } // if proceed
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        executeTask(BlueSeerUtils.dbaction.add, new String[]{"discount"});
     }//GEN-LAST:event_btadddiscActionPerformed
 
     private void btdeletediscActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdeletediscActionPerformed
-        boolean proceed = true; 
+        boolean proceed; 
         if (disclist.isSelectionEmpty()) {
             proceed = false;
             bsmf.MainFrame.show(getMessageTag(1081));
@@ -1118,258 +979,58 @@ public class CustPriceMaint extends javax.swing.JPanel {
            proceed = bsmf.MainFrame.warn(getMessageTag(1004));
         }
         if (proceed) {
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            try {
-              
-                   int i = st.executeUpdate("delete from cpr_mstr where cpr_cust = " + "'" + ddcustcode_disc.getSelectedItem().toString() + "'" + 
-                                            " and cpr_item = " + "'" + disclist.getSelectedValue().toString() + "'" +
-                                            " and cpr_type = 'DISCOUNT' " + ";");
-                    if (i > 0) {
-                    bsmf.MainFrame.show(getMessageTag(1009));
-                    initvars(null);
-                    }
-                } catch (SQLException s) {
-                    MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        executeTask(BlueSeerUtils.dbaction.delete, new String[]{"discount"});
         }
     }//GEN-LAST:event_btdeletediscActionPerformed
 
     private void btupdatediscActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdatediscActionPerformed
-        if (! disclist.isSelectionEmpty())
-        try {
-
-           Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                boolean proceed = true;
-                if (proceed) {
-                    String expiredate = null;
-                    if (dcexpiredisc.getDate() != null) {
-                      expiredate = "'" + BlueSeerUtils.setDateFormat(dcexpiredisc.getDate()) + "'";
-                    }
-                    st.executeUpdate("update cpr_mstr "
-                        + " set cpr_disc = " + "'" + tbdisc.getText().replace(defaultDecimalSeparator, '.') + "'" + ","
-                        + " cpr_expire = " + expiredate
-                        + " where cpr_cust = " + "'" + ddcustcode_disc.getSelectedItem() + "'" 
-                        + " and cpr_type = 'DISCOUNT' "        
-                        + " and cpr_item = " + "'" + disclist.getSelectedValue().toString() + "'"  
-                        + ";");
-
-                    bsmf.MainFrame.show(getMessageTag(1008));
-                    initvars(null);
-                } // if proceed
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        executeTask(BlueSeerUtils.dbaction.add, new String[]{"discount"});
+        
     }//GEN-LAST:event_btupdatediscActionPerformed
 
     private void disclistMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_disclistMouseClicked
-        if (! disclist.isSelectionEmpty())
-        try {
-           Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                  res = st.executeQuery("select cpr_disc, cpr_item, cpr_expire from cpr_mstr where " +
-                      " cpr_cust = " + "'" + ddcustcode_disc.getSelectedItem().toString() + "'" +
-                      " and cpr_type = 'DISCOUNT'" +
-                      " and cpr_item = " + "'" + disclist.getSelectedValue().toString() + "'" +
-                      ";");
-               while (res.next()) {
-                      tbdisc.setText(bsformat("s",res.getString("cpr_disc").replace('.', defaultDecimalSeparator),"4"));
-                      tbdisckey.setText(res.getString("cpr_item"));
-                      dcexpiredisc.setDate(BlueSeerUtils.parseDate(res.getString("cpr_expire"))); 
-               }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+        if (! disclist.isSelectionEmpty()) {
+            cpr_mstr cpr = getCprMstr(new String[]{ddcustcode_disc.getSelectedItem().toString(),
+            disclist.getSelectedValue().toString(), "", "", "DISCOUNT", "0"}); 
+            tbdisc.setText(bsNumber(cpr.cpr_price()));
+            tbdisckey.setText(cpr.cpr_item());
+            dcexpiredisc.setDate(BlueSeerUtils.parseDate(cpr.cpr_expire())); 
         }
+        
     }//GEN-LAST:event_disclistMouseClicked
 
     private void btUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btUpdateActionPerformed
-        try {
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                boolean proceed = true;
-                int i = 0;
-                String qty = "";
-                String expiredate = null;
-                if (dcexpire.getDate() != null) {
-                  expiredate = "'" + BlueSeerUtils.setDateFormatNull(dcexpire.getDate()) + "'";
-                }
-                if (ddtype.getSelectedItem().toString().equals("VOLUME")) {
-                    qty = tbqty.getText().replace(defaultDecimalSeparator, '.');
-                }  else {
-                    qty = "0";
-                }
-                
-                if (proceed) {
-                    
-                    if (ddtype.getSelectedItem().toString().equals("LIST")) {
-                       
-                        st.executeUpdate("update cpr_mstr "
-                        + " set cpr_price = " + "'" + tbprice.getText().replace(defaultDecimalSeparator, '.') + "'"
-                        + ", cpr_expire = " + expiredate 
-                        + " where cpr_cust = " + "'" + ddcustcode.getSelectedItem() + "'" 
-                        + " and cpr_type = " + "'" + ddtype.getSelectedItem().toString() + "'"        
-                        + " and cpr_uom = " + "'" + dduom.getSelectedItem().toString() + "'"
-                        + " and cpr_curr = " + "'" + ddcurr.getSelectedItem().toString() + "'"        
-                        + " and cpr_item = " + "'" + dditem.getSelectedItem().toString() + "'" 
-                        + ";");    
-                       
-                    } else {
-                       st.executeUpdate("update cpr_mstr "
-                        + " set cpr_price = " + "'" + tbprice.getText().replace(defaultDecimalSeparator, '.') + "'"
-                        + ", cpr_expire = " + expiredate        
-                        + " where cpr_cust = " + "'" + ddcustcode.getSelectedItem() + "'" 
-                        + " and cpr_type = " + "'" + ddtype.getSelectedItem().toString() + "'"        
-                        + " and cpr_uom = " + "'" + dduom.getSelectedItem().toString() + "'"
-                        + " and cpr_curr = " + "'" + ddcurr.getSelectedItem().toString() + "'"        
-                        + " and cpr_item = " + "'" + dditem.getSelectedItem().toString() + "'"  
-                        + " and cpr_volqty = " + "'" + qty + "'"         
-                        + ";"); 
-                    }
-                    
-                        
-                    
-
-                    bsmf.MainFrame.show(getMessageTag(1008));
-                    initvars(null);
-                } // if proceed
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        executeTask(BlueSeerUtils.dbaction.add, new String[]{""}); // update uses 'add' and calls addUpdate sql
     }//GEN-LAST:event_btUpdateActionPerformed
 
     private void pricelistMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_pricelistMouseClicked
-        if (! pricelist.isSelectionEmpty())
-        try {
-           Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                String[] str = pricelist.getSelectedValue().toString().split(":", -1);
-                if (str.length > 3) {
-               res = st.executeQuery("select cpr_price, cpr_item, cpr_uom, cpr_curr, cpr_volqty, cpr_type, cpr_expire from cpr_mstr where cpr_cust = " + "'" + 
-                      ddcustcode.getSelectedItem().toString() + "'" +
-                      " and cpr_type = " + "'VOLUME'" +
-                      " and cpr_item = " + "'" + str[0] + "'" +
-                      " and cpr_uom = " + "'" + str[1] + "'" +
-                      " and cpr_curr = " + "'" + str[2] + "'" +   
-                      " and cpr_volqty = " + "'" + str[3] + "'" +        
-                      ";");
+        if (! pricelist.isSelectionEmpty()) {
+          String[] str  = pricelist.getSelectedValue().toString().split(":", -1);  //item, uom, curr, volqty
+          cpr_mstr cpr = null;
+                if (str.length > 3) { 
+                    cpr = getCprMstr(new String[]{ddcustcode.getSelectedItem().toString(),
+                    str[0], str[1], str[2], "VOLUME", str[3]});
                 } else {
-                 res = st.executeQuery("select cpr_price, cpr_item, cpr_uom, cpr_curr, cpr_volqty, cpr_type, cpr_expire from cpr_mstr where cpr_cust = " + "'" + 
-                      ddcustcode.getSelectedItem().toString() + "'" +
-                      " and cpr_type = " + "'LIST'" +
-                      " and cpr_item = " + "'" + str[0] + "'" +
-                      " and cpr_uom = " + "'" + str[1] + "'" +
-                      " and cpr_curr = " + "'" + str[2] + "'" +        
-                      ";");  
+                    cpr = getCprMstr(new String[]{ddcustcode.getSelectedItem().toString(),
+                    str[0], str[1], str[2], "LIST", "0"});
                 }
-               while (res.next()) {
-                      dduom.setSelectedItem(res.getString("cpr_uom"));
-                      ddcurr.setSelectedItem(res.getString("cpr_curr"));
-                      dditem.setSelectedItem(res.getString("cpr_item"));
-                      ddtype.setSelectedItem(res.getString("cpr_type"));
-                      dcexpire.setDate(BlueSeerUtils.parseDate(res.getString("cpr_expire"))); 
-                      tbprice.setText(bsformat("s",res.getString("cpr_price").replace('.',defaultDecimalSeparator),"4"));
-                      tbqty.setText(bsformat("s",res.getString("cpr_volqty").replace('.',defaultDecimalSeparator),"4"));
-               }
-               btAdd.setEnabled(false);
-               btUpdate.setEnabled(true);
-               btDelete.setEnabled(true);
                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+                isLoad = true;
+                dduom.setSelectedItem(cpr.cpr_uom());
+                ddcurr.setSelectedItem(cpr.cpr_curr());
+                dditem.setSelectedItem(cpr.cpr_item());
+                ddtype.setSelectedItem(cpr.cpr_type());
+                dcexpire.setDate(BlueSeerUtils.parseDate(cpr.cpr_expire())); 
+                tbprice.setText(bsNumber(cpr.cpr_price())); 
+                tbqty.setText(bsNumber(cpr.cpr_volqty()));
+               
+                btAdd.setEnabled(false);
+                btUpdate.setEnabled(true);
+                btDelete.setEnabled(true);
+                tbprice.setBackground(Color.GREEN);
+                isLoad = false;
         }
+         
     }//GEN-LAST:event_pricelistMouseClicked
 
     private void dduomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dduomActionPerformed
@@ -1400,6 +1061,7 @@ public class CustPriceMaint extends javax.swing.JPanel {
     }//GEN-LAST:event_tbpriceFocusGained
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
+        initDataSets = null;
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 

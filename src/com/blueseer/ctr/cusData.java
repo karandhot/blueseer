@@ -2044,6 +2044,74 @@ public class cusData {
         return m;
     }
     
+    public static String[] addOrUpdateCprMstr(cpr_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addOrUpdateCprMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServCUS"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
+        String sqlSelect = "SELECT * FROM  cpr_mstr where cpr_cust = ? and cpr_item = ? and cpr_uom = ? and cpr_curr = ? and cpr_type = ? and cpr_volqty = ?";
+        String sqlInsert = "insert into cpr_mstr (cpr_cust, cpr_item, cpr_type, cpr_desc, cpr_uom, cpr_curr, "
+                        + "cpr_price, cpr_volqty, cpr_expire)  " 
+                        + " values (?,?,?,?,?,?,?,?,?); ";  
+        String sqlUpdate = "update cpr_mstr set cpr_desc = ?, cpr_price = ?, cpr_expire = ? " +   
+                " where cpr_cust = ? and cpr_item = ? and cpr_uom = ? and cpr_curr = ? and cpr_type = ? and cpr_volqty = ? ; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+             PreparedStatement ps = con.prepareStatement(sqlSelect);) {
+             ps.setString(1, x.cpr_cust);
+             ps.setString(2, x.cpr_item);
+             ps.setString(3, x.cpr_uom);
+             ps.setString(4, x.cpr_curr);
+             ps.setString(5, x.cpr_type);
+             ps.setDouble(6, x.cpr_volqty);
+          try (ResultSet res = ps.executeQuery();
+               PreparedStatement psi = con.prepareStatement(sqlInsert);
+               PreparedStatement psu = con.prepareStatement(sqlUpdate);) {  
+            if (! res.isBeforeFirst()) {
+            psi.setString(1, x.cpr_cust);
+            psi.setString(2, x.cpr_item);
+            psi.setString(3, x.cpr_type);
+            psi.setString(4, x.cpr_desc);
+            psi.setString(5, x.cpr_uom);
+            psi.setString(6, x.cpr_curr);
+            psi.setDouble(7, x.cpr_price);
+            psi.setDouble(8, x.cpr_volqty);
+            psi.setString(9, x.cpr_expire);
+            int rows = psi.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+            } else {
+            psu.setString(1, x.cpr_desc);
+            psu.setDouble(2, x.cpr_price);
+            psu.setString(3, x.cpr_expire);
+            psu.setString(4, x.cpr_cust);
+            psu.setString(5, x.cpr_item);
+            psu.setString(6, x.cpr_uom);
+            psu.setString(7, x.cpr_curr);
+            psu.setString(8, x.cpr_type);
+            psu.setDouble(9, x.cpr_volqty);
+            int rows = psu.executeUpdate();    
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};    
+            }
+          } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+          }
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+
+    
     public static String[] deleteCprMstr(cpr_mstr x) { 
        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
@@ -2082,12 +2150,12 @@ public class cusData {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id","getCprMstr"});
-            list.add(new String[]{"param1",x[0]});
-            list.add(new String[]{"param2",x[1]});
-            list.add(new String[]{"param3",x[2]});
-            list.add(new String[]{"param4",x[3]});
-            list.add(new String[]{"param5",x[4]});
-            list.add(new String[]{"param6",x[5]});
+            list.add(new String[]{"param1",x[0]}); // cust
+            list.add(new String[]{"param2",x[1]}); // item
+            list.add(new String[]{"param3",x[2]}); // uom
+            list.add(new String[]{"param4",x[3]}); // curr
+            list.add(new String[]{"param5",x[4]}); // type
+            list.add(new String[]{"param6",x[5]}); // volqty
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 String returnstring = sendServerPost(list, "", null, "dataServCUS");

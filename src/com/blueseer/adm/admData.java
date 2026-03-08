@@ -3409,6 +3409,15 @@ public class admData {
                                lines.add(s);
                             }
                         }
+                        if (sd.equals("pricegroups")) {
+                            res = st.executeQuery("select code_key from code_mstr where code_code = " + "'PRICEGROUP'" + " order by code_key ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "pricegroups";
+                               s[1] = res.getString("code_key");
+                               lines.add(s);
+                            }
+                        }
                         if (sd.equals("icprofiles")) {
                             res = st.executeQuery("select distinct glic_profile from glic_def ;");
                             while (res.next()) {
@@ -3559,6 +3568,24 @@ public class admData {
                                String[] s = new String[2];
                                s[0] = "locations";
                                s[1] = res.getString("loc_loc");
+                               lines.add(s);
+                            }
+                        }
+                        if (sd.equals("items")) {
+                            res = st.executeQuery("select it_item from item_mstr;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "items";
+                               s[1] = res.getString("it_item");
+                               lines.add(s);
+                            }
+                        }
+                        if (sd.equals("uoms")) {
+                            res = st.executeQuery("select uom_id from uom_mstr;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "uoms";
+                               s[1] = res.getString("uom_id");
                                lines.add(s);
                             }
                         }

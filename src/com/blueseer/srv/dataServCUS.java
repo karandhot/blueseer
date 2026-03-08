@@ -30,6 +30,7 @@ import static com.blueseer.ctr.cusData.addCMCDet;
 import static com.blueseer.ctr.cusData.addCMSDet;
 import static com.blueseer.ctr.cusData.addCprMstr;
 import static com.blueseer.ctr.cusData.addCustMstrMass;
+import static com.blueseer.ctr.cusData.addOrUpdateCprMstr;
 import static com.blueseer.ctr.cusData.addTermsMstr;
 import static com.blueseer.ctr.cusData.addUpdateCMCtrl;
 import static com.blueseer.ctr.cusData.deleteCMCDet;
@@ -400,6 +401,19 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             ObjectMapper objectMapper = new ObjectMapper();
             cusData.cm_ctrl x = objectMapper.readValue(sb.toString(), cusData.cm_ctrl.class);            
             response.getWriter().print(arrayToJson(addUpdateCMCtrl(x)));
+            break;
+          }
+        
+        case "addOrUpdateCprMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cpr_mstr x = objectMapper.readValue(sb.toString(), cusData.cpr_mstr.class);            
+            response.getWriter().print(arrayToJson(addOrUpdateCprMstr(x)));
             break;
           }
         

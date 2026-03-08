@@ -41,6 +41,7 @@ import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToBoolean;
 import static com.blueseer.utl.BlueSeerUtils.jsonToDouble;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
@@ -56,6 +57,7 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 import org.json.JSONArray;
 
@@ -332,6 +334,18 @@ public class schData {
     }
 
     public static String[] updatePlanOperation(plan_operation x ) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updatePlanOperation"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServSCH"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlUpdate = "update plan_operation set plo_qty = ?, plo_qty_comp = ?, plo_cell = ?, "
                         + " plo_operator = ?, plo_operatorname = ?, plo_date = ?, plo_status = ?  "
@@ -422,6 +436,21 @@ public class schData {
     public static plan_operation getPlanOperation(int parent, int op) {
         plan_operation r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getPlanOperation"});
+            list.add(new String[]{"param1",  bsNumber(parent)});
+            list.add(new String[]{"param2",  bsNumber(op)});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServSCH");
+                r = objectMapper.readValue(returnstring, plan_operation.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         String sql = "select * from plan_operation where plo_parent = ? and plo_op = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -450,7 +479,7 @@ public class schData {
     
     
     // misc functions 
-    
+   
     public static String getSchedulerBrowseView(String[] keys) {
         JSONArray jsonarray = new JSONArray();
         try {
@@ -1014,9 +1043,21 @@ public class schData {
       }
           
     public static void updatePlanStatus(String serialno, String value) {
-          try {
-
-            
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "updatePlanStatus"});
+            list.add(new String[]{"param1", serialno});
+            list.add(new String[]{"param2", value});
+            try {
+                sendServerPost(list, "", null, "dataServSCH");
+                return; 
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        }   
+        
+        try {
             Connection con = null;
             if (ds != null) {
               con = ds.getConnection();
@@ -1230,6 +1271,21 @@ public class schData {
   }
 
     public static boolean updatePlanOrder(String order, String schedqty, String cell, String scheddate, String status) {
+      if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "updatePlanOrder"});
+            list.add(new String[]{"param1", order});
+            list.add(new String[]{"param2", schedqty});
+            list.add(new String[]{"param3", cell});
+            list.add(new String[]{"param4", scheddate});
+            list.add(new String[]{"param5", status});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServSCH"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        } 
       boolean myreturn = false;  
       try {
 

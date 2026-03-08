@@ -3935,8 +3935,26 @@ public class invData {
 
     }
 
-    public static double getItemPriceFromCust(String cust, String item, String uom, String curr, String pricetype, String qty) {
-    double price = 0;
+    public static String[] getItemPriceFromCust(String cust, String item, String uom, String curr, String pricetype, String qty) {
+        // returns price, itemdesc
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getItemPriceFromCust"});
+            list.add(new String[]{"param1", cust});
+            list.add(new String[]{"param2", item});
+            list.add(new String[]{"param3", uom});
+            list.add(new String[]{"param4", curr});
+            list.add(new String[]{"param5", pricetype});
+            list.add(new String[]{"param6", qty});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) { 
+                bslog(ex);
+                return null;
+            }
+        } 
+       
+    String[] r = new String[]{"0",""};  
     String pricecode = "";
 
     try{
@@ -3961,7 +3979,9 @@ public class invData {
              }
 
             if (pricetype.equals("VOLUME")) {
-            res = st.executeQuery("select cpr_price from cpr_mstr where cpr_cust = " + "'" + cust + "'" + 
+            res = st.executeQuery("select cpr_price, it_desc from cpr_mstr " +
+                                  " inner join item_mstr on it_item = cpr_item " +
+                                  " where cpr_cust = " + "'" + cust + "'" + 
                                   " AND cpr_item = " + "'" + item + "'" +
                                   " AND cpr_uom = " + "'" + uom + "'" +
                                   " AND cpr_curr = " + "'" + curr + "'" +
@@ -3969,7 +3989,9 @@ public class invData {
                                   " AND cpr_volqty = " + "'" + qty + "'"        
                                   + ";");
             } else {
-              res = st.executeQuery("select cpr_price from cpr_mstr where cpr_cust = " + "'" + cust + "'" + 
+              res = st.executeQuery("select cpr_price, it_desc from cpr_mstr " +
+                                  " inner join item_mstr on it_item = cpr_item " +
+                                  " where cpr_cust = " + "'" + cust + "'" + 
                                   " AND cpr_item = " + "'" + item + "'" +
                                   " AND cpr_uom = " + "'" + uom + "'" +
                                   " AND cpr_curr = " + "'" + curr + "'" +
@@ -3977,8 +3999,9 @@ public class invData {
                                   + ";");  
             }
            while (res.next()) {
-               price = res.getDouble("cpr_price");
-
+              // price = res.getDouble("cpr_price");
+               r[0] = res.getString("cpr_price");
+               r[1] = res.getString("it_desc");
             }
 
 
@@ -3998,7 +4021,7 @@ public class invData {
     catch (Exception e){
         MainFrame.bslog(e);
     }
-    return price;
+    return r;
 
     }
 
@@ -4550,8 +4573,20 @@ public class invData {
         return set;
     }
     
-    public static ArrayList getInvMetaOperators(String routing, String op) {
-               ArrayList myarray = new ArrayList();
+    public static ArrayList getInvMetaOperators(String item, String op) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getInvMetaOperators"});
+            list.add(new String[]{"param1", item});
+             list.add(new String[]{"param2", op});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }    
+        ArrayList myarray = new ArrayList();
              try{
                 Connection con = null;
                 if (ds != null) {
@@ -4562,6 +4597,11 @@ public class invData {
                 Statement st = con.createStatement();
                 ResultSet res = null;
                 try{ 
+                    String routing = "";
+                    res = st.executeQuery("select it_wf from item_mstr where it_item = " + "'" + item + "'" + " ;" );
+                    while (res.next()) {
+                    routing = res.getString("it_wf");                    
+                    }
                     res = st.executeQuery("select invm_value from inv_meta where invm_id = " + "'" + routing + "'" +
                             " and invm_type = 'operator' and invm_key = " + "'" + op + "'" +
                             " order by invm_value ;" );

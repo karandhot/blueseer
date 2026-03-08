@@ -26,6 +26,7 @@ SOFTWARE.
 package com.blueseer.hrm;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
@@ -33,6 +34,9 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -772,6 +776,17 @@ public class hrmData {
 
     
     public static String getEmpIDByFormalName(String formalname) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getEmpIDByFormalName"});
+            list.add(new String[]{"param1",  formalname});
+            try {
+                return sendServerPost(list, "", null, "dataServHRM"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        }
         String x = "";
         String[] fn = formalname.split(",", -1);
         if (fn == null || fn.length < 2) {
@@ -888,6 +903,17 @@ public class hrmData {
     }
 
     public static ArrayList getEmpNameAll() {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getEmpNameAll"});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServHRM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
         ArrayList myarray = new ArrayList();
         try {
             
