@@ -28,6 +28,7 @@ package com.blueseer.ctr;
 
 import com.blueseer.fgl.*;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import java.awt.Color;
@@ -79,6 +80,8 @@ import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
@@ -92,6 +95,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 import javax.swing.table.TableCellRenderer;
 
 /**
@@ -100,6 +104,10 @@ import javax.swing.table.TableCellRenderer;
  */
 public class SalesRepBrowse extends javax.swing.JPanel {
  
+    boolean isLoad = false;
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
     String defaultSite = "";
     String defaultCurrency = "";
     
@@ -212,6 +220,75 @@ public class SalesRepBrowse extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+              
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }        
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
     public void setLanguageTags(Object myobj) {
       // lblaccount.setText(labels.getString("LedgerAcctMstrPanel.labels.lblaccount"));
       
@@ -260,12 +337,27 @@ public class SalesRepBrowse extends javax.swing.JPanel {
     
     
     public void initvars(String[] arg) {
+        executeTask("dataInit", null);       
+    }
+    
+     public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        
+        isLoad = true;
         mymodel.setRowCount(0);
          java.util.Date now = new java.util.Date();
          dcfrom.setDate(now);
          dcto.setDate(now);
          
-         ArrayList<String[]> initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "reps");
+         initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "reps");
           
         ddsite.removeAllItems();
         
@@ -315,8 +407,72 @@ public class SalesRepBrowse extends javax.swing.JPanel {
           }
         }
          
-       
+        isLoad = false;
+        
     }
+    
+    public String[] getBrowseView() {
+        String jsonString = null; 
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(new String[]{"id","getSalesRepBrowseView"});
+        list.add(new String[]{"param1",dfdate.format(dcfrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcto.getDate())});
+        list.add(new String[]{"param3",ddfromrep.getSelectedItem().toString()});
+        list.add(new String[]{"param4",ddtorep.getSelectedItem().toString()});
+        list.add(new String[]{"param5",ddsite.getSelectedItem().toString()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServCUS"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getSalesRepBrowseView")};
+            }
+        } else {
+            jsonString = cusData.getSalesRepBrowseView(new String[]{
+                dfdate.format(dcfrom.getDate()),
+                dfdate.format(dcto.getDate()),
+                ddfromrep.getSelectedItem().toString(),
+                ddtorep.getSelectedItem().toString(),
+                ddsite.getSelectedItem().toString()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getCustXrefBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+       
+        int i = 0;
+        double dol = 0.0;
+        double repamttotal = 0.0;
+        
+        mymodel.setNumRows(0);
+        if (roData != null) {
+            for (Object[] rowData : roData) {
+               roData[i][6] = bsParseDouble(roData[i][6].toString()); // totdol
+               roData[i][7] = bsParseDouble(roData[i][7].toString()); // totdol
+               dol += bsParseDouble(roData[i][6].toString());
+               repamttotal += bsParseDouble(roData[i][7].toString());
+               mymodel.addRow(rowData);
+                i++;
+            }
+        }
+        labeldollar.setText(String.valueOf(currformatDouble(dol)));
+        labelrep.setText(String.valueOf(currformatDouble(repamttotal)));
+       
+        roData = null;
+    }   
+       
+
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -519,84 +675,7 @@ public class SalesRepBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-    
-try {
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int qty = 0;
-                double dol = 0;
-                double repamt = 0;
-                double repamttotal = 0;
-                int i = 0;
-                
-                   
-                 mymodel.setNumRows(0);
-                   
-               
-               
-                Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
-                 
-             
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-
-                     
-                 res = st.executeQuery("SELECT sh_id, sh_confdate, so_slsperson1, so_slsperson2, cm_code, cm_name, sh_po, ar_amt, slsp_rate from ship_mstr " +
-                        " inner join ar_mstr on ar_nbr = sh_id " +
-                        " inner join cm_mstr on cm_code = sh_cust " +
-                        " inner join so_mstr on so_nbr = sh_so " + 
-                        " inner join slsp_mstr on slsp_name = so_slsperson1 " +  
-                        " where sh_confdate >= " + "'" + setDateDB(dcfrom.getDate())  + "'" + 
-                        " AND sh_confdate <= " + "'" + setDateDB(dcto.getDate()) + "'" +
-                         " AND so_slsperson1 >= " + "'" + ddfromrep.getSelectedItem().toString() + "'" +
-                         " AND so_slsperson1 <= " + "'" + ddtorep.getSelectedItem().toString() + "'" +
-                         " AND sh_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +
-                         " order by sh_id desc ;");    
-                 
-                 
-                while (res.next()) {
-                                      
-                    dol = dol + res.getDouble("ar_amt");
-                    repamt = (res.getDouble("ar_amt") * (res.getDouble("slsp_rate") / 100));
-                    repamttotal = repamttotal + repamt;
-                    i++;
-                        mymodel.addRow(new Object[]{
-                                res.getString("sh_id"),
-                                getDateDB(res.getString("sh_confdate")),
-                                res.getString("so_slsperson1"),
-                                res.getString("cm_code"),
-                                res.getString("cm_name"),
-                                res.getString("sh_po"),
-                                bsParseDouble(currformatDouble(res.getDouble("ar_amt"))),
-                                bsParseDouble(currformatDouble(repamt))
-                            });
-                }
-                labeldollar.setText(String.valueOf(currformatDouble(dol)));
-                labelrep.setText(String.valueOf(currformatDouble(repamttotal)));
-               
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
+        executeTask("getBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btcsvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcsvActionPerformed

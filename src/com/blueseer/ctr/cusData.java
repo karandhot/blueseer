@@ -36,6 +36,7 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
@@ -43,6 +44,7 @@ import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -2805,6 +2807,68 @@ public class cusData {
                         rowArray.put(res.getString("cpr_volqty"));
                         rowArray.put(res.getString("cpr_price"));
                         rowArray.put(res.getString("cpr_disc"));
+                        jsonarray.put(rowArray);
+                        
+                } 
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getSalesRepBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                double repamt = 0.00;
+                
+                res = st.executeQuery("SELECT sh_id, sh_confdate, so_slsperson1, so_slsperson2, cm_code, cm_name, sh_po, ar_amt, slsp_rate from ship_mstr " +
+                        " inner join ar_mstr on ar_nbr = sh_id " +
+                        " inner join cm_mstr on cm_code = sh_cust " +
+                        " inner join so_mstr on so_nbr = sh_so " + 
+                        " inner join slsp_mstr on slsp_name = so_slsperson1 " +  
+                        " where sh_confdate >= " + "'" + keys[0]  + "'" + 
+                        " AND sh_confdate <= " + "'" + keys[1] + "'" +
+                         " AND so_slsperson1 >= " + "'" + keys[2] + "'" +
+                         " AND so_slsperson1 <= " + "'" + keys[3] + "'" +
+                         " AND sh_site = " + "'" + keys[4] + "'" +
+                         " order by sh_id desc ;");   
+               
+                repamt = (res.getDouble("ar_amt") * (res.getDouble("slsp_rate") / 100));
+                
+                while (res.next()) {
+                        i++;
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("sh_id"));
+                        rowArray.put(res.getString("sh_confdate"));
+                        rowArray.put(res.getString("so_slsperson1"));
+                        rowArray.put(res.getString("cm_code"));
+                        rowArray.put(res.getString("cm_name"));
+                        rowArray.put(res.getString("sh_po"));
+                        rowArray.put(currformatDouble(res.getDouble("ar_amt")));
+                        rowArray.put(currformatDouble(repamt));
                         jsonarray.put(rowArray);
                         
                 } 

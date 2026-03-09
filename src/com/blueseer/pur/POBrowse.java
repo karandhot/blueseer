@@ -91,7 +91,7 @@ public class POBrowse extends javax.swing.JPanel {
     public String rsData; 
     Object[][] roData;
     ArrayList<String[]> initDataSets = new ArrayList<>();
-    String defaultsite = "";
+    String defaultSite = "";
     String defaultCurrency = "";
      public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
      
@@ -367,7 +367,7 @@ public class POBrowse extends javax.swing.JPanel {
               ddsite.addItem(s[1]); 
             }
             if (s[0].equals("site")) {
-              defaultsite = s[1]; 
+              defaultSite = s[1]; 
             }
             if (s[0].equals("vendors")) {
               ddvendfrom.addItem(s[1]); 
@@ -378,7 +378,7 @@ public class POBrowse extends javax.swing.JPanel {
             }
         }
         if (ddsite.getItemCount() > 0) {
-            ddsite.setSelectedItem(defaultsite);
+            ddsite.setSelectedItem(defaultSite);
         }
         
         if (ddvendfrom.getItemCount() > 0) {
