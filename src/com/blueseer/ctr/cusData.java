@@ -36,6 +36,8 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
+import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
+import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
@@ -2708,6 +2710,120 @@ public class cusData {
         MainFrame.bslog(e);
     }
         return lines;
+    }
+    
+    public static String getCustXrefBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                if (keys[0].equals("item")) {
+                res = st.executeQuery("SELECT * FROM  cup_mstr  left outer join cm_mstr on cm_code = cup_cust where " +
+                    " cup_item like " + "'%" + keys[1] + "%' ;") ;
+                } else {
+                    res = st.executeQuery("SELECT * FROM  cup_mstr left outer join cm_mstr on cm_code = cup_cust where " +
+                    " cup_citem like " + "'%" + keys[1] + "%' ;") ;
+                }
+               
+                while (res.next()) {
+                        i++;
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("cup_cust"));
+                        rowArray.put(res.getString("cm_name"));
+                        rowArray.put(res.getString("cup_item"));
+                        rowArray.put(res.getString("cup_citem"));
+                        rowArray.put(res.getString("cup_citem2"));
+                        jsonarray.put(rowArray);
+                        
+                } 
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getCustPriceBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                String expire = "";
+                if (keys[0].equals("item")) {
+                res = st.executeQuery("SELECT * FROM  cpr_mstr where " +
+                    " cpr_item like " + "'" + "%" + keys[1] + "%' order by cpr_cust, cpr_item;") ;
+                } else {
+                    res = st.executeQuery("SELECT * FROM  cpr_mstr where " +
+                    " cpr_cust like " + "'" + "%" + keys[1] + "%' order by cpr_cust, cpr_item ;") ;
+                }
+                if (res.getString("cpr_expire") == null || res.getString("cpr_expire").equals("null") ) {
+                        expire = "";  
+                      } else {
+                        expire = res.getString("cpr_expire");  
+                      } 
+               
+                while (res.next()) {
+                        i++;
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("cpr_cust"));
+                        rowArray.put(res.getString("cpr_type"));
+                        rowArray.put(res.getString("cpr_item"));
+                        rowArray.put(res.getString("cpr_uom"));
+                        rowArray.put(res.getString("cpr_curr"));
+                        rowArray.put(expire);
+                        rowArray.put(res.getString("cpr_volqty"));
+                        rowArray.put(res.getString("cpr_price"));
+                        rowArray.put(res.getString("cpr_disc"));
+                        jsonarray.put(rowArray);
+                        
+                } 
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
     }
     
     

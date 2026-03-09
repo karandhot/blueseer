@@ -47,7 +47,9 @@ import static com.blueseer.ctr.cusData.getCprPriceLists;
 import static com.blueseer.ctr.cusData.getCustBrowseView;
 import static com.blueseer.ctr.cusData.getCustLabel;
 import static com.blueseer.ctr.cusData.getCustMstr;
+import static com.blueseer.ctr.cusData.getCustPriceBrowseView;
 import static com.blueseer.ctr.cusData.getCustShipSet;
+import static com.blueseer.ctr.cusData.getCustXrefBrowseView;
 import static com.blueseer.ctr.cusData.getDiscountRecsByCust;
 import static com.blueseer.ctr.cusData.getTermsMstr;
 import static com.blueseer.ctr.cusData.getcustshipmstrlist;
@@ -424,6 +426,24 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                request.getHeader("param3")
                };     
         response.getWriter().print(getCustBrowseView(x));  
+        break;
+        }
+        
+        case "getCustXrefBrowseView" : {
+        String[] x = new String[]{
+               request.getHeader("param1"), 
+               request.getHeader("param2")
+               };     
+        response.getWriter().print(getCustXrefBrowseView(x));  
+        break;
+        }
+        
+        case "getCustPriceBrowseView" : {
+        String[] x = new String[]{
+               request.getHeader("param1"), 
+               request.getHeader("param2")
+               };     
+        response.getWriter().print(getCustPriceBrowseView(x));  
         break;
         }
         

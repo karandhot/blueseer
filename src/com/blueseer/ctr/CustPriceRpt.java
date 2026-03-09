@@ -28,6 +28,7 @@ package com.blueseer.ctr;
 
 import com.blueseer.rcv.*;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static bsmf.MainFrame.checkperms;
@@ -70,9 +71,13 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
+import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.vdr.venData;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
@@ -84,6 +89,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 
 /**
  *
@@ -91,8 +97,13 @@ import javax.swing.JTabbedPane;
  */
 public class CustPriceRpt extends javax.swing.JPanel {
  
-     public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
-     
+    boolean isLoad = false;
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultsite = "";
+    String defaultCurrency = "";
+    
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{
                         getGlobalColumnTag("select"), 
@@ -160,51 +171,73 @@ public class CustPriceRpt extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
-     public void getdetail(String rvid) {
+    public void executeTask(String x, String[] y) { 
       
-         modeldetail.setNumRows(0);
-         double total = 0;
-        
-        try {
-
-            Class.forName(bsmf.MainFrame.driver).newInstance();
-            bsmf.MainFrame.con = DriverManager.getConnection(bsmf.MainFrame.url + bsmf.MainFrame.db, bsmf.MainFrame.user, bsmf.MainFrame.pass);
-            try {
-                Statement st = bsmf.MainFrame.con.createStatement();
-                ResultSet res = null;
-                int i = 0;
-                String blanket = "";
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
                 
-                res = st.executeQuery("select rvd_id, rvd_po, rvd_poline, rvd_item, rvd_packingslip, rvd_date, rvd_netprice, rvd_qty, rvd_voqty " +
-                        " from recv_det " +
-                        " where rvd_id = " + "'" + rvid + "'" + ";");
-                while (res.next()) {
-                   modeldetail.addRow(new Object[]{ 
-                      res.getString("rvd_id"), 
-                       res.getString("rvd_po"),
-                       res.getString("rvd_poline"),
-                       res.getString("rvd_item"),
-                       res.getString("rvd_packingslip"),
-                       res.getString("rvd_date"),
-                       currformatDouble(res.getDouble("rvd_netprice")),
-                      res.getInt("rvd_qty"), 
-                      res.getInt("rvd_voqty")});
-                }
-               
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
               
-                tabledetail.setModel(modeldetail);
-                 tabledetail.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
+                default:
+                    message = new String[]{"1", "unknown action"};
             }
-            bsmf.MainFrame.con.close();
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+            
+            
+            
+            
+            return message;
         }
-
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }        
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
     }
     
     public void setLanguageTags(Object myobj) {
@@ -252,12 +285,27 @@ public class CustPriceRpt extends javax.swing.JPanel {
     }
     
     public void initvars(String[] arg) {
-       rbpart.setSelected(true);
-       rbcode.setSelected(false);
-       buttonGroup1.add(rbpart);
-       buttonGroup1.add(rbcode);
-       cbpricelist.setSelected(true);
-       cbdiscounts.setSelected(true);
+       executeTask("dataInit", null);
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        
+        isLoad = true;
+        rbpart.setSelected(true);
+        rbcode.setSelected(false);
+        buttonGroup1.add(rbpart);
+        buttonGroup1.add(rbcode);
+        cbpricelist.setSelected(true);
+        cbdiscounts.setSelected(true);
        
        
        // Detail table is not required at this version
@@ -265,12 +313,78 @@ public class CustPriceRpt extends javax.swing.JPanel {
        btdetail.setEnabled(false);
        
        
-         mymodel.setRowCount(0);
-         tablereport.setModel(mymodel);
-         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-         tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+        mymodel.setRowCount(0);
+        tablereport.setModel(mymodel);
+        tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
          
+        
+        for (String[] s : initDataSets) {
+           
+            if (s[0].equals("site")) {
+              defaultsite = s[1]; 
+            }
+            
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+        }
+        
+        tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+         
+        isLoad = false;
+        
     }
+    
+    public String[] getBrowseView() {
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(new String[]{"id","getCustPriceBrowseView"});
+        list.add(new String[]{"param1",(rbpart.isSelected()) ? "item" : "citem"});
+        list.add(new String[]{"param2",tbtext.getText()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServCUS"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getCustPriceBrowseView")};
+            }
+        } else {
+            jsonString = cusData.getCustPriceBrowseView(new String[]{
+                (rbpart.isSelected()) ? "item" : "citem",
+                tbtext.getText()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getCustXrefBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+       
+        int i = 0;
+        mymodel.setNumRows(0);
+        if (roData != null) {
+            for (Object[] rowData : roData) {
+                if (! cbdiscounts.isSelected() && rowData[2].toString().equals("DISCOUNT")) {
+                continue;
+                }
+                if (! cbpricelist.isSelected() && rowData[2].toString().equals("LIST")) {
+                continue;
+                }
+               mymodel.addRow(rowData);
+                i++;
+            }
+        }
+       
+        roData = null;
+    }   
+      
     
     
     /**
@@ -511,71 +625,7 @@ public class CustPriceRpt extends javax.swing.JPanel {
     }//GEN-LAST:event_tbtextActionPerformed
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
- mymodel.setRowCount(0);
-        
-        try {
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            String expire = "";
-            try {
-                int i = 0;
-                if (rbpart.isSelected()) {
-                res = st.executeQuery("SELECT * FROM  cpr_mstr where " +
-                    " cpr_item like " + "'" + "%" + tbtext.getText().toString() + "%' order by cpr_cust, cpr_item;") ;
-                } else {
-                    res = st.executeQuery("SELECT * FROM  cpr_mstr where " +
-                    " cpr_cust like " + "'" + "%" + tbtext.getText().toString() + "%' order by cpr_cust, cpr_item ;") ;
-                }
-
-                
-                while (res.next()) {
-                    i++;
-                        if (! cbdiscounts.isSelected() && res.getString("cpr_type").equals("DISCOUNT") )
-                            continue;
-                        
-                        if (! cbpricelist.isSelected() && res.getString("cpr_type").equals("LIST") )
-                            continue;
-                        
-                      if (res.getString("cpr_expire") == null || res.getString("cpr_expire").equals("null") ) {
-                        expire = "";  
-                      } else {
-                        expire = res.getString("cpr_expire");  
-                      }    
-                        
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, res.getString("cpr_cust"),
-                        res.getString("cpr_type"),
-                        res.getString("cpr_item"),
-                        res.getString("cpr_uom"),
-                        res.getString("cpr_curr"),
-                        expire, 
-                        res.getString("cpr_volqty"),
-                        res.getDouble("cpr_price"),
-                        res.getString("cpr_disc")
-                    });
-                }
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
+        executeTask("getBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btdetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdetailActionPerformed
