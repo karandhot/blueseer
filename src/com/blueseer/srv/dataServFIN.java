@@ -437,6 +437,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       break;
     }    
     
+    case "getTaxLines" : {
+            response.getWriter().print(ArrayListStringToJson(fglData.getTaxLines(request.getHeader("param1"))));  
+            break;
+    }
+            
     case "getExpenseBrowseView" : { 
       response.getWriter().print(fglData.getExpenseBrowseView(new String[]{request.getHeader("param1"), 
                     request.getHeader("param2"),
