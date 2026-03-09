@@ -1435,7 +1435,7 @@ public class fglData {
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 String returnstring = sendServerPost(params, "", null, "dataServFIN");
-                list = objectMapper.readValue(returnstring, ArrayList.class); 
+                list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<taxd_mstr>>() {});
                 return list;
             } catch (IOException ex) {
                 bslog(ex);
