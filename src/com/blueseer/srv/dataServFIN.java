@@ -39,6 +39,7 @@ import static com.blueseer.fgl.fglData.addAcctMstr;
 import static com.blueseer.fgl.fglData.addGL;
 import static com.blueseer.fgl.fglData.deleteAcctMstr;
 import static com.blueseer.fgl.fglData.deleteGL;
+import static com.blueseer.fgl.fglData.deleteTaxMstr;
 import com.blueseer.fgl.fglData.exc_mstr;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAcctMstr;
@@ -55,6 +56,7 @@ import static com.blueseer.fgl.fglData.getGLCtrl;
 import static com.blueseer.fgl.fglData.getGLHist;
 import static com.blueseer.fgl.fglData.getGLTran;
 import static com.blueseer.fgl.fglData.getTaxDet;
+import static com.blueseer.fgl.fglData.getTaxMstr;
 import static com.blueseer.fgl.fglData.updateAcctMstr;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
@@ -298,16 +300,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       response.getWriter().print(r);
       break;
     }
-    
-    case "getTaxDet" : {
-      String param1 = request.getHeader("param1"); 
-      ArrayList<fglData.taxd_mstr> emlist = getTaxDet(param1);
-      ObjectMapper objectMapper = new ObjectMapper();
-      String r = objectMapper.writeValueAsString(emlist);
-      response.getWriter().print(r);
-      break;
-    }
-    
+        
     case "getARMstr" : { 
       String[] key = new String[]{request.getHeader("param1"), request.getHeader("param2")}; 
       farData.ar_mstr am = getARMstr(key);
@@ -377,6 +370,72 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(arrayToJson(deleteGL(request.getHeader("param1"))));  
             break;
         }
+    
+    case "addTaxTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            fglData.taxd_mstr[] sdarray = om.readValue(ca[0], fglData.taxd_mstr[].class);
+            ArrayList<fglData.taxd_mstr> txd = (sdarray == null) ? null :new ArrayList<fglData.taxd_mstr>(Arrays.asList(sdarray)); 
+            fglData.tax_mstr tx = om.readValue(ca[1], fglData.tax_mstr.class);
+            response.getWriter().print(arrayToJson(fglData.addTaxTransaction(txd, tx)));     
+            break; 
+            }   
+    
+    case "updateTaxTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            String key = ca[0];
+            ArrayList<String> badlist = om.readValue(ca[1], ArrayList.class);
+            fglData.taxd_mstr[] sdarray = om.readValue(ca[2], fglData.taxd_mstr[].class);
+            ArrayList<fglData.taxd_mstr> txd = (sdarray == null) ? null :new ArrayList<fglData.taxd_mstr>(Arrays.asList(sdarray)); 
+            fglData.tax_mstr tx = om.readValue(ca[3], fglData.tax_mstr.class);
+            response.getWriter().print(arrayToJson(fglData.updateTaxTransaction(key, badlist, txd, tx)));     
+            break; 
+            }   
+    
+    case "deleteTaxMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            fglData.tax_mstr x = objectMapper.readValue(sb.toString(), fglData.tax_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteTaxMstr(x)));
+            break;
+          }
+    
+    case "getTaxMstr" :  {      
+            fglData.tax_mstr tx = getTaxMstr(new String[]{request.getHeader("param1")});
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(tx);
+            response.getWriter().print(r);
+            break;  
+        }
+    
+    case "getTaxDet" : {
+      String param1 = request.getHeader("param1"); 
+      ArrayList<fglData.taxd_mstr> emlist = getTaxDet(param1);
+      ObjectMapper objectMapper = new ObjectMapper();
+      String r = objectMapper.writeValueAsString(emlist);
+      response.getWriter().print(r);
+      break;
+    }    
     
     case "getExpenseBrowseView" : { 
       response.getWriter().print(fglData.getExpenseBrowseView(new String[]{request.getHeader("param1"), 

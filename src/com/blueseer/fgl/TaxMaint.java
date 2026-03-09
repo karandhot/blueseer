@@ -28,6 +28,7 @@ package com.blueseer.fgl;
 import bsmf.MainFrame;
 import com.blueseer.utl.BlueSeerUtils;
 import static bsmf.MainFrame.tags;
+import com.blueseer.adm.admData;
 import static com.blueseer.fgl.fglData.addTaxTransaction;
 import static com.blueseer.fgl.fglData.deleteTaxMstr;
 import static com.blueseer.fgl.fglData.getTaxDet;
@@ -56,6 +57,7 @@ import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerT;
+import com.blueseer.utl.IBlueSeerV;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.canUpdate;
 import java.awt.Color;
@@ -89,10 +91,16 @@ import javax.swing.table.DefaultTableModel;
  */
 
 
-public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
+public class TaxMaint extends javax.swing.JPanel implements IBlueSeerV {
 
     // global variable declarations
-            boolean isLoad = false;
+        boolean isLoad = false;
+        boolean canUpdate = false;
+        boolean isAutoPost = false;
+        ArrayList<String[]> initDataSets = null;
+        String defaultSite = "";
+        String defaultCurrency = "";
+        String defaultCC = "";
             public static tax_mstr x = null;
             public static ArrayList<taxd_mstr> taxdlist = null;
     // global datatablemodel declarations       
@@ -271,7 +279,7 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
     } 
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
        taxmodel.setRowCount(0);
        tabletax.setModel(taxmodel);
@@ -280,6 +288,19 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
        tbtaxelement.setText("");
        tbtaxpercent.setText("");
        cbenabled.setSelected(true);
+       
+       if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
+       }
+       for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+        }
+       
        isLoad = false;
     }
     
@@ -330,7 +351,7 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btdelete.setEnabled(false);
@@ -357,7 +378,7 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public boolean validateInput(dbaction x) {
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -393,7 +414,7 @@ public class TaxMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         
