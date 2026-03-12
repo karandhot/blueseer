@@ -48,6 +48,7 @@ import net.sf.jasperreports.view.JasperViewer;
 import static bsmf.MainFrame.checkperms;
 import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
+import com.blueseer.adm.admData;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
@@ -291,7 +292,7 @@ public class VendBrowse extends javax.swing.JPanel {
     }
     
     public String[] getInitialization() {
-        initDataSets = invData.getInvMaintInit_min(this.getClass().getName(), bsmf.MainFrame.userid);
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
         if (initDataSets.isEmpty()) {
            return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
         } else {

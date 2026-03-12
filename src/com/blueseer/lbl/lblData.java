@@ -33,6 +33,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
@@ -473,6 +474,18 @@ public class lblData {
     
     
     public static String[] addLabelZebraMstr(label_zebra x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addLabelZebraMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServLBL"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlSelect = "select * from label_zebra where lblz_code = ?";
         String sqlInsert = "insert into label_zebra (lblz_code, lblz_desc, lblz_type, lblz_file)  " +
@@ -504,6 +517,18 @@ public class lblData {
     }
     
     public static String[] updateLabelZebraMstr(label_zebra x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateLabelZebraMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServLBL"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sql = "update label_zebra set lblz_desc = ?, lblz_type = ?, lblz_file = ? " +
                 "  where lblz_code = ? ";
@@ -523,8 +548,21 @@ public class lblData {
     }
     
     public static String[] deleteLabelZebraMstr(label_zebra x) { 
-       String[] m = new String[2];
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteLabelZebraMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServLBL"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
         String sql = "delete from label_zebra where lblz_code = ?; ";
+        
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql)) {
         ps.setString(1, x.lblz_code);
@@ -1310,6 +1348,129 @@ public class lblData {
       return r;
   }
 
+    public static String getLabelBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                               
+                keys[2] = (keys[2].isBlank()) ? bsmf.MainFrame.lowchar : keys[2];
+                keys[3] = (keys[3].isBlank()) ? bsmf.MainFrame.hichar : keys[3];
+                keys[4] = (keys[4].isBlank()) ? bsmf.MainFrame.lowchar : keys[4];
+                keys[5] = (keys[5].isBlank()) ? bsmf.MainFrame.hichar : keys[5]; 
+                
+                res = st.executeQuery("SELECT * " +
+                        " FROM  label_mstr " +
+                        " where lbl_crt_date >= " + "'" + keys[0]  + "'" + 
+                        " AND lbl_crt_date <= " + "'" + keys[1] + "'" + 
+                        " AND lbl_item >= " + "'" + keys[2] + "'" + 
+                        " AND lbl_item <= " + "'" + keys[3] + "'" + 
+                         " AND lbl_id >= " + "'" + keys[4] + "'" + 
+                         " AND lbl_id <= " + "'" + keys[5] + "'" + 
+                         " ;");
+                    while (res.next()) {
+                  
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("lbl_id"));
+                        rowArray.put(res.getString("lbl_id_str"));
+                        rowArray.put(res.getString("lbl_item"));
+                        rowArray.put(res.getString("lbl_qty"));
+                        rowArray.put(res.getString("lbl_po"));
+                        rowArray.put(res.getString("lbl_order"));
+                        rowArray.put(res.getString("lbl_line"));
+                        rowArray.put(res.getString("lbl_ref"));
+                        rowArray.put(res.getString("lbl_type"));
+                        rowArray.put(res.getString("lbl_prog"));
+                        rowArray.put(res.getString("lbl_name"));
+                        rowArray.put(res.getString("lbl_crt_date"));
+                        rowArray.put(res.getString("lbl_scan"));
+                        rowArray.put(res.getString("lbl_void"));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
+    public static String getLabelBrowseDetView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                if (keys[0].equals("trans")) {
+                    res = st.executeQuery("select * from tran_mstr " +
+                        " where tr_serial = " + "'" + keys[1] + "'" + ";");
+                    while (res.next()) {                        
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("tr_serial"));
+                        rowArray.put(res.getString("tr_item"));
+                        rowArray.put(res.getString("tr_qty"));
+                        rowArray.put(res.getString("tr_ref"));
+                        rowArray.put(res.getString("tr_eff_date"));
+                        jsonarray.put(rowArray);
+                    }
+                } else {
+                    res = st.executeQuery("select * from label_det " +
+                        " where lbld_id = " + "'" + keys[1] + "'" + ";");
+                    while (res.next()) {                        
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("lbld_id"));
+                        rowArray.put(res.getString("lbld_order"));
+                        rowArray.put(res.getString("lbld_line"));
+                        rowArray.put(res.getString("lbld_item"));
+                        rowArray.put(res.getString("lbld_desc"));
+                        rowArray.put(res.getString("lbld_qty"));
+                        jsonarray.put(rowArray);
+                    }
+                }
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
     
     public record label_zebra(String[] m, String lblz_code, String lblz_desc, 
         String lblz_type, String lblz_file) {

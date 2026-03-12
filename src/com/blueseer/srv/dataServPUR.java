@@ -27,6 +27,8 @@ package com.blueseer.srv;
 
 
 import com.blueseer.pur.purData;
+import static com.blueseer.pur.purData.addUpdatePOCtrl;
+import static com.blueseer.pur.purData.getPOCtrl;
 import static com.blueseer.pur.purData.getPODet;
 import static com.blueseer.pur.purData.getPOListByVend;
 import static com.blueseer.pur.purData.getPOMstr;
@@ -208,6 +210,28 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     request.getHeader("param6"),
                     request.getHeader("param7")
                     )));  
+            break;
+        }
+        
+        case "getPOCtrl" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            purData.po_ctrl x = getPOCtrl(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+        }
+        
+        case "addUpdatePOCtrl" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            purData.po_ctrl x = objectMapper.readValue(sb.toString(), purData.po_ctrl.class);            
+            response.getWriter().print(arrayToJson(addUpdatePOCtrl(x)));
             break;
         }
         

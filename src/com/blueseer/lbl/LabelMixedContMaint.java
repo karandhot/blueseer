@@ -27,25 +27,22 @@ package com.blueseer.lbl;
 
 
 import bsmf.MainFrame;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
-import com.blueseer.ctr.cusData;
-import static com.blueseer.lbl.lblData.addLabelMstr;
+import com.blueseer.adm.admData;
+import static com.blueseer.adm.admData.getSiteMstr;
 import static com.blueseer.lbl.lblData.addMixedLabelTransaction;
 import static com.blueseer.lbl.lblData.getLabelZebraMstr;
 import com.blueseer.lbl.lblData.label_det;
 import com.blueseer.lbl.lblData.label_mstr;
 import com.blueseer.lbl.lblData.label_zebra;
+import com.blueseer.ord.ordData;
 import static com.blueseer.ord.ordData.getOrderLineInfo;
+import static com.blueseer.ord.ordData.getOrderMstrSet;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
+import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.checkDigitUCC18;
-import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
-import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.luModel;
@@ -59,46 +56,20 @@ import static com.blueseer.utl.BlueSeerUtils.setDateFormat;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.checkForCustomPath;
-import static com.blueseer.utl.OVData.getSystemLabelDirectory;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.print.PrinterJob;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileReader;
-import java.io.InputStream;
-import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.print.Doc;
-import javax.print.DocFlavor;
-import javax.print.DocPrintJob;
-import javax.print.PrintService;
-import javax.print.PrintServiceLookup;
-import javax.print.SimpleDoc;
-import javax.print.attribute.HashPrintRequestAttributeSet;
-import javax.print.attribute.PrintRequestAttributeSet;
-import javax.print.attribute.standard.Copies;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -115,37 +86,24 @@ import javax.swing.JTable;
  */
 public class LabelMixedContMaint extends javax.swing.JPanel {
 
-String item = "";
-String revnbr = "";
-String custitem = "";
-String partdesc = "";
-String billto = "";
-String shipto = "";
-String ref = "";
-String ordernbr = "";
-String linenbr = "";
-String ponbr = "";
+
 int serialno = 0;
 String serialno_str = "";
 String serialno_display = "";
 String quantity = "";
 String labelname = "";
 
-String sitename = "";
-String siteaddr = "";
-String sitephone = "";
-String sitecitystatezip = "";
-
-String shipname = "";
-String shipaddr1 = "";
-String shipaddr2 = "";
-String shipcity = "";
-String shipstate = "";
-String shipzip = "";
-String shipcountry = "";
-String shipcsz = "";
-
-String carrier = "";
+boolean isLoad = false;
+private static ordData.so_mstr so = null;
+private static ordData.sod_det sod = null;
+private static ordData.salesOrder soset = null;
+private static admData.site_mstr sm = null;
+boolean canUpdate = false;
+boolean isAutoPost = false;
+ArrayList<String[]> initDataSets = null;
+String defaultSite = "";
+String defaultCurrency = "";
+String syslabeldir = "";    
 
    javax.swing.table.DefaultTableModel itemmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
             new String[]{
@@ -166,116 +124,15 @@ String carrier = "";
     }
 
     
-    public void getSiteAddress(String site) {
-        try {
-
-            Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                                
-                res = st.executeQuery("select * from site_mstr where site_site = " + "'" + site + "'" +";");
-                while (res.next()) {
-                    i++;
-                   sitename = res.getString("site_desc").replace("'", "");
-                   siteaddr = res.getString("site_line1").replace("'", "");
-                   sitephone = res.getString("site_phone");
-                   sitecitystatezip = res.getString("site_city") + ", " + res.getString("site_state") + " " + res.getString("site_zip");
-                  
-                }
-               
-                if (i == 0)
-                    bsmf.MainFrame.show(getMessageTag(1141,site));
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
+    public void getOrderInfo(String order, String line) {
+        soset = getOrderMstrSet(new String[]{order});
+        so = soset.so();
+        for (ordData.sod_det sd : soset.sod()) {
+            if (sd.sod_line() == bsParseInt(line)) { 
+                sod = sd;
+                break;
             }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }
-    
-    public void getOrderInfo(String order) {
-         try {
-
-            Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                                
-                res = st.executeQuery("select so_nbr, so_cust, so_po, so_shipvia, so_ship from so_mstr " 
-                        + " where so_nbr = " + "'" + order + "'"
-                        + ";");
-                while (res.next()) {
-                    i++;
-                   billto = res.getString("so_cust");
-                   shipto = res.getString("so_ship");
-                   ponbr = res.getString("so_po");
-                   ordernbr = res.getString("so_nbr");
-                   carrier = res.getString("so_shipvia");
-                   
-                }
-               
-                
-                if (i == 0)
-                    bsmf.MainFrame.show(getMessageTag(1143, order));
-                
-                
-                // get shipto addr info
-                if (! shipto.isEmpty() && ! billto.isEmpty()) {
-                    res = st.executeQuery("select * from cms_det inner join cm_mstr on cm_code = cms_code where cms_shipto = " + "'" + shipto + "'" 
-                            + " AND cms_code = " + "'" + billto + "'" + ";");
-                }
-                 while (res.next()) {
-                 shipname = res.getString("cms_name").replace("'", "");
-                 shipaddr1 = res.getString("cms_line1").replace("'", "");
-                 shipaddr2 = res.getString("cms_line2").replace("'", "");
-                 shipcity = res.getString("cms_city").replace("'", "");
-                 shipstate = res.getString("cms_state").replace("'", "");
-                 shipzip = res.getString("cms_zip").replace("'", "");
-                 shipcountry = res.getString("cms_country").replace("'", "");
-                 shipcsz = shipcity + ", " + shipstate + " " + shipzip;
-                 lblcust.setText(res.getString("cm_name"));
-                 lblship.setText(res.getString("cms_name") + "  " + shipcsz);
-                 
-                 }
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        } 
     }
     
     public void setLanguageTags(Object myobj) {
@@ -322,8 +179,9 @@ String carrier = "";
        }
     }
     
-    public void initvars(String[] arg) {
-        lblcust.setText("");
+    public void setComponentDefaultValues(boolean init) {
+       isLoad = true;
+       lblcust.setText("");
         lblship.setText("");
         lblitem.setText("");
         tbqty.setText("");
@@ -338,22 +196,58 @@ String carrier = "";
         itemtable.setModel(itemmodel);
         itemtable.getTableHeader().setReorderingAllowed(false);
         
-        ArrayList mylist = OVData.getPrinterList();
-        for (int i = 0; i < mylist.size(); i++) {
-            ddprinter.addItem(mylist.get(i));
+        
+        
+       if (init) {
+          initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "printers");
         }
-      
-        ddprinter.removeAllItems();
-        OVData.getPrinterList().stream().forEach((s) -> ddprinter.addItem(s));
+       
+       ddprinter.removeAllItems();
+         
+         for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            
+            if (s[0].equals("labeldir")) {
+              syslabeldir = s[1];  
+            }
+            
+            if (s[0].equals("autopost")) {
+              isAutoPost = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            
+            if (s[0].equals("printers")) {
+              ddprinter.addItem(s[1]);  
+            }
+           
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+        }
+        
+        if (ddprinter.getItemCount() == 0) {
+            bsmf.MainFrame.show("No Printers Available");
+            btprint.setEnabled(false);
+        } 
         ddprinter.insertItemAt("<record only>",0);
         
-        getSiteAddress(OVData.getDefaultSite());
-        
-         if (ddprinter.getItemCount() == 0) {
+        sm = getSiteMstr(new String[]{defaultSite});
+        /*
+        if (ddprinter.getItemCount() == 0) {
             bsmf.MainFrame.show("No Printers Available");
             btprint.setEnabled(false);
         }
-        
+        */
+       isLoad = false;
+    }
+    
+    public void initvars(String[] arg) {
+        setComponentDefaultValues(initDataSets == null);
     }
     
     public void lookUpFrameOrder() {
@@ -390,7 +284,7 @@ String carrier = "";
                 ludialog.dispose();
                 tbordnbr.setText(target.getValueAt(row,1).toString());
                 tbordnbr.setEditable(false);
-                getOrderInfo(tbordnbr.getText());
+               // getOrderInfo(tbordnbr.getText(), target.getValueAt(row,1).toString());
                 //tbline.setText(target.getValueAt(row,2).toString());
                 }
             }
@@ -439,6 +333,7 @@ String carrier = "";
                 tbline.setText(target.getValueAt(row,1).toString());
                 tbqty.setText(BlueSeerUtils.bsNumber(target.getValueAt(row,4).toString()));
                 lblitem.setText(target.getValueAt(row,2).toString() + " " + target.getValueAt(row,3).toString());
+                getOrderInfo(tbordnbr.getText(), target.getValueAt(row,1).toString());
                 }
             }
         };
@@ -504,37 +399,37 @@ String carrier = "";
          label_mstr x = new label_mstr(null, 
                  serialno_str, 
                  "mixeditems", 
-                 custitem, 
+                 sod.sod_custitem(), 
                  serialno_display, 
                  "XX", 
                  labelname,
                  "0", 
-                 ponbr, 
-                 billto,
-                 ordernbr, 
-                 linenbr, 
-                 ref, 
+                 so.so_po(),
+                 soset.cm().cm_code(),
+                 so.so_nbr(), 
+                 bsNumber(sod.sod_line()), 
+                 tbref.getText(), 
                  "",  // lot 
                  "0", 
                  "0", 
-                 shipname, 
-                 shipaddr1, 
-                 shipaddr2, 
-                 shipcity, 
-                 shipstate, 
-                 shipstate, 
-                 shipzip, 
-                 shipcountry, 
+                 soset.cms().cms_name(), 
+                 soset.cms().cms_line1(), 
+                 soset.cms().cms_line2(), 
+                 soset.cms().cms_city(), 
+                 soset.cms().cms_state(), 
+                 soset.cms().cms_state(), 
+                 soset.cms().cms_zip(), 
+                 soset.cms().cms_country(), 
                  setDateFormat(now), 
                  setDateFormat(now), 
                  bsmf.MainFrame.userid, 
                  ddprinter.getSelectedItem().toString(), 
-                 "LabelContPanel", 
-                 OVData.getDefaultSite(), 
+                 "LabelMixedContPanel", 
+                 so.so_site(), 
                  "", // loc
                  "CONT",
                  "mixed",
-                 shipto
+                 soset.cms().cms_shipto()
                 );
         return x;
     }
@@ -813,15 +708,12 @@ String carrier = "";
             return;
         }
         
+        java.util.Date now = new java.util.Date();
+        DateFormat dfdate = new SimpleDateFormat("MM/dd/yyyy");
+        DateFormat dftime = new SimpleDateFormat("hh:mm");
+        DateFormat dfdate2 = new SimpleDateFormat("yyyy-MM-dd");
         
-        
-        quantity = tbqty.getText();
-        ref = tbref.getText();
-        item = lblitem.getText();
-        linenbr = tbline.getText();
-        String cust = cusData.getCustFromOrder(tbordnbr.getText());
-        String label = cusData.getCustLabel(cust);
-        label  = (label.isBlank()) ? "generic" : label; 
+        String label  = (soset.cm().cm_label().isBlank()) ? "generic" : soset.cm().cm_label();
         label_zebra lz = getLabelZebraMstr(new String[]{label});
         labelname = label;
         serialno = OVData.getNextNbr("label");
@@ -852,7 +744,7 @@ String carrier = "";
         if (ddprinter.getSelectedItem() != null && ! ddprinter.getSelectedItem().toString().equals("<record only>")) {
             try {
         
-            Path template = checkForCustomPath(getSystemLabelDirectory(), lz.lblz_file());
+            Path template = checkForCustomPath(syslabeldir, lz.lblz_file());
             File f = template.toFile();
             if(f.exists() && !f.isDirectory()) { 
                 
@@ -865,32 +757,27 @@ String carrier = "";
                 }
                 fsr.close();
                 // replace variables with values
-                concatline = concatline.replace("$PART", item);
-                concatline = concatline.replace("$CUSTPART", custitem);
+                concatline = concatline.replace("$PART", sod.sod_item());
+                concatline = concatline.replace("$CUSTPART", sod.sod_custitem());
                 concatline = concatline.replace("$SERIALNO", serialno_display);
                 concatline = concatline.replace("$QUANTITY", quantity);
-                concatline = concatline.replace("$DESCRIPTION", partdesc);
-                concatline = concatline.replace("$CUSTCODE", billto);
-                concatline = concatline.replace("$PART", "");
+                concatline = concatline.replace("$DESCRIPTION", sod.sod_desc());
+                concatline = concatline.replace("$CUSTCODE", so.so_cust());
                 concatline = concatline.replace("$ADDRNAME", "");
-                concatline = concatline.replace("$REV", revnbr);
-                concatline = concatline.replace("$PONUMBER", ponbr);
-                concatline = concatline.replace("$REF", ref);
-                concatline = concatline.replace("$SONBR", ordernbr);
-                concatline = concatline.replace("$SOLINE", linenbr);
-                concatline = concatline.replace("$CARRIER", carrier);
-                concatline = concatline.replace("$SITENAME", sitename);
-                concatline = concatline.replace("$SITEADDR", siteaddr);
-                concatline = concatline.replace("$SITEPHONE", sitephone);
-                concatline = concatline.replace("$SITECSZ", sitecitystatezip);
-                concatline = concatline.replace("$SHIPNAME", shipname);
-                concatline = concatline.replace("$SHIPADDR1", shipaddr1);
-                concatline = concatline.replace("$SHIPADDR2", shipaddr2);
-                concatline = concatline.replace("$SHIPZIP", shipzip);
-                concatline = concatline.replace("$SHIPCSZ", shipcsz);
-                java.util.Date now = new java.util.Date();
-                DateFormat dfdate = new SimpleDateFormat("MM/dd/yyyy");
-                DateFormat dftime = new SimpleDateFormat("hh:mm");
+                concatline = concatline.replace("$REV", tbref.getText());
+                concatline = concatline.replace("$PONUMBER", so.so_po());
+                concatline = concatline.replace("$SONBR", so.so_nbr());
+                concatline = concatline.replace("$SOLINE", bsNumber(sod.sod_line()));
+                concatline = concatline.replace("$CARRIER", so.so_shipvia());
+                concatline = concatline.replace("$SITENAME", sm.site_desc() );
+                concatline = concatline.replace("$SITEADDR", sm.site_line1());
+                concatline = concatline.replace("$SITEPHONE", sm.site_phone());
+                concatline = concatline.replace("$SITECSZ", sm.site_city() + ", " + sm.site_state() + " " + sm.site_zip());
+                concatline = concatline.replace("$SHIPNAME", soset.cms().cms_name());
+                concatline = concatline.replace("$SHIPADDR1", soset.cms().cms_line1());
+                concatline = concatline.replace("$SHIPADDR2", soset.cms().cms_line2());
+                concatline = concatline.replace("$SHIPZIP", soset.cms().cms_zip());
+                concatline = concatline.replace("$SHIPCSZ", soset.cms().cms_city() + ", " + soset.cms().cms_state() + " " + soset.cms().cms_zip());
                 concatline = concatline.replace("$TODAYDATE", dfdate.format(now));
                 concatline = concatline.replace("$TODAYTIME", dftime.format(now));
 
@@ -947,6 +834,7 @@ String carrier = "";
     }//GEN-LAST:event_btdeleteitemActionPerformed
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
+        initDataSets = null;
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 

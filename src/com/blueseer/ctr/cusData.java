@@ -3244,7 +3244,18 @@ public class cusData {
     }
         
     public static ArrayList getcustmstrlist() {
-       ArrayList myarray = new ArrayList();
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getcustmstrlist"});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServCUS"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        ArrayList myarray = new ArrayList();
         try{
             
             Connection con = null;

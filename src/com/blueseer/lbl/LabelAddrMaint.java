@@ -27,46 +27,26 @@ SOFTWARE.
 package com.blueseer.lbl;
 
 import bsmf.MainFrame;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import static com.blueseer.adm.admData.getSiteMstr;
+import com.blueseer.adm.admData.site_mstr;
 import com.blueseer.ctr.cusData;
-import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
+import com.blueseer.ctr.cusData.cms_det;
+import static com.blueseer.ctr.cusData.getCMSDet;
+import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.checkForCustomPath;
 import static com.blueseer.utl.OVData.getSystemLabelDirectory;
 import java.awt.Component;
-import java.awt.print.PrinterJob;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileReader;
-import java.io.InputStream;
-import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import javax.print.Doc;
-import javax.print.DocFlavor;
-import javax.print.DocPrintJob;
-import javax.print.PrintService;
-import javax.print.SimpleDoc;
-import javax.print.attribute.HashPrintRequestAttributeSet;
-import javax.print.attribute.PrintRequestAttributeSet;
-import javax.print.attribute.standard.Copies;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -75,6 +55,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 
 /**
  *
@@ -82,17 +63,17 @@ import javax.swing.JTabbedPane;
  */
 public class LabelAddrMaint extends javax.swing.JPanel {
 
-String shipname = "";
-String shipline1 = "";
-String shipline2 = "";
-String shipcity = "";
-String shipstate = "";
-String shipzip = "";
-
-String sitename = "";
-String siteaddr = "";
-String sitephone = "";
-String sitecitystatezip = "";
+// global variable declarations
+        boolean isLoad = false;
+        boolean canUpdate = false;
+        boolean isAutoPost = false;
+        ArrayList<String[]> initDataSets = null;
+        String defaultSite = "";
+        String defaultCurrency = "";
+        String defaultCC = "";
+        String labelDir = "";
+        cms_det cms = null;
+        site_mstr site = null;
     
     
     
@@ -103,106 +84,65 @@ String sitecitystatezip = "";
         initComponents();
         setLanguageTags(this);
     }
-
-    
-    public void getSiteAddress(String site) {
-        try {
-
-            Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
+   
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
             
-            try {
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
                 
-                int i = 0;
-                                
-                res = st.executeQuery("select * from site_mstr where site_site = " + "'" + site + "'" +";");
-                while (res.next()) {
-                    i++;
-                   sitename = res.getString("site_desc");
-                   siteaddr = res.getString("site_line1");
-                   sitephone = res.getString("site_phone");
-                   sitecitystatezip = res.getString("site_city") + ", " + res.getString("site_state") + " " + res.getString("site_zip");
-                  
-                }
-               
-                if (i == 0)
-                    bsmf.MainFrame.show(getMessageTag(1141,site));
-
-            } catch (SQLException s){
-                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
+                default:
+                    message = new String[]{"1", "unknown action"};
             }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+            
+            
+            
+            
+            return message;
         }
-    }
-    
-    public void getShiptoInfo(String billto, String shipto) {
-         try {
-
-            Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
+ 
+        
+       public void done() {
             try {
-               
-                int i = 0;
-                                
-                res = st.executeQuery("select * from cms_det where cms_code = " + "'" + billto + "'" +
-                        " AND cms_shipto = " + "'" + shipto + "'" + ";");
-                while (res.next()) {
-                    i++;
-                   shipname = res.getString("cms_name");
-                   shipline1 = res.getString("cms_line1");
-                   shipline2 = res.getString("cms_line2");
-                   shipcity = res.getString("cms_city");
-                   shipstate = res.getString("cms_state");
-                   shipzip = res.getString("cms_zip");
-                   lbladdr.setText(res.getString("cms_name") + "  " + res.getString("cms_line1") + "..." + res.getString("cms_city") +
-                                    ", " + res.getString("cms_state") + " " + res.getString("cms_zip"));
-                }
-               
-                if (i == 0)
-                    bsmf.MainFrame.show(getMessageTag(1143, billto + "/" + shipto));
-
-            
-            } catch (SQLException s){
-                 MainFrame.bslog(s);
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
             
             
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }            
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
         }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
     }
-    
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -246,32 +186,62 @@ String sitecitystatezip = "";
                 }
        }
     }
-    
-    public void initvars(String[] arg) {
-        ddshipto.removeAllItems();
-        ddbillto.removeAllItems();
-        ArrayList mycusts = cusData.getcustmstrlist();
-        for (int i = 0; i < mycusts.size(); i++) {
-            ddbillto.addItem(mycusts.get(i));
-        }
         
+    public void initvars(String[] arg) {
+       executeTask("dataInit", null);
+        
+    }
+    
+    public String[] getInitialization() {
+        initDataSets  = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "customers,printers");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        isLoad = true;
         btprint.setEnabled(true);
         lbladdr.setText("");
         
+        ddshipto.removeAllItems();
+        ddbillto.removeAllItems();
         ddprinter.removeAllItems();
-        ArrayList mylist = OVData.getPrinterList();
-        for (int i = 0; i < mylist.size(); i++) {
-            ddprinter.addItem(mylist.get(i));
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            if (s[0].equals("labeldir")) {
+              labelDir = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("customers")) {
+              ddbillto.addItem(s[1]);  
+            }
+            if (s[0].equals("printers")) {
+              ddprinter.addItem(s[1]);  
+            }
+            
         }
         
-        getSiteAddress(OVData.getDefaultSite());
-        
-         if (ddprinter.getItemCount() == 0) {
+        if (ddprinter.getItemCount() == 0) {
             bsmf.MainFrame.show(getMessageTag(1139));
             btprint.setEnabled(false);
         }
         
+        site = getSiteMstr(new String[]{defaultSite});
+        
+       isLoad = false;
     }
+    
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -387,6 +357,11 @@ String sitecitystatezip = "";
                  bsmf.MainFrame.show(getMessageTag(1140));
                  return;
             }
+            
+            if (cms == null) {
+                bsmf.MainFrame.show("shipto record not found");
+                return;
+            }
 
             try {
             Path template = checkForCustomPath(getSystemLabelDirectory(), "address.prn");
@@ -402,17 +377,17 @@ String sitecitystatezip = "";
             java.util.Date now = new java.util.Date();
             DateFormat dfdate = new SimpleDateFormat("MM/dd/yyyy");
 
-            concatline = concatline.replace("$ADDRNAME", shipname);
-            concatline = concatline.replace("$ADDRLINE1", shipline1);
-            concatline = concatline.replace("$ADDRLINE2", shipline2);
-            concatline = concatline.replace("$ADDRCITY", shipcity);
-            concatline = concatline.replace("$ADDRSTATE", shipstate);
-            concatline = concatline.replace("$ADDRZIP", shipzip);
+            concatline = concatline.replace("$ADDRNAME", cms.cms_name());
+            concatline = concatline.replace("$ADDRLINE1", cms.cms_line1());
+            concatline = concatline.replace("$ADDRLINE2", cms.cms_line2());
+            concatline = concatline.replace("$ADDRCITY", cms.cms_city());
+            concatline = concatline.replace("$ADDRSTATE", cms.cms_state());
+            concatline = concatline.replace("$ADDRZIP", cms.cms_zip());
 
-            concatline = concatline.replace("$SITENAME", sitename);
-            concatline = concatline.replace("$SITEADDR", siteaddr);
-            concatline = concatline.replace("$SITEPHONE", sitephone);
-            concatline = concatline.replace("$SITECSZ", sitecitystatezip);
+            concatline = concatline.replace("$SITENAME", site.site_desc());
+            concatline = concatline.replace("$SITEADDR", site.site_line1());
+            concatline = concatline.replace("$SITEPHONE", site.site_phone());
+            concatline = concatline.replace("$SITECSZ", site.site_city() + ", " + site.site_state() + "  " + site.site_zip());
 
             concatline = concatline.replace("$TODAYDATE", dfdate.format(now));
 
@@ -425,7 +400,7 @@ String sitecitystatezip = "";
 
     private void ddshiptoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddshiptoActionPerformed
        if (ddshipto.getSelectedItem() != null && ddbillto.getSelectedItem() != null)
-        getShiptoInfo(ddbillto.getSelectedItem().toString(), ddshipto.getSelectedItem().toString());
+        cms = getCMSDet(ddshipto.getSelectedItem().toString(), ddbillto.getSelectedItem().toString());
     }//GEN-LAST:event_ddshiptoActionPerformed
 
     private void ddbilltoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddbilltoActionPerformed

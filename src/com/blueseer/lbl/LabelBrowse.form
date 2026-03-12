@@ -74,7 +74,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="421" max="32767" attributes="0"/>
+                      <EmptySpace pref="446" max="32767" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
@@ -150,8 +150,8 @@
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="dcTo" max="32767" attributes="0"/>
-                              <Component id="dcFrom" min="-2" pref="158" max="-2" attributes="0"/>
+                              <Component id="dcto" max="32767" attributes="0"/>
+                              <Component id="dcfrom" min="-2" pref="158" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="32767" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
@@ -165,14 +165,14 @@
                                   <EmptySpace max="32767" attributes="0"/>
                                   <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="tbtopart" min="-2" pref="152" max="-2" attributes="0"/>
+                                  <Component id="tbtoitem" min="-2" pref="152" max="-2" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="1" attributes="0">
                                   <Component id="tblblfrom" min="-2" pref="78" max="-2" attributes="0"/>
                                   <EmptySpace type="separate" max="-2" attributes="0"/>
                                   <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="tbfrompart" min="-2" pref="152" max="-2" attributes="0"/>
+                                  <Component id="tbfromitem" min="-2" pref="152" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -201,9 +201,9 @@
                                           <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="2" attributes="0">
-                                          <Component id="dcFrom" min="-2" max="-2" attributes="0"/>
+                                          <Component id="dcfrom" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace min="12" pref="12" max="12" attributes="0"/>
-                                          <Component id="dcTo" min="-2" max="-2" attributes="0"/>
+                                          <Component id="dcto" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -218,7 +218,7 @@
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="3" attributes="0">
-                                      <Component id="tbfrompart" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="tbfromitem" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="tblblfrom" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="jLabel5" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -228,7 +228,7 @@
                                       <Component id="tblblto" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="tbtopart" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="tbtoitem" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="cbtransactions" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
@@ -263,15 +263,15 @@
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btexportActionPerformed"/>
                   </Events>
                 </Component>
-                <Component class="javax.swing.JTextField" name="tbtopart">
+                <Component class="javax.swing.JTextField" name="tbtoitem">
                 </Component>
                 <Component class="javax.swing.JLabel" name="jLabel1">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="From Part"/>
+                    <Property name="text" type="java.lang.String" value="From Item"/>
                     <Property name="name" type="java.lang.String" value="lblfromitem" noResource="true"/>
                   </Properties>
                 </Component>
-                <Component class="com.toedter.calendar.JDateChooser" name="dcFrom">
+                <Component class="com.toedter.calendar.JDateChooser" name="dcfrom">
                   <Properties>
                     <Property name="dateFormatString" type="java.lang.String" value="yyyy-MM-dd"/>
                   </Properties>
@@ -284,12 +284,12 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="tblblto">
                 </Component>
-                <Component class="com.toedter.calendar.JDateChooser" name="dcTo">
+                <Component class="com.toedter.calendar.JDateChooser" name="dcto">
                   <Properties>
                     <Property name="dateFormatString" type="java.lang.String" value="yyyy-MM-dd"/>
                   </Properties>
                 </Component>
-                <Component class="javax.swing.JTextField" name="tbfrompart">
+                <Component class="javax.swing.JTextField" name="tbfromitem">
                 </Component>
                 <Component class="javax.swing.JTextField" name="tblblfrom">
                 </Component>
@@ -316,7 +316,7 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="jLabel4">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="To Part"/>
+                    <Property name="text" type="java.lang.String" value="To Item"/>
                     <Property name="name" type="java.lang.String" value="lbltoitem" noResource="true"/>
                   </Properties>
                 </Component>

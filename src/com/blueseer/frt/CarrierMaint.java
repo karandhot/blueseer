@@ -52,7 +52,7 @@ import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import com.blueseer.utl.DTData;
-import com.blueseer.utl.IBlueSeerT;
+import com.blueseer.utl.IBlueSeerV;
 import com.blueseer.utl.OVData;
 import com.blueseer.vdr.venData;
 import static com.blueseer.vdr.venData.addVendMstr;
@@ -80,10 +80,16 @@ import javax.swing.SwingWorker;
  *
  * @author vaughnte
  */
-public class CarrierMaint extends javax.swing.JPanel implements IBlueSeerT {
+public class CarrierMaint extends javax.swing.JPanel implements IBlueSeerV {
 
     // global variable declarations
-                boolean isLoad = false;
+        boolean isLoad = false;
+        boolean canUpdate = false;
+        boolean isAutoPost = false;
+        ArrayList<String[]> initDataSets = null;
+        String defaultSite = "";
+        String defaultCurrency = "";
+        String defaultCC = "";
                 public static car_mstr x = null;
     // global datatablemodel declarations       
    
@@ -269,20 +275,32 @@ public class CarrierMaint extends javax.swing.JPanel implements IBlueSeerT {
        }
     }
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
        tbkey.setText("");
        tbdesc.setText("");
        cbapply.setSelected(false);
        
-        ArrayList<String[]> initDataSets = frtData.getCarrierMaintInit();
+        if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "states,countries");
+        }
         
         ddstate.removeAllItems();
         ddcountry.removeAllItems();
         
         
         for (String[] s : initDataSets) {
-                      
+              
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+          
             if (s[0].equals("states")) {
               ddstate.addItem(s[1]); 
             }
@@ -321,7 +339,7 @@ public class CarrierMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btdelete.setEnabled(false);
@@ -348,7 +366,11 @@ public class CarrierMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public boolean validateInput(dbaction x) {
-       
+        
+       if (! canUpdate) {
+            bsmf.MainFrame.show(getMessageTag(1185));
+            return false;
+        }
                
         Map<String,Integer> f = OVData.getTableInfo(new String[]{"car_mstr"});
         int fc;
@@ -379,7 +401,7 @@ public class CarrierMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         
@@ -1116,6 +1138,7 @@ public class CarrierMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
         BlueSeerUtils.messagereset();
+        initDataSets = null;
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 

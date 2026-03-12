@@ -53,6 +53,7 @@ import static com.blueseer.ctr.cusData.getCustXrefBrowseView;
 import static com.blueseer.ctr.cusData.getDiscountRecsByCust;
 import static com.blueseer.ctr.cusData.getSalesRepBrowseView;
 import static com.blueseer.ctr.cusData.getTermsMstr;
+import static com.blueseer.ctr.cusData.getcustmstrlist;
 import static com.blueseer.ctr.cusData.getcustshipmstrlist;
 import static com.blueseer.ctr.cusData.updateCMCDet;
 import static com.blueseer.ctr.cusData.updateCMSDet;
@@ -179,6 +180,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             String r = objectMapper.writeValueAsString(cm);
             response.getWriter().print(r);
             break;  
+        }
+        
+        case "getcustmstrlist" :   {     
+            response.getWriter().print(ArrayListStringToJson(getcustmstrlist()));
+            break;
         }
         
         case "getcustshipmstrlist" :   {     

@@ -27,22 +27,22 @@ package com.blueseer.srv;
 
 
 import com.blueseer.lbl.lblData;
+import static com.blueseer.lbl.lblData.addLabelZebraMstr;
+import static com.blueseer.lbl.lblData.deleteLabelZebraMstr;
+import static com.blueseer.lbl.lblData.getLabelBrowseDetView;
+import static com.blueseer.lbl.lblData.getLabelBrowseView;
 import static com.blueseer.lbl.lblData.getLabelSerialDisplay;
 import static com.blueseer.lbl.lblData.getLabelZebraMstr;
-import com.blueseer.shp.shpData;
-import static com.blueseer.shp.shpData.getShipperMstrSet;
-import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
-import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
+import com.blueseer.lbl.lblData.label_zebra;
+import static com.blueseer.lbl.lblData.updateLabelZebraMstr;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
-import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -84,6 +84,54 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     
     switch (id) {
             
+        case "addLabelZebraMstr" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            label_zebra am = objectMapper.readValue(sb.toString(), label_zebra.class);            
+            response.getWriter().print(arrayToJson(addLabelZebraMstr(am)));
+            break;
+        }
+        
+        case "updateLabelZebraMstr" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            label_zebra am = objectMapper.readValue(sb.toString(), label_zebra.class);            
+            response.getWriter().print(arrayToJson(updateLabelZebraMstr(am)));
+            break;
+        }
+        
+        case "deleteLabelZebraMstr" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            label_zebra am = objectMapper.readValue(sb.toString(), label_zebra.class);            
+            response.getWriter().print(arrayToJson(deleteLabelZebraMstr(am)));
+            break;
+        }
+        
+        case "getLabelZebraMstrX" : {
+            String[] key = new String[]{request.getHeader("key")}; 
+            label_zebra am = getLabelZebraMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(am);
+            response.getWriter().print(r);
+            break;
+        }
+        
         case "addMultiLabelTransaction" : {
             String line;
             StringBuilder sb = new StringBuilder();  
@@ -131,18 +179,41 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(lblData.getJobOperationPrintData(request.getHeader("param1"), request.getHeader("param2")));    
             break;   
         }
+        
+        case "getLabelBrowseView" : {
+        String[] it = new String[]{
+               request.getHeader("param1"), 
+               request.getHeader("param2"), 
+               request.getHeader("param3"), 
+               request.getHeader("param4"), 
+               request.getHeader("param5"), 
+               request.getHeader("param6")
+               };     
+        response.getWriter().print(getLabelBrowseView(it));  
+        break;
+        } 
             
+        case "getLabelBrowseDetView" : {
+        String[] it = new String[]{
+               request.getHeader("param1"), 
+               request.getHeader("param2")
+               };     
+        response.getWriter().print(getLabelBrowseDetView(it));  
+        break;
+        } 
+                
         case "getLabelZebraMstr" : {       
         lblData.label_zebra lz = getLabelZebraMstr(new String[]{request.getHeader("param1")});
         ObjectMapper objectMapper = new ObjectMapper();
         String r = objectMapper.writeValueAsString(lz);
         response.getWriter().print(r);
+        break;
         }
-        break; 
-        
-        case "getLabelSerialDisplay" :        
+                
+        case "getLabelSerialDisplay" : {       
             response.getWriter().print(getLabelSerialDisplay(request.getHeader("param1")));
             break; 
+        }
         
         default:
         response.getWriter().print("");

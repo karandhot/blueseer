@@ -26,7 +26,15 @@ SOFTWARE.
 package com.blueseer.srv;
 
 
+import static com.blueseer.frt.frtData.addCarrierMstr;
+import com.blueseer.frt.frtData.car_mstr;
+import static com.blueseer.frt.frtData.deleteCarrierMstr;
+import static com.blueseer.frt.frtData.getCarrierMstr;
+import static com.blueseer.frt.frtData.updateCarrierMstr;
+import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
@@ -70,7 +78,54 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     
     switch (id) {
         
-     
+     case "addCarrierMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      car_mstr x = objectMapper.readValue(sb.toString(), car_mstr.class);            
+      response.getWriter().print(arrayToJson(addCarrierMstr(x)));
+      break;
+    }
+    
+    case "updateCarrierMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      car_mstr x = objectMapper.readValue(sb.toString(), car_mstr.class);            
+      response.getWriter().print(arrayToJson(updateCarrierMstr(x)));
+      break;
+    }
+    
+    case "deleteCarrierMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      car_mstr x = objectMapper.readValue(sb.toString(), car_mstr.class);            
+      response.getWriter().print(arrayToJson(deleteCarrierMstr(x)));
+      break;
+    }
+    
+    case "getCarrierMstr" : {
+      String[] key = new String[]{request.getHeader("param1")}; 
+      car_mstr x = getCarrierMstr(key);
+      ObjectMapper objectMapper = new ObjectMapper();
+      String r = objectMapper.writeValueAsString(x);
+      response.getWriter().print(r);
+      break;
+    }
+    
         
         
         default:

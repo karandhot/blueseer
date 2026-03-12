@@ -3409,6 +3409,17 @@ public class admData {
                                lines.add(s);
                             }
                         }
+                        
+                        if (sd.equals("labeltype")) {
+                            res = st.executeQuery("select code_key from code_mstr where code_code = 'labeltype' order by code_key ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "labeltype";
+                               s[1] = res.getString("code_key");
+                               lines.add(s);
+                            }
+                        }
+                        
                         if (sd.equals("pricegroups")) {
                             res = st.executeQuery("select code_key from code_mstr where code_code = " + "'PRICEGROUP'" + " order by code_key ;");
                             while (res.next()) {

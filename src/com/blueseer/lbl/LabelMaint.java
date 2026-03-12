@@ -27,12 +27,8 @@ SOFTWARE.
 package com.blueseer.lbl;
 
 import bsmf.MainFrame;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import static com.blueseer.lbl.lblData.addLabelZebraMstr;
 import static com.blueseer.lbl.lblData.deleteLabelZebraMstr;
 import static com.blueseer.lbl.lblData.getLabelZebraMstr;
@@ -51,11 +47,9 @@ import static com.blueseer.utl.BlueSeerUtils.ludialog;
 import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
-import static com.blueseer.utl.BlueSeerUtils.setDateFormat;
 import com.blueseer.utl.DTData;
-import com.blueseer.utl.IBlueSeerT;
+import com.blueseer.utl.IBlueSeerV;
 import com.blueseer.utl.OVData;
-import static com.blueseer.utl.OVData.getSystemLabelDirectory;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -65,13 +59,6 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -89,10 +76,17 @@ import javax.swing.SwingWorker;
  *
  * @author vaughnte
  */
-public class LabelMaint extends javax.swing.JPanel implements IBlueSeerT {
+public class LabelMaint extends javax.swing.JPanel implements IBlueSeerV {
 
     // global variable declarations
-                boolean isLoad = false;
+        boolean isLoad = false;
+        boolean canUpdate = false;
+        boolean isAutoPost = false;
+        ArrayList<String[]> initDataSets = null;
+        String defaultSite = "";
+        String defaultCurrency = "";
+        String defaultCC = "";
+        String labelDir = "";
     
    // global datatablemodel declarations       
     
@@ -279,24 +273,39 @@ public class LabelMaint extends javax.swing.JPanel implements IBlueSeerT {
        }
     }
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
         isLoad = true;
         tbkey.setText("");
         tbdesc.setText("");
         tbfile.setText("");
+        if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "labeltype");
+        }
         
         ddtype.removeAllItems();
-        ArrayList<String> mylist = OVData.getCodeMstr("labeltype");
-        for (int i = 0; i < mylist.size(); i++) {
-            ddtype.addItem(mylist.get(i));
-        } 
-        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            if (s[0].equals("labeldir")) {
+              labelDir = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("labeltype")) {
+              ddtype.addItem(s[1]);  
+            }
+        }
        isLoad = false;
     }
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btdelete.setEnabled(false);
@@ -355,7 +364,7 @@ public class LabelMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
       
@@ -457,59 +466,13 @@ public class LabelMaint extends javax.swing.JPanel implements IBlueSeerT {
     // misc funcs
     public boolean isFile(String myfile) {
         boolean isgood = false;
-        Path template = FileSystems.getDefault().getPath(cleanDirString(getSystemLabelDirectory()) + myfile);
+        Path template = FileSystems.getDefault().getPath(cleanDirString(labelDir) + myfile);
         File f = template.toFile();
         if(f.exists() && !f.isDirectory()) { 
            isgood = true;
         }
         return isgood;
     }
-    
-    public void getLabelFileCode(String mykey) {
-        initvars(null);
-        try {
-
-            Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                res = st.executeQuery("select * from label_zebra where lblz_code = " + "'" + mykey + "'" + ";");
-                while (res.next()) {
-                    i++;
-                    tbkey.setText(res.getString("lblz_code"));
-                    tbdesc.setText(res.getString("lblz_desc"));
-                    tbfile.setText(res.getString("lblz_file"));
-                    ddtype.setSelectedItem(res.getString("lblz_type"));
-                    
-                }
-               
-                if (i == 0)
-                    bsmf.MainFrame.show(getMessageTag(1143,mykey));
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
-    }
-    
     
     
     /**
@@ -709,6 +672,7 @@ public class LabelMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
         BlueSeerUtils.messagereset(); 
+        initDataSets = null;
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 
