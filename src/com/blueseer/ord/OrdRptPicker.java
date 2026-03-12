@@ -30,6 +30,7 @@ import com.blueseer.inv.*;
 import com.blueseer.sch.*;
 import com.blueseer.inv.*;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import java.awt.Color;
@@ -56,8 +57,11 @@ import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.RPData;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -88,6 +92,7 @@ import javax.swing.table.TableColumn;
  */
 public class OrdRptPicker extends javax.swing.JPanel {
 
+    String func = null;
     /* NOTES:
     These notes apply to all RptPicker classes.
     
@@ -394,52 +399,39 @@ public class OrdRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+              
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getOrdRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromdate});
+        list.add(new String[]{"param2",todate});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery("SELECT so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name, " +
-                    " sum(sod_ord_qty * sod_netprice) as 'total' " +
-                    " from so_mstr inner join sod_det on so_nbr = sod_nbr " +
-                    " inner join cm_mstr on cm_code = so_cust " +
-                    " where " +
-                    " so_due_date >= " + "'" + fromdate + "'" +
-                    " and so_due_date <= " + "'" + todate + "'" +         
-                    " group by so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name order by so_nbr ;");
-
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{ 
-                        BlueSeerUtils.clickflag,  // imageicon always column 1
-                        res.getString("so_nbr"),
-                        res.getString("so_po"),
-                        res.getString("cm_code"),
-                        res.getString("cm_name"),
-                        res.getString("so_ord_date"),
-                        res.getString("so_due_date"),
-                        res.getString("so_status"),
-                        BlueSeerUtils.currformat(res.getString("total")),
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = ordData.getOrdRptPickerData(new String[]{
+                func,
+                fromdate,
+                todate
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                mymodel.addRow(rowData);
+                i++;
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
-      
+        }    
+        
+             
+             
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
             tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
@@ -454,8 +446,7 @@ public class OrdRptPicker extends javax.swing.JPanel {
         } // else run report
                
     }
-    
-    
+        
     /* Order by Order Date range */
     public void ordersOrdDateByRange (boolean input) {
         
@@ -506,52 +497,35 @@ public class OrdRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getOrdRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromdate});
+        list.add(new String[]{"param2",todate});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery("SELECT so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name, " +
-                    " sum(sod_ord_qty  * sod_netprice) as 'total' " +
-                    " from so_mstr inner join sod_det on so_nbr = sod_nbr " +
-                    " inner join cm_mstr on cm_code = so_cust " +
-                    " where " +
-                    " so_ord_date >= " + "'" + fromdate + "'" +
-                    " and so_ord_date <= " + "'" + todate + "'" +         
-                    " group by so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name order by so_nbr ;");
-
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{ 
-                        BlueSeerUtils.clickflag,  // imageicon always column 1
-                        res.getString("so_nbr"),
-                        res.getString("so_po"),
-                        res.getString("cm_code"),
-                        res.getString("cm_name"),
-                        res.getString("so_ord_date"),
-                        res.getString("so_due_date"),
-                        res.getString("so_status"),
-                        BlueSeerUtils.currformat(res.getString("total")),
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = ordData.getOrdRptPickerData(new String[]{
+                func,
+                fromdate,
+                todate
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                mymodel.addRow(rowData);
+                i++;
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
-      
+        }    
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
             tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
@@ -627,53 +601,36 @@ public class OrdRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+      String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getOrdRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromcust});
+        list.add(new String[]{"param2",tocust});
+        list.add(new String[]{"param3",fromdate});
+        list.add(new String[]{"param4",todate});         
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery("SELECT so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name, " +
-                    " sum(sod_ord_qty  * sod_netprice) as 'total' " +
-                    " from so_mstr inner join sod_det on so_nbr = sod_nbr " +
-                    " inner join cm_mstr on cm_code = so_cust " +
-                    " where " +
-                    " so_cust >= " + "'" + fromcust + "'" +
-                    " and so_cust <= " + "'" + tocust + "'" +   
-                    " and so_ord_date >= " + "'" + fromdate + "'" +
-                    " and so_ord_date <= " + "'" + todate + "'" +         
-                    " group by so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name order by so_nbr ;");
-
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{ 
-                        BlueSeerUtils.clickflag,  // imageicon always column 1
-                        res.getString("so_nbr"),
-                        res.getString("so_po"),
-                        res.getString("cm_code"),
-                        res.getString("cm_name"),
-                        res.getString("so_ord_date"),
-                        res.getString("so_due_date"),
-                        res.getString("so_status"),
-                        BlueSeerUtils.currformat(res.getString("total")),
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = ordData.getOrdRptPickerData(new String[]{
+                func,
+                fromcust,
+                tocust,
+                fromdate,
+                todate
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            for (Object[] rowData : roData) {
+                mymodel.addRow(rowData);
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        }    
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -743,52 +700,32 @@ public class OrdRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+      String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getOrdRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromcust});
+        list.add(new String[]{"param2",tocust});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery("SELECT so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name, " +
-                    " sum(sod_ord_qty  * sod_netprice) as 'total' " +
-                    " from so_mstr inner join sod_det on so_nbr = sod_nbr " +
-                    " inner join cm_mstr on cm_code = so_cust " +
-                    " where " +
-                    " so_cust >= " + "'" + fromcust + "'" +
-                    " and so_cust <= " + "'" + tocust + "'" +   
-                    " and so_status <> " + "'" + "close" + "'" +       
-                    " group by so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name order by so_nbr ;");
-
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{ 
-                        BlueSeerUtils.clickflag,  // imageicon always column 1
-                        res.getString("so_nbr"),
-                        res.getString("so_po"),
-                        res.getString("cm_code"),
-                        res.getString("cm_name"),
-                        res.getString("so_ord_date"),
-                        res.getString("so_due_date"),
-                        res.getString("so_status"),
-                        BlueSeerUtils.currformat(res.getString("total")),
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = ordData.getOrdRptPickerData(new String[]{
+                func,
+                fromcust,
+                tocust
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            for (Object[] rowData : roData) {
+                mymodel.addRow(rowData);
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        }  
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -860,52 +797,32 @@ public class OrdRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+    String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getOrdRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromcust});
+        list.add(new String[]{"param2",tocust});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery("SELECT so_nbr, so_po, so_status, sod_item, cm_code, cm_name, " +
-                    " sod_ord_qty, sod_shipped_qty, (sod_ord_qty - sod_shipped_qty) as 'remaining' " +
-                    " from so_mstr inner join sod_det on so_nbr = sod_nbr " +
-                    " inner join cm_mstr on cm_code = so_cust " +
-                    " where " +
-                    " so_cust >= " + "'" + fromcust + "'" +
-                    " and so_cust <= " + "'" + tocust + "'" +   
-                    " and so_status <> " + "'" + "close" + "'" +       
-                    " order by so_nbr ;");
-
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{ 
-                        BlueSeerUtils.clickflag,  // imageicon always column 1
-                        res.getString("so_nbr"),
-                        res.getString("so_po"),
-                        res.getString("so_status"),
-                        res.getString("cm_name"),
-                        res.getString("sod_item"),
-                        res.getString("sod_ord_qty"),
-                        res.getString("sod_shipped_qty"),
-                        res.getString("remaining")
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = ordData.getOrdRptPickerData(new String[]{
+                func,
+                fromcust,
+                tocust
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            for (Object[] rowData : roData) {
+                mymodel.addRow(rowData);
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        } 
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -975,52 +892,32 @@ public class OrdRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+      String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getOrdRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromcust});
+        list.add(new String[]{"param2",tocust});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery("SELECT so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name, " +
-                    " sum(sod_ord_qty  * sod_netprice) as 'total' " +
-                    " from so_mstr inner join sod_det on so_nbr = sod_nbr " +
-                    " inner join cm_mstr on cm_code = so_cust " +
-                    " where " +
-                    " so_cust >= " + "'" + fromcust + "'" +
-                    " and so_cust <= " + "'" + tocust + "'" +   
-                    " and so_status = " + "'" + "onhold" + "'" +       
-                    " group by so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name order by so_nbr ;");
-
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{ 
-                        BlueSeerUtils.clickflag,  // imageicon always column 1
-                        res.getString("so_nbr"),
-                        res.getString("so_po"),
-                        res.getString("cm_code"),
-                        res.getString("cm_name"),
-                        res.getString("so_ord_date"),
-                        res.getString("so_due_date"),
-                        res.getString("so_status"),
-                        BlueSeerUtils.currformat(res.getString("total")),
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = ordData.getOrdRptPickerData(new String[]{
+                func,
+                fromcust,
+                tocust
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            for (Object[] rowData : roData) {
+                mymodel.addRow(rowData);
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        } 
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -1092,52 +989,32 @@ public class OrdRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+      String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getOrdRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",frompo});
+        list.add(new String[]{"param2",topo});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery("SELECT sod_nbr, shd_po, sh_id, sh_shipdate,  " +
-                    " sod_ord_qty, shd_qty, shd_item, shd_desc, sh_rmks " +
-                    " from ship_det inner join ship_mstr on sh_id = shd_id " +
-                    " inner join sod_det on sod_nbr = shd_so and sod_line = shd_soline" + 
-                    " where " +
-                    " shd_po >= " + "'" + frompo + "'" +
-                    " and shd_po <= " + "'" + topo + "'" +  
-                    " order by shd_po ;");
-
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{ 
-                        BlueSeerUtils.clickflag,  // imageicon always column 1
-                        res.getString("sod_nbr"),
-                        res.getString("shd_po"),
-                        res.getString("sh_id"),
-                        res.getString("sh_shipdate"),
-                        res.getString("sh_rmks"),                        
-                        res.getString("shd_item"),
-                        res.getString("shd_desc"),
-                        res.getString("shd_qty")
-                        
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = ordData.getOrdRptPickerData(new String[]{
+                func,
+                frompo,
+                topo
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            for (Object[] rowData : roData) {
+                mymodel.addRow(rowData);
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        } 
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -1214,88 +1091,40 @@ public class OrdRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+      String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getOrdRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromcust});
+        list.add(new String[]{"param2",tocust}); 
+        list.add(new String[]{"param2",fromdate});
+        list.add(new String[]{"param2",todate});
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServORD"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-           
-            double total = 0;
-            double tax = 0;
-            double disc = 0;
-            double charge = 0;
-            try{   
-                res = st.executeQuery("SELECT so_nbr, so_cust, so_po, so_ord_date, so_status, cm_code, cm_name,  " +
-                        " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
-                        " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
-                        " (select sum(case when sos_type <> 'tax' and sos_type <> 'passive' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'charge'," + 
-                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = so_nbr)as 'taxpercent', " +
-                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = so_nbr) as 'taxcharge' " +
-                        " FROM  so_mstr left outer join sod_det on sod_nbr = so_nbr " +
-                        " inner join cm_mstr on cm_code = so_cust " +
-                        " where so_ord_date >= " + "'" + fromdate  + "'" + 
-                        " AND so_ord_date <= " + "'" + todate + "'" + 
-                        " AND so_cust >= " + "'" + fromcust + "'" + 
-                        " AND so_cust <= " + "'" + tocust + "'" + 
-                        " AND so_type = 'DISCRETE' " +
-                         " group by so_nbr, so_cust, so_po, so_ord_date, so_status order by so_nbr desc ;");    
-                 
-                while (res.next()) {
-                    
-                    total = 0;
-                    tax = 0;
-                    disc = 0;
-                    charge = 0;
-                    
-                    if (res.getDouble("discountpercent") != 0) {
-                      disc = res.getDouble("totdol") * (res.getDouble("discountpercent") / 100.0);
-                    } else {
-                      disc = 0;  
-                    }
-                    charge = res.getDouble("charge");
-                    total = res.getDouble("totdol") + charge;  // charges added to total before taxing
-                    
-                    // now do tax
-                    if (res.getDouble("taxpercent") != 0) {
-                      tax = total * (res.getDouble("taxpercent") / 100.0);
-                    } else {
-                      tax = 0;  
-                    }
-                    tax += res.getDouble("taxcharge");
-                                        
-                    total = total + tax;
-                    
-                   
-                    
-                    mymodel.addRow(new Object[]{ 
-                        BlueSeerUtils.clickflag,  // imageicon always column 1
-                        res.getString("so_nbr"),
-                        res.getString("so_po"),
-                        res.getString("cm_code"),
-                        res.getString("cm_name"),
-                        res.getString("so_ord_date"),
-                        res.getString("so_status"),
-                        bsParseDouble(currformatDouble(total)),
-                        bsParseDouble(currformatDouble(tax))
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = ordData.getOrdRptPickerData(new String[]{
+                func,
+                fromcust,
+                tocust,
+                fromdate,
+                todate
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][7] = bsParseDouble(roData[i][7].toString());
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                mymodel.addRow(rowData);
+                i++;
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        } 
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -1728,7 +1557,7 @@ public class OrdRptPicker extends javax.swing.JPanel {
     private void ddreportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddreportActionPerformed
       
        if (! isLoad)  { 
-       String func = OVData.getJasperFuncByTitle(jasperGroup, ddreport.getSelectedItem().toString());
+       func = OVData.getJasperFuncByTitle(jasperGroup, ddreport.getSelectedItem().toString());
        Method mymethod;
        ((DefaultTableModel)tablereport.getModel()).setRowCount(0);
        btprint.setEnabled(false);

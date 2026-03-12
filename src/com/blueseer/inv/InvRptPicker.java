@@ -31,6 +31,7 @@ import com.blueseer.inv.*;
 import com.blueseer.sch.*;
 import com.blueseer.inv.*;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import java.awt.Color;
@@ -53,10 +54,14 @@ import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble5;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.RPData;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -88,7 +93,7 @@ import javax.swing.table.TableColumn;
  * @author vaughnte
  */
 public class InvRptPicker extends javax.swing.JPanel {
-
+    String func = null;
     /* NOTES:
     These notes apply to all RptPicker classes.
     
@@ -398,45 +403,37 @@ public class InvRptPicker extends javax.swing.JPanel {
                       }  
                         };
              
-            
-               
-           try{
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-              res = st.executeQuery("SELECT it_item, it_desc, it_code, it_prodline, " +
-                      " it_group, it_loc, it_wh, it_createdate, it_sell_price, " +
-                        "  it_pur_price, it_rev from item_mstr " +
-                        " where cast(it_item as double) >= " + "'" + fromitem + "'" +
-                        " and cast(it_item as double) <= " + "'" + toitem + "'" +
-                        " order by it_item; ") ;
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, res.getString("it_item"),
-                                res.getString("it_desc"),
-                                res.getString("it_createdate"),
-                                res.getString("it_prodline"),
-                                res.getString("it_code"),
-                                res.getString("it_group"),
-                                res.getString("it_loc"),
-                                res.getString("it_wh"),
-                                res.getDouble("it_sell_price"),
-                                res.getDouble("it_pur_price"),
-                                res.getString("it_rev")
-                                });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getInvRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromitem});
+        list.add(new String[]{"param2",toitem});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
+        } else {
+            jsonString = invData.getInvRptPickerData(new String[]{
+                func,
+                fromitem,
+                toitem
+            });
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][9] = bsParseDouble(roData[i][9].toString());
+                roData[i][10] = bsParseDouble(roData[i][10].toString());
+                mymodel.addRow(rowData);
+                i++;
+            }
+        }      
+       
       
       // now assign tablemodel to table
         tablereport.setModel(mymodel);
@@ -500,43 +497,36 @@ public class InvRptPicker extends javax.swing.JPanel {
                       }  
                         };
            
-           try{
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-              res = st.executeQuery("SELECT it_item, it_desc, it_code, it_prodline, " +
-                      " it_group, it_loc, it_wh, it_type, it_sell_price, " +
-                        "  it_pur_price, it_rev from item_mstr " +
-                        " where it_prodline >= " + "'" + fromprodline + "'" +
-                        " and it_prodline <= " + "'" + toprodline + "'" +
-                        " order by it_item; ") ;
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, res.getString("it_item"),
-                                res.getString("it_desc"),
-                                res.getString("it_type"),
-                                res.getString("it_prodline"),
-                                res.getString("it_code"),
-                                res.getString("it_group"),
-                                res.getString("it_loc"),
-                                res.getString("it_wh"),
-                                res.getDouble("it_sell_price"),
-                                res.getDouble("it_pur_price"),
-                                res.getString("it_rev")
-                                });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getInvRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromprodline});
+        list.add(new String[]{"param2",toprodline});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
+        } else {
+            jsonString = invData.getInvRptPickerData(new String[]{
+                func,
+                fromprodline,
+                toprodline
+            });
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][9] = bsParseDouble(roData[i][9].toString());
+                roData[i][10] = bsParseDouble(roData[i][10].toString());
+                mymodel.addRow(rowData);
+                i++;
+            }
+        }      
       
       // now assign tablemodel to table
         tablereport.setModel(mymodel);
@@ -598,42 +588,42 @@ public class InvRptPicker extends javax.swing.JPanel {
                       }  
                         };
            
-           try{
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-              res = st.executeQuery("select * from item_cost inner join item_mstr on it_item = itc_item " +
-                       " where itc_item >= " + "'" + fromitem + "'" +  " AND " 
-                       + " itc_item <= " + "'" + toitem + "'" + " AND "        
-                        + " itc_set = " + "'" + "standard" + "'" + " AND "
-                        + " itc_site = " + "'" + site + "'" + ";" );
-              
-              
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, 
-                        res.getString("it_item"),
-                        res.getString("it_desc"),
-                        bsFormatDouble5(res.getDouble("itc_mtl_low") + res.getDouble("itc_mtl_top")),
-                        bsFormatDouble5(res.getDouble("itc_lbr_low") + res.getDouble("itc_lbr_top")),
-                        bsFormatDouble5(res.getDouble("itc_bdn_low") + res.getDouble("itc_bdn_top")),
-                        bsFormatDouble5(res.getDouble("itc_ovh_low") + res.getDouble("itc_ovh_top")),
-                        bsFormatDouble5(res.getDouble("itc_out_low") + res.getDouble("itc_out_top")),
-                        bsFormatDouble5(res.getDouble("itc_total"))
-                                });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getInvRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromitem});
+        list.add(new String[]{"param2",toitem}); 
+        list.add(new String[]{"param3",site}); 
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
+        } else {
+            jsonString = invData.getInvRptPickerData(new String[]{
+                func,
+                fromitem,
+                toitem,
+                site
+            });
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][3] = bsParseDouble(roData[i][3].toString());
+                roData[i][4] = bsParseDouble(roData[i][4].toString());
+                roData[i][5] = bsParseDouble(roData[i][5].toString());
+                roData[i][6] = bsParseDouble(roData[i][6].toString());
+                roData[i][7] = bsParseDouble(roData[i][7].toString());
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                mymodel.addRow(rowData);
+                i++;
+            }
+        }     
       
       // now assign tablemodel to table
            tablereport.setModel(mymodel);
@@ -697,46 +687,36 @@ public class InvRptPicker extends javax.swing.JPanel {
                       }  
                         };
            
-           try{
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-              res = st.executeQuery("select it_item, cpr_item, it_desc, it_sell_price, " +
-                      " cpr_cust, cpr_curr, cpr_uom, cm_name, cpr_price " +
-                      " from cpr_mstr " +
-                      " inner join item_mstr on cpr_item = it_item " +
-                      " inner join cm_mstr on cm_code = cpr_cust " +
-                      " where cpr_item >= " + "'" + fromitem + "'" +  " AND " +
-                       " cpr_item <= " + "'" + toitem + "'" +
-                       " and cpr_type = 'List' " +
-                       ";" );
-              
-              
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, 
-                        res.getString("it_item"),
-                        res.getString("it_desc"),
-                        res.getString("cpr_cust"),
-                        res.getString("cm_name"),
-                        res.getString("cpr_curr"),
-                        res.getString("cpr_uom"),
-                        res.getDouble("it_sell_price"),
-                        res.getDouble("cpr_price")
-                                });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getInvRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromitem});
+        list.add(new String[]{"param2",toitem}); 
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
+        } else {
+            jsonString = invData.getInvRptPickerData(new String[]{
+                func,
+                fromitem,
+                toitem
+            });
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {                
+                roData[i][7] = bsParseDouble(roData[i][7].toString());
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                mymodel.addRow(rowData);
+                i++;
+            }
+        }     
       
       // now assign tablemodel to table
         tablereport.setModel(mymodel);
@@ -794,51 +774,35 @@ public class InvRptPicker extends javax.swing.JPanel {
                       }  
                         };
            
-           try{
-           Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-              String qtyall = "";                  
-              res = st.executeQuery("select it_item, it_desc, " + 
-                     // " in_qoh as qoh, in_loc as loc, in_wh as wh, " +
-                      " in_serial as serial, in_expire as expire, " +
-                      
-                       "case when in_qoh is null then '0' else in_qoh end as qoh, " +
-                       "case when in_loc is null then '0' else in_loc end as loc, " +
-                       "case when in_wh is null then '0' else in_wh end as wh " +
-                    //   "case when in_serial is null then '0' else in_serial end as serial, " +
-                    //   "case when in_expire is null then '0' else in_expire end as expire " +
-                       
-                      " from item_mstr left outer join in_mstr on in_item = it_item " +
-                       " where it_item >= " + "'" + fromitem + "'" +  " AND " 
-                       + " it_item <= " + "'" + toitem + "'"         
-                       + ";" );
-              
-              
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, 
-                        res.getString("it_item"),
-                        res.getString("it_desc"),
-                        res.getString("qoh"),
-                        res.getString("serial"),
-                        res.getString("loc"),
-                        res.getString("wh"),
-                        res.getString("expire")
-                                });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getInvRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromitem});
+        list.add(new String[]{"param2",toitem}); 
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
+        } else {
+            jsonString = invData.getInvRptPickerData(new String[]{
+                func,
+                fromitem,
+                toitem
+            });
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {                
+                roData[i][3] = bsParseDouble(roData[i][3].toString());
+                mymodel.addRow(rowData);
+                i++;
+            }
+        }   
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -901,49 +865,35 @@ public class InvRptPicker extends javax.swing.JPanel {
                       }  
                         };
            
-           try{
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-              String qtyall = "";                  
-              res = st.executeQuery("select it_item, it_desc, " + 
-                       "case when in_qoh is null then '0' else in_qoh end as qoh, " +
-                       "case when in_loc is null then '0' else in_loc end as loc, " +
-                       "case when in_wh is null then '0' else in_wh end as wh, " +
-                       " (select sum(sod_all_qty - sod_shipped_qty) from sod_det where sod_item = it_item and sod_status <> 'close' group by sod_item) as qtyall " +
-                       " from item_mstr left outer join in_mstr on in_item = it_item " +
-                       " where it_item >= " + "'" + fromitem + "'" +  " AND " 
-                       + " it_item <= " + "'" + toitem + "'"         
-                       + ";" );
-              
-              
-                while (res.next()) {
-                    qtyall = "0";
-                    if (res.getString("qtyall") != null) {
-                       qtyall = res.getString("qtyall");
-                    } 
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, 
-                        res.getString("it_item"),
-                        res.getString("it_desc"),
-                        res.getString("qoh"),
-                        qtyall,
-                        res.getString("loc"),
-                        res.getString("wh")
-                                });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getInvRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromitem});
+        list.add(new String[]{"param2",toitem}); 
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
+        } else {
+            jsonString = invData.getInvRptPickerData(new String[]{
+                func,
+                fromitem,
+                toitem
+            });
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {                
+                roData[i][3] = bsParseDouble(roData[i][3].toString());
+                mymodel.addRow(rowData);
+                i++;
+            }
+        }   
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -1005,46 +955,34 @@ public class InvRptPicker extends javax.swing.JPanel {
                       }  
                         };
            
-           try{
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-                                
-              res = st.executeQuery("select sod_item, it_desc, sod_nbr, cm_name, (sod_all_qty - sod_shipped_qty) as qtyall, " + 
-                       " sod_loc, sod_wh " +
-                       " from sod_det inner join item_mstr on it_item = sod_item " +
-                       " inner join so_mstr on so_nbr = sod_nbr " +
-                       " inner join cm_mstr on cm_code = so_cust " +
-                       " where sod_item >= " + "'" + fromitem + "'" +  " AND " 
-                       + " sod_item <= " + "'" + toitem + "'" + " AND "
-                       + " sod_status <> 'close' "
-                       + ";" );
-              
-              
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, 
-                        res.getString("sod_item"),
-                        res.getString("it_desc"),
-                        res.getString("sod_nbr"),
-                        res.getString("cm_name"),
-                        res.getString("qtyall"),
-                        res.getString("sod_loc"),
-                        res.getString("sod_wh")
-                                });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getInvRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromitem});
+        list.add(new String[]{"param2",toitem}); 
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
+        } else {
+            jsonString = invData.getInvRptPickerData(new String[]{
+                func,
+                fromitem,
+                toitem
+            });
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) { 
+                mymodel.addRow(rowData);
+                i++;
+            }
+        }   
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -1106,45 +1044,34 @@ public class InvRptPicker extends javax.swing.JPanel {
                       }  
                         };
            
-           try{
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-              String qtyall = "";                  
-              res = st.executeQuery("select it_item, it_desc, it_code, it_safestock, it_minordqty, " + 
-                       "coalesce(sum(in_qoh),0) as qoh " +
-                        " from item_mstr left outer join in_mstr on in_item = it_item " +
-                       " where it_item >= " + "'" + fromitem + "'" +  " AND " 
-                       + " it_item <= " + "'" + toitem + "'" 
-                       + " group by it_item, it_desc, it_code, it_safestock, it_minordqty ;" );
-              
-              
-                while (res.next()) {
-                    if (res.getDouble("qoh") >= res.getDouble("it_safestock")) {
-                        continue;
-                    }
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, 
-                        res.getString("it_item"),
-                        res.getString("it_desc"),
-                        res.getString("it_code"),
-                        res.getString("qoh"),
-                        res.getString("it_safestock"),
-                        res.getString("it_minordqty")
-                                });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               con.close();
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getInvRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromitem});
+        list.add(new String[]{"param2",toitem}); 
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
+        } else {
+            jsonString = invData.getInvRptPickerData(new String[]{
+                func,
+                fromitem,
+                toitem
+            });
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) { 
+                mymodel.addRow(rowData);
+                i++;
+            }
+        }   
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -1209,45 +1136,39 @@ public class InvRptPicker extends javax.swing.JPanel {
                       }  
                         };
            
-           try{
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-              double totalval = 0.00;                  
-              res = st.executeQuery("select it_item, it_desc, it_prodline, it_code, itc_total, " + 
-                       "case when in_qoh is null then '0' else in_qoh end as qoh " +
-                       " from item_mstr left outer join in_mstr on in_item = it_item " +
-                       " left outer join item_cost on itc_item = it_item and itc_set = 'standard' and itc_site = " + "'" + site + "'" +
-                       " where it_item >= " + "'" + fromitem + "'" +  " AND " 
-                       + " it_item <= " + "'" + toitem + "'"         
-                       + ";" );
-              
-              
-                while (res.next()) {
-                    totalval = (res.getDouble("qoh") * res.getDouble("itc_total"));
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, 
-                        res.getString("it_item"),
-                        res.getString("it_desc"),
-                        res.getString("it_code"),
-                        res.getString("it_prodline"),
-                        res.getDouble("qoh"),
-                        bsFormatDouble5(res.getDouble("itc_total")),
-                        bsFormatDouble5(totalval)
-                        });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getInvRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromitem});
+        list.add(new String[]{"param2",toitem}); 
+        list.add(new String[]{"param3",site});
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
+        } else {
+            jsonString = invData.getInvRptPickerData(new String[]{
+                func,
+                fromitem,
+                toitem,
+                site
+            });
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) { 
+                roData[i][5] = bsParseDouble(roData[i][5].toString());
+                roData[i][6] = bsParseDouble(roData[i][6].toString());
+                roData[i][7] = bsParseDouble(roData[i][7].toString());
+                mymodel.addRow(rowData);
+                i++;
+            }
+        }   
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -1317,49 +1238,40 @@ public class InvRptPicker extends javax.swing.JPanel {
                       }  
                         };
            
-           try{
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-              String qtyall = ""; 
-              res = st.executeQuery("select it_item, it_desc, it_code, " + 
-                       "case when in_qoh is null then '0' else in_qoh end as qoh, " +
-                       "case when in_loc is null then '0' else in_loc end as loc, " +
-                       "case when in_wh is null then '0' else in_wh end as wh, " +
-                       " (select sum(sod_all_qty - sod_shipped_qty) from sod_det where sod_item = in_item and sod_status <> 'close' group by sod_item) as qtyall " +
-                       " from in_mstr inner join item_mstr on it_item = in_item " +
-                       " where in_wh >= " + "'" + fromwh + "'" +  " AND " 
-                       + " in_wh <= " + "'" + towh + "'"         
-                       + ";" );
-              
-                while (res.next()) {
-                    qtyall = "0";
-                    if (res.getString("qtyall") != null) {
-                       qtyall = res.getString("qtyall");
-                    } 
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, 
-                        res.getString("it_item"),
-                        res.getString("it_desc"),
-                        res.getString("it_code"),
-                        res.getString("qoh"),
-                        qtyall,
-                        res.getString("loc"),
-                        res.getString("wh")
-                                });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getInvRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromwh});
+        list.add(new String[]{"param2",towh}); 
+        list.add(new String[]{"param3",site});
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
+        } else {
+            jsonString = invData.getInvRptPickerData(new String[]{
+                func,
+                fromwh,
+                towh,
+                site
+            });
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) { 
+                roData[i][4] = bsParseDouble(roData[i][4].toString());
+                roData[i][5] = bsParseDouble(roData[i][5].toString());
+                roData[i][6] = bsParseDouble(roData[i][6].toString());
+                roData[i][7] = bsParseDouble(roData[i][7].toString());
+                mymodel.addRow(rowData);
+                i++;
+            }
+        }   
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -1428,49 +1340,40 @@ public class InvRptPicker extends javax.swing.JPanel {
                       }  
                         };
            
-           try{
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-              String qtyall = ""; 
-              res = st.executeQuery("select it_item, it_desc, it_code, " + 
-                       "case when in_qoh is null then '0' else in_qoh end as qoh, " +
-                       "case when in_loc is null then '0' else in_loc end as loc, " +
-                       "case when in_wh is null then '0' else in_wh end as wh, " +
-                       " (select sum(sod_all_qty - sod_shipped_qty) from sod_det where sod_item = in_item and sod_status <> 'close' group by sod_item) as qtyall " +
-                       " from in_mstr inner join item_mstr on it_item = in_item " +
-                       " where in_loc >= " + "'" + fromloc + "'" +  " AND " 
-                       + " in_loc <= " + "'" + toloc + "'"         
-                       + ";" );
-              
-                while (res.next()) {
-                    qtyall = "0";
-                    if (res.getString("qtyall") != null) {
-                       qtyall = res.getString("qtyall");
-                    } 
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, 
-                        res.getString("it_item"),
-                        res.getString("it_desc"),
-                        res.getString("it_code"),
-                        res.getString("qoh"),
-                        qtyall,
-                        res.getString("loc"),
-                        res.getString("wh")
-                                });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getInvRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromloc});
+        list.add(new String[]{"param2",toloc}); 
+        list.add(new String[]{"param3",site});
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
+        } else {
+            jsonString = invData.getInvRptPickerData(new String[]{
+                func,
+                fromloc,
+                toloc,
+                site
+            });
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) { 
+                roData[i][4] = bsParseDouble(roData[i][4].toString());
+                roData[i][5] = bsParseDouble(roData[i][5].toString());
+                roData[i][6] = bsParseDouble(roData[i][6].toString());
+                roData[i][7] = bsParseDouble(roData[i][7].toString());
+                mymodel.addRow(rowData);
+                i++;
+            }
+        }   
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -1907,7 +1810,7 @@ public class InvRptPicker extends javax.swing.JPanel {
        ((DefaultTableModel)tablereport.getModel()).setRowCount(0);
        btprint.setEnabled(false);
        btcsv.setEnabled(false);
-       String func = OVData.getJasperFuncByTitle(jasperGroup, ddreport.getSelectedItem().toString());
+       func = OVData.getJasperFuncByTitle(jasperGroup, ddreport.getSelectedItem().toString());
        Method mymethod;
            if (func != null && ! func.isEmpty()) {
                try {

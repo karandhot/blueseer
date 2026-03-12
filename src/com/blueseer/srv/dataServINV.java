@@ -56,6 +56,7 @@ import static com.blueseer.inv.invData.getInvBrowseView;
 import static com.blueseer.inv.invData.getInvMaintInit;
 import static com.blueseer.inv.invData.getInvMaintInit_min;
 import static com.blueseer.inv.invData.getInvMetaOperators;
+import static com.blueseer.inv.invData.getInvRptPickerData;
 import static com.blueseer.inv.invData.getInvValuationBrowseView;
 import static com.blueseer.inv.invData.getInventoryQtyByItem;
 import static com.blueseer.inv.invData.getItemBrowseView;
@@ -872,6 +873,20 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     request.getHeader("param6"))));  
             break;
         }
+        
+        case "getInvRptPickerData" : {
+        String[] x = new String[]{
+               request.getHeader("func"),
+               request.getHeader("param1"), 
+               request.getHeader("param2"),
+               request.getHeader("param3"),
+               request.getHeader("param4"),
+               request.getHeader("param5")
+               };     
+        response.getWriter().print(getInvRptPickerData(x));  
+        break;
+        }
+        
         
         default:
         response.getWriter().print("");

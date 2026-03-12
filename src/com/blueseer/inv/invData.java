@@ -38,10 +38,12 @@ import static bsmf.MainFrame.user;
 import com.blueseer.fgl.fglData;
 import com.blueseer.fgl.fglData.gl_pair;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble5;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.bsformat;
+import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.formatUSC;
 import static com.blueseer.utl.BlueSeerUtils.formatUSZ;
@@ -3066,6 +3068,348 @@ public class invData {
    
 
     /* misc functions */
+    public static String getInvRptPickerData(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                if (keys[0].equals("iteminfoByItemRange")) {
+                res = st.executeQuery("SELECT it_item, it_desc, it_code, it_prodline, " +
+                      " it_group, it_loc, it_wh, it_createdate, it_sell_price, " +
+                        "  it_pur_price, it_rev from item_mstr " +
+                        " where cast(it_item as double) >= " + "'" + keys[1] + "'" +
+                        " and cast(it_item as double) <= " + "'" + keys[2] + "'" +
+                        " order by it_item; ") ;
+                
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("it_item"));
+                            rowArray.put(res.getString("it_desc"));
+                            rowArray.put(res.getString("it_createdate"));
+                            rowArray.put(res.getString("it_prodline"));
+                            rowArray.put(res.getString("it_code"));
+                            rowArray.put(res.getString("it_group"));
+                            rowArray.put(res.getString("it_loc"));
+                            rowArray.put(res.getString("it_wh"));
+                            rowArray.put(currformat(res.getString("it_sell_price")));
+                            rowArray.put(currformat(res.getString("it_pur_price")));
+                            rowArray.put(res.getString("it_rev"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("itemByProdLineRange")) {
+                res = st.executeQuery("SELECT it_item, it_desc, it_code, it_prodline, " +
+                      " it_group, it_loc, it_wh, it_type, it_sell_price, " +
+                        "  it_pur_price, it_rev from item_mstr " +
+                        " where it_prodline >= " + "'" + keys[1] + "'" +
+                        " and it_prodline <= " + "'" + keys[2] + "'" +
+                        " order by it_item; ") ;                
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("it_item"));
+                            rowArray.put(res.getString("it_desc"));
+                            rowArray.put(res.getString("it_type"));
+                            rowArray.put(res.getString("it_prodline"));
+                            rowArray.put(res.getString("it_code"));
+                            rowArray.put(res.getString("it_group"));
+                            rowArray.put(res.getString("it_loc"));
+                            rowArray.put(res.getString("it_wh"));
+                            rowArray.put(currformat(res.getString("it_sell_price")));
+                            rowArray.put(currformat(res.getString("it_pur_price")));
+                            rowArray.put(res.getString("it_rev"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("itemCostsRange")) {
+                res = st.executeQuery("select * from item_cost inner join item_mstr on it_item = itc_item " +
+                       " where itc_item >= " + "'" + keys[1] + "'" +  " AND " 
+                       + " itc_item <= " + "'" + keys[2] + "'" + " AND "        
+                        + " itc_set = " + "'" + "standard" + "'" + " AND "
+                        + " itc_site = " + "'" + keys[3] + "'" + ";" );                
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("it_item"));
+                            rowArray.put(res.getString("it_desc"));
+                            rowArray.put(bsNumber(res.getDouble("itc_mtl_low") + res.getDouble("itc_mtl_top")));
+                            rowArray.put(bsNumber(res.getDouble("itc_lbr_low") + res.getDouble("itc_lbr_top")));
+                            rowArray.put(bsNumber(res.getDouble("itc_bdn_low") + res.getDouble("itc_bdn_top")));
+                            rowArray.put(bsNumber(res.getDouble("itc_ovh_low") + res.getDouble("itc_ovh_top")));
+                            rowArray.put(bsNumber(res.getDouble("itc_out_low") + res.getDouble("itc_out_top")));   
+                            rowArray.put(bsNumber(res.getDouble("itc_total")));  
+                            jsonarray.put(rowArray); 
+                    } 
+                }
+                
+                if (keys[0].equals("itemCustPriceRange")) {
+                res = st.executeQuery("select it_item, cpr_item, it_desc, it_sell_price, " +
+                      " cpr_cust, cpr_curr, cpr_uom, cm_name, cpr_price " +
+                      " from cpr_mstr " +
+                      " inner join item_mstr on cpr_item = it_item " +
+                      " inner join cm_mstr on cm_code = cpr_cust " +
+                      " where cpr_item >= " + "'" + keys[1] + "'" +  " AND " +
+                       " cpr_item <= " + "'" + keys[2] + "'" +
+                       " and cpr_type = 'List' " +
+                       ";" );                  
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("it_item"));
+                            rowArray.put(res.getString("it_desc"));
+                            rowArray.put(res.getString("cpr_cust"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("cpr_curr"));
+                            rowArray.put(res.getString("cpr_uom"));
+                            rowArray.put(currformat(res.getString("it_sell_price")));
+                            rowArray.put(currformat(res.getString("cpr_price")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("itemInventoryRange")) {
+                res = st.executeQuery("select it_item, it_desc, " + 
+                     // " in_qoh as qoh, in_loc as loc, in_wh as wh, " +
+                      " in_serial as serial, in_expire as expire, " +
+                      
+                       "case when in_qoh is null then '0' else in_qoh end as qoh, " +
+                       "case when in_loc is null then '0' else in_loc end as loc, " +
+                       "case when in_wh is null then '0' else in_wh end as wh " +
+                    //   "case when in_serial is null then '0' else in_serial end as serial, " +
+                    //   "case when in_expire is null then '0' else in_expire end as expire " +
+                       
+                      " from item_mstr left outer join in_mstr on in_item = it_item " +
+                       " where it_item >= " + "'" + keys[1] + "'" +  " AND " 
+                       + " it_item <= " + "'" + keys[2] + "'"         
+                       + ";" );               
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("it_item"));
+                            rowArray.put(res.getString("it_desc"));
+                            rowArray.put(res.getString("qoh"));
+                            rowArray.put(res.getString("serial"));
+                            rowArray.put(res.getString("loc"));
+                            rowArray.put(res.getString("wh"));
+                            rowArray.put(res.getString("expire"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("itemQOHRange")) {
+                res = st.executeQuery("select it_item, it_desc, " + 
+                       "case when in_qoh is null then '0' else in_qoh end as qoh, " +
+                       "case when in_loc is null then '0' else in_loc end as loc, " +
+                       "case when in_wh is null then '0' else in_wh end as wh, " +
+                       " (select sum(sod_all_qty - sod_shipped_qty) from sod_det where sod_item = it_item and sod_status <> 'close' group by sod_item) as qtyall " +
+                       " from item_mstr left outer join in_mstr on in_item = it_item " +
+                       " where it_item >= " + "'" + keys[1] + "'" +  " AND " 
+                       + " it_item <= " + "'" + keys[2] + "'"         
+                       + ";" );
+                    String qtyall = "";
+                    while (res.next()) {
+                        qtyall = "0";
+                    if (res.getString("qtyall") != null) {
+                       qtyall = res.getString("qtyall");
+                    } 
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("it_item"));
+                            rowArray.put(res.getString("it_desc"));
+                            rowArray.put(res.getString("qoh"));
+                            rowArray.put(qtyall);
+                            rowArray.put(res.getString("loc"));
+                            rowArray.put(res.getString("wh"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("itemAllocatedToOrder")) {
+                res = st.executeQuery("select sod_item, it_desc, sod_nbr, cm_name, (sod_all_qty - sod_shipped_qty) as qtyall, " + 
+                       " sod_loc, sod_wh " +
+                       " from sod_det inner join item_mstr on it_item = sod_item " +
+                       " inner join so_mstr on so_nbr = sod_nbr " +
+                       " inner join cm_mstr on cm_code = so_cust " +
+                       " where sod_item >= " + "'" + keys[1] + "'" +  " AND " 
+                       + " sod_item <= " + "'" + keys[2] + "'" + " AND "
+                       + " sod_status <> 'close' "
+                       + ";" );
+                
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("it_item"));
+                            rowArray.put(res.getString("it_desc"));
+                            rowArray.put(res.getString("sod_nbr"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("qtyall"));
+                            rowArray.put(res.getString("wh"));
+                            rowArray.put(res.getString("sod_loc"));
+                            rowArray.put(res.getString("sod_wh"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("itemStockRange")) {
+                res = st.executeQuery("select it_item, it_desc, it_code, it_safestock, it_minordqty, " + 
+                       "coalesce(sum(in_qoh),0) as qoh " +
+                        " from item_mstr left outer join in_mstr on in_item = it_item " +
+                       " where it_item >= " + "'" + keys[1] + "'" +  " AND " 
+                       + " it_item <= " + "'" + keys[2] + "'" 
+                       + " group by it_item, it_desc, it_code, it_safestock, it_minordqty ;" );
+                
+                    while (res.next()) {
+                        if (res.getDouble("qoh") >= res.getDouble("it_safestock")) {
+                        continue;
+                        }
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("it_item"));
+                            rowArray.put(res.getString("it_desc"));
+                            rowArray.put(res.getString("it_code"));
+                            rowArray.put(res.getString("qoh"));
+                            rowArray.put(res.getString("it_safestock"));
+                            rowArray.put(res.getString("it_minordqty"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("itemValuationRange")) {
+                res = st.executeQuery("select it_item, it_desc, it_prodline, it_code, itc_total, " + 
+                       "case when in_qoh is null then '0' else in_qoh end as qoh " +
+                       " from item_mstr left outer join in_mstr on in_item = it_item " +
+                       " left outer join item_cost on itc_item = it_item and itc_set = 'standard' and itc_site = " + "'" + keys[3] + "'" +
+                       " where it_item >= " + "'" + keys[1] + "'" +  " AND " 
+                       + " it_item <= " + "'" + keys[2] + "'"         
+                       + ";" );
+                    double totalval = 0;
+                    while (res.next()) {
+                        totalval = (res.getDouble("qoh") * res.getDouble("itc_total"));
+                    
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("it_item"));
+                            rowArray.put(res.getString("it_desc"));
+                            rowArray.put(res.getString("it_code"));
+                            rowArray.put(res.getString("it_prodline"));
+                            rowArray.put(res.getString("qoh"));
+                            rowArray.put(res.getString("itc_total"));
+                            rowArray.put(totalval);
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("itemQOHWH")) {
+                res = st.executeQuery("select it_item, it_desc, it_code, " + 
+                       "case when in_qoh is null then '0' else in_qoh end as qoh, " +
+                       "case when in_loc is null then '0' else in_loc end as loc, " +
+                       "case when in_wh is null then '0' else in_wh end as wh, " +
+                       " (select sum(sod_all_qty - sod_shipped_qty) from sod_det where sod_item = in_item and sod_status <> 'close' group by sod_item) as qtyall " +
+                       " from in_mstr inner join item_mstr on it_item = in_item " +
+                       " where in_wh >= " + "'" + keys[1] + "'" +  " AND " 
+                       + " in_wh <= " + "'" + keys[2] + "'"         
+                       + ";" );
+                    String qtyall = "0";
+                    while (res.next()) {
+                        qtyall = "0";
+                        if (res.getString("qtyall") != null) {
+                           qtyall = res.getString("qtyall");
+                        } 
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("it_item"));
+                            rowArray.put(res.getString("it_desc"));
+                            rowArray.put(res.getString("it_code"));
+                            rowArray.put(res.getString("qoh"));
+                            rowArray.put(qtyall);
+                            rowArray.put(res.getString("loc"));
+                            rowArray.put(res.getString("wh"));
+                            
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("itemQOHLoc")) {
+                res = st.executeQuery("select it_item, it_desc, it_code, " + 
+                       "case when in_qoh is null then '0' else in_qoh end as qoh, " +
+                       "case when in_loc is null then '0' else in_loc end as loc, " +
+                       "case when in_wh is null then '0' else in_wh end as wh, " +
+                       " (select sum(sod_all_qty - sod_shipped_qty) from sod_det where sod_item = in_item and sod_status <> 'close' group by sod_item) as qtyall " +
+                       " from in_mstr inner join item_mstr on it_item = in_item " +
+                       " where in_loc >= " + "'" + keys[1] + "'" +  " AND " 
+                       + " in_loc <= " + "'" + keys[2] + "'"         
+                       + ";" );
+                    String qtyall = "0";
+                    while (res.next()) {
+                        qtyall = "0";
+                        if (res.getString("qtyall") != null) {
+                           qtyall = res.getString("qtyall");
+                        } 
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("it_item"));
+                            rowArray.put(res.getString("it_desc"));
+                            rowArray.put(res.getString("it_code"));
+                            rowArray.put(res.getString("qoh"));
+                            rowArray.put(qtyall);
+                            rowArray.put(res.getString("loc"));
+                            rowArray.put(res.getString("wh"));
+                            
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+     
     public static ArrayList<String> getRoutingOperations(String routing) {
           ArrayList<String> r = new ArrayList<String>();
          try{

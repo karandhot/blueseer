@@ -3868,7 +3868,292 @@ public class ordData {
     
     
     // miscellaneous SQL queries
-    
+    public static String getOrdRptPickerData(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                if (keys[0].equals("ordersDueDateByRange")) {
+                res = st.executeQuery("SELECT so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name, " +
+                    " sum(sod_ord_qty * sod_netprice) as 'total' " +
+                    " from so_mstr inner join sod_det on so_nbr = sod_nbr " +
+                    " inner join cm_mstr on cm_code = so_cust " +
+                    " where " +
+                    " so_due_date >= " + "'" + keys[0] + "'" +
+                    " and so_due_date <= " + "'" + keys[1] + "'" +         
+                    " group by so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name order by so_nbr ;");
+                
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("so_nbr"));
+                            rowArray.put(res.getString("so_po"));
+                            rowArray.put(res.getString("cm_code"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("so_ord_date"));
+                            rowArray.put(res.getString("so_due_date"));
+                            rowArray.put(res.getString("so_status"));
+                            rowArray.put(currformat(res.getString("total")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("ordersOrdDateByRange")) {
+                res = st.executeQuery("SELECT so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name, " +
+                    " sum(sod_ord_qty * sod_netprice) as 'total' " +
+                    " from so_mstr inner join sod_det on so_nbr = sod_nbr " +
+                    " inner join cm_mstr on cm_code = so_cust " +
+                    " where " +
+                    " so_ord_date >= " + "'" + keys[0] + "'" +
+                    " and so_ord_date <= " + "'" + keys[1] + "'" +         
+                    " group by so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name order by so_nbr ;");
+                
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("so_nbr"));
+                            rowArray.put(res.getString("so_po"));
+                            rowArray.put(res.getString("cm_code"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("so_ord_date"));
+                            rowArray.put(res.getString("so_due_date"));
+                            rowArray.put(res.getString("so_status"));
+                            rowArray.put(currformat(res.getString("total")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("ordersCustDateByRange")) {
+                res = st.executeQuery("SELECT so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name, " +
+                    " sum(sod_ord_qty  * sod_netprice) as 'total' " +
+                    " from so_mstr inner join sod_det on so_nbr = sod_nbr " +
+                    " inner join cm_mstr on cm_code = so_cust " +
+                    " where " +
+                    " so_cust >= " + "'" + keys[1] + "'" +
+                    " and so_cust <= " + "'" + keys[2] + "'" +   
+                    " and so_ord_date >= " + "'" + keys[3] + "'" +
+                    " and so_ord_date <= " + "'" + keys[4] + "'" +         
+                    " group by so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name order by so_nbr ;");
+                
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("so_nbr"));
+                            rowArray.put(res.getString("so_po"));
+                            rowArray.put(res.getString("cm_code"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("so_ord_date"));
+                            rowArray.put(res.getString("so_due_date"));
+                            rowArray.put(res.getString("so_status"));
+                            rowArray.put(currformat(res.getString("total")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("ordersOpenByCust")) {
+                res = st.executeQuery("SELECT so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name, " +
+                    " sum(sod_ord_qty  * sod_netprice) as 'total' " +
+                    " from so_mstr inner join sod_det on so_nbr = sod_nbr " +
+                    " inner join cm_mstr on cm_code = so_cust " +
+                    " where " +
+                    " so_cust >= " + "'" + keys[1] + "'" +
+                    " and so_cust <= " + "'" + keys[2] + "'" +   
+                    " and so_status <> " + "'" + "close" + "'" +       
+                    " group by so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name order by so_nbr ;");
+                
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("so_nbr"));
+                            rowArray.put(res.getString("so_po"));
+                            rowArray.put(res.getString("cm_code"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("so_ord_date"));
+                            rowArray.put(res.getString("so_due_date"));
+                            rowArray.put(res.getString("so_status"));
+                            rowArray.put(currformat(res.getString("total")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("ordersOpenDetailByCust")) {
+                res = st.executeQuery("SELECT so_nbr, so_po, so_status, sod_item, cm_code, cm_name, " +
+                    " sod_ord_qty, sod_shipped_qty, (sod_ord_qty - sod_shipped_qty) as 'remaining' " +
+                    " from so_mstr inner join sod_det on so_nbr = sod_nbr " +
+                    " inner join cm_mstr on cm_code = so_cust " +
+                    " where " +
+                    " so_cust >= " + "'" + keys[1] + "'" +
+                    " and so_cust <= " + "'" + keys[2] + "'" +   
+                    " and so_status <> " + "'" + "close" + "'" +       
+                    " order by so_nbr ;");                
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("so_nbr"));
+                            rowArray.put(res.getString("so_po"));
+                            rowArray.put(res.getString("so_status"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("sod_item"));
+                            rowArray.put(res.getString("sod_ord_qty"));
+                            rowArray.put(res.getString("sod_shipped_qty"));
+                            rowArray.put(res.getString("remaining"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("ordersOnHoldByCust")) {
+                res = st.executeQuery("SELECT so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name, " +
+                    " sum(sod_ord_qty  * sod_netprice) as 'total' " +
+                    " from so_mstr inner join sod_det on so_nbr = sod_nbr " +
+                    " inner join cm_mstr on cm_code = so_cust " +
+                    " where " +
+                    " so_cust >= " + "'" + keys[0] + "'" +
+                    " and so_cust <= " + "'" + keys[1] + "'" +   
+                    " and so_status = " + "'" + "onhold" + "'" +       
+                    " group by so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name order by so_nbr ;");
+                
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("so_nbr"));
+                            rowArray.put(res.getString("so_po"));
+                            rowArray.put(res.getString("cm_code"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("so_ord_date"));
+                            rowArray.put(res.getString("so_due_date"));
+                            rowArray.put(res.getString("so_status"));
+                            rowArray.put(currformat(res.getString("total")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("ordersShippedDetailByPO")) {
+                res = st.executeQuery("SELECT sod_nbr, shd_po, sh_id, sh_shipdate,  " +
+                    " sod_ord_qty, shd_qty, shd_item, shd_desc, sh_rmks " +
+                    " from ship_det inner join ship_mstr on sh_id = shd_id " +
+                    " inner join sod_det on sod_nbr = shd_so and sod_line = shd_soline" + 
+                    " where " +
+                    " shd_po >= " + "'" + keys[1] + "'" +
+                    " and shd_po <= " + "'" + keys[2] + "'" +  
+                    " order by shd_po ;"); 
+               
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("so_nbr"));
+                            rowArray.put(res.getString("shd_po"));
+                            rowArray.put(res.getString("sh_id"));
+                            rowArray.put(res.getString("sh_shipdate"));
+                            rowArray.put(res.getString("sh_rmks"));
+                            rowArray.put(res.getString("shd_item"));
+                            rowArray.put(res.getString("shd_desc"));
+                            rowArray.put(res.getString("shd_qty"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("ordersTaxByCustDate")) {
+                res = st.executeQuery("SELECT so_nbr, so_cust, so_po, so_ord_date, so_status, cm_code, cm_name,  " +
+                        " sum(sod_ord_qty) as totqty, sum(sod_ord_qty * sod_netprice) as totdol, " +
+                        " (select sum(case when sos_type = 'discount' and sos_amttype = 'percent' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'discountpercent', " +
+                        " (select sum(case when sos_type <> 'tax' and sos_type <> 'passive' then sos_amt else '0' end) from sos_det where sos_nbr = so_nbr) as 'charge'," + 
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'percent' then sos_amt end) from sos_det where sos_nbr = so_nbr)as 'taxpercent', " +
+                        " (select sum(case when sos_type = 'tax' and sos_amttype = 'amount' then sos_amt end) from sos_det where sos_nbr = so_nbr) as 'taxcharge' " +
+                        " FROM  so_mstr left outer join sod_det on sod_nbr = so_nbr " +
+                        " inner join cm_mstr on cm_code = so_cust " +
+                        " where so_ord_date >= " + "'" + keys[3]  + "'" + 
+                        " AND so_ord_date <= " + "'" + keys[4] + "'" + 
+                        " AND so_cust >= " + "'" + keys[1] + "'" + 
+                        " AND so_cust <= " + "'" + keys[2] + "'" + 
+                        " AND so_type = 'DISCRETE' " +
+                         " group by so_nbr, so_cust, so_po, so_ord_date, so_status order by so_nbr desc ;");   
+               
+                    double total = 0;
+                    double tax = 0;
+                    double disc = 0;
+                    double charge = 0;
+                    while (res.next()) {
+                        
+                        total = 0;
+                        tax = 0;
+                        disc = 0;
+                        charge = 0;
+                    
+                        if (res.getDouble("discountpercent") != 0) {
+                          disc = res.getDouble("totdol") * (res.getDouble("discountpercent") / 100.0);
+                        } else {
+                          disc = 0;  
+                        }
+                        charge = res.getDouble("charge");
+                        total = res.getDouble("totdol") + charge;  // charges added to total before taxing
+
+                        // now do tax
+                        if (res.getDouble("taxpercent") != 0) {
+                          tax = total * (res.getDouble("taxpercent") / 100.0);
+                        } else {
+                          tax = 0;  
+                        }
+                        tax += res.getDouble("taxcharge");
+
+                        total = total + tax;
+                        
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("so_nbr"));
+                            rowArray.put(res.getString("so_po"));
+                            rowArray.put(res.getString("cm_code"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("so_ord_date")); 
+                            rowArray.put(res.getString("so_status"));
+                            rowArray.put(currformatDouble(total));
+                            rowArray.put(currformatDouble(tax));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+        
     public static String getOrderPrintData(String order) {
         JSONArray jsonarray = new JSONArray();
         try {

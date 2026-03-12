@@ -38,6 +38,7 @@ import static com.blueseer.ord.ordData.getBillDet;
 import static com.blueseer.ord.ordData.getBillMstr;
 import static com.blueseer.ord.ordData.getBillSAC;
 import static com.blueseer.ord.ordData.getORCtrl;
+import static com.blueseer.ord.ordData.getOrdRptPickerData;
 import static com.blueseer.ord.ordData.getOrderBrowseView;
 import static com.blueseer.ord.ordData.getOrderChangeBrowseDetail;
 import static com.blueseer.ord.ordData.getOrderChangeBrowseView;
@@ -698,6 +699,20 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(arrayToJson(addUpdateORCtrl(x)));
             break;
           }
+        
+        case "getOrdRptPickerData" : {
+        String[] x = new String[]{
+               request.getHeader("func"),
+               request.getHeader("param1"), 
+               request.getHeader("param2"),
+               request.getHeader("param3"),
+               request.getHeader("param4"),
+               request.getHeader("param5")
+               };     
+        response.getWriter().print(getOrdRptPickerData(x));  
+        break;
+        }
+        
             
         default:
         response.getWriter().print("");
