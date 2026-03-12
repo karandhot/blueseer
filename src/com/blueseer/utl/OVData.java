@@ -7689,7 +7689,18 @@ public class OVData {
     }
       
     public static ArrayList getJasperByGroup(String group) {
-       ArrayList<String[]> myarray = new ArrayList();
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getJasperByGroup"});
+            list.add(new String[]{"param1",  group});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        ArrayList<String[]> myarray = new ArrayList();
        
         try{
             
@@ -7726,7 +7737,19 @@ public class OVData {
     }
       
     public static String getJasperFuncByTitle(String group, String title) {
-       String x = "";
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getJasperFuncByTitle"});
+            list.add(new String[]{"param1", group});
+            list.add(new String[]{"param2", title});
+            try {
+                return sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        }
+        String x = "";
         try{
             Connection con = null;
             if (ds != null) {

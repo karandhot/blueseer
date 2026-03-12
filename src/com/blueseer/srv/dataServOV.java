@@ -65,6 +65,8 @@ import static com.blueseer.utl.OVData.getCodeValueByCode;
 import static com.blueseer.utl.OVData.getCodeValueByCodeKey;
 import static com.blueseer.utl.OVData.getExchangeBaseValue;
 import static com.blueseer.utl.OVData.getExchangeRate;
+import static com.blueseer.utl.OVData.getJasperByGroup;
+import static com.blueseer.utl.OVData.getJasperFuncByTitle;
 import static com.blueseer.utl.OVData.getMenuRecs;
 import static com.blueseer.utl.OVData.getMenusAsTree;
 import static com.blueseer.utl.OVData.getMenusOfUsersListArray;
@@ -341,6 +343,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(ArrayListStringArrayToJson(getSysMetaData(request.getHeader("param1"))));
             break;
             
+        case "getJasperByGroup" :        
+            response.getWriter().print(ArrayListStringArrayToJson(getJasperByGroup(request.getHeader("param1"))));
+            break;    
+            
         case "getSysMetaData2Param" :        
             response.getWriter().print(ArrayListStringArrayToJson(getSysMetaData(request.getHeader("param1"), request.getHeader("param2"))));
             break;    
@@ -352,6 +358,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "getSysMetaValue" :        
             response.getWriter().print(getSysMetaValue(request.getHeader("param1"),request.getHeader("param2"),request.getHeader("param3")));
             break; 
+            
+        case "getJasperFuncByTitle" :        
+            response.getWriter().print(getJasperFuncByTitle(request.getHeader("param1"),request.getHeader("param2")));
+            break;    
             
         case "getCodeValueByCodeKey" :        
             response.getWriter().print(getCodeValueByCodeKey(request.getHeader("param1"),request.getHeader("param2")));
