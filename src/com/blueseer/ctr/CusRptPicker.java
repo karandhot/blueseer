@@ -26,6 +26,7 @@ SOFTWARE.
 package com.blueseer.ctr;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
@@ -46,6 +47,9 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -71,7 +75,7 @@ import javax.swing.table.TableColumn;
  * @author vaughnte
  */
 public class CusRptPicker extends javax.swing.JPanel {
-
+    String func = null;
     /* NOTES:
     These notes apply to all RptPicker classes.
     
@@ -369,50 +373,35 @@ public class CusRptPicker extends javax.swing.JPanel {
                 else return String.class;  //other columns accept String values  
               }  
                 }; 
-            
-      try{
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+             
+             
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getCusRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",from});
+        list.add(new String[]{"param2",to});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServCUS"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery("SELECT cm_code, cm_market, cm_name, cm_line1, " +
-                    " cm_city, cm_state, cm_zip, cm_market, cm_phone, cm_email, " +
-                    " cm_terms, cm_bank, cm_curr, cm_ar_acct, cm_onhold " +
-                    "from cm_mstr " +
-                    " where cast(cm_code as decimal) >= " + "'" + from + "'" +
-                    " and cast(cm_code as decimal) <= " + "'" + to + "'" +
-                    "order by cm_code ;");
-
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{ 
-                        BlueSeerUtils.clickflag,  // imageicon always column 1
-                        res.getString("cm_code"),
-                        res.getString("cm_name"),
-                        res.getString("cm_line1"),
-                        res.getString("cm_city"),
-                        res.getString("cm_state"),
-                        res.getString("cm_zip")
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = cusData.getCusRptPickerData(new String[]{
+                func,
+                from,
+                to
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            for (Object[] rowData : roData) {
+                mymodel.addRow(rowData);
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
-      
+        }    
+        
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
             tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
@@ -1332,7 +1321,7 @@ public class CusRptPicker extends javax.swing.JPanel {
     private void btviewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btviewActionPerformed
        btprint.setEnabled(true);
        btcsv.setEnabled(true);
-       String func = OVData.getJasperFuncByTitle(jasperGroup, ddreport.getSelectedItem().toString());
+       func = OVData.getJasperFuncByTitle(jasperGroup, ddreport.getSelectedItem().toString());
        Method mymethod;
            if (func != null && ! func.isEmpty()) {
                try {

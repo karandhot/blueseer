@@ -44,6 +44,7 @@ import static com.blueseer.ctr.cusData.getCMSDet;
 import static com.blueseer.ctr.cusData.getCprDiscLists;
 import static com.blueseer.ctr.cusData.getCprMstr;
 import static com.blueseer.ctr.cusData.getCprPriceLists;
+import static com.blueseer.ctr.cusData.getCusRptPickerData;
 import static com.blueseer.ctr.cusData.getCustBrowseView;
 import static com.blueseer.ctr.cusData.getCustLabel;
 import static com.blueseer.ctr.cusData.getCustMstr;
@@ -463,6 +464,19 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                request.getHeader("param5")
                };     
         response.getWriter().print(getSalesRepBrowseView(x));  
+        break;
+        }
+        
+        case "getCusRptPickerData" : {
+        String[] x = new String[]{
+               request.getHeader("func"),
+               request.getHeader("param1"), 
+               request.getHeader("param2"),
+               request.getHeader("param3"),
+               request.getHeader("param4"),
+               request.getHeader("param5")
+               };     
+        response.getWriter().print(getCusRptPickerData(x));  
         break;
         }
         

@@ -2890,6 +2890,60 @@ public class cusData {
         return jsonarray.toString(); 
     }
     
+    public static String getCusRptPickerData(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                if (keys[0].equals("custAddrInfoByRange")) {
+                res = st.executeQuery("SELECT cm_code, cm_market, cm_name, cm_line1, " +
+                    " cm_city, cm_state, cm_zip, cm_market, cm_phone, cm_email, " +
+                    " cm_terms, cm_bank, cm_curr, cm_ar_acct, cm_onhold " +
+                    "from cm_mstr " +
+                    " where cast(cm_code as decimal) >= " + "'" + keys[1] + "'" +
+                    " and cast(cm_code as decimal) <= " + "'" + keys[2] + "'" +
+                    "order by cm_code ;");
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("cm_code"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("cm_line1"));
+                            rowArray.put(res.getString("cm_city"));
+                            rowArray.put(res.getString("cm_state"));
+                            rowArray.put(res.getString("cm_zip"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
     
     public static String[] getCustInfo(String cust) {
            // get billto specific data
