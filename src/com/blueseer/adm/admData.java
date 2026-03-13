@@ -3600,6 +3600,18 @@ public class admData {
                                lines.add(s);
                             }
                         }
+                        if (sd.startsWith("jaspergroups=")) { // ex:  jaspergroups=ShpRptGroup
+                            String[] x = sd.split("=", -1);
+                            res = st.executeQuery("select * from jasp_mstr " +
+                            " where jasp_group = " + "'" + x[1] + "'" + 
+                            " order by cast(jasp_sequence as decimal) ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "jaspergroups";
+                               s[1] = res.getString("jasp_desc") + "," + res.getString("jasp_func") + "," + res.getString("jasp_format");
+                               lines.add(s);
+                            }
+                        }
                         
                         
                 }

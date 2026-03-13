@@ -53,6 +53,7 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble5;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
@@ -84,6 +85,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -94,6 +96,16 @@ import javax.swing.table.TableColumn;
  */
 public class InvRptPicker extends javax.swing.JPanel {
     String func = null;
+    boolean isLoad = false;
+    boolean canUpdate = false;
+    boolean isAutoPost = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String defaultCC = "";
+    
+    ArrayList<String> warehouses = new ArrayList<>();
+    ArrayList<String> locations = new ArrayList<>();
     /* NOTES:
     These notes apply to all RptPicker classes.
     
@@ -113,7 +125,7 @@ public class InvRptPicker extends javax.swing.JPanel {
     */
     Map<String, String> jaspermap = new HashMap<String, String>();
     String jasperGroup = "InvRptGroup";
-    boolean isLoad = false;
+   
     
      class renderer1 extends DefaultTableCellRenderer {
         
@@ -173,6 +185,64 @@ public class InvRptPicker extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }            
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
     
     class ButtonRenderer extends JButton implements TableCellRenderer {
 
@@ -239,17 +309,23 @@ public class InvRptPicker extends javax.swing.JPanel {
     }
     
     
-    public void initvars(String[] arg) {
+    public void initvars(String[] arg) {     
+     executeTask("dataInit", null);
+    }
+   
+    public String[] getInitialization() {
+        initDataSets  = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "locations,warehouses,jaspergroups=" + jasperGroup);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
       isLoad = true;
       ddreport.removeAllItems();
       jaspermap.clear();
-      int k = 0;
-      ArrayList<String[]> list = OVData.getJasperByGroup(jasperGroup);
-      for (String[] x : list) { // list is string of desc, func, format
-              jaspermap.put(x[0], x[2]); // desc, format
-              ddreport.addItem(x[0]); // desc
-          k++;
-      }
       ddreport.insertItemAt("", 0);
       ddreport.setSelectedIndex(0);
       resetVariables();
@@ -260,9 +336,39 @@ public class InvRptPicker extends javax.swing.JPanel {
       buttonGroup1.add(rbactive);
       buttonGroup1.add(rbinactive);
       ((DefaultTableModel)tablereport.getModel()).setRowCount(0);
-     isLoad = false;
+       
+      warehouses.clear();
+      locations.clear();
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("jaspergroups")) {
+              String[] z = s[1].split(",", -1);
+              jaspermap.put(z[0], z[2]); // desc, format
+              ddreport.addItem(z[0]); // desc 
+            }
+            if (s[0].equals("locations")) {
+              locations.add(s[1]);  
+            }
+            if (s[0].equals("warehouses")) {
+              warehouses.add(s[1]);  
+            }
+            
+        }
+        
+        
+        
+       isLoad = false;
     }
-   
+    
     
     
     /* misc methods */   
@@ -438,8 +544,8 @@ public class InvRptPicker extends javax.swing.JPanel {
       // now assign tablemodel to table
         tablereport.setModel(mymodel);
         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
 
         } // else run report
                
@@ -531,8 +637,8 @@ public class InvRptPicker extends javax.swing.JPanel {
       // now assign tablemodel to table
         tablereport.setModel(mymodel);
         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
 
         } // else run report
                
@@ -552,7 +658,7 @@ public class InvRptPicker extends javax.swing.JPanel {
             // colect variables from input
             String fromitem = tbkey1.getText();
             String toitem = tbkey2.getText();
-            String site = OVData.getDefaultSite();
+            String site = defaultSite;
             // cleanup variables
           
             if (fromitem.isEmpty()) {
@@ -628,12 +734,12 @@ public class InvRptPicker extends javax.swing.JPanel {
       // now assign tablemodel to table
            tablereport.setModel(mymodel);
         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-        tablereport.getColumnModel().getColumn(3).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        tablereport.getColumnModel().getColumn(4).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        tablereport.getColumnModel().getColumn(5).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+        tablereport.getColumnModel().getColumn(3).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tablereport.getColumnModel().getColumn(4).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tablereport.getColumnModel().getColumn(5).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
 
         } // else run report
                
@@ -721,8 +827,8 @@ public class InvRptPicker extends javax.swing.JPanel {
       // now assign tablemodel to table
         tablereport.setModel(mymodel);
         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-        tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+        tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
         
         } // else run report
                
@@ -742,7 +848,7 @@ public class InvRptPicker extends javax.swing.JPanel {
             // colect variables from input
             String fromitem = tbkey1.getText();
             String toitem = tbkey2.getText();
-            String site = OVData.getDefaultSite();
+            String site = defaultSite;
             // cleanup variables
           
             if (fromitem.isEmpty()) {
@@ -834,7 +940,7 @@ public class InvRptPicker extends javax.swing.JPanel {
             // colect variables from input
             String fromitem = tbkey1.getText();
             String toitem = tbkey2.getText();
-            String site = OVData.getDefaultSite();
+            String site = defaultSite;
             // cleanup variables
           
             if (fromitem.isEmpty()) {
@@ -924,7 +1030,7 @@ public class InvRptPicker extends javax.swing.JPanel {
             // colect variables from input
             String fromitem = tbkey1.getText();
             String toitem = tbkey2.getText();
-            String site = OVData.getDefaultSite();
+            String site = defaultSite;
             // cleanup variables
           
             if (fromitem.isEmpty()) {
@@ -1013,7 +1119,7 @@ public class InvRptPicker extends javax.swing.JPanel {
             // colect variables from input
             String fromitem = tbkey1.getText();
             String toitem = tbkey2.getText();
-            String site = OVData.getDefaultSite();
+            String site = defaultSite;
             // cleanup variables
           
             if (fromitem.isEmpty()) {
@@ -1102,7 +1208,6 @@ public class InvRptPicker extends javax.swing.JPanel {
             // colect variables from input
             String fromitem = tbkey1.getText();
             String toitem = tbkey2.getText();
-            String site = OVData.getDefaultSite();
             // cleanup variables
           
             if (fromitem.isEmpty()) {
@@ -1143,7 +1248,7 @@ public class InvRptPicker extends javax.swing.JPanel {
         list.add(new String[]{"func",func});
         list.add(new String[]{"param1",fromitem});
         list.add(new String[]{"param2",toitem}); 
-        list.add(new String[]{"param3",site});
+        list.add(new String[]{"param3",defaultSite});
         try {
                 jsonString = sendServerPost(list, "", null, "dataServINV"); 
             } catch (IOException ex) {
@@ -1154,7 +1259,7 @@ public class InvRptPicker extends javax.swing.JPanel {
                 func,
                 fromitem,
                 toitem,
-                site
+                defaultSite
             });
         }
         
@@ -1181,6 +1286,9 @@ public class InvRptPicker extends javax.swing.JPanel {
                  }
                  tc.setCellRenderer(new InvRptPicker.renderer1());
              }
+        tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        
         } // else run report
                
     }
@@ -1190,9 +1298,8 @@ public class InvRptPicker extends javax.swing.JPanel {
         
         if (input) { // input...draw variable input panel
            resetVariables();
-           hidePanels();
-           ArrayList<String> whs = OVData.getWareHouseList();
-           for (String s : whs) {
+           hidePanels();           
+           for (String s : warehouses) {
                ddkey1.addItem(s);
                ddkey2.addItem(s);
            }
@@ -1206,7 +1313,7 @@ public class InvRptPicker extends javax.swing.JPanel {
             // colect variables from input
             String fromwh = ddkey1.getSelectedItem().toString();
             String towh = ddkey2.getSelectedItem().toString();
-            String site = OVData.getDefaultSite();
+            String site = defaultSite;
             // cleanup variables
           
             if (fromwh.isEmpty()) {
@@ -1293,8 +1400,8 @@ public class InvRptPicker extends javax.swing.JPanel {
         
         if (input) { // input...draw variable input panel
            resetVariables();
-           hidePanels();ArrayList<String> locs = OVData.getLocationList();
-           for (String s : locs) {
+           hidePanels();           
+           for (String s : locations) {
                ddkey1.addItem(s);
                ddkey2.addItem(s);
            }
@@ -1308,7 +1415,7 @@ public class InvRptPicker extends javax.swing.JPanel {
             // colect variables from input
             String fromloc = ddkey1.getSelectedItem().toString();
             String toloc = ddkey2.getSelectedItem().toString();
-            String site = OVData.getDefaultSite();
+            String site = defaultSite;
             // cleanup variables
           
             if (fromloc.isEmpty()) {

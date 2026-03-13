@@ -29,6 +29,7 @@ package com.blueseer.srv;
 import com.blueseer.adm.admData;
 import com.blueseer.shp.shpData;
 import static com.blueseer.shp.shpData.getShipperMstrSet;
+import static com.blueseer.shp.shpData.getShpRptPickerData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
@@ -176,7 +177,21 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getShipperLines" :
             response.getWriter().print(ArrayListStringArrayToJson(shpData.getShipperLines(request.getHeader("param1"))));
-            break;    
+            break; 
+            
+        case "getShpRptPickerData" : {
+        String[] x = new String[]{
+               request.getHeader("func"),
+               request.getHeader("param1"), 
+               request.getHeader("param2"),
+               request.getHeader("param3"),
+               request.getHeader("param4"),
+               request.getHeader("param5")
+               };     
+        response.getWriter().print(getShpRptPickerData(x));  
+        break;
+        }
+            
             
         default:
         response.getWriter().print("");

@@ -3262,12 +3262,11 @@ public class invData {
                             i++;
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put("select");
-                            rowArray.put(res.getString("it_item"));
+                            rowArray.put(res.getString("sod_item"));
                             rowArray.put(res.getString("it_desc"));
                             rowArray.put(res.getString("sod_nbr"));
                             rowArray.put(res.getString("cm_name"));
                             rowArray.put(res.getString("qtyall"));
-                            rowArray.put(res.getString("wh"));
                             rowArray.put(res.getString("sod_loc"));
                             rowArray.put(res.getString("sod_wh"));
                             jsonarray.put(rowArray);

@@ -56,6 +56,7 @@ import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
+import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDoubleUS;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
@@ -1275,6 +1276,70 @@ public class shpData {
     
     
     // misc functions
+    public static String getShpRptPickerData(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                if (keys[0].equals("shippersByShipDateRange")) {
+                res = st.executeQuery("SELECT sh_id, sh_cust, cm_name, " +
+                        " sh_shipdate, sh_type, sh_site, sh_po, sh_so, sh_curr, sh_status, " +
+                        " sum(shd_qty * shd_netprice) as amt FROM  ship_mstr " +
+                        " inner join ship_det " +
+                        " on shd_id = sh_id " +
+                        " inner join cm_mstr on cm_code = sh_cust " +
+                        " where sh_shipdate >= " + "'" + keys[1] + "'" +
+                        " and sh_shipdate <= " + "'" + keys[2] + "'" +
+                        " group by sh_id, sh_cust, cm_name, sh_shipdate, sh_type, sh_site, sh_po, sh_so, sh_curr, sh_status " +
+                        " order by sh_id;");               
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("sh_id"));
+                            rowArray.put(res.getString("sh_cust"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("sh_shipdate"));
+                            rowArray.put(res.getString("sh_type"));
+                            rowArray.put(res.getString("sh_site"));
+                            rowArray.put(res.getString("sh_po"));
+                            rowArray.put(res.getString("sh_so"));
+                            rowArray.put(res.getString("sh_curr"));
+                            rowArray.put(currformat(res.getString("amt")));
+                            rowArray.put(res.getString("sh_status"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+     
     public static ArrayList<String[]> getShipperInit(String panelClassName, String userid) {
         
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
