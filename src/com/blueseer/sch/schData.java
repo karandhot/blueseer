@@ -36,6 +36,7 @@ import static bsmf.MainFrame.user;
 import static com.blueseer.hrm.hrmData.getEmpFormalNameByID;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
+import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
@@ -45,6 +46,7 @@ import static com.blueseer.utl.BlueSeerUtils.jsonToBoolean;
 import static com.blueseer.utl.BlueSeerUtils.jsonToDouble;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import static com.blueseer.utl.BlueSeerUtils.xNull;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -479,6 +481,89 @@ public class schData {
     
     
     // misc functions 
+    public static String getSchRptPickerData(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                if (keys[0].equals("planOrdersByItem")) {
+                res = st.executeQuery("SELECT it_item, it_desc, it_code, it_site, plan_nbr, plan_type, plan_order, case plan_is_sched when '1' then 'yes' else 'no' end plan_is_sched , plan_cell, plan_qty_sched, plan_date_sched, case plan_status when '1' then 'complete' when '0' then 'open' else 'void' end plan_status  " +
+                        " FROM  item_mstr left outer join plan_mstr on plan_item = it_item  " +
+                        " where it_item  >= " + "'" + keys[1] + "'" +
+                        " and it_item  <= " + "'" + keys[2] + "'" +
+                        " order by plan_nbr ;");                
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put(res.getString("it_item"));
+                            rowArray.put(res.getString("it_desc"));
+                            rowArray.put(res.getString("it_code"));
+                            rowArray.put(xNull(res.getString("plan_nbr")));
+                            rowArray.put(xNull(res.getString("plan_type")));
+                            rowArray.put(xNull(res.getString("plan_order")));
+                            rowArray.put(xNull(res.getString("plan_is_sched")));
+                            rowArray.put(xNull(res.getString("plan_cell")));
+                            rowArray.put(xNull(res.getString("plan_qty_sched")));
+                            rowArray.put(xNull(res.getString("plan_date_sched")));
+                            rowArray.put(xNull(res.getString("plan_status")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("planOrdersBySalesOrder")) {
+                res = st.executeQuery("SELECT sod_item, sod_nbr, sod_line, it_desc, it_code, it_site, plan_nbr, plan_type, plan_order, case plan_is_sched when '1' then 'yes' else 'no' end plan_is_sched , plan_cell, plan_qty_sched, plan_date_sched, case plan_status when '1' then 'complete' when '0' then 'open' else 'void' end plan_status  " +
+                        " FROM  sod_det inner join item_mstr on sod_item = it_item left outer join plan_mstr on plan_order = sod_nbr and plan_line = sod_line  " +
+                        " where cast(sod_nbr as decimal) >= " + "'" + keys[1] + "'" +
+                        " and cast(sod_nbr as decimal) <= " + "'" + keys[2] + "'" +
+                        " order by sod_line ;");                
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put(res.getString("sod_nbr"));
+                            rowArray.put(res.getString("sod_line"));
+                            rowArray.put(res.getString("sod_item"));
+                            rowArray.put(res.getString("it_desc"));
+                            rowArray.put(res.getString("it_code"));
+                            rowArray.put(res.getString("plan_nbr"));
+                            rowArray.put(res.getString("plan_is_sched"));
+                            rowArray.put(res.getString("plan_cell"));
+                            rowArray.put(res.getString("plan_qty_sched"));
+                            rowArray.put(res.getString("plan_date_sched"));
+                            rowArray.put(res.getString("plan_status"));
+                            
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
    
     public static String getSchedulerBrowseView(String[] keys) {
         JSONArray jsonarray = new JSONArray();

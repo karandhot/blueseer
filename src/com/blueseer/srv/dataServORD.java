@@ -707,7 +707,8 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                request.getHeader("param2"),
                request.getHeader("param3"),
                request.getHeader("param4"),
-               request.getHeader("param5")
+               request.getHeader("param5"),
+               request.getHeader("param6")
                };     
         response.getWriter().print(getOrdRptPickerData(x));  
         break;

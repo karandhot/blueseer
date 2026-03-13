@@ -34,6 +34,7 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
@@ -1514,6 +1515,129 @@ public class venData {
     
     
     // misc
+    public static String getVenRptPickerData(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                if (keys[0].equals("vendAddrInfoByRange")) {
+                res = st.executeQuery("SELECT vd_addr, vd_name, vd_line1, " +
+                    " vd_city, vd_state, vd_zip,  vd_phone, vd_email, " +
+                    " vd_terms, vd_bank, vd_curr, vd_ap_acct " +
+                    "from vd_mstr " +
+                    " where cast(vd_addr as decimal) >= " + "'" + keys[1] + "'" +
+                    " and cast(vd_addr as decimal) <= " + "'" + keys[2] + "'" +
+                    "order by vd_addr ;");              
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("vd_addr"));
+                            rowArray.put(res.getString("vd_name"));
+                            rowArray.put(res.getString("vd_line1"));
+                            rowArray.put(res.getString("vd_city"));
+                            rowArray.put(res.getString("vd_state"));
+                            rowArray.put(res.getString("vd_zip"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("vendPhoneEmailByRange")) {
+                res = st.executeQuery("SELECT vd_addr, vd_name, vd_line1, " +
+                    " vd_city, vd_state, vd_zip,  vd_phone, vd_email, " +
+                    " vd_terms, vd_bank, vd_curr, vd_ap_acct " +
+                    "from vd_mstr " +
+                    " where cast(vd_addr as decimal) >= " + "'" + keys[1] + "'" +
+                    " and cast(vd_addr as decimal) <= " + "'" + keys[2] + "'" +
+                    "order by vd_addr ;");             
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("vd_addr"));
+                            rowArray.put(res.getString("vd_name"));
+                            rowArray.put(res.getString("vd_phone"));
+                            rowArray.put(res.getString("vd_email"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("vendFinanceInfoByRange")) {
+                res = st.executeQuery("SELECT vd_addr, vd_market, vd_name,  " +
+                        " vd_terms, vd_bank, vd_curr, vd_ap_acct, vd_ap_cc " +
+                        "from vd_mstr " +
+                        " where cast(vd_addr as decimal) >= " + "'" + keys[1] + "'" +
+                        " and cast(vd_addr as decimal) <= " + "'" + keys[2] + "'" +
+                        "order by vd_addr ;");                
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("vd_addr"));
+                            rowArray.put(res.getString("vd_name"));
+                            rowArray.put(res.getString("vd_terms"));
+                            rowArray.put(res.getString("vd_bank"));
+                            rowArray.put(res.getString("vd_curr"));
+                            rowArray.put(res.getString("vd_ap_acct"));
+                            rowArray.put(res.getString("vd_ap_cc"));
+                            rowArray.put(res.getString("vd_market"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("vendTotalPurchasesByRange")) {
+                res = st.executeQuery("SELECT vd_addr, vd_name,  " +
+                        " sum(rvd_qty * rvd_netprice) as 'total' " +
+                          "from vd_mstr inner join recv_mstr on rv_vend = vd_addr " +
+                        " inner join recv_det on rvd_id = rv_id and rv_status = '1' " +
+                        " where cast(vd_addr as decimal) >= " + "'" + keys[1] + "'" +
+                        " and cast(vd_addr as decimal) <= " + "'" + keys[2] + "'" +
+                        " and rv_recvdate >= " + "'" + keys[3] + "'" +
+                        " and rv_recvdate <= " + "'" + keys[4] + "'" +
+                        " group by vd_addr, vd_name order by vd_addr ;");                 
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("vd_addr"));
+                            rowArray.put(res.getString("vd_name"));
+                            rowArray.put(keys[3]);
+                            rowArray.put(keys[4]);
+                            rowArray.put(currformat(res.getString("total")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
     
     public static ArrayList<String[]> getVendMaintInit(String panelClassName, String userid) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {

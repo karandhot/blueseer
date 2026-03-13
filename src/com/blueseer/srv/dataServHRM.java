@@ -28,6 +28,7 @@ package com.blueseer.srv;
 
 import static com.blueseer.hrm.hrmData.getEmpIDByFormalName;
 import static com.blueseer.hrm.hrmData.getEmpNameAll;
+import static com.blueseer.hrm.hrmData.getHrmRptPickerData;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import java.io.IOException;
@@ -83,6 +84,19 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
         }
         
+        case "getHrmRptPickerData" : {
+        String[] x = new String[]{
+               request.getHeader("func"),
+               request.getHeader("param1"), 
+               request.getHeader("param2"),
+               request.getHeader("param3"),
+               request.getHeader("param4"),
+               request.getHeader("param5"),
+               request.getHeader("param6")
+               };     
+        response.getWriter().print(getHrmRptPickerData(x));  
+        break;
+        }
         
         default:
         response.getWriter().print("");

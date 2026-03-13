@@ -42,6 +42,7 @@ import static com.blueseer.vdr.venData.addVendMstrMass;
 import static com.blueseer.vdr.venData.deleteVDCDet;
 import static com.blueseer.vdr.venData.deleteVendMstr;
 import static com.blueseer.vdr.venData.getVDCDet;
+import static com.blueseer.vdr.venData.getVenRptPickerData;
 import static com.blueseer.vdr.venData.getVendBrowseView;
 import static com.blueseer.vdr.venData.getVendMstr;
 import static com.blueseer.vdr.venData.getVendShipSet;
@@ -226,6 +227,19 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
           }
         
+        case "getVenRptPickerData" : {
+        String[] x = new String[]{
+               request.getHeader("func"),
+               request.getHeader("param1"), 
+               request.getHeader("param2"),
+               request.getHeader("param3"),
+               request.getHeader("param4"),
+               request.getHeader("param5"),
+               request.getHeader("param6")
+               };     
+        response.getWriter().print(getVenRptPickerData(x));  
+        break;
+        }
         
         
         default:

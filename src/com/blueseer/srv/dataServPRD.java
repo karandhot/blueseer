@@ -26,6 +26,7 @@ SOFTWARE.
 package com.blueseer.srv;
 
 
+import static com.blueseer.prd.prdData.getPrdRptPickerData;
 import static com.blueseer.prd.prdData.getSerialBrowseView;
 import static com.blueseer.prd.prdData.getSerialBrowseViewDet;
 import static com.blueseer.prd.prdData.getTransBrowseView;
@@ -103,6 +104,20 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         response.getWriter().print(getTransBrowseView(it));  
         break;
         } 
+    
+    case "getPrdRptPickerData" : {
+        String[] x = new String[]{
+               request.getHeader("func"),
+               request.getHeader("param1"), 
+               request.getHeader("param2"),
+               request.getHeader("param3"),
+               request.getHeader("param4"),
+               request.getHeader("param5"),
+               request.getHeader("param6")
+               };     
+        response.getWriter().print(getPrdRptPickerData(x));  
+        break;
+        }
         
         default:
         response.getWriter().print("");

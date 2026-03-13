@@ -30,6 +30,7 @@ import com.blueseer.inv.*;
 import com.blueseer.sch.*;
 import com.blueseer.inv.*;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import java.awt.Color;
@@ -51,10 +52,16 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import com.blueseer.pur.purData;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.RPData;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -68,6 +75,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -95,9 +103,16 @@ public class VenRptPicker extends javax.swing.JPanel {
     per each sub report.   I'm all ears if have another option.  :)
     
     */
+    String func = null;
+    boolean isLoad = false;
+    boolean canUpdate = false;
+    boolean isAutoPost = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String defaultCC = "";
     Map<String, String> jaspermap = new HashMap<String, String>();
     String jasperGroup = "VenRptGroup";
-    boolean isLoad = false;
     
      class renderer1 extends DefaultTableCellRenderer {
         
@@ -156,6 +171,64 @@ public class VenRptPicker extends javax.swing.JPanel {
         initComponents();
     }
 
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }            
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
     
     class ButtonRenderer extends JButton implements TableCellRenderer {
 
@@ -180,29 +253,56 @@ public class VenRptPicker extends javax.swing.JPanel {
     
     
     public void initvars(String[] arg) {
+      executeTask("dataInit", null);
+    }
+   
+    public String[] getInitialization() {
+        initDataSets  = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "jaspergroups=" + jasperGroup);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
       isLoad = true;
       ddreport.removeAllItems();
       jaspermap.clear();
-      int k = 0;
-      ArrayList<String[]> list = OVData.getJasperByGroup(jasperGroup);
-      for (String[] x : list) { // list is string of desc, func, format
-              jaspermap.put(x[0], x[2]); // desc, format
-              ddreport.addItem(x[0]); // desc
-          k++;
-      }
       ddreport.insertItemAt("", 0);
       ddreport.setSelectedIndex(0);
       resetVariables();
       hidePanels();
-      
+           
       rbactive.setSelected(true);
       rbinactive.setSelected(false);
       buttonGroup1.add(rbactive);
       buttonGroup1.add(rbinactive);
       ((DefaultTableModel)tablereport.getModel()).setRowCount(0);
-     isLoad = false;
+       
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("jaspergroups")) {
+              String[] z = s[1].split(",", -1);
+              jaspermap.put(z[0], z[2]); // desc, format
+              ddreport.addItem(z[0]); // desc 
+            }
+        }
+        
+        
+        
+       isLoad = false;
     }
-   
+    
     
     
     /* misc methods */   
@@ -332,48 +432,34 @@ public class VenRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery("SELECT vd_addr, vd_name, vd_line1, " +
-                    " vd_city, vd_state, vd_zip,  vd_phone, vd_email, " +
-                    " vd_terms, vd_bank, vd_curr, vd_ap_acct " +
-                    "from vd_mstr " +
-                    " where cast(vd_addr as decimal) >= " + "'" + from + "'" +
-                    " and cast(vd_addr as decimal) <= " + "'" + to + "'" +
-                    "order by vd_addr ;");
-
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{ 
-                        BlueSeerUtils.clickflag,  // imageicon always column 1
-                        res.getString("vd_addr"),
-                        res.getString("vd_name"),
-                        res.getString("vd_line1"),
-                        res.getString("vd_city"),
-                        res.getString("vd_state"),
-                        res.getString("vd_zip")
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getVenRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",from});
+        list.add(new String[]{"param2",to});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServVDR"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
+        } else {
+            jsonString = venData.getVenRptPickerData(new String[]{
+                func,
+                from,
+                to
+            });
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                mymodel.addRow(rowData);
+                i++;
+            }
+        } 
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -430,46 +516,34 @@ public class VenRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery("SELECT vd_addr, vd_name, vd_line1, " +
-                    " vd_city, vd_state, vd_zip,  vd_phone, vd_email, " +
-                    " vd_terms, vd_bank, vd_curr, vd_ap_acct " +
-                    "from vd_mstr " +
-                    " where cast(vd_addr as decimal) >= " + "'" + from + "'" +
-                    " and cast(vd_addr as decimal) <= " + "'" + to + "'" +
-                    "order by vd_addr ;");
-
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{ 
-                        BlueSeerUtils.clickflag,  // imageicon always column 1
-                        res.getString("vd_addr"),
-                        res.getString("vd_name"),
-                        res.getString("vd_phone"),
-                        res.getString("vd_email")
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getVenRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",from});
+        list.add(new String[]{"param2",to});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServVDR"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
+        } else {
+            jsonString = venData.getVenRptPickerData(new String[]{
+                func,
+                from,
+                to
+            });
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                mymodel.addRow(rowData);
+                i++;
+            }
+        } 
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -529,49 +603,34 @@ public class VenRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                 res = st.executeQuery("SELECT vd_addr, vd_market, vd_name,  " +
-                        " vd_terms, vd_bank, vd_curr, vd_ap_acct, vd_ap_cc " +
-                        "from vd_mstr " +
-                        " where cast(vd_addr as decimal) >= " + "'" + from + "'" +
-                        " and cast(vd_addr as decimal) <= " + "'" + to + "'" +
-                        "order by vd_addr ;");
-
-                while (res.next()) {
-                   
-                    mymodel.addRow(new Object[]{ BlueSeerUtils.clickflag,
-                        res.getString("vd_addr"),
-                        res.getString("vd_name"),
-                        res.getString("vd_terms"),
-                        res.getString("vd_bank"),
-                        res.getString("vd_curr"),
-                        res.getString("vd_ap_acct"),
-                        res.getString("vd_ap_cc"),
-                        res.getString("vd_market")
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getVenRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",from});
+        list.add(new String[]{"param2",to});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServVDR"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
+        } else {
+            jsonString = venData.getVenRptPickerData(new String[]{
+                func,
+                from,
+                to
+            });
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                mymodel.addRow(rowData);
+                i++;
+            }
+        } 
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -642,49 +701,39 @@ public class VenRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                 res = st.executeQuery("SELECT vd_addr, vd_name,  " +
-                        " sum(rvd_qty * rvd_netprice) as 'total' " +
-                          "from vd_mstr inner join recv_mstr on rv_vend = vd_addr " +
-                        " inner join recv_det on rvd_id = rv_id and rv_status = '1' " +
-                        " where cast(vd_addr as decimal) >= " + "'" + from + "'" +
-                        " and cast(vd_addr as decimal) <= " + "'" + to + "'" +
-                        " and rv_recvdate >= " + "'" + fromdate + "'" +
-                        " and rv_recvdate <= " + "'" + todate + "'" +
-                        " group by vd_addr, vd_name order by vd_addr ;");
-
-                while (res.next()) {
-                   
-                    mymodel.addRow(new Object[]{ BlueSeerUtils.clickflag,
-                        res.getString("vd_addr"),
-                        res.getString("vd_name"),
-                        fromdate,
-                        todate,
-                        BlueSeerUtils.bsformat("", res.getString("total"), "2")
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getVenRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",from});
+        list.add(new String[]{"param2",to});   
+        list.add(new String[]{"param3",fromdate});
+        list.add(new String[]{"param4",todate});
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServVDR"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
+        } else {
+            jsonString = venData.getVenRptPickerData(new String[]{
+                func,
+                from,
+                to,
+                fromdate,
+                todate
+            });
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][5] = bsParseDouble(roData[i][5].toString());
+                mymodel.addRow(rowData);
+                i++;
+            }
+        } 
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -697,6 +746,8 @@ public class VenRptPicker extends javax.swing.JPanel {
                  }
                  tc.setCellRenderer(new VenRptPicker.renderer1());
              }
+            tablereport.getColumnModel().getColumn(5).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+            
         } // else run report
     }
     

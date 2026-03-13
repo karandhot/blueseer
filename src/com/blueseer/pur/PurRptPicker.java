@@ -25,20 +25,14 @@ SOFTWARE.
  */
 package com.blueseer.pur;
 
-import com.blueseer.ord.*;
-import com.blueseer.ctr.*;
-import com.blueseer.inv.*;
-import com.blueseer.sch.*;
-import com.blueseer.inv.*;
+
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import java.awt.Color;
 import java.awt.Component;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -53,13 +47,18 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import com.blueseer.shp.shpData;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.RPData;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.Enumeration;
@@ -77,6 +76,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -104,9 +104,16 @@ public class PurRptPicker extends javax.swing.JPanel {
     per each sub report.   I'm all ears if have another option.  :)
     
     */
+    String func = null;
+    boolean isLoad = false;
+    boolean canUpdate = false;
+    boolean isAutoPost = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String defaultCC = "";
     Map<String, String> jaspermap = new HashMap<String, String>();
     String jasperGroup = "PurRptGroup";
-    boolean isLoad = false;
     
      class renderer1 extends DefaultTableCellRenderer {
         
@@ -166,6 +173,65 @@ public class PurRptPicker extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }            
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
     
     class ButtonRenderer extends JButton implements TableCellRenderer {
 
@@ -232,16 +298,22 @@ public class PurRptPicker extends javax.swing.JPanel {
     }
     
     public void initvars(String[] arg) {
+      executeTask("dataInit", null);
+    }
+   
+    public String[] getInitialization() {
+        initDataSets  = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "jaspergroups=" + jasperGroup);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
       isLoad = true;
       ddreport.removeAllItems();
       jaspermap.clear();
-      int k = 0;
-      ArrayList<String[]> list = OVData.getJasperByGroup(jasperGroup);
-      for (String[] x : list) { // list is string of desc, func, format
-              jaspermap.put(x[0], x[2]); // desc, format
-              ddreport.addItem(x[0]); // desc
-          k++;
-      }
       ddreport.insertItemAt("", 0);
       ddreport.setSelectedIndex(0);
       resetVariables();
@@ -252,9 +324,30 @@ public class PurRptPicker extends javax.swing.JPanel {
       buttonGroup1.add(rbactive);
       buttonGroup1.add(rbinactive);
       ((DefaultTableModel)tablereport.getModel()).setRowCount(0);
-     isLoad = false;
+       
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("jaspergroups")) {
+              String[] z = s[1].split(",", -1);
+              jaspermap.put(z[0], z[2]); // desc, format
+              ddreport.addItem(z[0]); // desc 
+            }
+        }
+        
+        
+        
+       isLoad = false;
     }
-   
+    
     
     
     /* misc methods */   
@@ -392,51 +485,35 @@ public class PurRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getPurRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromdate});
+        list.add(new String[]{"param2",todate});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServPUR"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery(" select po_nbr, po_vend, vd_name, po_site, po_rmks, po_ord_date, po_due_date, po_status, " +
-                        " sum(pod_ord_qty  * pod_netprice) as 'total' " +
-                        " FROM  po_mstr inner join pod_mstr on pod_nbr = po_nbr " +
-                        " inner join vd_mstr on vd_addr = po_vend " +
-                        " where po_ord_date >= " + "'" + fromdate + "'" + 
-                        " and po_ord_date <= " + "'" + todate + "'" +
-                        " group by po_nbr, po_vend, vd_name, po_site, po_rmks, po_ord_date, po_due_date, po_status " +
-                        " order by po_nbr desc ;");
-               
-                
-                    while (res.next()) {
-                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, 
-                                   res.getString("po_nbr"),
-                                   res.getString("po_vend"),
-                                   res.getString("vd_name"),
-                                   res.getString("po_rmks"),
-                                   res.getString("po_ord_date"),
-                                   res.getString("po_due_date"),
-                                   res.getString("po_status"),
-                                   BlueSeerUtils.currformat(res.getString("total"))
-                        });
-                    }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = purData.getPurRptPickerData(new String[]{
+                func,
+                fromdate,
+                todate
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                mymodel.addRow(rowData);
+                i++;
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        }  
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -449,6 +526,8 @@ public class PurRptPicker extends javax.swing.JPanel {
                  }
                  tc.setCellRenderer(new PurRptPicker.renderer1());
              }
+            tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+            
         } // else run report
                
     }
@@ -498,51 +577,35 @@ public class PurRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getPurRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromvend});
+        list.add(new String[]{"param2",tovend});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServPUR"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery(" select po_nbr, po_vend, vd_name, po_site, po_rmks, po_ord_date, po_due_date, po_status, " +
-                        " sum(pod_ord_qty  * pod_netprice) as 'total' " +
-                        " FROM  po_mstr inner join pod_mstr on pod_nbr = po_nbr " +
-                        " inner join vd_mstr on vd_addr = po_vend " +
-                        " where po_vend >= " + "'" + fromvend + "'" +   
-                        " and po_vend <= " + "'" + tovend + "'" +          
-                        " group by po_nbr, po_vend, vd_name, po_site, po_rmks, po_ord_date, po_due_date, po_status " +
-                        " order by po_nbr desc ;");
-               
-                
-                    while (res.next()) {
-                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, 
-                                   res.getString("po_nbr"),
-                                   res.getString("po_vend"),
-                                   res.getString("vd_name"),
-                                   res.getString("po_rmks"),
-                                   res.getString("po_ord_date"),
-                                   res.getString("po_due_date"),
-                                   res.getString("po_status"),
-                                   BlueSeerUtils.currformat(res.getString("total"))
-                        });
-                    }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = purData.getPurRptPickerData(new String[]{
+                func,
+                fromvend,
+                tovend
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                mymodel.addRow(rowData);
+                i++;
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        }  
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -555,6 +618,7 @@ public class PurRptPicker extends javax.swing.JPanel {
                  }
                  tc.setCellRenderer(new PurRptPicker.renderer1());
              }
+            tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
         } // else run report
                
     }
@@ -617,53 +681,39 @@ public class PurRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getPurRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromvend});
+        list.add(new String[]{"param2",tovend});   
+        list.add(new String[]{"param3",fromdate});
+        list.add(new String[]{"param4",todate});
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServPUR"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery(" select po_nbr, po_vend, vd_name, po_site, po_rmks, po_ord_date, po_due_date, po_status, " +
-                        " sum(pod_ord_qty  * pod_netprice) as 'total' " +
-                        " FROM  po_mstr inner join pod_mstr on pod_nbr = po_nbr " +
-                        " inner join vd_mstr on vd_addr = po_vend " +
-                        " where po_ord_date >= " + "'" + fromdate + "'" + 
-                        " and po_ord_date <= " + "'" + todate + "'" +
-                        " and po_vend >= " + "'" + fromvend + "'" +   
-                        " and po_vend <= " + "'" + tovend + "'" +          
-                        " group by po_nbr, po_vend, vd_name, po_site, po_rmks, po_ord_date, po_due_date, po_status " +
-                        " order by po_nbr desc ;");
-               
-                
-                    while (res.next()) {
-                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, 
-                                   res.getString("po_nbr"),
-                                   res.getString("po_vend"),
-                                   res.getString("vd_name"),
-                                   res.getString("po_rmks"),
-                                   res.getString("po_ord_date"),
-                                   res.getString("po_due_date"),
-                                   res.getString("po_status"),
-                                   BlueSeerUtils.currformat(res.getString("total"))
-                        });
-                    }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = purData.getPurRptPickerData(new String[]{
+                func,
+                fromvend,
+                tovend,
+                fromdate,
+                todate
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                mymodel.addRow(rowData);
+                i++;
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        }  
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -676,6 +726,7 @@ public class PurRptPicker extends javax.swing.JPanel {
                  }
                  tc.setCellRenderer(new PurRptPicker.renderer1());
              }
+            tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));  
         } // else run report
                
     }
@@ -725,51 +776,35 @@ public class PurRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getPurRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromvend});
+        list.add(new String[]{"param2",tovend}); 
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServPUR"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery(" select po_nbr, po_vend, vd_name, po_site, po_rmks, po_ord_date, po_due_date, po_status, " +
-                        " pod_ord_qty, pod_rcvd_qty, pod_netprice, pod_item, pod_due_date " +
-                        " FROM  po_mstr inner join pod_mstr on pod_nbr = po_nbr " +
-                        " inner join vd_mstr on vd_addr = po_vend " +
-                        " where po_vend >= " + "'" + fromvend + "'" +   
-                        " and po_vend <= " + "'" + tovend + "'" +          
-                        " group by po_nbr, po_vend, vd_name, po_site, po_rmks, po_ord_date, po_due_date, po_status " +
-                        " order by po_nbr desc ;");
-               
-                
-                    while (res.next()) {
-                        mymodel.addRow(new Object[] {BlueSeerUtils.clickflag, 
-                                   res.getString("po_nbr"),
-                                   res.getString("po_vend"),
-                                   res.getString("vd_name"),
-                                   res.getString("pod_item"),
-                                   res.getString("pod_due_date"),
-                                   res.getString("pod_ord_qty"),
-                                   res.getString("pod_rcvd_qty"),
-                                   BlueSeerUtils.currformat(res.getString("pod_netprice"))
-                        });
-                    }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = purData.getPurRptPickerData(new String[]{
+                func,
+                fromvend,
+                tovend
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                mymodel.addRow(rowData);
+                i++;
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        }  
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -782,6 +817,7 @@ public class PurRptPicker extends javax.swing.JPanel {
                  }
                  tc.setCellRenderer(new PurRptPicker.renderer1());
              }
+            tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));    
         } // else run report
                
     }
@@ -843,52 +879,39 @@ public class PurRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getPurRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromvend});
+        list.add(new String[]{"param2",tovend}); 
+        list.add(new String[]{"param3",fromdate});
+        list.add(new String[]{"param4",todate});
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServPUR"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery(" select tr_id, tr_addrcode, tr_item, tr_type, tr_eff_date, tr_qty, " +
-                        " vd_name, it_desc " +
-                        " FROM  tran_mstr inner join item_mstr on it_item = tr_item " +
-                        " inner join vd_mstr on vd_addr = tr_addrcode " +
-                        " where tr_eff_date >= " + "'" + fromdate + "'" + 
-                        " and tr_eff_date <= " + "'" + todate + "'" +
-                        " and tr_addrcode >= " + "'" + fromvend + "'" +   
-                        " and tr_addrcode <= " + "'" + tovend + "'" +  
-                        " order by tr_id desc ;");
-               
-                
-                    while (res.next()) {
-                        mymodel.addRow(new Object[] {
-                                   res.getString("tr_id"),
-                                   res.getString("tr_addrcode"),
-                                   res.getString("vd_name"),
-                                   res.getString("tr_item"),
-                                   res.getString("it_desc"),
-                                   res.getString("tr_type"),
-                                   res.getString("tr_eff_date"),
-                                   res.getDouble("tr_qty")
-                        });
-                    }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = purData.getPurRptPickerData(new String[]{
+                func,
+                fromvend,
+                tovend,
+                fromdate,
+                todate
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                mymodel.addRow(rowData);
+                i++;
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        }  
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -972,55 +995,43 @@ public class PurRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getPurRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromvend});
+        list.add(new String[]{"param2",tovend}); 
+        list.add(new String[]{"param3",fromdate});
+        list.add(new String[]{"param4",todate});
+        list.add(new String[]{"param5",fromitem});
+        list.add(new String[]{"param6",toitem});
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServPUR"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery(" select pod_nbr, vd_addr, pod_item, it_desc, pod_ord_date, pod_ord_qty, pod_rcvd_qty, pod_netprice, " +
-                        " vd_name " +
-                        " FROM  pod_mstr inner join po_mstr on pod_nbr = po_nbr " +
-                        " inner join vd_mstr on vd_addr = po_vend " +
-                        " inner join item_mstr on it_item = pod_item " +
-                        " where pod_ord_date >= " + "'" + fromdate + "'" + 
-                        " and pod_ord_date <= " + "'" + todate + "'" +
-                        " and vd_addr >= " + "'" + fromvend + "'" +   
-                        " and vd_addr <= " + "'" + tovend + "'" + 
-                        " and pod_item >= " + "'" + fromitem + "'" +   
-                        " and pod_item <= " + "'" + toitem + "'" +         
-                        " order by pod_nbr desc ;");
-               
-                
-                    while (res.next()) {
-                        mymodel.addRow(new Object[] {
-                                   res.getString("pod_nbr"),
-                                   res.getString("vd_name"),
-                                   res.getString("pod_item"),
-                                   res.getString("it_desc"),
-                                   res.getString("pod_ord_date"),
-                                   res.getDouble("pod_ord_qty"),
-                                   res.getDouble("pod_rcvd_qty"),
-                                   res.getDouble("pod_netprice")
-                        });
-                    }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = purData.getPurRptPickerData(new String[]{
+                func,
+                fromvend,
+                tovend,
+                fromdate,
+                todate,
+                fromitem,
+                toitem                    
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                mymodel.addRow(rowData);
+                i++;
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        }  
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -1033,6 +1044,7 @@ public class PurRptPicker extends javax.swing.JPanel {
                  }
                  tc.setCellRenderer(new PurRptPicker.renderer1());
              }
+            tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));    
         } // else run report
                
     }
@@ -1104,56 +1116,43 @@ public class PurRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getPurRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromvend});
+        list.add(new String[]{"param2",tovend}); 
+        list.add(new String[]{"param3",fromdate});
+        list.add(new String[]{"param4",todate});
+        list.add(new String[]{"param5",fromitem});
+        list.add(new String[]{"param6",toitem});
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServPUR"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery(" select rvd_id, vd_addr, rvd_item, rvd_po, it_desc, rvd_date, rvd_qty, rvd_netprice, " +
-                        " vd_name " +
-                        " FROM  recv_det inner join recv_mstr on rvd_id = rv_id " +
-                        " inner join vd_mstr on vd_addr = rv_vend " +
-                        " inner join item_mstr on it_item = rvd_item " +
-                        " where rvd_date >= " + "'" + fromdate + "'" + 
-                        " and rvd_date <= " + "'" + todate + "'" +
-                        " and vd_addr >= " + "'" + fromvend + "'" +   
-                        " and vd_addr <= " + "'" + tovend + "'" + 
-                        " and rvd_item >= " + "'" + fromitem + "'" +   
-                        " and rvd_item <= " + "'" + toitem + "'" +         
-                        " order by rvd_id desc ;");
-               
-                
-                    while (res.next()) {
-                        mymodel.addRow(new Object[] {
-                                   res.getString("rvd_id"),
-                                   res.getString("vd_name"),
-                                   res.getString("rvd_item"),
-                                   res.getString("it_desc"),
-                                   res.getString("rvd_po"),
-                                   res.getString("rvd_date"),
-                                   res.getDouble("rvd_qty"),
-                                   res.getDouble("rvd_netprice")
-                        });
-                    }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = purData.getPurRptPickerData(new String[]{
+                func,
+                fromvend,
+                tovend,
+                fromdate,
+                todate,
+                fromitem,
+                toitem                    
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                mymodel.addRow(rowData);
+                i++;
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
-      
+        }  
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
             tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
@@ -1165,6 +1164,7 @@ public class PurRptPicker extends javax.swing.JPanel {
                  }
                  tc.setCellRenderer(new PurRptPicker.renderer1());
              }
+            tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));      
         } // else run report
                
     }

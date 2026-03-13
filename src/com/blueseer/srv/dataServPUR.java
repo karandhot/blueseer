@@ -33,6 +33,7 @@ import static com.blueseer.pur.purData.getPODet;
 import static com.blueseer.pur.purData.getPOListByVend;
 import static com.blueseer.pur.purData.getPOMstr;
 import static com.blueseer.pur.purData.getPOMstrSet;
+import static com.blueseer.pur.purData.getPurRptPickerData;
 import static com.blueseer.pur.purData.getPurchaseOrderInit;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
@@ -233,6 +234,20 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             purData.po_ctrl x = objectMapper.readValue(sb.toString(), purData.po_ctrl.class);            
             response.getWriter().print(arrayToJson(addUpdatePOCtrl(x)));
             break;
+        }
+        
+        case "getPurRptPickerData" : {
+        String[] x = new String[]{
+               request.getHeader("func"),
+               request.getHeader("param1"), 
+               request.getHeader("param2"),
+               request.getHeader("param3"),
+               request.getHeader("param4"),
+               request.getHeader("param5"),
+               request.getHeader("param6")
+               };     
+        response.getWriter().print(getPurRptPickerData(x));  
+        break;
         }
         
         default:

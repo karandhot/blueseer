@@ -1321,6 +1321,153 @@ public class shpData {
                     } 
                 }
                 
+                if (keys[0].equals("shippersByShipNbrRange")) {
+                res = st.executeQuery("SELECT sh_id, sh_cust, cm_name, " +
+                        " sh_shipdate, sh_type, sh_site, sh_po, sh_so, sh_curr, sh_status, " +
+                        " sum(shd_qty * shd_netprice) as amt FROM  ship_mstr " +
+                        " inner join ship_det " +
+                        " on shd_id = sh_id " +
+                        " inner join cm_mstr on cm_code = sh_cust " +
+                        " where sh_id >= " + "'" + keys[1] + "'" +
+                        " and sh_id <= " + "'" + keys[2] + "'" +
+                        " group by sh_id, sh_cust, cm_name, sh_shipdate, sh_type, sh_site, sh_po, sh_so, sh_curr, sh_status " +
+                         " order by sh_id;");              
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("sh_id"));
+                            rowArray.put(res.getString("sh_cust"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("sh_shipdate"));
+                            rowArray.put(res.getString("sh_type"));
+                            rowArray.put(res.getString("sh_site"));
+                            rowArray.put(res.getString("sh_po"));
+                            rowArray.put(res.getString("sh_so"));
+                            rowArray.put(res.getString("sh_curr"));
+                            rowArray.put(currformat(res.getString("amt")));
+                            rowArray.put(res.getString("sh_status"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("shippersByCustDateRange")) {
+                res = st.executeQuery("SELECT sh_id, sh_cust, cm_name, " +
+                        " sh_shipdate, sh_type, sh_site, sh_po, sh_so, sh_curr, sh_status, " +
+                        " sum(shd_qty * shd_netprice) as amt FROM  ship_mstr " +
+                        " inner join ship_det " +
+                        " on shd_id = sh_id " +
+                        " inner join cm_mstr on cm_code = sh_cust " +
+                        " where sh_shipdate >= " + "'" + keys[1] + "'" +
+                        " and sh_shipdate <= " + "'" + keys[2] + "'" +
+                        " and sh_cust >= " + "'" + keys[3] + "'" +
+                        " and sh_cust <= " + "'" + keys[4] + "'" +
+                        " group by sh_id, sh_cust, cm_name, sh_shipdate, sh_type, sh_site, sh_po, sh_so, sh_curr, sh_status " +
+                        " order by sh_id;");             
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("sh_id"));
+                            rowArray.put(res.getString("sh_cust"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("sh_shipdate"));
+                            rowArray.put(res.getString("sh_type"));
+                            rowArray.put(res.getString("sh_site"));
+                            rowArray.put(res.getString("sh_po"));
+                            rowArray.put(res.getString("sh_so"));
+                            rowArray.put(res.getString("sh_curr"));
+                            rowArray.put(currformat(res.getString("amt")));
+                            rowArray.put(res.getString("sh_status"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("shipperDetailByCustDateRange")) {
+                res = st.executeQuery("SELECT sh_id, sh_cust, cm_name, " +
+                        " sh_shipdate, sh_type, sh_site, sh_po, " +
+                        " shd_item, shd_qty, shd_netprice from ship_mstr " +
+                        " inner join ship_det " +
+                        " on shd_id = sh_id " +
+                        " inner join cm_mstr on cm_code = sh_cust " +
+                        " where sh_shipdate >= " + "'" + keys[1] + "'" +
+                        " and sh_shipdate <= " + "'" + keys[2] + "'" +
+                        " and sh_cust >= " + "'" + keys[3] + "'" +
+                        " and sh_cust <= " + "'" + keys[4] + "'" +
+                        " order by sh_id;");  
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("sh_id"));
+                            rowArray.put(res.getString("sh_cust"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("sh_shipdate"));
+                            rowArray.put(res.getString("sh_po"));
+                            rowArray.put(res.getString("shd_item"));
+                            rowArray.put(res.getString("shd_qty"));
+                            rowArray.put(currformat(res.getString("shd_netprice")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("shipperDetailByPO")) {
+                res = st.executeQuery("SELECT sh_id, sh_cust, cm_name, " +
+                        " sh_shipdate, sh_type, sh_site, shd_po, " +
+                        " shd_item, shd_qty, shd_netprice from ship_mstr " +
+                        " inner join ship_det " +
+                        " on shd_id = sh_id " +
+                        " inner join cm_mstr on cm_code = sh_cust " +
+                        " where shd_po >= " + "'" + keys[1] + "'" +
+                        " and shd_po <= " + "'" + keys[2] + "'" +
+                        " order by sh_id;");  
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("sh_id"));
+                            rowArray.put(res.getString("sh_cust"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("sh_shipdate"));
+                            rowArray.put(res.getString("sh_po"));
+                            rowArray.put(res.getString("shd_item"));
+                            rowArray.put(res.getString("shd_qty"));
+                            rowArray.put(currformat(res.getString("shd_netprice")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("shipperByRawSerial")) {
+                res = st.executeQuery("SELECT sh_id, sh_cust, cm_name, " +
+                        " sh_shipdate, sh_type, sh_site, shd_po, " +
+                        " shd_item, shd_qty, shd_netprice from ship_mstr " +
+                        " inner join ship_det " +
+                        " on shd_id = sh_id " +
+                        " inner join cm_mstr on cm_code = sh_cust " +
+                        " where shd_id in (select tr_nbr from tran_mstr " +
+                        " where tr_serial in (select tr_lot from tran_mstr where tr_serial = " + "'" + keys[1] + "'" + 
+                        " and tr_type <> 'RCT-PURCH') and tr_type = 'ISS-SALES') " +
+                        " order by sh_id;");
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("sh_id"));
+                            rowArray.put(res.getString("sh_cust"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("sh_shipdate"));
+                            rowArray.put(res.getString("sh_po"));
+                            rowArray.put(res.getString("shd_item"));
+                            rowArray.put(res.getString("shd_qty"));
+                            rowArray.put(currformat(res.getString("shd_netprice")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
                 
                 
             } catch (SQLException s) {

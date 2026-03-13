@@ -25,55 +25,30 @@ SOFTWARE.
  */
 package com.blueseer.shp;
 
-import com.blueseer.ord.*;
-import com.blueseer.ctr.*;
-import com.blueseer.inv.*;
-import com.blueseer.sch.*;
-import com.blueseer.inv.*;
 import bsmf.MainFrame;
 import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import java.awt.Color;
 import java.awt.Component;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import static bsmf.MainFrame.checkperms;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.driver;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.menumap;
-import static bsmf.MainFrame.panelmap;
-import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
 import com.blueseer.adm.admData;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
-import com.blueseer.utl.DTData;
-import com.blueseer.utl.RPData;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Currency;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -310,7 +285,7 @@ public class ShpRptPicker extends javax.swing.JPanel {
     }
    
     public String[] getInitialization() {
-        initDataSets  = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "locations,warehouses,jaspergroups=" + jasperGroup);
+        initDataSets  = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "jaspergroups=" + jasperGroup);
         if (initDataSets.isEmpty()) {
            return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
         } else {
@@ -592,56 +567,35 @@ public class ShpRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getShpRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromnbr});
+        list.add(new String[]{"param2",tonbr});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServSHP"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery("SELECT sh_id, sh_cust, cm_name, " +
-                        " sh_shipdate, sh_type, sh_site, sh_po, sh_so, sh_curr, sh_status, " +
-                        " sum(shd_qty * shd_netprice) as amt FROM  ship_mstr " +
-                        " inner join ship_det " +
-                        " on shd_id = sh_id " +
-                        " inner join cm_mstr on cm_code = sh_cust " +
-                        " where cast(sh_id as decimal) >= " + "'" + fromnbr + "'" +
-                        " and cast(sh_id as decimal) <= " + "'" + tonbr + "'" +
-                        " group by sh_id, sh_cust, cm_name, sh_shipdate, sh_type, sh_site, sh_po, sh_so, sh_curr, sh_status " +
-                         " order by sh_id;");
-
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{ 
-                        BlueSeerUtils.clickflag,  // imageicon always column 1
-                        res.getString("sh_id"), 
-                        res.getString("sh_cust"), 
-                        res.getString("cm_name"),
-                        res.getString("sh_shipdate"),
-                        res.getString("sh_type"),
-                        res.getString("sh_site"),
-                        res.getString("sh_po"),
-                        res.getString("sh_so"),
-                        res.getString("sh_curr"),
-                        BlueSeerUtils.currformat(res.getString("amt")),
-                        res.getString("sh_status")
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = shpData.getShpRptPickerData(new String[]{
+                func,
+                fromnbr,
+                tonbr
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][10] = bsParseDouble(roData[i][10].toString());
+                mymodel.addRow(rowData);
+                i++;
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        }      
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -720,58 +674,39 @@ public class ShpRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getShpRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromdate});
+        list.add(new String[]{"param2",todate}); 
+        list.add(new String[]{"param3",fromcust}); 
+        list.add(new String[]{"param4",tocust}); 
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServSHP"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                   res = st.executeQuery("SELECT sh_id, sh_cust, cm_name, " +
-                        " sh_shipdate, sh_type, sh_site, sh_po, sh_so, sh_curr, sh_status, " +
-                        " sum(shd_qty * shd_netprice) as amt FROM  ship_mstr " +
-                        " inner join ship_det " +
-                        " on shd_id = sh_id " +
-                        " inner join cm_mstr on cm_code = sh_cust " +
-                        " where sh_shipdate >= " + "'" + fromdate + "'" +
-                        " and sh_shipdate <= " + "'" + todate + "'" +
-                        " and sh_cust >= " + "'" + fromcust + "'" +
-                        " and sh_cust <= " + "'" + tocust + "'" +
-                        " group by sh_id, sh_cust, cm_name, sh_shipdate, sh_type, sh_site, sh_po, sh_so, sh_curr, sh_status " +
-                        " order by sh_id;");
-
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{ 
-                        BlueSeerUtils.clickflag,  // imageicon always column 1
-                        res.getString("sh_id"), 
-                        res.getString("sh_cust"), 
-                        res.getString("cm_name"),
-                        res.getString("sh_shipdate"),
-                        res.getString("sh_type"),
-                        res.getString("sh_site"),
-                        res.getString("sh_po"),
-                        res.getString("sh_so"),
-                        res.getString("sh_curr"),
-                        BlueSeerUtils.currformat(res.getString("amt")),
-                        res.getString("sh_status")
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = shpData.getShpRptPickerData(new String[]{
+                func,
+                fromdate,
+                todate,
+                fromcust,
+                tocust
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][10] = bsParseDouble(roData[i][10].toString());
+                mymodel.addRow(rowData);
+                i++;
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        }      
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -846,54 +781,40 @@ public class ShpRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getShpRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromdate});
+        list.add(new String[]{"param2",todate}); 
+        list.add(new String[]{"param3",fromcust}); 
+        list.add(new String[]{"param4",tocust}); 
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServSHP"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                   res = st.executeQuery("SELECT sh_id, sh_cust, cm_name, " +
-                        " sh_shipdate, sh_type, sh_site, sh_po, " +
-                        " shd_item, shd_qty, shd_netprice from ship_mstr " +
-                        " inner join ship_det " +
-                        " on shd_id = sh_id " +
-                        " inner join cm_mstr on cm_code = sh_cust " +
-                        " where sh_shipdate >= " + "'" + fromdate + "'" +
-                        " and sh_shipdate <= " + "'" + todate + "'" +
-                        " and sh_cust >= " + "'" + fromcust + "'" +
-                        " and sh_cust <= " + "'" + tocust + "'" +
-                        " order by sh_id;");
-
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{ 
-                        BlueSeerUtils.clickflag,  // imageicon always column 1
-                        res.getString("sh_id"), 
-                        res.getString("sh_cust"), 
-                        res.getString("cm_name"),
-                        res.getString("sh_shipdate"),
-                        res.getString("sh_po"),
-                        res.getString("shd_item"),
-                        res.getString("shd_qty"),
-                        res.getString("shd_netprice")
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = shpData.getShpRptPickerData(new String[]{
+                func,
+                fromdate,
+                todate,
+                fromcust,
+                tocust
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][7] = bsParseDouble(roData[i][7].toString());
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                mymodel.addRow(rowData);
+                i++;
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        }      
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -906,6 +827,8 @@ public class ShpRptPicker extends javax.swing.JPanel {
                  }
                  tc.setCellRenderer(new ShpRptPicker.renderer1());
              }
+            tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        
         } // else run report
                
     }
@@ -956,52 +879,36 @@ public class ShpRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getShpRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",frompo});
+        list.add(new String[]{"param2",topo}); 
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServSHP"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                   res = st.executeQuery("SELECT sh_id, sh_cust, cm_name, " +
-                        " sh_shipdate, sh_type, sh_site, shd_po, " +
-                        " shd_item, shd_qty, shd_netprice from ship_mstr " +
-                        " inner join ship_det " +
-                        " on shd_id = sh_id " +
-                        " inner join cm_mstr on cm_code = sh_cust " +
-                        " where shd_po >= " + "'" + frompo + "'" +
-                        " and shd_po <= " + "'" + topo + "'" +
-                        " order by sh_id;");
-
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{ 
-                        BlueSeerUtils.clickflag,  // imageicon always column 1
-                        res.getString("sh_id"), 
-                        res.getString("sh_cust"), 
-                        res.getString("cm_name"),
-                        res.getString("sh_shipdate"),
-                        res.getString("shd_po"),
-                        res.getString("shd_item"),
-                        res.getString("shd_qty"),
-                        res.getString("shd_netprice")
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = shpData.getShpRptPickerData(new String[]{
+                func,
+                frompo,
+                topo
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][7] = bsParseDouble(roData[i][7].toString());
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                mymodel.addRow(rowData);
+                i++;
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        }      
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -1014,6 +921,8 @@ public class ShpRptPicker extends javax.swing.JPanel {
                  }
                  tc.setCellRenderer(new ShpRptPicker.renderer1());
              }
+            tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+          
         } // else run report
                
     }
@@ -1062,52 +971,34 @@ public class ShpRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getShpRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromserial});
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServSHP"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                
-                   res = st.executeQuery("SELECT sh_id, sh_cust, cm_name, " +
-                        " sh_shipdate, sh_type, sh_site, shd_po, " +
-                        " shd_item, shd_qty, shd_netprice from ship_mstr " +
-                        " inner join ship_det " +
-                        " on shd_id = sh_id " +
-                        " inner join cm_mstr on cm_code = sh_cust " +
-                        " where shd_id in (select tr_nbr from tran_mstr where tr_serial in (select tr_lot from tran_mstr where tr_serial = " + "'" + fromserial + "'" + " and tr_type <> 'RCT-PURCH') and tr_type = 'ISS-SALES') " +
-                        " order by sh_id;");
-
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{ 
-                        BlueSeerUtils.clickflag,  // imageicon always column 1
-                        res.getString("sh_id"), 
-                        res.getString("sh_cust"), 
-                        res.getString("cm_name"),
-                        res.getString("sh_shipdate"),
-                        res.getString("shd_po"),
-                        res.getString("shd_item"),
-                        res.getString("shd_qty"),
-                        res.getString("shd_netprice")
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = shpData.getShpRptPickerData(new String[]{
+                func,
+                fromserial
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][7] = bsParseDouble(roData[i][7].toString());
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                mymodel.addRow(rowData);
+                i++;
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        }      
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -1120,6 +1011,8 @@ public class ShpRptPicker extends javax.swing.JPanel {
                  }
                  tc.setCellRenderer(new ShpRptPicker.renderer1());
              }
+            tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+          
         } // else run report
                
     }

@@ -48,6 +48,7 @@ import static com.blueseer.fgl.fglData.getCurrMstr;
 import static com.blueseer.fgl.fglData.getDeptMstr;
 import static com.blueseer.fgl.fglData.getExcMstr;
 import static com.blueseer.fgl.fglData.getFINInit;
+import static com.blueseer.fgl.fglData.getFglRptPickerData;
 import static com.blueseer.fgl.fglData.getGLAcctListRangeWCurrTypeDesc;
 import static com.blueseer.fgl.fglData.getGLCalForPeriod;
 import static com.blueseer.fgl.fglData.getGLCalForPeriodRange;
@@ -592,6 +593,20 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       response.getWriter().print(ArrayListStringToJson(getGLCalYearsRange()));
       break;
     } 
+    
+    case "getFglRptPickerData" : {
+        String[] x = new String[]{
+               request.getHeader("func"),
+               request.getHeader("param1"), 
+               request.getHeader("param2"),
+               request.getHeader("param3"),
+               request.getHeader("param4"),
+               request.getHeader("param5"),
+               request.getHeader("param6")
+               };     
+        response.getWriter().print(getFglRptPickerData(x));  
+        break;
+        }
     
     default:
         response.getWriter().print("");

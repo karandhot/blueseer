@@ -36,6 +36,7 @@ import static com.blueseer.sch.schData.getPlanDetHistory;
 import static com.blueseer.sch.schData.getPlanDetTotQtyByOp;
 import static com.blueseer.sch.schData.getPlanMstr;
 import static com.blueseer.sch.schData.getPlanOperation;
+import static com.blueseer.sch.schData.getSchRptPickerData;
 import static com.blueseer.sch.schData.getSummaryByDate;
 import static com.blueseer.sch.schData.updatePlanOperation;
 import static com.blueseer.sch.schData.updatePlanOrder;
@@ -208,6 +209,21 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         response.getWriter().print(r);
         break;
         }
+        
+        case "getSchRptPickerData" : {
+        String[] x = new String[]{
+               request.getHeader("func"),
+               request.getHeader("param1"), 
+               request.getHeader("param2"),
+               request.getHeader("param3"),
+               request.getHeader("param4"),
+               request.getHeader("param5"),
+               request.getHeader("param6")
+               };     
+        response.getWriter().print(getSchRptPickerData(x));  
+        break;
+        }
+        
         
         default:
         response.getWriter().print("");

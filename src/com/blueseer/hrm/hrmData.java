@@ -33,6 +33,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
@@ -45,6 +46,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.json.JSONArray;
 
 /**
  *
@@ -600,6 +602,60 @@ public class hrmData {
     }
    
     // misc
+    public static String getHrmRptPickerData(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                if (keys[0].equals("employeeByEmpNbr")) {
+                res = st.executeQuery("SELECT * FROM emp_mstr " +
+                        " where emp_nbr >= " + "'" + keys[1] + "'" +
+                        " and emp_nbr <= " + "'" + keys[2] + "'" + 
+                        "order by emp_nbr;");              
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("emp_nbr"));
+                            rowArray.put(res.getString("emp_lname"));
+                            rowArray.put(res.getString("emp_fname"));
+                            rowArray.put(res.getString("emp_dept"));
+                            rowArray.put(res.getString("emp_status"));
+                            rowArray.put(res.getString("emp_shift"));
+                            rowArray.put(res.getString("emp_startdate"));
+                            rowArray.put(res.getString("emp_termdate"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
     public static ArrayList<String[]> getHRInit() {
         String defaultsite = "";
         ArrayList<String[]> lines = new ArrayList<String[]>();

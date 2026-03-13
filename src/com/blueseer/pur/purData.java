@@ -42,6 +42,7 @@ import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
+import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
@@ -1499,6 +1500,231 @@ public class purData {
     
     
     // miscellaneous SQL queries
+    public static String getPurRptPickerData(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                if (keys[0].equals("poByOrdDateRange")) {
+                res = st.executeQuery(" select po_nbr, po_vend, vd_name, po_site, po_rmks, po_ord_date, po_due_date, po_status, " +
+                        " sum(pod_ord_qty  * pod_netprice) as 'total' " +
+                        " FROM  po_mstr inner join pod_mstr on pod_nbr = po_nbr " +
+                        " inner join vd_mstr on vd_addr = po_vend " +
+                        " where po_ord_date >= " + "'" + keys[1] + "'" + 
+                        " and po_ord_date <= " + "'" + keys[2] + "'" +
+                        " group by po_nbr, po_vend, vd_name, po_site, po_rmks, po_ord_date, po_due_date, po_status " +
+                        " order by po_nbr desc ;");                  
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("po_nbr"));
+                            rowArray.put(res.getString("po_vend"));
+                            rowArray.put(res.getString("vd_name"));
+                            rowArray.put(res.getString("po_rmks"));
+                            rowArray.put(res.getString("po_ord_date"));
+                            rowArray.put(res.getString("po_due_date"));
+                            rowArray.put(res.getString("po_status"));
+                            rowArray.put(currformat(res.getString("total")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("poByVendRange")) {
+                res = st.executeQuery(" select po_nbr, po_vend, vd_name, po_site, po_rmks, po_ord_date, po_due_date, po_status, " +
+                        " sum(pod_ord_qty  * pod_netprice) as 'total' " +
+                        " FROM  po_mstr inner join pod_mstr on pod_nbr = po_nbr " +
+                        " inner join vd_mstr on vd_addr = po_vend " +
+                        " where po_vend >= " + "'" + keys[1] + "'" +   
+                        " and po_vend <= " + "'" + keys[2] + "'" +          
+                        " group by po_nbr, po_vend, vd_name, po_site, po_rmks, po_ord_date, po_due_date, po_status " +
+                        " order by po_nbr desc ;");                 
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("po_nbr"));
+                            rowArray.put(res.getString("po_vend"));
+                            rowArray.put(res.getString("vd_name"));
+                            rowArray.put(res.getString("po_rmks"));
+                            rowArray.put(res.getString("po_ord_date"));
+                            rowArray.put(res.getString("po_due_date"));
+                            rowArray.put(res.getString("po_status"));
+                            rowArray.put(currformat(res.getString("total")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("poByVendOrdDateRange")) {
+                res = st.executeQuery(" select po_nbr, po_vend, vd_name, po_site, po_rmks, po_ord_date, po_due_date, po_status, " +
+                        " sum(pod_ord_qty  * pod_netprice) as 'total' " +
+                        " FROM  po_mstr inner join pod_mstr on pod_nbr = po_nbr " +
+                        " inner join vd_mstr on vd_addr = po_vend " +
+                        " where po_ord_date >= " + "'" + keys[3] + "'" + 
+                        " and po_ord_date <= " + "'" + keys[4] + "'" +
+                        " and po_vend >= " + "'" + keys[1] + "'" +   
+                        " and po_vend <= " + "'" + keys[2] + "'" +          
+                        " group by po_nbr, po_vend, vd_name, po_site, po_rmks, po_ord_date, po_due_date, po_status " +
+                        " order by po_nbr desc ;");                 
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("po_nbr"));
+                            rowArray.put(res.getString("po_vend"));
+                            rowArray.put(res.getString("vd_name"));
+                            rowArray.put(res.getString("po_rmks"));
+                            rowArray.put(res.getString("po_ord_date"));
+                            rowArray.put(res.getString("po_due_date"));
+                            rowArray.put(res.getString("po_status"));
+                            rowArray.put(currformat(res.getString("total")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("poDetailByVendRange")) {
+                res = st.executeQuery(" select po_nbr, po_vend, vd_name, po_site, po_rmks, po_ord_date, po_due_date, po_status, " +
+                        " pod_ord_qty, pod_rcvd_qty, pod_netprice, pod_item, pod_due_date " +
+                        " FROM  po_mstr inner join pod_mstr on pod_nbr = po_nbr " +
+                        " inner join vd_mstr on vd_addr = po_vend " +
+                        " where po_vend >= " + "'" + keys[1] + "'" +   
+                        " and po_vend <= " + "'" + keys[2] + "'" +          
+                        " group by po_nbr, po_vend, vd_name, po_site, po_rmks, po_ord_date, po_due_date, po_status " +
+                        " order by po_nbr desc ;");                  
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("po_nbr"));
+                            rowArray.put(res.getString("po_vend"));
+                            rowArray.put(res.getString("vd_name"));
+                            rowArray.put(res.getString("pod_item"));
+                            rowArray.put(res.getString("pod_due_date"));
+                            rowArray.put(res.getString("pod_ord_qty"));
+                            rowArray.put(res.getString("pod_rcvd_qty"));
+                            rowArray.put(currformat(res.getString("pod_netprice")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("tranByVendDateRange")) {
+                res = st.executeQuery(" select tr_id, tr_addrcode, tr_item, tr_type, tr_eff_date, tr_qty, " +
+                        " vd_name, it_desc " +
+                        " FROM  tran_mstr inner join item_mstr on it_item = tr_item " +
+                        " inner join vd_mstr on vd_addr = tr_addrcode " +
+                        " where tr_eff_date >= " + "'" + keys[3] + "'" + 
+                        " and tr_eff_date <= " + "'" + keys[4] + "'" +
+                        " and tr_addrcode >= " + "'" + keys[1] + "'" +   
+                        " and tr_addrcode <= " + "'" + keys[2] + "'" +  
+                        " order by tr_id desc ;");                 
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("tr_id"));
+                            rowArray.put(res.getString("tr_addrcode"));
+                            rowArray.put(res.getString("vd_name"));
+                            rowArray.put(res.getString("tr_item"));
+                            rowArray.put(res.getString("it_desc"));
+                            rowArray.put(res.getString("tr_type"));
+                            rowArray.put(res.getString("tr_eff_date"));
+                            rowArray.put(res.getString("tr_qty"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("poByItemDateVendorRange")) {
+                res = st.executeQuery(" select pod_nbr, vd_addr, pod_item, it_desc, pod_ord_date, pod_ord_qty, pod_rcvd_qty, pod_netprice, " +
+                        " vd_name " +
+                        " FROM  pod_mstr inner join po_mstr on pod_nbr = po_nbr " +
+                        " inner join vd_mstr on vd_addr = po_vend " +
+                        " inner join item_mstr on it_item = pod_item " +
+                        " where pod_ord_date >= " + "'" + keys[3] + "'" + 
+                        " and pod_ord_date <= " + "'" + keys[4] + "'" +
+                        " and vd_addr >= " + "'" + keys[1] + "'" +   
+                        " and vd_addr <= " + "'" + keys[2] + "'" + 
+                        " and pod_item >= " + "'" + keys[5] + "'" +   
+                        " and pod_item <= " + "'" + keys[6] + "'" +         
+                        " order by pod_nbr desc ;");                
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("pod_nbr"));
+                            rowArray.put(res.getString("vd_name"));
+                            rowArray.put(res.getString("pod_item"));
+                            rowArray.put(res.getString("it_desc"));
+                            rowArray.put(res.getString("pod_ord_date"));
+                            rowArray.put(res.getString("pod_ord_qty"));
+                            rowArray.put(res.getString("pod_rcvd_qty"));
+                            rowArray.put(currformat(res.getString("pod_netprice")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("receiversByItemDateVendorRange")) {
+                res = st.executeQuery(" select rvd_id, vd_addr, rvd_item, rvd_po, it_desc, rvd_date, rvd_qty, rvd_netprice, " +
+                        " vd_name " +
+                        " FROM  recv_det inner join recv_mstr on rvd_id = rv_id " +
+                        " inner join vd_mstr on vd_addr = rv_vend " +
+                        " inner join item_mstr on it_item = rvd_item " +
+                        " where rvd_date >= " + "'" + keys[3] + "'" + 
+                        " and rvd_date <= " + "'" + keys[4] + "'" +
+                        " and vd_addr >= " + "'" + keys[1] + "'" +   
+                        " and vd_addr <= " + "'" + keys[2] + "'" + 
+                        " and rvd_item >= " + "'" + keys[5] + "'" +   
+                        " and rvd_item <= " + "'" + keys[6] + "'" +         
+                        " order by rvd_id desc ;");              
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("rvd_id"));
+                            rowArray.put(res.getString("vd_name"));
+                            rowArray.put(res.getString("rvd_item"));
+                            rowArray.put(res.getString("it_desc"));
+                            rowArray.put(res.getString("rvd_po"));
+                            rowArray.put(res.getString("rvd_date"));
+                            rowArray.put(res.getString("rvd_qty"));
+                            rowArray.put(currformat(res.getString("rvd_netprice")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
     public static String[] validatePODetail(String key, String vend, String item, String qty, String site, String uom, String curr) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<>();
