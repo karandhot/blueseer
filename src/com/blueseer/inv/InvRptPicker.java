@@ -1377,8 +1377,6 @@ public class InvRptPicker extends javax.swing.JPanel {
             for (Object[] rowData : roData) { 
                 roData[i][4] = bsParseDouble(roData[i][4].toString());
                 roData[i][5] = bsParseDouble(roData[i][5].toString());
-                roData[i][6] = bsParseDouble(roData[i][6].toString());
-                roData[i][7] = bsParseDouble(roData[i][7].toString());
                 mymodel.addRow(rowData);
                 i++;
             }
@@ -1482,9 +1480,7 @@ public class InvRptPicker extends javax.swing.JPanel {
             int i = 0;
             for (Object[] rowData : roData) { 
                 roData[i][4] = bsParseDouble(roData[i][4].toString());
-                roData[i][5] = bsParseDouble(roData[i][5].toString());
-                roData[i][6] = bsParseDouble(roData[i][6].toString());
-                roData[i][7] = bsParseDouble(roData[i][7].toString());
+                roData[i][5] = bsParseDouble(roData[i][5].toString());                
                 mymodel.addRow(rowData);
                 i++;
             }
