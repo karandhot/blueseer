@@ -1303,6 +1303,10 @@ public class InvRptPicker extends javax.swing.JPanel {
                ddkey1.addItem(s);
                ddkey2.addItem(s);
            }
+           if (ddkey1.getItemCount() == 0) {
+               ddkey1.insertItemAt("", 0);
+               ddkey2.insertItemAt("", 0);
+           }
            ddkey1.setSelectedIndex(0);
            ddkey2.setSelectedIndex(ddkey2.getItemCount() - 1);
            showPanels(new String[]{"dd"});
@@ -1404,6 +1408,10 @@ public class InvRptPicker extends javax.swing.JPanel {
            for (String s : locations) {
                ddkey1.addItem(s);
                ddkey2.addItem(s);
+           }
+           if (ddkey1.getItemCount() == 0) {
+               ddkey1.insertItemAt("", 0);
+               ddkey2.insertItemAt("", 0);
            }
            ddkey1.setSelectedIndex(0);
            ddkey2.setSelectedIndex(ddkey2.getItemCount() - 1);

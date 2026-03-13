@@ -3301,7 +3301,7 @@ public class invData {
                 }
                 
                 if (keys[0].equals("itemValuationRange")) {
-                res = st.executeQuery("select it_item, it_desc, it_prodline, it_code, itc_total, " + 
+                res = st.executeQuery("select it_item, it_desc, it_prodline, it_code, coalesce(itc_total,0) as itctotal, " + 
                        "case when in_qoh is null then '0' else in_qoh end as qoh " +
                        " from item_mstr left outer join in_mstr on in_item = it_item " +
                        " left outer join item_cost on itc_item = it_item and itc_set = 'standard' and itc_site = " + "'" + keys[3] + "'" +
@@ -3310,7 +3310,7 @@ public class invData {
                        + ";" );
                     double totalval = 0;
                     while (res.next()) {
-                        totalval = (res.getDouble("qoh") * res.getDouble("itc_total"));
+                        totalval = (res.getDouble("qoh") * res.getDouble("itctotal"));
                     
                             i++;
                             JSONArray rowArray = new JSONArray(); 
@@ -3320,7 +3320,7 @@ public class invData {
                             rowArray.put(res.getString("it_code"));
                             rowArray.put(res.getString("it_prodline"));
                             rowArray.put(res.getString("qoh"));
-                            rowArray.put(res.getString("itc_total"));
+                            rowArray.put(res.getString("itctotal"));
                             rowArray.put(totalval);
                             jsonarray.put(rowArray);
 
