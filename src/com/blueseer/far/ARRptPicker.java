@@ -32,6 +32,7 @@ import com.blueseer.inv.*;
 import com.blueseer.sch.*;
 import com.blueseer.inv.*;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
@@ -50,8 +51,14 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import com.blueseer.pur.purData;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -72,6 +79,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -99,9 +107,17 @@ public class ARRptPicker extends javax.swing.JPanel {
     per each sub report.   I'm all ears if have another option.  :)
     
     */
+    String func = null;
+    boolean isLoad = false;
+    boolean canUpdate = false;
+    boolean isAutoPost = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String defaultCC = "";
     Map<String, String> jaspermap = new HashMap<String, String>();
     String jasperGroup = "ARRptGroup";
-    boolean isLoad = false;
+    
     
      class renderer1 extends DefaultTableCellRenderer {
         
@@ -161,6 +177,65 @@ public class ARRptPicker extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }            
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
     
     class ButtonRenderer extends JButton implements TableCellRenderer {
 
@@ -226,18 +301,23 @@ public class ARRptPicker extends javax.swing.JPanel {
        }
     }
     
+    public void initvars(String[] arg) {     
+     executeTask("dataInit", null);
+    }
+   
+    public String[] getInitialization() {
+        initDataSets  = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "jaspergroups=" + jasperGroup);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
     
-    public void initvars(String[] arg) {
+    public void done_Initialization() {
       isLoad = true;
       ddreport.removeAllItems();
       jaspermap.clear();
-      int k = 0;
-      ArrayList<String[]> list = OVData.getJasperByGroup(jasperGroup);
-      for (String[] x : list) { // list is string of desc, func, format
-              jaspermap.put(x[0], x[2]); // desc, format
-              ddreport.addItem(x[0]); // desc
-          k++;
-      }
       ddreport.insertItemAt("", 0);
       ddreport.setSelectedIndex(0);
       resetVariables();
@@ -248,9 +328,30 @@ public class ARRptPicker extends javax.swing.JPanel {
       buttonGroup1.add(rbactive);
       buttonGroup1.add(rbinactive);
       ((DefaultTableModel)tablereport.getModel()).setRowCount(0);
-     isLoad = false;
+       
+     
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("jaspergroups")) {
+              String[] z = s[1].split(",", -1);
+              jaspermap.put(z[0], z[2]); // desc, format
+              ddreport.addItem(z[0]); // desc 
+            }
+        }
+        
+        
+        
+       isLoad = false;
     }
-   
     
     
     /* misc methods */   
@@ -379,50 +480,36 @@ public class ARRptPicker extends javax.swing.JPanel {
                    getGlobalColumnTag("open"), 
                    getGlobalColumnTag("status")});
            
-           try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getFarRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromcust});
+        list.add(new String[]{"param2",tocust});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServFAR"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-              res = st.executeQuery("select ar_id, ar_cust, cm_name, ar_type, " +
-                               " ar_ref, ar_nbr, ar_effdate, ar_invdate, ar_duedate, ar_curr, ar_amt, ar_base_amt, ar_open_amt, " +
-                               " case when ar_status = 'c' then 'closed' else 'open' end as 'status', " +
-                               " ar_curr, ar_acct " +
-                               " from ar_mstr inner join cm_mstr on cm_code = ar_cust " +
-                               " where ar_cust >= " + "'" + fromcust + "'" +
-                               " and ar_cust <= " + "'" + tocust + "'" + ";");
-                while (res.next()) {
-                        mymodel.addRow(new Object[] {
-                            res.getString("ar_cust"),
-                            res.getString("cm_name"),
-                            res.getString("ar_type"),
-                            res.getString("ar_ref"),
-                            res.getString("ar_nbr"),
-                            res.getString("ar_effdate"),
-                            res.getString("ar_duedate"),
-                            res.getString("ar_curr"),
-                            BlueSeerUtils.currformat(res.getString("ar_amt")),
-                            BlueSeerUtils.currformat(res.getString("ar_open_amt")),
-                            res.getString("status")
-                        });
-                    }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = farData.getFarRptPickerData(new String[]{
+                func,
+                fromcust,
+                tocust
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                roData[i][9] = bsParseDouble(roData[i][9].toString());
+                mymodel.addRow(rowData);
+                i++;
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
+        }  
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -435,6 +522,8 @@ public class ARRptPicker extends javax.swing.JPanel {
                  }
                  tc.setCellRenderer(new ARRptPicker.renderer1());
              }
+            tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));  
+            tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));  
         } // else run report
                
     }
@@ -474,73 +563,39 @@ public class ARRptPicker extends javax.swing.JPanel {
                             getGlobalColumnTag("60daysold"), 
                             getGlobalColumnTag("90daysold"), 
                             getGlobalColumnTag("90+daysold")});
-           try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getFarRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromcust});
+        list.add(new String[]{"param2",tocust});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServFAR"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-                
-                
-            ArrayList custs = cusData.getcustmstrlistBetween(fromcust, tocust);
-                 
-            for (int j = 0; j < custs.size(); j++) {    
-                
-              if (bsmf.MainFrame.dbtype.equals("sqlite")) {
-                     res = st.executeQuery("SELECT ar_cust, cm_name, " +
-                        " sum(case when ar_duedate > date() then ar_open_amt else 0 end) as '0', " +
-                        " sum(case when ar_duedate <= date() and ar_duedate > date() - date(date(), '+30 day') then ar_open_amt else 0 end) as '30', " +
-                        " sum(case when ar_duedate <= date() - date(date(), '+30 day') and ar_duedate > date(date(), '+60 day') then ar_open_amt else 0 end) as '60', " +
-                        " sum(case when ar_duedate <= date() - date(date(), '+60 day') and ar_duedate > date(date(), '+90 day') then ar_open_amt else 0 end) as '90', " +
-                        " sum(case when ar_duedate <= date() - date(date(), '+90 day') then ar_open_amt else 0 end) as '90p' " +
-                        " FROM  ar_mstr " +
-                        " inner join cm_mstr on cm_code = ar_cust " +
-                        " where ar_cust = " + "'" + custs.get(j) + "'" + 
-                        " AND ar_status = 'o' " +
-                         " group by ar_cust, cm_name order by ar_cust;");
-                 }  else {
-                 res = st.executeQuery("SELECT ar_cust, cm_name, " +
-                        " sum(case when ar_duedate > curdate() then ar_open_amt else 0 end) as '0', " +
-                        " sum(case when ar_duedate <= curdate() and ar_duedate > curdate() - interval 30 day then ar_open_amt else 0 end) as '30', " +
-                        " sum(case when ar_duedate <= curdate() - interval 30 day and ar_duedate > curdate() - interval 60 day then ar_open_amt else 0 end) as '60', " +
-                        " sum(case when ar_duedate <= curdate() - interval 60 day and ar_duedate > curdate() - interval 90 day then ar_open_amt else 0 end) as '90', " +
-                        " sum(case when ar_duedate <= curdate() - interval 90 day then ar_open_amt else 0 end) as '90p' " +
-                        " FROM  ar_mstr " +
-                        " inner join cm_mstr on cm_code = ar_cust " +
-                         " where ar_cust = " + "'" + custs.get(j) + "'" + 
-                        " AND ar_status = 'o' " +
-                         " group by ar_cust, cm_name order by ar_cust;");
-                 }
-                while (res.next()) {
-                        mymodel.addRow(new Object[] {
-                                res.getString("ar_cust"),
-                                res.getString("cm_name"),
-                                BlueSeerUtils.currformat(res.getString("0")),
-                                BlueSeerUtils.currformat(res.getString("30")),
-                                BlueSeerUtils.currformat(res.getString("60")),
-                                BlueSeerUtils.currformat(res.getString("90")),
-                                BlueSeerUtils.currformat(res.getString("90p"))
-                        });
-                    }
-           
-            }
-            
-            }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
-            }
+        } else {
+            jsonString = farData.getFarRptPickerData(new String[]{
+                func,
+                fromcust,
+                tocust
+            });
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][2] = bsParseDouble(roData[i][2].toString());
+                roData[i][3] = bsParseDouble(roData[i][3].toString());
+                roData[i][4] = bsParseDouble(roData[i][4].toString());
+                roData[i][5] = bsParseDouble(roData[i][5].toString());
+                roData[i][6] = bsParseDouble(roData[i][6].toString());
+                mymodel.addRow(rowData);
+                i++;
+            }
+        }  
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -553,6 +608,12 @@ public class ARRptPicker extends javax.swing.JPanel {
                  }
                  tc.setCellRenderer(new ARRptPicker.renderer1());
              }
+            tablereport.getColumnModel().getColumn(2).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));  
+            tablereport.getColumnModel().getColumn(3).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+            tablereport.getColumnModel().getColumn(4).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));  
+            tablereport.getColumnModel().getColumn(5).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+            tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));  
+            
         } // else run report
                
     }
@@ -597,78 +658,39 @@ public class ARRptPicker extends javax.swing.JPanel {
                             getGlobalColumnTag("90daysold"), 
                             getGlobalColumnTag("90+daysold")});
            
-           try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getFarRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromcust});
+        list.add(new String[]{"param2",tocust});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServFAR"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-                
-                
-            ArrayList custs = cusData.getcustmstrlistBetween(fromcust, tocust);
-                 
-            for (int j = 0; j < custs.size(); j++) {    
-                
-               if (bsmf.MainFrame.dbtype.equals("sqlite")) {
-                 res = st.executeQuery("SELECT cm_name, ar_cust, ar_rmks, ar_ref, ar_type, ar_nbr, ar_effdate, ar_duedate, " +
-                        " case when ar_duedate > date() then ar_open_amt else 0 end as '0', " +
-                        " case when ar_duedate <= date() and ar_duedate > date() - date(date(), '+30 day') then ar_open_amt else 0 end as '30', " +
-                        " case when ar_duedate <= date() - date(date(), '+30 day') and ar_duedate > date(date(), '+60 day') then ar_open_amt else 0 end as '60', " +
-                        " case when ar_duedate <= date() - date(date(), '+60 day') and ar_duedate > date(date(), '+90 day') then ar_open_amt else 0 end as '90', " +
-                        " case when ar_duedate <= date() - date(date(), '+90 day') then ar_open_amt else 0 end as '90p' " +
-                        " FROM  ar_mstr " +
-                        " inner join cm_mstr on cm_code = ar_cust " +
-                        " where ar_cust = " + "'" + custs.get(j) + "'" + 
-                        " AND ar_status = 'o' " +
-                         " order by ar_cust, ar_nbr ;"); 
-                 } else {
-                 res = st.executeQuery("SELECT cm_name, ar_cust, ar_rmks, ar_ref, ar_type, ar_nbr, ar_effdate, ar_duedate, " +
-                        " case when ar_duedate > curdate() then ar_open_amt else 0 end as '0', " +
-                        " case when ar_duedate <= curdate() and ar_duedate > curdate() - interval 30 day then ar_open_amt else 0 end as '30', " +
-                        " case when ar_duedate <= curdate() - interval 30 day and ar_duedate > curdate() - interval 60 day then ar_open_amt else 0 end as '60', " +
-                        " case when ar_duedate <= curdate() - interval 60 day and ar_duedate > curdate() - interval 90 day then ar_open_amt else 0 end as '90', " +
-                        " case when ar_duedate <= curdate() - interval 90 day then ar_open_amt else 0 end as '90p' " +
-                        " FROM  ar_mstr " +
-                        " inner join cm_mstr on cm_code = ar_cust " + 
-                        " where ar_cust = " + "'" + custs.get(j) + "'" + 
-                        " AND ar_status = 'o' " +
-                         " order by ar_cust, ar_nbr ;");     
-                 }
-                while (res.next()) {
-                        mymodel.addRow(new Object[] {
-                            
-                            res.getString("ar_cust"),
-                            res.getString("cm_name"),
-                            res.getString("ar_nbr"),
-                            res.getString("ar_ref"),
-                            res.getString("ar_effdate"),
-                            res.getString("ar_duedate"),
-                                BlueSeerUtils.currformat(res.getString("0")),
-                                BlueSeerUtils.currformat(res.getString("30")),
-                                BlueSeerUtils.currformat(res.getString("60")),
-                                BlueSeerUtils.currformat(res.getString("90")),
-                                BlueSeerUtils.currformat(res.getString("90p"))
-                        });
-                    }
-           
-            }
-            
-            }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
-            }
+        } else {
+            jsonString = farData.getFarRptPickerData(new String[]{
+                func,
+                fromcust,
+                tocust
+            });
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][6] = bsParseDouble(roData[i][6].toString());
+                roData[i][7] = bsParseDouble(roData[i][7].toString());
+                roData[i][8] = bsParseDouble(roData[i][8].toString());
+                roData[i][9] = bsParseDouble(roData[i][9].toString());
+                roData[i][10] = bsParseDouble(roData[i][10].toString());
+                mymodel.addRow(rowData);
+                i++;
+            }
+        }  
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -681,6 +703,12 @@ public class ARRptPicker extends javax.swing.JPanel {
                  }
                  tc.setCellRenderer(new ARRptPicker.renderer1());
              }
+            tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));  
+            tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+            tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));  
+            tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+            tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));  
+              
         } // else run report
                
     }
@@ -735,59 +763,36 @@ public class ARRptPicker extends javax.swing.JPanel {
                             getGlobalColumnTag("invoiceamt"), 
                             getGlobalColumnTag("checkamt")});
            
-           try{
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getFarRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",fromcust});
+        list.add(new String[]{"param2",tocust});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServFAR"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-                
-                
-            ArrayList custs = cusData.getcustmstrlistBetween(fromcust, tocust);
-                 
-            for (int j = 0; j < custs.size(); j++) {    
-                
-              res = st.executeQuery("SELECT a.ar_cust, cm_name, b.ar_ref as 'b.ar_ref', b.ar_duedate as 'b.ar_duedate', a.ar_nbr, a.ar_ref, ard_ref, a.ar_type, a.ar_effdate, a.ar_amt, ard_amt " +
-                        " FROM  ar_mstr a " +
-                        " inner join ard_mstr on ard_nbr = a.ar_nbr " +
-                        " inner join ar_mstr b on b.ar_nbr = ard_ref and b.ar_type = 'I' " +
-                        " inner join cm_mstr on cm_code = a.ar_cust " +
-                        " where a.ar_cust = " + "'" + custs.get(j) + "'" + 
-                        " AND a.ar_type = 'P' " +
-                        " AND a.ar_effdate >= " + "'" + fromdate + "'" +
-                        " AND a.ar_effdate <= " + "'" + todate + "'" +
-                         " order by a.ar_effdate desc ;");        
-                while (res.next()) {
-                        mymodel.addRow(new Object[] {
-                            res.getString("ar_cust"),
-                            res.getString("cm_name"),
-                            res.getString("ard_ref"),
-                            res.getString("b.ar_ref"),
-                            res.getString("ar_type"),
-                            res.getString("ar_ref"),
-                            BlueSeerUtils.currformat(res.getString("ard_amt")),
-                            BlueSeerUtils.currformat(res.getString("ar_amt"))
-                        });
-                    }
-           
-            }
-            
-            }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
-            }
+        } else {
+            jsonString = farData.getFarRptPickerData(new String[]{
+                func,
+                fromcust,
+                tocust
+            });
         }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            int i = 0;
+            for (Object[] rowData : roData) {
+                roData[i][6] = bsParseDouble(roData[i][6].toString());
+                roData[i][7] = bsParseDouble(roData[i][7].toString());
+                mymodel.addRow(rowData);
+                i++;
+            }
+        }  
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -800,6 +805,9 @@ public class ARRptPicker extends javax.swing.JPanel {
                  }
                  tc.setCellRenderer(new ARRptPicker.renderer1());
              }
+            tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));  
+            tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+            
         } // else run report
                
     }
@@ -1200,7 +1208,7 @@ public class ARRptPicker extends javax.swing.JPanel {
     private void ddreportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddreportActionPerformed
       
        if (! isLoad)  { 
-       String func = OVData.getJasperFuncByTitle(jasperGroup, ddreport.getSelectedItem().toString());
+       func = OVData.getJasperFuncByTitle(jasperGroup, ddreport.getSelectedItem().toString());
        Method mymethod;
        ((DefaultTableModel)tablereport.getModel()).setRowCount(0);
        btprint.setEnabled(false);

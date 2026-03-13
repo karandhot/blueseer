@@ -910,6 +910,64 @@ public class fapData {
     }
      
     // misc
+    public static String getFapRptPickerData(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                if (keys[0].equals("poByOrdDateRange")) {
+                res = st.executeQuery(" select po_nbr, po_vend, vd_name, po_site, po_rmks, po_ord_date, po_due_date, po_status, " +
+                        " sum(pod_ord_qty  * pod_netprice) as 'total' " +
+                        " FROM  po_mstr inner join pod_mstr on pod_nbr = po_nbr " +
+                        " inner join vd_mstr on vd_addr = po_vend " +
+                        " where po_ord_date >= " + "'" + keys[1] + "'" + 
+                        " and po_ord_date <= " + "'" + keys[2] + "'" +
+                        " group by po_nbr, po_vend, vd_name, po_site, po_rmks, po_ord_date, po_due_date, po_status " +
+                        " order by po_nbr desc ;");                  
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("po_nbr"));
+                            rowArray.put(res.getString("po_vend"));
+                            rowArray.put(res.getString("vd_name"));
+                            rowArray.put(res.getString("po_rmks"));
+                            rowArray.put(res.getString("po_ord_date"));
+                            rowArray.put(res.getString("po_due_date"));
+                            rowArray.put(res.getString("po_status"));
+                            rowArray.put(currformat(res.getString("total")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
     public static ArrayList<String[]> getAPExpenseByVendor(String fromdate, String todate, String fromvend, String tovend, String site) {
     if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<>();

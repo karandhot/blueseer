@@ -30,6 +30,7 @@ import com.blueseer.fap.fapData;
 import static com.blueseer.fap.fapData.getAPVoucherSet;
 import com.blueseer.far.farData;
 import static com.blueseer.far.farData.getARMstrSet;
+import static com.blueseer.far.farData.getFarRptPickerData;
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import com.blueseer.ord.ordData;
 import static com.blueseer.ord.ordData.addUpdateORCtrl;
@@ -200,6 +201,20 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         
         case "getARAgingExport" : { 
         response.getWriter().print(farData.getARAgingExport(request.getHeader("param1"))); 
+        break;
+        }
+        
+        case "getFarRptPickerData" : {
+        String[] x = new String[]{
+               request.getHeader("func"),
+               request.getHeader("param1"), 
+               request.getHeader("param2"),
+               request.getHeader("param3"),
+               request.getHeader("param4"),
+               request.getHeader("param5"),
+               request.getHeader("param6")
+               };     
+        response.getWriter().print(getFarRptPickerData(x));  
         break;
         }
         

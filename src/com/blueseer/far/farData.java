@@ -38,6 +38,7 @@ import static com.blueseer.fgl.fglData._glEntryFromARPayment;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
@@ -633,6 +634,188 @@ public class farData {
     
     
     // misc functions
+    public static String getFarRptPickerData(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                if (keys[0].equals("AREntriesByCust")) {
+                res = st.executeQuery("select ar_id, ar_cust, cm_name, ar_type, " +
+                               " ar_ref, ar_nbr, ar_effdate, ar_invdate, ar_duedate, ar_curr, ar_amt, ar_base_amt, ar_open_amt, " +
+                               " case when ar_status = 'c' then 'closed' else 'open' end as 'status', " +
+                               " ar_curr, ar_acct " +
+                               " from ar_mstr inner join cm_mstr on cm_code = ar_cust " +
+                               " where ar_cust >= " + "'" + keys[1] + "'" +
+                               " and ar_cust <= " + "'" + keys[2] + "'" + ";");  
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put(res.getString("ar_cust"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("ar_type"));
+                            rowArray.put(res.getString("ar_ref"));
+                            rowArray.put(res.getString("ar_nbr"));
+                            rowArray.put(res.getString("ar_effdate"));
+                            rowArray.put(res.getString("ar_duedate"));
+                            rowArray.put(res.getString("ar_curr"));
+                            rowArray.put(currformat(res.getString("ar_amt")));
+                            rowArray.put(currformat(res.getString("ar_open_amt")));
+                            rowArray.put(res.getString("status"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+               
+                if (keys[0].equals("ARAgingByCust")) {
+                    ArrayList custs = cusData.getcustmstrlistBetween(keys[1], keys[2]);
+                    for (int j = 0; j < custs.size(); j++) {    
+
+                            if (bsmf.MainFrame.dbtype.equals("sqlite")) {
+                               res = st.executeQuery("SELECT ar_cust, cm_name, " +
+                                  " sum(case when ar_duedate > date() then ar_open_amt else 0 end) as '0', " +
+                                  " sum(case when ar_duedate <= date() and ar_duedate > date() - date(date(), '+30 day') then ar_open_amt else 0 end) as '30', " +
+                                  " sum(case when ar_duedate <= date() - date(date(), '+30 day') and ar_duedate > date(date(), '+60 day') then ar_open_amt else 0 end) as '60', " +
+                                  " sum(case when ar_duedate <= date() - date(date(), '+60 day') and ar_duedate > date(date(), '+90 day') then ar_open_amt else 0 end) as '90', " +
+                                  " sum(case when ar_duedate <= date() - date(date(), '+90 day') then ar_open_amt else 0 end) as '90p' " +
+                                  " FROM  ar_mstr " +
+                                  " inner join cm_mstr on cm_code = ar_cust " +
+                                  " where ar_cust = " + "'" + custs.get(j) + "'" + 
+                                  " AND ar_status = 'o' " +
+                                   " group by ar_cust, cm_name order by ar_cust;");
+                            }  else {
+                            res = st.executeQuery("SELECT ar_cust, cm_name, " +
+                                  " sum(case when ar_duedate > curdate() then ar_open_amt else 0 end) as '0', " +
+                                  " sum(case when ar_duedate <= curdate() and ar_duedate > curdate() - interval 30 day then ar_open_amt else 0 end) as '30', " +
+                                  " sum(case when ar_duedate <= curdate() - interval 30 day and ar_duedate > curdate() - interval 60 day then ar_open_amt else 0 end) as '60', " +
+                                  " sum(case when ar_duedate <= curdate() - interval 60 day and ar_duedate > curdate() - interval 90 day then ar_open_amt else 0 end) as '90', " +
+                                  " sum(case when ar_duedate <= curdate() - interval 90 day then ar_open_amt else 0 end) as '90p' " +
+                                  " FROM  ar_mstr " +
+                                  " inner join cm_mstr on cm_code = ar_cust " +
+                                   " where ar_cust = " + "'" + custs.get(j) + "'" + 
+                                  " AND ar_status = 'o' " +
+                                   " group by ar_cust, cm_name order by ar_cust;");
+                            }
+                            while (res.next()) {
+                                  i++;
+                                  JSONArray rowArray = new JSONArray(); 
+                                  rowArray.put(res.getString("ar_cust"));
+                                  rowArray.put(res.getString("cm_name"));
+                                  rowArray.put(currformat(res.getString("0")));
+                                  rowArray.put(currformat(res.getString("30")));
+                                  rowArray.put(currformat(res.getString("60")));
+                                  rowArray.put(currformat(res.getString("90")));
+                                  rowArray.put(currformat(res.getString("90p")));                           
+                                  jsonarray.put(rowArray);
+                            }
+                    }
+                }
+               
+                if (keys[0].equals("ARAgingDetailByCust")) {
+                    ArrayList custs = cusData.getcustmstrlistBetween(keys[1], keys[2]);
+                    for (int j = 0; j < custs.size(); j++) {    
+                
+                        if (bsmf.MainFrame.dbtype.equals("sqlite")) {
+                          res = st.executeQuery("SELECT cm_name, ar_cust, ar_rmks, ar_ref, ar_type, ar_nbr, ar_effdate, ar_duedate, " +
+                                 " case when ar_duedate > date() then ar_open_amt else 0 end as '0', " +
+                                 " case when ar_duedate <= date() and ar_duedate > date() - date(date(), '+30 day') then ar_open_amt else 0 end as '30', " +
+                                 " case when ar_duedate <= date() - date(date(), '+30 day') and ar_duedate > date(date(), '+60 day') then ar_open_amt else 0 end as '60', " +
+                                 " case when ar_duedate <= date() - date(date(), '+60 day') and ar_duedate > date(date(), '+90 day') then ar_open_amt else 0 end as '90', " +
+                                 " case when ar_duedate <= date() - date(date(), '+90 day') then ar_open_amt else 0 end as '90p' " +
+                                 " FROM  ar_mstr " +
+                                 " inner join cm_mstr on cm_code = ar_cust " +
+                                 " where ar_cust = " + "'" + custs.get(j) + "'" + 
+                                 " AND ar_status = 'o' " +
+                                  " order by ar_cust, ar_nbr ;"); 
+                          } else {
+                          res = st.executeQuery("SELECT cm_name, ar_cust, ar_rmks, ar_ref, ar_type, ar_nbr, ar_effdate, ar_duedate, " +
+                                 " case when ar_duedate > curdate() then ar_open_amt else 0 end as '0', " +
+                                 " case when ar_duedate <= curdate() and ar_duedate > curdate() - interval 30 day then ar_open_amt else 0 end as '30', " +
+                                 " case when ar_duedate <= curdate() - interval 30 day and ar_duedate > curdate() - interval 60 day then ar_open_amt else 0 end as '60', " +
+                                 " case when ar_duedate <= curdate() - interval 60 day and ar_duedate > curdate() - interval 90 day then ar_open_amt else 0 end as '90', " +
+                                 " case when ar_duedate <= curdate() - interval 90 day then ar_open_amt else 0 end as '90p' " +
+                                 " FROM  ar_mstr " +
+                                 " inner join cm_mstr on cm_code = ar_cust " + 
+                                 " where ar_cust = " + "'" + custs.get(j) + "'" + 
+                                 " AND ar_status = 'o' " +
+                                  " order by ar_cust, ar_nbr ;");     
+                          }
+                         while (res.next()) {
+                                 i++;
+                                  JSONArray rowArray = new JSONArray(); 
+                                  rowArray.put(res.getString("ar_cust"));
+                                  rowArray.put(res.getString("cm_name"));
+                                  rowArray.put(res.getString("ar_nbr"));
+                                  rowArray.put(res.getString("ar_ref"));
+                                  rowArray.put(res.getString("ar_effdate"));
+                                  rowArray.put(res.getString("ar_duedate"));
+                                  rowArray.put(currformat(res.getString("0")));
+                                  rowArray.put(currformat(res.getString("30")));
+                                  rowArray.put(currformat(res.getString("60")));
+                                  rowArray.put(currformat(res.getString("90")));
+                                  rowArray.put(currformat(res.getString("90p")));                           
+                                  jsonarray.put(rowArray);
+                             }
+           
+                    }
+                }
+               
+                if (keys[0].equals("ARPaymentsByCustDate")) {
+                    ArrayList custs = cusData.getcustmstrlistBetween(keys[1], keys[2]);
+                    for (int j = 0; j < custs.size(); j++) {    
+
+                        res = st.executeQuery("SELECT a.ar_cust, cm_name, b.ar_ref as 'b.ar_ref', b.ar_duedate as 'b.ar_duedate', a.ar_nbr, a.ar_ref, ard_ref, a.ar_type, a.ar_effdate, a.ar_amt, ard_amt " +
+                        " FROM  ar_mstr a " +
+                        " inner join ard_mstr on ard_nbr = a.ar_nbr " +
+                        " inner join ar_mstr b on b.ar_nbr = ard_ref and b.ar_type = 'I' " +
+                        " inner join cm_mstr on cm_code = a.ar_cust " +
+                        " where a.ar_cust = " + "'" + custs.get(j) + "'" + 
+                        " AND a.ar_type = 'P' " +
+                        " AND a.ar_effdate >= " + "'" + keys[1] + "'" +
+                        " AND a.ar_effdate <= " + "'" + keys[2] + "'" +
+                         " order by a.ar_effdate desc ;");                        
+                            while (res.next()) {
+                                  i++;
+                                  JSONArray rowArray = new JSONArray(); 
+                                  rowArray.put(res.getString("ar_cust"));
+                                  rowArray.put(res.getString("cm_name"));
+                                  rowArray.put(res.getString("ard_ref"));
+                                  rowArray.put(res.getString("b.ar_ref"));
+                                  rowArray.put(res.getString("ar_type"));
+                                  rowArray.put(res.getString("ar_ref"));
+                                  rowArray.put(currformat(res.getString("ard_amt")));
+                                  rowArray.put(currformat(res.getString("ar_amt")));                         
+                                  jsonarray.put(rowArray);
+                            }
+                    }
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
     public static String getARAgingView(String[] keys) {
         JSONArray jsonarray = new JSONArray();
         try {

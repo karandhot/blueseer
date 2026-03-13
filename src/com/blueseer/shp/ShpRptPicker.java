@@ -1414,7 +1414,7 @@ public class ShpRptPicker extends javax.swing.JPanel {
     private void ddreportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddreportActionPerformed
       
        if (! isLoad)  { 
-       String func = OVData.getJasperFuncByTitle(jasperGroup, ddreport.getSelectedItem().toString());
+       func = OVData.getJasperFuncByTitle(jasperGroup, ddreport.getSelectedItem().toString());
        Method mymethod;
        ((DefaultTableModel)tablereport.getModel()).setRowCount(0);
        btprint.setEnabled(false);
