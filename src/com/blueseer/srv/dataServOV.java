@@ -82,6 +82,7 @@ import static com.blueseer.utl.OVData.getTaxAmtApplicableByItem;
 import static com.blueseer.utl.OVData.getTaxPercentElementsApplicableByItem;
 import static com.blueseer.utl.OVData.getTermsResults;
 import static com.blueseer.utl.OVData.getUsersOfMenusList;
+import static com.blueseer.utl.OVData.getWeekNbrByDate;
 import static com.blueseer.utl.OVData.getmenutree;
 import static com.blueseer.utl.OVData.getpsmstrcompSerialized;
 import static com.blueseer.utl.OVData.getzerolevelpsmstr;
@@ -434,6 +435,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;    
         }
         
+        case "getWeekNbrByDate" :        
+            response.getWriter().print(ArrayListStringToJson(getWeekNbrByDate(request.getHeader("param1"), request.getHeader("param2"))));
+            break; 
+            
         case "getzerolevelpsmstr" :        
             response.getWriter().print(ArrayListStringToJson(getzerolevelpsmstr()));
             break;
