@@ -493,399 +493,301 @@ String symbol = "";
      
      // finance
     public void piechart_expensebyaccount() {
-         try {
-         cleanUpOldChartFile();
-         ChartPanel.setVisible(true);
-            Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd"); 
-                res = st.executeQuery("select glh_acct, ac_desc, sum(glh_amt) as 'sum' from gl_hist inner join ac_mstr on ac_id = glh_acct " +
-                        " where glh_effdate >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                        " AND glh_effdate <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                        " AND ac_type = 'E' " +
-                        " group by glh_acct, ac_desc order by sum desc;");
-             
-                DefaultPieDataset dataset = new DefaultPieDataset();
-               
-                String acct = "";
-                double total = 0.00;
-                double displayed = 0.00;
-                int i = 0;
-                while (res.next()) {
-                    i++;
-                    if (res.getString("glh_acct") == null || res.getString("glh_acct").isEmpty()) {
-                      acct = "Unassigned";
-                    } else {
-                      acct = res.getString("ac_desc");   
-                    }
-                    total += res.getDouble("sum");
-                    Double amt = res.getDouble("sum");
-                    if (i <= Integer.valueOf(ddlimit.getSelectedItem().toString())) {
-                       displayed += res.getDouble("sum"); 
-                       dataset.setValue(acct, amt);
-                    }
-                }
-                // other
-                if (total > displayed) {
-                    dataset.setValue("other", (total - displayed));
-                }
-                JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5000), dataset, true, true, false);
-                PiePlot plot = (PiePlot) chart.getPlot();
-                PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
-                plot.setLabelGenerator(gen);
-
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-       
-                } catch (SQLException s) {
-                  MainFrame.bslog(s);
-                } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }
-       
-    public void piechart_incomebyaccountcc() {
-         try {
-         cleanUpOldChartFile();
-         ChartPanel.setVisible(true);
-            Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd"); 
-                res = st.executeQuery("select glh_acct, glh_cc,  sum(glh_amt) as 'sum' from gl_hist inner join ac_mstr on ac_id = glh_acct " +
-                        " where glh_effdate >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                        " AND glh_effdate <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                        " AND ac_type = 'I' " +
-                        " group by glh_acct, glh_cc order by sum desc;");
-             
-                DefaultPieDataset dataset = new DefaultPieDataset();
-               
-                String acct = "";
-                double total = 0.00;
-                double abssum = 0.00;
-                double displayed = 0.00;
-                int i = 0;
-                while (res.next()) {
-                    i++;
-                    if (res.getDouble("sum") < 0) {
-                        abssum = -1 * res.getDouble("sum");
-                    } else {
-                        abssum = res.getDouble("sum");
-                    }
-                    
-                    if (res.getString("glh_acct") == null || res.getString("glh_acct").isEmpty()) {
-                      acct = "Unassigned";
-                    } else {
-                      acct = res.getString("glh_acct") + "-" + res.getString("glh_cc");   
-                    }
-                    total += abssum;
-                    Double amt = abssum;
-                    if (i <= Integer.valueOf(ddlimit.getSelectedItem().toString())) {
-                       displayed += abssum; 
-                       dataset.setValue(acct, amt);
-                    }
-                }
-                
-                // other
-                if (total > displayed) {
-                    dataset.setValue("other", (total - displayed));
-                }
-                
-                JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5001), dataset, true, true, false);
-                PiePlot plot = (PiePlot) chart.getPlot();
-               PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
-                plot.setLabelGenerator(gen);
-
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-
-              } catch (SQLException s) {
-                  MainFrame.bslog(s);
-            } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }
-    
-    public void piechart_profitandloss() {
-        
+      
+        cleanUpOldChartFile();
+        ChartPanel.setVisible(true);
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getChartRptPickerData"});
+        list.add(new String[]{"func","piechart_expensebyaccount"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
         try {
-         cleanUpOldChartFile();
-         ChartPanel.setVisible(true);
-            Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
         } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "piechart_expensebyaccount",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
         }
-            Statement st = con.createStatement();
-            ResultSet res = null;
+        Object[][] roData = jsonToData(jsonString);
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        double total = 0.00;
+        double displayed = 0.00;
+        int i = 0;
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                total += bsParseDouble(roData1[1].toString());
+                Double amt = bsParseDouble(roData1[1].toString());
+                if (i <= Integer.parseInt(ddlimit.getSelectedItem().toString())) {
+                   displayed += bsParseDouble(roData1[1].toString()); 
+                   dataset.setValue(roData1[0].toString(), amt);
+                }
+            }
+            // other
+            if (total > displayed) {
+                dataset.setValue("other", (total - displayed));
+            }
+        }  
+        JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5000), dataset, true, true, false);
+        PiePlot plot = (PiePlot) chart.getPlot();
+        PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
+        plot.setLabelGenerator(gen);
             try {
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd"); 
-                res = st.executeQuery("select ac_type, sum(glh_amt) as 'sum' from gl_hist inner join ac_mstr on ac_id = glh_acct " +
-                        " where glh_effdate >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                        " AND glh_effdate <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                        " AND (ac_type = 'E' or ac_type = 'I') " +
-                        " group by ac_type order by sum desc limit 10  ;");
-             
-                DefaultPieDataset dataset = new DefaultPieDataset();
-               
-                String type = "";
-                double amt = 0.00;
-                while (res.next()) {
-                    if (res.getString("ac_type").equals("E")) {
-                        type = "Expense";
-                    } else {
-                        type = "Income";
-                    }
-                    if (res.getDouble("sum") < 0.00) {
-                    amt = (-1 * res.getDouble("sum"));    
-                    } else {
-                    amt = res.getDouble("sum");    
-                    }
-                    dataset.setValue(type, amt);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
+                MainFrame.bslog(e);
                 }
-                JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5026), dataset, true, true, false);
-                PiePlot plot = (PiePlot) chart.getPlot();
-                PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
-                plot.setLabelGenerator(gen);
-
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-       
-                } catch (SQLException s) {
-                  MainFrame.bslog(s);
-                } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+ }
+        
+    public void piechart_incomebyaccountcc() {
+      
+        cleanUpOldChartFile();
+        ChartPanel.setVisible(true);
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getChartRptPickerData"});
+        list.add(new String[]{"func","piechart_incomebyaccountcc"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "piechart_incomebyaccountcc",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
         }
-    }
-         
+        Object[][] roData = jsonToData(jsonString);
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        double total = 0.00;
+        double displayed = 0.00;
+        int i = 0;
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                total += bsParseDouble(roData1[1].toString());
+                Double amt = bsParseDouble(roData1[1].toString());
+                if (i <= Integer.parseInt(ddlimit.getSelectedItem().toString())) {
+                   displayed += bsParseDouble(roData1[1].toString()); 
+                   dataset.setValue(roData1[0].toString(), amt);
+                }
+            }
+            // other
+            if (total > displayed) {
+                dataset.setValue("other", (total - displayed));
+            }
+        }  
+        JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5001), dataset, true, true, false);
+        PiePlot plot = (PiePlot) chart.getPlot();
+        PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
+        plot.setLabelGenerator(gen);
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
+                MainFrame.bslog(e);
+                }
+ }
+        
+    public void piechart_profitandloss() {
+      
+        cleanUpOldChartFile();
+        ChartPanel.setVisible(true);
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getChartRptPickerData"});
+        list.add(new String[]{"func","piechart_profitandloss"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "piechart_profitandloss",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
+        }
+        Object[][] roData = jsonToData(jsonString);
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        double total = 0.00;
+        double displayed = 0.00;
+        int i = 0;
+        String type = "";
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                total += bsParseDouble(roData1[1].toString());
+                Double amt = bsParseDouble(roData1[1].toString());
+                if (roData1[0].toString().equals("E")) {
+                        type = "Expense";
+                } else {
+                        type = "Income";
+                }
+                if (i <= Integer.parseInt(ddlimit.getSelectedItem().toString())) {
+                   displayed += bsParseDouble(roData1[1].toString()); 
+                   dataset.setValue(type, amt);
+                }
+            }
+            // other
+            if (total > displayed) {
+                dataset.setValue("other", (total - displayed));
+            }
+        }  
+        JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5026), dataset, true, true, false);
+        PiePlot plot = (PiePlot) chart.getPlot();
+        PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
+        plot.setLabelGenerator(gen);
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
+                MainFrame.bslog(e);
+                }
+ }
+    
+
     
      // shipments
     public void ShipPerWeekDollarsChart() {
+      
+        cleanUpOldChartFile();
+        ChartPanel.setVisible(true);
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getChartRptPickerData"});
+        list.add(new String[]{"func","ShipPerWeekDollarsChart"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
         try {
-                cleanUpOldChartFile();
-                ChartPanel.setVisible(true);
-                Connection con = null;
-                if (ds != null) {
-                  con = ds.getConnection();
-                } else {
-                  con = DriverManager.getConnection(url + db, user, pass);  
-                }
-                Statement st = con.createStatement();
-                ResultSet res = null;
-                DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-                try {
-                    DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                    int days = (int)( (dcTo.getDate().getTime() - dcFrom.getDate().getTime()) / (1000 * 60 * 60 * 24) );
-                    if (bsmf.MainFrame.dbtype.equals("sqlite")) {
-                   res = st.executeQuery(" select c.myweek as 'myweek', sum(shd_qty * shd_netprice) as 'sum' from ( select boo.mydate, strftime('%W',mydate) as 'myweek' " +
-                                         " from (select date(julianday( " + "'" + dfdate.format(dcFrom.getDate()) + "' )" +
-                                         ", '0 days', '+' || mock_nbr || ' days') as mydate " +
-                                         " from mock_mstr where mock_nbr <= " + "'" + days + "'" + " ) as boo group by myweek) as c " +
-                                         " left outer join ship_det on strftime('%W',shd_date) = c.myweek " +
-                                         " and shd_date >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                                         " and shd_date <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                                         //" where mock_nbr <= 10 " +
-                                         " group by c.myweek;");
-                    } else {
-                    res = st.executeQuery(" select c.myweek as 'myweek', sum(shd_qty * shd_netprice) as 'sum' from ( select boo.mydate, week(mydate) as 'myweek' " +
-                        " from (select date_add( " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                        ", interval mock_nbr day) as 'mydate' " +" from mock_mstr where mock_nbr <= " + "'" + days + "'" + " ) as boo group by myweek, boo.mydate) as c " +
-                        " left outer join ship_det on week(shd_date) = c.myweek " +
-                        " and shd_date >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                        " and shd_date <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                                         //" where mock_nbr <= 10 " +
-                                         " group by c.myweek order by c.myweek;");
-                    }
-                    
-                    
-                    while (res.next()) {
-                    dataset.setValue(res.getDouble("sum"), "Sum", res.getString("myweek"));
-                }
-                    
-                    JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5002), getGlobalColumnTag("week"), getGlobalColumnTag("totalsales") + " " + symbol, dataset, PlotOrientation.VERTICAL, true, true, false);
-                    CategoryItemRenderer renderer = new CustomRenderer();
-                    
-                    Font font = new Font("Dialog", Font.PLAIN, 30);
-                    CategoryPlot p = chart.getCategoryPlot();
-                    
-                    CategoryAxis axis = p.getDomainAxis();
-                     ValueAxis axisv = p.getRangeAxis();
-                     axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-                     axisv.setVerticalTickLabels(false);
-                     
-                     p.setRenderer(renderer);
-                    try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "ShipPerWeekDollarsChart",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
+        }
+        Object[][] roData = jsonToData(jsonString);
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                dataset.setValue(bsParseDouble(roData1[1].toString()), "Dollars", roData1[0].toString());
+            }
+        }  
+        JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5002), getGlobalColumnTag("week"), getGlobalColumnTag("total"), dataset, PlotOrientation.VERTICAL, true, true, false);
+        CategoryItemRenderer renderer = new CustomRenderer();
 
-                } catch (SQLException s) {
-                    MainFrame.bslog(s);
-                } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-            } catch (Exception e) {
+        Font font = new Font("Dialog", Font.PLAIN, 30);
+        CategoryPlot p = chart.getCategoryPlot();
+
+        CategoryAxis axis = p.getDomainAxis();
+         ValueAxis axisv = p.getRangeAxis();
+         axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+         axisv.setVerticalTickLabels(false);
+
+         p.setRenderer(renderer);
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
                 MainFrame.bslog(e);
-            } 
-     }
-       
+                }
+ }
+         
     public void ShipPerWeekUnitsChart() {
-        
+      
+        cleanUpOldChartFile();
+        ChartPanel.setVisible(true);
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getChartRptPickerData"});
+        list.add(new String[]{"func","ShipPerWeekUnitsChart"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
         try {
-                cleanUpOldChartFile();
-                ChartPanel.setVisible(true);
-                Connection con = null;
-                if (ds != null) {
-                  con = ds.getConnection();
-                } else {
-                  con = DriverManager.getConnection(url + db, user, pass);  
-                }
-                Statement st = con.createStatement();
-                ResultSet res = null;
-                int qty = 0;
-                double dol = 0;
-                try {
-                    DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                    int days = (int)( (dcTo.getDate().getTime() - dcFrom.getDate().getTime()) / (1000 * 60 * 60 * 24) );
-                    
-                    if (bsmf.MainFrame.dbtype.equals("sqlite")) {
-                      res = st.executeQuery(" select c.myweek as 'myweek', sum(shd_qty) as 'sum' from ( select boo.mydate, strftime('%W',mydate) as 'myweek' " +
-                         " from (select date(julianday( " + "'" + dfdate.format(dcFrom.getDate()) + "' )" +
-                         ", '0 days', '+' || mock_nbr || ' days') as mydate " +
-                         " from mock_mstr where mock_nbr <= " + "'" + days + "'" + " ) as boo group by myweek) as c " +
-                         " left outer join ship_det on strftime('%W',shd_date) = c.myweek " +
-                         " and shd_date >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                         " and shd_date <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                         //" where mock_nbr <= 10 " +
-                         " group by c.myweek;"); 
-                    } else {
-                     res = st.executeQuery(" select c.myweek as 'myweek', sum(shd_qty) as 'sum' from ( select boo.mydate, week(mydate) as 'myweek' " +
-                        " from (select date_add( " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                        ", interval mock_nbr day) as 'mydate' " +" from mock_mstr where mock_nbr <= " + "'" + days + "'" + " ) as boo group by myweek, boo.mydate) as c " +
-                         " left outer join ship_det on week(shd_date) = c.myweek " +
-                         " and shd_date >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                         " and shd_date <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                                         //" where mock_nbr <= 10 " +
-                                         " group by c.myweek order by c.myweek;"); 
-                    }
-                    
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "ShipPerWeekUnitsChart",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
+        }
+        Object[][] roData = jsonToData(jsonString);
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                dataset.setValue(bsParseDouble(roData1[1].toString()), "Sum", roData1[0].toString());
+            }
+        }  
+        JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5003), getGlobalColumnTag("week"), getGlobalColumnTag("total"), dataset, PlotOrientation.VERTICAL, true, true, false);
+        CategoryItemRenderer renderer = new CustomRenderer();
 
-                    DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-                   
-                    while (res.next()) {
-                        dataset.setValue(res.getDouble("sum"), "Sum", res.getString("myweek"));
-                    }
-                    JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5003), getGlobalColumnTag("week"), getGlobalColumnTag("totalqty"), dataset, PlotOrientation.VERTICAL, true, true, false);
-                    CategoryItemRenderer renderer = new CustomRenderer();
-                    
-                    Font font = new Font("Dialog", Font.PLAIN, 30);
-                    CategoryPlot p = chart.getCategoryPlot();
-                    
-                    CategoryAxis axis = p.getDomainAxis();
-                     ValueAxis axisv = p.getRangeAxis();
-                     axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-                     axisv.setVerticalTickLabels(false);
-                     
-                     p.setRenderer(renderer);
-                    try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
+        Font font = new Font("Dialog", Font.PLAIN, 30);
+        CategoryPlot p = chart.getCategoryPlot();
 
-                } catch (SQLException s) {
-                    MainFrame.bslog(s);
-                } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-            } catch (Exception e) {
+        CategoryAxis axis = p.getDomainAxis();
+         ValueAxis axisv = p.getRangeAxis();
+         axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+         axisv.setVerticalTickLabels(false);
+
+         p.setRenderer(renderer);
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
                 MainFrame.bslog(e);
-            } 
-     }
-     
+                }
+ }
+    
      
      // production
     public void ProdByWeekFGUnits() {
@@ -974,7 +876,7 @@ String symbol = "";
                 dataset.setValue(bsParseDouble(roData1[1].toString()), "Dollars", roData1[0].toString());
             }
         }  
-        JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5004), getGlobalColumnTag("week"), getGlobalColumnTag("total"), dataset, PlotOrientation.VERTICAL, true, true, false);
+        JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5005), getGlobalColumnTag("week"), getGlobalColumnTag("total"), dataset, PlotOrientation.VERTICAL, true, true, false);
         CategoryItemRenderer renderer = new CustomRenderer();
 
         Font font = new Font("Dialog", Font.PLAIN, 30);
@@ -1030,7 +932,7 @@ String symbol = "";
                 dataset.setValue(bsParseDouble(roData1[1].toString()), "Sum", roData1[0].toString());
             }
         }  
-        JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5004), getGlobalColumnTag("week"), getGlobalColumnTag("totalqty"), dataset, PlotOrientation.VERTICAL, true, true, false);
+        JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5006), getGlobalColumnTag("week"), getGlobalColumnTag("totalqty"), dataset, PlotOrientation.VERTICAL, true, true, false);
         CategoryItemRenderer renderer = new CustomRenderer();
 
         Font font = new Font("Dialog", Font.PLAIN, 30);
@@ -1085,7 +987,7 @@ String symbol = "";
                 dataset.setValue(bsParseDouble(roData1[1].toString()), "Dollars", roData1[0].toString());
             }
         }  
-        JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5004), getGlobalColumnTag("week"), getGlobalColumnTag("total"), dataset, PlotOrientation.VERTICAL, true, true, false);
+        JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5007), getGlobalColumnTag("week"), getGlobalColumnTag("total"), dataset, PlotOrientation.VERTICAL, true, true, false);
         CategoryItemRenderer renderer = new CustomRenderer();
 
         Font font = new Font("Dialog", Font.PLAIN, 30);
@@ -1172,1282 +1074,746 @@ String symbol = "";
    
     // inventory
     public void piechart_inventorybyitem() {
-        
-     try {
+      
         cleanUpOldChartFile();
         ChartPanel.setVisible(true);
-        Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-        Statement st = con.createStatement();
-            ResultSet res = null;
-
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getChartRptPickerData"});
+        list.add(new String[]{"func","piechart_inventorybyitem"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
         try {
-                  
-            res = st.executeQuery("select in_item, sum(in_qoh * itc_total) as 'sum' from in_mstr " +
-                    " left outer join item_cost on itc_item = in_item and itc_set = 'standard' " +
-                    " where in_qoh > 0 group by in_item order by sum desc;");
-
-            DefaultPieDataset dataset = new DefaultPieDataset();
-
-            String item = "";
-            double total = 0.00;
-            double displayed = 0.00;
-            int i = 0;
-            while (res.next()) {
-                i++;
-                if (res.getString("in_item") == null || res.getString("in_item").isEmpty()) {
-                  item = "Unassigned";
-                } else {
-                  item = res.getString("in_item");   
-                }
-                total += res.getDouble("sum");
-                Double amt = res.getDouble("sum");
-                if (i <= Integer.valueOf(ddlimit.getSelectedItem().toString())) {
-                   displayed += res.getDouble("sum"); 
-                   dataset.setValue(item, amt);
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "piechart_inventorybyitem",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
+        }
+        Object[][] roData = jsonToData(jsonString);
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        double total = 0.00;
+        double displayed = 0.00;
+        int i = 0;
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                total += bsParseDouble(roData1[1].toString());
+                Double amt = bsParseDouble(roData1[1].toString());
+                if (i <= Integer.parseInt(ddlimit.getSelectedItem().toString())) {
+                   displayed += bsParseDouble(roData1[1].toString()); 
+                   dataset.setValue(roData1[0].toString(), amt);
                 }
             }
             // other
             if (total > displayed) {
                 dataset.setValue("other", (total - displayed));
             }
-    JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5029) + " -- Total: " + currformatDoubleWithSymbol(total,defaultCurrency), dataset, true, true, false);
-    PiePlot plot = (PiePlot) chart.getPlot();
-
-    PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
-    plot.setLabelGenerator(gen);
-
-    
-    
-    try {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    myimage = ImageIO.read(bais);
-    ImageIcon myicon = new ImageIcon(myimage);
-    myicon.getImage().flush();   
-    chartlabel.setIcon(myicon);
-    bais.close();
-    baos.close();
-    } catch (IOException e) {
-    MainFrame.bslog(e);
-    }
-    
-    
-    
-    this.repaint();
-          } catch (SQLException s) {
-           MainFrame.bslog(s);
-        } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
+        }  
+        JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5029) + " -- Total: " + currformatDoubleWithSymbol(total,defaultCurrency), dataset, true, true, false);
+        PiePlot plot = (PiePlot) chart.getPlot();
+        PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
+        plot.setLabelGenerator(gen);
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
+                MainFrame.bslog(e);
                 }
-    } catch (Exception e) {
-        MainFrame.bslog(e);
-    }
-}
-
+ }
+     
     
      // sales
     public void piechart_salesbycust() {
-        
-     try {
+      
         cleanUpOldChartFile();
         ChartPanel.setVisible(true);
-        Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-        Statement st = con.createStatement();
-            ResultSet res = null;
-
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getChartRptPickerData"});
+        list.add(new String[]{"func","piechart_salesbycust"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
         try {
-            
-             DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");            
-            res = st.executeQuery("select ar_cust, cm_name, sum(ar_amt) as 'sum' from ar_mstr " +
-                    " inner join cm_mstr on cm_code = ar_cust " +
-                    " where ar_effdate >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                    " AND ar_effdate <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                    " AND ar_type = 'I' " +
-                    " group by ar_cust order by sum desc;");
-
-            DefaultPieDataset dataset = new DefaultPieDataset();
-
-            String acct = "";
-            double total = 0.00;
-            double displayed = 0.00;
-            int i = 0;
-            while (res.next()) {
-                i++;
-                if (res.getString("ar_cust") == null || res.getString("ar_cust").isEmpty()) {
-                  acct = "Unassigned";
-                } else {
-                  acct = res.getString("cm_name");   
-                }
-                total += res.getDouble("sum");
-                Double amt = res.getDouble("sum");
-                if (i <= Integer.valueOf(ddlimit.getSelectedItem().toString())) {
-                   displayed += res.getDouble("sum"); 
-                   dataset.setValue(acct, amt);
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "piechart_salesbycust",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
+        }
+        Object[][] roData = jsonToData(jsonString);
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        double total = 0.00;
+        double displayed = 0.00;
+        int i = 0;
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                total += bsParseDouble(roData1[1].toString());
+                Double amt = bsParseDouble(roData1[1].toString());
+                if (i <= Integer.parseInt(ddlimit.getSelectedItem().toString())) {
+                   displayed += bsParseDouble(roData1[1].toString()); 
+                   dataset.setValue(roData1[0].toString(), amt);
                 }
             }
             // other
             if (total > displayed) {
                 dataset.setValue("other", (total - displayed));
             }
-    JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5009) + " -- Total: " + currformatDoubleWithSymbol(total,defaultCurrency), dataset, true, true, false);
-    PiePlot plot = (PiePlot) chart.getPlot();
-
-    PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
-    plot.setLabelGenerator(gen);
-
-    
-    
-    try {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    myimage = ImageIO.read(bais);
-    ImageIcon myicon = new ImageIcon(myimage);
-    myicon.getImage().flush();   
-    chartlabel.setIcon(myicon);
-    bais.close();
-    baos.close();
-    } catch (IOException e) {
-    MainFrame.bslog(e);
-    }
-    
-    
-    
-    this.repaint();
-          } catch (SQLException s) {
-           MainFrame.bslog(s);
-        } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
+        }  
+        JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5009) + " -- Total: " + currformatDoubleWithSymbol(total,defaultCurrency), dataset, true, true, false);
+        PiePlot plot = (PiePlot) chart.getPlot();
+        PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
+        plot.setLabelGenerator(gen);
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
+                MainFrame.bslog(e);
                 }
-    } catch (Exception e) {
-        MainFrame.bslog(e);
-    }
-}
-
+ }
+        
     public void piechart_custAR() {
-     try {
+      
         cleanUpOldChartFile();
         ChartPanel.setVisible(true);
-        Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-        Statement st = con.createStatement();
-            ResultSet res = null;
-
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getChartRptPickerData"});
+        list.add(new String[]{"func","piechart_custAR"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
         try {
-            
-            DecimalFormat df = new DecimalFormat("$ #,##0.00", new DecimalFormatSymbols(Locale.getDefault()));
-             DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");            
-            res = st.executeQuery("select ar_cust, cm_name, sum(ar_amt) as 'sum' from ar_mstr " +
-                " inner join cm_mstr on cm_code = ar_cust " +    
-                " where ar_effdate >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                    " AND ar_effdate <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                    " AND ar_type = 'I' " +
-                    " AND ar_status = 'o' " + 
-                    " group by ar_cust order by sum desc ;");
-
-            DefaultPieDataset dataset = new DefaultPieDataset();
-
-            String acct = "";
-            double total = 0.00;
-            double displayed = 0.00;
-            int i = 0;
-            while (res.next()) {
-                i++;
-                if (res.getString("ar_cust") == null || res.getString("ar_cust").isEmpty()) {
-                  acct = "Unassigned";
-                } else {
-                  acct = res.getString("cm_name");   
-                }
-                total += res.getDouble("sum");
-                Double amt = res.getDouble("sum");
-                if (i <= Integer.valueOf(ddlimit.getSelectedItem().toString())) {
-                   displayed += res.getDouble("sum"); 
-                   dataset.setValue(acct, amt);
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "piechart_custAR",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
+        }
+        Object[][] roData = jsonToData(jsonString);
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        double total = 0.00;
+        double displayed = 0.00;
+        int i = 0;
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                total += bsParseDouble(roData1[1].toString());
+                Double amt = bsParseDouble(roData1[1].toString());
+                if (i <= Integer.parseInt(ddlimit.getSelectedItem().toString())) {
+                   displayed += bsParseDouble(roData1[1].toString()); 
+                   dataset.setValue(roData1[0].toString(), amt);
                 }
             }
             // other
             if (total > displayed) {
                 dataset.setValue("other", (total - displayed));
             }
-    JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5009) + " -- Total: " + currformatDoubleWithSymbol(total,defaultCurrency), dataset, true, true, false);
-    PiePlot plot = (PiePlot) chart.getPlot();
-   PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
-    plot.setLabelGenerator(gen);
-
-                    try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-          } catch (SQLException s) {
-            MainFrame.bslog(s);
-        } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
+        }  
+        JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5010) + " -- Total: " + currformatDoubleWithSymbol(total,defaultCurrency), dataset, true, true, false);
+        PiePlot plot = (PiePlot) chart.getPlot();
+        PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
+        plot.setLabelGenerator(gen);
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
+                MainFrame.bslog(e);
                 }
-    } catch (Exception e) {
-        MainFrame.bslog(e);
-    }
-}  
-        
+ }
+    
        // Clock 
     public void ClockChartByDept() {
-    try {
-        cleanUpOldChartFile();
+     cleanUpOldChartFile();
         ChartPanel.setVisible(true);
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","ClockChartByDept"});
+        list.add(new String[]{"func","DiscreteOrderPerWeekUnits"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-                ResultSet res = null;
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "ClockChartByDept",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
+        }
+        Object[][] roData = jsonToData(jsonString);
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                dataset.setValue(bsParseDouble(roData1[1].toString()), "Sum", roData1[0].toString());
+            }
+        }  
+        JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5011), getGlobalColumnTag("dept"), getGlobalColumnTag("totalqty"), dataset, PlotOrientation.VERTICAL, true, true, false);
+        CategoryItemRenderer renderer = new CustomRenderer();
 
+        Font font = new Font("Dialog", Font.PLAIN, 30);
+        CategoryPlot p = chart.getCategoryPlot();
+
+        CategoryAxis axis = p.getDomainAxis();
+         ValueAxis axisv = p.getRangeAxis();
+         axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+         axisv.setVerticalTickLabels(false);
+
+         p.setRenderer(renderer);
             try {
-                
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-               
-                   res = st.executeQuery("select dept_id as 'dept', sum(tothrs) as 'sum' from dept_mstr " + 
-                    " left outer join time_clock on dept = dept_id " +    
-                    " and indate >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                    " AND indate <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                    " group by dept_id order by dept_id  ;"); 
-               
-                
-
-                DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-                while (res.next()) {
-                    dataset.setValue(res.getDouble("sum"), "Sum", res.getString("dept"));
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
+                MainFrame.bslog(e);
                 }
-                JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5011), getGlobalColumnTag("dept"), getGlobalColumnTag("hours"), dataset, PlotOrientation.VERTICAL, true, true, false);
-                CategoryItemRenderer renderer = new CustomRenderer();
-
-                Font font = new Font("Dialog", Font.PLAIN, 30);
-                CategoryPlot p = chart.getCategoryPlot();
-
-                CategoryAxis axis = p.getDomainAxis();
-                 ValueAxis axisv = p.getRangeAxis();
-                 axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-                 axisv.setVerticalTickLabels(false);
-
-                 p.setRenderer(renderer);
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-            } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        } 
  }
-
+        
     public void ClockChartByCode() {
-    try {
-        cleanUpOldChartFile();
+     cleanUpOldChartFile();
         ChartPanel.setVisible(true);
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","ClockChartByCode"});
+        list.add(new String[]{"func","DiscreteOrderPerWeekUnits"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-                ResultSet res = null;
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "ClockChartByCode",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
+        }
+        Object[][] roData = jsonToData(jsonString);
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                dataset.setValue(bsParseDouble(roData1[1].toString()), "Sum", roData1[0].toString());
+            }
+        }  
+        JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5012), getGlobalColumnTag("code"), getGlobalColumnTag("totalqty"), dataset, PlotOrientation.VERTICAL, true, true, false);
+        CategoryItemRenderer renderer = new CustomRenderer();
 
+        Font font = new Font("Dialog", Font.PLAIN, 30);
+        CategoryPlot p = chart.getCategoryPlot();
+
+        CategoryAxis axis = p.getDomainAxis();
+         ValueAxis axisv = p.getRangeAxis();
+         axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+         axisv.setVerticalTickLabels(false);
+
+         p.setRenderer(renderer);
             try {
-                
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                res = st.executeQuery("select clc_code, sum(tothrs) as 'sum' from clock_code " +
-                    " left outer join time_clock on code_id = clc_code " +    
-                    " and indate >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                    " AND indate <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                    " group by clc_code order by clc_code  ;");
-
-                DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-                while (res.next()) {
-                    dataset.setValue(res.getDouble("sum"), "Sum", res.getString("clc_code"));
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
+                MainFrame.bslog(e);
                 }
-                JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5012), getGlobalColumnTag("code"), getGlobalColumnTag("hours"), dataset, PlotOrientation.VERTICAL, true, true, false);
-                CategoryItemRenderer renderer = new CustomRenderer();
-
-                Font font = new Font("Dialog", Font.PLAIN, 30);
-                CategoryPlot p = chart.getCategoryPlot();
-
-                CategoryAxis axis = p.getDomainAxis();
-                 ValueAxis axisv = p.getRangeAxis();
-                 axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-                 axisv.setVerticalTickLabels(false);
-
-                 p.setRenderer(renderer);
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-            } catch (SQLException s) {
-               MainFrame.bslog(s);
-            } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        } 
  }
-
+        
     public void ClockChartByEmp() {
-    try { 
-        cleanUpOldChartFile();
+     cleanUpOldChartFile();
         ChartPanel.setVisible(true);
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","ClockChartByEmp"});
+        list.add(new String[]{"func","DiscreteOrderPerWeekUnits"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-                ResultSet res = null;
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "ClockChartByEmp",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
+        }
+        Object[][] roData = jsonToData(jsonString);
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                dataset.setValue(bsParseDouble(roData1[1].toString()), "Sum", roData1[0].toString());
+            }
+        }  
+        JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5013), getGlobalColumnTag("employee"), getGlobalColumnTag("totalqty"), dataset, PlotOrientation.VERTICAL, true, true, false);
+        CategoryItemRenderer renderer = new CustomRenderer();
 
+        Font font = new Font("Dialog", Font.PLAIN, 30);
+        CategoryPlot p = chart.getCategoryPlot();
+
+        CategoryAxis axis = p.getDomainAxis();
+         ValueAxis axisv = p.getRangeAxis();
+         axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+         axisv.setVerticalTickLabels(false);
+
+         p.setRenderer(renderer);
             try {
-                
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                res = st.executeQuery("select emp_mstr.emp_nbr as 'emp_nbr', sum(tothrs) as 'sum' from emp_mstr " +
-                    " left outer join time_clock on time_clock.emp_nbr = emp_mstr.emp_nbr " +    
-                    " and indate >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                    " AND indate <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                    " group by emp_mstr.emp_nbr order by emp_mstr.emp_nbr  ;");
-
-                DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-                while (res.next()) {
-                    dataset.setValue(res.getDouble("sum"), "Sum", res.getString("emp_nbr"));
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
+                MainFrame.bslog(e);
                 }
-                JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5013), getGlobalColumnTag("empid"), getGlobalColumnTag("hours"), dataset, PlotOrientation.VERTICAL, true, true, false);
-                CategoryItemRenderer renderer = new CustomRenderer();
-
-                Font font = new Font("Dialog", Font.PLAIN, 30);
-                CategoryPlot p = chart.getCategoryPlot();
-
-                CategoryAxis axis = p.getDomainAxis();
-                 ValueAxis axisv = p.getRangeAxis();
-                 axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-                 axisv.setVerticalTickLabels(false);
-
-                 p.setRenderer(renderer);
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-            } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        } 
  }
-
+        
     public void HoursPerWeek() {
-    try {
-        cleanUpOldChartFile();
+     cleanUpOldChartFile();
         ChartPanel.setVisible(true);
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","ClockChartByEmp"});
+        list.add(new String[]{"func","HoursPerWeek"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-                ResultSet res = null;
-            int qty = 0;
-            double dol = 0;
-            DecimalFormat df = new DecimalFormat("###,###,###.##", new DecimalFormatSymbols(Locale.getDefault()));
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "HoursPerWeek",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
+        }
+        Object[][] roData = jsonToData(jsonString);
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                dataset.setValue(bsParseDouble(roData1[1].toString()), "Sum", roData1[0].toString());
+            }
+        }  
+        JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5014), getGlobalColumnTag("week"), getGlobalColumnTag("totalqty"), dataset, PlotOrientation.VERTICAL, true, true, false);
+        CategoryItemRenderer renderer = new CustomRenderer();
+
+        Font font = new Font("Dialog", Font.PLAIN, 30);
+        CategoryPlot p = chart.getCategoryPlot();
+
+        CategoryAxis axis = p.getDomainAxis();
+         ValueAxis axisv = p.getRangeAxis();
+         axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+         axisv.setVerticalTickLabels(false);
+
+         p.setRenderer(renderer);
             try {
-                
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                int days = (int)( (dcTo.getDate().getTime() - dcFrom.getDate().getTime()) / (1000 * 60 * 60 * 24) );
-                 
-                if (bsmf.MainFrame.dbtype.equals("sqlite")) {
-                 res = st.executeQuery(" select c.d as 't', sum(tothrs) as 'sum' from ( select boo.mydate, strftime('%W',mydate) as 'd' " +
-                                     " from (select date(julianday( " + "'" + dfdate.format(dcFrom.getDate()) + "' )" +
-                                     ", '-6 days', '+' || mock_nbr || ' days') as mydate " +
-                                     " from mock_mstr where mock_nbr <= " + "'" + days + "'" + " ) as boo group by d) as c " +
-                                     " left outer join time_clock on strftime('%W',indate) = c.d  " +
-                                     " and indate >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                                     " and indate <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                                     " group by c.d;");   
-                } else {
-                   res = st.executeQuery(" select c.d as 't', sum(tothrs) as 'sum' from ( select boo.mydate, week(mydate) as 'd' " +
-                    " from (select date_add( " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                    ", interval mock_nbr day) as 'mydate' " +" from mock_mstr where mock_nbr <= " + "'" + days + "'" + " ) as boo group by d, boo.mydate) as c " +
-                                     " left outer join time_clock on week(indate) = c.d  " +
-                                     " and indate >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                                     " and indate <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                                     " group by c.d;"); 
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
+                MainFrame.bslog(e);
                 }
-                
-
-                DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-                while (res.next()) {
-                    dataset.setValue(res.getDouble("sum"), "Sum", res.getString("t"));
-                }
-                JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5014), getGlobalColumnTag("week"), getGlobalColumnTag("hours"), dataset, PlotOrientation.VERTICAL, true, true, false);
-                CategoryItemRenderer renderer = new CustomRenderer();
-
-                Font font = new Font("Dialog", Font.PLAIN, 30);
-                CategoryPlot p = chart.getCategoryPlot();
-
-                CategoryAxis axis = p.getDomainAxis();
-                 ValueAxis axisv = p.getRangeAxis();
-                 axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-                 axisv.setVerticalTickLabels(false);
-
-                 p.setRenderer(renderer);
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-            } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        } 
  }
-
+    
         
     // Requisition charts
     public void ReqDollarsByAcct() {
-      try {
-      cleanUpOldChartFile();
-      ChartPanel.setVisible(true);
-        Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-        Statement st = con.createStatement();
-            ResultSet res = null;
-
-        try {
-            
-             DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");            
-            res = st.executeQuery("select req_acct, sum(req_amt) as 'sum' from req_mstr " +
-                    " where req_date >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                    " AND req_date <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                    " group by req_acct order by sum desc limit 10  ;");
-
-            DefaultPieDataset dataset = new DefaultPieDataset();
-
-            String acct = "";
-            while (res.next()) {
-                if (res.getString("req_acct") == null || res.getString("req_acct").isEmpty()) {
-                  acct = "MRO";
-                } else {
-                  acct = res.getString("req_acct");   
-                }
-                Double amt = res.getDouble("sum");
-
-              dataset.setValue(acct, amt);
-            }
-    JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5015), dataset, true, true, false);
-
-               PiePlot plot = (PiePlot) chart.getPlot();
-
-   PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
-    plot.setLabelGenerator(gen);
-
-                    try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-
-          } catch (SQLException s) {
-              MainFrame.bslog(s);
-        } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-    } catch (Exception e) {
-        MainFrame.bslog(e);
-    }
- }
-
-    public void ReqDollarsByDept() {
-      try {
-    cleanUpOldChartFile();
-    ChartPanel.setVisible(true);
-        Class.forName(driver).newInstance();
-        Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-        Statement st = con.createStatement();
-            ResultSet res = null;
-
-        try {
-            
-             DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");            
-            res = st.executeQuery("select req_dept, sum(req_amt) as 'sum' from req_mstr " +
-                    " where req_date >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                    " AND req_date <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                    " group by req_dept order by sum desc limit 10  ;");
-
-            DefaultPieDataset dataset = new DefaultPieDataset();
-
-            String acct = "";
-            while (res.next()) {
-                if (res.getString("req_dept") == null || res.getString("req_dept").isEmpty()) {
-                  acct = "Unknown";
-                } else {
-                  acct = res.getString("req_dept");   
-                }
-                Double amt = res.getDouble("sum");
-
-              dataset.setValue(acct, amt);
-            }
-    JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5016), dataset, true, true, false);
-
-               PiePlot plot = (PiePlot) chart.getPlot();
-
-   PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
-    plot.setLabelGenerator(gen);
-
-            try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-
-          } catch (SQLException s) {
-             MainFrame.bslog(s);
-        } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-    } catch (Exception e) {
-        MainFrame.bslog(e);
-    }
- }
-
-    public void ReqDollarsByUser() {
-      try {
+      
         cleanUpOldChartFile();
         ChartPanel.setVisible(true);
-        Class.forName(driver).newInstance();
-        Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-        Statement st = con.createStatement();
-            ResultSet res = null;
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getChartRptPickerData"});
+        list.add(new String[]{"func","ReqDollarsByAcct"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
         try {
-             DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");            
-            res = st.executeQuery("select req_name, sum(req_amt) as 'sum' from req_mstr " +
-                    " where req_date >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                    " AND req_date <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                    " group by req_name order by sum desc limit 10  ;");
-
-            DefaultPieDataset dataset = new DefaultPieDataset();
-
-            String name = "";
-            while (res.next()) {
-                if (res.getString("req_name") == null || res.getString("req_name").isEmpty()) {
-                  name = "Unknown";
-                } else {
-                  name = res.getString("req_name");   
-                }
-                Double amt = res.getDouble("sum");
-
-              dataset.setValue(name, amt);
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-    JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5017), dataset, true, true, false);
-
-               PiePlot plot = (PiePlot) chart.getPlot();
-
-   PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
-    plot.setLabelGenerator(gen);
-
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-
-          } catch (SQLException s) {
-              MainFrame.bslog(s);
-        } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "ReqDollarsByAcct",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
+        }
+        Object[][] roData = jsonToData(jsonString);
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        double total = 0.00;
+        double displayed = 0.00;
+        int i = 0;
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                total += bsParseDouble(roData1[1].toString());
+                Double amt = bsParseDouble(roData1[1].toString());
+                if (i <= Integer.parseInt(ddlimit.getSelectedItem().toString())) {
+                   displayed += bsParseDouble(roData1[1].toString()); 
+                   dataset.setValue(roData1[0].toString(), amt);
                 }
-    } catch (Exception e) {
-        MainFrame.bslog(e);
-    }
+            }
+            // other
+            if (total > displayed) {
+                dataset.setValue("other", (total - displayed));
+            }
+        }  
+        JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5015), dataset, true, true, false);
+        PiePlot plot = (PiePlot) chart.getPlot();
+        PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
+        plot.setLabelGenerator(gen);
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
+                MainFrame.bslog(e);
+                }
  }
-
+        
+    public void ReqDollarsByDept() {
+      
+        cleanUpOldChartFile();
+        ChartPanel.setVisible(true);
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getChartRptPickerData"});
+        list.add(new String[]{"func","ReqDollarsByDept"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "ReqDollarsByDept",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
+        }
+        Object[][] roData = jsonToData(jsonString);
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        double total = 0.00;
+        double displayed = 0.00;
+        int i = 0;
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                total += bsParseDouble(roData1[1].toString());
+                Double amt = bsParseDouble(roData1[1].toString());
+                if (i <= Integer.parseInt(ddlimit.getSelectedItem().toString())) {
+                   displayed += bsParseDouble(roData1[1].toString()); 
+                   dataset.setValue(roData1[0].toString(), amt);
+                }
+            }
+            // other
+            if (total > displayed) {
+                dataset.setValue("other", (total - displayed));
+            }
+        }  
+        JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5016), dataset, true, true, false);
+        PiePlot plot = (PiePlot) chart.getPlot();
+        PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
+        plot.setLabelGenerator(gen);
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
+                MainFrame.bslog(e);
+                }
+ }
+    
+    public void ReqDollarsByUser() {
+      
+        cleanUpOldChartFile();
+        ChartPanel.setVisible(true);
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getChartRptPickerData"});
+        list.add(new String[]{"func","ReqDollarsByUser"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "ReqDollarsByUser",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
+        }
+        Object[][] roData = jsonToData(jsonString);
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        double total = 0.00;
+        double displayed = 0.00;
+        int i = 0;
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                total += bsParseDouble(roData1[1].toString());
+                Double amt = bsParseDouble(roData1[1].toString());
+                if (i <= Integer.parseInt(ddlimit.getSelectedItem().toString())) {
+                   displayed += bsParseDouble(roData1[1].toString()); 
+                   dataset.setValue(roData1[0].toString(), amt);
+                }
+            }
+            // other
+            if (total > displayed) {
+                dataset.setValue("other", (total - displayed));
+            }
+        }  
+        JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5017), dataset, true, true, false);
+        PiePlot plot = (PiePlot) chart.getPlot();
+        PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
+        plot.setLabelGenerator(gen);
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
+                MainFrame.bslog(e);
+                }
+ }
+    
         
     // Scrap charts
     public void ScrapPerWeek() {
-    try { 
-            cleanUpOldChartFile();
-            ChartPanel.setVisible(true);
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+     cleanUpOldChartFile();
+        ChartPanel.setVisible(true);
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","ClockChartByEmp"});
+        list.add(new String[]{"func","ScrapPerWeek"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-                ResultSet res = null;
-            int qty = 0;
-            double dol = 0;
-            try {
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                int days = (int)( (dcTo.getDate().getTime() - dcFrom.getDate().getTime()) / (1000 * 60 * 60 * 24) );
-                 if (bsmf.MainFrame.dbtype.equals("sqlite")) {
-                res = st.executeQuery(" select c.d as 't', sum(tr_qty * tr_cost) as 'sum' from ( select boo.mydate, strftime('%W',mydate) as 'd' " +
-                                     " from (select date(julianday( " + "'" + dfdate.format(dcFrom.getDate()) + "' )" +
-                                     ", '-6 days', '+' || mock_nbr || ' days') as mydate " +
-                                     " from mock_mstr where mock_nbr <= " + "'" + days + "'" + " ) as boo group by d) as c " +
-                                     " left outer join tran_mstr on strftime('%W',tr_eff_date) = c.d and tr_type = 'ISS-SCRAP' " +
-                                     " and tr_eff_date >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                                     " and tr_eff_date <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                                     " group by c.d;");
-                 } else {
-                res = st.executeQuery(" select c.d as 't', sum(tr_qty * tr_cost) as 'sum' from ( select boo.mydate, week(mydate) as 'd' " +
-                    " from (select date_add( " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                    ", interval mock_nbr day) as 'mydate' " +" from mock_mstr where mock_nbr <= " + "'" + days + "'" + " ) as boo group by d, boo.mydate) as c " +
-                                     " left outer join tran_mstr on week(tr_eff_date) = c.d and tr_type = 'ISS-SCRAP' " +
-                                     //" where mock_nbr <= 10 " +
-                                     " group by c.d;");
-                 }
-
-                DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-                while (res.next()) {
-                    dataset.setValue(res.getDouble("sum"), "Dollars", res.getString("t"));
-                }
-                JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5018), getGlobalColumnTag("week"), getGlobalColumnTag("total"), dataset, PlotOrientation.VERTICAL, true, true, false);
-                CategoryItemRenderer renderer = new CustomRenderer();
-
-                Font font = new Font("Dialog", Font.PLAIN, 30);
-                CategoryPlot p = chart.getCategoryPlot();
-
-                CategoryAxis axis = p.getDomainAxis();
-                 ValueAxis axisv = p.getRangeAxis();
-                 axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-                 axisv.setVerticalTickLabels(false);
-
-                 p.setRenderer(renderer);
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-            } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        } 
- }
-
-    public void CodesAccumQty() {
-    try {
-            cleanUpOldChartFile();
-            ChartPanel.setVisible(true);
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "ScrapPerWeek",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
+        }
+        Object[][] roData = jsonToData(jsonString);
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                dataset.setValue(bsParseDouble(roData1[1].toString()), "Sum", roData1[0].toString());
             }
-            Statement st = con.createStatement();
-                ResultSet res = null;
+        }  
+        JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5018), getGlobalColumnTag("week"), getGlobalColumnTag("totalqty"), dataset, PlotOrientation.VERTICAL, true, true, false);
+        CategoryItemRenderer renderer = new CustomRenderer();
 
+        Font font = new Font("Dialog", Font.PLAIN, 30);
+        CategoryPlot p = chart.getCategoryPlot();
+
+        CategoryAxis axis = p.getDomainAxis();
+         ValueAxis axisv = p.getRangeAxis();
+         axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+         axisv.setVerticalTickLabels(false);
+
+         p.setRenderer(renderer);
             try {
-                
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                res = st.executeQuery("select tr_ref, sum(tr_qty) as 'sum' from tran_mstr " +
-                    " where tr_eff_date >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                    " AND tr_eff_date <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                    " AND tr_type = 'ISS-SCRAP' " + 
-                    " group by tr_ref order by tr_ref  ;");
-
-                DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-                while (res.next()) {
-
-                    dataset.setValue(res.getDouble("sum"), "Sum", res.getString("tr_ref"));
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
+                MainFrame.bslog(e);
                 }
-                JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5019), getGlobalColumnTag("code"), getGlobalColumnTag("totalqty"), dataset, PlotOrientation.VERTICAL, true, true, false);
-                CategoryItemRenderer renderer = new CustomRenderer();
-
-                Font font = new Font("Dialog", Font.PLAIN, 30);
-                CategoryPlot p = chart.getCategoryPlot();
-
-                CategoryAxis axis = p.getDomainAxis();
-                 ValueAxis axisv = p.getRangeAxis();
-                 axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-                 axisv.setVerticalTickLabels(false);
-
-                 p.setRenderer(renderer);
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-            } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        } 
  }
-
+        
     public void PartAccumQty() {
-    try {
-
-            cleanUpOldChartFile();
-            ChartPanel.setVisible(true);
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+     cleanUpOldChartFile();
+        ChartPanel.setVisible(true);
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","ClockChartByEmp"});
+        list.add(new String[]{"func","PartAccumQty"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-                ResultSet res = null;
-
-            try {
-                
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                res = st.executeQuery("select tr_item, sum(tr_qty) as 'sum' from tran_mstr " +
-                    " where tr_eff_date >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                    " AND tr_eff_date <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                    " AND tr_type = 'ISS-SCRAP' " + 
-                    " group by tr_item order by sum desc limit 20 ;");
-
-                DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-                while (res.next()) {
-
-                    dataset.setValue(res.getDouble("sum"), "Sum", res.getString("tr_item"));
-                }
-                JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5020), getGlobalColumnTag("item"), getGlobalColumnTag("qty"), dataset, PlotOrientation.VERTICAL, true, true, false);
-                CategoryItemRenderer renderer = new CustomRenderer();
-
-                Font font = new Font("Dialog", Font.PLAIN, 30);
-                CategoryPlot p = chart.getCategoryPlot();
-
-                CategoryAxis axis = p.getDomainAxis();
-                 ValueAxis axisv = p.getRangeAxis();
-                 axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-                 axisv.setVerticalTickLabels(false);
-
-                 p.setRenderer(renderer);
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-            } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        } 
- }
-
-    public void RWPartAccumQty() {
-    try {
-
-            cleanUpOldChartFile();
-            ChartPanel.setVisible(true);
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "PartAccumQty",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
+        }
+        Object[][] roData = jsonToData(jsonString);
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                dataset.setValue(bsParseDouble(roData1[1].toString()), "Sum", roData1[0].toString());
             }
-            Statement st = con.createStatement();
-                ResultSet res = null;
+        }  
+        JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5020), getGlobalColumnTag("item"), getGlobalColumnTag("totalqty"), dataset, PlotOrientation.VERTICAL, true, true, false);
+        CategoryItemRenderer renderer = new CustomRenderer();
 
+        Font font = new Font("Dialog", Font.PLAIN, 30);
+        CategoryPlot p = chart.getCategoryPlot();
+
+        CategoryAxis axis = p.getDomainAxis();
+         ValueAxis axisv = p.getRangeAxis();
+         axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+         axisv.setVerticalTickLabels(false);
+
+         p.setRenderer(renderer);
             try {
-                
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                res = st.executeQuery("select tr_item, sum(tr_qty) as 'sum' from tran_mstr " +
-                    " where tr_eff_date >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                    " AND tr_eff_date <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                    " AND tr_type = 'ISS-REWK' " + 
-                    " group by tr_item order by sum desc limit 20 ;");
-
-                DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-                while (res.next()) {
-
-                    dataset.setValue(res.getDouble("sum"), "Sum", res.getString("tr_item"));
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
+                MainFrame.bslog(e);
                 }
-                JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5021), getGlobalColumnTag("item"), getGlobalColumnTag("qty"), dataset, PlotOrientation.VERTICAL, true, true, false);
-                CategoryItemRenderer renderer = new CustomRenderer();
-
-                Font font = new Font("Dialog", Font.PLAIN, 30);
-                CategoryPlot p = chart.getCategoryPlot();
-
-                CategoryAxis axis = p.getDomainAxis();
-                 ValueAxis axisv = p.getRangeAxis();
-                 axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-                 axisv.setVerticalTickLabels(false);
-
-                 p.setRenderer(renderer);
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-            } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        } 
  }
-
+    
     public void PartAccumDollar() {
-    try {
-
-            cleanUpOldChartFile();
-            ChartPanel.setVisible(true);
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+     cleanUpOldChartFile();
+        ChartPanel.setVisible(true);
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","ClockChartByEmp"});
+        list.add(new String[]{"func","PartAccumDollar"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-                ResultSet res = null;
-            int qty = 0;
-            double dol = 0;
-            try {
-                
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                res = st.executeQuery("select tr_item, sum(tr_qty * itr_total) as 'sum' from tran_mstr " +
-                         " inner join item_mstr on it_item = tr_item " +
-                    " left outer join itemr_cost on itr_item = tr_item and itr_op = tr_op and itr_routing = item_mstr.it_wf" +
-                    " where tr_eff_date >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                    " AND tr_eff_date <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                    " AND tr_type = 'ISS-SCRAP' " + 
-                    " group by tr_item order by sum desc limit 20 ;");
-
-                DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-                while (res.next()) {
-                    dataset.setValue(res.getDouble("sum"), "Sum", res.getString("tr_item"));
-                }
-                JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5022), getGlobalColumnTag("item"), getGlobalColumnTag("total"), dataset, PlotOrientation.VERTICAL, true, true, false);
-                CategoryItemRenderer renderer = new CustomRenderer();
-
-                Font font = new Font("Dialog", Font.PLAIN, 30);
-                CategoryPlot p = chart.getCategoryPlot();
-
-                CategoryAxis axis = p.getDomainAxis();
-                 ValueAxis axisv = p.getRangeAxis();
-                 axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-                 axisv.setVerticalTickLabels(false);
-
-                 p.setRenderer(renderer);
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-            } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        } 
- }
-
-    public void CodesAccumDollar() {
-    try {
-
-            cleanUpOldChartFile();
-            ChartPanel.setVisible(true);
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "PartAccumDollar",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
+        }
+        Object[][] roData = jsonToData(jsonString);
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                dataset.setValue(bsParseDouble(roData1[1].toString()), "Sum", roData1[0].toString());
             }
-            Statement st = con.createStatement();
-                ResultSet res = null;
-            int qty = 0;
-            double dol = 0;
+        }  
+        JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5022), getGlobalColumnTag("item"), getGlobalColumnTag("total"), dataset, PlotOrientation.VERTICAL, true, true, false);
+        CategoryItemRenderer renderer = new CustomRenderer();
+
+        Font font = new Font("Dialog", Font.PLAIN, 30);
+        CategoryPlot p = chart.getCategoryPlot();
+
+        CategoryAxis axis = p.getDomainAxis();
+         ValueAxis axisv = p.getRangeAxis();
+         axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+         axisv.setVerticalTickLabels(false);
+
+         p.setRenderer(renderer);
             try {
-               
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                res = st.executeQuery("select tr_ref, sum(tr_qty * itr_total) as 'sum' from tran_mstr " +
-                         " inner join item_mstr on it_item = tr_item " +
-                    " left outer join itemr_cost on itr_item = tr_item and itr_op = tr_op and itr_routing = item_mstr.it_wf" +
-                    " where tr_eff_date >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                    " AND tr_eff_date <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                    " AND tr_type = 'ISS-SCRAP' " + 
-                    " group by tr_ref order by sum desc limit 20 ;");
-
-                DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-                while (res.next()) {
-                    dataset.setValue(res.getDouble("sum"), "Sum", res.getString("tr_ref"));
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
+                MainFrame.bslog(e);
                 }
-                JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5023), getGlobalColumnTag("code"), getGlobalColumnTag("total"), dataset, PlotOrientation.VERTICAL, true, true, false);
-                CategoryItemRenderer renderer = new CustomRenderer();
-
-                Font font = new Font("Dialog", Font.PLAIN, 30);
-                CategoryPlot p = chart.getCategoryPlot();
-
-                CategoryAxis axis = p.getDomainAxis();
-                 ValueAxis axisv = p.getRangeAxis();
-                 axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-                 axisv.setVerticalTickLabels(false);
-
-                 p.setRenderer(renderer);
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-            } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        } 
  }
-
-    public void DeptAccumDollar() {
-    try {
-
-            cleanUpOldChartFile();
-            ChartPanel.setVisible(true);
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-                ResultSet res = null;
-            int qty = 0;
-            double dol = 0;
-            try {
-                
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                res = st.executeQuery("select tr_actcell, sum(tr_qty * itr_total) as 'sum' from tran_mstr " +
-                         " inner join item_mstr on it_item = tr_item " +
-                    " left outer join itemr_cost on itr_item = tr_item and itr_op = tr_op and itr_routing = item_mstr.it_wf" +
-                    " where tr_eff_date >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                    " AND tr_eff_date <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                    " AND tr_type = 'ISS-SCRAP' " + 
-                    " group by tr_actcell order by sum desc limit 20 ;");
-
-                DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-                while (res.next()) {
-                    dataset.setValue(res.getDouble("sum"), "Sum", res.getString("tr_actcell"));
-                }
-                JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5024), getGlobalColumnTag("cell"), getGlobalColumnTag("total"), dataset, PlotOrientation.VERTICAL, true, true, false);
-                CategoryItemRenderer renderer = new CustomRenderer();
-
-                Font font = new Font("Dialog", Font.PLAIN, 30);
-                CategoryPlot p = chart.getCategoryPlot();
-
-                CategoryAxis axis = p.getDomainAxis();
-                 ValueAxis axisv = p.getRangeAxis();
-                 axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-                 axisv.setVerticalTickLabels(false);
-
-                 p.setRenderer(renderer);
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-            } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        } 
- }
-
-    public void DeptAccumQty() {
-    try {
-
-          cleanUpOldChartFile();
-          ChartPanel.setVisible(true);
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-                ResultSet res = null;
-            try {
-                
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                res = st.executeQuery("select tr_actcell, sum(tr_qty) as 'sum' from tran_mstr " +
-                    " where tr_eff_date >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                    " AND tr_eff_date <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +
-                        " AND tr_type = 'ISS-SCRAP' " + 
-                    " group by tr_actcell order by tr_actcell  ;");
-
-                DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-                while (res.next()) {
-
-                    dataset.setValue(res.getDouble("sum"), "Sum", res.getString("tr_actcell"));
-                }
-                JFreeChart chart = ChartFactory.createBarChart(getTitleTag(5025) + "\n" +"from " + 
-                        dfdate.format(dcFrom.getDate()).toString() + " thru " +
-                        dfdate.format(dcTo.getDate()).toString(), getGlobalColumnTag("dept"), getGlobalColumnTag("qty"), dataset, PlotOrientation.VERTICAL, true, true, false);
-                CategoryItemRenderer renderer = new CustomRenderer();
-
-                Font font = new Font("Dialog", Font.PLAIN, 30);
-                CategoryPlot p = chart.getCategoryPlot();
-
-                CategoryAxis axis = p.getDomainAxis();
-                 ValueAxis axisv = p.getRangeAxis();
-                 axis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-                 axisv.setVerticalTickLabels(false);
-
-                 p.setRenderer(renderer);
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-                    ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
-                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                    myimage = ImageIO.read(bais);
-                    ImageIcon myicon = new ImageIcon(myimage);
-                    myicon.getImage().flush();   
-                    chartlabel.setIcon(myicon);
-                    bais.close();
-                    baos.close();
-                    } catch (IOException e) {
-                    MainFrame.bslog(e);
-                    }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-            } finally {
-                   if (res != null) res.close();
-                   if (st != null) st.close();
-                   con.close();
-                }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        } 
- }
-
+    
+    
+    
     public void GenericDataXY(String reporttitle) {
     try {
           List<String> filecontent = getInput();
@@ -2929,16 +2295,7 @@ String symbol = "";
             tacodes.setText(weeknumbers);
            // CodePanel.setVisible(true);
         } // if whichreport
-        
-       
-        
-       
-        
-        
-        if (whichreport.equals("RWPartAccumQty")) {
-            RWPartAccumQty();
-        }
-        
+                
         if (whichreport.equals("Sales -- total sales by date")) {
             piechart_salesbycust();
         }
@@ -2988,7 +2345,7 @@ String symbol = "";
           //  CodePanel.setVisible(true);
         } // if whichreport
         
-         if (whichreport.equals("Clock -- by employee")) {
+        if (whichreport.equals("Clock -- by employee")) {
             ClockChartByEmp();
             tacodes.setText("");
             ArrayList codes = OVData.getEmployeeIDAndName();
@@ -3000,75 +2357,27 @@ String symbol = "";
             tacodes.setText(str);
          //   CodePanel.setVisible(true);
         } // if whichreport
-        
-        
-       if (whichreport.equals("Clock -- by week")) {
+                
+        if (whichreport.equals("Clock -- by week")) {
             HoursPerWeek();
             tacodes.setText(weeknumbers);
           //  CodePanel.setVisible(true);
         } // if whichreport
    
         
-       
-        
         if (whichreport.equals("Scrap -- per week")) {
             ScrapPerWeek();
             tacodes.setText(weeknumbers);
            // CodePanel.setVisible(true);
         } // if whichreport
-        
-         if (whichreport.equals("Scrap -- quantity by code")) {
-            CodesAccumQty();
-            tacodes.setText("");
-            ArrayList<String[]> codes = OVData.getCodeAndValueMstr("Scrap");
-            String str = "";
-            for (int i = 0; i < codes.size(); i++) {
-              String[] c = codes.get(i);  
-              str += (c[0] + " = " + c[1]) + "\n";
-            }
-            tacodes.setText(str);
-           // CodePanel.setVisible(true);
-        } // if whichreport
-         
-          if (whichreport.equals("Scrap -- dollars by code")) {
-            CodesAccumDollar();
-            tacodes.setText("");
-            ArrayList<String[]> codes = OVData.getCodeAndValueMstr("Scrap"); 
-            String str = "";
-            for (int i = 0; i < codes.size(); i++) {
-              String[] c = codes.get(i);  
-              str += (c[0] + " = " + c[1]) + "\n";
-            }
-            tacodes.setText(str);
-         //   CodePanel.setVisible(true);
-        } 
-        
+                
         if (whichreport.equals("Scrap -- quantity by item")) {
             PartAccumQty();
         }
         
-       
-        
         if (whichreport.equals("Scrap -- dollars by item")) {
             PartAccumDollar();
         }
-        
-        if (whichreport.equals("Scrap -- quantity by department")) {
-            DeptAccumQty();
-        
-            tacodes.setText("");
-            ArrayList codes = OVData.getdeptanddesclist();
-            String str = "";
-            for (int i = 0; i < codes.size(); i++) {
-              str += (codes.get(i)) + "\n";
-            }
-            tacodes.setText(str);
-        
-          //  CodePanel.setVisible(true);
-        } 
-        if (whichreport.equals("Scrap -- dollars by department")) {
-            DeptAccumDollar();
-        } 
         
         if (whichreport.equals("Generic -- xy plot <date,number>")) {
             GenericDataXY(whichreport);
