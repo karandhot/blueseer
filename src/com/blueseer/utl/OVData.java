@@ -24895,12 +24895,12 @@ return mylist;
                 if (keys[0].equals("pcOpenOrdersByCust")) {  
                  DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
                  int days = (int)( (dfdate.parse(keys[2]).getTime() - dfdate.parse(keys[1]).getTime()) / (1000 * 60 * 60 * 24) );     
-                 res = st.executeQuery("select so_cust, cm_name, sum( (sod_ord_qty - sod_shipped_qty) * sod_netprice) as 'sum' from so_mstr " +
+                 res = st.executeQuery("select cm_name, sum( (sod_ord_qty - sod_shipped_qty) * sod_netprice) as 'sum' from so_mstr " +
                     " inner join sod_det on sod_nbr = so_nbr " +
                     " inner join cm_mstr on cm_code = so_cust " +
                     " where so_due_date >= " + "'" + keys[1] + "'" +
                     " AND so_due_date <= " + "'" + keys[2] + "'" +
-                    " group by so_cust order by sum desc;");
+                    " group by cm_name order by sum desc;");
                     while (res.next()) {
                             i++;
                             JSONArray rowArray = new JSONArray(); 
