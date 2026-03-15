@@ -30,9 +30,9 @@ package com.blueseer.utl;
 
 import bsmf.MainFrame;
 import static bsmf.MainFrame.bslog;
+import static bsmf.MainFrame.db;
 import com.blueseer.edi.EDI;
 
-import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.dbtype;
 import static bsmf.MainFrame.defaultDecimalSeparator;
 import static bsmf.MainFrame.ds;
@@ -75,6 +75,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.bsformat;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
+import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDoubleUS;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
@@ -94,6 +95,7 @@ import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPostByteR;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
+import static com.blueseer.utl.BlueSeerUtils.xNull;
 import com.blueseer.vdr.venData;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.awt.Component;
@@ -24726,7 +24728,194 @@ return mylist;
     
     }
     
-     
+    public static String getChartRptPickerData(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                
+                if (keys[0].equals("ProdByWeekFGUnits")) {  
+                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+                 int days = (int)( (dfdate.parse(keys[2]).getTime() - dfdate.parse(keys[1]).getTime()) / (1000 * 60 * 60 * 24) );     
+                 if (bsmf.MainFrame.dbtype.equals("sqlite")) {
+                 res = st.executeQuery(" select c.d as 't', sum(tr_qty) as 'sum' from ( select boo.mydate, strftime('%W',mydate) as 'd' " +
+                                     " from (select date(julianday( " + "'" + keys[1] + "' )" +
+                                     ", '-6 days', '+' || mock_nbr || ' days') as mydate " +
+                                     " from mock_mstr where mock_nbr <= " + "'" + days + "'" + " ) as boo group by d) as c " +
+                                     " left outer join tran_mstr on strftime('%W',tr_eff_date) = c.d and tr_type = 'RCT-FG' " +
+                                     " and tr_eff_date >= " + "'" + keys[1] + "'" +
+                                     " and tr_eff_date <= " + "'" + keys[2] + "'" +
+                                     " group by c.d;");
+                 } else {
+                  res = st.executeQuery(" select c.d as 't', sum(tr_qty) as 'sum' from ( select boo.mydate, week(mydate) as 'd' " +
+                    " from (select date_add( " + "'" + keys[1] + "'" +
+                    ", interval mock_nbr day) as 'mydate' " +
+                    " from mock_mstr where mock_nbr <= " + "'" + days + "'" + " ) as boo group by d, boo.mydate) as c " +
+                    " left outer join tran_mstr on week(tr_eff_date) = c.d and tr_type = 'RCT-FG' " +
+                    " and tr_eff_date >= " + "'" + keys[1] + "'" +
+                    " and tr_eff_date <= " + "'" + keys[2] + "'" +        
+                    " group by c.d order by c.d;");
+                 }
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put(res.getString("t"));
+                            rowArray.put(xNull(res.getString("sum")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+               
+                if (keys[0].equals("ProdByWeekFGDollars")) {  
+                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+                 int days = (int)( (dfdate.parse(keys[2]).getTime() - dfdate.parse(keys[1]).getTime()) / (1000 * 60 * 60 * 24) );     
+                 if (bsmf.MainFrame.dbtype.equals("sqlite")) {
+                res = st.executeQuery(" select c.d as 't', sum(tr_qty * itr_total) as 'sum' from ( select boo.mydate, strftime('%W',mydate) as 'd' " +
+                                     " from (select date(julianday( " + "'" + keys[1] + "' )" +
+                                     ", '-6 days', '+' || mock_nbr || ' days') as mydate " +
+                                     " from mock_mstr where mock_nbr <= " + "'" + days + "'" + " ) as boo group by d) as c " +
+                                     " left outer join tran_mstr on strftime('%W',tr_eff_date) = c.d and tr_type = 'RCT-FG' " +
+                                     " and tr_eff_date >= " + "'" + keys[1] + "'" +
+                                     " and tr_eff_date <= " + "'" + keys[2] + "'" +
+                                     " left outer join itemr_cost on itemr_cost.itr_item = tran_mstr.tr_item " +
+                                     " and itr_op = tr_op and itr_set = 'standard' and itr_site = tr_site " +
+                                     //" where mock_nbr <= 10 " +
+                                     " group by c.d;");
+                } else {
+                 res = st.executeQuery(" select c.d as 't', sum(tr_qty * itr_total) as 'sum' from ( select boo.mydate, week(mydate) as 'd' " +
+                    " from (select date_add( " + "'" + keys[1] + "'" +
+                    ", interval mock_nbr day) as 'mydate' " + 
+                    " from mock_mstr where mock_nbr <= " + "'" + days + "'" + " ) as boo group by d, boo.mydate) as c " +
+                                     " left outer join tran_mstr on week(tr_eff_date) = c.d and tr_type = 'RCT-FG' " +
+                                     " and tr_eff_date >= " + "'" + keys[1] + "'" +
+                                     " and tr_eff_date <= " + "'" + keys[2] + "'" +
+                                     " left outer join itemr_cost on itemr_cost.itr_item = tran_mstr.tr_item " +
+                                     " and itr_op = tr_op and itr_set = 'standard' and itr_site = tr_site " +
+                                     //" where mock_nbr <= 10 " +
+                                     " group by c.d order by c.d;");
+                }
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put(res.getString("t"));
+                            rowArray.put(xNull(res.getString("sum")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+               
+                if (keys[0].equals("DiscreteOrderPerWeekUnits")) {  
+                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+                 int days = (int)( (dfdate.parse(keys[2]).getTime() - dfdate.parse(keys[1]).getTime()) / (1000 * 60 * 60 * 24) );     
+                 if (bsmf.MainFrame.dbtype.equals("sqlite")) {
+               res = st.executeQuery(" select c.d as 't', sum(sod_ord_qty) as 'sum' from ( select boo.mydate, strftime('%W',mydate) as 'd' " +
+                                     " from (select date(julianday( " + "'" + keys[1] + "' )" +
+                                     ", '0 days', '+' || mock_nbr || ' days') as mydate " +
+                                     " from mock_mstr where mock_nbr <= " + "'" + days + "'" + " ) as boo group by d) as c " +
+                                     " left outer join sod_Det on strftime('%W',sod_due_date) = c.d " +
+                                     " and sod_due_date >= " + "'" + keys[1] + "'" +
+                                     " and sod_due_date <= " + "'" + keys[2] + "'" +
+                                     " group by c.d;");
+
+                } else {
+                    res = st.executeQuery(" select c.d as 't', sum(sod_ord_qty) as 'sum' from ( select boo.mydate, week(mydate) as 'd' " +
+                    " from (select date_add( " + "'" + keys[1] + "'" +
+                    ", interval mock_nbr day) as 'mydate' " +" from mock_mstr where mock_nbr <= " + "'" + days + "'" + " ) as boo group by d, boo.mydate) as c " +
+                                     " left outer join sod_det on week(sod_due_date) = c.d  " +
+                                     " and sod_due_date >= " + "'" + keys[1] + "'" +
+                                     " and sod_due_date <= " + "'" + keys[2] + "'" +
+                                     " inner join so_mstr on so_nbr = sod_nbr and so_type = 'DISCRETE' " +        
+                                     " group by c.d order by c.d;"); 
+                }
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put(res.getString("t"));
+                            rowArray.put(xNull(res.getString("sum")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+               
+                if (keys[0].equals("DiscreteOrderPerWeekDollars")) {  
+                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+                 int days = (int)( (dfdate.parse(keys[2]).getTime() - dfdate.parse(keys[1]).getTime()) / (1000 * 60 * 60 * 24) );     
+                 if (bsmf.MainFrame.dbtype.equals("sqlite")) {
+                 res = st.executeQuery(" select c.d as 't', sum(sod_ord_qty * sod_netprice) as 'sum' from ( select boo.mydate, strftime('%W',mydate) as 'd' " +
+                                     " from (select date(julianday( " + "'" + keys[1] + "' )" +
+                                     ", '0 days', '+' || mock_nbr || ' days') as mydate " +
+                                     " from mock_mstr where mock_nbr <= " + "'" + days + "'" + " ) as boo group by d) as c " +
+                                     " left outer join sod_det on strftime('%W',sod_due_date) = c.d " +
+                                     " and sod_due_date >= " + "'" + keys[1] + "'" +
+                                     " and sod_due_date <= " + "'" + keys[2] + "'" +
+                                     " left outer join so_mstr on so_mstr.so_nbr = sod_det.sod_nbr and so_type = 'DISCRETE' " +
+                                     //" where mock_nbr <= 10 " +
+                                     " group by c.d;");
+                } else {
+                res = st.executeQuery(" select c.d as 't', sum(sod_ord_qty * sod_netprice) as 'sum' from ( select boo.mydate, week(mydate) as 'd' " +
+                    " from (select date_add( " + "'" + keys[1] + "'" +
+                    ", interval mock_nbr day) as 'mydate' " +" from mock_mstr where mock_nbr <= " + "'" + days + "'" + " ) as boo group by d, boo.mydate) as c " +
+                     " left outer join sod_det on week(sod_due_date) = c.d  " +
+                     " and sod_due_date >= " + "'" + keys[1] + "'" +
+                     " and sod_due_date <= " + "'" + keys[2] + "'" +
+                     " inner join so_mstr on so_nbr = sod_nbr and so_type = 'DISCRETE' " +        
+                     " group by c.d order by c.d;");
+                }
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put(res.getString("t"));
+                            rowArray.put(xNull(res.getString("sum")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+               
+                if (keys[0].equals("pcOpenOrdersByCust")) {  
+                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+                 int days = (int)( (dfdate.parse(keys[2]).getTime() - dfdate.parse(keys[1]).getTime()) / (1000 * 60 * 60 * 24) );     
+                 res = st.executeQuery("select so_cust, cm_name, sum( (sod_ord_qty - sod_shipped_qty) * sod_netprice) as 'sum' from so_mstr " +
+                    " inner join sod_det on sod_nbr = so_nbr " +
+                    " inner join cm_mstr on cm_code = so_cust " +
+                    " where so_due_date >= " + "'" + keys[1] + "'" +
+                    " AND so_due_date <= " + "'" + keys[2] + "'" +
+                    " group by so_cust order by sum desc;");
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(xNull(res.getString("sum")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    } 
         
     
 }

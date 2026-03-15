@@ -26,7 +26,6 @@ SOFTWARE.
 package com.blueseer.srv;
 
 import static com.blueseer.fgl.fglData.getAccountActivityYear;
-import com.blueseer.ord.ordData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
@@ -57,6 +56,7 @@ import static com.blueseer.utl.OVData.deleteAllMRP;
 import static com.blueseer.utl.OVData.deleteMenuToAllUsers;
 import static com.blueseer.utl.OVData.deleteMenuToUser;
 import static com.blueseer.utl.OVData.deleteSysMeta;
+import static com.blueseer.utl.OVData.getChartRptPickerData;
 import static com.blueseer.utl.OVData.getCodeDescByCode;
 import static com.blueseer.utl.OVData.getCodeKeyByCode;
 import static com.blueseer.utl.OVData.getCodeMstrKeyList;
@@ -716,6 +716,21 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     bsParseDouble(request.getHeader("param7")));
             break;  
         }
+        
+        case "getChartRptPickerData" : {
+        String[] x = new String[]{
+               request.getHeader("func"),
+               request.getHeader("param1"), 
+               request.getHeader("param2"),
+               request.getHeader("param3"),
+               request.getHeader("param4"),
+               request.getHeader("param5"),
+               request.getHeader("param6")
+               };     
+        response.getWriter().print(getChartRptPickerData(x));    
+        break;
+        } 
+        
         
         default:
         response.getWriter().print("");
