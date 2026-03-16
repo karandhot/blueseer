@@ -165,7 +165,8 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerV {
     boolean hasInit = false;
     int planstatus = 0;
     String plantype = "";
-    String chartfilepath = OVData.getSystemTempDirectory() + "/" + "jobm.jpg";
+    String tempdir = "";
+    
     boolean isAdd = false;
     
     public static plan_mstr x = null;
@@ -477,6 +478,9 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerV {
             if (s[0].equals("nontooling")) {
               ddmaterial.addItem(s[1]); 
             }
+            if (s[0].equals("tempdir")) {
+              tempdir = s[1];  
+            }
         }
         ddoperator.insertItemAt("", 0);
         ddtooling.insertItemAt("", 0);
@@ -630,7 +634,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerV {
         //}
         plan_mstr x = new plan_mstr(null, nbr,
         "generic", // item
-        OVData.getDefaultSiteForUserid(bsmf.MainFrame.userid), // site
+        defaultSite, // site
         0, // qty
         0,
         0,
@@ -747,6 +751,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerV {
         String title = "";
         NumberFormat nf = null;
         LinkedHashMap<String, Double> lhm = new LinkedHashMap<String, Double>();
+        String chartfilepath = tempdir + "/" + "jobm.jpg";
          /*
          for (int j = 0; j < plodmatl.size(); j++) {
              if (! ddop.getSelectedItem().toString().isBlank() && ddop.getSelectedItem().toString().equals(plodmatl.get(j)[2])) {
@@ -1014,7 +1019,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerV {
         message = new String[]{"0", "Service Order has been invoiced"};    
        
         // autopost
-        if (OVData.isAutoPost()) {
+        if (isAutoPost) {
             fglData.PostGL();
         }        
         return message;

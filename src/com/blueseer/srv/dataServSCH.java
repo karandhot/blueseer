@@ -40,6 +40,7 @@ import static com.blueseer.sch.schData.getSchRptPickerData;
 import static com.blueseer.sch.schData.getSummaryByDate;
 import static com.blueseer.sch.schData.updatePlanOperation;
 import static com.blueseer.sch.schData.updatePlanOrder;
+import static com.blueseer.sch.schData.updatePlanOrderStatus;
 import static com.blueseer.sch.schData.updatePlanStatus;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
@@ -186,6 +187,12 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     request.getHeader("param3"),
                     request.getHeader("param4"),
                     request.getHeader("param5")))); 
+            break;    
+        }
+        
+        case "updatePlanOrderStatus" : {
+            response.getWriter().print(boolToJson(updatePlanOrderStatus(request.getHeader("param1"), 
+                    request.getHeader("param2")))); 
             break;    
         }
         

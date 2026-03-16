@@ -1424,6 +1424,18 @@ public class schData {
   }
 
     public static boolean updatePlanOrderStatus(String order, String status) {
+      if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "updatePlanOrderStatus"});
+            list.add(new String[]{"param1", order});
+            list.add(new String[]{"param2", status});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServSCH"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        } 
       boolean myreturn = false;  
       try {
 
