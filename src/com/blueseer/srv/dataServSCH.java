@@ -31,7 +31,9 @@ import static com.blueseer.inv.invData.addWorkCenterMstr;
 import com.blueseer.ord.ordData;
 import com.blueseer.sch.schData;
 import static com.blueseer.sch.schData.addPlanMstr;
+import static com.blueseer.sch.schData.addPlanOperation;
 import static com.blueseer.sch.schData.addPlanOperationTrans;
+import static com.blueseer.sch.schData.deletePlanMstr;
 import static com.blueseer.sch.schData.getPlanDetHistory;
 import static com.blueseer.sch.schData.getPlanDetTotQtyByOp;
 import static com.blueseer.sch.schData.getPlanMstr;
@@ -127,6 +129,32 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
           }
         
+        case "deletePlanMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            schData.plan_mstr x = objectMapper.readValue(sb.toString(), schData.plan_mstr.class);            
+            response.getWriter().print(arrayToJson(deletePlanMstr(x)));
+            break;
+          }
+        
+        case "addPlanOperation" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            schData.plan_operation x = objectMapper.readValue(sb.toString(), schData.plan_operation.class);            
+            response.getWriter().print(arrayToJson(addPlanOperation(x)));
+            break;
+          }
+        
         case "addPlanOperationTrans" : { 
             String line;
             StringBuilder sb = new StringBuilder();  
@@ -141,6 +169,13 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
           }
         
+        case "getPlanOperationList" : { 
+            ArrayList<schData.plan_operation> x = getPlanOperation(request.getHeader("param1")); 
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
         case "getSummaryByDate" :  {      
             response.getWriter().print(ArrayListStringArrayToJson(getSummaryByDate(request.getHeader("param1"),
                     request.getHeader("param2"),
