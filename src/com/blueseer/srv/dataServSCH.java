@@ -41,12 +41,15 @@ import static com.blueseer.sch.schData.getPlanOperation;
 import static com.blueseer.sch.schData.getSchRptPickerData;
 import static com.blueseer.sch.schData.getSummaryByDate;
 import static com.blueseer.sch.schData.updatePlanOperation;
+import static com.blueseer.sch.schData.updatePlanOperationStatusQty;
 import static com.blueseer.sch.schData.updatePlanOrder;
+import static com.blueseer.sch.schData.updatePlanOrderRemarks;
 import static com.blueseer.sch.schData.updatePlanOrderStatus;
 import static com.blueseer.sch.schData.updatePlanStatus;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.boolToJson;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.doubleToJson;
@@ -230,6 +233,21 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     request.getHeader("param2")))); 
             break;    
         }
+        
+        case "updatePlanOrderRemarks" : {
+            response.getWriter().print(boolToJson(updatePlanOrderRemarks(request.getHeader("param1"), 
+                    request.getHeader("param2")))); 
+            break;    
+        }
+        
+        case "updatePlanOperationStatusQty" : {
+            response.getWriter().print(boolToJson(updatePlanOperationStatusQty(request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    bsParseDouble(request.getHeader("param4"))))); 
+            break;    
+        }
+        
         
         case "updatePlanOperation" : { 
             String line;

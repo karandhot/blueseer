@@ -1525,8 +1525,21 @@ public class schData {
       return myreturn;
   }
     
-    public static void updatePlanOrderRemarks(String order, String remarks) {
-    try {
+    public static boolean updatePlanOrderRemarks(String order, String remarks) {
+      if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "updatePlanOrderRemarks"});
+            list.add(new String[]{"param1", order});
+            list.add(new String[]{"param2", remarks});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServSCH"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        } 
+      boolean r = false;
+        try {
             Connection con = null;
             if (ds != null) {
               con = ds.getConnection();
@@ -1540,6 +1553,7 @@ public class schData {
                     + "plan_rmks = " + "'" + remarks + "'"
                     + " where plan_nbr = " + "'" + order + "'" 
                     + ";");
+                r = true;
            
         } catch (SQLException s) {
             MainFrame.bslog(s);
@@ -1555,10 +1569,25 @@ public class schData {
     } catch (Exception e) {
         MainFrame.bslog(e);
     }
+        return r;
   }
     
     
     public static boolean updatePlanOperationStatusQty(String plan, String op, String status, double qty) {
+      if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "updatePlanOperationStatusQty"});
+            list.add(new String[]{"param1", plan});
+            list.add(new String[]{"param2", op});
+            list.add(new String[]{"param3", status});
+            list.add(new String[]{"param4", bsNumber(qty)});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServSCH"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        } 
       boolean x = false;  
       try {
             Connection con = null;
