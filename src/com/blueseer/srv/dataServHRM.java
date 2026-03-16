@@ -26,12 +26,22 @@ SOFTWARE.
 package com.blueseer.srv;
 
 
+import com.blueseer.hrm.hrmData;
+import static com.blueseer.hrm.hrmData.addEmployeeTransaction;
+import static com.blueseer.hrm.hrmData.deleteEmpMstr;
 import static com.blueseer.hrm.hrmData.getEmpIDByFormalName;
 import static com.blueseer.hrm.hrmData.getEmpNameAll;
+import static com.blueseer.hrm.hrmData.getEmployeeMstr;
 import static com.blueseer.hrm.hrmData.getHrmRptPickerData;
+import static com.blueseer.hrm.hrmData.updateEmployeeTransaction;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -73,6 +83,63 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     String id = request.getHeader("id");
     
     switch (id) {
+        
+        case "addEmployeeTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            hrmData.emp_mstr em = om.readValue(ca[0], hrmData.emp_mstr.class); 
+            hrmData.emp_exception[] sdarray = om.readValue(ca[1], hrmData.emp_exception[].class);
+            ArrayList<hrmData.emp_exception> svlist = new ArrayList<hrmData.emp_exception>(Arrays.asList(sdarray));             
+            response.getWriter().print(arrayToJson(addEmployeeTransaction(em, svlist))); 
+            break;
+            }
+        
+        case "updateEmployeeTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            hrmData.emp_mstr em = om.readValue(ca[0], hrmData.emp_mstr.class); 
+            hrmData.emp_exception[] sdarray = om.readValue(ca[1], hrmData.emp_exception[].class);
+            ArrayList<hrmData.emp_exception> svlist = new ArrayList<hrmData.emp_exception>(Arrays.asList(sdarray));             
+            response.getWriter().print(arrayToJson(updateEmployeeTransaction(em, svlist))); 
+            break;
+            }
+        
+        case "deleteEmpMstr" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            hrmData.emp_mstr em = om.readValue(sb.toString(), hrmData.emp_mstr.class);                    
+            response.getWriter().print(arrayToJson(deleteEmpMstr(em))); 
+            break;
+            }
+        
+        case "getEmployeeMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            hrmData.emp_mstr x = getEmployeeMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
         
         case "getEmpNameAll" : {       
             response.getWriter().print(ArrayListStringArrayToJson(getEmpNameAll()));

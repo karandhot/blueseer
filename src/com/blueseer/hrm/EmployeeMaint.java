@@ -86,6 +86,7 @@ import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import static com.blueseer.utl.BlueSeerUtils.lurb2;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerT;
+import com.blueseer.utl.IBlueSeerV;
 import static com.blueseer.utl.OVData.canUpdate;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -122,11 +123,18 @@ import javax.swing.text.StyledDocument;
  *
  * @author vaughnte
  */
-public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerT  {
+public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerV  {
 
      // global variable declarations
-                boolean isLoad = false;
-                public static emp_mstr x = null;
+    boolean canUpdate = false;
+    boolean isAutoPost = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String defaultCC = "";
+    String default_payc_payrolltax_acct = "";
+    boolean isLoad = false;
+    public static emp_mstr x = null;
     // global datatablemodel declarations
     javax.swing.table.DefaultTableModel excmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
             new String[]{
@@ -397,8 +405,12 @@ public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerT  {
        }
     }
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
+       
+       if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "shifts,payc_payrolltax_acct,depts,states,countries");
+       }
        
         jTabbedPane1.removeAll();
         jTabbedPane1.add("Main", jPanelMain);
@@ -410,8 +422,6 @@ public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerT  {
         tableattachment.setModel(attachmentmodel);
         tableattachment.getTableHeader().setReorderingAllowed(false);
         tableattachment.getColumnModel().getColumn(0).setMaxWidth(100);
-        
-        ArrayList<String[]> initDataSets = hrmData.getHRInit();
         
         
         mymodel.setNumRows(0);
@@ -427,9 +437,9 @@ public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerT  {
         chartpanel.setVisible(false);
         summarypanel.setVisible(true);
         
-         tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-         tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-         tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+         tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+         tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+         tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
         
         tbkey.setText("");
         tbkey.setEditable(true);
@@ -477,7 +487,6 @@ public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerT  {
         ddstate.removeAllItems();
         ddcountry.removeAllItems();
         
-        String defaultsite = "";
         
         for (String[] s : initDataSets) {
            
@@ -485,24 +494,38 @@ public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerT  {
               ddsite.addItem(s[1]); 
             }
             if (s[0].equals("site")) {
-              defaultsite = s[1]; 
+              defaultSite = s[1]; 
+            }
+            if (s[0].equals("cc")) {
+              defaultCC = s[1]; 
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("payc_payrolltax_acct")) {
+              default_payc_payrolltax_acct = s[1]; 
             }
             if (s[0].equals("shifts")) {
               ddshift.addItem(s[1]); 
             }
-            if (s[0].equals("departments")) {
+            
+            if (s[0].equals("depts")) {
               dddept.addItem(s[1]); 
             }
            
             if (s[0].equals("states")) {
               ddstate.addItem(s[1]); 
             }
+            
             if (s[0].equals("countries")) {
               ddcountry.addItem(s[1]); 
             }
             
         }
-        ddsite.setSelectedItem(defaultsite);
+        ddsite.setSelectedItem(defaultSite);
         if (ddshift.getItemCount() == 0) {
             ddshift.addItem("NotDef");
         }
@@ -513,7 +536,7 @@ public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerT  {
     
     public void newAction(String x) {
         setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btdelete.setEnabled(false);
@@ -540,7 +563,7 @@ public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerT  {
         
     public boolean validateInput(dbaction x) {
         
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -600,7 +623,7 @@ public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerT  {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         
@@ -725,8 +748,8 @@ public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerT  {
                 tbkey.getText().toString(),
                 exctable.getValueAt(j, 1).toString(),
                 exctable.getValueAt(j, 0).toString(),
-                OVData.getDefaultPayTaxAcct(),
-                OVData.getDefaultCC(),
+                default_payc_payrolltax_acct,
+                defaultCC,
                 exctable.getValueAt(j, 2).toString(),
                 exctable.getValueAt(j, 3).toString().replace(defaultDecimalSeparator, '.'));     
                 list.add(x);
@@ -1306,7 +1329,7 @@ public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerT  {
         jLabel28 = new javax.swing.JLabel();
         btdelete = new javax.swing.JButton();
         btnew = new javax.swing.JButton();
-        tbclear = new javax.swing.JButton();
+        btclear = new javax.swing.JButton();
         btlookup = new javax.swing.JButton();
         btchangelog = new javax.swing.JButton();
         jPanelPay = new javax.swing.JPanel();
@@ -1636,7 +1659,7 @@ public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerT  {
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(tbtitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel56))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 5, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(cbactive)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1783,11 +1806,11 @@ public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerT  {
             }
         });
 
-        tbclear.setText("Clear");
-        tbclear.setName("btclear"); // NOI18N
-        tbclear.addActionListener(new java.awt.event.ActionListener() {
+        btclear.setText("Clear");
+        btclear.setName("btclear"); // NOI18N
+        btclear.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tbclearActionPerformed(evt);
+                btclearActionPerformed(evt);
             }
         });
 
@@ -1833,7 +1856,7 @@ public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerT  {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnew)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(tbclear)
+                                .addComponent(btclear)
                                 .addGap(0, 0, Short.MAX_VALUE))
                             .addGroup(jPanelMainLayout.createSequentialGroup()
                                 .addComponent(jLabel15)
@@ -1856,7 +1879,7 @@ public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerT  {
                         .addComponent(jLabel46))
                     .addGroup(jPanelMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(btnew)
-                        .addComponent(tbclear))
+                        .addComponent(btclear))
                     .addComponent(btlookup)
                     .addComponent(btchangelog))
                 .addGap(12, 12, 12)
@@ -2365,10 +2388,11 @@ public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerT  {
         }
     }//GEN-LAST:event_tbrateFocusLost
 
-    private void tbclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbclearActionPerformed
+    private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
         BlueSeerUtils.messagereset();
+        initDataSets = null;
         initvars(null);
-    }//GEN-LAST:event_tbclearActionPerformed
+    }//GEN-LAST:event_btclearActionPerformed
 
     private void btlookupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupActionPerformed
         lookUpFrame();
@@ -2414,6 +2438,7 @@ public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerT  {
     private javax.swing.JButton btadd;
     private javax.swing.JButton btaddattachment;
     private javax.swing.JButton btchangelog;
+    private javax.swing.JButton btclear;
     private javax.swing.JButton btdelete;
     private javax.swing.JButton btdeleteattachment;
     private javax.swing.JButton btexcadd;
@@ -2513,7 +2538,6 @@ public class EmployeeMaint extends javax.swing.JPanel implements IBlueSeerT  {
     private javax.swing.JTable tablereport;
     private javax.swing.JTextField tbaccount;
     private javax.swing.JTextField tbcity;
-    private javax.swing.JButton tbclear;
     private javax.swing.JTextField tbclockin;
     private javax.swing.JTextField tbefladays;
     private javax.swing.JTextField tbemercontact;

@@ -3477,12 +3477,33 @@ public class admData {
                             }
                         }
                         
+                        if (sd.equals("payc_payrolltax_acct")) {
+                            res = st.executeQuery("select payc_payrolltax_acct from pay_ctrl;" );
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "payc_payrolltax_acct";
+                               s[1] = res.getString("payc_payrolltax_acct");
+                               lines.add(s);
+                            }
+                        }
+                        
+                        
                         if (sd.equals("serialize")) {
                             res = st.executeQuery("select serialize from inv_ctrl;");
                             while (res.next()) {
                                String[] s = new String[2];
                                s[0] = "serialize";
                                s[1] = res.getString("serialize");
+                               lines.add(s);
+                            }
+                        }
+                        
+                        if (sd.equals("shifts")) {
+                            res = st.executeQuery("select shf_id from shift_mstr order by shf_id ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "shifts";
+                               s[1] = res.getString("shf_id");
                                lines.add(s);
                             }
                         }
@@ -3496,6 +3517,7 @@ public class admData {
                                lines.add(s);
                             }
                         }
+                        
                         if (sd.equals("reps")) {
                             res = st.executeQuery("select slsp_name from slsp_mstr order by slsp_name ;");
                             while (res.next()) {
