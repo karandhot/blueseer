@@ -37,12 +37,15 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import com.blueseer.fgl.fglData;
 import com.blueseer.hrm.hrmData;
 import static com.blueseer.hrm.hrmData.getEmpIDByFormalName;
 import static com.blueseer.inv.invData.addUOMMstr;
 import static com.blueseer.inv.invData.deleteUOMMstr;
+import static com.blueseer.inv.invData.getItemMstr;
 import static com.blueseer.inv.invData.getUOMMstr;
+import com.blueseer.inv.invData.item_mstr;
 import com.blueseer.inv.invData.uom_mstr;
 import static com.blueseer.inv.invData.updateUOMMstr;
 import com.blueseer.ord.ordData;
@@ -96,9 +99,12 @@ import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeer;
 import com.blueseer.utl.IBlueSeerT;
+import com.blueseer.utl.IBlueSeerV;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.canUpdate;
 import static com.blueseer.utl.OVData.getSysMetaValue;
+import static com.blueseer.utl.OVData.printJasperJobOperationTicket;
+import static com.blueseer.utl.OVData.printJasperJobTicket;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -107,11 +113,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -149,10 +150,16 @@ import org.jfree.data.general.DefaultPieDataset;
  *
  * @author vaughnte
  */
-public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {  
+public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerV {  
 
     // global variable declarations
     boolean isLoad = false;
+    boolean canUpdate = false;
+    boolean isAutoPost = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String defaultCC = "";
     boolean isOpScan = false;
     boolean requireOpScan = false;
     boolean hasInit = false;
@@ -388,8 +395,9 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
        }
     }
          
-    public void setComponentDefaultValues() {
-       isLoad = true;
+    public void setComponentDefaultValues(boolean init) {
+       isLoad = true;      
+       
        
         jTabbedPane1.removeAll();
         jTabbedPane1.add("Main", panelMain);
@@ -397,6 +405,11 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
         jTabbedPane1.add("TimeClock", panelClock);
         jTabbedPane1.add("Charts", panelChart);
        
+        if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "employees,tooling,nontooling");
+        }
+        
+        
         lblchart.setHorizontalTextPosition(SwingConstants.CENTER);
         ddchart.removeAllItems();
         ddchart.addItem("Total Hours By Operator");
@@ -435,30 +448,42 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
         hasInit = true;
         }
         
-        ArrayList<String> operators = hrmData.getEmpNameAll();
-        ddoperator.removeAllItems();
-        for (String operator : operators) {
-            ddoperator.addItem(operator);
-          }
-        ddoperator.insertItemAt("", 0);
         
+        ddoperator.removeAllItems();
         ddmaterial.removeAllItems();
-        ArrayList<String> mylist = invData.getItemsByTypeExcept(new String[]{"TOOLING"});
-        for (int i = 0; i < mylist.size(); i++) {
-            ddmaterial.addItem(mylist.get(i));
+        ddtooling.removeAllItems();
+        
+        
+        
+        ddop.removeAllItems();
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+          
+            if (s[0].equals("employees")) {
+              ddoperator.addItem(s[1]); 
+            }
+            if (s[0].equals("tooling")) {
+              ddtooling.addItem(s[1]); 
+            }
+            if (s[0].equals("nontooling")) {
+              ddmaterial.addItem(s[1]); 
+            }
         }
+        ddoperator.insertItemAt("", 0);
+        ddtooling.insertItemAt("", 0);
+        ddtooling.setSelectedIndex(0);
         ddmaterial.insertItemAt("", 0);
         ddmaterial.setSelectedIndex(0);
         
-        ddtooling.removeAllItems();
-        ArrayList<String> tooling = invData.getItemsByType("TOOLING");
-        for (int i = 0; i < tooling.size(); i++) {
-            ddtooling.addItem(tooling.get(i));
-        }
-        ddtooling.insertItemAt("", 0);
-        ddtooling.setSelectedIndex(0);
-        
-        ddop.removeAllItems();
         
        isLoad = false;
     }
@@ -466,7 +491,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
     public void newAction(String x) {
         // non-standard newAction
         setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         
         tbkey.setEditable(false);
@@ -524,7 +549,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public boolean validateInput(dbaction x) {
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -537,7 +562,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
        requireOpScan = BlueSeerUtils.ConvertStringToBool(getSysMetaValue("system", "inventorycontrol", "operation_scan_required"));
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btlookup.setEnabled(true);
         btgeneric.setEnabled(true);
         
@@ -886,7 +911,14 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public void printticket(String jobid, String bustitle, String operation, String order) {
-        
+       String jobtype =  (order.equals("0")) ? "GNRC" : "SRVC";
+       if (! operation.isBlank()) {
+           printJasperJobOperationTicket(jobid, operation, jobtype, bustitle);
+       } else {
+           printJasperJobTicket(jobid, bustitle, jobtype);
+       }
+       
+       /*
        try {
             Connection con = null;
             if (ds != null) {
@@ -925,7 +957,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
-        
+       */ 
     }
         
     public String[] autoInvoiceServiceOrder(String nbr, String jobid) {
@@ -1730,6 +1762,7 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
         BlueSeerUtils.messagereset();
+        initDataSets = null;
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 
@@ -1877,15 +1910,17 @@ public class JobScanIOProject extends javax.swing.JPanel implements IBlueSeerT {
 
     private void ddmaterialActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddmaterialActionPerformed
         if (! isLoad && ddmaterial.getSelectedItem() != null) {
-            lblmaterial.setText(invData.getItemDesc(ddmaterial.getSelectedItem().toString()));
-            tbcost.setText(bsNumber(invData.getItemPurchPrice(ddmaterial.getSelectedItem().toString())));
+            item_mstr im = getItemMstr(new String[]{ddmaterial.getSelectedItem().toString()});
+            lblmaterial.setText(im.it_desc());
+            tbcost.setText(bsNumber(im.it_pur_price()));
         }
     }//GEN-LAST:event_ddmaterialActionPerformed
 
     private void ddtoolingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddtoolingActionPerformed
         if (! isLoad && ddtooling.getSelectedItem() != null) {
-            lbltooling.setText(invData.getItemDesc(ddtooling.getSelectedItem().toString()));
-            tbcost.setText(bsNumber(invData.getItemPurchPrice(ddtooling.getSelectedItem().toString())));
+            item_mstr im = getItemMstr(new String[]{ddmaterial.getSelectedItem().toString()});
+            lbltooling.setText(im.it_desc());
+            tbcost.setText(bsNumber(im.it_pur_price()));
         }
     }//GEN-LAST:event_ddtoolingActionPerformed
 

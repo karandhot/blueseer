@@ -26,6 +26,7 @@ SOFTWARE.
 package com.blueseer.prd;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.dbtype;
 import static bsmf.MainFrame.ds;
@@ -37,6 +38,11 @@ import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToInt;
+import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -464,6 +470,19 @@ public class prdData {
    public static String[] getJobClockInTime(int plan, int op, String empnbr) {
            // get billto specific data
             // aracct, arcc, currency, bank, terms, carrier, onhold, site
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getJobClockInTime"});
+            list.add(new String[]{"param1",  bsNumber(plan)});
+            list.add(new String[]{"param2",  bsNumber(op)});
+            list.add(new String[]{"param3",  empnbr});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServPRD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
         String[] timeinfo = new String[]{"",""};
         String sql = "select jobc_indate, jobc_intime from job_clock where jobc_planid = ? and jobc_op = ? and jobc_empnbr = ? and jobc_code = '01';";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
@@ -485,7 +504,18 @@ public class prdData {
     }
    
    public static ArrayList<String[]> getJobClockHistory(String now) {
-      ArrayList<String[]> x = new ArrayList<String[]>();
+      if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getJobClockHistory"});
+            list.add(new String[]{"param1",  now});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServPRD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+       ArrayList<String[]> x = new ArrayList<String[]>();
       try {
             Connection con = null;
             if (ds != null) {
@@ -532,6 +562,17 @@ public class prdData {
   }
    
    public static ArrayList<String[]> getJobClockDetail(int plan) {
+      if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getJobClockDetail"});
+            list.add(new String[]{"param1",  bsNumber(plan)});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServPRD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
       ArrayList<String[]> x = new ArrayList<String[]>();
       try {
             Connection con = null;
@@ -581,6 +622,19 @@ public class prdData {
   }
    
    public static int updatePlanOPNotes(String job, String op, String notes) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "updatePlanOPNotes"});
+            list.add(new String[]{"param1", job});
+            list.add(new String[]{"param2", op});
+            list.add(new String[]{"param3", notes});
+            try {
+                return jsonToInt(sendServerPost(list, "", null, "dataServPRD")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0;
+            }
+        }
         int x = 0;
         try {
             
@@ -616,6 +670,20 @@ public class prdData {
     }
 
    public static int updatePlanOPOperator(String job, String op, String operator, String operatorname) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "updatePlanOPOperator"});
+            list.add(new String[]{"param1", job});
+            list.add(new String[]{"param2", op});
+            list.add(new String[]{"param3", operator});
+            list.add(new String[]{"param4", operatorname});
+            try {
+                return jsonToInt(sendServerPost(list, "", null, "dataServPRD")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0;
+            }
+        }
         int x = 0;
         try {
             
@@ -652,7 +720,20 @@ public class prdData {
     }
 
    public static int updatePlanOPDate(String job, String op, String scheddate) {
-        int x = 0;
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "updatePlanOPDate"});
+            list.add(new String[]{"param1", job});
+            list.add(new String[]{"param2", op});
+            list.add(new String[]{"param3", scheddate});
+            try {
+                return jsonToInt(sendServerPost(list, "", null, "dataServPRD")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0;
+            }
+        } 
+       int x = 0;
         try {
             
             Connection con = null;
@@ -687,6 +768,19 @@ public class prdData {
     }
 
    public static int updatePlanOPDesc(String job, String op, String desc) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "updatePlanOPDesc"});
+            list.add(new String[]{"param1", job});
+            list.add(new String[]{"param2", op});
+            list.add(new String[]{"param3", desc});
+            try {
+                return jsonToInt(sendServerPost(list, "", null, "dataServPRD")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0;
+            }
+        } 
         int x = 0;
         try {
             
@@ -720,10 +814,19 @@ public class prdData {
         }
         return x;
     }
-
    
    public static int getPlanOpLastOp(String jobid) {
-        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getPlanOpLastOp"});
+            list.add(new String[]{"param1", jobid});
+            try {
+                return jsonToInt(sendServerPost(list, "", null, "dataServPRD")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0;
+            }
+        }
           int x = 0;
           
           try {
@@ -758,9 +861,27 @@ public class prdData {
         }
           return x;
       }
-    
    
    public static int addPlanOpDet(String job, String op, String datatype, String item, String itemdesc, double qty, double cost, String operator, int consumable) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "addPlanOpDet"});
+            list.add(new String[]{"param1", job});
+            list.add(new String[]{"param2", op});
+            list.add(new String[]{"param3", datatype});
+            list.add(new String[]{"param4", item});
+            list.add(new String[]{"param5", itemdesc});
+            list.add(new String[]{"param6", bsNumber(qty)});
+            list.add(new String[]{"param7", bsNumber(cost)});
+            list.add(new String[]{"param8", operator});
+            list.add(new String[]{"param9", bsNumber(consumable)});
+            try {
+                return jsonToInt(sendServerPost(list, "", null, "dataServPRD")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0;
+            }
+        }
         int x = 0;
         try {
             
@@ -835,6 +956,18 @@ public class prdData {
     }
    
    public static void deletePlanOpDet(String id) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "deletePlanOpDet"});
+            list.add(new String[]{"param1", id});
+            try {
+                sendServerPost(list, "", null, "dataServPRD");
+                return;
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        }
         try {
 
                 Connection con = DriverManager.getConnection(url + db, user, pass);
@@ -860,7 +993,18 @@ public class prdData {
     }
    
    public static ArrayList<String[]> getPlanOpDet(String job) {
-       ArrayList<String[]> x = new ArrayList<String[]>();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getPlanOpDet"});
+            list.add(new String[]{"param1",  job});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServPRD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+      ArrayList<String[]> x = new ArrayList<String[]>();
       try {
             Connection con = null;
             if (ds != null) {
@@ -908,7 +1052,19 @@ public class prdData {
    }
    
    public static ArrayList<String[]> getPlanOpDet(String job, String op) {
-       ArrayList<String[]> x = new ArrayList<String[]>();
+      if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getPlanOpDetX"});
+            list.add(new String[]{"param1",  job});
+            list.add(new String[]{"param2",  op});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServPRD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }  
+      ArrayList<String[]> x = new ArrayList<String[]>();
       try {
             Connection con = null;
             if (ds != null) {

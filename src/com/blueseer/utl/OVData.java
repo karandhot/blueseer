@@ -54,6 +54,7 @@ import com.blueseer.hrm.hrmData;
 import com.blueseer.inv.calcCost;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData._updateInventoryBalance;
+import static com.blueseer.lbl.lblData.getJobOperationPrintData;
 import static com.blueseer.lbl.lblData.getJobTicketPrintData;
 import static com.blueseer.lbl.lblData.getLabelMultiPrintData;
 import static com.blueseer.ord.ordData.getOrderPrintData;
@@ -19803,8 +19804,8 @@ return mystring;
         String site_csz = "";
         String ship_csz = "";
         String logo = "";
-        String imagedir = "";
-        String jasperdir = "";
+        String imagedir = getSystemImageDirectory();
+        String jasperdir = getSystemJasperDirectory();
         String  now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         
         String jasperfile = getSysMetaValue("system", "inventorycontrol", "jasper_job_ticket");  
@@ -19816,10 +19817,14 @@ return mystring;
               jasperfile = "jobSVticket.jasper";
               bustitle = "Job Service Ticket";
           }
-        
+          if (jobtype.equals("GNRC")) {
+                jasperfile = "jobGRticket.jasper";
+                bustitle = "Generic Service Ticket";    
+          }
+       // System.out.println("HERE: " + jasperfile + " / " + jobid + " / " + jobtype);
         int k = 0;
-        for (Object[] rowData : rData) {
-            rowData[0] = bsParseInt(rowData[0].toString());
+        for (Object[] rowData : rData) {            
+           // rowData[0] = bsParseInt(rowData[0].toString());
             rowData[2] = bsParseInt(rowData[2].toString());
             rowData[3] = bsParseDouble(rowData[3].toString());
             rowData[9] = bsParseInt(rowData[9].toString());
@@ -19827,7 +19832,6 @@ return mystring;
             rowData[19] = bsParseDouble(rowData[19].toString());
             if (k == 0) {
                // logo = (rowData[39].toString().isBlank()) ? rowData[40].toString() : rowData[39].toString(); // if cm_logo = "" then site_logo
-                jasperdir = rowData[24].toString();
                // imagedir = rowData[41].toString();
               //  ship_csz = rowData[18].toString() + " " + rowData[19].toString() + " " + rowData[20].toString() + " " + rowData[21].toString();
               //  site_csz = rowData[25].toString() + " " + rowData[26].toString() + " " + rowData[27].toString() + " " + rowData[28].toString();
@@ -19840,7 +19844,8 @@ return mystring;
         String columnnames = "plan_nbr,plan_item,plan_qty_req,plan_qty_sched,plan_date_due," +
                        "plan_date_sched,plan_date_create,plan_order,plan_type,plan_line," +
                        "plan_cell,it_item,it_rev,it_desc,it_wf,wf_op,wf_desc,wf_cell," +
-                       "assert,runrate,custpo,custcode,bomcode,custitem,ov_jasper_directory";
+                       "assert,runrate,custpo,custcode,bomcode,custitem,ov_jasper_directory," +
+                       "plo_operator,plo_operatorname,plo_cell,plo_op,plo_desc,plo_notes,plan_rmks";
         String[] columnnamesarray = columnnames.split(",", -1);
         JRDataSource datasource = new ListOfArrayDataSource(list, columnnamesarray);
         Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
@@ -19882,7 +19887,8 @@ return mystring;
                 return;
             }
         } else {
-            jsonString = getJobTicketPrintData(jobid); 
+            jsonString = getJobOperationPrintData(jobid, op); 
+            System.out.println("HERE operation: " + jobid + " / " + op);
         }        
         Object[][] rData = jsonToData(jsonString);
         
@@ -19890,8 +19896,8 @@ return mystring;
         String site_csz = "";
         String ship_csz = "";
         String logo = "";
-        String imagedir = "";
-        String jasperdir = "";
+        String imagedir = getSystemImageDirectory();
+        String jasperdir = getSystemJasperDirectory();
         String  now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         
         String jasperfile = getSysMetaValue("system", "inventorycontrol", "jasper_operation_ticket");  
@@ -19902,12 +19908,21 @@ return mystring;
                 if (plantype.equals("SRVC")) {
                     jasperfile = "operationSVticket.jasper";
                 }
+                
+                if (plantype.equals("GNRC")) {
+                    jasperfile = "operationGRticket.jasper";
+                }
         
         int k = 0;
         for (Object[] rowData : rData) {
+            System.out.println("HERE operation: " + rowData[0] + " / " + rowData[1]);
             if (k == 0) {
+                rowData[2] = bsParseInt(rowData[2].toString());
+                rowData[3] = bsParseDouble(rowData[3].toString());
+                rowData[9] = bsParseInt(rowData[9].toString());
+                rowData[15] = bsParseInt(rowData[15].toString());
+                rowData[19] = bsParseDouble(rowData[19].toString());
                // logo = (rowData[39].toString().isBlank()) ? rowData[40].toString() : rowData[39].toString(); // if cm_logo = "" then site_logo
-                jasperdir = rowData[24].toString();
                // imagedir = rowData[41].toString();
               //  ship_csz = rowData[18].toString() + " " + rowData[19].toString() + " " + rowData[20].toString() + " " + rowData[21].toString();
               //  site_csz = rowData[25].toString() + " " + rowData[26].toString() + " " + rowData[27].toString() + " " + rowData[28].toString();
@@ -19921,7 +19936,7 @@ return mystring;
                        "plan_date_sched,plan_date_create,plan_order,plan_type,plan_line," +
                        "plan_cell,it_item,it_rev,it_desc,it_wf,wf_op,wf_desc,wf_cell," +
                        "assert,runrate,custpo,custcode,bomcode,custitem,ov_jasper_directory," +
-                       "plo_operator,plo_operatorname,plo_cell";
+                       "plo_operator,plo_operatorname,plo_cell,plo_op,plo_date,plo_qty,plo_desc,plo_notes,plan_rmks";
         String[] columnnamesarray = columnnames.split(",", -1);
         JRDataSource datasource = new ListOfArrayDataSource(list, columnnamesarray);
         Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);

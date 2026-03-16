@@ -37,6 +37,7 @@ import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import static com.blueseer.utl.BlueSeerUtils.xNull;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.sql.Connection;
@@ -749,15 +750,17 @@ public class lblData {
                sqlquery = "select plan_nbr, plan_item, plan_qty_req, plan_qty_sched, plan_date_due, " +
                        " plan_date_sched, plan_date_create, plan_order, plan_type, plan_line, " +
                        " plan_cell, it_item, it_rev, it_desc, it_wf, wf_op, wf_desc, wf_cell, ov_jasper_directory,  " +
+                       " plo_operator, plo_operator, plo_operatorname, plo_cell, plo_op, plo_desc, plo_notes, plan_rmks, " + 
                        " case when wf_assert = 0 then 'no' else 'yes' end as assert, " +
                        " case when wf_run_hours = 0 then '0' when wf_run_hours = '' then '0' when wf_run_hours is null then '0' else (1 / wf_run_hours) end as runrate, " +
                        " case when plan_type = 'DEMD' then so_po else 'N/A' end as custpo, " +
                        " case when plan_type = 'DEMD' then so_cust else 'N/A' end as custcode, " + 
                        " case when plan_type = 'DEMD' then sod_bom else bom_id end as bomcode, " +
                        " case when plan_type = 'DEMD' then sod_custitem else 'N/A' end as custitem " +
-                       " FROM plan_mstr inner join item_mstr on it_item = plan_item " +
+                       " FROM plan_mstr left outer join item_mstr on it_item = plan_item " +
                        " inner join ov_ctrl " + 
                        " left outer join wf_mstr on wf_id = it_wf " +
+                       " left outer join plan_operation on plo_parent = plan_nbr " +
                        " left outer join bom_mstr on bom_item = plan_item and bom_primary = '1' and bom_enabled = '1' " +
                        " left outer join so_mstr on so_nbr = plan_order " +
                        " left outer join sod_det on sod_nbr = so_nbr and sod_item = plan_item and sod_line = plan_line " +
@@ -777,13 +780,13 @@ public class lblData {
                         rowArray.put(res.getString("plan_type"));
                         rowArray.put(res.getString("plan_line")); 
                         rowArray.put(res.getString("plan_cell")); // 10 zero base
-                        rowArray.put(res.getString("it_item")); 
-                        rowArray.put(res.getString("it_rev")); 
-                        rowArray.put(res.getString("it_desc"));
-                        rowArray.put(res.getString("it_wf"));
-                        rowArray.put(res.getString("wf_op"));
-                        rowArray.put(res.getString("wf_desc"));
-                        rowArray.put(res.getString("wf_cell"));
+                        rowArray.put(xNull(res.getString("it_item"))); 
+                        rowArray.put(xNull(res.getString("it_rev"))); 
+                        rowArray.put(xNull(res.getString("it_desc")));
+                        rowArray.put(xNull(res.getString("it_wf")));
+                        rowArray.put(xNull(res.getString("wf_op")));
+                        rowArray.put(xNull(res.getString("wf_desc")));
+                        rowArray.put(xNull(res.getString("wf_cell")));
                         rowArray.put(res.getString("assert"));  
                         rowArray.put(res.getString("runrate"));
                         rowArray.put(res.getString("custpo")); // 20 zero base
@@ -791,6 +794,14 @@ public class lblData {
                         rowArray.put(res.getString("bomcode"));
                         rowArray.put(res.getString("custitem"));
                         rowArray.put(res.getString("ov_jasper_directory"));
+                        
+                        rowArray.put(xNull(res.getString("plo_operator")));
+                        rowArray.put(xNull(res.getString("plo_operatorname")));
+                        rowArray.put(xNull(res.getString("plo_cell")));
+                        rowArray.put(xNull(res.getString("plo_op")));
+                        rowArray.put(xNull(res.getString("plo_desc")));
+                        rowArray.put(xNull(res.getString("plo_notes"))); // 30 zero based
+                        rowArray.put(res.getString("plan_rmks"));
                         jsonarray.put(rowArray);
                         i++;
                     }
@@ -824,26 +835,25 @@ public class lblData {
             ResultSet res = null;
             
             try{
-                String sqlquery = ""; 
                
-               sqlquery = "select plan_nbr, plan_item, plan_qty_req, plan_qty_sched, plan_date_due, " +
+              String sqlquery = "select plan_nbr, plan_item, plan_qty_req, plan_qty_sched, plan_date_due, " +
                        " plan_date_sched, plan_date_create, plan_order, plan_type, plan_line, " +
                        " plan_cell, plo_operator, plo_operatorname, plo_cell, it_item, it_rev, it_desc, it_wf, wf_op, wf_desc, wf_cell, ov_jasper_directory,  " +
+                       " plo_op, plo_date, plo_qty, plo_desc, plo_notes, plan_rmks, " +
                        " case when wf_assert = 0 then 'no' else 'yes' end as assert, " +
                        " case when wf_run_hours = 0 then '0' when wf_run_hours = '' then '0' when wf_run_hours is null then '0' else (1 / wf_run_hours) end as runrate, " +
                        " case when plan_type = 'DEMD' then so_po else 'N/A' end as custpo, " +
                        " case when plan_type = 'DEMD' then so_cust else 'N/A' end as custcode, " + 
                        " case when plan_type = 'DEMD' then sod_bom else bom_id end as bomcode, " +
                        " case when plan_type = 'DEMD' then sod_custitem else 'N/A' end as custitem " +
-                       " FROM plan_mstr inner join item_mstr on it_item = plan_item " +
+                       " FROM plan_mstr left outer join item_mstr on it_item = plan_item " +
                        " inner join ov_ctrl " + 
-                       " left outer join wf_mstr on wf_id = it_wf " +
-                       " left outer join plan_operation on plo_parent = plan_nbr and plo_op = wf_op " +
+                       " left outer join wf_mstr on wf_id = it_wf and wf_op = " + "'" + op + "'" +
+                       " left outer join plan_operation on plo_parent = plan_nbr and plo_op = " + "'" + op + "'" +
                        " left outer join bom_mstr on bom_item = plan_item and bom_primary = '1' and bom_enabled = '1' " +
                        " left outer join so_mstr on so_nbr = plan_order " +
                        " left outer join sod_det on sod_nbr = so_nbr and sod_item = plan_item and sod_line = plan_line " +
                        " where plan_nbr = " + "'" + jobid + "'" + 
-                       " and wf_op = " + "'" + op + "'" +
                        " ;"; 
                res = st.executeQuery(sqlquery);
                     int i = 0;
@@ -860,13 +870,13 @@ public class lblData {
                         rowArray.put(res.getString("plan_type"));
                         rowArray.put(res.getString("plan_line")); 
                         rowArray.put(res.getString("plan_cell")); // 10 zero base
-                        rowArray.put(res.getString("it_item")); 
-                        rowArray.put(res.getString("it_rev")); 
-                        rowArray.put(res.getString("it_desc"));
-                        rowArray.put(res.getString("it_wf"));
-                        rowArray.put(res.getString("wf_op"));
-                        rowArray.put(res.getString("wf_desc"));
-                        rowArray.put(res.getString("wf_cell"));
+                        rowArray.put(xNull(res.getString("it_item"))); 
+                        rowArray.put(xNull(res.getString("it_rev"))); 
+                        rowArray.put(xNull(res.getString("it_desc")));
+                        rowArray.put(xNull(res.getString("it_wf")));
+                        rowArray.put(xNull(res.getString("wf_op")));
+                        rowArray.put(xNull(res.getString("wf_desc")));
+                        rowArray.put(xNull(res.getString("wf_cell")));
                         rowArray.put(res.getString("assert"));  
                         rowArray.put(res.getString("runrate"));
                         rowArray.put(res.getString("custpo")); // 20 zero base
@@ -874,9 +884,15 @@ public class lblData {
                         rowArray.put(res.getString("bomcode"));
                         rowArray.put(res.getString("custitem"));
                         rowArray.put(res.getString("ov_jasper_directory"));
-                        rowArray.put(res.getString("plo_operator"));
-                        rowArray.put(res.getString("plo_operatorname"));
-                        rowArray.put(res.getString("plo_cell"));
+                        rowArray.put(xNull(res.getString("plo_op")));
+                        rowArray.put(xNull(res.getString("plo_operator")));
+                        rowArray.put(xNull(res.getString("plo_operatorname")));
+                        rowArray.put(xNull(res.getString("plo_cell")));
+                        rowArray.put(xNull(res.getString("plo_date")));
+                        rowArray.put(xNull(res.getString("plo_qty")));
+                        rowArray.put(xNull(res.getString("plo_desc")));
+                        rowArray.put(xNull(res.getString("plo_notes")));    
+                        rowArray.put(xNull(res.getString("plan_rmks")));
                         jsonarray.put(rowArray);
                         i++;
                     }

@@ -26,11 +26,27 @@ SOFTWARE.
 package com.blueseer.srv;
 
 
+import static com.blueseer.prd.prdData.addPlanOpDet;
+import static com.blueseer.prd.prdData.deletePlanOpDet;
+import static com.blueseer.prd.prdData.getJobClockDetail;
+import static com.blueseer.prd.prdData.getJobClockHistory;
+import static com.blueseer.prd.prdData.getJobClockInTime;
+import static com.blueseer.prd.prdData.getPlanOpDet;
+import static com.blueseer.prd.prdData.getPlanOpLastOp;
 import static com.blueseer.prd.prdData.getPrdRptPickerData;
 import static com.blueseer.prd.prdData.getSerialBrowseView;
 import static com.blueseer.prd.prdData.getSerialBrowseViewDet;
 import static com.blueseer.prd.prdData.getTransBrowseView;
+import static com.blueseer.prd.prdData.updatePlanOPDate;
+import static com.blueseer.prd.prdData.updatePlanOPDesc;
+import static com.blueseer.prd.prdData.updatePlanOPNotes;
+import static com.blueseer.prd.prdData.updatePlanOPOperator;
+import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import static com.blueseer.utl.BlueSeerUtils.intToJson;
 import java.io.IOException;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
@@ -118,7 +134,87 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         response.getWriter().print(getPrdRptPickerData(x));  
         break;
         }
+    
+    case "addPlanOpDet" : {
+            response.getWriter().print(intToJson(addPlanOpDet(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5"),
+                    bsParseDouble(request.getHeader("param6")),
+                    bsParseDouble(request.getHeader("param7")),
+                    request.getHeader("param8"),
+                    bsParseInt(request.getHeader("param9"))))); 
+            break;    
+    }
         
+    case "getPlanOpLastOp" : {
+            response.getWriter().print(intToJson(getPlanOpLastOp(request.getHeader("param1")))); 
+            break;    
+    }
+    
+    case "updatePlanOPNotes" : {
+            response.getWriter().print(intToJson(updatePlanOPNotes(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3")))); 
+            break;    
+    }
+    
+    case "updatePlanOPOperator" : {
+            response.getWriter().print(intToJson(updatePlanOPOperator(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4")))); 
+            break;    
+    }
+    
+    case "updatePlanOPDate" : {
+            response.getWriter().print(intToJson(updatePlanOPDate(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3")))); 
+            break;    
+    }
+    
+    case "updatePlanOPDesc" : {
+            response.getWriter().print(intToJson(updatePlanOPDesc(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3")))); 
+            break;    
+    }
+    
+    
+    case "getPlanOpDet" : {       
+            response.getWriter().print(ArrayListStringArrayToJson(getPlanOpDet(request.getHeader("param1"))));
+            break;  
+    }
+    
+    case "getPlanOpDetX" : {       
+            response.getWriter().print(ArrayListStringArrayToJson(getPlanOpDet(request.getHeader("param1"), request.getHeader("param2"))));
+            break;  
+    }
+    
+    case "getJobClockHistory" : {       
+            response.getWriter().print(ArrayListStringArrayToJson(getJobClockHistory(request.getHeader("param1"))));
+            break;  
+    }
+    
+    case "getJobClockDetail" : {       
+            response.getWriter().print(ArrayListStringArrayToJson(getJobClockDetail(bsParseInt(request.getHeader("param1")))));
+            break;  
+    }
+    
+    case "getJobClockInTime" : {       
+            response.getWriter().print(arrayToJson(getJobClockInTime(bsParseInt(request.getHeader("param1")),
+                    bsParseInt(request.getHeader("param2")),
+                    request.getHeader("param3"))));
+            break;  
+    }
+    
+    case "deletePlanOpDet" : {       
+            deletePlanOpDet(request.getHeader("param1"));
+            break;  
+    }
+    
         default:
         response.getWriter().print("");
         System.out.println("no switch case exists in dataServPRD for id: " + id);    

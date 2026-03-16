@@ -3613,6 +3613,24 @@ public class admData {
                                lines.add(s);
                             }
                         }
+                        if (sd.equals("tooling")) {
+                            res = st.executeQuery("select it_item from item_mstr where it_type = 'TOOLING';");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "tooling";
+                               s[1] = res.getString("it_item");
+                               lines.add(s);
+                            }
+                        }
+                        if (sd.equals("nontooling")) {
+                            res = st.executeQuery("select it_item from item_mstr where it_type <> 'TOOLING';");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "nontooling";
+                               s[1] = res.getString("it_item");
+                               lines.add(s);
+                            }
+                        }
                         if (sd.equals("uoms")) {
                             res = st.executeQuery("select uom_id from uom_mstr;");
                             while (res.next()) {
