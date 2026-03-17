@@ -969,9 +969,14 @@ public class prdData {
       return x;
   }
    
-   public static int updatePlanOPNotes(String job, String op, String notes) throws UnsupportedEncodingException {
+   public static int updatePlanOPNotes(String job, String op, String notes) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
-            String notes_encoded = URLEncoder.encode(notes, StandardCharsets.UTF_8.toString());
+            String notes_encoded;
+            try {
+                notes_encoded = URLEncoder.encode(notes, StandardCharsets.UTF_8.toString());
+            } catch (UnsupportedEncodingException ex) {
+                bslog(ex);
+            }
             ArrayList<String[]> list = new ArrayList<>();
             list.add(new String[]{"id", "updatePlanOPNotes"});
             list.add(new String[]{"param1", job});
