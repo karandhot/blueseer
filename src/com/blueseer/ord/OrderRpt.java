@@ -777,7 +777,7 @@ public class OrderRpt extends javax.swing.JPanel {
         double total = 0;
         int i = 0;
         
-        modeltable.setNumRows(0);
+        
         
         if (roData != null) {
         
@@ -1396,6 +1396,7 @@ public class OrderRpt extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
+        modeltable.setNumRows(0);
         setPanelComponentState(this, false);
         executeTask("getOrderBrowseView", null);
 

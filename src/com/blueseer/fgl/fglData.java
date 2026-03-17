@@ -7130,7 +7130,7 @@ public class fglData {
             list.add(new String[]{"id", "getGLCalForPeriodRange"});
             list.add(new String[]{"param1", String.valueOf(year)});
             list.add(new String[]{"param2", String.valueOf(fromper)});
-            list.add(new String[]{"param2", String.valueOf(toper)});
+            list.add(new String[]{"param3", String.valueOf(toper)});
             try {
                 return jsonToArrayListString(sendServerPost(list, "", null, "dataServFIN"));
             } catch (IOException ex) {
