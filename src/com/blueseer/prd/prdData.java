@@ -244,14 +244,13 @@ public class prdData {
                               " where jobc_id = ? " + 
                               ";";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
-	PreparedStatement ps = con.prepareStatement(sql)) {
-       
-        ps.setString(2, indate);
-        ps.setString(3, outdate);
-        ps.setString(4, intime);
-        ps.setString(5, outtime);
-        ps.setDouble(6, bsParseDouble(tothrs));
-        ps.setString(1, recid);
+	PreparedStatement ps = con.prepareStatement(sql)) {       
+        ps.setString(1, indate);
+        ps.setString(2, outdate);
+        ps.setString(3, intime);
+        ps.setString(4, outtime);
+        ps.setDouble(5, bsParseDouble(tothrs));
+        ps.setString(6, recid);
         rows = ps.executeUpdate();
         if (rows > 0) {
            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};  
