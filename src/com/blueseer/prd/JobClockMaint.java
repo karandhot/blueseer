@@ -26,15 +26,10 @@ SOFTWARE.
 
 package com.blueseer.prd;
 
-import com.blueseer.tca.*;
-import bsmf.MainFrame;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.pass;
-import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
+import com.blueseer.prd.prdData.JobClockSet;
+import static com.blueseer.prd.prdData.getJobClockSet;
+import static com.blueseer.prd.prdData.updateJobClockRec;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
@@ -56,21 +51,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -189,29 +177,10 @@ public class JobClockMaint extends javax.swing.JPanel {
     }
     
     public boolean getTimeClockRecord(String recid) {
-        boolean hasRec = false;
-        
-        try{
-         Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-
-        int i = 0;
-
-        res = st.executeQuery("SELECT jobc_code, t.jobc_empnbr as t_emp_nbr, emp_fname, emp_lname, jobc_indate, jobc_outdate, jobc_intime, jobc_outtime, jobc_tothrs FROM  job_clock t inner join emp_mstr e on e.emp_nbr = t.jobc_empnbr " +
-                              " where jobc_id = " + "'" + recid + "'" +
-                              ";" );
-        while (res.next()) {
-            i++;
-            hasRec = true;
-            
-            if (res.getString("jobc_code").equals("01") ) {
+        JobClockSet jcs = getJobClockSet(new String[]{recid});
+                
+        if (jcs != null && jcs.m()[0].equals("0")) {
+            if (jcs.jc().jobc_code().equals("01") ) {
                 lblmessage.setText(getMessageTag(1159));
                 lblmessage.setForeground(Color.red);
                 btupdate.setEnabled(false);
@@ -220,50 +189,34 @@ public class JobClockMaint extends javax.swing.JPanel {
             btupdate.setEnabled(true);
             lblmessage.setText("");
             lblmessage.setForeground(Color.black);
-            lblemployee.setText(res.getString("t_emp_nbr") + "  " + res.getString("emp_fname") + 
-                               "  " + res.getString("emp_lname"));
-            dcindate.setDate(parseDate(res.getString("jobc_indate")));
-            dcoutdate.setDate(parseDate(res.getString("jobc_outdate")));
-            tbintime.setText(res.getString("jobc_intime"));
-            tbouttime.setText(res.getString("jobc_outtime"));
-            tbtothrs.setText(bsFormatDouble(res.getDouble("jobc_tothrs"),"2"));
-            tbcode.setText(res.getString("jobc_code"));
+            lblemployee.setText(jcs.em().emp_nbr() + "  " + jcs.em().emp_fname() + 
+                               "  " + jcs.em().emp_lname());
+            dcindate.setDate(parseDate(jcs.jc().jobc_indate()));
+            dcoutdate.setDate(parseDate(jcs.jc().jobc_outdate()));
+            tbintime.setText(jcs.jc().jobc_intime());
+            tbouttime.setText(jcs.jc().jobc_outtime());
+            tbtothrs.setText(bsFormatDouble(jcs.jc().jobc_tothrs(),"2")); 
+            tbcode.setText(jcs.jc().jobc_code());
             
             // preset adj times
-            ddInTimeHr.setSelectedItem(res.getString("jobc_intime").substring(0,2));
-            ddInTimeMin.setSelectedItem(res.getString("jobc_intime").substring(3,5));
+            ddInTimeHr.setSelectedItem(jcs.jc().jobc_intime().substring(0,2));
+            ddInTimeMin.setSelectedItem(jcs.jc().jobc_intime().substring(3,5));
             
-            ddOutTimeHr.setSelectedItem(res.getString("jobc_outtime").substring(0,2));
-            ddOutTimeMin.setSelectedItem(res.getString("jobc_outtime").substring(3,5));
+            ddOutTimeHr.setSelectedItem(jcs.jc().jobc_outtime().substring(0,2));
+            ddOutTimeMin.setSelectedItem(jcs.jc().jobc_outtime().substring(3,5));
             
             }
-        }
-
-        if (hasRec) {
+            
             tbrecid.setText(recid);
             tbrecid.setEditable(false);
             tbrecid.setForeground(Color.blue);
             adjustTime();
-        }
-
-        }
-      catch (SQLException s){
-          MainFrame.bslog(s);
-       bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-      } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-    }
-    catch (Exception e){
-      MainFrame.bslog(e);
-    }
-        return hasRec;
+            
+            return true;
+        } else {
+            return false;
+        }  
+       
     }
     
     public double calcTotHours(String start, String stop) {
@@ -698,72 +651,17 @@ public class JobClockMaint extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btupdateActionPerformed
-        try{
-
-         Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{
-
-        int i = 0;
-        boolean proceed = true;
-
-            // Pattern match the times
-            /*
-          Pattern p = Pattern.compile("\\d\\d\\:\\d\\d\\:\\d\\d");
-           
-           Matcher m = p.matcher(tbintime.getText().toString());
-           if (! m.find()) {
-               bsmf.MainFrame.show("Invalid InTime..must be xx:xx:xx");
-               proceed = false;
-           }
-            */
-            
-         
-            
-           
-            java.util.Date now = new java.util.Date();
-            DateFormat cdate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-            String clockdate = cdate.format(now);
-
-
-         if (proceed) {
-        st.executeUpdate("update job_clock set " +
-                              "jobc_code = '77' " + "," +
-                              "jobc_indate = " + "'" + dfdate.format(dcindate.getDate()) + "'" + "," +
-                              "jobc_outdate = " + "'" +  dfdate.format(dcoutdate.getDate()) + "'"  + "," +
-                              "jobc_intime = " + "'" +  tbnewintime.getText() + "'"  + "," +
-                              "jobc_outtime = " + "'" +  tbnewouttime.getText() + "'"  + "," +        
-                              "jobc_tothrs = " + "'" + tbnewtothours.getText() + "'" +
-                              " where jobc_id = " + "'" + tbrecid.getText().toString() + "'" +
-                              ";" );
-        
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String[] m = updateJobClockRec(tbrecid.getText(),
+                dfdate.format(dcindate.getDate()),
+                dfdate.format(dcoutdate.getDate()),
+                tbnewintime.getText(),
+                tbnewouttime.getText(),
+                tbnewtothours.getText()
+                );
         bsmf.MainFrame.show(getMessageTag(1008));
-        initvars(new String[]{tbrecid.getText()});
-            } // if proceed
-        }
-      catch (SQLException s){
-          MainFrame.bslog(s);
-        bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-      } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-    }
-    catch (Exception e){
-      MainFrame.bslog(e);
-    }
+        initvars(new String[]{tbrecid.getText()});        
+      
     }//GEN-LAST:event_btupdateActionPerformed
 
     private void tbtothrsFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbtothrsFocusLost

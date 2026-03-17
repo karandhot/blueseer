@@ -33,9 +33,11 @@ import static com.blueseer.hrm.hrmData.getEmpIDByFormalName;
 import static com.blueseer.hrm.hrmData.getEmpNameAll;
 import static com.blueseer.hrm.hrmData.getEmployeeMstr;
 import static com.blueseer.hrm.hrmData.getHrmRptPickerData;
+import static com.blueseer.hrm.hrmData.isValidEmployeeID;
 import static com.blueseer.hrm.hrmData.updateEmployeeTransaction;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.boolToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
@@ -165,11 +167,18 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         break;
         }
         
+        case "isValidEmployeeID" : {
+        response.getWriter().println(boolToJson(isValidEmployeeID(request.getHeader("param1")))); 
+        break;
+        }
+        
         default:
         response.getWriter().print("");
         System.out.println("no switch case exists in dataServHRM for id: " + id);    
             
     }
+    
+    
     
        
        

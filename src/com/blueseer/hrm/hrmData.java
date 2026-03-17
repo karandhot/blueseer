@@ -36,6 +36,7 @@ import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToBoolean;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -573,6 +574,62 @@ public class hrmData {
         return r;
     }
    
+    public static emp_mstr _getEmployeeMstr(String code, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        
+        emp_mstr r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from emp_mstr where emp_nbr = ? ;";
+          ps = con.prepareStatement(sqlSelect); 
+           ps.setString(1, code);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new emp_mstr(m);
+            } else {
+                while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new emp_mstr(m, 
+                        res.getString("emp_nbr"), 
+                        res.getString("emp_lname"),
+                        res.getString("emp_fname"),
+                        res.getString("emp_mname"),
+                        res.getString("emp_dept"),
+                        res.getString("emp_status"),
+                        res.getString("emp_startdate"),
+                        res.getString("emp_shift"),
+                        res.getString("emp_type"),
+                        res.getString("emp_gender"),
+                        res.getString("emp_jobtitle"),
+                        res.getString("emp_ssn"),
+                        res.getString("emp_autoclock"),
+                        res.getString("emp_active"),
+                        res.getString("emp_rate"),
+                        res.getString("emp_profile"),
+                        res.getString("emp_acct"),
+                        res.getString("emp_routing"),
+                        res.getString("emp_payfrequency"),
+                        res.getString("emp_efla_days"),
+                        res.getString("emp_vac_days"),
+                        res.getString("emp_vac_taken"),
+                        res.getString("emp_addrline1"),
+                        res.getString("emp_addrline2"),
+                        res.getString("emp_city"),
+                        res.getString("emp_state"),
+                        res.getString("emp_country"),
+                        res.getString("emp_zip"),
+                        res.getString("emp_phone"),
+                        res.getString("emp_emer_contact"),
+                        res.getString("emp_emer_phone"),
+                        res.getString("emp_dob"),
+                        res.getString("emp_termdate"),
+                        res.getString("emp_clockin"),
+                        res.getString("emp_supervisor")        
+                        );
+                    }
+            }
+            return r;
+    }
+   
     private static int _addEmpException(emp_exception x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
         int rows = 0;
         String sqlSelect = "select * from emp_exception where empx_nbr = ? and empx_desc = ? and empx_amt = ?";
@@ -1051,6 +1108,17 @@ public class hrmData {
 
     
     public static boolean isValidEmployeeID(String id) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isValidEmployeeID"});
+            list.add(new String[]{"param1", id});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServHRM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }  
         boolean x = false;
         try {
             Connection con = null;

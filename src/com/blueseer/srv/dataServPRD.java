@@ -26,19 +26,25 @@ SOFTWARE.
 package com.blueseer.srv;
 
 
+import com.blueseer.prd.prdData;
+import static com.blueseer.prd.prdData.addJobClock;
 import static com.blueseer.prd.prdData.addPlanOpDet;
 import static com.blueseer.prd.prdData.deletePlanOpDet;
 import static com.blueseer.prd.prdData.getJobBrowseView;
 import static com.blueseer.prd.prdData.getJobBrowseViewDet;
+import static com.blueseer.prd.prdData.getJobClock;
 import static com.blueseer.prd.prdData.getJobClockDetail;
 import static com.blueseer.prd.prdData.getJobClockHistory;
 import static com.blueseer.prd.prdData.getJobClockInTime;
+import static com.blueseer.prd.prdData.getJobClockSet;
 import static com.blueseer.prd.prdData.getPlanOpDet;
 import static com.blueseer.prd.prdData.getPlanOpLastOp;
 import static com.blueseer.prd.prdData.getPrdRptPickerData;
 import static com.blueseer.prd.prdData.getSerialBrowseView;
 import static com.blueseer.prd.prdData.getSerialBrowseViewDet;
 import static com.blueseer.prd.prdData.getTransBrowseView;
+import static com.blueseer.prd.prdData.updateJobClock;
+import static com.blueseer.prd.prdData.updateJobClockRec;
 import static com.blueseer.prd.prdData.updatePlanOPDate;
 import static com.blueseer.prd.prdData.updatePlanOPDesc;
 import static com.blueseer.prd.prdData.updatePlanOPNotes;
@@ -49,6 +55,8 @@ import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.intToJson;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
@@ -91,7 +99,43 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     String id = request.getHeader("id");
     
     switch (id) {
-        
+     
+    case "addJobClock" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            prdData.job_clock x = objectMapper.readValue(sb.toString(), prdData.job_clock.class);            
+            response.getWriter().print(arrayToJson(addJobClock(x)));
+            break;
+          }    
+    
+    case "updateJobClock" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            prdData.job_clock x = objectMapper.readValue(sb.toString(), prdData.job_clock.class);            
+            response.getWriter().print(arrayToJson(updateJobClock(x)));
+            break;
+          }    
+    
+    case "getJobClock" :  {      
+            prdData.job_clock x = getJobClock(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3")});
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;  
+        }
+    
     case "getSerialBrowseView" : {
         String[] it = new String[]{
                request.getHeader("fromdate"), 
@@ -235,6 +279,25 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             deletePlanOpDet(request.getHeader("param1"));
             break;  
     }
+    
+    case "updateJobClockRec" : {       
+            response.getWriter().print(arrayToJson(updateJobClockRec(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5"),
+                    request.getHeader("param6"))));
+            break;  
+    }
+    
+    case "getJobClockSet" :  {      
+            prdData.JobClockSet cs = getJobClockSet(new String[]{request.getHeader("param1"), request.getHeader("param2")});
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(cs);
+            response.getWriter().print(r);
+            break;  
+        }
+        
     
         default:
         response.getWriter().print("");

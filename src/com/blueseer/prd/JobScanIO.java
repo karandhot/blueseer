@@ -228,9 +228,9 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
        ArrayList<String[]> hist = getJobClockHistory(setDateDB(new java.util.Date()));
        for (String[] h : hist) {
            io = (h[8].equals("01")) ? "In" : "Out";
-           operatorName = getEmpFormalNameByID(h[2]);
+           
             historymodel.addRow(new Object[]{
-                      operatorName, // user
+                      h[9], // user name
                       h[0], // jobid
                       h[1], // op
                       h[3], // qty
@@ -396,6 +396,7 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
        
        
        // now validate    
+       pm = getPlanMstr(new String[]{plannbr});
        
        if (! schData.hasOperations(plannbr)) {
                 badScan("Job does not have any operations");
@@ -403,12 +404,13 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
                 return;
         } 
        
-       if (! schData.isPlan(plannbr)) {
+       if (! pm.m().equals("0")) {
                 badScan("Bad Ticket");
                 new AnswerWorker().execute();
                 return;
         } 
-        pm = getPlanMstr(new String[]{plannbr});
+        
+        
         if (Integer.valueOf(pm.plan_status()) != 0 ) { // check if closed
             badScan(getMessageTag(1071));
             new AnswerWorker().execute();
@@ -439,7 +441,7 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
             new AnswerWorker().execute();
             return;
         }
-        partlabel.setText(schData.getPlanItem(scan));
+        partlabel.setText(pm.plan_item());
         qtysched = pm.plan_qty_sched(); // assume parent plan sched qty
         
        
@@ -454,7 +456,7 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
            }
            */
         tboperator.setText(po.plo_operator());
-        userlabel.setText(getEmpFormalNameByID(po.plo_operator()));
+        userlabel.setText(po.plo_operatorname());
            if (po.plo_status().equals(getGlobalProgTag("closed"))) {
                badScan("Operation ticket is closed");
                new AnswerWorker().execute();
@@ -487,79 +489,7 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
        }
        
        
-    /*    
-    if (! opticketScan) {    
-        if (schData.isPlan(scan)) {
-      // tbqty.setText(String.valueOf(schData.getPlanSchedQty(scan)));
-       partlabel.setText(schData.getPlanItem(scan));
-       partlabel.setForeground(Color.blue);
-       ddop.removeAllItems();
-       ArrayList<String> mylist = OVData.getOperationsByItem(partlabel.getText());
-     //  ArrayList<String> mylist = invData.getItemRoutingOPs(partlabel.getText());
-       mylist.sort(Comparator.comparingInt(Integer::parseInt)); 
-      // Collections.sort(mylist, Collections.reverseOrder());
-       for (int i = 0; i < mylist.size(); i++) {
-    //   for (int i = mylist.size() - 1; i >= 0; i--) {    
-           ddop.addItem(mylist.get(i));
-       }
-       if (ddop.getItemCount() > 0) {
-        ddop.setSelectedIndex(mylist.size() - 1);
-       }
-       
-       if (ddop.getItemCount() <= 0) {
-           ddop.addItem("0");
-           partlabel.setText(partlabel.getText() + " " + "No Operations..." + "\n" + "make sure item has routing AND standard cost");
-           partlabel.setForeground(Color.yellow);
-           new AnswerWorker().execute();
-           return;
-       } else {
-          double prevscanned = schData.getPlanDetTotQtyByOp(tbscan.getText(), ddop.getSelectedItem().toString());
-          double qtysched = schData.getPlanSchedQty(tbscan.getText());
-          double remaining = qtysched - prevscanned;
-          tbqty.setText(String.valueOf(remaining));
-          qtylabel.setText("qty sched: " + String.valueOf(qtysched) + "     qty scanned: " + String.valueOf(prevscanned));
-          qtylabel.setForeground(Color.blue);
-          plan_mstr pm = schData.getPlanMstr(new String[]{tbscan.getText()});
-          
-          if (Integer.valueOf(pm.plan_status()) != 0 ) { // check if closed
-            lblmessage.setText(getMessageTag(1071,tbscan.getText()));
-            lblmessage.setForeground(Color.red);
-            btcommit.setEnabled(false);
-            new AnswerWorker().execute();
-            return;
-            } 
-          
-          if (qtysched == 0 ) { // check if scheduled
-            lblmessage.setText(getMessageTag(1182,tbscan.getText()));
-            lblmessage.setForeground(Color.red);
-            btcommit.setEnabled(false);
-            } 
-       }
-       
-       // now get history of plan jobid (scan)
-       planLegit = true;
-       if (dddir.getSelectedItem().toString().equals("In")) {
-           tbqty.setText("0");
-           tbqty.setEnabled(false);
-       } else {
-           tbqty.setEnabled(true);
-       }
-       
-      
-       
-       tboperator.requestFocusInWindow();
-       
-      } else {
-              planLegit = false;
-              btcommit.setEnabled(false);
-              tbscan.setText("");
-              qtylabel.setText("Bad Ticket");
-              qtylabel.setForeground(Color.red);
-              tbscan.requestFocusInWindow();
-      }
-        
-    } // if not opticketscan    
-    */    
+   
     }
        
     public void setLanguageTags(Object myobj) {

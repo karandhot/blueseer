@@ -33,15 +33,19 @@ import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import static com.blueseer.hrm.hrmData._getEmployeeMstr;
+import com.blueseer.hrm.hrmData.emp_mstr;
 import com.blueseer.pur.purData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.jsonToInt;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -65,7 +69,18 @@ public class prdData {
    
     
    public static String[] addJobClock(job_clock x) {
-       
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addJobClock"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServPRD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
        String[] m = new String[2];
         if (x == null) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordError};
@@ -157,6 +172,18 @@ public class prdData {
    public static String[] updateJobClock(job_clock x) {
         // method only updates job_clock records that are in 'open' condition....jobc_code = '01'
         // method only updates table fields that are relevant to clocking out
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateJobClock"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServPRD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         int rows = 0;
         String sql = "update job_clock set jobc_outdate = ?, jobc_outtime = ?, jobc_qty = ?, " +
@@ -186,10 +213,79 @@ public class prdData {
         return m;
     }
    
+   public static String[] updateJobClockRec(String recid, String indate, String outdate, String intime, String outtime, String tothrs) {
+        // method only updates job_clock records that are in 'open' condition....jobc_code = '01'
+        // method only updates table fields that are relevant to clocking out
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "updateJobClockRec"});
+            list.add(new String[]{"param1",  recid});
+            list.add(new String[]{"param2",  indate});
+            list.add(new String[]{"param3",  outdate});
+            list.add(new String[]{"param4",  intime});
+            list.add(new String[]{"param5",  outtime});
+            list.add(new String[]{"param6",  tothrs});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServPRD"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        String[] m = new String[2];
+        int rows = 0;
+        String sql = "update job_clock set " +
+                              "jobc_code = '77' " + "," +
+                              "jobc_indate = ?, " +
+                              "jobc_outdate = ?, " + 
+                              "jobc_intime = ?, " + 
+                              "jobc_outtime = ?, " +       
+                              "jobc_tothrs = ? " + 
+                              " where jobc_id = ? " + 
+                              ";";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql)) {
+       
+        ps.setString(2, indate);
+        ps.setString(3, outdate);
+        ps.setString(4, intime);
+        ps.setString(5, outtime);
+        ps.setDouble(6, bsParseDouble(tothrs));
+        ps.setString(1, recid);
+        rows = ps.executeUpdate();
+        if (rows > 0) {
+           m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};  
+        } else {
+           m = new String[] {BlueSeerUtils.ErrorBit, getMessageTag(1012)}; 
+        }
+        
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+   
    public static job_clock getJobClock(String[] x) {
        // gets clockin jobs only
         job_clock r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getJobClock"});
+            list.add(new String[]{"param1",  x[0]});
+            list.add(new String[]{"param2",  x[1]});
+            list.add(new String[]{"param3",  x[2]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServPRD");
+                r = objectMapper.readValue(returnstring, job_clock.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         String sql = "select * from job_clock where jobc_planid = ? and jobc_op = ? and jobc_empnbr = ? and jobc_code = '01' ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -215,6 +311,28 @@ public class prdData {
                r = new job_clock(m);
         }
         return r;
+    }
+    
+   public static job_clock _getJobClock(String code, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        
+        job_clock r = null;
+        String[] m = new String[2];
+        String sqlSelect = "select * from job_clock where jobc_id = ? ;";
+          ps = con.prepareStatement(sqlSelect); 
+           ps.setString(1, code);
+          res = ps.executeQuery();
+            if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+                r = new job_clock(m);
+            } else {
+                while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new job_clock(m, res.getInt("jobc_planid"), res.getInt("jobc_op"), res.getDouble("jobc_qty"), res.getString("jobc_empnbr"),
+                    res.getString("jobc_indate"), res.getString("jobc_outdate"), res.getString("jobc_intime"), res.getString("jobc_outtime"),
+                    res.getDouble("jobc_tothrs"), res.getString("jobc_code"));
+                    }
+            }
+            return r;
     }
     
    // miscellaneous methods
@@ -753,7 +871,7 @@ public class prdData {
             Statement st = con.createStatement();
             ResultSet res = null;
             try {
-             res = st.executeQuery("select * from job_clock where jobc_indate = " + "'" + now + "'" +
+             res = st.executeQuery("select * from job_clock inner join emp_mstr on emp_nbr = jobc_empnbr where jobc_indate = " + "'" + now + "'" +
                      " or jobc_outdate = " + "'" + now + "'"
                      + " order by jobc_planid ;");
            while (res.next()) {
@@ -766,7 +884,8 @@ public class prdData {
                     res.getString("jobc_intime"),
                     res.getString("jobc_outdate"),
                     res.getString("jobc_outtime"),
-                    res.getString("jobc_code")
+                    res.getString("jobc_code"),
+                    res.getString("emp_lname") + ", " + res.getString("emp_fname")
                };
                x.add(w);
            }
@@ -1338,6 +1457,75 @@ public class prdData {
       return x;
    }
    
+   public static JobClockSet getJobClockSet(String[] x ) {
+        JobClockSet r = null;
+        String[] m;
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getJobClockSet"});
+            list.add(new String[]{"param1",  x[0]});
+            list.add(new String[]{"param2",  x[1]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServPRD");
+                r = objectMapper.readValue(returnstring, JobClockSet.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        
+        Connection bscon = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            
+            if (ds != null) {
+              bscon = ds.getConnection();
+            } else {
+              bscon = DriverManager.getConnection(url + db, user, pass);  
+            }
+            
+            
+            job_clock jc = _getJobClock(x[0], bscon, ps, res );
+            emp_mstr em = _getEmployeeMstr(jc.jobc_empnbr(), bscon, ps, res);
+            
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+            r = new JobClockSet(m, em, jc);
+            
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordError};
+             r = new JobClockSet(m);
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return r;
+    }
+    
    
    public record job_clock (String[] m, int jobc_planid, int jobc_op, double jobc_qty, String jobc_empnbr,
         String jobc_indate, String jobc_outdate, String jobc_intime, String jobc_outtime, double jobc_tothrs,
@@ -1347,4 +1535,9 @@ public class prdData {
         }
     }
     
+   public record JobClockSet(String[] m, emp_mstr em, job_clock jc) {
+        public JobClockSet(String[] m) {
+            this (m, null, null);
+        }
+    }
 }

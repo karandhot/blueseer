@@ -1296,6 +1296,17 @@ public class schData {
           
           // From perspective of "does it exist"
           // assume it's false i.e. it doesnt exist.
+          if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "hasOperations"});
+            list.add(new String[]{"param1", serialno});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServSCH"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        } 
           boolean myreturn = false;
           int i = 0;
           

@@ -29,14 +29,19 @@ import com.blueseer.ctr.cusData;
 import static com.blueseer.ctr.cusData.addCMCDet;
 import static com.blueseer.ctr.cusData.addCMSDet;
 import static com.blueseer.ctr.cusData.addCprMstr;
+import static com.blueseer.ctr.cusData.addCupMstr;
 import static com.blueseer.ctr.cusData.addCustMstrMass;
 import static com.blueseer.ctr.cusData.addOrUpdateCprMstr;
+import static com.blueseer.ctr.cusData.addOrUpdateCupMstr;
+import static com.blueseer.ctr.cusData.addSlspMstr;
 import static com.blueseer.ctr.cusData.addTermsMstr;
 import static com.blueseer.ctr.cusData.addUpdateCMCtrl;
 import static com.blueseer.ctr.cusData.deleteCMCDet;
 import static com.blueseer.ctr.cusData.deleteCMSDet;
 import static com.blueseer.ctr.cusData.deleteCprMstr;
+import static com.blueseer.ctr.cusData.deleteCupMstr;
 import static com.blueseer.ctr.cusData.deleteCustMstr;
+import static com.blueseer.ctr.cusData.deleteSlspMstr;
 import static com.blueseer.ctr.cusData.deleteTermsMstr;
 import static com.blueseer.ctr.cusData.getCMCDet;
 import static com.blueseer.ctr.cusData.getCMCtrl;
@@ -44,6 +49,7 @@ import static com.blueseer.ctr.cusData.getCMSDet;
 import static com.blueseer.ctr.cusData.getCprDiscLists;
 import static com.blueseer.ctr.cusData.getCprMstr;
 import static com.blueseer.ctr.cusData.getCprPriceLists;
+import static com.blueseer.ctr.cusData.getCupMstr;
 import static com.blueseer.ctr.cusData.getCusRptPickerData;
 import static com.blueseer.ctr.cusData.getCustBrowseView;
 import static com.blueseer.ctr.cusData.getCustLabel;
@@ -53,13 +59,16 @@ import static com.blueseer.ctr.cusData.getCustShipSet;
 import static com.blueseer.ctr.cusData.getCustXrefBrowseView;
 import static com.blueseer.ctr.cusData.getDiscountRecsByCust;
 import static com.blueseer.ctr.cusData.getSalesRepBrowseView;
+import static com.blueseer.ctr.cusData.getSlspMstr;
 import static com.blueseer.ctr.cusData.getTermsMstr;
 import static com.blueseer.ctr.cusData.getcustmstrlist;
 import static com.blueseer.ctr.cusData.getcustshipmstrlist;
 import static com.blueseer.ctr.cusData.updateCMCDet;
 import static com.blueseer.ctr.cusData.updateCMSDet;
 import static com.blueseer.ctr.cusData.updateCprMstr;
+import static com.blueseer.ctr.cusData.updateCupMstr;
 import static com.blueseer.ctr.cusData.updateCustMstr;
+import static com.blueseer.ctr.cusData.updateSlspMstr;
 import static com.blueseer.ctr.cusData.updateTermsMstr;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
 import static com.blueseer.inv.invData.getLocationListByWarehouse;
@@ -385,6 +394,67 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;  
         }
         
+        case "addCupMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cup_mstr x = objectMapper.readValue(sb.toString(), cusData.cup_mstr.class);            
+            response.getWriter().print(arrayToJson(addCupMstr(x)));
+            break;
+          }
+        
+        case "addOrUpdateCupMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cup_mstr x = objectMapper.readValue(sb.toString(), cusData.cup_mstr.class);            
+            response.getWriter().print(arrayToJson(addOrUpdateCupMstr(x)));
+            break;
+          }
+        
+        case "updateCupMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cup_mstr x = objectMapper.readValue(sb.toString(), cusData.cup_mstr.class);            
+            response.getWriter().print(arrayToJson(updateCupMstr(x)));
+            break;
+          }
+        
+        case "deleteCupMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.cup_mstr x = objectMapper.readValue(sb.toString(), cusData.cup_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteCupMstr(x)));
+            break;
+          }
+        
+        case "getCupMstr" :  {      
+            cusData.cup_mstr cup = getCupMstr(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2")});
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(cup);
+            response.getWriter().print(r);
+            break;  
+        }
+        
         case "getCprPriceLists" : { 
             ArrayList<cusData.cpr_mstr> x = getCprPriceLists(request.getHeader("param1"));
             ObjectMapper objectMapper = new ObjectMapper();
@@ -524,6 +594,54 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             cusData.cust_term cpr = getTermsMstr(new String[]{request.getHeader("param1")});
             ObjectMapper objectMapper = new ObjectMapper();
             String r = objectMapper.writeValueAsString(cpr);
+            response.getWriter().print(r);
+            break;  
+        }
+        
+        case "addSlspMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.slsp_mstr x = objectMapper.readValue(sb.toString(), cusData.slsp_mstr.class);            
+            response.getWriter().print(arrayToJson(addSlspMstr(x)));
+            break;
+          }
+        
+        case "updateSlspMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.slsp_mstr x = objectMapper.readValue(sb.toString(), cusData.slsp_mstr.class);            
+            response.getWriter().print(arrayToJson(updateSlspMstr(x)));
+            break;
+          }
+        
+        case "deleteSlspMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            cusData.slsp_mstr x = objectMapper.readValue(sb.toString(), cusData.slsp_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteSlspMstr(x)));
+            break;
+          }
+        
+        case "getSlspMstr" :  {      
+            cusData.slsp_mstr cup = getSlspMstr(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2")});
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(cup);
             response.getWriter().print(r);
             break;  
         }
