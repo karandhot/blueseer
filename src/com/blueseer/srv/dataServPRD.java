@@ -291,7 +291,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     }
     
     case "getJobClockSet" :  {      
-            prdData.JobClockSet cs = getJobClockSet(new String[]{request.getHeader("param1"), request.getHeader("param2")});
+            prdData.JobClockSet cs = getJobClockSet(new String[]{request.getHeader("param1")});
             ObjectMapper objectMapper = new ObjectMapper();
             String r = objectMapper.writeValueAsString(cs);
             response.getWriter().print(r);
