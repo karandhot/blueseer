@@ -47,6 +47,9 @@ import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -966,13 +969,14 @@ public class prdData {
       return x;
   }
    
-   public static int updatePlanOPNotes(String job, String op, String notes) {
+   public static int updatePlanOPNotes(String job, String op, String notes) throws UnsupportedEncodingException {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            String notes_encoded = URLEncoder.encode(notes, StandardCharsets.UTF_8.toString());
             ArrayList<String[]> list = new ArrayList<>();
             list.add(new String[]{"id", "updatePlanOPNotes"});
             list.add(new String[]{"param1", job});
             list.add(new String[]{"param2", op});
-            list.add(new String[]{"param3", notes});
+            list.add(new String[]{"param3", notes_encoded});
             try {
                 return jsonToInt(sendServerPost(list, "", null, "dataServPRD")); 
             } catch (IOException ex) {
