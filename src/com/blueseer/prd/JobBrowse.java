@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.prd;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.checkperms;
 import static bsmf.MainFrame.db;
 import java.awt.Color;
@@ -80,11 +81,13 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import static com.blueseer.hrm.hrmData.getEmpFormalNameByID;
 import static com.blueseer.hrm.hrmData.getEmpNameAll;
 import static com.blueseer.hrm.hrmData.getEmpNameByDept;
 import static com.blueseer.hrm.hrmData.getempmstrlist;
 import static com.blueseer.inv.invData.getAllOperationIDs;
+import static com.blueseer.prd.prdData.getJobBrowseViewDet;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatInt;
@@ -94,12 +97,15 @@ import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.getTitleTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.OVData;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Locale;
@@ -111,6 +117,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -125,6 +132,11 @@ import org.jfree.data.general.DefaultPieDataset;
  */
 public class JobBrowse extends javax.swing.JPanel {
  
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultSite = "";
+    String defaultCurrency = "";
     
        MasterModel mymodel = new MasterModel(new Object[][]{},
                         new String[]{ 
@@ -442,6 +454,83 @@ public class JobBrowse extends javax.swing.JPanel {
        
     }
     
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                case "getBrowseViewDet":
+                    message = getBrowseViewDet(key[0], key[1]);
+                    break;     
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+            if (this.action.equals("getBrowseViewDet")) {
+                done_getBrowseViewDet(key[0]);
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
     
     public void getdetail(String detailtype, String jobid) {
       
@@ -667,9 +756,21 @@ public class JobBrowse extends javax.swing.JPanel {
     }
     
     public void initvars(String[] arg) {
-         
-        isLoad = true;
+       executeTask("dataInit", null);
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "employees,operations");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
         
+        detailpanel.setVisible(false);
         cbhierarchical.setSelected(true);
         cbchart.setEnabled(false);
         
@@ -699,29 +800,222 @@ public class JobBrowse extends javax.swing.JPanel {
         // mastertable.setModel(mymodel);
          mastertable.getTableHeader().setReorderingAllowed(false);
         
-        ArrayList<String> operators = getempmstrlist();
-        ddoperator.removeAllItems();
-        for (String operator : operators) {
-            ddoperator.addItem(operator);
-        }
-        ddoperator.insertItemAt("", 0);
-        ddoperator.setSelectedIndex(0);
+        ddoperator.removeAllItems(); 
+        ddop.removeAllItems();   
         
-        Set<String> set = getAllOperationIDs();
-        ddop.removeAllItems();
-        for (String s : set) {
+        Set<String> opset = new HashSet<>();        
+        
+        for (String[] s : initDataSets) {
+            
+            if (s[0].equals("operations")) {
+                opset.add(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            if (s[0].equals("employees")) {
+              ddoperator.addItem(s[1]); 
+            }
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+            
+        }
+        
+        for (String s : opset) {
               ddop.addItem(s);
         }
+        
+        ddoperator.insertItemAt("", 0);
+        ddoperator.setSelectedIndex(0); 
         ddop.insertItemAt("1", 0);
         ddop.insertItemAt("", 0);
         ddop.setSelectedIndex(0);
-        
-        chartpanel.setVisible(false);
-        detailpanel.setVisible(false);
-          
-         
-        isLoad = false; 
     }
+    
+    public String[] getBrowseView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jobid = "";
+                if (! tbjobid.getText().isBlank()) {
+                    if (tbjobid.getText().contains("-")) {
+                       String[] sc = tbjobid.getText().split("-",-1);
+                        if (sc != null && sc.length == 2) {
+                          jobid = sc[0];
+                        } 
+                    } else {
+                        jobid = tbjobid.getText();
+                    }
+                }
+        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getJobBrowseView"});
+        list.add(new String[]{"param1",jobid});
+        list.add(new String[]{"param2",dfdate.format(dcfrom.getDate())});
+        list.add(new String[]{"param3",dfdate.format(dcto.getDate())});
+        list.add(new String[]{"param4",frompart.getText()});
+        list.add(new String[]{"param5",topart.getText()});
+        list.add(new String[]{"param6",BlueSeerUtils.boolToString(cbhierarchical.isSelected())});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServPRD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getJobBrowseView")};
+            }
+        } else {
+            jsonString = prdData.getJobBrowseView(new String[]{
+                jobid,
+                dfdate.format(dcfrom.getDate()),
+                dfdate.format(dcto.getDate()),
+                frompart.getText(), 
+                topart.getText(), 
+                BlueSeerUtils.boolToString(cbhierarchical.isSelected())
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getJobBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+        labelqtysched.setText("0");
+        labelqtycomp.setText("0");
+        labelcount.setText("0");
+        
+        consolidatedModel.setRowCount(0);
+        mymodel.setRowCount(0);   
+                
+                if (cbhierarchical.isSelected()) { 
+                    mastertable.setModel(consolidatedModel); 
+                    mastertable.getColumnModel().getColumn(0).setMaxWidth(100);
+                    mastertable.getColumnModel().getColumn(1).setMaxWidth(100);
+                    mastertable.getColumnModel().getColumn(2).setMaxWidth(100);
+                    Enumeration<TableColumn> en = mastertable.getColumnModel().getColumns();
+                    while (en.hasMoreElements()) {
+                     TableColumn tc = en.nextElement();
+                     if (consolidatedModel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+                         continue;
+                     }
+                     tc.setCellRenderer(new SomeRenderer());
+                    } 
+                } else {
+                    mastertable.setModel(mymodel);
+                    mastertable.getColumnModel().getColumn(0).setMaxWidth(100);
+                    Enumeration<TableColumn> en = mastertable.getColumnModel().getColumns();
+                    while (en.hasMoreElements()) {
+                     TableColumn tc = en.nextElement();
+                     if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+                         continue;
+                     }
+                     tc.setCellRenderer(new SomeRenderer());
+                    } 
+                }
+                 
+        
+        int i = 0;
+        mymodel.setNumRows(0);
+        if (roData != null) {
+        for (Object[] rowData : roData) {
+            if (roData[i][3].toString().isBlank()) {
+                        continue;
+            }
+            if (! cbhierarchical.isSelected()) {
+            schtot = schtot + bsParseDouble(roData[i][8].toString());
+            comptot = comptot + bsParseDouble(roData[i][9].toString());
+            avghours = avghours + bsParseDouble(roData[i][10].toString());
+            tothours = tothours + bsParseDouble(roData[i][10].toString());
+             mymodel.addRow(rowData);
+            } else {
+             consolidatedModel.addRow(rowData);   
+            }            
+            
+            i++;
+        }
+        
+        }          
+        
+        avghours = (i > 0) ? (avghours / i) : 0;
+        if (ddop.getSelectedItem().toString().isBlank()) {
+          labelavghours.setText("N/A");  
+        } else {
+          labelavghours.setText(bsFormatDouble(avghours));  
+        }
+        lbltothours.setText(bsFormatDouble(tothours));
+        labelqtysched.setText(bsFormatDouble(schtot));
+        labelqtycomp.setText(bsFormatDouble(comptot));
+
+        labelcount.setText(bsFormatInt(i));
+
+        chartHours(); 
+        
+        roData = null;
+    }   
+    
+    public String[] getBrowseViewDet(String dataview, String jobid) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getJobBrowseViewDet"});
+            list.add(new String[]{"param1", dataview});
+            list.add(new String[]{"param2", jobid});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServPRD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getJobBrowseViewDet(dataview, jobid); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getBrowseViewDet(String key) {
+      modeldetailclock.setNumRows(0);
+      modeldetailplo.setNumRows(0);
+       //  double totalsales = 0;
+      //   double totalqty = 0;
+       int i = 0;  
+       if (roData != null) {
+        if (roData.length > 0) {
+            if (key.equals("clock")) {
+                detailtable.setModel(modeldetailclock);
+                detailpanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Clock Records"));
+                for (Object[] rowData : roData) {
+                   // totalsales = totalsales + (bsParseDouble(rowData[6].toString()) * bsParseDouble(rowData[7].toString()));
+                   // totalqty = totalqty + bsParseDouble(rowData[6].toString());
+                    modeldetailclock.addRow(rowData);
+                    i++;
+                } 
+            } else {
+                detailtable.setModel(modeldetailplo);
+                detailpanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Operations"));
+                for (Object[] rowData : roData) {
+                    roData[i][4] = bsParseDouble(roData[i][4].toString());
+                    roData[i][5] = bsParseDouble(roData[i][5].toString());
+                   // totalsales = totalsales + (bsParseDouble(rowData[6].toString()) * bsParseDouble(rowData[7].toString()));
+                   // totalqty = totalqty + bsParseDouble(rowData[6].toString());
+                    modeldetailplo.addRow(rowData);
+                    i++;
+                } 
+            }
+        }
+       }
+       roData = null;
+    }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -1149,6 +1443,8 @@ public class JobBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
+        executeTask("getBrowseView", null);
+        /*
         schtot = 0;
         comptot = 0;
         avghours = 0;
@@ -1210,35 +1506,7 @@ try {
               //    CheckBoxRenderer checkBoxRenderer = new CheckBoxRenderer();
              //   mastertable.getColumnModel().getColumn(4).setCellRenderer(checkBoxRenderer); 
                  
-                consolidatedModel.setRowCount(0);
-                mymodel.setRowCount(0);   
                 
-                if (cbhierarchical.isSelected()) { 
-                    mastertable.setModel(consolidatedModel); 
-                    mastertable.getColumnModel().getColumn(0).setMaxWidth(100);
-                    mastertable.getColumnModel().getColumn(1).setMaxWidth(100);
-                    mastertable.getColumnModel().getColumn(2).setMaxWidth(100);
-                    Enumeration<TableColumn> en = mastertable.getColumnModel().getColumns();
-                    while (en.hasMoreElements()) {
-                     TableColumn tc = en.nextElement();
-                     if (consolidatedModel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
-                         continue;
-                     }
-                     tc.setCellRenderer(new SomeRenderer());
-                    } 
-                } else {
-                    mastertable.setModel(mymodel);
-                    mastertable.getColumnModel().getColumn(0).setMaxWidth(100);
-                    Enumeration<TableColumn> en = mastertable.getColumnModel().getColumns();
-                    while (en.hasMoreElements()) {
-                     TableColumn tc = en.nextElement();
-                     if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
-                         continue;
-                     }
-                     tc.setCellRenderer(new SomeRenderer());
-                    } 
-                }
-                 
                 
                 
                
@@ -1390,19 +1658,7 @@ try {
                             });  
                     }
                 }
-                avghours = (i > 0) ? (avghours / i) : 0;
-                if (ddop.getSelectedItem().toString().isBlank()) {
-                  labelavghours.setText("N/A");  
-                } else {
-                  labelavghours.setText(bsFormatDouble(avghours));  
-                }
-                lbltothours.setText(bsFormatDouble(tothours));
-                labelqtysched.setText(bsFormatDouble(schtot));
-                labelqtycomp.setText(bsFormatDouble(comptot));
                 
-                labelcount.setText(bsFormatInt(i));
-               
-                chartHours(); 
                 
                 
              //    RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(mymodel);
@@ -1424,7 +1680,7 @@ try {
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
-       
+       */
     }//GEN-LAST:event_btRunActionPerformed
 
     private void mastertableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mastertableMouseClicked
@@ -1442,29 +1698,16 @@ try {
 
             }
             if (col == 1) {
-                getdetail("plo", mastertable.getValueAt(row, 3).toString());
+                executeTask("getBrowseViewDet", new String[]{"plo", mastertable.getValueAt(row, 3).toString()});
+               // getdetail("plo", mastertable.getValueAt(row, 3).toString());
                 detailpanel.setVisible(true);
             }
             if (col == 2) {
-                getdetail("clock", mastertable.getValueAt(row, 3).toString());
+                executeTask("getBrowseViewDet", new String[]{"clock", mastertable.getValueAt(row, 3).toString()});
+                //getdetail("clock", mastertable.getValueAt(row, 3).toString());
                 detailpanel.setVisible(true);
             }
-            /*
-            if ( col == 0 && mastertable.getValueAt(row, 2).toString().equals("SRVC")) {
-                    String mypanel = "JobScanIOProject";
-                   if (! checkperms(mypanel)) { return; }
-                  String[] args = new String[]{mastertable.getValueAt(row, 1).toString(), mastertable.getValueAt(row, 2).toString()};
-                   reinitpanels(mypanel, true, args);
-
-            }
-
-            if (col == 13) {
-                if (! mastertable.getValueAt(row, 12).toString().equals("n/c")) {
-                getdetail(mastertable.getValueAt(row, 13).toString());
-                detailpanel.setVisible(true);
-                }
-            }
-            */
+            
         } else {
             if ( col == 0 && mastertable.getValueAt(row, 2).toString().equals("SRVC")) {
                     String mypanel = "JobScanIOProject";
@@ -1473,18 +1716,9 @@ try {
                    reinitpanels(mypanel, true, args);
 
             }
-            /*
-            if (col == 1) {
-                getdetail("plo", mastertable.getValueAt(row, 1).toString());
-                detailpanel.setVisible(true);
-            }
-            */
+            
         }
-        /*
-        if ( col == 14) {
-            printticket(mastertable.getValueAt(row, 1).toString(), "Work Order");
-        }
-        */
+       
     }//GEN-LAST:event_mastertableMouseClicked
 
     private void ddoperatorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddoperatorActionPerformed

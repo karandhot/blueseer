@@ -3239,6 +3239,10 @@ public class BlueSeerUtils {
                     data[i][j] = BlueSeerUtils.clickprint; 
                 } else if (rawData[i][j].equals("mail")) {
                     data[i][j] = BlueSeerUtils.clickmail;
+                } else if (rawData[i][j].equals("void")) {
+                    data[i][j] = BlueSeerUtils.clickvoid; 
+                } else if (rawData[i][j].equals("clock")) {
+                    data[i][j] = BlueSeerUtils.clickclock;    
                 } else {
                     data[i][j] = rawData[i][j];
                 }

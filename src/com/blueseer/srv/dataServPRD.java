@@ -28,6 +28,8 @@ package com.blueseer.srv;
 
 import static com.blueseer.prd.prdData.addPlanOpDet;
 import static com.blueseer.prd.prdData.deletePlanOpDet;
+import static com.blueseer.prd.prdData.getJobBrowseView;
+import static com.blueseer.prd.prdData.getJobBrowseViewDet;
 import static com.blueseer.prd.prdData.getJobClockDetail;
 import static com.blueseer.prd.prdData.getJobClockHistory;
 import static com.blueseer.prd.prdData.getJobClockInTime;
@@ -108,6 +110,25 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         response.getWriter().print(getSerialBrowseViewDet(request.getHeader("param1")));  
         break;
     } 
+    
+    case "getJobBrowseView" : {
+        String[] it = new String[]{
+               request.getHeader("param1"), 
+               request.getHeader("param2"), 
+               request.getHeader("param3"), 
+               request.getHeader("param4"), 
+               request.getHeader("param5"), 
+               request.getHeader("param6")
+               };     
+        response.getWriter().print(getJobBrowseView(it));  
+        break;
+        } 
+    
+    case "getJobBrowseViewDet" : {
+        response.getWriter().print(getJobBrowseViewDet(request.getHeader("param1"), request.getHeader("param2")));  
+        break;
+    } 
+    
     
     case "getTransBrowseView" : {
         String[] it = new String[]{

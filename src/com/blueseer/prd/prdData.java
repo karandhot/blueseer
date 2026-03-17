@@ -467,6 +467,233 @@ public class prdData {
         return jsonarray.toString(); 
     }
    
+   public static String getJobBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                keys[3] = (keys[3].isBlank()) ? bsmf.MainFrame.lowchar : keys[3];  //fromitem
+                keys[4] = (keys[4].isBlank()) ? bsmf.MainFrame.hichar : keys[4];  //toitem
+                
+                if (! keys[0].isBlank()) {
+                     
+                    if (keys[5].equals("1")) {
+                     res = st.executeQuery("SELECT plan_nbr, plan_type, plan_item, plan_order, " +
+                         "plan_qty_sched, plan_qty_comp, plan_line, plan_cell, plan_date_sched, plan_date_create, plan_status " +
+                        " FROM  plan_mstr " +
+                        " where plan_nbr = " + "'" + keys[0] + "'" + 
+                        " order by plan_nbr;");    
+                    } else {
+                    res = st.executeQuery("SELECT plan_nbr, plan_type, plan_item, plo_op, plo_operator, plo_operatorname, plo_cell, " +
+                         "plo_qty, plo_qty_comp, plo_date, plo_status, " +
+                         " jobc_id, jobc_empnbr, jobc_qty, coalesce(jobc_tothrs,0) as jobc_tothrs, jobc_code,  " +
+                         " emp_lname, emp_fname " +   
+                        " FROM  plan_operation " +
+                        " inner join plan_mstr on plan_nbr = plo_parent " +
+                        " left outer join job_clock on jobc_planid = plo_parent and jobc_op = plo_op " + 
+                        " left outer join emp_mstr on emp_nbr = jobc_empnbr " +   
+                        " where plo_parent = " + "'" + keys[0] + "'" + 
+                        " order by plo_op;"); 
+                    }
+  
+                 } else {
+                    
+                    if (keys[5].equals("1")) {
+                     res = st.executeQuery("SELECT plan_nbr, plan_type, plan_item, plan_order, " +
+                         "plan_qty_sched, plan_qty_comp, plan_line, plan_cell, plan_date_sched, plan_date_create, plan_status " +
+                        " FROM  plan_mstr " +
+                        " where " +
+                        " (( plan_date_create >= " + "'" + keys[1] + "'" + 
+                        " AND plan_date_create <= " + "'" + keys[2] + "'" + " ) OR plan_date_create is null )" + 
+                        " AND plan_item >= " + "'" + keys[3] + "'" + 
+                        " AND plan_item <= " + "'" + keys[4] + "'" + 
+                        " order by plan_nbr;");     
+                    } else { 
+                    res = st.executeQuery("SELECT plan_nbr, plan_type, plan_item, plo_op, plo_operator, plo_operatorname, plo_cell, " +
+                         "plo_qty, plo_qty_comp, plo_date, plo_status, " +
+                         " jobc_id, jobc_empnbr, jobc_qty, coalesce(jobc_tothrs,0) as jobc_tothrs, jobc_code,  " +
+                         " emp_lname, emp_fname " +  
+                        " FROM  plan_operation " +
+                        " inner join plan_mstr on plan_nbr = plo_parent " +
+                        " left outer join job_clock on jobc_planid = plo_parent and jobc_op = plo_op " + 
+                        " left outer join emp_mstr on emp_nbr = jobc_empnbr " +    
+                        " where " +
+                        " (( plo_date >= " + "'" + keys[1] + "'" + 
+                        " AND plo_date <= " + "'" + keys[2] + "'" + " ) OR plo_date is null )" + 
+                        " AND plan_item >= " + "'" + keys[3] + "'" + 
+                        " AND plan_item <= " + "'" + keys[4] + "'" + 
+                      //  " AND plan_is_sched = " + "'1' "  +
+                        " order by plan_nbr, plo_op;");    
+                    }
+                 }
+                String imagevar;
+                String clockstatus = "";
+                String plostatus = "";
+                String clockid = "";
+                String operatorname = "";
+                
+                    while (res.next()) {
+                        
+                    if (res.getString("plan_type").equals("SRVC")) {
+                        imagevar = "select";
+                    } else {
+                        imagevar = "void";
+                    }
+                    
+                    if (! keys[5].equals("1")) {
+                        if (res.getString("jobc_code") == null) {
+                            clockstatus = "n/c";
+                        } else {
+                            clockstatus = (res.getString("jobc_code").equals("01")) ? "in" : "out";
+                        }
+                        if (res.getString("plo_status").isBlank()) {
+                            plostatus = "unscheduled";
+                        } else {
+                            plostatus = res.getString("plo_status");
+                        }
+
+                        if (res.getString("jobc_id") == null) {
+                            clockid = "0";
+                        } else {
+                            clockid = res.getString("jobc_id");
+                        }
+
+                        if (res.getString("emp_lname") != null) {
+                            operatorname = res.getString("emp_lname") + ", " + res.getString("emp_fname");
+                        } else {
+                            operatorname = "";
+                        }
+                    }    
+                        
+                    if (keys[5].equals("1")) {
+                        JSONArray rowArray = new JSONArray();                         
+                        rowArray.put(imagevar);                
+                        rowArray.put("detail");
+                        rowArray.put("clock");
+                        rowArray.put(res.getString("plan_nbr"));
+                        rowArray.put(res.getString("plan_type"));
+                        rowArray.put(res.getString("plan_item"));
+                        rowArray.put(res.getString("plan_order"));
+                        rowArray.put(res.getString("plan_cell"));    
+                        rowArray.put(res.getString("plan_date_sched"));
+                        rowArray.put(bsNumber(res.getDouble("plan_qty_sched")));
+                        rowArray.put(bsNumber(res.getDouble("plan_qty_comp")));                        
+                        rowArray.put(0);
+                        rowArray.put(res.getString("plan_status"));
+                        jsonarray.put(rowArray);
+                    } else {
+                       JSONArray rowArray = new JSONArray();                        
+                        rowArray.put(imagevar);
+                        rowArray.put(res.getString("plan_nbr"));
+                        rowArray.put(res.getString("plan_type"));
+                        rowArray.put(res.getString("plan_item"));
+                        rowArray.put(res.getString("plo_op"));
+                        rowArray.put(operatorname);
+                        rowArray.put(res.getString("plo_cell"));
+                        rowArray.put(res.getString("plo_date"));
+                        rowArray.put(bsNumber(res.getDouble("plo_qty")));
+                        rowArray.put(bsNumber(res.getDouble("plo_qty_comp")));
+                        rowArray.put(bsNumber(res.getDouble("jobc_tothrs")));
+                        rowArray.put(plostatus);
+                        rowArray.put(clockstatus);
+                        rowArray.put(clockid);
+                        jsonarray.put(rowArray); 
+                    }   
+                    
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
+   public static String getJobBrowseViewDet(String dataview, String key) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                if (dataview.equals("clock")) {
+                 res = st.executeQuery("SELECT * from job_clock   " +
+                        " inner join emp_mstr on emp_nbr = jobc_empnbr " +
+                        " where jobc_planid = " + "'" + key + "'" + 
+                         " order by jobc_op ;"); 
+                 while (res.next()) {                       
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("jobc_op"));
+                        rowArray.put(res.getString("jobc_id"));
+                        rowArray.put(res.getString("emp_lname") + ", " + res.getString("emp_fname"));
+                        rowArray.put(res.getString("jobc_indate"));
+                        rowArray.put(res.getString("jobc_intime"));
+                        rowArray.put(res.getString("jobc_outdate"));
+                        rowArray.put(res.getString("jobc_outtime"));
+                        rowArray.put(res.getString("jobc_code"));
+                        jsonarray.put(rowArray);
+                   }                 
+                } else {
+                  res = st.executeQuery("SELECT * from plan_operation   " +
+                        " where plo_parent = " + "'" + key + "'" + 
+                         " order by plo_op ;"); 
+                  while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("plo_op"));
+                        rowArray.put(res.getString("plo_desc"));
+                        rowArray.put(res.getString("plo_operatorname"));
+                        rowArray.put(res.getString("plo_cell"));
+                        rowArray.put(bsNumber(res.getDouble("plo_qty")));
+                        rowArray.put(bsNumber(res.getDouble("plo_qty_comp")));
+                        rowArray.put(res.getString("plo_date"));
+                        rowArray.put(res.getString("plo_status"));
+                        jsonarray.put(rowArray);
+                   }
+                }
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
    public static String[] getJobClockInTime(int plan, int op, String empnbr) {
            // get billto specific data
             // aracct, arcc, currency, bank, terms, carrier, onhold, site

@@ -3613,6 +3613,15 @@ public class admData {
                                lines.add(s);
                             }
                         }
+                        if (sd.equals("operations")) {
+                            res = st.executeQuery("SELECT wf_op from wf_mstr order by wf_op ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "operations";
+                               s[1] = res.getString("wf_op");
+                               lines.add(s);
+                            }
+                        }
                         if (sd.equals("tooling")) {
                             res = st.executeQuery("select it_item from item_mstr where it_type = 'TOOLING';");
                             while (res.next()) {

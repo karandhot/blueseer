@@ -118,7 +118,7 @@ import javax.swing.table.TableColumn;
  */
 public class SerialBrowse extends javax.swing.JPanel {
     public String rsData; 
-     Object[][] roData;
+    Object[][] roData;
     ArrayList<String[]> initDataSets = new ArrayList<>();
     String defaultSite = "";
     String defaultCurrency = "";
