@@ -58,6 +58,7 @@ import static com.blueseer.utl.BlueSeerUtils.intToJson;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -219,9 +220,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     }
     
     case "updatePlanOPNotes" : {
+            String decodedNotes = URLDecoder.decode(request.getHeader("param3"), "UTF-8");
             response.getWriter().print(intToJson(updatePlanOPNotes(request.getHeader("param1"),
                     request.getHeader("param2"),
-                    request.getHeader("param3")))); 
+                    decodedNotes))); 
             break;    
     }
     
