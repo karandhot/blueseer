@@ -770,7 +770,9 @@ public class JobBrowse extends javax.swing.JPanel {
     
     public void done_Initialization() {
         
+        isLoad = true;
         detailpanel.setVisible(false);
+        chartpanel.setVisible(false);
         cbhierarchical.setSelected(true);
         cbchart.setEnabled(false);
         
@@ -831,6 +833,8 @@ public class JobBrowse extends javax.swing.JPanel {
         ddop.insertItemAt("1", 0);
         ddop.insertItemAt("", 0);
         ddop.setSelectedIndex(0);
+        
+        isLoad = false;
     }
     
     public String[] getBrowseView() {

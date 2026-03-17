@@ -29,6 +29,7 @@ package com.blueseer.srv;
 import com.blueseer.hrm.hrmData;
 import static com.blueseer.hrm.hrmData.addEmployeeTransaction;
 import static com.blueseer.hrm.hrmData.deleteEmpMstr;
+import static com.blueseer.hrm.hrmData.getEmpFormalNameByID;
 import static com.blueseer.hrm.hrmData.getEmpIDByFormalName;
 import static com.blueseer.hrm.hrmData.getEmpNameAll;
 import static com.blueseer.hrm.hrmData.getEmployeeMstr;
@@ -150,6 +151,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         case "getEmpIDByFormalName" : {       
             response.getWriter().print(getEmpIDByFormalName(request.getHeader("param1")));
+            break;
+        }
+        
+        case "getEmpFormalNameByID" : {       
+            response.getWriter().print(getEmpFormalNameByID(request.getHeader("param1")));
             break;
         }
         

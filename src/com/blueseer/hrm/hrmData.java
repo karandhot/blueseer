@@ -854,6 +854,17 @@ public class hrmData {
     }
 
     public static String getEmpFormalNameByID(String id) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getEmpFormalNameByID"});
+            list.add(new String[]{"param1",  id});
+            try {
+                return sendServerPost(list, "", null, "dataServHRM"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        }
         String x = "";
         try {
             Connection con = null;
