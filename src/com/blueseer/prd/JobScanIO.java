@@ -404,7 +404,7 @@ javax.swing.table.DefaultTableModel historymodel = new javax.swing.table.Default
                 return;
         } 
        
-       if (! pm.m().equals("0")) {
+       if (! pm.m()[0].equals("0")) {
                 badScan("Bad Ticket");
                 new AnswerWorker().execute();
                 return;
