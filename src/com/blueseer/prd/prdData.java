@@ -971,7 +971,7 @@ public class prdData {
    
    public static int updatePlanOPNotes(String job, String op, String notes) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
-            String notes_encoded;
+            String notes_encoded = "";
             try {
                 notes_encoded = URLEncoder.encode(notes, StandardCharsets.UTF_8.toString());
             } catch (UnsupportedEncodingException ex) {
