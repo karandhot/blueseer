@@ -16264,7 +16264,19 @@ return mystring;
     }
        
     public static boolean isDuplicateNavCode(String code, String callingmenu) {
-   boolean myreturn = false;
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isDuplicateNavCode"});
+            list.add(new String[]{"param1", code});
+            list.add(new String[]{"param2", callingmenu});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+        boolean myreturn = false;
     try{
 
         Connection con = null;

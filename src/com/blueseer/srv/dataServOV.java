@@ -87,6 +87,7 @@ import static com.blueseer.utl.OVData.getmenutree;
 import static com.blueseer.utl.OVData.getpsmstrcompSerialized;
 import static com.blueseer.utl.OVData.getzerolevelpsmstr;
 import static com.blueseer.utl.OVData.isAutoPost;
+import static com.blueseer.utl.OVData.isDuplicateNavCode;
 import static com.blueseer.utl.OVData.isGLPeriodClosed;
 import static com.blueseer.utl.OVData.isValidBank;
 import static com.blueseer.utl.OVData.isValidCurrency;
@@ -471,6 +472,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(arrayToJson(getTermsResults(parseDate(request.getHeader("param1")), request.getHeader("param2"))));
         break; 
             
+        case "isDuplicateNavCode" : {
+        response.getWriter().println(boolToJson(isDuplicateNavCode(request.getHeader("param1"), request.getHeader("param2")))); 
+        break;
+        }
             
         case "isAutoPost" : {
         response.getWriter().println(boolToJson(isAutoPost())); 

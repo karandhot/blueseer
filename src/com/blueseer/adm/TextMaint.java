@@ -57,6 +57,7 @@ import static com.blueseer.utl.BlueSeerUtils.lurb2;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeer;
 import com.blueseer.utl.IBlueSeerT;
+import com.blueseer.utl.IBlueSeerV;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.canUpdate;
 import java.awt.Color;
@@ -87,11 +88,11 @@ import javax.swing.SwingWorker;
  *
  * @author vaughnte
  */
-public class TextMaint extends javax.swing.JPanel implements IBlueSeerT { 
+public class TextMaint extends javax.swing.JPanel implements IBlueSeerV { 
 
     // global variable declarations
     boolean isLoad = false;
-    ArrayList<String[]> initDataSets = new ArrayList<>();
+    ArrayList<String[]> initDataSets = null;
     String defaultSite = "";
     String defaultCurrency = "";
     boolean canupdate = false;
@@ -280,9 +281,11 @@ public class TextMaint extends javax.swing.JPanel implements IBlueSeerT {
        }
     }
          
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
+       if (init) {
        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
+       }
         for (String[] s : initDataSets) {
             if (s[0].equals("currency")) {
               defaultCurrency = s[1];  
@@ -301,7 +304,7 @@ public class TextMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void newAction(String x) {
         setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btdelete.setEnabled(false);
@@ -361,11 +364,11 @@ public class TextMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         
-        if (arg != null && arg.length > 0) {
+        if (arg != null && arg.length > 2) {
             executeTask(dbaction.get,arg);
         } else {
             tbkey.setEnabled(true);
@@ -657,6 +660,7 @@ public class TextMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
         BlueSeerUtils.messagereset();
+        initDataSets = null;
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 
