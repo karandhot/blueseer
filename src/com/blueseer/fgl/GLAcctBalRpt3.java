@@ -292,50 +292,47 @@ public class GLAcctBalRpt3 extends javax.swing.JPanel {
     }
     
     public void chartExpAndInc() {
-         try {
-          
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        
+        java.util.Date now = new java.util.Date();
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");       
+        Calendar cal = new GregorianCalendar();
+        cal.set(Calendar.DAY_OF_YEAR, 1);
+        java.util.Date firstday = cal.getTime();
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<>();
+        list.add(new String[]{"id","getChartRptPickerData"});
+        list.add(new String[]{"func","piechart_ExpenseAndIncome"});
+        list.add(new String[]{"param1",dfdate.format(firstday)});
+        list.add(new String[]{"param2",dfdate.format(now)});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                java.util.Date now = new java.util.Date();
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");       
-                  Calendar cal = new GregorianCalendar();
-                  cal.set(Calendar.DAY_OF_YEAR, 1);
-                  java.util.Date firstday = cal.getTime();
-                  
-                res = st.executeQuery("select ac_type, sum(glh_base_amt) as 'sum' from gl_hist inner join ac_mstr on ac_id = glh_acct " +
-                        " where glh_effdate >= " + "'" + dfdate.format(firstday) + "'" +
-                        " AND glh_effdate <= " + "'" + dfdate.format(now) + "'" +
-                        " AND glh_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +
-                        " AND ( ac_type = 'E' or ac_type = 'I' ) " +
-                        " group by ac_type   ;");
-             
-                DefaultPieDataset dataset = new DefaultPieDataset();
-               
-                String acct = "";
-                while (res.next()) {
-                    if (res.getString("ac_type") == null || res.getString("ac_type").isEmpty()) {
-                      acct = "Unassigned";
-                    } else {
-                      acct = res.getString("ac_type");   
-                    }
-                    Double amt = res.getDouble("sum");
-                    if (amt < 0) {amt = amt * -1;}
-                  dataset.setValue(acct, amt);
-                }
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "piechart_ExpenseAndIncome",
+                dfdate.format(firstday),
+                dfdate.format(now),
+                ddsite.getSelectedItem().toString()
+            });
+        }
+        Object[][] roData = jsonToData(jsonString);
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        double total = 0.00;
+        double displayed = 0.00;
+        int i = 0;
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                total += bsParseDouble(roData1[1].toString());
+                Double amt = bsParseDouble(roData1[1].toString());
+                dataset.setValue(roData1[0].toString(), amt);
+            }
+            
+        }  
         JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5026), dataset, true, true, false);
         PiePlot plot = (PiePlot) chart.getPlot();
-      //  plot.setSectionPaint(KEY1, Color.green);
-      //  plot.setSectionPaint(KEY2, Color.red);
-     //   plot.setExplodePercent(KEY1, 0.10);
-        //plot.setSimpleLabels(true);
-
         PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(
             "{0}: {1} ({2})", NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
         plot.setLabelGenerator(gen);
@@ -350,24 +347,6 @@ public class GLAcctBalRpt3 extends javax.swing.JPanel {
         myicon.getImage().flush();   
         this.pielabel.setIcon(myicon);
         this.repaint();
-       
-       // bsmf.MainFrame.show("your chart is complete...go to chartview");
-                
-              } catch (SQLException s) {
-                  MainFrame.bslog(s);
-                  bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
     }
        
     public void setPanelComponentState(Object myobj, boolean b) {

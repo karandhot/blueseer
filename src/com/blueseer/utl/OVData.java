@@ -25596,6 +25596,24 @@ return mylist;
                     } 
                 }
                
+                if (keys[0].equals("piechart_ExpenseAndIncome")) {  
+                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+                 int days = (int)( (dfdate.parse(keys[2]).getTime() - dfdate.parse(keys[1]).getTime()) / (1000 * 60 * 60 * 24) );     
+                 res = st.executeQuery("select ac_type, sum(glh_base_amt) as 'sum' from gl_hist inner join ac_mstr on ac_id = glh_acct " +
+                        " where glh_effdate >= " + "'" + keys[1] + "'" +
+                        " AND glh_effdate <= " + "'" + keys[2] + "'" +
+                        " AND glh_site = " + "'" + keys[3] + "'" +
+                        " AND ( ac_type = 'E' or ac_type = 'I' ) " +
+                        " group by ac_type   ;");
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put(res.getString("ac_type"));
+                            rowArray.put(xNull(res.getString("sum")));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
                 
                 
             } catch (SQLException s) {
