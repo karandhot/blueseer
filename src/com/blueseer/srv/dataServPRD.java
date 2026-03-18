@@ -40,6 +40,9 @@ import static com.blueseer.prd.prdData.getJobClockSet;
 import static com.blueseer.prd.prdData.getPlanOpDet;
 import static com.blueseer.prd.prdData.getPlanOpLastOp;
 import static com.blueseer.prd.prdData.getPrdRptPickerData;
+import static com.blueseer.prd.prdData.getProdDetBrowseView;
+import static com.blueseer.prd.prdData.getProdSchedBrowseView;
+import static com.blueseer.prd.prdData.getProdSchedBrowseViewDet;
 import static com.blueseer.prd.prdData.getSerialBrowseView;
 import static com.blueseer.prd.prdData.getSerialBrowseViewDet;
 import static com.blueseer.prd.prdData.getTransBrowseView;
@@ -173,6 +176,38 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         response.getWriter().print(getJobBrowseViewDet(request.getHeader("param1"), request.getHeader("param2")));  
         break;
     } 
+    
+    case "getProdSchedBrowseView" : {
+        String[] it = new String[]{
+               request.getHeader("param1"), 
+               request.getHeader("param2"), 
+               request.getHeader("param3"), 
+               request.getHeader("param4"), 
+               request.getHeader("param5"), 
+               request.getHeader("param6")
+               };     
+        response.getWriter().print(getProdSchedBrowseView(it));  
+        break;
+        } 
+    
+    case "getProdSchedBrowseViewDet" : {
+        response.getWriter().print(getProdSchedBrowseViewDet(request.getHeader("param1")));  
+        break;
+    } 
+    
+    case "getProdDetBrowseView" : {
+        String[] it = new String[]{
+               request.getHeader("param1"), 
+               request.getHeader("param2"), 
+               request.getHeader("param3"), 
+               request.getHeader("param4"), 
+               request.getHeader("param5"), 
+               request.getHeader("param6"),
+               request.getHeader("param7")
+               };     
+        response.getWriter().print(getProdDetBrowseView(it));  
+        break;
+        } 
     
     
     case "getTransBrowseView" : {

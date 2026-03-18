@@ -13423,8 +13423,20 @@ return myarray;
 
      }
 
-    public static void setStandardCosts(String site, String item) {
-        
+    public static String[] setStandardCosts(String site, String item) {
+        boolean error = false;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "setStandardCosts"});
+            list.add(new String[]{"param1", site});
+            list.add(new String[]{"param2", item});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         calcCost cur = new calcCost("current");
         ArrayList<Double> costcur = cur.getTotalCostElements(item, ""); // assume default bom
         Double totalcost = 0.00;
@@ -13461,7 +13473,7 @@ return myarray;
                 }
 
                 if (i == 0) {
-                    return;
+                    return new String[]{"1", "unknown item or missing routing"};
                 }
                
                 st.executeUpdate("update item_cost set "
@@ -13614,6 +13626,7 @@ return myarray;
                
         } catch (SQLException s) {
             MainFrame.bslog(s);
+            error = true;
         } finally {
             if (res != null) res.close();
             if (st != null) st.close();
@@ -13623,10 +13636,273 @@ return myarray;
         }
     } catch (Exception e) {
         MainFrame.bslog(e);
-    }  
+        error = true;
+    } 
+        return (error) ? new String[]{"1", "setStandardCosts Exception Error"} : new String[]{"0", ""};
     }
 
-public static ArrayList rollCost(String item) {
+    public static String[] _setStandardCosts(String site, String item, Connection bscon) {
+        boolean error = false;
+        
+        calcCost cur = new calcCost("current");
+        ArrayList<Double> costcur = cur.getCurrentCostElementsForRoll(item, "", bscon); // assume default bom
+        Double totalcost = 0.00;
+        for (Double d : costcur) {
+           totalcost += d;
+        }
+        
+        
+        try {
+            
+
+        
+        Statement st = bscon.createStatement();
+        ResultSet res = null;
+        Statement st2 = bscon.createStatement();
+        ResultSet res2 = null;
+        
+        try {
+            
+            int i = 0;
+            String routing = "";
+            
+            // lets do item_cost first 
+            res = st.executeQuery("SELECT itc_item, it_wf FROM  item_cost " +
+                    " inner join item_mstr on it_item = itc_item " +
+                    " where itc_item = " + "'" + item + "'" + ";");
+                while (res.next()) {
+                    i++;
+                    routing = res.getString("it_wf");
+                }
+
+                if (i == 0) {
+                    return new String[]{"1", "unknown item or missing routing"};
+                }
+               
+                st.executeUpdate("update item_cost set "
+                        + "itc_mtl_low = " + "'" + costcur.get(0).toString().replace(defaultDecimalSeparator, '.') + "'" + ","
+                        + "itc_mtl_top = " + "'" + costcur.get(5).toString().replace(defaultDecimalSeparator, '.') + "'" + ","
+                        + "itc_lbr_low = " + "'" + costcur.get(1).toString().replace(defaultDecimalSeparator, '.') + "'" + ","
+                        + "itc_lbr_top = " + "'" + costcur.get(6).toString().replace(defaultDecimalSeparator, '.') + "'" + ","
+                        + "itc_bdn_low = " + "'" + costcur.get(2).toString().replace(defaultDecimalSeparator, '.') + "'" + ","
+                        + "itc_bdn_top = " + "'" + costcur.get(7).toString().replace(defaultDecimalSeparator, '.') + "'" + ","
+                        + "itc_ovh_low = " + "'" + costcur.get(3).toString().replace(defaultDecimalSeparator, '.') + "'" + ","
+                        + "itc_ovh_top = " + "'" + costcur.get(8).toString().replace(defaultDecimalSeparator, '.') + "'" + ","
+                        + "itc_out_low = " + "'" + costcur.get(4).toString().replace(defaultDecimalSeparator, '.') + "'" + ","
+                        + "itc_out_top = " + "'" + costcur.get(9).toString().replace(defaultDecimalSeparator, '.') + "'" + ","
+                        + "itc_total = " + "'" +  totalcost.toString().replace(defaultDecimalSeparator, '.') + "'" 
+                        + " where itc_item = " + "'" + item + "'"
+                        + " AND itc_set = 'standard' "
+                        + " AND itc_site = " + "'" + site + "'"
+                        + ";");
+
+                
+        // ok now lets do itemr_cost ...routing based costing
+        // delete original itemr_cost records for this item, op, routing, standard
+        // NOTE:   all operation records for itemr_cost for this routing are deleted
+        st.executeUpdate(" delete FROM  itemr_cost where itr_item = " + "'" + item + "'" 
+                          /*   +  " AND itr_op = " + "'" + op + "'"  remove all ops even ones that were changed/removed by routing maint*/
+                             + " AND itr_set = 'standard' "
+                             + " AND itr_site = " + "'" + site + "'"
+                             + " AND itr_routing = " + "'" + routing + "'" + ";");
+
+        // get all info necessary to create itemr_cost records        
+        ArrayList<String> costs = new ArrayList<String>(); // = OVData.rollCost(item);
+        String mystring = "";
+         Double labor = 0.0;
+         Double burden = 0.0;
+         Double material = 0.0;
+         Double ovh = 0.0;
+         Double outside = 0.0;
+         Double total = 0.0;
+         Double prevcost = 0.0;
+         Double stdopcost = 0.0;
+         String op = "";
+         String cell = "";
+         String cc = "";
+         String desc = "";
+         
+         
+        res = st.executeQuery("select it_lotsize, itr_total, wf_cell, wf_op, wc_run_crew, wf_run_hours, wf_setup_hours, " +
+            " wc_desc, wc_cc, wc_run_rate, wc_setup_rate, wc_bdn_rate " +
+            " from wf_mstr inner join item_mstr on it_wf = wf_id " + 
+            " inner join wc_mstr on wc_cell = wf_cell  " + 
+            " left outer join itemr_cost on itr_item = it_item and itr_site = it_site and itr_routing = item_mstr.it_wf and itr_op = wf_op and itr_set = 'standard' " +
+            " where it_item = " + "'" + item + "'" + 
+            " order by wf_op; " );
+           i = 0;         
+           while (res.next()) {
+               i++;
+
+               if (i == 1) {
+                   stdopcost = res.getDouble("itr_total");
+               } else {
+                   stdopcost = res.getDouble("itr_total") - prevcost;
+               }
+               prevcost = res.getDouble("itr_total");
+
+               op = res.getString("wf_op");
+               cell = res.getString("wf_cell");
+               desc = res.getString("wc_desc");
+               cc = res.getString("wc_cc");
+
+
+               material = 0.0;
+               labor = 0.0;
+               burden = 0.0;
+               if (res.getDouble("it_lotsize") == 0) {
+                labor += ( ((res.getDouble("wc_setup_rate") * res.getDouble("wf_setup_hours")) ) +
+                        (res.getDouble("wc_run_rate")) * res.getDouble("wf_run_hours") * res.getDouble("wc_run_crew"));
+                burden += ( ((res.getDouble("wc_bdn_rate") * res.getDouble("wf_setup_hours"))  ) +
+                        (res.getDouble("wc_bdn_rate") * res.getDouble("wf_run_hours") )  );
+               } else {
+                 labor += ( ((res.getDouble("wc_setup_rate") * res.getDouble("wf_setup_hours")) / res.getDouble("it_lotsize") ) +
+                         (res.getDouble("wc_run_rate") * res.getDouble("wf_run_hours") * res.getDouble("wc_run_crew") )  );
+                burden += ( ((res.getDouble("wc_bdn_rate") * res.getDouble("wf_setup_hours")) / res.getDouble("it_lotsize") ) +
+                        (res.getDouble("wc_bdn_rate") * res.getDouble("wf_run_hours") )  );  
+               }
+
+            // now do the matl for this operation
+           res2 = st2.executeQuery("select ps_qty_per, itc_total from pbm_mstr " + 
+                " inner join bom_mstr on bom_id = ps_bom and bom_primary = '1' " +
+                " inner join item_cost on ps_child = itc_item and itc_set = 'standard' " +
+                " where ps_parent = " + "'" + item + "'" +
+                " AND ps_op = " + "'" + op + "'" + ";");
+            while (res2.next()) {
+            material += ( res2.getDouble("itc_total") * res2.getDouble("ps_qty_per") );
+            //ovh += ( res2.getDouble("itc_total") * res2.getDouble("ps_qty_per") );
+            //outside += ( res2.getDouble("itc_total") * res2.getDouble("ps_qty_per") );
+           }
+            total = labor + burden + material + ovh + outside;
+           mystring = 
+                   item + "," +
+                   op + "," +
+                   cell + "," +
+                   "" + "," +   // used to be machine
+                   desc + "," +
+                   cc + "," +
+                   String.valueOf(labor) + "," + 
+                   String.valueOf(burden) + "," + 
+                   String.valueOf(material) + "," + 
+                   String.valueOf(ovh) + "," + 
+                   String.valueOf(outside) + "," +
+                   res.getString("wc_setup_rate") + "," +
+                   res.getString("wc_run_rate") + "," +
+                   res.getString("wc_bdn_rate") + "," +
+                   res.getString("wf_setup_hours") + "," +
+                   res.getString("wf_run_hours") + "," +
+                   res.getString("it_lotsize") + "," +
+                   String.valueOf(total) + "," +
+                   String.valueOf(stdopcost) + "," +
+                   totalcost.toString()
+                   ;
+           costs.add(mystring);
+
+           } 
+              
+              
+
+                for (String cost : costs) {
+                 String[] elements = cost.split(",", -1);
+
+                        st.executeUpdate("insert into itemr_cost (itr_item, itr_site, itr_set, itr_routing, itr_op, " +
+                             " itr_total, itr_lbr_top, itr_bdn_top, itr_mtl_top,  itr_ovh_top, itr_out_top, " +
+                             " itr_mtl_low, itr_lbr_low, itr_bdn_low, itr_ovh_low, itr_out_low ) values ( "
+                            + "'" + item + "'" + ","
+                            + "'" + site + "'" + ","
+                            + "'" + "standard" + "'" + ","
+                            + "'" + routing + "'" + ","
+                            + "'" + elements[1] + "'" + ","
+                            + "'" + bsformat("",elements[17].toString(),"5").replace(defaultDecimalSeparator, '.') + "'" + "," 
+                            + "'" + bsformat("",elements[6].toString(),"5").replace(defaultDecimalSeparator, '.') + "'" + ","   
+                            + "'" + bsformat("",elements[7].toString(),"5").replace(defaultDecimalSeparator, '.') + "'" + ","
+                            + "'" + bsformat("",elements[8].toString(),"5").replace(defaultDecimalSeparator, '.') + "'" + ","
+                            + "'" + bsformat("",elements[9].toString(),"5").replace(defaultDecimalSeparator, '.') + "'" + ","
+                            + "'" + bsformat("",elements[10].toString(),"5").replace(defaultDecimalSeparator, '.') + "'" + ","
+                            + "'" + "0" + "'" + ","
+                            + "'" + "0" + "'" + ","
+                            + "'" + "0" + "'" + ","
+                            + "'" + "0" + "'" + ","
+                            + "'" + "0" + "'" + " ) ;");
+                }  
+
+               
+        } catch (SQLException s) {
+            MainFrame.bslog(s);
+            error = true;
+        } finally {
+            if (res != null) res.close();
+            if (st != null) st.close();
+            if (res2 != null) res2.close();
+            if (st2 != null) st2.close();
+        }
+    } catch (Exception e) {
+        MainFrame.bslog(e);
+        error = true;
+    } 
+        return (error) ? new String[]{"1", "setStandardCosts Exception Error"} : new String[]{"0", ""};
+    }
+
+    public static String[] setStandardCostsByRange(String site, String fromitem, String toitem) {
+        boolean error = false;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "setStandardCostsByRange"});
+            list.add(new String[]{"param1", site});
+            list.add(new String[]{"param2", fromitem});
+            list.add(new String[]{"param3", toitem});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+        ArrayList<String> items = invData.getItemRange(site, fromitem, toitem);
+        
+        Connection con = null;
+        try { 
+            
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            
+            
+            for (String p : items) {
+              _setStandardCosts(site, p, con); 
+            }
+            
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             error = true;
+        } finally {            
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }        
+        
+        return (error) ? new String[]{"1", "setStandardCostsByRange Exception Error"} : new String[]{"0", bsNumber(items.size())};
+    }
+    
+    public static ArrayList<String> getRollCostInfo(String item) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getRollCostInfo"});
+            list.add(new String[]{"param1", item});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServOV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
          ArrayList<String> myarray = new ArrayList<String>();
          String mystring = "";
          Double labor = 0.0;
@@ -13761,7 +14037,7 @@ public static ArrayList rollCost(String item) {
          return myarray;
      }
 
-public static Double simulateCost(String site, String item, String opvar, 
+    public static Double simulateCost(String site, String item, String opvar, 
                                       double runratevar,
                                       double setupratevar,
                                       double burdenratevar,
@@ -19832,6 +20108,9 @@ return mystring;
           if (jobtype.equals("GNRC")) {
                 jasperfile = "jobGRticket.jasper";
                 bustitle = "Generic Service Ticket";    
+          }
+          if (jobtype.isBlank()) {
+                jasperfile = "jobticket.jasper"; 
           }
        // System.out.println("HERE: " + jasperfile + " / " + jobid + " / " + jobtype);
         int k = 0;

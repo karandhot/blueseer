@@ -74,6 +74,7 @@ import static com.blueseer.utl.OVData.getNextLevelpsmstr;
 import static com.blueseer.utl.OVData.getNextNbr;
 import static com.blueseer.utl.OVData.getOperationsByItem;
 import static com.blueseer.utl.OVData.getProdLineInvAcct;
+import static com.blueseer.utl.OVData.getRollCostInfo;
 import static com.blueseer.utl.OVData.getSysMetaData;
 import static com.blueseer.utl.OVData.getSysMetaValue;
 import static com.blueseer.utl.OVData.getSystemAttachmentDirectory;
@@ -117,6 +118,7 @@ import static com.blueseer.utl.OVData.isValidVendPriceRecordExists;
 import static com.blueseer.utl.OVData.isValidVendor;
 import static com.blueseer.utl.OVData.isValidWarehouse;
 import static com.blueseer.utl.OVData.isValidWorkCenter;
+import static com.blueseer.utl.OVData.setStandardCosts;
 import static com.blueseer.utl.OVData.sourceOrder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -440,6 +442,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(ArrayListStringToJson(getWeekNbrByDate(request.getHeader("param1"), request.getHeader("param2"))));
             break; 
             
+        case "getRollCostInfo" :        
+            response.getWriter().print(ArrayListStringToJson(getRollCostInfo(request.getHeader("param1"))));
+            break;    
+            
         case "getzerolevelpsmstr" :        
             response.getWriter().print(ArrayListStringToJson(getzerolevelpsmstr()));
             break;
@@ -672,6 +678,13 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                 bsParseDouble(request.getHeader("param5")),
                 bsParseDouble(request.getHeader("param6")),
                 bsParseDouble(request.getHeader("param7"))))); 
+            break;
+        } 
+        
+        case "setStandardCosts" : {
+            response.getWriter().print(arrayToJson(setStandardCosts(
+                request.getHeader("param1"),
+                request.getHeader("param2")))); 
             break;
         } 
         

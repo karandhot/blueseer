@@ -4104,6 +4104,7 @@ public class invData {
     
     
     
+    
     public static String[] getWHLOCfromSerialNumber(String item, String serial) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
@@ -5068,6 +5069,23 @@ public class invData {
         }
      calcCost cur = new calcCost("current");
      ArrayList<Double> costlist = cur.getTotalCost(item, ""); // assume default bom
+     return costlist;
+    }
+    
+    public static ArrayList<Double> getTotalCostElements(String item) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getTotalCostElements"});
+            list.add(new String[]{"param1", item});
+            try {
+                return jsonToArrayListDouble(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+     calcCost cur = new calcCost("current");
+     ArrayList<Double> costlist = cur.getTotalCostElements(item, ""); // assume default bom
      return costlist;
     }
     
@@ -7375,6 +7393,71 @@ public class invData {
                 if (days > 0) {
                   caldate.add(Calendar.DATE, days);
                   x[10] = BlueSeerUtils.setDateFormat(caldate.getTime());
+                }
+                }
+          } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+          }
+        } catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return x;
+
+    }
+
+    public static String[] getItemComponentDetail(String parent, String component) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getItemComponentDetail"});
+            list.add(new String[]{"param1",  parent});
+            list.add(new String[]{"param2",  component});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServINV"));  
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }   
+        
+        String[] x = new String[]{"","","","","","","","","","",""};
+           int days = 0;
+           Calendar caldate = Calendar.getInstance();
+           try{
+            Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try{
+                res = st.executeQuery("SELECT ps_child, it_desc, ps_op, ps_qty_per, itc_total, it_expiredays  " +
+                        " FROM  pbm_mstr inner join item_mstr on it_item = ps_child  " +
+                       " left outer join item_cost on itc_item = it_item and itc_set = 'standard' " +
+                       " where ps_parent = " + "'" + parent + "'" + 
+                       " AND ps_child = " + "'" + component + "'" +
+                        " ;");
+                while (res.next()) {
+                   if (res.getString("it_expiredays") != null && ! res.getString("it_expiredays").isEmpty()) {
+                   days = res.getInt("it_expiredays");
+                   }  
+                x[0] = res.getString("ps_child"); 
+                x[1] = res.getString("it_desc"); 
+                x[2] = res.getString("ps_op"); 
+                x[3] = res.getString("ps_qty_per"); 
+                x[4] = res.getString("itc_total"); 
+                if (days > 0) {
+                  caldate.add(Calendar.DATE, days);
+                  x[5] = BlueSeerUtils.setDateFormat(caldate.getTime());
                 }
                 }
           } catch (SQLException s) {

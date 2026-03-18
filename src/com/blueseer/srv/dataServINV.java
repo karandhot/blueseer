@@ -60,6 +60,7 @@ import static com.blueseer.inv.invData.getInvRptPickerData;
 import static com.blueseer.inv.invData.getInvValuationBrowseView;
 import static com.blueseer.inv.invData.getInventoryQtyByItem;
 import static com.blueseer.inv.invData.getItemBrowseView;
+import static com.blueseer.inv.invData.getItemComponentDetail;
 import static com.blueseer.inv.invData.getItemCost;
 import static com.blueseer.inv.invData.getItemCostElements;
 import static com.blueseer.inv.invData.getItemDataInit;
@@ -80,6 +81,7 @@ import static com.blueseer.inv.invData.getOrderMaintDetailEvent;
 import static com.blueseer.inv.invData.getPLMstr;
 import static com.blueseer.inv.invData.getRecentTransByItem;
 import static com.blueseer.inv.invData.getRoutingMstr;
+import static com.blueseer.inv.invData.getTotalCostElements;
 import static com.blueseer.inv.invData.getTranMstr;
 import static com.blueseer.inv.invData.getTranMstrBySerial;
 import static com.blueseer.inv.invData.getUOMConvMstr;
@@ -761,8 +763,18 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;    
         }
         
+        case "getItemComponentDetail" : {
+            response.getWriter().print(arrayToJson(getItemComponentDetail(request.getHeader("param1"), request.getHeader("param2"))));
+            break;    
+        }
+        
         case "getCurrentCost" :   {     
             response.getWriter().print(ArrayListDoubleToJson(getCurrentCost(request.getHeader("param1"))));
+            break;    
+        }
+        
+        case "getTotalCostElements" :   {     
+            response.getWriter().print(ArrayListDoubleToJson(getTotalCostElements(request.getHeader("param1"))));
             break;    
         }
         

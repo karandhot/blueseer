@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.prd;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import java.awt.Color;
 import java.awt.Component;
@@ -38,10 +39,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -78,26 +76,39 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import static com.blueseer.prd.prdData.getProdSchedBrowseViewDet;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
-import java.sql.Connection;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import static com.blueseer.utl.OVData.printJasperJobTicket;
 import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
 import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 
 /**
  *
  * @author vaughnte
  */
 public class ProdSchedRpt extends javax.swing.JPanel {
- 
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultSite = "";
+    String defaultCurrency = "";
     
        MasterModel mymodel = new MasterModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("detail"), 
@@ -139,8 +150,7 @@ public class ProdSchedRpt extends javax.swing.JPanel {
 
       
      
-      double schtot = 0;
-      double reqtot = 0;
+      
       
       
       
@@ -314,136 +324,85 @@ public class ProdSchedRpt extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
-    public void getdetail(String jobnbr) {
+    public void executeTask(String x, String[] y) { 
       
-         modeldetail.setNumRows(0);
-         double total = 0.00;
-         DecimalFormat df = new DecimalFormat("#0.00", new DecimalFormatSymbols(Locale.US));
-        
-        
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                case "getBrowseViewDet":
+                    message = getBrowseViewDet(key[0]);
+                    break;     
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
             try {
-                int i = 0;
-                double dol = 0.00;
-                int qty = 0;
-                
-                
-                
-                 res = st.executeQuery("SELECT * from pland_mstr   " +
-                        " where pland_parent = " + "'" + jobnbr + "'" + 
-                         " order by pland_id desc ;"); 
-               
-                 
-              
-                
-                 
-                while (res.next()) {
-                    qty = qty + 0;
-                    i++;
-                        modeldetail.addRow(new Object[]{
-                            res.getString("pland_id"),
-                            res.getString("pland_parent"),
-                            res.getString("pland_item"),
-                            res.getString("pland_op"),
-                            res.getString("pland_cell"),
-                            res.getString("pland_date"),
-                            res.getString("pland_ref"),
-                            res.getDouble("pland_qty")
-                            });
-                   }
-               
-               
-                
-                tabledetail.setModel(modeldetail);
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
-    }
-    
-    public void printtickets(String fromjob, String tojob ) {
-        
-       try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-                HashMap hm = new HashMap();
-                hm.put("REPORT_TITLE", "CUT TICKET");
-                 hm.put("SUBREPORT_DIR", "jasper/");
-                hm.put("fromjob",  fromjob);
-                hm.put("tojob", tojob);
-                 File mytemplate = new File("jasper/jobticketnitridemulti.jasper");
-                JasperPrint jasperPrint = JasperFillManager.fillReport(mytemplate.getPath(), hm, con );
-              //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/jobticketmulti.pdf");
-         
-            JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
-            jasperViewer.setVisible(true);
-            con.close();   
+            String[] message = get();
            
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        } 
-        
-    }
-    
-    public void printticket(String jobid, String bustitle) {
-        
-       try {
-           Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
             }
             
-                HashMap hm = new HashMap();
-                String jasperfile = "jobticket.jasper";
-                hm.put("BUSINESSTITLE", bustitle);
-                hm.put("REPORT_TITLE", jasperfile);
-                hm.put("SUBREPORT_DIR", "jasper/");
-                hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
-                hm.put("myid",  jobid);
-                //hm.put("imagepath", "images/avmlogo.png");
-               // res = st.executeQuery("select shd_id, sh_cust, shd_po, shd_item, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, cm_city, cm_state, cm_zip, concat(cm_city, \" \", cm_state, \" \", cm_zip) as st_citystatezip, site_desc from ship_det inner join ship_mstr on sh_id = shd_id inner join cm_mstr on cm_code = sh_cust inner join site_mstr on site_site = sh_site where shd_id = '1848' ");
-               // JRResultSetDataSource jasperReports = new JRResultSetDataSource(res);
-                File mytemplate = new File("jasper/" + jasperfile);
-                JasperPrint jasperPrint = JasperFillManager.fillReport(mytemplate.getPath(), hm, con );
-               // JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/jobticket.pdf");
-         
-            JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
-            jasperViewer.setVisible(true);
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
             
-            con.close();
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+            if (this.action.equals("getBrowseViewDet")) {
+                done_getBrowseViewDet();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
         }
-        
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+   
+    public void printticket(String jobid, String bustitle) {
+       printJasperJobTicket(jobid, bustitle, "");        
     }
     
     public void postcommit() {
@@ -473,6 +432,62 @@ public class ProdSchedRpt extends javax.swing.JPanel {
          
          
     }
+    
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
     
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
@@ -519,7 +534,21 @@ public class ProdSchedRpt extends javax.swing.JPanel {
     }
     
     public void initvars(String[] arg) {
-         java.util.Date now = new java.util.Date();
+        executeTask("dataInit", null); 
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        setPanelComponentState(this, true);
+        java.util.Date now = new java.util.Date();
          
          Calendar calfrom = Calendar.getInstance();
          calfrom.add(Calendar.DATE, -7);
@@ -536,15 +565,149 @@ public class ProdSchedRpt extends javax.swing.JPanel {
          topart.setText("");
          
          mymodel.setRowCount(0);
+         modeldetail.setRowCount(0);
          mastertable.setModel(mymodel);
-        
+         tabledetail.setModel(modeldetail);
          detailpanel.setVisible(false);
-          
-          
-             
-         
-         
+       
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+           
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+           
+        }
+        
+        CheckBoxRenderer checkBoxRenderer = new CheckBoxRenderer();
+        mastertable.getColumnModel().getColumn(4).setCellRenderer(checkBoxRenderer); 
+
+         Enumeration<TableColumn> en = mastertable.getColumnModel().getColumns();
+         while (en.hasMoreElements()) {
+             TableColumn tc = en.nextElement();
+             if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+                 continue;
+             }
+             tc.setCellRenderer(new SomeRenderer());
+         }   
+
+        mastertable.getColumnModel().getColumn(0).setMaxWidth(100);
+        mastertable.getColumnModel().getColumn(14).setMaxWidth(100);
     }
+    
+    public String[] getBrowseView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getProdSchedBrowseView"});
+        list.add(new String[]{"param1",dfdate.format(dcfrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcto.getDate())});
+        list.add(new String[]{"param3",frompart.getText()});
+        list.add(new String[]{"param4",topart.getText()});
+        list.add(new String[]{"param5",fromcell.getText()});
+        list.add(new String[]{"param6",tocell.getText()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServPRD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getProdSchedBrowseView")};
+            }
+        } else {
+            jsonString = prdData.getProdSchedBrowseView(new String[]{
+                dfdate.format(dcfrom.getDate()),
+                dfdate.format(dcto.getDate()),
+                frompart.getText(), 
+                topart.getText(), 
+                fromcell.getText(),
+                tocell.getText()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getProdSchedBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+        setPanelComponentState(this, true);
+        int i = 0;
+        double schtot = 0;
+        double reqtot = 0;
+        mymodel.setNumRows(0);
+        if (roData != null) {
+        for (Object[] rowData : roData) {            
+            if (cbclosed.isSelected() && roData[i][13].toString().equals("closed")) {
+                continue;
+            }
+            if (cbclosed.isSelected() && roData[i][13].toString().equals("void")) {
+                continue;
+            }
+            reqtot = reqtot + bsParseDouble(roData[i][8].toString());
+            schtot = schtot + bsParseDouble(roData[i][7].toString());
+            roData[i][7] = bsParseDouble(roData[i][7].toString());
+            roData[i][8] = bsParseDouble(roData[i][8].toString());
+            roData[i][9] = bsParseDouble(roData[i][9].toString());           
+            mymodel.addRow(rowData);
+            i++;
+        }
+        }
+        labelqtysched.setText(String.valueOf(schtot));
+        labelqtyreqd.setText(String.valueOf(reqtot));
+        labelcount.setText(String.valueOf(i));
+
+        roData = null;
+    }   
+    
+    public String[] getBrowseViewDet(String jobid) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getProdSchedBrowseViewDet"});
+            list.add(new String[]{"param1", jobid});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServPRD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getProdSchedBrowseViewDet(jobid); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getBrowseViewDet() {
+      modeldetail.setNumRows(0);
+       //  double totalsales = 0;
+      //   double totalqty = 0;
+       int i = 0;  
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+                modeldetail.addRow(rowData);
+                i++;
+            } 
+        }
+       }
+              roData = null;
+    }
+    
+    
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -857,152 +1020,9 @@ public class ProdSchedRpt extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-        schtot = 0;
-        reqtot = 0;
-       
-        
-        labelqtysched.setText("0");
-        labelqtyreqd.setText("0");
-        labelcount.setText("0");
-    
-try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                double amt = 0;
-               
-                int i = 0;
-                String fpart;
-                String tpart;
-                String fcell;
-                String tcell;
-                String status;
-                
-                if (frompart.getText().isEmpty()) {
-                    fpart = bsmf.MainFrame.lowchar;
-                } else {
-                    fpart = frompart.getText();
-                }
-                 if (topart.getText().isEmpty()) {
-                    tpart = bsmf.MainFrame.hichar;
-                } else {
-                    tpart = topart.getText();
-                }
-                 if (fromcell.getText().isEmpty()) {
-                    fcell = bsmf.MainFrame.lowchar;
-                } else {
-                    fcell = fromcell.getText();
-                }
-                 if (tocell.getText().isEmpty()) {
-                    tcell = bsmf.MainFrame.hichar;
-                } else {
-                    tcell = tocell.getText();
-                }
-             
-                  CheckBoxRenderer checkBoxRenderer = new CheckBoxRenderer();
-                mastertable.getColumnModel().getColumn(4).setCellRenderer(checkBoxRenderer); 
-                 
-                 Enumeration<TableColumn> en = mastertable.getColumnModel().getColumns();
-                 while (en.hasMoreElements()) {
-                     TableColumn tc = en.nextElement();
-                     if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
-                         continue;
-                     }
-                     tc.setCellRenderer(new SomeRenderer());
-                 }   
-                
-                mastertable.getColumnModel().getColumn(0).setMaxWidth(100);
-                mastertable.getColumnModel().getColumn(14).setMaxWidth(100);
-               
-            
-                mymodel.setRowCount(0);
-               
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                 
-                 res = st.executeQuery("SELECT plan_nbr, plan_type, plan_item, plan_qty_req, plan_qty_comp, "
-                         + " plan_qty_sched, plan_date_due, plan_date_sched, plan_status, plan_is_sched, plan_cell, plan_order, plan_line " +
-                        " FROM  plan_mstr " +
-                        " where plan_date_due >= " + "'" + dfdate.format(dcfrom.getDate()) + "'" + 
-                        " AND plan_date_due <= " + "'" + dfdate.format(dcto.getDate()) + "'" + 
-                        " AND plan_item >= " + "'" + fpart + "'" + 
-                        " AND plan_item <= " + "'" + tpart + "'" + 
-                         " AND plan_cell >= " + "'" + fcell + "'" + 
-                        " AND plan_cell <= " + "'" + tcell + "'" + 
-                        " AND plan_is_sched = " + "'1' "  +
-                        " order by plan_item, plan_date_due;");    
-                 
-                 
-                while (res.next()) {
-                    
-                    if (cbclosed.isSelected() && res.getInt("plan_status") == 1) {
-                        continue;
-                    }
-                    if (cbclosed.isSelected() && res.getInt("plan_status") == -1) {
-                        continue;
-                    }
-                    
-                    if (res.getInt("plan_status") == 0) {
-                        status = getGlobalProgTag("open");
-                    } else if (res.getInt("plan_status") == 1) {
-                        status = getGlobalProgTag("closed");
-                    } else {
-                        status = getGlobalProgTag("void"); // -1
-                    }
-                    
-                    i++;
-                    reqtot = reqtot + res.getInt("plan_qty_req");
-                    schtot = schtot + res.getInt("plan_qty_sched");
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickbasket,
-                                res.getString("plan_nbr"),
-                                res.getString("plan_item"),
-                                res.getString("plan_date_due"),
-                                res.getString("plan_type"),
-                                res.getBoolean("plan_is_sched"),
-                                res.getString("plan_cell"),
-                                res.getInt("plan_qty_sched"),
-                                res.getInt("plan_qty_req"),
-                                res.getInt("plan_qty_comp"),
-                                res.getString("plan_date_sched"),
-                                res.getString("plan_order"),
-                                res.getString("plan_line"),
-                                status,
-                                BlueSeerUtils.clickprint
-                            });
-                }
-                labelqtysched.setText(String.valueOf(schtot));
-                labelqtyreqd.setText(String.valueOf(reqtot));
-                labelcount.setText(String.valueOf(i));
-               
-                 
-                
-                
-             //    RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(mymodel);
-            //     mytable.setRowSorter(sorter);
-                
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
+        mymodel.setNumRows(0);
+        setPanelComponentState(this, false);
+        executeTask("getBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void bthidedetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bthidedetailActionPerformed
@@ -1013,11 +1033,9 @@ try {
     private void mastertableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mastertableMouseClicked
         int row = mastertable.rowAtPoint(evt.getPoint());
         int col = mastertable.columnAtPoint(evt.getPoint());
-         // select any field in a row grabs the vendor for that row...so open the possibility of payment for that row/vendor
-        String jobnbr = mastertable.getValueAt(row, 1).toString();
         
         if ( col == 0) {
-            getdetail(jobnbr);
+            executeTask("getBrowseViewDet", new String[]{mastertable.getValueAt(row, 1).toString()});
             bthidedetail.setEnabled(true);
             detailpanel.setVisible(true);
         }

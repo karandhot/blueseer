@@ -42,7 +42,11 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.OVData.setStandardCostsByRange;
+import java.awt.Color;
 import java.awt.Component;
 import java.sql.Connection;
 import java.util.logging.Level;
@@ -50,18 +54,28 @@ import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
 
 /**
  *
  * @author vaughnte
  */
 public class CostRollRange extends javax.swing.JPanel {
-
+    String[] rarray = null;
+    boolean isLoad = false;
+    boolean canUpdate = false;
+    boolean isAutoPost = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String defaultCC = "";
     /**
      * Creates new form ItemLevelMaint
      */
@@ -70,6 +84,65 @@ public class CostRollRange extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;                
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+   
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -114,22 +187,105 @@ public class CostRollRange extends javax.swing.JPanel {
        }
     }
     
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
+    
     
     public void initvars(String[] arg) {
-         btroll.setEnabled(true);
-       ddsite.removeAllItems();
-       ArrayList<String>  mylist = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (String code : mylist) {
-            ddsite.addItem(code);
-        }
-        ddsite.setSelectedItem(OVData.getDefaultSite());
-        tbfromitem.setText("");
-        tbtoitem.setText("");
-        
+      setPanelComponentState(this, false);
+        executeTask("dataInit", null); 
     }
    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+       setPanelComponentState(this, true);
+       ddsite.removeAllItems();
+       tbfromitem.setText("");
+       tbtoitem.setText(""); 
+       
+       for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);   
+            }
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            } 
+        }
+       
+       ddsite.setSelectedItem(defaultSite);
+        
+
+    }
+    
       
-         class TaskROLL extends SwingWorker<Void, Void> {
+    class TaskROLL extends SwingWorker<Void, Void> {
         /*
          * Main task. Executed in background thread.
          */
@@ -146,17 +302,9 @@ public class CostRollRange extends javax.swing.JPanel {
         }
        
       
-        ArrayList<String> items = invData.getItemRange(ddsite.getSelectedItem().toString(), fromitem, toitem);
-       
-       
+        rarray = setStandardCostsByRange(ddsite.getSelectedItem().toString(), fromitem, toitem);
         
-          for (String p : items) {
-          OVData.setStandardCosts(ddsite.getSelectedItem().toString(), p); 
-          talog.append("Rolling Cost for: " + p + " \n");
-          }
-        
-          
-            return null;
+        return null;
            
         }
  
@@ -169,9 +317,15 @@ public class CostRollRange extends javax.swing.JPanel {
            // setperms(bsmf.MainFrame.userid);
           //  reinitpanels2("BackGroundPanel", "BackGroundPanel", false, "");
             bsmf.MainFrame.show(getMessageTag(1065));
-            talog.setText("");
+            if (rarray != null && rarray.length > 1) {
+                if (rarray[0].equals("0")) {
+                  talog.append("Item count rolled: " + rarray[1] + " \n");
+                } else {
+                  talog.append("Error: " + rarray[1]);  
+                }
+            }            
             MainProgressBar.setVisible(false);
-             btroll.setEnabled(true);
+            btroll.setEnabled(true);
         }
     }  
     /**
@@ -281,8 +435,6 @@ public class CostRollRange extends javax.swing.JPanel {
         
         CostRollRange.TaskROLL taskroll = new CostRollRange.TaskROLL();
         taskroll.execute();
-        
-        
        
     }//GEN-LAST:event_btrollActionPerformed
 

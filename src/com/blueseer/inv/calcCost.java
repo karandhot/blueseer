@@ -180,7 +180,40 @@ public class calcCost {
           }
              return mylist;
          }
-           
+     
+    public ArrayList getCurrentCostArrayForRoll(String item, String bom, Connection bscon) {
+        
+             ArrayList mylist = new ArrayList();
+            
+             _getTotalCostRecursive(item,1,bom,bscon);
+             mylist.add(lowermtlcost + uppermtlcost);
+             mylist.add(lowerlbrcost + upperlbrcost);
+             mylist.add(lowerbdncost + upperbdncost);
+             mylist.add(lowerovhcost + upperovhcost);
+             mylist.add(loweroutcost + upperoutcost);
+          
+             return mylist;
+         }
+     
+    public ArrayList getCurrentCostElementsForRoll(String item, String bom, Connection bscon) {
+        
+             ArrayList mylist = new ArrayList();
+            
+             _getTotalCostRecursive(item,1,bom,bscon);
+             mylist.add(lowermtlcost);
+             mylist.add(lowerlbrcost);
+             mylist.add(lowerbdncost);
+             mylist.add(lowerovhcost);
+             mylist.add(loweroutcost);
+             mylist.add(uppermtlcost);
+             mylist.add(upperlbrcost);
+             mylist.add(upperbdncost);
+             mylist.add(upperovhcost);
+             mylist.add(upperoutcost);
+          
+             return mylist;
+         }
+    
            
     public ArrayList getTotalCostElements(String part, String bom) {
                   

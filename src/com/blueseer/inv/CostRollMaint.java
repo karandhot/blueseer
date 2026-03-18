@@ -46,6 +46,12 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import static com.blueseer.inv.invData.getItemComponentDetail;
+import static com.blueseer.inv.invData.getItemMstr;
+import com.blueseer.inv.invData.item_mstr;
+import com.blueseer.prd.ProdDetRpt;
+import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble5;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDoubleUS;
@@ -66,6 +72,7 @@ import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import com.blueseer.utl.DTData;
 import static com.blueseer.utl.OVData.canUpdate;
+import static com.blueseer.utl.OVData.setStandardCosts;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -75,16 +82,22 @@ import java.awt.event.MouseEvent;
 import java.math.RoundingMode;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
+import java.util.Calendar;
+import java.util.Enumeration;
 import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
+import javax.swing.table.TableColumn;
 import javax.swing.tree.TreeNode;
 
 /**
@@ -93,6 +106,13 @@ import javax.swing.tree.TreeNode;
  */
 public class CostRollMaint extends javax.swing.JPanel {
 
+    boolean isLoad = false;
+    boolean canUpdate = false;
+    boolean isAutoPost = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String defaultCC = "";
     javax.swing.table.DefaultTableModel costmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
             new String[]{
                getGlobalColumnTag("item"), 
@@ -150,7 +170,6 @@ public class CostRollMaint extends javax.swing.JPanel {
                getGlobalColumnTag("standardcost")
             });
     
-    String thissite = "";
     
     
     /**
@@ -161,6 +180,121 @@ public class CostRollMaint extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;                
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+   
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
+    
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -209,12 +343,12 @@ public class CostRollMaint extends javax.swing.JPanel {
     public void settoplowmodeltable() {
         toplowmodel.setNumRows(0);
         ArrayList<Double> costs = new ArrayList<Double>();
-        costs = invData.getItemCostElements(tbitem.getText(), "standard", thissite);
+        costs = invData.getItemCostElements(tbitem.getText(), "standard", defaultSite);
        
-        calcCost cur = new calcCost("current");
+      //  calcCost cur = new calcCost("current");        
+      //  ArrayList<Double> costcur = cur.getTotalCostElements(tbitem.getText(),""); // assume default bom
         
-        ArrayList<Double> costcur = new ArrayList<Double>();
-        costcur = cur.getTotalCostElements(tbitem.getText(),""); // assume default bom
+        ArrayList<Double> costcur = invData.getTotalCostElements(tbitem.getText());
         
         double stdmtllow = costs.get(0);
         double stdlbrlow = costs.get(1);
@@ -269,8 +403,7 @@ public class CostRollMaint extends javax.swing.JPanel {
     
     public void setcostmodeltable() {
         costmodel.setNumRows(0);
-         ArrayList<String> costs = new ArrayList<String>();
-        costs = OVData.rollCost(tbitem.getText());
+         ArrayList<String> costs = OVData.getRollCostInfo(tbitem.getText());
         double total = 0.0;
         double totmtl = 0.0;
         double totlbr = 0.0;
@@ -341,11 +474,11 @@ public class CostRollMaint extends javax.swing.JPanel {
                 
     }
     
-     public void setsubcostmodeltable(String part) {
+     public void setsubcostmodeltable(String item) {
          
          subcostmodel.setNumRows(0);
          ArrayList<String> costs = new ArrayList<String>();
-        costs = OVData.rollCost(part);
+        costs = OVData.getRollCostInfo(item);
         Double total = 0.0;
         String stdtotalcost = "";
           for (String cost : costs) {
@@ -379,91 +512,37 @@ public class CostRollMaint extends javax.swing.JPanel {
     }
     
     public void getCompInfo(String parent, String component) {
-         try {
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-               
-
-                int i = 0;
-
-            //    javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
-          //          new String[]{"Site", "Loc", "Qty", "Date"});
-           //     mymodel.setRowCount(0);
-                
-                            
-                // ReportPanel.TableReport.getColumn("CallID").setCellRenderer(new ButtonRenderer());
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
-
-               res = st.executeQuery("SELECT ps_child, it_desc, ps_op, ps_qty_per, itc_total  " +
-                        " FROM  pbm_mstr inner join item_mstr on it_item = ps_child  " +
-                       " left outer join item_cost on itc_item = it_item and itc_set = 'standard' " +
-                       " where ps_parent = " + "'" + parent.toString() + "'" + 
-                       " AND ps_child = " + "'" + component.toString() + "'" +
-                        " ;");
-
-                while (res.next()) {
-                    i++;
-                    //mymodel.addRow(new Object[]{
-                     //           res.getString("in_site")
-                     //  });
-                     tbdesc.setText(res.getString("it_desc"));
-                     tbqtyper.setText(res.getString("ps_qty_per"));
-                     tbstdcost.setText(res.getString("itc_total"));
-                     tbcomp.setText(res.getString("ps_child"));
-                     tbop.setText(res.getString("ps_op"));
-                }
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        String[] x = getItemComponentDetail(parent, component);
+        tbdesc.setText(x[1]);
+         tbqtyper.setText(x[3]);
+         tbstdcost.setText(x[4]);
+         tbcomp.setText(x[0]);
+         tbop.setText(x[2]);         
     }
     
      public void bind_tree(String parentpart) {
-      //  jTree1.setModel(null);
-       
-      //  DefaultMutableTreeNode mynode = get_nodes(parentpart);
-        DefaultMutableTreeNode mynode = OVData.get_nodes_without_op(parentpart);
-      // DefaultMutableTreeNode mynode = OVData.get_op_nodes_experimental(parentpart);
-       
+      //  DefaultMutableTreeNode mynode = OVData.get_nodes_without_op(parentpart);
+        DefaultMutableTreeNode mynode = invData.bind_tree_op(parentpart);
         DefaultTreeModel model = (DefaultTreeModel)jTree1.getModel();
-        
         model.setRoot(mynode);
         jTree1.setVisible(true);
-        
     }
      
      public void establishParent(String item) {
-          boolean validItem =  OVData.isValidItem(item);
-          String desc = invData.getItemDesc(item);
-          String type = invData.getItemCode(item);
-             if (validItem) {
+          item_mstr im = getItemMstr(new String[]{item});
+          
+             if (im.m()[0].equals("0")) {
               tbitem.setEditable(false);
               tbitem.setForeground(Color.blue);
-                   settoplowmodeltable();
-                   setcostmodeltable();
-                   bind_tree(item);
-             lblitem.setText("type: " + type + " / " + desc);
-             enableAll();
+               settoplowmodeltable();
+               setcostmodeltable();
+               bind_tree(item);
+             lblitem.setText("type: " + im.it_type() + " / " + im.it_desc());
              } else {
                tbitem.setEditable(true);
                tbitem.setForeground(Color.black); 
                lblitem.setText("invalid item");
-               disableAll();
+               btroll.setEnabled(false);
              }
     }
     
@@ -510,18 +589,30 @@ public class CostRollMaint extends javax.swing.JPanel {
     }
  
      
-    public void disableAll() {
-        btroll.setEnabled(false);
-        btclear.setEnabled(false);
-        
-    } 
-    
-    public void enableAll() {
-         btroll.setEnabled(true);
-        btclear.setEnabled(true);
-    }
      
-    public void clearAll() {
+    public void initvars(String[] arg) {
+        setPanelComponentState(this, false);
+        executeTask("dataInit", null); 
+        if (arg != null && arg.length > 0) {
+           tbitem.setText(arg[0]);
+           establishParent(arg[0]);
+       }
+         
+         
+       
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        setPanelComponentState(this, true);
          DefaultMutableTreeNode root = new DefaultMutableTreeNode("");
        jTree1.setModel(new DefaultTreeModel(root));
        tbitem.setText("");
@@ -536,25 +627,25 @@ public class CostRollMaint extends javax.swing.JPanel {
          tbqtyper.setText("");
          tbstdcost.setText("");
          tbcomp.setText("");
-         thissite = OVData.getDefaultSite();
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);   
+            }
+           
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            } 
+           
+        }
+        
+
     }
-     
-    public void initvars(String[] arg) {
-       
-        clearAll();
-        disableAll();
-      
-         
-         
-         if (arg != null && arg.length > 0) {
-           tbitem.setText(arg[0]);
-           establishParent(arg[0]);
-          
-       }
-         
-         
-       
-    }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -931,6 +1022,11 @@ public class CostRollMaint extends javax.swing.JPanel {
 
     private void jTree1ValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_jTree1ValueChanged
         String comp = "";
+        tbdesc.setText("");
+        tbqtyper.setText("");
+        tbstdcost.setText("");
+        tbcomp.setText("");
+        tbop.setText("");
         DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)jTree1.getLastSelectedPathComponent(); 
         DefaultMutableTreeNode thisnode = new DefaultMutableTreeNode();
         DefaultMutableTreeNode grandnode = new DefaultMutableTreeNode();
@@ -940,12 +1036,15 @@ public class CostRollMaint extends javax.swing.JPanel {
             if (! selectedNode.isRoot()) {
                 // lets see if op is in between parent and child...i.e. we may be looking for grandparent
                 thisnode = (DefaultMutableTreeNode) selectedNode.getParent();
-               // if (thisnode != null) {
-              //  grandnode = (DefaultMutableTreeNode) thisnode.getParent();
-              //  }
                 if (thisnode != null) {
-                   // bsmf.MainFrame.show(grandnode.toString() + "/" + comp);
-                    getCompInfo(thisnode.toString(), comp);
+                grandnode = (DefaultMutableTreeNode) thisnode.getParent();
+                }
+                if (grandnode != null) {
+                    // bsmf.MainFrame.show(grandnode.toString() + "/" + comp);
+                    String[] cx = comp.split("___", -1);
+                    if (cx != null && cx.length > 1) {
+                     getCompInfo(grandnode.toString(), cx[0]);
+                    }
                 }
             }
             if (! selectedNode.isRoot() && ! selectedNode.isLeaf()) {
@@ -961,119 +1060,22 @@ public class CostRollMaint extends javax.swing.JPanel {
     }//GEN-LAST:event_jTree1ValueChanged
 
     private void btrollActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btrollActionPerformed
-       
-        if (! canUpdate(this.getClass().getName())) {
+        setPanelComponentState(this, false);
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return;
         }
         
-        try {
-
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-               
-                boolean proceed = true;
-                
-                int i = 0;
-                String perms = "";
-                double itrcost = 0.00;
-                String routing = invData.getItemRouting(tbitem.getText());
-                ArrayList<String> ops = OVData.getOperationsByItem(tbitem.getText());
-                // lets do item_cost first 
-                res = st.executeQuery("SELECT itc_item FROM  item_cost where itc_item = " + "'" + tbitem.getText() + "'" + ";");
-                    while (res.next()) {
-                        i++;
-                    }
-
-                    if (i > 0) {
-                        st.executeUpdate("update item_cost set "
-                                + "itc_mtl_low = " + "'" + bsFormatDoubleUS(bsParseDouble(toplowtable.getValueAt(0, 1).toString())) + "'" + ","
-                                + "itc_mtl_top = " + "'" + bsFormatDoubleUS(bsParseDouble(toplowtable.getValueAt(0, 3).toString())) + "'" + ","
-                                + "itc_lbr_low = " + "'" + bsFormatDoubleUS(bsParseDouble(toplowtable.getValueAt(1, 1).toString())) + "'" + ","
-                                + "itc_lbr_top = " + "'" + bsFormatDoubleUS(bsParseDouble(toplowtable.getValueAt(1, 3).toString())) + "'" + ","
-                                + "itc_bdn_low = " + "'" + bsFormatDoubleUS(bsParseDouble(toplowtable.getValueAt(2, 1).toString())) + "'" + ","
-                                + "itc_bdn_top = " + "'" + bsFormatDoubleUS(bsParseDouble(toplowtable.getValueAt(2, 3).toString())) + "'" + ","
-                                + "itc_ovh_low = " + "'" + bsFormatDoubleUS(bsParseDouble(toplowtable.getValueAt(3, 1).toString())) + "'" + ","
-                                + "itc_ovh_top = " + "'" + bsFormatDoubleUS(bsParseDouble(toplowtable.getValueAt(3, 3).toString())) + "'" + ","
-                                + "itc_out_low = " + "'" + bsFormatDoubleUS(bsParseDouble(toplowtable.getValueAt(4, 1).toString())) + "'" + ","
-                                + "itc_out_top = " + "'" + bsFormatDoubleUS(bsParseDouble(toplowtable.getValueAt(4, 3).toString())) + "'" + ","
-                                + "itc_total = " + "'" + bsFormatDoubleUS(bsParseDouble(toplowtable.getValueAt(5, 5).toString())) + "'" 
-                                + " where itc_item = " + "'" + tbitem.getText() + "'"
-                                + " AND itc_set = 'standard' "
-                                + " AND itc_site = " + "'" + thissite + "'"
-                                + ";");
-                       
-                    } else {
-                        bsmf.MainFrame.show(getMessageTag(1001));
-                        proceed = false;
-                    }
-
-                    
-                    // ok now lets do itemr_cost ...routing based costing
-                   if (proceed) { 
-                    i = -1;
-                    for (String op : ops) {
-                    // bsmf.MainFrame.show(op);
-                    i++;
-                    // delete original itemr_cost records for this item, op, routing, standard
-                    st.executeUpdate(" delete FROM  itemr_cost where itr_item = " + "'" + tbitem.getText() + "'" 
-                                     /*    +  " AND itr_op = " + "'" + op + "'"  need to remove all ops in case routing change*/
-                                         + " AND itr_set = 'standard' "
-                                         + " AND itr_site = " + "'" + thissite + "'"
-                                         + " AND itr_routing = " + "'" + routing + "'" + ";");
-                        
-                         
-                            itrcost = bsParseDouble(costtable.getValueAt(i,8).toString()) + 
-                                   bsParseDouble(costtable.getValueAt(i,6).toString()) +
-                                 bsParseDouble(costtable.getValueAt(i,7).toString()) +
-                                 bsParseDouble(costtable.getValueAt(i,9).toString()) +
-                                 bsParseDouble(costtable.getValueAt(i,10).toString()) ;
-                                
-                         
-                            st.executeUpdate("insert into itemr_cost (itr_item, itr_site, itr_set, itr_routing, itr_op, " +
-                                 " itr_total, itr_mtl_top, itr_lbr_top, itr_bdn_top, itr_ovh_top, itr_out_top, " +
-                                 " itr_mtl_low, itr_lbr_low, itr_bdn_low, itr_ovh_low, itr_out_low ) values ( "
-                                + "'" + tbitem.getText() + "'" + ","
-                                + "'" + thissite + "'" + ","
-                                + "'" + "standard" + "'" + ","
-                                + "'" + routing + "'" + ","
-                                + "'" + op + "'" + ","
-                                + "'" + bsFormatDoubleUS(itrcost) + "'" + "," 
-                                + "'" + bsFormatDoubleUS(bsParseDouble(costtable.getValueAt(i, 8).toString())) + "'" + ","   
-                                + "'" + bsFormatDoubleUS(bsParseDouble(costtable.getValueAt(i, 6).toString())) + "'" + ","
-                                + "'" + bsFormatDoubleUS(bsParseDouble(costtable.getValueAt(i, 7).toString())) + "'" + ","
-                                + "'" + bsFormatDoubleUS(bsParseDouble(costtable.getValueAt(i, 9).toString())) + "'" + ","
-                                + "'" + bsFormatDoubleUS(bsParseDouble(costtable.getValueAt(i, 10).toString())) + "'" + ","
-                                + "'" + "0" + "'" + ","
-                                + "'" + "0" + "'" + ","
-                                + "'" + "0" + "'" + ","
-                                + "'" + "0" + "'" + ","
-                                + "'" + "0" + "'" + " ) ;");
-                       
-                        
-                  
-                    } // for ops
-                    bsmf.MainFrame.show(getMessageTag(1125));
-                    initvars(new String[]{tbitem.getText()});
-                   }
-            } // if proceed
-            catch (SQLException s) {
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-                MainFrame.bslog(s);
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }  
+        String[] x = setStandardCosts(defaultSite, tbitem.getText());
+        if (x[0].equals("0")) {
+            bsmf.MainFrame.show(getMessageTag(1125));
+            initvars(new String[]{tbitem.getText()});
+        } else {
+            bsmf.MainFrame.show(x[1]); 
+        }
+        
+        
+         
     }//GEN-LAST:event_btrollActionPerformed
 
     private void tbitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbitemActionPerformed

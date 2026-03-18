@@ -26,7 +26,6 @@ SOFTWARE.
 
 package com.blueseer.prd;
 
-import com.blueseer.rcv.*;
 import bsmf.MainFrame;
 import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
@@ -43,11 +42,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -92,7 +87,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.lang.reflect.Field;
-import java.sql.Connection;
+
 import java.text.DecimalFormatSymbols;
 import java.util.Calendar;
 import java.util.Enumeration;
@@ -300,55 +295,6 @@ public class SerialBrowse extends javax.swing.JPanel {
        
     }
      
-    public void getdetail(String masterserial) {
-      
-         modeldetail.setNumRows(0);
-         double total = 0;
-        
-        try {
-
-            Class.forName(bsmf.MainFrame.driver).newInstance();
-            bsmf.MainFrame.con = DriverManager.getConnection(bsmf.MainFrame.url + bsmf.MainFrame.db, bsmf.MainFrame.user, bsmf.MainFrame.pass);
-            try {
-                Statement st = bsmf.MainFrame.con.createStatement();
-                ResultSet res = null;
-                int i = 0;
-                String blanket = "";
-                
-                res = st.executeQuery("SELECT tr_id, tr_op, tr_cost,  tr_item, tr_type, tr_wh, tr_loc, tr_qty, tr_base_qty, tr_uom, tr_eff_date, tr_timestamp, tr_ref, tr_serial, tr_program , tr_userid, tr_lot " +
-                        " FROM  tran_mstr  " +
-                        " where tr_lot = " + "'" + masterserial  + "'" + 
-                        " and tr_serial <> " + "'" + masterserial  + "'" + // prevent cyclic grab
-                         " order by tr_id desc ;"); 
-                    while (res.next()) {
-                        modeldetail.addRow(new Object[]{
-                                BlueSeerUtils.clickflag,
-                                res.getString("tr_id"),
-                                res.getString("tr_serial"),
-                                res.getString("tr_item"),
-                                res.getString("tr_type"),
-                                res.getDouble("tr_qty"),
-                                res.getString("tr_uom"),
-                                res.getString("tr_eff_date"),
-                                res.getString("tr_timestamp")
-                            });
-                    }
-               
-              
-                tabledetail.setModel(modeldetail);
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            }
-            bsmf.MainFrame.con.close();
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
-    }
-    
     public void showTranMstr(String key, String bytype) {
         javax.swing.JTextArea ta = new javax.swing.JTextArea();
         

@@ -40,6 +40,7 @@ import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformat;
+import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.jsonToInt;
@@ -796,6 +797,212 @@ public class prdData {
                         jsonarray.put(rowArray);
                    }
                 }
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
+   public static String getProdSchedBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                keys[2] = (keys[2].isBlank()) ? bsmf.MainFrame.lowchar : keys[2];
+                keys[3] = (keys[3].isBlank()) ? bsmf.MainFrame.lowchar : keys[3];
+                keys[4] = (keys[4].isBlank()) ? bsmf.MainFrame.lowchar : keys[4];
+                keys[5] = (keys[5].isBlank()) ? bsmf.MainFrame.lowchar : keys[5];
+                
+                res = st.executeQuery("SELECT plan_nbr, plan_type, plan_item, plan_qty_req, plan_qty_comp, "
+                         + " plan_qty_sched, plan_date_due, plan_date_sched, plan_status, plan_is_sched, plan_cell, plan_order, plan_line " +
+                        " FROM  plan_mstr " +
+                        " where plan_date_due >= " + "'" + keys[0] + "'" + 
+                        " AND plan_date_due <= " + "'" + keys[1] + "'" + 
+                        " AND plan_item >= " + "'" + keys[2] + "'" + 
+                        " AND plan_item <= " + "'" + keys[3] + "'" + 
+                         " AND plan_cell >= " + "'" + keys[4] + "'" + 
+                        " AND plan_cell <= " + "'" + keys[5] + "'" + 
+                        " AND plan_is_sched = " + "'1' "  +
+                        " order by plan_item, plan_date_due;");
+                    String status = "";
+                    
+                    while (res.next()) {
+                    if (res.getInt("plan_status") == 0) {
+                        status = getGlobalProgTag("open");
+                    } else if (res.getInt("plan_status") == 1) {
+                        status = getGlobalProgTag("closed");
+                    } else {
+                        status = getGlobalProgTag("void"); // -1
+                    }    
+                        
+                    JSONArray rowArray = new JSONArray();
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("plan_nbr"));
+                        rowArray.put(res.getString("plan_item"));
+                        rowArray.put(res.getString("plan_date_due"));
+                        rowArray.put(res.getString("plan_type"));
+                        rowArray.put(res.getString("plan_is_sched"));
+                        rowArray.put(res.getString("plan_cell"));                        
+                        rowArray.put(bsNumber(res.getDouble("plan_qty_sched")));
+                        rowArray.put(bsNumber(res.getDouble("plan_qty_req")));
+                        rowArray.put(bsNumber(res.getDouble("plan_qty_comp")));
+                        rowArray.put(res.getString("plan_date_sched"));
+                        rowArray.put(res.getString("plan_order"));
+                        rowArray.put(res.getString("plan_line"));
+                        rowArray.put(status);
+                        rowArray.put("print");
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
+   public static String getProdSchedBrowseViewDet(String key) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+               
+                 res = st.executeQuery("SELECT * from pland_mstr   " +
+                        " where pland_parent = " + "'" + key + "'" + 
+                         " order by pland_id desc ;");                 
+                 while (res.next()) {                       
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("pland_id"));
+                        rowArray.put(res.getString("pland_parent"));
+                        rowArray.put(res.getString("pland_item"));
+                        rowArray.put(res.getString("pland_op"));
+                        rowArray.put(res.getString("pland_cell"));
+                        rowArray.put(res.getString("pland_date"));
+                        rowArray.put(res.getString("pland_ref"));
+                        rowArray.put(res.getString("pland_qty"));
+                        jsonarray.put(rowArray);
+                   } 
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
+   public static String getProdDetBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                keys[3] = (keys[3].isBlank()) ? bsmf.MainFrame.lowchar : keys[3];
+                keys[4] = (keys[4].isBlank()) ? bsmf.MainFrame.lowchar : keys[4];
+                keys[5] = (keys[5].isBlank()) ? bsmf.MainFrame.lowchar : keys[5];
+                keys[6] = (keys[6].isBlank()) ? bsmf.MainFrame.lowchar : keys[6];
+                
+                 if (keys[0].equals("ALL")) {    
+                   res = st.executeQuery("SELECT tr_id, tr_item,  tr_cost, tr_type, it_code, tr_qty, " +
+                        " tr_op, tr_eff_date, tr_assy_date, tr_ref, tr_actcell, tr_cost, " +
+                         " tr_timestamp, tr_userid, tr_pack, tr_pack_date " +
+                        " FROM  tran_mstr inner join item_mstr on it_item = tr_item " +
+                        " left outer join itemr_cost on itr_item = tr_item and itr_op = tr_op and itr_routing = it_wf and itr_set = 'standard' and itr_site = it_site " +
+                         " left outer join item_cost on itc_item = tr_item and itc_set = 'standard' and itc_site = it_site " +
+                        " where  tr_eff_date   >= " + "'" + keys[1] + "'" + 
+                        " AND  tr_eff_date   <= " + "'" + keys[2] + "'" + 
+                        " AND tr_item >= " + "'" + keys[3] + "'" + 
+                        " AND tr_item <= " + "'" + keys[4] + "'" + 
+                         " AND tr_actcell >= " + "'" + keys[5] + "'" + 
+                        " AND tr_actcell <= " + "'" + keys[6] + "'" + 
+                        " AND ( tr_type = 'ISS-PRD' or tr_type = 'RCT-FG') " + 
+                        " order by tr_id desc ;");    
+                  } else {
+                      res = st.executeQuery("SELECT tr_id, tr_item,  tr_cost, tr_type, it_code, tr_qty, " +
+                        " tr_op, tr_eff_date, tr_assy_date, tr_ref, tr_actcell, tr_cost, " +
+                         " tr_timestamp, tr_userid, tr_pack, tr_pack_date " +
+                        " FROM  tran_mstr inner join item_mstr on it_item = tr_item " +
+                        " left outer join itemr_cost on itr_item = tr_item and itr_op = tr_op and itr_routing = it_wf and itr_set = 'standard' and itr_site = it_site " +
+                         " left outer join item_cost on itc_item = tr_item and itc_set = 'standard' and itc_site = it_site " +
+                        " where  tr_eff_date   >= " + "'" + keys[1] + "'" + 
+                        " AND  tr_eff_date   <= " + "'" + keys[2] + "'" + 
+                        " AND tr_item >= " + "'" + keys[3] + "'" + 
+                        " AND tr_item <= " + "'" + keys[4] + "'" + 
+                         " AND tr_actcell >= " + "'" + keys[5] + "'" + 
+                        " AND tr_actcell <= " + "'" + keys[6] + "'" + 
+                        " AND tr_type = " + "'" + keys[0] + "'" + 
+                        " order by tr_id desc ;");    
+                  }
+                    String status = "";
+                    
+                    while (res.next()) {
+                    JSONArray rowArray = new JSONArray();
+                        rowArray.put(res.getString("tr_id"));
+                        rowArray.put(res.getString("tr_item"));
+                        rowArray.put(res.getString("it_code"));
+                        rowArray.put(res.getString("tr_type"));                      
+                        rowArray.put(bsNumber(res.getDouble("tr_qty")));
+                        rowArray.put(bsNumber(res.getDouble("tr_cost")));
+                        rowArray.put(res.getString("tr_op"));
+                        rowArray.put(res.getString("tr_eff_date"));
+                        rowArray.put(res.getString("tr_actcell"));
+                        rowArray.put(res.getString("tr_userid"));
+                        jsonarray.put(rowArray);
+                }
+               
                 
             } catch (SQLException s) {
                 MainFrame.bslog(s);
