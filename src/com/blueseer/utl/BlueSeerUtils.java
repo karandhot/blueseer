@@ -3242,7 +3242,9 @@ public class BlueSeerUtils {
                 } else if (rawData[i][j].equals("void")) {
                     data[i][j] = BlueSeerUtils.clickvoid; 
                 } else if (rawData[i][j].equals("clock")) {
-                    data[i][j] = BlueSeerUtils.clickclock;    
+                    data[i][j] = BlueSeerUtils.clickclock;  
+                } else if (rawData[i][j].equals("chart")) {
+                    data[i][j] = BlueSeerUtils.clickchart;      
                 } else {
                     data[i][j] = rawData[i][j];
                 }

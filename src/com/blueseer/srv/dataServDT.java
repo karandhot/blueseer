@@ -25,36 +25,10 @@ SOFTWARE.
  */
 package com.blueseer.srv;
 
-import static bsmf.MainFrame.bslog;
-import static com.blueseer.adm.admData.getLoginInit;
-import com.blueseer.fgl.fglData.AcctMstr;
-import static com.blueseer.fgl.fglData.addAcctMstr;
-import static com.blueseer.fgl.fglData.getAccountActivityYear;
-import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
-import static com.blueseer.utl.BlueSeerUtils.DefaultTableModelToJson;
-import static com.blueseer.utl.BlueSeerUtils.HashMapStringIntegerToJson;
-import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
-import static com.blueseer.utl.BlueSeerUtils.intToJson;
-import static com.blueseer.utl.BlueSeerUtils.jsonToDefaultTableModel;
-import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.DTData;
-import static com.blueseer.utl.DTData.getAcctBrowseUtil;
-import static com.blueseer.utl.DTData.getAcctBrowseUtilData;
-import static com.blueseer.utl.DTData.getBankBrowseUtil;
-import static com.blueseer.utl.DTData.getBankBrowseUtilData;
-import static com.blueseer.utl.DTData.getCurrencyBrowseUtil;
-import static com.blueseer.utl.DTData.getCurrencyBrowseUtilData;
-import static com.blueseer.utl.DTData.getDeptCCBrowseUtil;
-import static com.blueseer.utl.DTData.getDeptCCBrowseUtilData;
-import static com.blueseer.utl.OVData.getCodeMstrValueList;
-import static com.blueseer.utl.OVData.getNextNbr;
-import static com.blueseer.utl.OVData.getTableInfo;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -92,56 +66,6 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         String id = request.getParameter("id");
         
         response.setStatus(HttpServletResponse.SC_OK);
-        
-        
-        if (id.equals("getAccountActivityYear")) {
-           String[] keys = new String[]{
-               request.getParameter("year"), 
-               request.getParameter("site"), 
-               request.getParameter("fromacct"), 
-               request.getParameter("toacct")  
-           }; 
-           
-           for (String k : keys) {
-               if (k == null) {
-                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                   response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing param");  
-                   return;
-               }
-           }
-           
-           String r = getAccountActivityYear(keys);
-           
-           if (r == null || r.isBlank()) {
-             response.getWriter().println("no return for: " + String.join(",",keys));   
-           } else {
-             response.getWriter().println(r);   
-           }
-        } 
-        
-        if (id.equals("setStandardCosts")) {
-           String[] keys = new String[]{
-               request.getParameter("site"), 
-               request.getParameter("item") 
-           }; 
-           
-           for (String k : keys) {
-               if (k == null) {
-                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                   response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing param");  
-                   return;
-               }
-           }
-           
-           String r = getAccountActivityYear(keys);
-           
-           if (r == null || r.isBlank()) {
-             response.getWriter().println("no return for: " + String.join(",",keys));   
-           } else {
-             response.getWriter().println(r);   
-           }
-        } 
-        
         
     }
 

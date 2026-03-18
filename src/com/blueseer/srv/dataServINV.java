@@ -26,7 +26,6 @@ SOFTWARE.
 package com.blueseer.srv;
 
 import com.blueseer.fgl.fglData;
-import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData.addItemMasterMass;
 import static com.blueseer.inv.invData.addItemMstr;

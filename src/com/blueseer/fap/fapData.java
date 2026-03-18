@@ -36,6 +36,7 @@ import static bsmf.MainFrame.user;
 import com.blueseer.fgl.fglData;
 import static com.blueseer.rcv.rcvData._updateReceiverLinesByVoucher;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.ConvertIntToYesNo;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
@@ -910,6 +911,117 @@ public class fapData {
     }
      
     // misc
+    public static String getVoucherBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                keys[1] = (keys[1].isBlank()) ? bsmf.MainFrame.lowchar : keys[1];  
+                keys[2] = (keys[2].isBlank()) ? bsmf.MainFrame.hichar : keys[2];  
+                keys[3] = (keys[3].isBlank()) ? bsmf.MainFrame.lowchar : keys[3];  
+                keys[4] = (keys[4].isBlank()) ? bsmf.MainFrame.hichar : keys[4];  
+                if (keys[0].isBlank()) {
+                res = st.executeQuery(" select ap_nbr, ap_status, ap_ref, ap_rmks, ap_vend, ap_amt, ap_subtype, ap_approved " +
+                             " FROM  ap_mstr where " + 
+                             " ap_vend >= " + "'" + keys[1] + "'" + " AND " +
+                             " ap_vend <= " + "'" + keys[2] + "'" + " AND " +
+                             " ap_nbr >= " + "'" + keys[3] + "'" + " AND " +
+                             " ap_nbr <= " + "'" + keys[4] + "'" + " AND " +
+                             " ap_type = 'V' order by ap_nbr desc ;");
+                } else {
+                    res = st.executeQuery(" select ap_nbr, ap_status, ap_ref, ap_rmks, ap_vend, ap_amt, ap_subtype, ap_approved " +
+                             " FROM  ap_mstr where " + 
+                             " ap_ref like " + "'%" + keys[0] + "%'" + " AND " +
+                             " ap_type = 'V' order by ap_nbr desc ;");
+                }
+                    while (res.next()) {                   
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("ap_nbr"));
+                        rowArray.put(res.getString("ap_vend"));
+                        rowArray.put(res.getString("ap_subtype"));
+                        rowArray.put(res.getString("ap_ref"));                        
+                        rowArray.put(res.getString("ap_rmks"));
+                        rowArray.put(res.getString("ap_status"));
+                        rowArray.put(bsNumber(res.getDouble("ap_amt")));
+                        rowArray.put(ConvertIntToYesNo(res.getInt("ap_approved")));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
+    public static String getVoucherBrowseDetView(String po, String line) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+               
+                res = st.executeQuery("select rvd_id, rvd_poline, rvd_item, rvd_packingslip, rvd_date, rvd_netprice, rvd_qty, rvd_voqty " +
+                        " from recv_det " +
+                        " where rvd_po = " + "'" + po + "'" +
+                        " AND rvd_poline = " + "'" + line + "'" + ";");
+                    while (res.next()) {                        
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("rvd_id"));
+                        rowArray.put(res.getString("rvd_poline"));
+                        rowArray.put(res.getString("rvd_item"));
+                        rowArray.put(res.getString("rvd_packingslip"));                        
+                        rowArray.put(res.getString("rvd_date"));
+                        rowArray.put(bsNumber(res.getDouble("rvd_netprice")));
+                        rowArray.put(bsNumber(res.getDouble("rvd_qty")));
+                        rowArray.put(bsNumber(res.getDouble("rvd_voqty")));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
     public static String getFapRptPickerData(String[] keys) {
         JSONArray jsonarray = new JSONArray();
         try {

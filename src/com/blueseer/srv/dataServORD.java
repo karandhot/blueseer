@@ -26,7 +26,6 @@ SOFTWARE.
 package com.blueseer.srv;
 
 
-import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import com.blueseer.ord.ordData;
 import static com.blueseer.ord.ordData.addUpdateORCtrl;
 import static com.blueseer.ord.ordData.addUpdateSOMeta;

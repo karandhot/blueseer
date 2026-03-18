@@ -3639,8 +3639,7 @@ public class fglData {
        // System.out.println("HERE: " + jsonarray.toString());
         return jsonarray.toString();
     }
-    
-    
+        
     public static String getAccountBalanceDetView(String acct, String cc, String site, int year, int period, boolean isCC) {
         JSONArray jsonarray = new JSONArray();
         ArrayList<String> actdatearray = fglData.getGLCalForPeriod(year, period);  
@@ -3716,9 +3715,9 @@ public class fglData {
       return jsonarray.toString();
     }
     
-    public static String getAccountActivityYear(String[] key) {
+    public static String getAccountActivityYearView(String[] key) {
         // key = year, site, acctfrom, acctto
-        StringBuilder sb = new StringBuilder();
+        JSONArray jsonarray = new JSONArray();
         
         try {
             Connection con = null;
@@ -3798,7 +3797,7 @@ public class fglData {
                  
                  
                   } // k
-                 
+                 /*
                  sb.append(acctid + ";" + 
                             acctdesc + ";" + 
                             str_activity[0] + ";" + 
@@ -3815,6 +3814,25 @@ public class fglData {
                             str_activity[11]
                             );
                 sb.append("\n");
+                */
+                JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("chart");
+                            rowArray.put(acctid);
+                            rowArray.put(acctdesc);
+                            rowArray.put(str_activity[0]);
+                            rowArray.put(str_activity[1]);
+                            rowArray.put(str_activity[2]);
+                            rowArray.put(str_activity[3]);
+                            rowArray.put(str_activity[4]);
+                            rowArray.put(str_activity[5]);
+                            rowArray.put(str_activity[6]);
+                            rowArray.put(str_activity[7]);
+                            rowArray.put(str_activity[8]);
+                            rowArray.put(str_activity[9]);
+                            rowArray.put(str_activity[10]);
+                            rowArray.put(str_activity[11]);
+                            jsonarray.put(rowArray); 
+                
               
                  } // account
              
@@ -3833,8 +3851,92 @@ public class fglData {
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
-        return sb.toString();
+        return jsonarray.toString();
     }
+    
+    public static String getGlTranBrowseView(String[] key) {
+        JSONArray jsonarray = new JSONArray();
+               
+        try {
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                int i = 0;
+                
+                if (key[0].equals("1")) {
+                res = st.executeQuery("SELECT * from gl_tran " +
+                        " inner join ac_mstr on ac_id = glt_acct " +
+                        " where glt_effdate >= " + "'" + key[1]  + "'" + 
+                        " AND glt_effdate <= " + "'" + key[2] + "'" +
+                         " AND glt_acct >= " + "'" + key[3] + "'" +
+                         " AND glt_acct <= " + "'" + key[4] + "'" +
+                         " AND glt_site = " + "'" + key[5] + "'" +
+                         " order by glt_id desc ;"); 
+                    while (res.next()) {
+                    JSONArray rowArray = new JSONArray();
+                    rowArray.put("select");
+                    rowArray.put(res.getString("glt_doc"));
+                    rowArray.put(res.getString("glt_site"));
+                    rowArray.put(res.getString("glt_acct"));
+                    rowArray.put(res.getString("ac_desc"));
+                    rowArray.put(res.getString("glt_cc"));
+                    rowArray.put(res.getString("glt_effdate"));
+                    rowArray.put(res.getString("glt_type"));
+                    rowArray.put(res.getString("glt_ref"));
+                    rowArray.put(currformatDouble(res.getDouble("glt_base_amt")));
+                    jsonarray.put(rowArray); 
+                    }
+                } else {
+                  res = st.executeQuery("SELECT * from gl_hist " +
+                        " inner join ac_mstr on ac_id = glh_acct " +
+                        " where glh_effdate >= " + "'" + key[1]  + "'" + 
+                        " AND glh_effdate <= " + "'" + key[2] + "'" +
+                         " AND glh_acct >= " + "'" + key[3] + "'" +
+                         " AND glh_acct <= " + "'" + key[4] + "'" +
+                         " AND glh_site = " + "'" + key[5] + "'" +
+                         " order by glh_id desc ;");  
+                    while (res.next()) {
+                    JSONArray rowArray = new JSONArray();
+                    rowArray.put("select");
+                    rowArray.put(res.getString("glh_doc"));
+                    rowArray.put(res.getString("glh_site"));
+                    rowArray.put(res.getString("glh_acct"));
+                    rowArray.put(res.getString("ac_desc"));
+                    rowArray.put(res.getString("glh_cc"));
+                    rowArray.put(res.getString("glh_effdate"));
+                    rowArray.put(res.getString("glh_type"));
+                    rowArray.put(res.getString("glh_ref"));
+                    rowArray.put(currformatDouble(res.getDouble("glh_base_amt")));
+                    jsonarray.put(rowArray);
+                    }
+                }
+                
+               
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+
+      return jsonarray.toString();
+    }
+    
     
     public static String setGLRecNbr(String type) {
            String mystring = "";

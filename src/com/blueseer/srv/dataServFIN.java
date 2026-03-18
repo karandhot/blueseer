@@ -41,7 +41,6 @@ import static com.blueseer.fgl.fglData.deleteAcctMstr;
 import static com.blueseer.fgl.fglData.deleteGL;
 import static com.blueseer.fgl.fglData.deleteTaxMstr;
 import com.blueseer.fgl.fglData.exc_mstr;
-import static com.blueseer.fgl.fglData.getAccountActivityYear;
 import static com.blueseer.fgl.fglData.getAcctMstr;
 import static com.blueseer.fgl.fglData.getBankMstr;
 import static com.blueseer.fgl.fglData.getCurrMstr;
@@ -140,54 +139,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
            }
         } 
         */
-        if (id.equals("getAccountActivityYear")) {
-           String[] keys = new String[]{
-               request.getParameter("year"), 
-               request.getParameter("site"), 
-               request.getParameter("fromacct"), 
-               request.getParameter("toacct")  
-           }; 
-           
-           for (String k : keys) {
-               if (k == null) {
-                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                   response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing param");  
-                   return;
-               }
-           }
-           
-           String r = getAccountActivityYear(keys);
-           
-           if (r == null || r.isBlank()) {
-             response.getWriter().println("no return for: " + String.join(",",keys));   
-           } else {
-             response.getWriter().println(r);   
-           }
-        } 
         
-        if (id.equals("setStandardCosts")) {
-           String[] keys = new String[]{
-               request.getParameter("site"), 
-               request.getParameter("item") 
-           }; 
-           
-           for (String k : keys) {
-               if (k == null) {
-                   response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                   response.getWriter().println(HttpServletResponse.SC_BAD_REQUEST + ": missing param");  
-                   return;
-               }
-           }
-           
-           String r = getAccountActivityYear(keys);
-           
-           if (r == null || r.isBlank()) {
-             response.getWriter().println("no return for: " + String.join(",",keys));   
-           } else {
-             response.getWriter().println(r);   
-           }
-        } 
-       
     }
 
  @Override
@@ -452,6 +404,16 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       break;
     } 
     
+    case "getGlTranBrowseView" : { 
+      response.getWriter().print(fglData.getGlTranBrowseView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5"),
+                    request.getHeader("param6")})); 
+      break;
+    } 
+    
     case "getInvoiceBrowseView" : { 
       response.getWriter().print(fglData.getInvoiceBrowseView(request.getHeader("param1"), 
                     request.getHeader("param2"),
@@ -483,6 +445,15 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     BlueSeerUtils.ConvertStringToBool(request.getHeader("param6"))));
       break;
     } 
+    
+    case "getAccountActivityYearView" : { 
+      response.getWriter().print(fglData.getAccountActivityYearView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4")} ));
+      break;
+    } 
+    
     
     case "getInvoiceBrowseDetail" : { 
       response.getWriter().print(fglData.getInvoiceBrowseDetail(request.getHeader("param1"))); 

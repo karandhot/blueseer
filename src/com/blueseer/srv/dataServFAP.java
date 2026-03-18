@@ -32,48 +32,12 @@ import static com.blueseer.fap.fapData.getAPExpenseByVendor;
 import static com.blueseer.fap.fapData.getAPVoucherSet;
 import static com.blueseer.fap.fapData.getFapRptPickerData;
 import static com.blueseer.fap.fapData.getPOsummaryChargesTaxes;
+import static com.blueseer.fap.fapData.getVoucherBrowseView;
 import static com.blueseer.fap.fapData.updateAPVoucherStatus;
-import static com.blueseer.fgl.fglData.getAccountActivityYear;
-import com.blueseer.ord.ordData;
-import static com.blueseer.ord.ordData.addUpdateORCtrl;
-import static com.blueseer.ord.ordData.addUpdateSOMeta;
-import static com.blueseer.ord.ordData.applyOrderChange;
-import static com.blueseer.ord.ordData.billTransAll;
-import static com.blueseer.ord.ordData.deleteSOMeta;
-import static com.blueseer.ord.ordData.getBillBrowseView;
-import static com.blueseer.ord.ordData.getBillDet;
-import static com.blueseer.ord.ordData.getBillMstr;
-import static com.blueseer.ord.ordData.getBillSAC;
-import static com.blueseer.ord.ordData.getORCtrl;
-import static com.blueseer.ord.ordData.getOrderBrowseView;
-import static com.blueseer.ord.ordData.getOrderChangeBrowseDetail;
-import static com.blueseer.ord.ordData.getOrderChangeBrowseView;
-import static com.blueseer.ord.ordData.getOrderChangeExport;
-import static com.blueseer.ord.ordData.getOrderChangeReportData;
-import static com.blueseer.ord.ordData.getOrderDet;
-import static com.blueseer.ord.ordData.getOrderDetailExport;
-import static com.blueseer.ord.ordData.getOrderDetailExportNew;
-import static com.blueseer.ord.ordData.getOrderItemBrowseView;
-import static com.blueseer.ord.ordData.getOrderMstr;
-import static com.blueseer.ord.ordData.getOrderMstrSet;
-import static com.blueseer.ord.ordData.getOrderReportData;
-import static com.blueseer.ord.ordData.getQuoteBrowseView;
-import static com.blueseer.ord.ordData.getQuoteDet;
-import static com.blueseer.ord.ordData.getQuoteMstr;
-import static com.blueseer.ord.ordData.getQuoteSAC;
-import static com.blueseer.ord.ordData.getSOMetaData;
-import static com.blueseer.ord.ordData.getSVOrderTotalTax;
-import static com.blueseer.ord.ordData.getServiceOrderBrowseView;
-import static com.blueseer.ord.ordData.getServiceOrderDet;
-import static com.blueseer.ord.ordData.getServiceOrderMstr;
-import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
-import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
-import static com.blueseer.utl.BlueSeerUtils.boolToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
-import static com.blueseer.utl.BlueSeerUtils.doubleToJson;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -175,6 +139,18 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(arrayToJson(fapData.VouchAndPayTransaction(ctype, vodlist, ap, isvoid))); 
             break;
             }
+        
+        case "getVoucherBrowseView" : {
+        String[] it = new String[]{
+               request.getHeader("param1"), 
+               request.getHeader("param2"), 
+               request.getHeader("param3"), 
+               request.getHeader("param4"), 
+               request.getHeader("param5")
+               };     
+        response.getWriter().print(getVoucherBrowseView(it));  
+        break;
+        } 
        
         case "getAPVoucherSet" : {       
             fapData.VoucherAP shset = getAPVoucherSet(new String[]{request.getHeader("param1")});

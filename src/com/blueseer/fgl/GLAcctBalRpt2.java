@@ -100,11 +100,13 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -318,6 +320,62 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
        
     }
     
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
+    
     public void setLanguageTags(Object myobj) {
       // lblaccount.setText(labels.getString("LedgerAcctMstrPanel.labels.lblaccount"));
       
@@ -403,6 +461,7 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
     }  
     
     public void done_Initialization() {
+        setPanelComponentState(this, true);
         lblendbal.setText("0");
         lblbegbal.setText("0");
         lblactbal.setText("0");
@@ -462,6 +521,8 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
 
         
         ddsite.removeAllItems();
+        ddacctfrom.removeAllItems();
+        ddacctto.removeAllItems();
         
         
         ddtype.removeAllItems();
@@ -574,6 +635,7 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
     }
 
     public void done_getBrowseView() {
+        setPanelComponentState(this, true);
         if (cbcc.isSelected()) {
           tablereport.setModel(mymodelCC);
           tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
@@ -1143,7 +1205,9 @@ public class GLAcctBalRpt2 extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-       executeTask("getBrowseView", null);
+        mymodel.setNumRows(0);
+        setPanelComponentState(this, false);
+        executeTask("getBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btdetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdetailActionPerformed

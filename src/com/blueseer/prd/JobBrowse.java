@@ -40,10 +40,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -100,7 +96,7 @@ import static com.blueseer.utl.BlueSeerUtils.getTitleTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.utl.OVData;
-import java.sql.Connection;
+import static com.blueseer.utl.OVData.printJasperJobTicket;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -113,10 +109,12 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
@@ -530,158 +528,9 @@ public class JobBrowse extends javax.swing.JPanel {
        z.execute(); 
        
     }
-    
-    
-    public void getdetail(String detailtype, String jobid) {
-      
-        modeldetailclock.setNumRows(0);
-        modeldetailplo.setNumRows(0);
-                 
-        double total = 0.00;
-        DecimalFormat df = new DecimalFormat("#0.00", new DecimalFormatSymbols(Locale.US));
         
-        
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                double dol = 0.00;
-                int qty = 0;
-                
-                
-                if (detailtype.equals("clock")) {
-                 res = st.executeQuery("SELECT * from job_clock   " +
-                        " inner join emp_mstr on emp_nbr = jobc_empnbr " +
-                        " where jobc_planid = " + "'" + jobid + "'" + 
-                         " order by jobc_op ;"); 
-                 while (res.next()) {
-                    qty = qty + 0;
-                    i++;
-                        modeldetailclock.addRow(new Object[]{
-                            BlueSeerUtils.clickflag,
-                            res.getString("jobc_op"),
-                            res.getString("jobc_id"),
-                            res.getString("emp_lname") + ", " + res.getString("emp_fname"),
-                            res.getString("jobc_indate"),
-                            res.getString("jobc_intime"),
-                            res.getString("jobc_outdate"),
-                            res.getString("jobc_outtime"),
-                            res.getString("jobc_code")
-                            });
-                   }
-                 detailtable.setModel(modeldetailclock);
-                 detailpanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Clock Records"));
-                 
-                } else {
-                  res = st.executeQuery("SELECT * from plan_operation   " +
-                        " where plo_parent = " + "'" + jobid + "'" + 
-                         " order by plo_op ;"); 
-                  while (res.next()) {
-                    qty = qty + 0;
-                    i++;
-                        modeldetailplo.addRow(new Object[]{
-                            res.getString("plo_op"),
-                            res.getString("plo_desc"),
-                            res.getString("plo_operatorname"),
-                            res.getString("plo_cell"),
-                            res.getDouble("plo_qty"),
-                            res.getDouble("plo_qty_comp"),
-                            res.getString("plo_date"),
-                            res.getString("plo_status")
-                            });
-                   }
-                  detailtable.setModel(modeldetailplo);
-                  detailpanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Operations"));
-                }
-                
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
-    }
-    
-    public void printtickets(String fromjob, String tojob ) {
-        
-       try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-                HashMap hm = new HashMap();
-                hm.put("REPORT_TITLE", "CUT TICKET");
-                 hm.put("SUBREPORT_DIR", "jasper/");
-                hm.put("fromjob",  fromjob);
-                hm.put("tojob", tojob);
-                 File mytemplate = new File("jasper/jobticketnitridemulti.jasper");
-                JasperPrint jasperPrint = JasperFillManager.fillReport(mytemplate.getPath(), hm, con );
-              //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/jobticketmulti.pdf");
-         
-            JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
-            jasperViewer.setVisible(true);
-            con.close();   
-           
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        } 
-        
-    }
-    
     public void printticket(String jobid, String bustitle) {
-        
-       try {
-           Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            
-                HashMap hm = new HashMap();
-                String jasperfile = "jobticket.jasper";
-                hm.put("BUSINESSTITLE", bustitle);
-                hm.put("REPORT_TITLE", jasperfile);
-                hm.put("SUBREPORT_DIR", "jasper/");
-                hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
-                hm.put("myid",  jobid);
-                //hm.put("imagepath", "images/avmlogo.png");
-               // res = st.executeQuery("select shd_id, sh_cust, shd_po, shd_item, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, cm_city, cm_state, cm_zip, concat(cm_city, \" \", cm_state, \" \", cm_zip) as st_citystatezip, site_desc from ship_det inner join ship_mstr on sh_id = shd_id inner join cm_mstr on cm_code = sh_cust inner join site_mstr on site_site = sh_site where shd_id = '1848' ");
-               // JRResultSetDataSource jasperReports = new JRResultSetDataSource(res);
-                File mytemplate = new File("jasper/" + jasperfile);
-                JasperPrint jasperPrint = JasperFillManager.fillReport(mytemplate.getPath(), hm, con );
-               // JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/jobticket.pdf");
-         
-            JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
-            jasperViewer.setVisible(true);
-            
-            con.close();
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-        
+        printJasperJobTicket(jobid, bustitle, "");
     }
     
     public void postcommit() {
@@ -710,6 +559,62 @@ public class JobBrowse extends javax.swing.JPanel {
          
          
     }
+    
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
     
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
@@ -771,6 +676,7 @@ public class JobBrowse extends javax.swing.JPanel {
     public void done_Initialization() {
         
         isLoad = true;
+        setPanelComponentState(this, true);
         detailpanel.setVisible(false);
         chartpanel.setVisible(false);
         cbhierarchical.setSelected(true);
@@ -889,6 +795,7 @@ public class JobBrowse extends javax.swing.JPanel {
     }
 
     public void done_getBrowseView() {
+        setPanelComponentState(this, true);
         labelqtysched.setText("0");
         labelqtycomp.setText("0");
         labelcount.setText("0");
@@ -1447,6 +1354,8 @@ public class JobBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
+        mymodel.setNumRows(0);
+        setPanelComponentState(this, false);
         executeTask("getBrowseView", null);
         /*
         schtot = 0;

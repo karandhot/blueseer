@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.fap;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static bsmf.MainFrame.checkperms;
@@ -69,23 +70,39 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import static com.blueseer.fap.fapData.getVoucherBrowseDetView;
+import com.blueseer.prd.JobBrowse;
+import com.blueseer.prd.prdData;
+import static com.blueseer.prd.prdData.getJobBrowseViewDet;
 import static com.blueseer.utl.BlueSeerUtils.ConvertIntToYesNo;
+import static com.blueseer.utl.BlueSeerUtils.bsFormatDouble;
+import static com.blueseer.utl.BlueSeerUtils.bsFormatInt;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.vdr.venData;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
+import java.util.Calendar;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
@@ -95,6 +112,12 @@ import javax.swing.table.TableColumn;
  */
 public class VoucherBrowse extends javax.swing.JPanel {
  
+    boolean isLoad = false;
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultSite = "";
+    String defaultCurrency = "";
      public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
      
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -201,63 +224,138 @@ public class VoucherBrowse extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
-     public void getdetail(String po, String line) {
+    public void executeTask(String x, String[] y) { 
       
-         modeldetail.setNumRows(0);
-         double total = 0;
+        class Task extends SwingWorker<String[], Void> {
          
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                String blanket = "";
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
                 
-                res = st.executeQuery("select rvd_id, rvd_poline, rvd_item, rvd_packingslip, rvd_date, rvd_netprice, rvd_qty, rvd_voqty " +
-                        " from recv_det " +
-                        " where rvd_po = " + "'" + po + "'" +
-                        " AND rvd_poline = " + "'" + line + "'" + ";");
-                while (res.next()) {
-                   modeldetail.addRow(new Object[]{ 
-                      res.getString("rvd_id"), 
-                       res.getString("rvd_poline"),
-                       res.getString("rvd_item"),
-                       res.getString("rvd_packingslip"),
-                       res.getString("rvd_date"),
-                       currformatDouble(res.getDouble("rvd_netprice")),
-                      res.getInt("rvd_qty"), 
-                      res.getInt("rvd_voqty")});
-                }
-               
-              
-                tabledetail.setModel(modeldetail);
-                 tabledetail.getColumnModel().getColumn(5).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                case "getBrowseViewDet":
+                    message = getBrowseViewDet(key[0], key[1]);
+                    break;     
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
             }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+            
+            
+            
+            
+            return message;
         }
-
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+            if (this.action.equals("getBrowseViewDet")) {
+                done_getBrowseViewDet(key[0]);
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
     }
+     
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
     
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
@@ -304,12 +402,24 @@ public class VoucherBrowse extends javax.swing.JPanel {
     }
     
     public void initvars(String[] arg) {
-     
+     executeTask("dataInit", null);
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "vendors");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
         
-        java.util.Date now = new java.util.Date();
-        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-        DateFormat dfyear = new SimpleDateFormat("yyyy");
-        DateFormat dfperiod = new SimpleDateFormat("M");
+        isLoad = true;
+        setPanelComponentState(this, true);
+        detailpanel.setVisible(false);
+        
         
         mymodel.setNumRows(0);
         modeldetail.setNumRows(0);
@@ -317,46 +427,153 @@ public class VoucherBrowse extends javax.swing.JPanel {
         tablereport.getTableHeader().setReorderingAllowed(false);
         tabledetail.setModel(modeldetail);
         labelopen.setText("0");
-        labeltotal.setText("0");
-         
-         
+        labeltotal.setText("0"); 
        
-          
-         
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
-        
-        
-        
-        
-       
-        detailpanel.setVisible(false);
-        
         ddsite.removeAllItems();
-        ArrayList sites = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (Object site : sites) {
-            ddsite.addItem(site);
-        }
-        
         ddvendfrom.removeAllItems();
-        ArrayList vends = venData.getVendMstrList();
-        for (Object vend : vends) {
-            ddvendfrom.addItem(vend);
-        }
         ddvendto.removeAllItems();
-        for (Object vend : vends) {
-            ddvendto.addItem(vend);
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("vendors")) {
+              ddvendfrom.addItem(s[1]); 
+              ddvendto.addItem(s[1]);
+            }
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+            
+        }
+        if (ddvendfrom.getItemCount() > 0) {
+         ddvendfrom.setSelectedIndex(0);
+         }
+        
+        if (ddvendto.getItemCount() > 0) {
+         ddvendto.setSelectedIndex(ddvendto.getItemCount() - 1);
         }
         
-         if (ddvendfrom.getItemCount() > 0)
-        ddvendfrom.setSelectedIndex(0);
+        tabledetail.setModel(modeldetail);
+        tabledetail.getColumnModel().getColumn(5).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+                
         
-        if (ddvendto.getItemCount() > 0)
-        ddvendto.setSelectedIndex(ddvendto.getItemCount() - 1);
-        
-          
-          
+        isLoad = false;
     }
+    
+    public String[] getBrowseView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getVoucherBrowseView"});
+        list.add(new String[]{"param1",tbinvoice.getText()});
+        list.add(new String[]{"param2",ddvendfrom.getSelectedItem().toString()});
+        list.add(new String[]{"param3",ddvendto.getSelectedItem().toString()});
+        list.add(new String[]{"param4",tbfromnbr.getText()});
+        list.add(new String[]{"param5",tbtonbr.getText()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServFAP"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getVoucherBrowseView")};
+            }
+        } else {
+            jsonString = fapData.getVoucherBrowseView(new String[]{
+                tbinvoice.getText(),
+                ddvendfrom.getSelectedItem().toString(),
+                ddvendto.getSelectedItem().toString(),
+                tbfromnbr.getText(), 
+                tbtonbr.getText()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getVoucherBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+        setPanelComponentState(this, true);
+        labeltotal.setText("0");
+        labelopen.setText("0");
+        int i = 0;
+        double total = 0;
+        double open = 0;
+        mymodel.setNumRows(0);
+        if (roData != null) {
+        for (Object[] rowData : roData) {   
+            if (cbvoucher.isSelected() && ! roData[i][6].toString().equals("o")) {
+                continue;
+            }  
+            if (cbunapproved.isSelected() && roData[i][8].toString().toLowerCase().equals("yes")) {
+                continue;
+            } 
+            total = total + bsParseDouble(roData[i][7].toString());
+            if (roData[i][6].toString().equals("o")) {
+                    open += bsParseDouble(roData[i][7].toString());
+            }
+             mymodel.addRow(rowData);
+            i++;
+        }
+        
+        }          
+        
+        labeltotal.setText(String.valueOf(currformatDouble(total))); 
+        labelopen.setText(String.valueOf(currformatDouble(open)));
+        
+        roData = null;
+    }   
+    
+    public String[] getBrowseViewDet(String po, String line) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getVoucherBrowseDetView"});
+            list.add(new String[]{"param1", po});
+            list.add(new String[]{"param2", line});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServFAP"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getVoucherBrowseDetView(po, line); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getBrowseViewDet(String key) {
+      modeldetail.setNumRows(0);
+       int i = 0;  
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {                  
+                    roData[i][6] = bsParseDouble(roData[i][6].toString());
+                    roData[i][7] = bsParseDouble(roData[i][7].toString());
+                    roData[i][8] = bsParseDouble(roData[i][8].toString());
+                    modeldetail.addRow(rowData);
+                    i++;
+                } 
+        }
+       }
+       roData = null;
+    }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -624,139 +841,9 @@ public class VoucherBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-        labelopen.setText("0");
-        labeltotal.setText("0");
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }   
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                double open = 0;
-                double total = 0;
-               mymodel.setNumRows(0);
-        
-              tablereport.setModel(mymodel);
-              tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-              tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-            /*
-            Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
-                 while (en.hasMoreElements()) {
-                     TableColumn tc = en.nextElement();
-                     if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
-                         continue;
-                     }
-                     tc.setCellRenderer(new VoucherBrowse.SomeRenderer());
-                 }
-           */
-            
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                
-                 String fromnbr = tbfromnbr.getText();
-                 String tonbr = tbtonbr.getText();
-                 
-                 
-                 if (fromnbr.isEmpty()) {
-                     fromnbr = bsmf.MainFrame.lowchar;
-                 }
-                  if (tonbr.isEmpty()) {
-                     tonbr = bsmf.MainFrame.hichar;
-                 }
-                 
-                 
-                 String vendfrom = "";
-                 String vendto = "";
-                 if (ddvendfrom.getSelectedItem() != null)
-                     vendfrom = ddvendfrom.getSelectedItem().toString();
-                 
-                 if (ddvendto.getSelectedItem() != null)
-                     vendto = ddvendto.getSelectedItem().toString();
-                 
-                 
-         //     new String[]{"Detail", "PO", "Vend", "Line", "Part", "Type", "Status", "OrdQty", "RecvQty"});   
-        /*
-           res = st.executeQuery("select case when vod_id is null then '' else vod_id end as vod_id, " +
-                                " case when vod_invoice is null then '' else vod_invoice end as vod_invoice, rvd_status, rv_id, rv_vend, rvd_po, rvd_poline, rvd_rline, rvd_item, rvd_packingslip, " +
-                      " rvd_qty, rvd_voqty " +
-                         " from recv_det inner join recv_mstr on rvd_id = rv_id " +
-                         " left outer join vod_mstr on vod_rvdid = rvd_id and vod_rvdline = rvd_rline where " +
-                        " rv_vend >= " + "'" + vendfrom + "'" + " AND " +
-                        " rv_vend <= " + "'" + vendto + "'" + " AND " +
-                     " rvd_po >= " + "'" + pofrom + "'" + " AND " +
-                        " rvd_po <= " + "'" + poto + "'" +
-                        " order by rvd_po ;");
-           */
-           if (tbinvoice.getText().isBlank()) {
-           res = st.executeQuery(" select ap_nbr, ap_status, ap_ref, ap_rmks, ap_vend, ap_amt, ap_subtype, ap_approved " +
-                        " FROM  ap_mstr where " + 
-                        " ap_vend >= " + "'" + vendfrom + "'" + " AND " +
-                        " ap_vend <= " + "'" + vendto + "'" + " AND " +
-                        " ap_nbr >= " + "'" + fromnbr + "'" + " AND " +
-                        " ap_nbr <= " + "'" + tonbr + "'" + " AND " +
-                        " ap_type = 'V' order by ap_nbr desc ;");
-           } else {
-               res = st.executeQuery(" select ap_nbr, ap_status, ap_ref, ap_rmks, ap_vend, ap_amt, ap_subtype, ap_approved " +
-                        " FROM  ap_mstr where " + 
-                        " ap_ref like " + "'%" + tbinvoice.getText() + "%'" + " AND " +
-                        " ap_type = 'V' order by ap_nbr desc ;");
-           }
-        
-                  
-                
-                while (res.next()) {
-                           
-                 if (cbvoucher.isSelected() && ! res.getString("ap_status").equals("o")) {
-                     continue;
-                 }  
-                 if (cbunapproved.isSelected() && res.getString("ap_approved").equals("1")) {
-                     continue;
-                 } 
-                 
-                 total += res.getDouble("ap_amt");
-                 if (res.getString("ap_status").equals("o")) {
-                    open += res.getDouble("ap_amt");
-                 }
-                 
-                    mymodel.addRow(new Object[]{
-                                BlueSeerUtils.clickflag,
-                                res.getString("ap_nbr"),
-                                res.getString("ap_vend"),
-                                res.getString("ap_subtype"),
-                                res.getString("ap_ref"),
-                                res.getString("ap_rmks"),
-                                res.getString("ap_status"),
-                                res.getDouble("ap_amt"),
-                                ConvertIntToYesNo(res.getInt("ap_approved"))
-                            });
-               
-             
-                   
-                } // while   
-               
-                labeltotal.setText(String.valueOf(currformatDouble(total))); 
-                labelopen.setText(String.valueOf(currformatDouble(open)));
-                 
-        
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        mymodel.setNumRows(0);
+        setPanelComponentState(this, false);
+        executeTask("getBrowseView", null);
        
     }//GEN-LAST:event_btRunActionPerformed
 

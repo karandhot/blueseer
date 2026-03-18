@@ -55,11 +55,13 @@ import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import java.text.NumberFormat;
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
@@ -182,6 +184,62 @@ public class ExpenseBrowse extends javax.swing.JPanel {
         
     }
        
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
+    
     public void setLanguageTags(Object myobj) {
       // lblaccount.setText(labels.getString("LedgerAcctMstrPanel.labels.lblaccount"));
       
@@ -299,9 +357,7 @@ public class ExpenseBrowse extends javax.swing.JPanel {
     }
     
     public void initvars(String[] arg) {
-        
         executeTask("dataInit", null);
-       
     }
     
     public String[] getInitialization() {
@@ -314,7 +370,7 @@ public class ExpenseBrowse extends javax.swing.JPanel {
     }  
     
     public void done_Initialization() {
-        
+        setPanelComponentState(this, true);
          chartpanel.setVisible(false);
         bthidechart.setEnabled(false);
         btchart.setEnabled(true);
@@ -397,7 +453,7 @@ public class ExpenseBrowse extends javax.swing.JPanel {
     }
 
     public void done_getBrowseView() {
-       
+        setPanelComponentState(this, true);
         int i = 0;
         double amt = 0;
         mymodel.setNumRows(0);
@@ -624,6 +680,8 @@ public class ExpenseBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
+        mymodel.setRowCount(0);
+        setPanelComponentState(this, false);
         executeTask("getBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 

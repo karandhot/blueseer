@@ -79,11 +79,13 @@ import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
 
@@ -258,6 +260,62 @@ public class TransBrowse extends javax.swing.JPanel {
        
     }
     
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
+    
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -316,7 +374,7 @@ public class TransBrowse extends javax.swing.JPanel {
     }  
     
     public void done_Initialization() {
-        
+        setPanelComponentState(this, true);
          java.util.Date now = new java.util.Date();
          dcfrom.setDate(now);
          dcto.setDate(now);
@@ -402,7 +460,7 @@ public class TransBrowse extends javax.swing.JPanel {
     }
 
     public void done_getBrowseView() {
-       
+        setPanelComponentState(this, true);
         int i = 0;
         double qty = 0;
         mymodel.setNumRows(0);
@@ -618,7 +676,9 @@ public class TransBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-    executeTask("getBrowseView", null);
+        mymodel.setNumRows(0);
+        setPanelComponentState(this, false);
+        executeTask("getBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btexportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btexportActionPerformed

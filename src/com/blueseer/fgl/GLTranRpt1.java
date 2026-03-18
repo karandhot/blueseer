@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.fgl;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import java.awt.Color;
@@ -72,12 +73,17 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import com.blueseer.prd.ProdSchedRpt;
+import com.blueseer.prd.prdData;
+import static com.blueseer.prd.prdData.getProdSchedBrowseViewDet;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.luModel;
 import static com.blueseer.utl.BlueSeerUtils.luTable;
 import static com.blueseer.utl.BlueSeerUtils.lual;
@@ -85,6 +91,7 @@ import static com.blueseer.utl.BlueSeerUtils.ludialog;
 import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.DTData;
 import java.awt.event.ActionEvent;
@@ -93,16 +100,20 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
+import java.util.Calendar;
 import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 
 /**
  *
@@ -110,6 +121,13 @@ import javax.swing.JTabbedPane;
  */
 public class GLTranRpt1 extends javax.swing.JPanel {
  
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultSite = "";
+    String defaultCurrency = "";
+    
+    
      MyTableModel mymodel = new GLTranRpt1.MyTableModel(new Object[][]{},
                         new String[]{
                             getGlobalColumnTag("select"),
@@ -204,6 +222,75 @@ public class GLTranRpt1 extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+   
     public void setLanguageTags(Object myobj) {
       // lblaccount.setText(labels.getString("LedgerAcctMstrPanel.labels.lblaccount"));
       
@@ -250,37 +337,174 @@ public class GLTranRpt1 extends javax.swing.JPanel {
        }
     }
     
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
+    
     
     public void initvars(String[] arg) {
+        executeTask("dataInit", null); 
+    }
+   
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "accounts");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        setPanelComponentState(this, true);
         mymodel.setRowCount(0);
          java.util.Date now = new java.util.Date();
-         dcFrom.setDate(now);
-         dcTo.setDate(now);
+         dcfrom.setDate(now);
+         dcto.setDate(now);
          
         lblfromacct.setText("");
         lbltoacct.setText("");
         labeldollar.setText("");
         labelcount.setText("");
-         
-          ArrayList myacct = fglData.getGLAcctList();
-        for (int i = 0; i < myacct.size(); i++) {
-            ddacctfrom.addItem(myacct.get(i));
-            ddacctto.addItem(myacct.get(i));
-        }
-            ddacctfrom.setSelectedIndex(0);
-            ddacctto.setSelectedIndex(ddacctto.getItemCount() - 1);
+       
         
-        ddsite.removeAllItems();
-        ArrayList sites = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (Object site : sites) {
-            ddsite.addItem(site);
-        }  
-         
-         
-         
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }           
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("accounts")) {
+              ddacctfrom.addItem(s[1]); 
+              ddacctto.addItem(s[1]); 
+            }
+        }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultSite);
+        }
+        ddacctfrom.setSelectedIndex(0);
+        ddacctto.setSelectedIndex(ddacctto.getItemCount() - 1); 
+        tablereport.setModel(mymodel);
+        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
        
     }
-   
+    
+    public String[] getBrowseView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getGlTranBrowseView"});
+        list.add(new String[]{"param1",BlueSeerUtils.boolToString(cbunposted.isSelected())});
+        list.add(new String[]{"param2",dfdate.format(dcfrom.getDate())});
+        list.add(new String[]{"param3",dfdate.format(dcto.getDate())});
+        list.add(new String[]{"param4",ddacctfrom.getSelectedItem().toString()});
+        list.add(new String[]{"param5",ddacctto.getSelectedItem().toString()});
+        list.add(new String[]{"param6",ddsite.getSelectedItem().toString()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServFIN"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getGlTranBrowseView")};
+            }
+        } else {
+            jsonString = fglData.getGlTranBrowseView(new String[]{
+                BlueSeerUtils.boolToString(cbunposted.isSelected()),
+                dfdate.format(dcfrom.getDate()),
+                dfdate.format(dcto.getDate()),
+                ddacctfrom.getSelectedItem().toString(), 
+                ddacctto.getSelectedItem().toString(), 
+                ddsite.getSelectedItem().toString()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getGlTranBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+        setPanelComponentState(this, true);
+        int i = 0;
+        double dol = 0;
+        mymodel.setNumRows(0);
+        if (roData != null) {
+        for (Object[] rowData : roData) {
+            dol = dol + bsParseDouble(roData[i][9].toString());
+            roData[i][9] = bsParseDouble(roData[i][9].toString());           
+            mymodel.addRow(rowData);
+            i++;
+        }
+        }
+        labeldollar.setText(currformatDouble(dol));
+        labelcount.setText(String.valueOf(i));
+
+        roData = null;
+    }   
+    
+    
     public void lookUpFrameAcctDesc(String ddfield) {
         
         luinput.removeActionListener(lual);
@@ -342,8 +566,8 @@ public class GLTranRpt1 extends javax.swing.JPanel {
 
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        dcFrom = new com.toedter.calendar.JDateChooser();
-        dcTo = new com.toedter.calendar.JDateChooser();
+        dcfrom = new com.toedter.calendar.JDateChooser();
+        dcto = new com.toedter.calendar.JDateChooser();
         jLabel3 = new javax.swing.JLabel();
         btRun = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -373,9 +597,9 @@ public class GLTranRpt1 extends javax.swing.JPanel {
         jLabel2.setText("From Eff Date");
         jLabel2.setName("lblfromdate"); // NOI18N
 
-        dcFrom.setDateFormatString("yyyy-MM-dd");
+        dcfrom.setDateFormatString("yyyy-MM-dd");
 
-        dcTo.setDateFormatString("yyyy-MM-dd");
+        dcto.setDateFormatString("yyyy-MM-dd");
 
         jLabel3.setText("To Eff Date");
         jLabel3.setName("lbltodate"); // NOI18N
@@ -472,8 +696,8 @@ public class GLTranRpt1 extends javax.swing.JPanel {
                     .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(dcTo, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
-                    .addComponent(dcFrom, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(dcto, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
+                    .addComponent(dcfrom, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel4)
@@ -525,11 +749,11 @@ public class GLTranRpt1 extends javax.swing.JPanel {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(dcFrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(dcfrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel2))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(dcTo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel3)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -573,105 +797,9 @@ public class GLTranRpt1 extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-    
-try {
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int qty = 0;
-                double dol = 0;
-                int i = 0;
-                
-                   
-                 mymodel.setNumRows(0);
-                   
-               
-                tablereport.setModel(mymodel);
-               // tableorder.getColumnModel().getColumn(0).setCellRenderer(new OrderReport1.SomeRenderer());  
-                tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
-                 
-             
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-
-                 if (cbunposted.isSelected()) {    
-                 res = st.executeQuery("SELECT * from gl_tran " +
-                        " inner join ac_mstr on ac_id = glt_acct " +
-                        " where glt_effdate >= " + "'" + setDateDB(dcFrom.getDate())  + "'" + 
-                        " AND glt_effdate <= " + "'" + setDateDB(dcTo.getDate()) + "'" +
-                         " AND glt_acct >= " + "'" + ddacctfrom.getSelectedItem().toString() + "'" +
-                         " AND glt_acct <= " + "'" + ddacctto.getSelectedItem().toString() + "'" +
-                         " AND glt_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +
-                         " order by glt_id desc ;"); 
-                while (res.next()) {
-                    dol = dol + res.getDouble("glt_base_amt");
-                    i++;
-                        mymodel.addRow(new Object[]{
-                                BlueSeerUtils.clickflag,
-                                res.getString("glt_doc"),
-                                res.getString("glt_site"),
-                                res.getString("glt_acct"),
-                                res.getString("ac_desc"),
-                                res.getString("glt_cc"),
-                                getDateDB(res.getString("glt_effdate")),
-                                res.getString("glt_type"),
-                                res.getString("glt_ref"),
-                                bsParseDouble(currformatDouble(res.getDouble("glt_base_amt")))
-                            });
-                }
-                
-                } else {
-                  res = st.executeQuery("SELECT * from gl_hist " +
-                        " inner join ac_mstr on ac_id = glh_acct " +
-                        " where glh_effdate >= " + "'" + setDateDB(dcFrom.getDate())  + "'" + 
-                        " AND glh_effdate <= " + "'" + setDateDB(dcTo.getDate()) + "'" +
-                         " AND glh_acct >= " + "'" + ddacctfrom.getSelectedItem().toString() + "'" +
-                         " AND glh_acct <= " + "'" + ddacctto.getSelectedItem().toString() + "'" +
-                         " AND glh_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +
-                         " order by glh_id desc ;");      
-                    while (res.next()) { 
-                        dol = dol + res.getDouble("glh_base_amt");
-                        i++;
-                            mymodel.addRow(new Object[]{
-                                    BlueSeerUtils.clickflag,
-                                    res.getString("glh_doc"),
-                                    res.getString("glh_site"),
-                                    res.getString("glh_acct"),
-                                    res.getString("ac_desc"),
-                                    res.getString("glh_cc"),
-                                    getDateDB(res.getString("glh_effdate")),
-                                    res.getString("glh_type"),
-                                    res.getString("glh_ref"),
-                                    bsParseDouble(currformatDouble(res.getDouble("glh_base_amt")))
-                                });
-                    }  
-                }
-                labeldollar.setText(String.valueOf(currformatDouble(dol)));
-                labelcount.setText(String.valueOf(i));
-               
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
+        mymodel.setNumRows(0);
+        setPanelComponentState(this, false);
+        executeTask("getBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btcsvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcsvActionPerformed
@@ -683,23 +811,6 @@ try {
 
         if (tablereport != null && mymodel.getRowCount() > 0) {
             OVData.printJTableToJasper("Ledger Transaction Report", tablereport, "genericJTableL9.jasper" );
-            /*
-            try {
-
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                HashMap hm = new HashMap();
-                hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
-                File mytemplate = new File("jasper/orderbrowsesumary.jasper");
-
-                JasperPrint jasperPrint = JasperFillManager.fillReport(mytemplate.getPath(), hm, new JRTableModelDataSource(tableorder.getModel()) );
-                JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ordbrowse.pdf");
-
-                JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
-                jasperViewer.setVisible(true);
-            } catch (Exception e) {
-                MainFrame.bslog(e);
-            }
-            */
         }
     }//GEN-LAST:event_tbprintActionPerformed
 
@@ -731,8 +842,8 @@ try {
     private javax.swing.JButton btRun;
     private javax.swing.JButton btcsv;
     private javax.swing.JCheckBox cbunposted;
-    private com.toedter.calendar.JDateChooser dcFrom;
-    private com.toedter.calendar.JDateChooser dcTo;
+    private com.toedter.calendar.JDateChooser dcfrom;
+    private com.toedter.calendar.JDateChooser dcto;
     private javax.swing.JComboBox ddacctfrom;
     private javax.swing.JComboBox ddacctto;
     private javax.swing.JComboBox ddsite;
