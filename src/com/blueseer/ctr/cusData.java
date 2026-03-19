@@ -1183,7 +1183,7 @@ public class cusData {
                 + " cms_name = ?, cms_line1 = ?, cms_line2 = ?, "
                 + "cms_line3 = ?, cms_city = ?, cms_state = ?, cms_zip = ?, "
                 + "cms_country = ?, cms_plantcode = ?, cms_contact = ?, cms_phone = ?, cms_email = ?, "
-                + "cms_municpality = ?, cms_county = ? "
+                + "cms_municipality = ?, cms_county = ? "
                 + " where cms_code = ? and cms_shipto = ? ; ";
        ps = con.prepareStatement(sql);
         ps.setString(15, x.cms_code);
