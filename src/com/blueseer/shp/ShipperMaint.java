@@ -76,6 +76,7 @@ import static com.blueseer.utl.BlueSeerUtils.ludialog;
 import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
+import static com.blueseer.utl.BlueSeerUtils.lurb2;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.DTData;
@@ -494,7 +495,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         jTabbedPane1.add("Main", panelMain);
         jTabbedPane1.add("Lines", panelDetail);
         jTabbedPane1.add("Attachments", panelAttachment);
-        
+                
         attachmentmodel.setNumRows(0);
         tableattachment.setModel(attachmentmodel);
         tableattachment.getTableHeader().setReorderingAllowed(false);
@@ -523,7 +524,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
          dduom.removeAllItems();
          ddcont.removeAllItems();
          ddshipto.removeAllItems();
-         ddbillto.removeAllItems();
+         ddcust.removeAllItems();
          ddorder.removeAllItems();
          ddshipvia.removeAllItems();
          ddsite.removeAllItems();
@@ -556,7 +557,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
               dduom.addItem(s[1]); 
             }           
             if (s[0].equals("customers")) {
-              ddbillto.addItem(s[1]); 
+              ddcust.addItem(s[1]); 
             }
             if (s[0].equals("carriers")) {
               ddshipvia.addItem(s[1]); 
@@ -591,8 +592,8 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         ddshipto.insertItemAt("", 0);
         ddshipto.setSelectedIndex(0);
           
-        ddbillto.insertItemAt("", 0);
-        ddbillto.setSelectedIndex(0);
+        ddcust.insertItemAt("", 0);
+        ddcust.setSelectedIndex(0);
         
         ddorder.insertItemAt("", 0);
         ddorder.insertItemAt("none",1);
@@ -649,6 +650,10 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         tabledetail.getColumnModel().getColumn(11).setMinWidth(0);
         tabledetail.getColumnModel().getColumn(11).setPreferredWidth(0);
         
+        if (autonumber) {
+            tbkey.setBackground(bsmf.MainFrame.nonEditableColor);
+        }
+        
     }
     
     public void setAction(String[] x) {
@@ -700,7 +705,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void newAction(String x) {
         isLoad = true;
-        setPanelComponentState(this, true);
+        setPanelComponentState(this, true);        
         setComponentDefaultValues();
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btcommit.setEnabled(false);
@@ -714,6 +719,8 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         rbnonorder.setSelected(true);
         btshipto.setEnabled(true);
         tbkey.setForeground(Color.blue);
+        
+        jTabbedPane1.setEnabledAt(1, false);
         
         if (autonumber) {  
               tbkey.setText(bsNumber(OVData.getNextNbr(x)));
@@ -861,7 +868,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         isLoad = true;
         tbkey.setText(sh.sh_id());
         cbcomplete.setSelected(BlueSeerUtils.ConvertStringToBool(sh.sh_char2())); 
-        ddbillto.setSelectedItem(sh.sh_cust());
+        ddcust.setSelectedItem(sh.sh_cust());
         if (ddshipto.getItemCount() <= 1) {
             ddshipto.addItem(sh.sh_ship());
             ddshipto.setSelectedItem(sh.sh_ship());
@@ -953,9 +960,9 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
             ddshipto.addItem(s);
         }
 
-        if (ddbillto.getSelectedItem().toString() != null && ! ddbillto.getSelectedItem().toString().isEmpty() && ddshipto.getItemCount() <= 0) {
+        if (ddcust.getSelectedItem().toString() != null && ! ddcust.getSelectedItem().toString().isEmpty() && ddshipto.getItemCount() <= 0) {
        bsmf.MainFrame.show(getMessageTag(1108));
-       ddbillto.requestFocus();
+       ddcust.requestFocus();
         }
     }
     
@@ -984,7 +991,8 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
 
         disablechoices();
 
-
+        
+        jTabbedPane1.setEnabledAt(1, true);
         btadd.setEnabled(true);
         btupdate.setEnabled(false);
     }
@@ -1063,7 +1071,8 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
            
         disablechoices();
 
-
+        
+        jTabbedPane1.setEnabledAt(1, true);
         btadd.setEnabled(true);
         btupdate.setEnabled(false);
     }
@@ -1117,9 +1126,9 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         public void actionPerformed(ActionEvent event) {
          
         if (lurb1.isSelected()) {  
-         luModel = DTData.getOrderDetailBrowseUtil(luinput.getText(), "sod_item", ddbillto.getSelectedItem().toString(), ddshipto.getSelectedItem().toString() );
+         luModel = DTData.getOrderDetailBrowseUtil(luinput.getText(), "sod_item", ddcust.getSelectedItem().toString(), ddshipto.getSelectedItem().toString() );
         } else {
-         luModel = DTData.getOrderDetailBrowseUtil(luinput.getText(), "sod_desc", ddbillto.getSelectedItem().toString(), ddshipto.getSelectedItem().toString() );
+         luModel = DTData.getOrderDetailBrowseUtil(luinput.getText(), "sod_desc", ddcust.getSelectedItem().toString(), ddshipto.getSelectedItem().toString() );
         }    
         
          
@@ -1157,6 +1166,51 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         
     }
 
+    public void lookUpFrameBillTo() {
+        
+        luinput.removeActionListener(lual);
+        lual = new ActionListener() {
+        public void actionPerformed(ActionEvent event) {
+        if (lurb1.isSelected()) {  
+         luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_name");
+        } else if (lurb2.isSelected()) {
+         luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_code");   
+        } else {
+         luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_zip");   
+        }
+        luTable.setModel(luModel);
+        luTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        if (luModel.getRowCount() < 1) {
+            ludialog.setTitle(getMessageTag(1001));
+        } else {
+            ludialog.setTitle(getMessageTag(1002, String.valueOf(luModel.getRowCount())));
+        }
+        }
+        };
+        luinput.addActionListener(lual);
+        
+        luTable.removeMouseListener(luml);
+        luml = new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                JTable target = (JTable)e.getSource();
+                int row = target.getSelectedRow();
+                int column = target.getSelectedColumn();
+                if ( column == 0) {
+                ludialog.dispose();
+                ddcust.setSelectedItem(target.getValueAt(row,1).toString());
+                }
+            }
+        };
+        luTable.addMouseListener(luml);
+      
+        
+        callDialog(getClassLabelTag("lblname", this.getClass().getSimpleName()), 
+                getClassLabelTag("lblcode", this.getClass().getSimpleName()),
+                getClassLabelTag("lblzip", this.getClass().getSimpleName())); 
+        
+        
+    }
+ 
     public ship_mstr createRecord() {
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
         String uniqwh = getUniqueWH();
@@ -1168,7 +1222,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         ship_mstr x = new ship_mstr(null,  
                 tbkey.getText(),
-                ddbillto.getSelectedItem().toString(),
+                ddcust.getSelectedItem().toString(),
                 ddshipto.getSelectedItem().toString(),
                 pallets,
                 boxes,
@@ -1362,7 +1416,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         if (! isLoad) {
         btshipto.setEnabled(false);
         ddshipto.setEnabled(false);
-        ddbillto.setEnabled(false);
+        ddcust.setEnabled(false);
          btorder.setEnabled(true);
          ddorder.setEnabled(true);
         }
@@ -1371,14 +1425,14 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void enableshipto() {
         if (! isLoad) {
          ddshipto.setEnabled(true);
-         ddbillto.setEnabled(true);
+         ddcust.setEnabled(true);
          btshipto.setEnabled(true);
          btorder.setEnabled(false);
          ddorder.setEnabled(false);
          
          
-         if (ddbillto.getItemCount() > 0) {
-             ddbillto.setSelectedIndex(0);
+         if (ddcust.getItemCount() > 0) {
+             ddcust.setSelectedIndex(0);
          }
         }
     }
@@ -1388,7 +1442,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         btshipto.setEnabled(false);
         ddorder.setEnabled(false);
         ddshipto.setEnabled(false);
-        ddbillto.setEnabled(false);
+        ddcust.setEnabled(false);
         
     }
     
@@ -1504,7 +1558,6 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
             ddbom.setSelectedItem(sod.sod_bom());
             }
         }
-       
     }
     
    
@@ -1593,10 +1646,11 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel104 = new javax.swing.JLabel();
         ddshipto = new javax.swing.JComboBox<>();
         ddorder = new javax.swing.JComboBox<>();
-        ddbillto = new javax.swing.JComboBox<>();
+        ddcust = new javax.swing.JComboBox<>();
         jLabel2 = new javax.swing.JLabel();
         lbbilltoname = new javax.swing.JLabel();
         lbladdr = new javax.swing.JLabel();
+        btLookUpBillTo = new javax.swing.JButton();
         lblstatus = new javax.swing.JLabel();
         btcommit = new javax.swing.JButton();
         rborder = new javax.swing.JRadioButton();
@@ -1864,9 +1918,9 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
             }
         });
 
-        ddbillto.addActionListener(new java.awt.event.ActionListener() {
+        ddcust.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ddbilltoActionPerformed(evt);
+                ddcustActionPerformed(evt);
             }
         });
 
@@ -1874,6 +1928,14 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         jLabel2.setName("lblbillto"); // NOI18N
 
         lbladdr.setBackground(java.awt.Color.lightGray);
+
+        btLookUpBillTo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/find.png"))); // NOI18N
+        btLookUpBillTo.setToolTipText("lookup");
+        btLookUpBillTo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btLookUpBillToActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout ChoicePanelLayout = new javax.swing.GroupLayout(ChoicePanel);
         ChoicePanel.setLayout(ChoicePanelLayout);
@@ -1887,21 +1949,21 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                     .addComponent(jLabel36, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(ChoicePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ddbillto, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ddcust, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(ddorder, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(ddshipto, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(6, 6, 6)
                 .addGroup(ChoicePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(ChoicePanelLayout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addGroup(ChoicePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(ChoicePanelLayout.createSequentialGroup()
-                                .addComponent(btshipto, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lbladdr, javax.swing.GroupLayout.PREFERRED_SIZE, 655, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(btorder, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btLookUpBillTo, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addComponent(lbbilltoname, javax.swing.GroupLayout.PREFERRED_SIZE, 655, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(ChoicePanelLayout.createSequentialGroup()
-                        .addGap(41, 41, 41)
-                        .addComponent(lbbilltoname, javax.swing.GroupLayout.PREFERRED_SIZE, 655, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(ChoicePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(btshipto, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btorder, javax.swing.GroupLayout.DEFAULT_SIZE, 29, Short.MAX_VALUE))
+                        .addGap(9, 9, 9)
+                        .addComponent(lbladdr, javax.swing.GroupLayout.PREFERRED_SIZE, 655, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(0, 10, Short.MAX_VALUE))
         );
         ChoicePanelLayout.setVerticalGroup(
@@ -1909,10 +1971,12 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, ChoicePanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(ChoicePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(ChoicePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(ddbillto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel2))
-                    .addComponent(lbbilltoname, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lbbilltoname, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(ChoicePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(btLookUpBillTo)
+                        .addGroup(ChoicePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(ddcust, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(ChoicePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(ChoicePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -2534,11 +2598,9 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addComponent(btaddattachment)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btdeleteattachment)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 446, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 439, Short.MAX_VALUE)
                         .addComponent(labelmessage, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(panelAttachmentLayout.createSequentialGroup()
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                    .addComponent(jScrollPane3))
                 .addContainerGap())
         );
         panelAttachmentLayout.setVerticalGroup(
@@ -2551,8 +2613,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
                         .addComponent(btaddattachment)
                         .addComponent(btdeleteattachment)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(157, 157, 157))
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE))
         );
 
         add(panelAttachment);
@@ -2682,7 +2743,7 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btorderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btorderActionPerformed
         if (ddorder.getSelectedItem() != null && ! ddorder.getSelectedItem().toString().isBlank()) {
-        executeTask(dbaction.run, new String[]{"getOrderMstrSet", ddorder.getSelectedItem().toString()});   
+        executeTask(dbaction.run, new String[]{"getOrderMstrSet", ddorder.getSelectedItem().toString()});  
         }
     }//GEN-LAST:event_btorderActionPerformed
 
@@ -2695,8 +2756,8 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
     }//GEN-LAST:event_btupdateActionPerformed
 
     private void btshiptoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btshiptoActionPerformed
-        if (ddbillto.getSelectedItem() != null && ddshipto.getSelectedItem() != null && ! ddbillto.getSelectedItem().toString().isBlank() && ! ddshipto.getSelectedItem().toString().isBlank()) {
-          executeTask(dbaction.run, new String[]{"getCustShipSet", ddbillto.getSelectedItem().toString(), ddshipto.getSelectedItem().toString()});
+        if (ddcust.getSelectedItem() != null && ddshipto.getSelectedItem() != null && ! ddcust.getSelectedItem().toString().isBlank() && ! ddshipto.getSelectedItem().toString().isBlank()) {
+          executeTask(dbaction.run, new String[]{"getCustShipSet", ddcust.getSelectedItem().toString(), ddshipto.getSelectedItem().toString()});
         }
     }//GEN-LAST:event_btshiptoActionPerformed
 
@@ -2710,16 +2771,16 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
     private void ddorderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddorderActionPerformed
               if (! isLoad && ddorder.getItemCount() > 0 && ddorder.getSelectedItem() != null && ! ddorder.getSelectedItem().toString().isBlank()) {
                   so_mstr so = getOrderMstr(ddorder.getSelectedItem().toString());
-                  ddbillto.setSelectedItem(so.so_cust());
+                  ddcust.setSelectedItem(so.so_cust());
                   ddshipto.setSelectedItem(so.so_ship());
               }
     }//GEN-LAST:event_ddorderActionPerformed
 
-    private void ddbilltoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddbilltoActionPerformed
-         if (ddbillto.getItemCount() > 0 && ! isLoad) {
-           executeTask(dbaction.run, new String[]{"ddbilltoActionPerformed", ddbillto.getSelectedItem().toString()});
+    private void ddcustActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddcustActionPerformed
+         if (ddcust.getItemCount() > 0 && ! isLoad) {
+           executeTask(dbaction.run, new String[]{"ddbilltoActionPerformed", ddcust.getSelectedItem().toString()});
         } 
-    }//GEN-LAST:event_ddbilltoActionPerformed
+    }//GEN-LAST:event_ddcustActionPerformed
 
     private void rborderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rborderActionPerformed
         if (rborder.isSelected()) {
@@ -2942,9 +3003,14 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
         */
     }//GEN-LAST:event_rbnonorderStateChanged
 
+    private void btLookUpBillToActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btLookUpBillToActionPerformed
+        lookUpFrameBillTo();
+    }//GEN-LAST:event_btLookUpBillToActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ChoicePanel;
     private javax.swing.JPanel HeaderPanel;
+    private javax.swing.JButton btLookUpBillTo;
     private javax.swing.JButton btadd;
     private javax.swing.JButton btaddattachment;
     private javax.swing.JButton btadditem;
@@ -2965,9 +3031,9 @@ public class ShipperMaint extends javax.swing.JPanel implements IBlueSeerT {
     private javax.swing.JCheckBox cbcomplete;
     private javax.swing.JCheckBox cbexplode;
     private com.toedter.calendar.JDateChooser dcshipdate;
-    private javax.swing.JComboBox<String> ddbillto;
     private javax.swing.JComboBox<String> ddbom;
     private javax.swing.JComboBox<String> ddcont;
+    private javax.swing.JComboBox<String> ddcust;
     private javax.swing.JComboBox<String> ddloc;
     private javax.swing.JComboBox<String> ddorder;
     private javax.swing.JComboBox<String> ddshipfrom;

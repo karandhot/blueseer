@@ -59,6 +59,7 @@ import static com.blueseer.utl.BlueSeerUtils.ludialog;
 import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
+import static com.blueseer.utl.BlueSeerUtils.lurb2;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerV;
@@ -354,6 +355,7 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerV {
        tbactualamt.setText("0");
        tbkey.setText("");
        tbkey.setEnabled(false);
+       tbkey.setBackground(bsmf.MainFrame.nonEditableColor);
        tbrmks.setText("");
        tbref.setText("");
        tbhdracct.setText("");
@@ -719,6 +721,52 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerV {
         
     }
     
+    public void lookUpFrameBillTo() {
+        
+        luinput.removeActionListener(lual);
+        lual = new ActionListener() {
+        public void actionPerformed(ActionEvent event) {
+        if (lurb1.isSelected()) {  
+         luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_name");
+        } else if (lurb2.isSelected()) {
+         luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_code");   
+        } else {
+         luModel = DTData.getCustBrowseUtil(luinput.getText(),0, "cm_zip");   
+        }
+        luTable.setModel(luModel);
+        luTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        if (luModel.getRowCount() < 1) {
+            ludialog.setTitle(getMessageTag(1001));
+        } else {
+            ludialog.setTitle(getMessageTag(1002, String.valueOf(luModel.getRowCount())));
+        }
+        }
+        };
+        luinput.addActionListener(lual);
+        
+        luTable.removeMouseListener(luml);
+        luml = new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                JTable target = (JTable)e.getSource();
+                int row = target.getSelectedRow();
+                int column = target.getSelectedColumn();
+                if ( column == 0) {
+                ludialog.dispose();
+                ddcust.setSelectedItem(target.getValueAt(row,1).toString());
+                }
+            }
+        };
+        luTable.addMouseListener(luml);
+      
+        
+        callDialog(getClassLabelTag("lblname", this.getClass().getSimpleName()), 
+                getClassLabelTag("lblcode", this.getClass().getSimpleName()),
+                getClassLabelTag("lblzip", this.getClass().getSimpleName())); 
+        
+        
+    }
+ 
+    
     public void updateForm() {
         armodel.setNumRows(0);
         tbkey.setText(ar.ar_nbr());
@@ -824,6 +872,7 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerV {
         jLabel9 = new javax.swing.JLabel();
         btLookUpAccount = new javax.swing.JButton();
         lbacct = new javax.swing.JLabel();
+        btLookUpBillTo = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(0, 102, 204));
 
@@ -1078,6 +1127,14 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerV {
             }
         });
 
+        btLookUpBillTo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/find.png"))); // NOI18N
+        btLookUpBillTo.setToolTipText("lookup");
+        btLookUpBillTo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btLookUpBillToActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -1114,7 +1171,10 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerV {
                         .addComponent(btnew)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btclear))
-                    .addComponent(ddcust, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(ddcust, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btLookUpBillTo, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(tbhdrcc, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(tbhdracct, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1152,9 +1212,11 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerV {
                             .addComponent(btclear)))
                     .addComponent(btlookup))
                 .addGap(6, 6, 6)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(ddcust, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel53))
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(ddcust, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel53))
+                    .addComponent(btLookUpBillTo))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
@@ -1196,7 +1258,7 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerV {
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tbrmks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel7))
-                .addGap(0, 1, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -1354,10 +1416,15 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerV {
         lookUpFrameAcctDesc("detail");
     }//GEN-LAST:event_btLookUpAccountDetActionPerformed
 
+    private void btLookUpBillToActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btLookUpBillToActionPerformed
+        lookUpFrameBillTo();
+    }//GEN-LAST:event_btLookUpBillToActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable ardet;
     private javax.swing.JButton btLookUpAccount;
     private javax.swing.JButton btLookUpAccountDet;
+    private javax.swing.JButton btLookUpBillTo;
     private javax.swing.JButton btadd;
     private javax.swing.JButton btadditem;
     private javax.swing.JButton btclear;

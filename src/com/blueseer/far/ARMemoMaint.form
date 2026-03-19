@@ -337,7 +337,11 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="btclear" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="ddcust" alignment="0" min="-2" pref="136" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="ddcust" min="-2" pref="136" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="btLookUpBillTo" min="-2" pref="25" max="-2" attributes="0"/>
+                          </Group>
                           <Component id="tbhdrcc" min="-2" pref="57" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="tbhdracct" min="-2" pref="173" max="-2" attributes="0"/>
@@ -388,9 +392,12 @@
                           <Component id="btlookup" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="ddcust" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel53" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="ddcust" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel53" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="btLookUpBillTo" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -446,7 +453,7 @@
                           <Component id="tbrmks" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel7" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="0" pref="1" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -619,6 +626,17 @@
               </Events>
             </Component>
             <Component class="javax.swing.JLabel" name="lbacct">
+            </Component>
+            <Component class="javax.swing.JButton" name="btLookUpBillTo">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/images/find.png"/>
+                </Property>
+                <Property name="toolTipText" type="java.lang.String" value="lookup"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btLookUpBillToActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>
