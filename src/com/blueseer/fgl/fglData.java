@@ -3639,6 +3639,116 @@ public class fglData {
        // System.out.println("HERE: " + jsonarray.toString());
         return jsonarray.toString();
     }
+    
+    public static String getTrialBalanceView(String[] key) {
+        JSONArray jsonarray = new JSONArray();
+        int year = Integer.parseInt(key[0]); 
+        int period = Integer.parseInt(key[1]);
+        String site = key[2];
+        
+      //  StringBuilder sb = new StringBuilder();
+        ArrayList<String[]> accounts = fglData.getBalanceSheetAccounts();
+        try {
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                 
+                 int prioryear = 0;
+                 double begbal = 0.00;
+                 double activity = 0.00;
+                 double endbal = 0.00;
+                 double totbegbal = 0.00;
+                 double totactivity = 0.00;
+                 double totendbal = 0.00;
+                 double preact = 0.00;
+                 double postact = 0.00;
+                 Date p_datestart = null;
+                 Date p_dateend = null;
+                 
+                // ArrayList<String[]> accounts = fglData.getGLAcctListRangeWCurrTypeDesc(ddacctfrom.getSelectedItem().toString(), ddacctto.getSelectedItem().toString());
+                // ArrayList<String> ccs = fglData.getGLCCList();
+                 
+                  totbegbal = 0.00;
+                  totactivity = 0.00;
+                  totendbal = 0.00;
+                 
+                 prioryear = year - 1;
+                 String acctid = "";
+                 String acctdesc = "";
+                 String acctcurr = "";
+                 String accttype = "";
+                 String cc = "";
+                  
+                 ACCTS:    for (String[] account : accounts) {
+                  acctid = account[0];
+                  acctcurr = account[3];
+                  accttype = account[2];
+                  acctdesc = account[1];
+                  begbal = 0.00;
+                  activity = 0.00;
+                  endbal = 0.00;
+                  preact = 0.00;
+                  postact = 0.00;
+                  
+                 res = st.executeQuery("select sum(acb_amt) as sum from acb_mstr where acb_year = " +
+                        "'" + String.valueOf(year) + "'" + 
+                        " AND acb_per = " +
+                        "'" + String.valueOf(period) + "'" +
+                        " AND acb_acct = " +
+                        "'" + acctid + "'" +
+                        " AND acb_site = " + "'" + site + "'" +
+                        ";");
+                
+                       while (res.next()) {
+                          activity += res.getDouble(("sum"));
+                       }
+                 
+                               
+                 endbal = begbal + activity;
+                
+                 
+                JSONArray rowArray = new JSONArray();
+                            rowArray.put("detail");
+                            rowArray.put(acctid);
+                            rowArray.put(accttype);
+                            rowArray.put(acctcurr);
+                            rowArray.put(acctdesc);
+                            rowArray.put(site);
+                            rowArray.put(currformatDouble(begbal));
+                            rowArray.put(currformatDouble(activity)); 
+                            rowArray.put(0);
+                            rowArray.put(0);
+                            rowArray.put(currformatDouble(endbal));
+                            jsonarray.put(rowArray);
+             
+                   
+                } // Accts   
+                     
+                 
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+       // System.out.println("HERE: " + jsonarray.toString());
+        return jsonarray.toString();
+    }
         
     public static String getAccountBalanceDetView(String acct, String cc, String site, int year, int period, boolean isCC) {
         JSONArray jsonarray = new JSONArray();

@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.fgl;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
@@ -67,25 +68,33 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import static com.blueseer.fgl.fglData.getAccountBalanceDetView;
 import static com.blueseer.fgl.fglData.getGLCalYearsRange;
 import static com.blueseer.utl.BlueSeerUtils.bsFormatInt;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
+import static com.blueseer.utl.BlueSeerUtils.dropColumn;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
 
 /**
@@ -94,6 +103,15 @@ import javax.swing.table.DefaultTableCellRenderer;
  */
 public class TrialBalanceRpt extends javax.swing.JPanel {
  
+    boolean isLoad = false;
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String[] glCalDateArray;
+    ArrayList<String> datelabels = new ArrayList<>();
+    
      public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
      
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -202,6 +220,139 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
+    
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                    
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break;
+    
+                case "getBrowseViewDet":
+                    message = getBrowseViewDet(key);
+                    break;    
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+            if (this.action.equals("getBrowseViewDet")) {
+                done_getBrowseViewDet();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
     public void getdetail(String acct, String site, int year, int period) {
       
          modeldetail.setNumRows(0);
@@ -372,7 +523,37 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
     
      
     public void initvars(String[] arg) {
-        
+        isLoad = true;
+        java.util.Date now = new java.util.Date();
+        glCalDateArray = fglData.getGLCalForDate(now);
+        DateFormat dfyear = new SimpleDateFormat("yyyy");
+        ddyear.removeAllItems();
+        ddperiod.removeAllItems();
+        ArrayList<String> years = getGLCalYearsRange();
+        for (String y : years) {
+            ddyear.addItem(y);
+        }
+        ddyear.setSelectedItem(bsNumber(dfyear.format(now)));
+        for (int i = 1 ; i <= 12; i++) {
+            ddperiod.addItem(bsFormatInt(i));
+        }
+        ddperiod.setSelectedItem(bsNumber(glCalDateArray[1]));
+       
+        isLoad = false;
+        executeTask("dataInit", null);
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "vendors");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        setPanelComponentState(this, true);
         lbldebits.setText("0");
         lblcredits.setText("0");
        
@@ -390,51 +571,222 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
         
         tablereport.getTableHeader().setReorderingAllowed(false);
         tabledetail.getTableHeader().setReorderingAllowed(false);
-         
-        /*
-        BlueSeerUtils.clickheader = new ImageIcon(getClass().getResource("/images/flag.png")); 
-        BlueSeerUtilsclickprint = new ImageIcon(getClass().getResource("/images/print.png")); 
-        clickdetail = new ImageIcon(getClass().getResource("/images/basket.png")); 
-       */
-          
-         
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
-        
-        
-        
-        
+                
         btdetail.setEnabled(false);
         detailpanel.setVisible(false);
         
         ddsite.removeAllItems();
-        ArrayList sites = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (Object site : sites) {
-            ddsite.addItem(site);
-        }
-         ddsite.setSelectedItem(OVData.getDefaultSite());
         
-        
-        ddyear.removeAllItems();
-        ArrayList<String> years = getGLCalYearsRange();
-        for (String y : years) {
-            ddyear.addItem(y);
-        }
-        ddyear.setSelectedItem(bsNumber(dfyear.format(now)));
+        for (String[] s : initDataSets) {
             
-        ddperiod.removeAllItems();
-        for (int i = 1 ; i <= 12; i++) {
-            ddperiod.addItem(bsFormatInt(i));
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
         }
-        String[] fromdatearray = fglData.getGLCalForDate(now);
-        ddperiod.setSelectedItem(fromdatearray[1].toString());
-        ArrayList startend = fglData.getGLCalForPeriod(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperiod.getSelectedItem().toString()));
-        datelabel.setText(startend.get(0).toString() + " To " + startend.get(1).toString());
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultSite);
+        }
        
-        
-          
-          
     }
+    
+    public String[] getBrowseView() {
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getTrialBalanceView"});
+        list.add(new String[]{"param1",ddyear.getSelectedItem().toString()});
+        list.add(new String[]{"param2",ddperiod.getSelectedItem().toString()});
+        list.add(new String[]{"param3",ddsite.getSelectedItem().toString()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServFIN"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getTrialBalanceView")};
+            }
+        } else {
+            jsonString = fglData.getTrialBalanceView(new String[]{
+                ddyear.getSelectedItem().toString(),
+                ddperiod.getSelectedItem().toString(),
+                ddsite.getSelectedItem().toString()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getTrialBalanceView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+         setPanelComponentState(this, true);
+         if (cbcc.isSelected()) {    
+              tablereport.setModel(mymodelCC);
+              tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+         
+         //  tablereport.getColumnModel().getColumn(0).setCellRenderer(new ButtonRenderer());
+         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+          } else {
+              tablereport.setModel(mymodel);
+              tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+              tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
+         
+         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+          }
+        
+        for (int i = 0 ; i < tablereport.getColumnCount(); i++){ 
+              if (cbcc.isSelected()) {
+                  if (i == 7 || i == 8 ) {
+                 tablereport.getTableHeader().getColumnModel().getColumn(i)
+                 .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.RIGHT));
+                  } else {
+                  tablereport.getTableHeader().getColumnModel().getColumn(i)
+                 .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.LEFT));    
+                  }
+              } else {
+                   if (i >= 6 && i <= 10) {
+                 tablereport.getTableHeader().getColumnModel().getColumn(i)
+                 .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.RIGHT));
+                  } else {
+                  tablereport.getTableHeader().getColumnModel().getColumn(i)
+                 .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.LEFT));    
+                  }
+              }
+          }
+        
+        int i = 0;
+        double totendbal = 0;
+        double totbegbal = 0;
+        double totactivity = 0;
+        double totaldebits = 0;
+        double totalcredits = 0;
+        mymodel.setNumRows(0);
+        mymodelCC.setNumRows(0);
+        if (roData != null) {
+            
+             // drop column 16
+      Object[][] newdata = null;
+      if (! cbcc.isSelected()) {
+          newdata = dropColumn(roData, 2);
+      } else {
+          newdata = roData;
+      }
+            
+        for (Object[] rowData : newdata) {
+            if (cbzero.isSelected() && bsParseDouble(rowData[6].toString()) == 0 && bsParseDouble(rowData[7].toString()) == 0 && bsParseDouble(rowData[10].toString()) == 0) {
+                     continue;
+            }
+            
+            
+            if (cbcc.isSelected()) {
+            totendbal = totendbal + bsParseDouble(rowData[9].toString());
+                totbegbal = totbegbal + bsParseDouble(rowData[7].toString());
+                totactivity = totactivity + bsParseDouble(rowData[8].toString());
+                rowData[6] = bsParseDouble(rowData[7].toString());
+                rowData[7] = bsParseDouble(rowData[8].toString());
+                if (bsParseDouble(rowData[11].toString()) > 0) {  // endbal
+                    totaldebits = totaldebits + bsParseDouble(rowData[11].toString());
+                    rowData[9] = bsParseDouble(rowData[11].toString());
+                    rowData[10] = 0;
+                } else {
+                    totalcredits = totalcredits + bsParseDouble(rowData[11].toString());
+                    rowData[9] = 0;
+                    rowData[10] = -1 * bsParseDouble(rowData[11].toString());
+                }
+                rowData[11] = bsParseDouble(rowData[11].toString());
+                mymodelCC.addRow(rowData);
+            } else {  
+                totendbal = totendbal + bsParseDouble(rowData[8].toString());
+                totbegbal = totbegbal + bsParseDouble(rowData[6].toString());
+                totactivity = totactivity + bsParseDouble(rowData[7].toString());
+                rowData[6] = bsParseDouble(rowData[6].toString());
+                rowData[7] = bsParseDouble(rowData[7].toString());
+                if (bsParseDouble(rowData[10].toString()) > 0) {  // endbal
+                    totaldebits = totaldebits + bsParseDouble(rowData[10].toString());
+                    rowData[8] = bsParseDouble(rowData[10].toString());
+                    rowData[9] = 0;
+                } else {
+                    totalcredits = totalcredits + bsParseDouble(rowData[10].toString());
+                    rowData[8] = 0;
+                    rowData[9] = -1 * bsParseDouble(rowData[10].toString());
+                }
+                rowData[10] = bsParseDouble(rowData[10].toString());
+                mymodel.addRow(rowData);   
+            }
+            
+            
+            
+        }
+        lbldebits.setText(currformatDouble(totaldebits));
+        lblcredits.setText(currformatDouble(-1 * totalcredits));
+        
+        }          
+        roData = null;
+    }   
+    
+    public String[] getBrowseViewDet(String[] x) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getAccountBalanceDetView"});
+            list.add(new String[]{"param1", x[0]});
+            list.add(new String[]{"param2", x[1]});
+            list.add(new String[]{"param3", x[2]});
+            list.add(new String[]{"param4", x[3]});
+            list.add(new String[]{"param5", x[4]});
+            list.add(new String[]{"param6", x[5]});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServFIN"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getAccountBalanceDetView(x[0], x[1], x[2], bsParseInt(x[3]), bsParseInt(x[4]), BlueSeerUtils.ConvertStringToBool(x[5])); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getBrowseViewDet() {
+      modeldetail.setNumRows(0);
+      double total = 0.00;
+         
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+               total = total + bsParseDouble(rowData[7].toString());
+               rowData[7] = bsParseDouble(rowData[7].toString());
+                modeldetail.addRow(rowData);
+            }
+            this.repaint();
+        }
+       }
+       
+       roData = null;
+    }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -709,9 +1061,12 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-    
-try {
+        mymodel.setNumRows(0);
+        mymodelCC.setNumRows(0);
+        setPanelComponentState(this, false);
+        executeTask("getBrowseView", null);
+    /*
+    try {
             Connection con = null;
             if (ds != null) {
             con = ds.getConnection();
@@ -732,47 +1087,10 @@ try {
                mymodelCC.setNumRows(0);
                 
                  
-          if (cbcc.isSelected()) {    
-              tablereport.setModel(mymodelCC);
-              tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-              tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-              tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-              tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-              tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
          
-         //  tablereport.getColumnModel().getColumn(0).setCellRenderer(new ButtonRenderer());
-         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-          } else {
-              tablereport.setModel(mymodel);
-              tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-              tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-              tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-              tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-              tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-         
-         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-          }
           
           
-          for (int i = 0 ; i < tablereport.getColumnCount(); i++){ 
-              if (cbcc.isSelected()) {
-                  if (i == 7 || i == 8 ) {
-                 tablereport.getTableHeader().getColumnModel().getColumn(i)
-                 .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.RIGHT));
-                  } else {
-                  tablereport.getTableHeader().getColumnModel().getColumn(i)
-                 .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.LEFT));    
-                  }
-              } else {
-                   if (i >= 6 && i <= 10) {
-                 tablereport.getTableHeader().getColumnModel().getColumn(i)
-                 .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.RIGHT));
-                  } else {
-                  tablereport.getTableHeader().getColumnModel().getColumn(i)
-                 .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.LEFT));    
-                  }
-              }
-          }
+          
           
           
           
@@ -895,8 +1213,7 @@ try {
                  
                  
               
-                lbldebits.setText(currformatDouble(totaldebits));
-                lblcredits.setText(currformatDouble(-1 * totalcredits));
+                
             } catch (SQLException s) {
                 MainFrame.bslog(s);
                 bsmf.MainFrame.show(getMessageTag(1016,Thread.currentThread().getStackTrace()[1].getMethodName()));
@@ -918,7 +1235,7 @@ try {
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
-       
+      */ 
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btdetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdetailActionPerformed
@@ -931,15 +1248,42 @@ try {
         int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
         if ( col == 0) {
+            
+            if (cbcc.isSelected()) {
+            executeTask("getBrowseViewDet", new String[]{tablereport.getValueAt(row, 1).toString(),
+                tablereport.getValueAt(row, 6).toString(), // cc
+                tablereport.getValueAt(row, 5).toString(),
+                ddyear.getSelectedItem().toString(),
+                ddperiod.getSelectedItem().toString(),
+                String.valueOf(cbcc.isSelected())}); 
+            } else {
+                executeTask("getBrowseViewDet", new String[]{tablereport.getValueAt(row, 1).toString(),
+                "", // cc
+                tablereport.getValueAt(row, 5).toString(),
+                ddyear.getSelectedItem().toString(),
+                ddperiod.getSelectedItem().toString(),
+                String.valueOf(cbcc.isSelected())});
+            }
+            
+            /*
                if (tablereport.getColumnCount() == 8) {
-                getdetail(tablereport.getValueAt(row, 1).toString(), tablereport.getValueAt(row, 5).toString(), bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperiod.getSelectedItem().toString()));
+                getdetail(tablereport.getValueAt(row, 1).toString(), 
+                        tablereport.getValueAt(row, 5).toString(), 
+                        bsParseInt(ddyear.getSelectedItem().toString()), 
+                        bsParseInt(ddperiod.getSelectedItem().toString()));
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
                } else {
-                 getdetailCC(tablereport.getValueAt(row, 1).toString(), tablereport.getValueAt(row, 6).toString(), tablereport.getValueAt(row, 5).toString(), bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperiod.getSelectedItem().toString()));
+                 getdetailCC(tablereport.getValueAt(row, 1).toString(), 
+                         tablereport.getValueAt(row, 6).toString(), 
+                         tablereport.getValueAt(row, 5).toString(), 
+                         bsParseInt(ddyear.getSelectedItem().toString()), 
+                         bsParseInt(ddperiod.getSelectedItem().toString()));
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);  
                }
+               */
+               
         }
     }//GEN-LAST:event_tablereportMouseClicked
 

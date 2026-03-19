@@ -436,6 +436,13 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       break;
     } 
     
+    case "getTrialBalanceView" : { 
+      response.getWriter().print(fglData.getTrialBalanceView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3")})); 
+      break;
+    } 
+    
     case "getAccountBalanceDetView" : { 
       response.getWriter().print(fglData.getAccountBalanceDetView(request.getHeader("param1"), 
                     request.getHeader("param2"),
