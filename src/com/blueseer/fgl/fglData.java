@@ -5641,7 +5641,7 @@ public class fglData {
                     String thisdesc = "AR Memo";
                     String gldoc = setGLRecNbr("AR");
                     
-                    res = st.executeQuery("select ar_type, ard_acct, ard_cc, ard_nbr, ard_amt, ard_base_amt, ard_curr, ard_base_curr, ar_ref, ard_ref, ar_site, ar_acct, ar_cc from ard_mstr " +
+                    res = st.executeQuery("select ar_type, ar_rmks, ard_acct, ard_cc, ard_nbr, ard_amt, ard_base_amt, ard_curr, ard_base_curr, ar_ref, ard_ref, ar_site, ar_acct, ar_cc from ard_mstr " +
                                " inner join ar_mstr on ar_nbr = ard_nbr  where ard_nbr = " + "'" + batchnbr + "'" +";");
                    
                     while (res.next()) {
@@ -5649,14 +5649,14 @@ public class fglData {
                      // if DM debit cust acct and credit cash
                     if (res.getString("ar_type").equals("C")) {
                         thistype = "AR-MEMO-CM";
-                       acct_cr.add(res.getString("ard_acct"));
-                       acct_dr.add(res.getString("ar_acct"));
+                       acct_cr.add(res.getString("ar_acct"));
+                       acct_dr.add(res.getString("ard_acct"));
                        cc_cr.add(res.getString("ard_cc"));
                        cc_dr.add(res.getString("ar_cc")); 
                     } else {
                         thistype = "AR-MEMO-DM";
-                       acct_cr.add(res.getString("ar_acct"));
-                       acct_dr.add(res.getString("ard_acct"));
+                       acct_cr.add(res.getString("ard_acct"));
+                       acct_dr.add(res.getString("ar_acct"));
                        cc_cr.add(res.getString("ar_cc"));
                        cc_dr.add(res.getString("ard_cc"));  
                     }
@@ -5668,7 +5668,7 @@ public class fglData {
                     site.add(res.getString("ar_site"));
                     ref.add(res.getString("ard_nbr"));
                     type.add(thistype);
-                    desc.add("Memo " + res.getString("ard_ref"));
+                    desc.add(res.getString("ar_rmks") + " ref=" + res.getString("ard_ref"));
                     doc.add(gldoc);
                     
                     // need to do discounts ..credit sales, debit disc, debit AR (-$4.00, $.02, $3.98)

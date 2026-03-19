@@ -750,7 +750,7 @@ public class ARMemoMaint extends javax.swing.JPanel implements IBlueSeerV {
              amt += bsParseDouble(ardet.getValueAt(i, 4).toString());
           }
         actamt = amt;
-        tbactualamt.setText(String.valueOf(amt));  
+        tbactualamt.setText(currformatDouble(amt));  
         
     }
     
