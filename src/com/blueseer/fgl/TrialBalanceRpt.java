@@ -41,11 +41,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -81,9 +76,6 @@ import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToData;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
-import java.sql.Connection;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
@@ -351,130 +343,6 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
        Task z = new Task(x, y); 
        z.execute(); 
        
-    }
-    
-    public void getdetail(String acct, String site, int year, int period) {
-      
-         modeldetail.setNumRows(0);
-         double total = 0;
-         ArrayList<String> actdatearray = fglData.getGLCalForPeriod(year, period);  
-                String datestart = String.valueOf(actdatearray.get(0));
-                String dateend = String.valueOf(actdatearray.get(1));
-                
-                tabledetail.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency()))); 
-        
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                String blanket = "";
-                res = st.executeQuery("select glh_acct, glh_cc, glh_site, glh_type, glh_ref, glh_doc, glh_effdate, glh_desc, glh_base_amt from gl_hist " +
-                        " where glh_acct = " + "'" + acct + "'" + " AND " + 
-                        " glh_site = " + "'" + site + "'" + " AND " +
-                        " glh_effdate >= " + "'" + datestart + "'" + " AND " +
-                        " glh_effdate <= " + "'" + dateend + "'" + ";");
-                while (res.next()) {
-                    total = total + res.getDouble("glh_base_amt");
-                   modeldetail.addRow(new Object[]{ 
-                      res.getString("glh_acct"), 
-                       res.getString("glh_cc"),
-                       res.getString("glh_site"),
-                      res.getString("glh_ref"), 
-                      res.getString("glh_type"), 
-                      res.getString("glh_effdate"),
-                      res.getString("glh_desc"),
-                      bsParseDouble(currformatDouble(res.getDouble("glh_base_amt")))  });
-                }
-               
-                tabledetail.setModel(modeldetail);
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016,Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
-    }
-    
-    public void getdetailCC(String acct, String cc, String site, int year, int period) {
-      
-         modeldetail.setNumRows(0);
-         double total = 0;
-         ArrayList<String> actdatearray = fglData.getGLCalForPeriod(year, period);  
-                String datestart = String.valueOf(actdatearray.get(0));
-                String dateend = String.valueOf(actdatearray.get(1));
-        tabledetail.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                String blanket = "";
-                res = st.executeQuery("select glh_acct, glh_cc, glh_site, glh_ref, glh_doc, glh_effdate, glh_desc, glh_base_amt from gl_hist " +
-                        " where glh_acct = " + "'" + acct + "'" + " AND " + 
-                        " glh_cc = " + "'" + cc + "'" + " AND " +
-                        " glh_site = " + "'" + site + "'" + " AND " +
-                        " glh_effdate >= " + "'" + datestart + "'" + " AND " +
-                        " glh_effdate <= " + "'" + dateend + "'" + ";");
-                while (res.next()) {
-                    total = total + res.getDouble("glh_base_amt");
-                   modeldetail.addRow(new Object[]{ 
-                      res.getString("glh_acct"), 
-                       res.getString("glh_cc"),
-                       res.getString("glh_site"),
-                      res.getString("glh_ref"), 
-                      res.getString("glh_doc"), 
-                      res.getString("glh_effdate"),
-                      res.getString("glh_desc"),
-                      bsParseDouble(currformatDouble(res.getDouble("glh_base_amt")))});
-                }
-               
-              
-                tabledetail.setModel(modeldetail);
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016,Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
     }
     
     public void setLanguageTags(Object myobj) {

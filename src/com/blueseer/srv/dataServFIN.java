@@ -36,8 +36,19 @@ import static com.blueseer.far.farData.getARMstr;
 import com.blueseer.fgl.fglData;
 import com.blueseer.fgl.fglData.AcctMstr;
 import static com.blueseer.fgl.fglData.addAcctMstr;
+import static com.blueseer.fgl.fglData.addBankMstr;
+import static com.blueseer.fgl.fglData.addCurrMstr;
+import static com.blueseer.fgl.fglData.addDeptMstr;
+import static com.blueseer.fgl.fglData.addExcMstr;
 import static com.blueseer.fgl.fglData.addGL;
+import static com.blueseer.fgl.fglData.addUpdateGLCal;
+import static com.blueseer.fgl.fglData.addUpdateGLCtrl;
+import static com.blueseer.fgl.fglData.addUpdatePAYCtrl;
 import static com.blueseer.fgl.fglData.deleteAcctMstr;
+import static com.blueseer.fgl.fglData.deleteBankMstr;
+import static com.blueseer.fgl.fglData.deleteCurrMstr;
+import static com.blueseer.fgl.fglData.deleteDeptMstr;
+import static com.blueseer.fgl.fglData.deleteExcMstr;
 import static com.blueseer.fgl.fglData.deleteGL;
 import static com.blueseer.fgl.fglData.deleteTaxMstr;
 import com.blueseer.fgl.fglData.exc_mstr;
@@ -49,29 +60,40 @@ import static com.blueseer.fgl.fglData.getExcMstr;
 import static com.blueseer.fgl.fglData.getFINInit;
 import static com.blueseer.fgl.fglData.getFglRptPickerData;
 import static com.blueseer.fgl.fglData.getGLAcctListRangeWCurrTypeDesc;
+import static com.blueseer.fgl.fglData.getGLCal;
 import static com.blueseer.fgl.fglData.getGLCalForPeriod;
 import static com.blueseer.fgl.fglData.getGLCalForPeriodRange;
 import static com.blueseer.fgl.fglData.getGLCalYearsRange;
 import static com.blueseer.fgl.fglData.getGLCtrl;
 import static com.blueseer.fgl.fglData.getGLHist;
 import static com.blueseer.fgl.fglData.getGLTran;
+import static com.blueseer.fgl.fglData.getPAYCtrl;
 import static com.blueseer.fgl.fglData.getTaxDet;
 import static com.blueseer.fgl.fglData.getTaxMstr;
 import static com.blueseer.fgl.fglData.updateAcctMstr;
+import static com.blueseer.fgl.fglData.updateBankMstr;
+import static com.blueseer.fgl.fglData.updateCurrMstr;
+import static com.blueseer.fgl.fglData.updateDeptMstr;
+import static com.blueseer.fgl.fglData.updateExcMstr;
+import static com.blueseer.fgl.fglData.updateReconGLRecord;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.boolToJson;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import com.blueseer.utl.OVData;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.LinkedHashMap;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -218,6 +240,45 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       break;
     }
     
+    case "addDeptMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      fglData.dept_mstr am = objectMapper.readValue(sb.toString(), fglData.dept_mstr.class);            
+      response.getWriter().print(arrayToJson(addDeptMstr(am)));
+      break;
+    }
+    
+    case "updateDeptMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      fglData.dept_mstr am = objectMapper.readValue(sb.toString(), fglData.dept_mstr.class);            
+      response.getWriter().print(arrayToJson(updateDeptMstr(am)));
+      break;
+    }
+    
+    case "deleteDeptMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      fglData.dept_mstr am = objectMapper.readValue(sb.toString(), fglData.dept_mstr.class);            
+      response.getWriter().print(arrayToJson(deleteDeptMstr(am)));
+      break;
+    }
+        
     case "getDeptMstr" : {
       String[] key = new String[]{request.getHeader("key")}; 
       fglData.dept_mstr am = getDeptMstr(key);
@@ -227,6 +288,45 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       break;
     }
     
+    case "addBankMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      fglData.BankMstr am = objectMapper.readValue(sb.toString(), fglData.BankMstr.class);            
+      response.getWriter().print(arrayToJson(addBankMstr(am)));
+      break;
+    }
+    
+    case "updateBankMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      fglData.BankMstr am = objectMapper.readValue(sb.toString(), fglData.BankMstr.class);            
+      response.getWriter().print(arrayToJson(updateBankMstr(am)));
+      break;
+    }
+    
+    case "deleteBankMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      fglData.BankMstr am = objectMapper.readValue(sb.toString(), fglData.BankMstr.class);            
+      response.getWriter().print(arrayToJson(deleteBankMstr(am)));
+      break;
+    }
+        
     case "getBankMstr" : {
       String[] key = new String[]{request.getHeader("key")}; 
       fglData.BankMstr am = getBankMstr(key);
@@ -236,6 +336,45 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       break;
     }
     
+    case "addCurrMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      fglData.CurrMstr am = objectMapper.readValue(sb.toString(), fglData.CurrMstr.class);            
+      response.getWriter().print(arrayToJson(addCurrMstr(am)));
+      break;
+    }
+    
+    case "updateCurrMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      fglData.CurrMstr am = objectMapper.readValue(sb.toString(), fglData.CurrMstr.class);            
+      response.getWriter().print(arrayToJson(updateCurrMstr(am)));
+      break;
+    }
+    
+    case "deleteCurrMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      fglData.CurrMstr am = objectMapper.readValue(sb.toString(), fglData.CurrMstr.class);            
+      response.getWriter().print(arrayToJson(deleteCurrMstr(am)));
+      break;
+    }
+      
     case "getCurrMstr" : {
       String[] key = new String[]{request.getHeader("key")}; 
       fglData.CurrMstr am = getCurrMstr(key);
@@ -244,6 +383,46 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       response.getWriter().print(r);
       break;
     }
+    
+    case "addExcMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      fglData.exc_mstr am = objectMapper.readValue(sb.toString(), fglData.exc_mstr.class);            
+      response.getWriter().print(arrayToJson(addExcMstr(am)));
+      break;
+    }
+    
+    case "updateExcMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      fglData.exc_mstr am = objectMapper.readValue(sb.toString(), fglData.exc_mstr.class);            
+      response.getWriter().print(arrayToJson(updateExcMstr(am)));
+      break;
+    }
+    
+    case "deleteExcMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      fglData.exc_mstr am = objectMapper.readValue(sb.toString(), fglData.exc_mstr.class);            
+      response.getWriter().print(arrayToJson(deleteExcMstr(am)));
+      break;
+    }
+      
     
     case "getExcMstr" : {
       String base = request.getHeader("base"); 
@@ -302,6 +481,46 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       response.getWriter().print(arrayToJson(addGL(list)));
       break;
     }
+    
+    case "addUpdateGLCal" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      fglData.gl_cal x = objectMapper.readValue(sb.toString(), fglData.gl_cal.class);            
+      response.getWriter().print(arrayToJson(addUpdateGLCal(x)));
+      break;
+    }
+    
+    case "addUpdateGLCtrl" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      fglData.gl_ctrl x = objectMapper.readValue(sb.toString(), fglData.gl_ctrl.class);            
+      response.getWriter().print(arrayToJson(addUpdateGLCtrl(x)));
+      break;
+    }
+    
+    case "addUpdatePAYCtrl" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      fglData.pay_ctrl x = objectMapper.readValue(sb.toString(), fglData.pay_ctrl.class);            
+      response.getWriter().print(arrayToJson(addUpdatePAYCtrl(x)));
+      break;
+    }
+    
     
     case "getGLTran" : {       
         ArrayList<fglData.gl_tran> xd = getGLTran(new String[]{request.getHeader("param1")});
@@ -461,6 +680,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       break;
     } 
     
+    case "getReconAcctBrowseView" : { 
+      response.getWriter().print(fglData.getReconAcctBrowseView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4")} ));
+      break;
+    } 
+    
     
     case "getInvoiceBrowseDetail" : { 
       response.getWriter().print(fglData.getInvoiceBrowseDetail(request.getHeader("param1"))); 
@@ -491,6 +718,25 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(r);
             break;
     }
+    
+    case "getGLCal" : { 
+            String[] key = new String[]{request.getHeader("param1"), request.getHeader("param2")}; 
+            fglData.gl_cal x = getGLCal(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+    }
+    
+    case "getPAYCtrl" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            fglData.pay_ctrl x = getPAYCtrl(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+    }
+    
     
     case "getARCtrl" : { 
             String[] key = new String[]{request.getHeader("param1")}; 
@@ -585,6 +831,20 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         response.getWriter().print(getFglRptPickerData(x));  
         break;
         }
+    
+    case "updateReconGLRecord" : {
+        String line;
+        StringBuilder sb = new StringBuilder();  
+        BufferedReader reader = request.getReader();  // as string
+        while ((line = reader.readLine()) != null) {  
+        sb.append(line);
+        } 
+        reader.close();
+        ObjectMapper om = new ObjectMapper();
+        ArrayList<String> al = om.readValue(sb.toString(), new TypeReference<ArrayList<String>>() {});
+        response.getWriter().print(boolToJson(updateReconGLRecord(al))); 
+        break;
+    }
     
     default:
         response.getWriter().print("");

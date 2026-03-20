@@ -26,12 +26,7 @@ SOFTWARE.
 package com.blueseer.fgl;
 
 import bsmf.MainFrame;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
-import com.blueseer.far.*;
 import static com.blueseer.fgl.fglData.addUpdatePAYCtrl;
 import static com.blueseer.fgl.fglData.getPAYCtrl;
 import com.blueseer.fgl.fglData.pay_ctrl;
@@ -41,11 +36,6 @@ import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import com.blueseer.utl.IBlueSeerc;
 import com.blueseer.utl.OVData;
 import java.awt.Component;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -232,7 +222,7 @@ public class PayControl extends javax.swing.JPanel implements IBlueSeerc {
     
     public void initvars(String[] arg) {
             setComponentDefaultValues();
-            executeTask(dbaction.get, null);
+            executeTask(dbaction.get, new String[]{""});
     }
     
     public String[] updateRecord(String[] x) {
@@ -261,7 +251,7 @@ public class PayControl extends javax.swing.JPanel implements IBlueSeerc {
     }
         
     public void updateForm() {
-    tbbank.setText(x.payc_bank());         
+        tbbank.setText(x.payc_bank());         
         tblbracct.setText(x.payc_labor_acct());
         tblbrcc.setText(x.payc_labor_cc());
         tbsalacct.setText(x.payc_salaried_acct());

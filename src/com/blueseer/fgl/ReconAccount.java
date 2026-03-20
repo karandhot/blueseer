@@ -26,67 +26,55 @@ SOFTWARE.
 package com.blueseer.fgl;
 
 import bsmf.MainFrame;
-import com.blueseer.shp.*;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
-import static bsmf.MainFrame.checkperms;
 import static bsmf.MainFrame.db;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.FileDialog;
-import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
-import static bsmf.MainFrame.driver;
 import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.mydialog;
 import static bsmf.MainFrame.pass;
-import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import static com.blueseer.fgl.fglData.getGLAcctDesc;
+import static com.blueseer.fgl.fglData.updateReconGLRecord;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
-import java.sql.Connection;
+import static com.blueseer.utl.BlueSeerUtils.getTitleTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.parseDate;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.Locale;
-import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -106,11 +94,12 @@ import org.jfree.data.general.DefaultPieDataset;
  */
 public class ReconAccount extends javax.swing.JPanel {
  
-    String exoincfilepath = OVData.getSystemTempDirectory() + "/" + "chartexpinc.jpg";
-    String buysellfilepath = OVData.getSystemTempDirectory() + "/" + "chartbuysell.jpg";
-    double expenses = 0;
-    double inventory = 0;
     boolean isLoad = false;
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultSite = "";
+    String defaultCurrency = "";
     
     ReconAccount.MyTableModel mymodel = new ReconAccount.MyTableModel(new Object[][]{},
                         new String[]{"ID", "Acct", "CC", "Site", "Ref", "Type", "EffDate", "Desc", "Amount", "CheckBox", "Status"})
@@ -266,169 +255,7 @@ public class ReconAccount extends javax.swing.JPanel {
             return c;
     }
     }
-    
-      public void chartExp() {
           
-          expenses = 0;
-          
-         try {
-          
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");       
-                 
-                  
-                res = st.executeQuery("select posd_acct, ac_desc, sum(posd_netprice * posd_qty) as 'sum' from pos_det " +
-                        " inner join pos_mstr on pos_nbr = posd_nbr  " +
-                        " inner join ac_mstr on ac_id = posd_acct  " +
-                        " where pos_entrydate >= " + "'" + dfdate.format(dcglprevious.getDate()) + "'" +
-                        " AND pos_entrydate <= " + "'" + dfdate.format(dcto.getDate()) + "'" +
-                        " AND pos_type = 'expense' " +
-                        " AND pos_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +       
-                        " group by posd_acct, ac_desc order by posd_acct desc   ;");
-             
-                DefaultPieDataset dataset = new DefaultPieDataset();
-               
-                String acct = "";
-                while (res.next()) {
-                      acct = res.getString("ac_desc");  
-                    Double amt = res.getDouble("sum");
-                    if (amt < 0) {amt = amt * -1;}
-                    
-                    expenses += amt;
-                    
-                    if (amt > 0) {
-                       dataset.setValue(acct, amt);
-                    }
-                }
-        JFreeChart chart = ChartFactory.createPieChart("Expenses For Date Range", dataset, true, true, false);
-        PiePlot plot = (PiePlot) chart.getPlot();
-      //  plot.setSectionPaint(KEY1, Color.green);
-      //  plot.setSectionPaint(KEY2, Color.red);
-     //   plot.setExplodePercent(KEY1, 0.10);
-        //plot.setSimpleLabels(true);
-
-        PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(
-            "{0}: {1} ({2})", new DecimalFormat("$ #,##0.00", new DecimalFormatSymbols(Locale.US)), new DecimalFormat("0%", new DecimalFormatSymbols(Locale.US)));
-        plot.setLabelGenerator(gen);
-
-        try {
-        
-        ChartUtilities.saveChartAsJPEG(new File(exoincfilepath), chart, (int) (this.getWidth()/2.5), (int) (this.getHeight()/2.7));
-       // ChartUtilities.saveChartAsJPEG(new File(exoincfilepath), chart, 400, 200);
-        } catch (IOException e) {
-            MainFrame.bslog(e);
-        }
-        ImageIcon myicon = new ImageIcon(exoincfilepath);
-        myicon.getImage().flush();  
-      //  myicon.getImage().getScaledInstance(400, 200, Image.SCALE_SMOOTH);
-        this.chartlabel.setIcon(myicon);
-        this.repaint();
-       
-       // bsmf.MainFrame.show("your chart is complete...go to chartview");
-                
-              } catch (SQLException s) {
-                  MainFrame.bslog(s);
-                  bsmf.MainFrame.show(getMessageTag(1016,Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }
-       
-       public void chartBuyAndSell() {
-         try {
-          
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");       
-                 
-                  
-                res = st.executeQuery("select pos_type, sum(pos_totamt) as 'sum' from pos_mstr  " +
-                        " where pos_entrydate >= " + "'" + dfdate.format(dcglprevious.getDate()) + "'" +
-                        " AND pos_entrydate <= " + "'" + dfdate.format(dcto.getDate()) + "'" +
-                        " AND pos_type <> 'expense' " +
-                         " AND pos_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +               
-                        " group by pos_type order by pos_type desc   ;");
-             
-                DefaultPieDataset dataset = new DefaultPieDataset();
-               
-                String acct = "";
-                while (res.next()) {
-                      acct = res.getString("pos_type");
-                      if (acct.equals("income")) {
-                          acct = "misc income";
-                      }
-                    Double amt = res.getDouble("sum");
-                    if (amt < 0) {amt = amt * -1;}
-                  dataset.setValue(acct, amt);
-                }
-        JFreeChart chart = ChartFactory.createPieChart("Buy / Sell / Misc Income For Date Range", dataset, true, true, false);
-        PiePlot plot = (PiePlot) chart.getPlot();
-      //  plot.setSectionPaint(KEY1, Color.green);
-      //  plot.setSectionPaint(KEY2, Color.red);
-     //   plot.setExplodePercent(KEY1, 0.10);
-        //plot.setSimpleLabels(true);
-
-        PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(
-            "{0}: {1} ({2})", new DecimalFormat("$ #,##0.00", new DecimalFormatSymbols(Locale.US)), new DecimalFormat("0%", new DecimalFormatSymbols(Locale.US)));
-        plot.setLabelGenerator(gen);
-
-        try {
-        
-        ChartUtilities.saveChartAsJPEG(new File(buysellfilepath), chart, (int) (this.getWidth()/2.5), (int) (this.getHeight()/2.7));
-        } catch (IOException e) {
-            MainFrame.bslog(e);
-        }
-        ImageIcon myicon = new ImageIcon(buysellfilepath);
-        myicon.getImage().flush();   
-        this.pielabel.setIcon(myicon);
-        this.repaint();
-       
-       // bsmf.MainFrame.show("your chart is complete...go to chartview");
-                
-              } catch (SQLException s) {
-                  MainFrame.bslog(s);
-                  bsmf.MainFrame.show(getMessageTag(1016,Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-    }
-       
-     
      
    
     /**
@@ -439,61 +266,75 @@ public class ReconAccount extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
-    public void getdetail(String shipper) {
+    public void executeTask(String x, String[] y) { 
       
-         modeldetail.setNumRows(0);
-         double totalsales = 0;
-         double totalqty = 0;
+        class Task extends SwingWorker<String[], Void> {
          
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                String blanket = "";
-                res = st.executeQuery("select posd_nbr, posd_item, posd_desc, posd_ref, posd_qty, posd_netprice from pos_det " +
-                        " where posd_nbr = " + "'" + shipper + "'" +  ";");
-                while (res.next()) {
-                    totalsales = totalsales + (res.getDouble("posd_qty") * res.getDouble("posd_netprice"));
-                    totalqty = totalqty + res.getDouble("posd_qty");
-                   modeldetail.addRow(new Object[]{ 
-                      res.getString("posd_nbr"), 
-                      res.getString("posd_item"),
-                      res.getString("posd_desc"),
-                      res.getString("posd_ref"),
-                      res.getString("posd_qty"),
-                      res.getString("posd_netprice")});
-                }
-               
-             
-               
-                tabledetail.setModel(modeldetail);
-                this.repaint();
-
-            } catch (SQLException s) {
-                bsmf.MainFrame.show(getMessageTag(1016,Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+            
+            
+            
+            
+            return message;
         }
-
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
     }
-    
+       
     public Double sumtoggle () {
         double x = 0;
          for (int i = 0 ; i < mymodel.getRowCount(); i++) {    
@@ -533,46 +374,14 @@ public class ReconAccount extends javax.swing.JPanel {
     }
     
     public void updateRecon() {
-     
-     try {
-            
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-              double x = 0;
-             for (int i = 0 ; i < mymodel.getRowCount(); i++) {    
-                 if ( (boolean) mymodel.getValueAt(i, 9) ) {
-                     st.executeUpdate("update gl_hist set glh_recon = " + "'" + '1' + "'" 
-                            + " where glh_id = " + "'" + mymodel.getValueAt(i, 0).toString() + "'"                             
-                            + ";");
-                 }
-              }
-             
-              bsmf.MainFrame.show(getMessageTag(1058));
-              
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-            }  finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-            
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+        ArrayList<String> list = new ArrayList<String>();    
+        for (int i = 0 ; i < mymodel.getRowCount(); i++) {
+            list.add(mymodel.getValueAt(i, 0).toString());
+        }   
+        boolean b = updateReconGLRecord(list);
+        if (b) {
+            bsmf.MainFrame.show("Recon complete");
         }
-     
      }
    
     public void setLanguageTags(Object myobj) {
@@ -619,18 +428,84 @@ public class ReconAccount extends javax.swing.JPanel {
        }
     }
     
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
+    
     
     public void initvars(String[] arg) throws ParseException {
-        
-        isLoad = true;
-        
+       executeTask("dataInit", null); 
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "accounts");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        setPanelComponentState(this, true);
         lbacct.setText("");
         lbdiff.setText("0");
         lbdiff.setForeground(Color.black);
         tbendbalance.setText("");
         lbstatementbal.setText("0");
         lbselecttotal.setText("0");
-        expenses = 0;
         
              btRun.setEnabled(false);
              btcommit.setEnabled(false);
@@ -649,7 +524,7 @@ public class ReconAccount extends javax.swing.JPanel {
         
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
         ArrayList glcal = fglData.getGLCalByYearAndPeriod(String.valueOf(pyear), String.valueOf(pmonth));
-        java.util.Date prevenddate = dfdate.parse(glcal.get(3).toString());
+        java.util.Date prevenddate = parseDate(glcal.get(3).toString());
         dcglprevious.setDate(prevenddate);
         dcto.setDate(now);
                
@@ -682,30 +557,122 @@ public class ReconAccount extends javax.swing.JPanel {
                 //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
                     //       new ButtonEditor(new JCheckBox()));
         
-        
-        ArrayList<String> myacct = fglData.getGLAcctList();
-        for (int i = 0; i < myacct.size(); i++) {
-            ddacct.addItem(myacct.get(i));
-        }
-            
-                    
-                    
-        ddsite.removeAllItems();
-        ArrayList<String> mylist = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (String code : mylist) {
-            ddsite.addItem(code);
-        }
-        ddsite.setSelectedItem(OVData.getDefaultSite());
-                    
-       isLoad = false;             
-          
-       ddacct.setSelectedIndex(0);
        
+        ddacct.removeAllItems();
+        ddsite.removeAllItems();
         
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }           
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("accounts")) {
+              ddacct.addItem(s[1]); 
+            }
+        }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultSite);
+        }
+        
+          Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
+                 while (en.hasMoreElements()) {
+                     TableColumn tc = en.nextElement();
+                     if ( tc.getModelIndex() == 9 ) {
+                         continue;
+                     }
+                     tc.setCellRenderer(new ReconAccount.SomeRenderer());
+                 }   
+                 
+                 
         detailpanel.setVisible(false);
         chartpanel.setVisible(false);
-          
+        
+       
     }
+    
+    public String[] getBrowseView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getReconAcctBrowseView"});
+        list.add(new String[]{"param1",ddacct.getSelectedItem().toString()});
+        list.add(new String[]{"param2",ddsite.getSelectedItem().toString()});
+        list.add(new String[]{"param3",dfdate.format(dcglprevious.getDate())});
+        list.add(new String[]{"param4",dfdate.format(dcto.getDate())});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServFIN"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getReconAcctBrowseView")};
+            }
+        } else {
+            jsonString = fglData.getReconAcctBrowseView(new String[]{
+                ddacct.getSelectedItem().toString(),
+                ddsite.getSelectedItem().toString(),
+                dfdate.format(dcglprevious.getDate()),
+                dfdate.format(dcto.getDate())
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getReconAcctBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+        setPanelComponentState(this, true);
+        int i = 0;
+        double toggletotal = 0;
+        boolean toggle;
+        String status = "";
+        boolean haveOpen = false;
+        
+        mymodel.setNumRows(0);
+        if (roData != null) {
+            for (Object[] rowData : roData) {
+                roData[i][8] = bsParseDouble(roData[i][8].toString()); 
+                    if (roData[i][9].toString().equals("1")) {
+                        status = "cleared";
+                        toggletotal = toggletotal + bsParseDouble(roData[i][8].toString());
+                    } else {
+                        status = "open";
+                        haveOpen = true;
+                    }
+                mymodel.addRow(rowData);
+                i++;
+            }
+        }
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String fromdate = (dcglprevious.getDate() == null) ? bsmf.MainFrame.lowdate : dfdate.format(dcglprevious.getDate());
+        lbacctbal.setText(currformatDouble(fglData.getGLAcctBalAsOfDate(ddsite.getSelectedItem().toString(), ddacct.getSelectedItem().toString(), fromdate)));
+             
+          sumAll(toggletotal);
+
+
+            isLoad = false;
+
+            if (mymodel.getRowCount() > 0 && haveOpen) {
+                btcommit.setEnabled(true);
+            } else {
+                btcommit.setEnabled(false);
+            }
+
+        roData = null;
+    }   
+    
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -1046,154 +1013,14 @@ public class ReconAccount extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-        isLoad = true;
-       
-    
-try {
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                String fromdate = "";
-                String todate = "";
-               mymodel.setNumRows(0);
-                 
-              
-                double total = 0;
-                double toggletotal = 0;
-                boolean haveOpen = false;
-               
-                 
-                  Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
-                 while (en.hasMoreElements()) {
-                     TableColumn tc = en.nextElement();
-                     if ( tc.getModelIndex() == 9 ) {
-                         continue;
-                     }
-                     tc.setCellRenderer(new ReconAccount.SomeRenderer());
-                 }   
-               
-                
-              
-                 
-                 
-             
-                 if (dcglprevious.getDate() == null) {
-                     fromdate = bsmf.MainFrame.lowdate;
-                 } else {
-                     fromdate = dfdate.format(dcglprevious.getDate()); // non-inclusive
-                 }
-                 if (dcto.getDate() == null) {
-                     todate = bsmf.MainFrame.hidate;
-                 } else {
-                    todate = dfdate.format(dcto.getDate()); 
-                 }
-                 boolean toggle = false;
-                 String status = "";
-                 res = st.executeQuery("select glh_id, glh_acct, glh_cc, glh_site, glh_type, glh_ref, glh_doc, glh_effdate, glh_desc, glh_amt, glh_recon from gl_hist " +
-                        " where glh_acct = " + "'" + ddacct.getSelectedItem().toString() + "'" + " AND " + 
-                        " glh_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +
-                        " glh_effdate > " + "'" + fromdate + "'" + " AND " + // non-inclusive
-                        " glh_effdate <= " + "'" + todate + "'" + ";");
-                while (res.next()) {
-                    total = total + res.getDouble("glh_amt");
-                    toggle = res.getBoolean("glh_recon");
-                    if (toggle) {
-                        status = "cleared";
-                        toggletotal = toggletotal + res.getDouble("glh_amt");
-                    } else {
-                        status = "open";
-                        haveOpen = true;
-                    }
-                   
-                       mymodel.addRow(new Object[]{ 
-                          res.getString("glh_id"),
-                          res.getString("glh_acct"), 
-                          res.getString("glh_cc"),
-                          res.getString("glh_site"),
-                          res.getString("glh_ref"), 
-                          res.getString("glh_type"), 
-                          res.getString("glh_effdate"),
-                          res.getString("glh_desc"),
-                          bsParseDouble(currformatDouble(res.getDouble("glh_amt"))),
-                          toggle, status });
-                   
-                }
-               
-              lbacctbal.setText(currformatDouble(fglData.getGLAcctBalAsOfDate(ddsite.getSelectedItem().toString(), ddacct.getSelectedItem().toString(), fromdate)));
-            
-              sumAll(toggletotal);
-               
-                chartBuyAndSell();
-                chartExp();  
-                
-                isLoad = false;
-                       
-                if (mymodel.getRowCount() > 0 && haveOpen) {
-                    btcommit.setEnabled(true);
-                } else {
-                    btcommit.setEnabled(false);
-                }
-                
-             
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016,Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
+        mymodel.setNumRows(0);
+        setPanelComponentState(this, false);
+        executeTask("getBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void tablereportMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablereportMouseClicked
         
-        int row = tablereport.rowAtPoint(evt.getPoint());
-        int col = tablereport.columnAtPoint(evt.getPoint());
-      /* 
-        if ( col == 9) {
-                getdetail(tablereport.getValueAt(row, 1).toString());
-                btdetail.setEnabled(true);
-                detailpanel.setVisible(true);
-                if ( (boolean) mymodel.getValueAt(row, col) ) {
-                   //  x += Double.valueOf(mymodel.getValueAt(i, 8).toString());
-                 }
-        }
-       
-        if ( col == 0 && tablereport.getValueAt(row, 4).toString().equals("sell") ) {
-                String mypanel = "MenuShipMaint";
-               if (! checkperms(mypanel)) { return; }
-               String args = tablereport.getValueAt(row, 3).toString();
-               reinitpanels(mypanel, true, args);
-        }
-        if ( col == 0 && tablereport.getValueAt(row, 4).toString().equals("buy") ) {
-                String mypanel = "ReceiverMaintMenu";
-               if (! checkperms(mypanel)) { return; }
-               String args = tablereport.getValueAt(row, 3).toString();
-               reinitpanels(mypanel, true, args);
-        }
-
-        if ( col == 9 && tablereport.getValueAt(row, 3).toString().equals("sell")) {
-            //  OVData.printReceipt(tablereport.getValueAt(row, 2).toString());
-        }
-*/
+     
     }//GEN-LAST:event_tablereportMouseClicked
 
     private void cbtoggleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbtoggleActionPerformed
@@ -1207,21 +1034,18 @@ try {
     }//GEN-LAST:event_cbtoggleActionPerformed
 
     private void btcommitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcommitActionPerformed
-            
-                if (lbstatementbal.getText().isEmpty() || bsParseDouble(lbstatementbal.getText()) == 0) {
-                    bsmf.MainFrame.show(getMessageTag(1059));
-                    return;
-                }
-
-
-                if (bsParseDouble(lbdiff.getText()) == 0) {
-                    boolean sure = bsmf.MainFrame.warn(getMessageTag(1060));     
-                    if (sure) {
-                     updateRecon();
-                    }
-                } else {
-                    bsmf.MainFrame.show(getMessageTag(1061));
-                }
+        if (lbstatementbal.getText().isEmpty() || bsParseDouble(lbstatementbal.getText()) == 0) {
+            bsmf.MainFrame.show(getMessageTag(1059));
+            return;
+        }
+        if (bsParseDouble(lbdiff.getText()) == 0) {
+            boolean sure = bsmf.MainFrame.warn(getMessageTag(1060));     
+            if (sure) {
+             updateRecon();
+            }
+        } else {
+            bsmf.MainFrame.show(getMessageTag(1061));
+        }
                 
        
     }//GEN-LAST:event_btcommitActionPerformed
@@ -1259,36 +1083,11 @@ try {
     }//GEN-LAST:event_tbendbalanceFocusLost
 
     private void ddacctActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddacctActionPerformed
-         if (ddacct.getSelectedItem() != null && ! isLoad )
-        try {
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                    res = st.executeQuery("select ac_desc from ac_mstr where ac_id = " + "'" + ddacct.getSelectedItem().toString() + "'" + ";");
-                    while (res.next()) {
-                        lbacct.setText(res.getString("ac_desc"));
-                    }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016,Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+         
+        if (ddacct.getSelectedItem() != null && ! isLoad ) {
+            lbacct.setText(getGLAcctDesc(ddacct.getSelectedItem().toString()));
         }
+      
     }//GEN-LAST:event_ddacctActionPerformed
 
 

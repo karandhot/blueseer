@@ -26,8 +26,6 @@ SOFTWARE.
 
 package com.blueseer.vdr;
 
-import com.blueseer.ctr.*;
-import com.blueseer.inv.*;
 import bsmf.MainFrame;
 import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
@@ -49,7 +47,6 @@ import static bsmf.MainFrame.checkperms;
 import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import com.blueseer.adm.admData;
-import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.cleanDirString;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;

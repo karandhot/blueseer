@@ -516,6 +516,18 @@ public class fglData {
     }
     
     public static String[] addBankMstr(BankMstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addBankMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlSelect = "select * from bk_mstr where bk_id = ?";
         String sqlInsert = "insert into bk_mstr (bk_id, bk_site, bk_desc, bk_acct, bk_cur, " +
@@ -549,7 +561,19 @@ public class fglData {
     }
     
     public static String[] updateBankMstr(BankMstr x) {
-      String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateBankMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
         String sql = "update bk_mstr set bk_site = ?, bk_desc = ?, bk_acct = ?, bk_cur = ?, " +
                 " bk_active = ?, bk_route = ?, bk_assignedID = ? where bk_id = ? ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
@@ -572,7 +596,19 @@ public class fglData {
     }
     
     public static String[] deleteBankMstr(BankMstr x) {
-     String[] m = new String[2];
+     if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteBankMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
         String sql = "delete from bk_mstr where bk_id = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql)) {
@@ -637,6 +673,18 @@ public class fglData {
     }
     
     public static String[] addCurrMstr(CurrMstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addCurrMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlSelect = "select * from cur_mstr where cur_id = ?";
         String sqlInsert = "insert into cur_mstr (cur_id, cur_desc)  " +
@@ -663,6 +711,18 @@ public class fglData {
     }
         
     public static String[] updateCurrMstr(CurrMstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateCurrMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sql = "update cur_mstr set cur_desc = ? " +
                 " where cur_id = ? ";
@@ -680,7 +740,19 @@ public class fglData {
     }
     
     public static String[] deleteCurrMstr(CurrMstr x) { 
-       String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteCurrMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
         String sql = "delete from cur_mstr where cur_id = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql)) {
@@ -938,6 +1010,18 @@ public class fglData {
    
     
     public static String[] addDeptMstr(dept_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addDeptMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlSelect = "select * from dept_mstr where dept_id = ?";
         String sqlInsert = "insert into dept_mstr (dept_id, dept_desc, dept_cop_acct, dept_lbr_acct, "
@@ -973,6 +1057,18 @@ public class fglData {
     }
     
     public static String[] updateDeptMstr(dept_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateDeptMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sql = "update dept_mstr set dept_desc = ?, dept_cop_acct = ?, dept_lbr_acct = ?, "
                 + " dept_bdn_acct = ?, dept_lbr_usg_acct= ?, dept_lbr_rate_acct = ?, dept_bdn_usg_acct = ?, dept_bdn_rate_acct = ? " +
@@ -998,7 +1094,19 @@ public class fglData {
     }
     
     public static String[] deleteDeptMstr(dept_mstr x) { 
-       String[] m = new String[2];
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteDeptMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
         String sql = "delete from dept_mstr where dept_id = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql)) {
@@ -1573,9 +1681,126 @@ public class fglData {
         return rows;
     }
     
+    public static String[] addUpdateGLCal(gl_cal x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addUpdateGLCal"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+
+        int rows = 0;
+        String[] m = new String[2];
+        String sqlSelect = "SELECT * FROM  gl_cal where glc_year = ? and glc_per = ?"; // there should always be only 1 or 0 records 
+        String sqlInsert = "insert into gl_cal (glc_year, glc_per, glc_start," +
+        " glc_end, glc_status ) "
+                        + " values (?,?,?,?,?); "; 
+        String sqlUpdate = "update gl_cal set glc_start = ?, glc_end = ? " +
+        " where glc_year = ? and glc_per = ? ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+             PreparedStatement ps = con.prepareStatement(sqlSelect);) {
+             ps.setInt(1, x.glc_year());
+             ps.setInt(2, x.glc_per());
+          try (ResultSet res = ps.executeQuery();
+               PreparedStatement psi = con.prepareStatement(sqlInsert);
+               PreparedStatement psu = con.prepareStatement(sqlUpdate);) {  
+            if (! res.isBeforeFirst()) {
+            psi.setInt(1, x.glc_year());
+            psi.setInt(2, x.glc_per());
+            psi.setString(3, x.glc_start());
+            psi.setString(4, x.glc_end());
+            psi.setString(5, x.glc_status());
+             rows = psi.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+            } else {
+            psu.setString(1, x.glc_start());
+            psu.setString(2, x.glc_end());
+            psu.setInt(3, x.glc_year());
+            psu.setInt(4, x.glc_per()); 
+            rows = psu.executeUpdate();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};    
+            }
+          } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+          }
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+   
+    public static gl_cal getGLCal(String[] x) {
+        gl_cal r = null;
+        String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getGLCal"});
+            list.add(new String[]{"param1",x[0]});
+            list.add(new String[]{"param2",x[1]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServFIN");
+                r = objectMapper.readValue(returnstring, gl_cal.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new gl_cal(m);
+                return r;
+            }
+        }
+        String sql = "select * from gl_cal where glc_year = ? and glc_per = ?;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+            ps.setString(1, x[0]);
+            ps.setString(2, x[1]);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new gl_cal(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new gl_cal(m, 
+                                res.getInt("glc_year"),
+                                res.getInt("glc_per"),
+                                res.getString("glc_start"),
+                                res.getString("glc_end"),
+                                res.getString("glc_status")
+                        );
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new gl_cal(m);
+        }
+        return r;
+    }
     
     
     public static String[] addUpdateGLCtrl(gl_ctrl x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addUpdateGLCtrl"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         int rows = 0;
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  gl_ctrl"; // there should always be only 1 or 0 records 
@@ -2066,6 +2291,18 @@ public class fglData {
     
     
     public static String[] addUpdatePAYCtrl(pay_ctrl x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addUpdatePAYCtrl"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         int rows = 0;
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  pay_ctrl"; // there should always be only 1 or 0 records 
@@ -2120,6 +2357,22 @@ public class fglData {
     public static pay_ctrl getPAYCtrl(String[] x) {
         pay_ctrl r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getPAYCtrl"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServFIN");
+                r = objectMapper.readValue(returnstring, pay_ctrl.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new pay_ctrl(m);
+                return r;
+            }
+        }
         String sql = "select * from pay_ctrl;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -2608,6 +2861,56 @@ public class fglData {
                             + ";");
                     x = true;
                 }
+            } // if proceed
+            catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return x;
+    }
+
+    public static boolean updateReconGLRecord(ArrayList<String> recordKeys) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> xlist = new ArrayList<>();
+            xlist.add(new String[]{"id","updateReconGLRecord"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(recordKeys);
+                sendServerPost(xlist, jsonString, null, "dataServFIN");
+                return true;
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        } 
+        boolean x = false;
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                    for (String s : recordKeys) {
+                        st.executeUpdate("update gl_hist set glh_recon = " + "'" + '1' + "'" 
+                            + " where glh_id = " + "'" + s + "'"                             
+                            + ";");
+                    }
+                
             } // if proceed
             catch (SQLException s) {
                 MainFrame.bslog(s);
@@ -4027,6 +4330,71 @@ public class fglData {
                     jsonarray.put(rowArray);
                     }
                 }
+                
+               
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+
+      return jsonarray.toString();
+    }
+    
+    public static String getReconAcctBrowseView(String[] key) {
+        JSONArray jsonarray = new JSONArray();
+               
+        try {
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                int i = 0;
+                
+                
+                res = st.executeQuery("select glh_id, glh_acct, glh_cc, glh_site, glh_type, glh_ref, glh_doc, glh_effdate, glh_desc, glh_amt, glh_recon from gl_hist " +
+                        " where glh_acct = " + "'" + key[0] + "'" + " AND " + 
+                        " glh_site = " + "'" + key[1] + "'" + " AND " +
+                        " glh_effdate > " + "'" + key[2] + "'" + " AND " + // non-inclusive
+                        " glh_effdate <= " + "'" + key[3] + "'" + ";"); 
+                
+                    String status = "";
+                    while (res.next()) {
+                        if (res.getString("glh_recon").equals("1")) {
+                            status = "cleared";
+                        } else {
+                            status = "open";
+                        }
+                    JSONArray rowArray = new JSONArray();
+                    rowArray.put(res.getString("glh_id"));
+                    rowArray.put(res.getString("glh_acct"));
+                    rowArray.put(res.getString("glh_cc"));
+                    rowArray.put(res.getString("glh_site"));
+                    rowArray.put(res.getString("glh_ref"));
+                    rowArray.put(res.getString("glh_type"));
+                    rowArray.put(res.getString("glh_effdate"));
+                    rowArray.put(res.getString("glh_desc"));
+                    rowArray.put(currformatDouble(res.getDouble("glh_amt")));
+                    rowArray.put(res.getString("glh_recon"));
+                    rowArray.put(status);
+                    jsonarray.put(rowArray); 
+                    }
+               
                 
                
             } catch (SQLException s) {
@@ -9682,6 +10050,14 @@ return myarray;
             this(m, "", "", 0);
         }
     }
+    
+    public record gl_cal(String[] m, int glc_year, int glc_per, String glc_start,
+        String glc_end, String glc_status) {
+        public gl_cal(String[] m) {
+            this(m, 0, 0, "", "", "");
+        }
+    }
+    
     
     public record gl_ctrl(String[] m, String gl_bs_from, String gl_bs_to, String gl_is_from,
         String gl_is_to, String gl_earnings, String gl_foreignreal, String gl_autopost, String gl_currmtl) {

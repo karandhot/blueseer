@@ -27,26 +27,17 @@ SOFTWARE.
 package com.blueseer.fgl;
 
 import bsmf.MainFrame;
-import static bsmf.MainFrame.db;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import static bsmf.MainFrame.driver;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.mydialog;
-import static bsmf.MainFrame.pass;
-import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import static com.blueseer.fgl.fglData.addUpdateGLCal;
+import static com.blueseer.fgl.fglData.getGLCal;
+import com.blueseer.fgl.fglData.gl_cal;
+import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
-import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.luModel;
 import static com.blueseer.utl.BlueSeerUtils.luTable;
 import static com.blueseer.utl.BlueSeerUtils.lual;
@@ -54,13 +45,14 @@ import static com.blueseer.utl.BlueSeerUtils.ludialog;
 import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
+import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import com.blueseer.utl.DTData;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.Connection;
+import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -70,6 +62,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JViewport;
+import javax.swing.SwingWorker;
 
 /**
  *
@@ -77,6 +71,13 @@ import javax.swing.JTable;
  */
 public class GLCalMaint extends javax.swing.JPanel {
 
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultSite = "";
+    String defaultCurrency = "";
+    
+    
     /**
      * Creates new form LedgerAcctMstrPanel
      */
@@ -85,6 +86,75 @@ public class GLCalMaint extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
+    
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+       
+          String type;
+          String[] key = null;
+          
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
+              this.key = key;
+          } 
+           
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+             switch(this.type) {
+                case "dataInit":
+                    message = getInitialization();
+                    break; 
+                case "add" :
+                    message = addRecord(key);
+                    break;
+                case "update":
+                    message = updateRecord(key);
+                    break;                
+                case "get":
+                    message = getRecord(key);    
+                    break;    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+          
+           if (this.type.equals("delete")) {
+             initvars(null);  
+           } else if (this.type.equals("get")) {
+             initvars(null); 
+           } else if (this.type.equals("dataInit")) {
+             done_Initialization();  
+           } else {
+             setAction(new String[]{"0",""});  
+           }
+           
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+   
     public void setLanguageTags(Object myobj) {
       // lblaccount.setText(labels.getString("LedgerAcctMstrPanel.labels.lblaccount"));
       
@@ -132,7 +202,76 @@ public class GLCalMaint extends javax.swing.JPanel {
        }
     }
     
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        JScrollPane scrollpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else if (myobj instanceof JScrollPane) {
+           scrollpane = (JScrollPane) myobj;    
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                if (component instanceof JScrollPane) {
+                    setPanelComponentState((JScrollPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    
+                    component.setEnabled(b);
+                    
+                }
+            }
+            if (scrollpane != null) {
+                scrollpane.setEnabled(b);
+                JViewport viewport = scrollpane.getViewport();
+                Component[] componentspane = viewport.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
     
+    public void setAction(String[] x) {
+        if (x[0].equals("0")) { 
+           setPanelComponentState(this, true);           
+        }
+    }
+    
+
     public void initvars(String[] arg) {
        Calendar now = Calendar.getInstance();
        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
@@ -156,63 +295,70 @@ public class GLCalMaint extends javax.swing.JPanel {
         }
         
         
-         if (arg != null && arg.length > 1) {
-            getcal(arg[0],arg[1]);
+        if (arg != null && arg.length > 0) {
+            executeTask(BlueSeerUtils.dbaction.get,arg);
         }
         
       
     }
     
-    public void getcal(String year, String per) {
-         try {
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "accounts");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }           
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                int i = 0;
-               
-                res = st.executeQuery("SELECT * FROM gl_cal where glc_year = " + "'" + year + "'" + 
-                        " AND glc_per = " + "'" + per + "'" + ";");
-
-                while (res.next()) {
-                    i++;
-                    ddyear.setSelectedItem(res.getString("glc_year"));
-                    ddperiod.setSelectedItem(res.getString("glc_per"));
-                    dcstart.setDate(dfdate.parse(res.getString("glc_start")));
-                    dcend.setDate(dfdate.parse(res.getString("glc_end")));
-                    if (res.getString("glc_status").equals("closed")) {
-                    cbstatus.setSelected(true);
-                    } else {
-                    cbstatus.setSelected(false);
-                    }
-                }
-                
-                if (i == 0) {
-                    bsmf.MainFrame.show(getMessageTag(1037));
-                }
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
         }
     }
+    
+    public String[] addRecord(String[] x) {
+     String[] m = addUpdateGLCal(createRecord());
+     return m;
+     }
+     
+    public String[] updateRecord(String[] x) {
+     String[] m = addUpdateGLCal(createRecord());
+     return m;
+     }
+   
+    public String[] getRecord(String[] key) {
+      gl_cal x = getGLCal(key);
+      ddyear.setSelectedItem(x.glc_year());
+      ddperiod.setSelectedItem(x.glc_per());
+      dcstart.setDate(parseDate(x.glc_start()));
+      dcend.setDate(parseDate(x.glc_end()));
+      if (x.glc_status().equals("1")) {
+        cbstatus.setSelected(true);
+        } else {
+        cbstatus.setSelected(false);
+      }
+      setAction(x.m());
+      return x.m();  
+    }
+    
+    public gl_cal createRecord() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        gl_cal x = new gl_cal(null, 
+           bsParseInt(ddyear.getSelectedItem().toString()),
+           bsParseInt(ddperiod.getSelectedItem().toString()),     
+           dfdate.format(dcstart.getDate()),
+           dfdate.format(dcend.getDate()),
+           BlueSeerUtils.boolToString(cbstatus.isSelected())
+        );
+        return x;
+    }
+        
     
     public void lookUpFrame() {
         
@@ -395,121 +541,13 @@ public class GLCalMaint extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btaddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btaddActionPerformed
-        try {
-            DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                boolean proceed = true;
-                int i = 0;
-                String status = "";
-                   if (cbstatus.isSelected()) {
-                    status = "closed";
-                } else {
-                    status = "open";
-                }
-                
-                if (proceed) {
-
-                    res = st.executeQuery("SELECT ac_id FROM  ac_mstr where ac_id = " + "'" + ddyear.getSelectedItem().toString() + "'" + ";");
-                    while (res.next()) {
-                        i++;
-                    }
-                    if (i == 0) {
-                        st.executeUpdate("insert into gl_cal "
-                            + "( glc_year, glc_per, glc_start, glc_end, glc_status ) "
-                            + " values ( " + "'" + ddyear.getSelectedItem().toString() + "'" + ","
-                            + "'" + ddperiod.getSelectedItem().toString() + "'" + ","
-                            + "'" + dfdate.format(dcstart.getDate()) + "'" + ","
-                            + "'" + dfdate.format(dcend.getDate()) + "'" + ","
-                            + "'" + status + "'" 
-                            + ")"
-                            + ";" );
-                        
-                        bsmf.MainFrame.show(getMessageTag(1007));
-                    } else {
-                        bsmf.MainFrame.show(getMessageTag(1014));
-                    }
-
-                    //reinitapmvariables();
-                    // btQualProbAdd.setEnabled(false);
-                } // if proceed
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        setPanelComponentState(this, false);
+        executeTask(BlueSeerUtils.dbaction.add, new String[]{""});
     }//GEN-LAST:event_btaddActionPerformed
 
     private void bteditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bteditActionPerformed
-        try {
-            DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                boolean proceed = true;
-                int i = 0;
-                String status = "";
-                
-                
-                if (cbstatus.isSelected()) {
-                    status = "closed";
-                } else {
-                    status = "open";
-                }
-                
-                if (proceed) {
-
-                        st.executeUpdate("update gl_cal set "
-                            + " glc_start = " + "'" + dfdate.format(dcstart.getDate()) + "'" + ","
-                            + " glc_end = " + "'" + dfdate.format(dcend.getDate()) + "'" + ","
-                            + " glc_status = " + "'" + status + "'"
-                            + " where glc_year = " + "'" + ddyear.getSelectedItem().toString() + "'" 
-                            + " AND glc_per = " + "'" + ddperiod.getSelectedItem().toString() + "'" 
-                                + ";");
-                        bsmf.MainFrame.show(getMessageTag(1008));
-                    
-
-                    //reinitapmvariables();
-                    // btQualProbAdd.setEnabled(false);
-                } // if proceed
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        setPanelComponentState(this, false);
+        executeTask(BlueSeerUtils.dbaction.update, new String[]{""});
     }//GEN-LAST:event_bteditActionPerformed
 
     private void btlookupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btlookupActionPerformed
