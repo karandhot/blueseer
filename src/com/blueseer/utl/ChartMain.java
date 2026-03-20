@@ -301,6 +301,7 @@ String symbol = "";
         ml.add("Finance -- income versus expense");
         ml.add("Finance -- expense by account");
         ml.add("Finance -- income by account");
+        ml.add("Finance -- account balances");
         }
         if (rpt.equals("chart_order")) {
         ml.add("Order -- open orders");
@@ -320,6 +321,8 @@ String symbol = "";
         lhm.put("Finance -- income versus expense", "0");
         ml.add("Finance -- expense by account");
         lhm.put("Finance -- expense by account", "0");
+        ml.add("Finance -- account balances");
+        lhm.put("Finance -- account balances", "0");
         ml.add("Finance -- income by account");
         lhm.put("Finance -- income by account", "0");
         ml.add("Order -- open orders");
@@ -652,6 +655,70 @@ String symbol = "";
                 if (i <= Integer.parseInt(ddlimit.getSelectedItem().toString())) {
                    displayed += bsParseDouble(roData1[1].toString()); 
                    dataset.setValue(type, amt);
+                }
+            }
+            // other
+            if (total > displayed) {
+                dataset.setValue("other", (total - displayed));
+            }
+        }  
+        JFreeChart chart = ChartFactory.createPieChart(getTitleTag(5026), dataset, true, true, false);
+        PiePlot plot = (PiePlot) chart.getPlot();
+        PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(("{1} ({2})"), NumberFormat.getCurrencyInstance(), new DecimalFormat("0.00%"));
+        plot.setLabelGenerator(gen);
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                ChartUtilities.writeChartAsJPEG(baos, chart, jPanel2.getWidth(), this.getHeight() - 150);
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());                
+                chartlabel.setIcon(new ImageIcon(ImageIO.read(bais)));
+                bais.close();
+                baos.close();
+                } catch (IOException e) {
+                MainFrame.bslog(e);
+                }
+ }
+    
+    public void piechart_acctbalances() {
+      
+        cleanUpOldChartFile();
+        ChartPanel.setVisible(true);
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getChartRptPickerData"});
+        list.add(new String[]{"func","piechart_acctbalances"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServOV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+            }
+        } else {
+            jsonString = OVData.getChartRptPickerData(new String[]{
+                "piechart_acctbalances",
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate())
+            });
+        }
+        Object[][] roData = jsonToData(jsonString);
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        double total = 0.00;
+        double displayed = 0.00;
+        int i = 0;
+        if (roData != null) {
+            for (Object[] roData1 : roData) {
+                total += bsParseDouble(roData1[1].toString());
+                Double amt = bsParseDouble(roData1[1].toString());
+                
+                if (amt <= 0) {
+                    continue;
+                }
+                
+                if (i <= Integer.parseInt(ddlimit.getSelectedItem().toString())) {
+                   displayed += bsParseDouble(roData1[1].toString()); 
+                   dataset.setValue(roData1[0].toString(), amt);
                 }
             }
             // other
@@ -2306,6 +2373,10 @@ String symbol = "";
         
         if (whichreport.equals("Finance -- income versus expense")) {
             piechart_profitandloss();
+        }
+        
+        if (whichreport.equals("Finance -- account balances")) {
+            piechart_acctbalances();
         }
         
         if (whichreport.equals("Finance -- expense by account")) {

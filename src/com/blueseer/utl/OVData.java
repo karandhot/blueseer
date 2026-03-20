@@ -25209,11 +25209,13 @@ return mylist;
                         " AND glh_effdate <= " + "'" + keys[2] + "'" +
                         " AND ac_type = 'I' " +
                         " group by glh_acct, glh_cc order by sum desc;");
+                    double amt = 0;
                     while (res.next()) {
                             i++;
+                            amt = (res.getDouble("sum") < 0) ? (-1 * res.getDouble("sum") ) : res.getDouble("sum");
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(res.getString("glh_acct") + "-" + res.getString("glh_cc"));
-                            rowArray.put(xNull(res.getString("sum")));
+                            rowArray.put(amt);
                             jsonarray.put(rowArray);
 
                     } 
@@ -25227,16 +25229,34 @@ return mylist;
                         " AND glh_effdate <= " + "'" + keys[2] + "'" +
                         " AND (ac_type = 'E' or ac_type = 'I') " +
                         " group by ac_type order by sum desc limit 10  ;");
+                    double amt = 0;
                     while (res.next()) {
+                            amt = (res.getDouble("sum") < 0) ? (-1 * res.getDouble("sum") ) : res.getDouble("sum");
                             i++;
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put(res.getString("ac_type"));
-                            rowArray.put(xNull(res.getString("sum")));
+                            rowArray.put(amt);
                             jsonarray.put(rowArray);
 
                     } 
                 }
                
+                if (keys[0].equals("piechart_acctbalances")) {  
+                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");     
+                 res = st.executeQuery("select ac_desc, sum(acb_amt) as 'sum' from acb_mstr inner join ac_mstr on ac_id = acb_acct " +                        
+                        " group by ac_desc order by sum desc;");
+                    double amt = 0;
+                    while (res.next()) {
+                            amt = (res.getDouble("sum") < 0) ? (-1 * res.getDouble("sum") ) : res.getDouble("sum");
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put(res.getString("ac_desc"));
+                            rowArray.put(amt);
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
                 if (keys[0].equals("piechart_salesbycust")) {  
                  DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
                  int days = (int)( (dfdate.parse(keys[2]).getTime() - dfdate.parse(keys[1]).getTime()) / (1000 * 60 * 60 * 24) );     
