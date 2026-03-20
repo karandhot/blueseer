@@ -25257,6 +25257,41 @@ return mylist;
                     } 
                 }
                 
+                if (keys[0].equals("piechart_cashflow")) {  
+                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");  
+                 res = st.executeQuery("select arc_bank from ar_ctrl;" );
+                 res = st.executeQuery("select bk_acct from bk_mstr inner join ar_ctrl on arc_bank = bk_id ");
+                 String acct = ""; 
+                 while (res.next()) {
+                      acct = res.getString("bk_acct");
+                  }
+                 res = st.executeQuery("select ac_desc, glh_amt from gl_hist inner join ac_mstr on ac_id = glh_acct " +
+                         " where glh_acct = " + "'" + acct + "'" +
+                         " AND glh_effdate >= " + "'" + keys[1] + "'" +
+                        " AND glh_effdate <= " + "'" + keys[2] + "'" +
+                        ";");
+                    double posamt = 0;
+                    double negamt = 0;
+                    
+                    while (res.next()) {
+                        if (res.getDouble("glh_amt") <= 0) {
+                            negamt += res.getDouble("glh_amt");
+                        }
+                        if (res.getDouble("glh_amt") > 0) {
+                            posamt += res.getDouble("glh_amt");
+                        }
+                    } 
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("credits");
+                        rowArray.put(posamt);
+                        jsonarray.put(rowArray);
+                        rowArray = new JSONArray();
+                        rowArray.put("debits");
+                        rowArray.put(-1 * negamt);
+                        jsonarray.put(rowArray);
+                }
+                
+                
                 if (keys[0].equals("piechart_salesbycust")) {  
                  DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
                  int days = (int)( (dfdate.parse(keys[2]).getTime() - dfdate.parse(keys[1]).getTime()) / (1000 * 60 * 60 * 24) );     
