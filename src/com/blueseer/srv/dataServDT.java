@@ -780,7 +780,7 @@ case "getFreightRejectionCodeDTData" :
             
         default:
         response.getWriter().print("");
-        System.out.println("no switch case exists in dataServDT for id: " + id);
+        System.out.println("error no switch case exists in dataServDT for id: " + id);
     }
        
     } // doPost

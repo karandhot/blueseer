@@ -293,7 +293,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         default:
         response.getWriter().print("");
-        System.out.println("no switch case exists in dataServSCH for id: " + id);    
+        System.out.println("error no switch case exists in dataServSCH for id: " + id);    
             
     }
     

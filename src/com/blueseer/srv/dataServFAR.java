@@ -180,7 +180,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         
         default:
         response.getWriter().print("");
-        System.out.println("no switch case exists in dataServFAR for id: " + id);    
+        System.out.println("error no switch case exists in dataServFAR for id: " + id);    
             
     }   
     

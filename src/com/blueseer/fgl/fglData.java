@@ -245,7 +245,7 @@ public class fglData {
             paramlist.add(new String[]{"param1",x[0]});
             ObjectMapper objectMapper = new ObjectMapper();
             try {
-                String returnstring = sendServerPost(paramlist, "", null, "dataServADM");
+                String returnstring = sendServerPost(paramlist, "", null, "dataServFIN");
                 rlist = objectMapper.readValue(returnstring, new TypeReference<ArrayList<gl_tran>>() {});
                 return rlist;
             } catch (IOException ex) {
@@ -304,7 +304,7 @@ public class fglData {
             paramlist.add(new String[]{"param1",x[0]});
             ObjectMapper objectMapper = new ObjectMapper();
             try {
-                String returnstring = sendServerPost(paramlist, "", null, "dataServADM");
+                String returnstring = sendServerPost(paramlist, "", null, "dataServFIN");
                 rlist = objectMapper.readValue(returnstring, new TypeReference<ArrayList<gl_hist>>() {});
                 return rlist;
             } catch (IOException ex) {
