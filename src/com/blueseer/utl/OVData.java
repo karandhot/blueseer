@@ -11250,40 +11250,6 @@ catch (Exception e){
         return bank;
     }
 
-    public static Integer getGLTranCount() {
-   int mycount = 0;
- try{
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-        res = st.executeQuery("select count(*) as mycount from gl_tran;" );
-       while (res.next()) {
-        mycount = res.getInt("mycount");                    
-        }
-
-   }
-    catch (SQLException s){
-         MainFrame.bslog(s);
-    } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               con.close();
-        }
-}
-catch (Exception e){
-    MainFrame.bslog(e);
-}
-return mycount;
-
-}
          
     public static String[] getBillToAddressArray(String cust) {
         String[] address = new String[9];

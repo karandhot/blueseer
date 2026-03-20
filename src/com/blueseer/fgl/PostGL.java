@@ -224,7 +224,7 @@ public class PostGL extends javax.swing.JPanel {
     }//GEN-LAST:event_btpostActionPerformed
 
     private void btcountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcountActionPerformed
-        tbcount.setText(String.valueOf(OVData.getGLTranCount()));
+        tbcount.setText(String.valueOf(fglData.getGLTranCount()));
         btpost.setEnabled(true);
     }//GEN-LAST:event_btcountActionPerformed
 

@@ -64,6 +64,7 @@ import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
 import static com.blueseer.utl.BlueSeerUtils.jsonToBoolean;
+import static com.blueseer.utl.BlueSeerUtils.jsonToInt;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
@@ -2407,6 +2408,51 @@ public class fglData {
     
     
     // misc functions
+    public static int getGLTranCount() {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getGLTranCount"});
+            try {
+                return jsonToInt(sendServerPost(list, "", null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0;
+            }
+        } 
+        int mycount = 0;
+        
+    try{
+
+                   Connection con = null;
+                   if (ds != null) {
+                     con = ds.getConnection();
+                   } else {
+                     con = DriverManager.getConnection(url + db, user, pass);  
+                   }
+                   Statement st = con.createStatement();
+                   ResultSet res = null;
+                   try {
+
+               res = st.executeQuery("select count(*) as mycount from gl_tran;" );
+              while (res.next()) {
+               mycount = res.getInt("mycount");                    
+               }
+
+          }
+           catch (SQLException s){
+                MainFrame.bslog(s);
+           } finally {
+                      if (res != null) res.close();
+                      if (st != null) st.close();
+                      con.close();
+               }
+       } catch (Exception e){
+           MainFrame.bslog(e);
+       }
+       return mycount;
+
+}
+    
     public static String getFglRptPickerData(String[] keys) {
         JSONArray jsonarray = new JSONArray();
         try {

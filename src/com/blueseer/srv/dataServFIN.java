@@ -67,6 +67,7 @@ import static com.blueseer.fgl.fglData.getGLCalYearsRange;
 import static com.blueseer.fgl.fglData.getGLCtrl;
 import static com.blueseer.fgl.fglData.getGLHist;
 import static com.blueseer.fgl.fglData.getGLTran;
+import static com.blueseer.fgl.fglData.getGLTranCount;
 import static com.blueseer.fgl.fglData.getPAYCtrl;
 import static com.blueseer.fgl.fglData.getTaxDet;
 import static com.blueseer.fgl.fglData.getTaxMstr;
@@ -81,11 +82,15 @@ import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.boolToJson;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import static com.blueseer.utl.BlueSeerUtils.doubleToJson;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.intToJson;
 import com.blueseer.utl.OVData;
+import static com.blueseer.utl.OVData.getExchangeBaseValue;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
@@ -537,6 +542,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         response.getWriter().print(rsd);
         break;
         } 
+    
+    case "getGLTranCount" : {
+            response.getWriter().print(intToJson(getGLTranCount())); 
+            break;    
+        }
     
     case "deleteGL" : {
             response.getWriter().print(arrayToJson(deleteGL(request.getHeader("param1"))));  
