@@ -2660,6 +2660,7 @@ CREATE TABLE "pay_profile" (
 CREATE TABLE "pay_profdet" (
   "paypd_id" INTEGER PRIMARY KEY,
   "paypd_parentcode" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
+  "paypd_line" int(6) NOT NULL COLLATE NOCASE DEFAULT '0',
   "paypd_desc" varchar(30) NOT NULL COLLATE NOCASE DEFAULT '',
   "paypd_type" varchar(10) NOT NULL COLLATE NOCASE DEFAULT '',
   "paypd_acct" varchar(12) NOT NULL COLLATE NOCASE DEFAULT '',

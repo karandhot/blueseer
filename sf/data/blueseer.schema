@@ -2714,6 +2714,7 @@ CREATE TABLE `pay_profile` (
 CREATE TABLE `pay_profdet` (
   `paypd_id` int PRIMARY KEY AUTO_INCREMENT,
   `paypd_parentcode` varchar(10) NOT NULL DEFAULT '',
+  `paypd_line` int(6) NOT NULL DEFAULT '0',
   `paypd_desc` varchar(30) NOT NULL DEFAULT '',
   `paypd_type` varchar(10) NOT NULL DEFAULT '',
   `paypd_acct` varchar(12) NOT NULL DEFAULT '',
