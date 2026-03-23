@@ -31,6 +31,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import com.blueseer.ctr.*;
 import com.blueseer.ord.*;
 import com.blueseer.utl.BlueSeerUtils;
@@ -46,6 +47,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -64,16 +66,20 @@ import javax.swing.SwingWorker;
 
 public class VendControl extends javax.swing.JPanel implements IBlueSeerc {
 
+    // global variable declarations
+    boolean isLoad = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    boolean canUpdate = false;
+    private static ArrayList<String> accounts = null;
+    private static vd_ctrl x = null;
+    
     public VendControl() {
         initComponents();
         setLanguageTags(this);
     }
 
-    
-    // global variable declarations
-                boolean isLoad = false;
-                private static vd_ctrl x = null;
-    
     
     // interface functions implemented
     public void executeTask(dbaction x, String[] y) { 
@@ -135,11 +141,25 @@ public class VendControl extends javax.swing.JPanel implements IBlueSeerc {
        
     }
    
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
-        
+        if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "accounts");
+       }
+       for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("accounts")) {
+              accounts.add(s[1]);
+            }
+        }
        isLoad = false;
     }
+    
     
     public void setAction(String[] x) {
         String[] m = new String[2];
@@ -203,7 +223,7 @@ public class VendControl extends javax.swing.JPanel implements IBlueSeerc {
     }
     
     public void initvars(String[] arg) {
-            setComponentDefaultValues();
+            setComponentDefaultValues(initDataSets == null);
             executeTask(dbaction.get, null);
     }
     

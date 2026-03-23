@@ -27,6 +27,7 @@ package com.blueseer.fgl;
 
 import bsmf.MainFrame;
 import static bsmf.MainFrame.tags;
+import com.blueseer.adm.admData;
 import static com.blueseer.fgl.fglData.addUpdatePAYCtrl;
 import static com.blueseer.fgl.fglData.getPAYCtrl;
 import com.blueseer.fgl.fglData.pay_ctrl;
@@ -36,6 +37,7 @@ import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import com.blueseer.utl.IBlueSeerc;
 import com.blueseer.utl.OVData;
 import java.awt.Component;
+import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -52,14 +54,21 @@ import javax.swing.SwingWorker;
  */
 public class PayControl extends javax.swing.JPanel implements IBlueSeerc {
 
+    boolean isLoad = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    boolean canUpdate = false;
+    private static ArrayList<String> accounts = null;
+    private static pay_ctrl x = null;
+    
     public PayControl() {
         initComponents();
         setLanguageTags(this);
     }
 
     // global variable declarations
-                boolean isLoad = false;
-                private static pay_ctrl x = null;
+                
     
     // interface functions implemented
     public void executeTask(dbaction x, String[] y) { 
@@ -121,11 +130,25 @@ public class PayControl extends javax.swing.JPanel implements IBlueSeerc {
        
     }
    
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
-        
+        if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "accounts");
+       }
+       for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("accounts")) {
+              accounts.add(s[1]);
+            }
+        }
        isLoad = false;
     }
+    
     
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
@@ -190,25 +213,25 @@ public class PayControl extends javax.swing.JPanel implements IBlueSeerc {
                     tbbank.requestFocus();
                     return b;
                 }
-                if (tblbracct.getText().isEmpty() || ! OVData.isValidGLAcct(tblbracct.getText())) {
+                if (tblbracct.getText().isEmpty() || ! accounts.contains(tblbracct.getText())) {
                     b = false;
                     bsmf.MainFrame.show(getMessageTag(1026));
                     tblbracct.requestFocus();
                     return b;
                 }
-                if (tbsalacct.getText().isEmpty() || ! OVData.isValidGLAcct(tbsalacct.getText())) {
+                if (tbsalacct.getText().isEmpty() || ! accounts.contains(tbsalacct.getText())) {
                     b = false;
                     bsmf.MainFrame.show(getMessageTag(1026));
                     tbsalacct.requestFocus();
                     return b;
                 }
-                if (tbtaxacct.getText().isEmpty() || ! OVData.isValidGLAcct(tbtaxacct.getText())) {
+                if (tbtaxacct.getText().isEmpty() || ! accounts.contains(tbtaxacct.getText())) {
                     b = false;
                     bsmf.MainFrame.show(getMessageTag(1026));
                     tbtaxacct.requestFocus();
                     return b;
                 }
-                if (tbwithholdacct.getText().isEmpty() || ! OVData.isValidGLAcct(tbwithholdacct.getText())) {
+                if (tbwithholdacct.getText().isEmpty() || ! accounts.contains(tbwithholdacct.getText())) {
                     b = false;
                     bsmf.MainFrame.show(getMessageTag(1026));
                     tbwithholdacct.requestFocus();
@@ -221,7 +244,7 @@ public class PayControl extends javax.swing.JPanel implements IBlueSeerc {
     }
     
     public void initvars(String[] arg) {
-            setComponentDefaultValues();
+            setComponentDefaultValues(initDataSets == null);
             executeTask(dbaction.get, new String[]{""});
     }
     

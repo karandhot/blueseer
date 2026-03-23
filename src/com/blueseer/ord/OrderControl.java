@@ -32,6 +32,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import static com.blueseer.ord.ordData.addUpdateORCtrl;
 import static com.blueseer.ord.ordData.billTransAll;
 import static com.blueseer.ord.ordData.getORCtrl;
@@ -89,7 +90,12 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
     }
 
     // global variable declarations
-                boolean isLoad = false;
+        boolean isLoad = false;
+        ArrayList<String[]> initDataSets = null;
+        String defaultSite = "";
+        String defaultCurrency = "";
+        boolean canUpdate = false;
+        private static ArrayList<String> accounts = null;
                 private static order_ctrl x = null;
     
     
@@ -153,12 +159,25 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
        
     }
    
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
-        
+        if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "accounts");
+       }
+       for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("accounts")) {
+              accounts.add(s[1]);
+            }
+        }
        isLoad = false;
     }
-    
+        
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -221,7 +240,7 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
     }
     
     public void initvars(String[] arg) {
-            setComponentDefaultValues();
+            setComponentDefaultValues(initDataSets == null);
             executeTask(dbaction.get, new String[]{""});
     }
     

@@ -31,6 +31,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import static com.blueseer.fap.fapData.addUpdateAPCtrl;
 import com.blueseer.fap.fapData.ap_ctrl;
 import static com.blueseer.fap.fapData.getAPCtrl;
@@ -46,6 +47,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -69,7 +71,12 @@ public class APControl extends javax.swing.JPanel implements IBlueSeerc {
     }
 
     // global variable declarations
-                boolean isLoad = false;
+        boolean isLoad = false;
+        ArrayList<String[]> initDataSets = null;
+        String defaultSite = "";
+        String defaultCurrency = "";
+        boolean canUpdate = false;
+        private static ArrayList<String> accounts = null;
                 private static ap_ctrl x = null;
     
     
@@ -133,9 +140,22 @@ public class APControl extends javax.swing.JPanel implements IBlueSeerc {
        
     }
    
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
-        
+        if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "accounts");
+       }
+       for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("accounts")) {
+              accounts.add(s[1]);
+            }
+        }
        isLoad = false;
     }
     
@@ -201,13 +221,13 @@ public class APControl extends javax.swing.JPanel implements IBlueSeerc {
                     tbbank.requestFocus();
                     return b;
                 }
-                if (tbdefaultpurchacct.getText().isEmpty() || ! OVData.isValidGLAcct(tbdefaultpurchacct.getText())) {
+                if (tbdefaultpurchacct.getText().isEmpty() || ! accounts.contains(tbdefaultpurchacct.getText())) {
                     b = false;
                     bsmf.MainFrame.show(getMessageTag(1052));
                     tbdefaultpurchacct.requestFocus();
                     return b;
                 }
-                if (tbapacct.getText().isEmpty() || ! OVData.isValidGLAcct(tbapacct.getText())) {
+                if (tbapacct.getText().isEmpty() || ! accounts.contains(tbapacct.getText())) {
                     b = false;
                     bsmf.MainFrame.show(getMessageTag(1052));
                     tbapacct.requestFocus();
@@ -219,7 +239,7 @@ public class APControl extends javax.swing.JPanel implements IBlueSeerc {
     }
     
     public void initvars(String[] arg) {
-            setComponentDefaultValues();
+            setComponentDefaultValues(initDataSets == null);
             executeTask(dbaction.get, new String[]{""});
     }
     

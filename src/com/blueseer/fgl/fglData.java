@@ -1682,6 +1682,444 @@ public class fglData {
         return rows;
     }
     
+    
+    
+    public static String[] addPayProfileTransaction(ArrayList<pay_profdet> paydet, pay_profile pay) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> xlist = new ArrayList<String[]>();
+            xlist.add(new String[]{"id","addPayProfileTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(paydet);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(pay);
+                return jsonToStringArray(sendServerPost(xlist, jsonString, null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        
+        String[] m = new String[2];
+        Connection bscon = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            if (ds != null) {
+              bscon = ds.getConnection();
+            } else {
+              bscon = DriverManager.getConnection(url + db, user, pass);  
+            }
+            bscon.setAutoCommit(false);
+            _addPayProfile(pay, bscon, ps, res);  
+            for (pay_profdet z : paydet) {
+                _addPayProfileDet(z, bscon, ps, res);
+            }
+            bscon.commit();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             try {
+                 bscon.rollback();
+                 m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordError};
+             } catch (SQLException rb) {
+                 MainFrame.bslog(rb);
+             }
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.setAutoCommit(true);
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+    
+    private static int _addPayProfile(pay_profile x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        int rows = 0;
+        String sqlSelect = "select * from pay_profile where tax_code = ?";
+        String sqlInsert = "insert into pay_profile (payp_code, payp_desc ) " +
+                " values (?,?); "; 
+       
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x.payp_code);
+          res = ps.executeQuery();
+          ps = con.prepareStatement(sqlInsert);
+            if (! res.isBeforeFirst()) {
+            ps.setString(1, x.payp_code);
+            ps.setString(2, x.payp_desc);
+            rows = ps.executeUpdate();
+            } 
+            return rows;
+    }
+    
+    private static int _addPayProfileDet(pay_profdet x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        int rows = 0;
+        String sqlSelect = "select * from pay_profdet where paypd_parentcode = ? and paypd_line = ?";
+        String sqlInsert = "insert into pay_profdet (paypd_parentcode, paypd_line, paypd_desc, paypd_type, " 
+                        + "paypd_acct, paypd_cc, paypd_amt, paypd_amttype, paypd_enabled ) "
+                        + " values (?,?,?,?,?,?,?,?,?); "; 
+       
+          ps = con.prepareStatement(sqlSelect); 
+          ps.setString(1, x.paypd_parentcode);
+          ps.setString(2, x.paypd_line);
+          res = ps.executeQuery();
+          ps = con.prepareStatement(sqlInsert);  
+            if (! res.isBeforeFirst()) {
+            ps.setString(1, x.paypd_parentcode);
+            ps.setString(2, x.paypd_line);
+            ps.setString(3, x.paypd_desc);
+            ps.setString(4, x.paypd_type);
+            ps.setString(5, x.paypd_acct);
+            ps.setString(6, x.paypd_cc);
+            ps.setDouble(7, x.paypd_amt);
+            ps.setString(8, x.paypd_amttype);
+            ps.setString(9, x.paypd_enabled);
+            rows = ps.executeUpdate();
+            } 
+            return rows;
+    }
+    
+    public static String[] updatePayProfileTransaction(String x, ArrayList<String> lines, ArrayList<pay_profdet> paydet, pay_profile pay) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> xlist = new ArrayList<String[]>();
+            xlist.add(new String[]{"id","updatePayProfileTransaction"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(lines);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(paydet);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(pay);
+                return jsonToStringArray(sendServerPost(xlist, jsonString, null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
+        Connection bscon = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+        try { 
+            if (ds != null) {
+              bscon = ds.getConnection();
+            } else {
+              bscon = DriverManager.getConnection(url + db, user, pass);  
+            }
+            bscon.setAutoCommit(false);
+            for (String line : lines) {
+               _deletePayProfileLines(x, line, bscon, ps);  // discard unwanted lines
+             }
+            for (pay_profdet z : paydet) {
+                _updatePayProfileDet(z, bscon, ps, res);
+            }
+             _updatePayProfileMstr(pay, bscon, ps);  // update so_mstr
+            bscon.commit();
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.updateRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             try {
+                 bscon.rollback();
+                 m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordError};
+             } catch (SQLException rb) {
+                 MainFrame.bslog(rb);
+             }
+        } finally {
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+            if (bscon != null) {
+                try {
+                    bscon.setAutoCommit(true);
+                    bscon.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+    
+    private static int _updatePayProfileMstr(pay_profile x, Connection con, PreparedStatement ps) throws SQLException {
+        int rows = 0;
+        String sql = "update pay_profile set payp_desc = ? where payp_code = ? ";
+	ps = con.prepareStatement(sql) ;
+        ps.setString(1, x.payp_desc);
+        ps.setString(2, x.payp_code);
+        rows = ps.executeUpdate();
+        return rows;
+    }
+    
+    private static int _updatePayProfileDet(pay_profdet x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
+        int rows = 0;
+        String sqlSelect = "select * from pay_profdet where taxd_parentcode = ? and taxd_line = ?";
+        String sqlUpdate = "update pay_profdet set paypd_desc = ?, " +
+                "paypd_type = ?, paypd_acct = ?, paypd_cc = ?, paypd_amt = ?, " +
+                " paypd_amttype = ?, paypd_enabled = ? " +
+                 " where paypd_parentcode = ? and paypd_line = ? ; ";
+        String sqlInsert = "insert into pay_profdet (paypd_parentcode, paypd_line, paypd_desc, paypd_type, " 
+                        + "paypd_acct, paypd_cc, paypd_amt, paypd_amttype, paypd_enabled ) "
+                        + " values (?,?,?,?,?,?,?,?,?); ";  
+        ps = con.prepareStatement(sqlSelect); 
+        ps.setString(1, x.paypd_parentcode);
+        ps.setString(2, x.paypd_line);
+        res = ps.executeQuery();
+        if (! res.isBeforeFirst()) {  // insert
+	 ps = con.prepareStatement(sqlInsert) ;
+            ps.setString(1, x.paypd_parentcode);
+            ps.setString(2, x.paypd_line);
+            ps.setString(3, x.paypd_desc);
+            ps.setString(4, x.paypd_type);
+            ps.setString(5, x.paypd_acct);
+            ps.setString(6, x.paypd_cc);
+            ps.setDouble(7, x.paypd_amt);
+            ps.setString(8, x.paypd_amttype);
+            ps.setString(9, x.paypd_enabled);
+            rows = ps.executeUpdate();
+        } else {    // update
+         ps = con.prepareStatement(sqlUpdate) ;
+            ps.setString(8, x.paypd_parentcode);
+            ps.setString(9, x.paypd_line);
+            ps.setString(1, x.paypd_desc);
+            ps.setString(2, x.paypd_type);
+            ps.setString(3, x.paypd_acct);
+            ps.setString(4, x.paypd_cc);
+            ps.setDouble(5, x.paypd_amt);
+            ps.setString(6, x.paypd_amttype);
+            ps.setString(7, x.paypd_enabled);
+            rows = ps.executeUpdate();
+        }
+            
+        return rows;
+    }
+    
+    public static pay_profile getPayProfile(String[] x) {
+        pay_profile r = null;
+        String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getPayProfile"});
+            list.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServFIN");
+                r = objectMapper.readValue(returnstring, pay_profile.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        String sql = "select * from pay_profile where payp_code = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, x[0]);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new pay_profile(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new pay_profile(m, res.getString("payp_code"), 
+                            res.getString("payp_desc")
+                        );
+                    }
+                }
+            } 
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new pay_profile(m);
+        }
+        return r;
+    }
+   
+    public static ArrayList<String> getPayProfileLines(String nbr) {
+        ArrayList<String> lines = new ArrayList<String>();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getPayProfileLines"});
+            list.add(new String[]{"param1", nbr});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        try{
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        try{
+            Statement st = con.createStatement();
+            ResultSet res = null;
+
+           res = st.executeQuery("SELECT paypd_line from pay_profdet " +
+                   " where paypd_parentcode = " + "'" + nbr + "'" + ";");
+                        while (res.next()) {
+                          lines.add(res.getString("paypd_line"));
+                        }
+       }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        }
+        con.close();
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+        return lines;
+    }
+    
+    public static ArrayList<pay_profdet> getPayProfileDet(String code) {
+        pay_profdet r = null;
+        String[] m = new String[2];
+        ArrayList<pay_profdet> list = new ArrayList<pay_profdet>();
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> params = new ArrayList<String[]>();
+            params.add(new String[]{"id","getPayProfileDet"});
+            params.add(new String[]{"param1",code});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(params, "", null, "dataServFIN");
+                list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<pay_profdet>>() {});
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new pay_profdet(m);
+               list.add(r);
+            }
+        }
+        
+        
+        String sql = "select * from pay_profdet where paypd_parentcode = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, code);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new pay_profdet(m);
+                } else {
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        
+                        r = new pay_profdet(m, res.getString("paypd_parentcode"), 
+                                res.getString("paypd_line"), 
+                                res.getString("paypd_desc"), 
+                                res.getString("paypd_type"), 
+                                res.getString("paypd_acct"),
+                                res.getString("paypd_cc"), 
+                                res.getDouble("paypd_amt"),
+                                res.getString("paypd_amttype"),
+                                res.getString("paypd_enabled"));
+                        list.add(r); 
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new pay_profdet(m);
+               list.add(r);
+        }
+        return list;
+    }
+   
+    private static void _deletePayProfileLines(String x, String line, Connection con, PreparedStatement ps) throws SQLException { 
+        
+        String sql = "delete from pay_profdet where paypd_parentcode = ? and paypd_line = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x);
+        ps.setString(2, line);
+        ps.executeUpdate();
+    }
+    
+    public static String[] deletePayProfile(pay_profile x) { 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deletePayProfile"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
+        if (x == null) {
+            return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
+        }
+        Connection con = null;
+        try { 
+            con = DriverManager.getConnection(url + db, user, pass);
+            _deletePayProfile(x, con);  // add cms_det
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+             MainFrame.bslog(s);
+             m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
+        } finally {
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException ex) {
+                    MainFrame.bslog(ex);
+                }
+            }
+        }
+    return m;
+    }
+    
+    private static void _deletePayProfile(pay_profile x, Connection con) throws SQLException { 
+        PreparedStatement ps = null; 
+        String sql = "delete from pay_profile where payp_code = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x.payp_code);
+        ps.executeUpdate();
+        sql = "delete from pay_profdet where paypd_parentcode = ?; ";
+        ps = con.prepareStatement(sql);
+        ps.setString(1, x.payp_code);
+        ps.executeUpdate();
+        ps.close();
+    }
+    
+    
     public static String[] addUpdateGLCal(gl_cal x) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
@@ -10173,6 +10611,20 @@ return myarray;
                     "", "", "", "");
         }
     }
+    
+    public record pay_profile(String[] m, String payp_code, String payp_desc) {
+        public pay_profile(String[] m) {
+            this(m, "", "");
+        }
+    }
+    
+    public record pay_profdet(String[] m, String paypd_parentcode,  String paypd_line, String paypd_desc, String paypd_type, String paypd_acct,
+        String paypd_cc, double paypd_amt, String paypd_amttype, String paypd_enabled) {
+        public pay_profdet(String[] m) {
+            this(m, "", "", "", "", "", "", 0, "", "");
+        }
+    }
+    
     
 }
 

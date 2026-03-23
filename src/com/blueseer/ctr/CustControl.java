@@ -28,6 +28,7 @@ package com.blueseer.ctr;
 import com.blueseer.utl.BlueSeerUtils;
 import bsmf.MainFrame;
 import static bsmf.MainFrame.tags;
+import com.blueseer.adm.admData;
 import static com.blueseer.ctr.cusData.addUpdateCMCtrl;
 import com.blueseer.ctr.cusData.cm_ctrl;
 import static com.blueseer.ctr.cusData.getCMCtrl;
@@ -36,6 +37,7 @@ import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import com.blueseer.utl.IBlueSeerc;
 import static com.blueseer.utl.OVData.deleteUSStates;
 import java.awt.Component;
+import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -60,7 +62,12 @@ public class CustControl extends javax.swing.JPanel implements IBlueSeerc {
     }
 
     // global variable declarations
-                boolean isLoad = false;
+        boolean isLoad = false;
+        ArrayList<String[]> initDataSets = null;
+        String defaultSite = "";
+        String defaultCurrency = "";
+        boolean canUpdate = false;
+        private static ArrayList<String> accounts = null;
                 private static cm_ctrl x = null;
     
     
@@ -168,9 +175,22 @@ public class CustControl extends javax.swing.JPanel implements IBlueSeerc {
        }
     }
         
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
-        
+       if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "accounts");
+       }
+       for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("accounts")) {
+              accounts.add(s[1]);
+            }
+        } 
        isLoad = false;
     }
     
@@ -190,7 +210,7 @@ public class CustControl extends javax.swing.JPanel implements IBlueSeerc {
     }
     
     public void initvars(String[] arg) {
-            setComponentDefaultValues();
+            setComponentDefaultValues(initDataSets == null);
             executeTask(dbaction.get, new String[]{""});
     }
     

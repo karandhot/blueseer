@@ -25282,12 +25282,12 @@ return mylist;
                         }
                     } 
                         JSONArray rowArray = new JSONArray(); 
-                        rowArray.put("credits");
-                        rowArray.put(posamt);
-                        jsonarray.put(rowArray);
-                        rowArray = new JSONArray();
                         rowArray.put("debits");
                         rowArray.put(-1 * negamt);
+                        jsonarray.put(rowArray);
+                        rowArray = new JSONArray();
+                        rowArray.put("credits");
+                        rowArray.put(posamt);
                         jsonarray.put(rowArray);
                 }
                 

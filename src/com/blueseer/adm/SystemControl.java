@@ -70,16 +70,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -103,8 +94,13 @@ import javax.swing.SwingWorker;
 
 public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
 
-    // global variable declarations
-                boolean isLoad = false;
+// global variable declarations
+        boolean isLoad = false;
+        ArrayList<String[]> initDataSets = null;
+        String defaultSite = "";
+        String defaultCurrency = "";
+        boolean canUpdate = false;
+        private static ArrayList<String> accounts = null;
                 static ov_ctrl oc = null;
                 
                 
@@ -222,9 +218,9 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
    
     
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
-         buttonGroup1.add(rbsamba);
+        buttonGroup1.add(rbsamba);
         buttonGroup1.add(rbwin);
         buttonGroup1.add(rblocal);
         
@@ -233,7 +229,21 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
         rbsamba.setSelected(false);
         rbwin.setSelected(false);
         rblocal.setSelected(false);
-        
+       
+        if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "accounts");
+       }
+       for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("accounts")) {
+              accounts.add(s[1]);
+            }
+        }
        
        isLoad = false;
     }
@@ -328,7 +338,7 @@ public class SystemControl extends javax.swing.JPanel implements IBlueSeerc {
     }
     
     public void initvars(String[] arg) {
-            setComponentDefaultValues();
+            setComponentDefaultValues(initDataSets == null);
             executeTask(dbaction.get, null);
     }
     

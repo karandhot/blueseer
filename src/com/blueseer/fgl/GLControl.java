@@ -27,6 +27,7 @@ package com.blueseer.fgl;
 
 import bsmf.MainFrame;
 import static bsmf.MainFrame.tags;
+import com.blueseer.adm.admData;
 import static com.blueseer.fgl.fglData.addUpdateGLCtrl;
 import static com.blueseer.fgl.fglData.clearGLEntries;
 import static com.blueseer.fgl.fglData.getGLCtrl;
@@ -60,10 +61,13 @@ public class GLControl extends javax.swing.JPanel implements IBlueSeerc {
         initComponents();
         setLanguageTags(this);
     }
-
-    
-    // global variable declarations
-                boolean isLoad = false;
+// global variable declarations
+        boolean isLoad = false;
+        ArrayList<String[]> initDataSets = null;
+        String defaultSite = "";
+        String defaultCurrency = "";
+        boolean canUpdate = false;
+        private static ArrayList<String> accounts = null;
                 private static gl_ctrl x = null;
     
     // interface functions implemented
@@ -126,11 +130,24 @@ public class GLControl extends javax.swing.JPanel implements IBlueSeerc {
        
     }
    
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
-        
+        if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "accounts");
+       }
+       for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("accounts")) {
+              accounts.add(s[1]);
+            }
+        }
        isLoad = false;
-    }
+    }    
     
     public void setLanguageTags(Object myobj) {
       // lblaccount.setText(labels.getString("LedgerAcctMstrPanel.labels.lblaccount"));
@@ -217,13 +234,13 @@ public class GLControl extends javax.swing.JPanel implements IBlueSeerc {
                     tbisto.requestFocus();
                     return b;
                 }
-                if (tbearnings.getText().isEmpty() || ! OVData.isValidGLAcct(tbearnings.getText())) {
+                if (tbearnings.getText().isEmpty() || ! accounts.contains(tbearnings.getText())) {
                     b = false;
                     bsmf.MainFrame.show(getMessageTag(1026));
                     tbearnings.requestFocus();
                     return b;
                 }
-                if (tbforeignreal.getText().isEmpty() || ! OVData.isValidGLAcct(tbforeignreal.getText())) {
+                if (tbforeignreal.getText().isEmpty() || ! accounts.contains(tbforeignreal.getText())) {
                     b = false;
                     bsmf.MainFrame.show(getMessageTag(1026));
                     tbforeignreal.requestFocus();
@@ -236,7 +253,7 @@ public class GLControl extends javax.swing.JPanel implements IBlueSeerc {
     }
     
     public void initvars(String[] arg) {
-            setComponentDefaultValues();
+            setComponentDefaultValues(initDataSets == null);
             executeTask(dbaction.get, new String[]{""});
     }
     

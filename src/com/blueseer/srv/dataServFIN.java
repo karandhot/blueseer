@@ -50,6 +50,7 @@ import static com.blueseer.fgl.fglData.deleteCurrMstr;
 import static com.blueseer.fgl.fglData.deleteDeptMstr;
 import static com.blueseer.fgl.fglData.deleteExcMstr;
 import static com.blueseer.fgl.fglData.deleteGL;
+import static com.blueseer.fgl.fglData.deletePayProfile;
 import static com.blueseer.fgl.fglData.deleteTaxMstr;
 import com.blueseer.fgl.fglData.exc_mstr;
 import static com.blueseer.fgl.fglData.getAcctMstr;
@@ -69,6 +70,8 @@ import static com.blueseer.fgl.fglData.getGLHist;
 import static com.blueseer.fgl.fglData.getGLTran;
 import static com.blueseer.fgl.fglData.getGLTranCount;
 import static com.blueseer.fgl.fglData.getPAYCtrl;
+import static com.blueseer.fgl.fglData.getPayProfile;
+import static com.blueseer.fgl.fglData.getPayProfileDet;
 import static com.blueseer.fgl.fglData.getTaxDet;
 import static com.blueseer.fgl.fglData.getTaxMstr;
 import static com.blueseer.fgl.fglData.updateAcctMstr;
@@ -623,7 +626,79 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(ArrayListStringToJson(fglData.getTaxLines(request.getHeader("param1"))));  
             break;
     }
-            
+   
+    case "addPayProfileTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            fglData.pay_profdet[] sdarray = om.readValue(ca[0], fglData.pay_profdet[].class);
+            ArrayList<fglData.pay_profdet> txd = (sdarray == null) ? null :new ArrayList<fglData.pay_profdet>(Arrays.asList(sdarray)); 
+            fglData.pay_profile tx = om.readValue(ca[1], fglData.pay_profile.class);
+            response.getWriter().print(arrayToJson(fglData.addPayProfileTransaction(txd, tx)));     
+            break; 
+            }   
+    
+    case "updatePayProfileTransaction" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            String key = ca[0];
+            ArrayList<String> badlist = om.readValue(ca[1], ArrayList.class);
+            fglData.pay_profdet[] sdarray = om.readValue(ca[0], fglData.pay_profdet[].class);
+            ArrayList<fglData.pay_profdet> txd = (sdarray == null) ? null :new ArrayList<fglData.pay_profdet>(Arrays.asList(sdarray)); 
+            fglData.pay_profile tx = om.readValue(ca[1], fglData.pay_profile.class);
+            response.getWriter().print(arrayToJson(fglData.updatePayProfileTransaction(key, badlist, txd, tx)));     
+            break; 
+            }   
+    
+    case "deletePayProfile" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            fglData.pay_profile x = objectMapper.readValue(sb.toString(), fglData.pay_profile.class);            
+            response.getWriter().print(arrayToJson(deletePayProfile(x)));
+            break;
+          }
+    
+    case "getPayProfile" :  {      
+            fglData.pay_profile tx = getPayProfile(new String[]{request.getHeader("param1")});
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(tx);
+            response.getWriter().print(r);
+            break;  
+        }
+    
+    case "getPayProfileDet" : {
+      String param1 = request.getHeader("param1"); 
+      ArrayList<fglData.pay_profdet> emlist = getPayProfileDet(param1);
+      ObjectMapper objectMapper = new ObjectMapper();
+      String r = objectMapper.writeValueAsString(emlist);
+      response.getWriter().print(r);
+      break;
+    }    
+    
+    case "getPayProfileLines" : {
+            response.getWriter().print(ArrayListStringToJson(fglData.getPayProfileLines(request.getHeader("param1"))));  
+            break;
+    }
+        
+    
     case "getExpenseBrowseView" : { 
       response.getWriter().print(fglData.getExpenseBrowseView(new String[]{request.getHeader("param1"), 
                     request.getHeader("param2"),

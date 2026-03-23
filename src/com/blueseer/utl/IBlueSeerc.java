@@ -51,5 +51,5 @@ public interface IBlueSeerc {
         
     public void executeTask(dbaction x, String[] y);
    
-    public void setComponentDefaultValues();
+    public void setComponentDefaultValues(boolean init);
 }
