@@ -4771,7 +4771,7 @@ public class DTData {
         String jsonString = null;
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
-            list.add(new String[]{"id", "getCustPriceBrowseUtilData"});
+            list.add(new String[]{"id", "getPayProfileBrowseUtilData"});
             list.add(new String[]{"param1", str});
             list.add(new String[]{"param2", String.valueOf(state)});
             list.add(new String[]{"param3", myfield});

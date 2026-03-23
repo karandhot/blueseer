@@ -1753,7 +1753,7 @@ public class fglData {
     
     private static int _addPayProfile(pay_profile x, Connection con, PreparedStatement ps, ResultSet res) throws SQLException {
         int rows = 0;
-        String sqlSelect = "select * from pay_profile where tax_code = ?";
+        String sqlSelect = "select * from pay_profile where payp_code = ?";
         String sqlInsert = "insert into pay_profile (payp_code, payp_desc ) " +
                 " values (?,?); "; 
        
@@ -9893,7 +9893,24 @@ public class fglData {
       }
 
     public static ArrayList getGLBalByYearByPeriod(int fromyear, int toyear, int fromper, int toper, String site, boolean supress, boolean bsact) {
-          java.util.Date now = new java.util.Date();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getGLBalByYearByPeriod"});
+            list.add(new String[]{"param1", String.valueOf(fromyear)});
+            list.add(new String[]{"param2", String.valueOf(toyear)});
+            list.add(new String[]{"param3", String.valueOf(fromper)});
+            list.add(new String[]{"param4", String.valueOf(toper)});
+            list.add(new String[]{"param5", site});
+            list.add(new String[]{"param6", BlueSeerUtils.boolToString(supress)});
+            list.add(new String[]{"param7", BlueSeerUtils.boolToString(bsact)});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }  
+        java.util.Date now = new java.util.Date();
           DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
           ArrayList<String> mylist = new ArrayList<String>();   
           String[] fromdatearray = fglData.getGLCalForDate(now);

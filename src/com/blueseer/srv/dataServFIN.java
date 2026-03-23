@@ -61,6 +61,7 @@ import static com.blueseer.fgl.fglData.getExcMstr;
 import static com.blueseer.fgl.fglData.getFINInit;
 import static com.blueseer.fgl.fglData.getFglRptPickerData;
 import static com.blueseer.fgl.fglData.getGLAcctListRangeWCurrTypeDesc;
+import static com.blueseer.fgl.fglData.getGLBalByYearByPeriod;
 import static com.blueseer.fgl.fglData.getGLCal;
 import static com.blueseer.fgl.fglData.getGLCalForPeriod;
 import static com.blueseer.fgl.fglData.getGLCalForPeriodRange;
@@ -895,6 +896,17 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     case "getGLCalForPeriodRange" : {
       response.getWriter().print(ArrayListStringToJson(getGLCalForPeriodRange(bsParseInt(request.getHeader("param1")), bsParseInt(request.getHeader("param2")),
               bsParseInt(request.getHeader("param3")))));
+      break;
+    }  
+    
+    case "getGLBalByYearByPeriod" : {
+      response.getWriter().print(ArrayListStringToJson(getGLBalByYearByPeriod(bsParseInt(request.getHeader("param1")), 
+              bsParseInt(request.getHeader("param2")),
+              bsParseInt(request.getHeader("param3")),
+              bsParseInt(request.getHeader("param4")),
+              request.getHeader("param5"),
+              BlueSeerUtils.ConvertStringToBool(request.getHeader("param6")),
+              BlueSeerUtils.ConvertStringToBool(request.getHeader("param7")))));
       break;
     }  
     

@@ -95,7 +95,6 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerV {
                 String apcc = "";
                 String apbank = "";
                 String apcurr = "";
-                String basecurr = "";
                 double actamt = 0.00;
                 double control = 0.00;
                 double rcvamt = 0.00;
@@ -375,7 +374,7 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerV {
         
         for (String[] s : initDataSets) {
             if (s[0].equals("currency")) {
-              basecurr = s[1];  
+              defaultCurrency = s[1];  
             }
             
             if (s[0].equals("autopost")) {
@@ -595,7 +594,7 @@ public class ExpenseMaint extends javax.swing.JPanel implements IBlueSeerV {
                 "o", //ap_status
                 apbank, //ap_bank
                 apcurr, //ap_curr
-                basecurr, //ap_base_curr
+                defaultCurrency, //ap_base_curr
                 tbkey.getText(), //ap_check // in this case voucher number is reference field
                 "0", //ap_batch
                 ddsite.getSelectedItem().toString(), //ap_site

@@ -27,10 +27,13 @@ package com.blueseer.fgl;
 
 import bsmf.MainFrame;
 import static bsmf.MainFrame.tags;
+import com.blueseer.adm.admData;
+import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import com.blueseer.utl.OVData;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.FileDialog;
 import java.awt.Frame;
@@ -60,7 +63,13 @@ import javax.swing.JTabbedPane;
  * @author vaughnte
  */
 public class LedgerBalanceExport extends javax.swing.JPanel {
-
+    boolean isLoad = false;            
+    boolean canUpdate = false;
+    boolean isAutoPost = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String defaultCC = "";
     
       javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("site"),
@@ -123,9 +132,51 @@ public class LedgerBalanceExport extends javax.swing.JPanel {
        }
     }
     
+    public void setComponentDefaultValues(boolean init) {
+        isLoad = true;
+        
+        if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
+        }
+       
+        
+        ddsite.removeAllItems();
+        
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            
+            if (s[0].equals("autopost")) {
+              isAutoPost = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            
+            if (s[0].equals("cc")) {
+              defaultCC = s[1];  
+            }
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }           
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            
+        }
+        
+        ddsite.setSelectedItem(defaultSite);
+      
+       isLoad = false;
+    }
+    
     public void initvars(String[] arg) {
      
-          lblendbal.setText("");
+        lblendbal.setText("");
         
         java.util.Date now = new java.util.Date();
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
@@ -136,12 +187,6 @@ public class LedgerBalanceExport extends javax.swing.JPanel {
       
         tablereport.setModel(mymodel);
      
-       
-         ddsite.removeAllItems();
-        ArrayList<String> mylist = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (String code : mylist) {
-            ddsite.addItem(code);
-        }
       
         
         ddfromper.removeAllItems();
@@ -166,7 +211,7 @@ public class LedgerBalanceExport extends javax.swing.JPanel {
         }
         ddtoyear.setSelectedItem(dfyear.format(now));
        
-       
+        setComponentDefaultValues(initDataSets == null);
           
     }
     
@@ -373,10 +418,10 @@ public class LedgerBalanceExport extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btviewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btviewActionPerformed
-        ArrayList<String> mylist = new ArrayList<String>();
-          String[] ac = null;
+        
+        String[] ac = null;
         double total = 0;
-        mylist = fglData.getGLBalByYearByPeriod(Integer.valueOf(ddfromyear.getSelectedItem().toString()), Integer.valueOf(ddtoyear.getSelectedItem().toString()), Integer.valueOf(ddfromper.getSelectedItem().toString()), Integer.valueOf(ddtoper.getSelectedItem().toString()), ddsite.getSelectedItem().toString(), cbzero.isSelected(), cbbs.isSelected());
+        ArrayList<String> mylist = fglData.getGLBalByYearByPeriod(Integer.valueOf(ddfromyear.getSelectedItem().toString()), Integer.valueOf(ddtoyear.getSelectedItem().toString()), Integer.valueOf(ddfromper.getSelectedItem().toString()), Integer.valueOf(ddtoper.getSelectedItem().toString()), ddsite.getSelectedItem().toString(), cbzero.isSelected(), cbbs.isSelected());
         mymodel.setNumRows(0);
         for (String rec : mylist) {
         ac = rec.split(",", -1);
