@@ -46,6 +46,7 @@ import static com.blueseer.sch.schData.updatePlanOperationStatusQty;
 import static com.blueseer.sch.schData.updatePlanOrder;
 import static com.blueseer.sch.schData.updatePlanOrderRemarks;
 import static com.blueseer.sch.schData.updatePlanOrderStatus;
+import static com.blueseer.sch.schData.updatePlanQty;
 import static com.blueseer.sch.schData.updatePlanStatus;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
@@ -220,6 +221,20 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;  
         }
         
+        case "updatePlanQty" : { 
+            updatePlanQty(request.getHeader("param1"), bsParseDouble(request.getHeader("param2")));
+            break;  
+        }
+        
+        case "updatePlanQtyByOp" : { 
+            updatePlanQtyByOp(request.getHeader("param1"), 
+                    bsParseDouble(request.getHeader("param2")),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5"));
+            break;  
+        }
+        
         case "updatePlanOrder" : {
             response.getWriter().print(boolToJson(updatePlanOrder(request.getHeader("param1"), 
                     request.getHeader("param2"), 
@@ -313,6 +328,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             }
     return requestHeaders.toString();
 }
+
+    private void updatePlanQtyByOp(String header, double bsParseDouble, String header0, String header1, String header2) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 
 
 }

@@ -33,7 +33,14 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import com.blueseer.prd.ProdDetRpt;
 import com.blueseer.sch.schData;
+import static com.blueseer.sch.schData.getPlanMstr;
+import com.blueseer.sch.schData.plan_mstr;
+import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import com.blueseer.utl.OVData;
 import java.awt.Color;
@@ -52,6 +59,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -59,11 +68,16 @@ import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
+import javax.swing.table.TableColumn;
 
 /**
  *
@@ -77,11 +91,12 @@ int serialno = 0;
 String serialno_str = "";
 String quantity = "";
 
-String sitename = "";
-String siteaddr = "";
-String sitephone = "";
-String sitecitystatezip = "";
-    
+boolean isLoad = false;
+ArrayList<String[]> initDataSets = new ArrayList<>();
+String defaultSite = "";
+String defaultCurrency = "";
+
+plan_mstr pm = null;
     
     
     /**
@@ -92,46 +107,70 @@ String sitecitystatezip = "";
         setLanguageTags(this);
     }
 
-    
-    public void getSiteAddress(String site) {
-        try {
-Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-               
-                int i = 0;
-                                
-                res = st.executeQuery("select * from site_mstr where site_site = " + "'" + site + "'" +";");
-                while (res.next()) {
-                    i++;
-                   sitename = res.getString("site_desc");
-                   siteaddr = res.getString("site_line1");
-                   sitephone = res.getString("site_phone");
-                   sitecitystatezip = res.getString("site_city") + ", " + res.getString("site_state") + " " + res.getString("site_zip");
-                  
-                }
-               
-                if (i == 0)
-                    bsmf.MainFrame.show(getMessageTag(1002));
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
             }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+            
+            
+            
+            
+            return message;
         }
-    }
+ 
         
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+           
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+   
+       
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -176,21 +215,101 @@ Connection con = DriverManager.getConnection(url + db, user, pass);
        }
     }
     
-    
-    public void initvars(String[] arg) {
-        tbqty.setText("");
-        tbscan.setText("");
-        ddcell.removeAllItems();
-        ArrayList myparts = OVData.getCodeMstr("CELLS");
-        for (int i = 0; i < myparts.size(); i++) {
-            ddcell.addItem(myparts.get(i));
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
         }
         
-        getSiteAddress(OVData.getDefaultSite());
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
+    
+    
+    public void initvars(String[] arg) {
+        executeTask("dataInit", null); 
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "cells");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        setPanelComponentState(this, true);
+        java.util.Date now = new java.util.Date();        
+        tbqty.setText("");
+        tbscan.setText("");
+        ddcell.removeAllItems(); 
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+           
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+            if (s[0].equals("cells")) {
+              ddcell.addItem(s[1]); 
+            }
+        }        
+        
         
        tbscan.requestFocus();
-        
+
     }
+    
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -307,7 +426,7 @@ Connection con = DriverManager.getConnection(url + db, user, pass);
     private void btcommitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btcommitActionPerformed
        
         
-        int qty = 0;
+        double qty = 0;
         
         Pattern p = Pattern.compile("^[0-9]\\d*$");
         Matcher m = p.matcher(tbqty.getText());
@@ -316,27 +435,34 @@ Connection con = DriverManager.getConnection(url + db, user, pass);
             tbqty.requestFocus();
             return;
         } else {
-            qty = Integer.valueOf(tbqty.getText());
+            qty = bsParseDouble(tbqty.getText());
         }
         
-        if (! schData.isPlan(tbscan.getText())) {
+        if (pm == null) {
             bsmf.MainFrame.show(getMessageTag(1070, tbscan.getText()));
             initvars(null);
             return;
-        }
-        if (schData.isPlan(tbscan.getText()) &&  schData.getPlanStatus(tbscan.getText()) > 0 ) {
+        } 
+        
+        
+        if (pm.m()[0].equals("1")) {
+            bsmf.MainFrame.show(getMessageTag(1070, tbscan.getText()));
+            initvars(null);
+            return;
+        } 
+        
+        
+        if (pm.plan_status() > 0 ) {
             bsmf.MainFrame.show(getMessageTag(1071, tbscan.getText()));
             initvars(null);
             return;
         }
-        if (schData.isPlan(tbscan.getText()) &&  schData.getPlanStatus(tbscan.getText()) < 0 ) {
+        if (pm.plan_status() < 0 ) {
             bsmf.MainFrame.show(getMessageTag(1072, tbscan.getText()));
             initvars(null);
             return;
         }
-       
-        
-        if (schData.isPlan(tbscan.getText()) &&  schData.getPlanStatus(tbscan.getText()) == 0 ) {
+        if (pm.plan_status() == 0 ) {
                
                schData.updatePlanQty(tbscan.getText(), qty);
                schData.updatePlanStatus(tbscan.getText(), "1");
@@ -365,7 +491,9 @@ Connection con = DriverManager.getConnection(url + db, user, pass);
     }//GEN-LAST:event_tbscanFocusLost
 
     private void tbscanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbscanActionPerformed
-       tbqty.setText(String.valueOf(schData.getPlanSchedQty(tbscan.getText())));
+       pm = null;
+       pm = getPlanMstr(new String[]{tbscan.getText()});
+       tbqty.setText(bsNumber(pm.plan_qty_sched()));
        tbqty.requestFocus();
     }//GEN-LAST:event_tbscanActionPerformed
 

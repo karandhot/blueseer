@@ -746,6 +746,7 @@ public class Scheduler extends javax.swing.JPanel {
         cellsonly.clear();
         sumOfAllCells = 0;
       //  cells = cells_list.toArray(new String[cells_list.size()]);
+        /*
         for (String[] code : cells) {
           ddcellchoice.addItem(code[0]);
           ddopcell.addItem(code[0]);
@@ -754,7 +755,7 @@ public class Scheduler extends javax.swing.JPanel {
            sumOfAllCells += Double.valueOf(code[1]);
           }
         } 
-        
+        */
         
         
         for (String[] s : initDataSets) {

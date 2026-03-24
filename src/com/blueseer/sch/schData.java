@@ -1207,7 +1207,20 @@ public class schData {
       }
       
     public static void updatePlanQty(String serialno, double qty) {
-          try {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "updatePlanQty"});
+            list.add(new String[]{"param1", serialno});
+            list.add(new String[]{"param2", bsNumber(qty)});
+            try {
+                sendServerPost(list, "", null, "dataServSCH");
+                return; 
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        }     
+        try {
             Connection con = null;
             if (ds != null) {
               con = ds.getConnection();
@@ -1231,8 +1244,24 @@ public class schData {
         }
       }
       
-    public static void updatePlanQtyByOp(String serialno, int qty, String op, String ref, String cell) {
-          try {
+    public static void updatePlanQtyByOp(String serialno, double qty, String op, String ref, String cell) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "updatePlanQtyByOp"});
+            list.add(new String[]{"param1", serialno});
+            list.add(new String[]{"param2", bsNumber(qty)});
+            list.add(new String[]{"param3", op});
+            list.add(new String[]{"param4", ref});
+            list.add(new String[]{"param5", cell});
+            try {
+                sendServerPost(list, "", null, "dataServSCH");
+                return; 
+            } catch (IOException ex) {
+                bslog(ex);
+                return;
+            }
+        }     
+        try {
             Connection con = null;
             if (ds != null) {
               con = ds.getConnection();

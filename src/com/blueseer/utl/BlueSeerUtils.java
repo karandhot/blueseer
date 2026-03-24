@@ -91,9 +91,11 @@ import java.util.Collections;
 import java.util.Currency;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -3084,6 +3086,18 @@ public class BlueSeerUtils {
         return x;
     }
     
+    public static String SetStringToJson(Set<String> list) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String x = "";
+        try {   
+            x = objectMapper.writeValueAsString(list);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+    
+    
     public static String ArrayListDoubleToJson(ArrayList<Double> list) {
         ObjectMapper objectMapper = new ObjectMapper();
         String x = "";
@@ -3281,6 +3295,17 @@ public class BlueSeerUtils {
         ArrayList<String> x = null;
         try {
             x = objectMapper.readValue(jsonstring, ArrayList.class);
+        } catch (JsonProcessingException ex) {
+            bslog(ex);
+        }
+        return x;
+    }
+
+    public static Set<String> jsonToSetString(String jsonstring) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Set<String> x = null;
+        try {
+            x = objectMapper.readValue(jsonstring, Set.class);
         } catch (JsonProcessingException ex) {
             bslog(ex);
         }

@@ -29,6 +29,7 @@ import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringIntegerToJson;
+import static com.blueseer.utl.BlueSeerUtils.SetStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.boolToJson;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
@@ -85,6 +86,8 @@ import static com.blueseer.utl.OVData.getUsersOfMenusList;
 import static com.blueseer.utl.OVData.getWeekNbrByDate;
 import static com.blueseer.utl.OVData.getmenutree;
 import static com.blueseer.utl.OVData.getpsmstrcompSerialized;
+import static com.blueseer.utl.OVData.getpsmstrparents;
+import static com.blueseer.utl.OVData.getpsmstrparents2;
 import static com.blueseer.utl.OVData.getzerolevelpsmstr;
 import static com.blueseer.utl.OVData.isAutoPost;
 import static com.blueseer.utl.OVData.isDuplicateNavCode;
@@ -282,7 +285,15 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             
         case "getpsmstrcompSerialized" :        
             response.getWriter().print(ArrayListStringToJson(getpsmstrcompSerialized(request.getHeader("param1"))));
-            break;    
+            break;   
+            
+        case "getpsmstrparents" :        
+            response.getWriter().print(SetStringToJson(getpsmstrparents(request.getHeader("param1"))));
+            break;   
+            
+        case "getpsmstrparents2" :        
+            response.getWriter().print(SetStringToJson(getpsmstrparents2(request.getHeader("param1"))));
+            break;     
             
         case "getmenutree" :        
             response.getWriter().print(ArrayListStringToJson(getmenutree(request.getHeader("param1"))));
