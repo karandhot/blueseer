@@ -54,6 +54,7 @@ import com.blueseer.hrm.hrmData;
 import com.blueseer.inv.calcCost;
 import com.blueseer.inv.invData;
 import static com.blueseer.inv.invData._updateInventoryBalance;
+import static com.blueseer.inv.invData.getQPRPrintData;
 import static com.blueseer.lbl.lblData.getJobOperationPrintData;
 import static com.blueseer.lbl.lblData.getJobTicketPrintData;
 import static com.blueseer.lbl.lblData.getLabelMultiPrintData;
@@ -19512,6 +19513,98 @@ return mystring;
         return rFilePath;
     }
     
+    public static Path printQPRRemote(String key, boolean toFile) {
+        
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getQPRPrintData"});
+            list.add(new String[]{"param1", key});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } else {
+            jsonString = getQPRPrintData(key);  
+        }        
+        Object[][] rData = jsonToData(jsonString);
+        Path rFilePath = null;
+        
+        List<Object[]> list = new ArrayList<>();
+        String site_csz = "";
+        String bill_csz = "";
+        String ship_csz = "";
+        String logo = "";
+        String imagedir = "";
+        String jasperfile = "qpr.jasper";
+        String jasperdir = "";
+        
+        int k = 0;
+        for (Object[] rowData : rData) {
+            
+            if (k == 0) {
+                logo = rowData[43].toString(); 
+                jasperdir = rowData[42].toString();
+                imagedir = rowData[41].toString();
+              //  bill_csz = rowData[21].toString() + " " + rowData[22].toString() + " " + rowData[23].toString() + " " + rowData[24].toString();
+              //  ship_csz = rowData[25].toString() + " " + rowData[26].toString() + " " + rowData[27].toString() + " " + rowData[28].toString();
+             //   site_csz = rowData[29].toString() + " " + rowData[30].toString() + " " + rowData[31].toString() + " " + rowData[32].toString();
+            }
+             
+                rowData[7] = bsParseDouble(rowData[7].toString());
+                list.add(rowData);
+                k++;
+        }
+         
+        String columnnames = "qual_id,qual_site," +
+            "qual_userid,qual_date_crt,qual_date_upd,qual_date_cls,qual_originator," +
+            "qual_vend,qual_vend_name,qual_vend_contact,qual_qpr,qual_infor," +
+            "qual_sendsupp,qual_sort,qual_rework,qual_scrap,qual_dev,qual_dev_nbr," +
+            "qual_src_line,qual_line_dept,qual_src_recv,qual_src_cust,qual_src_eng," +
+            "qual_src_oth,qual_src_oth_desc,qual_int_sup,qual_ext_sup,qual_item," +
+            "qual_item_desc,qual_qty_rej,qual_qty_susp,qual_qty_tot_def,qual_desc_iss," +
+            "qual_desc_fin_hist,qual_desc_sqe_comt,qual_tot_charge," +
+            "qual_dec1,qual_date1,qual_int1,vd_addr,vd_name,ov_image_directory,ov_jasper_directory,site_logo";
+        String[] columnnamesarray = columnnames.split(",", -1);
+               
+        JRDataSource datasource = new ListOfArrayDataSource(list, columnnamesarray);
+       
+        
+        Path imagepath = FileSystems.getDefault().getPath(cleanDirString(imagedir) + logo);
+        HashMap hm = new HashMap();
+        hm.put("REPORT_TITLE", "QPR Report");
+                hm.put("myid",  key);
+                hm.put("site_csz", site_csz);
+                hm.put("bill_csz", bill_csz);
+                hm.put("ship_csz", ship_csz);
+                hm.put("imagepath", imagepath.toString());
+                hm.put("REPORT_RESOURCE_BUNDLE", bsmf.MainFrame.tags);
+       
+        
+        Path template = checkForCustomPath(jasperdir, jasperfile);
+        JasperPrint jasperPrint; 
+        try {
+         jasperPrint = JasperFillManager.fillReport(template.toString(), hm, datasource );
+         if (toFile) {
+            String ef = "bstempfile." + Long.toHexString(System.currentTimeMillis()) + ".pdf";
+            rFilePath = FileSystems.getDefault().getPath("temp" + "/" + ef);
+            JasperExportManager.exportReportToPdfFile(jasperPrint,rFilePath.toString());   
+         } else {
+            JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
+            jasperViewer.setVisible(true);
+            jasperViewer.setTitle("Viewer");
+            jasperViewer.setIconImage(null);
+            jasperViewer.setFitPageZoomRatio();
+         }
+           //  JasperExportManager.exportReportToPdfFile(jasperPrint,"temp/ivprt.pdf");
+       } catch (JRException ex) {
+           MainFrame.bslog(ex);
+       }
+        return rFilePath;
+    }
+    
     
     public static void printServiceOrderRemote(String order) {
         
@@ -21194,15 +21287,9 @@ MainFrame.bslog(e);
              } 
             }
       }
-    
-    public static void printQPR(String id) throws SQLException, JRException {
+    /*
+    public static void printQPR(String id) throws JRException {
        
-                Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
                 
                 String logo = "";
                 logo = OVData.getSiteLogo(OVData.getDefaultSite());
@@ -21218,7 +21305,7 @@ MainFrame.bslog(e);
                // res = st.executeQuery("select shd_id, sh_cust, shd_po, shd_item, shd_qty, shd_netprice, cm_code, cm_name, cm_line1, cm_line2, cm_city, cm_state, cm_zip, concat(cm_city, \" \", cm_state, \" \", cm_zip) as st_citystatezip, site_desc from ship_det inner join ship_mstr on sh_id = shd_id inner join cm_mstr on cm_code = sh_cust inner join site_mstr on site_site = sh_site where shd_id = '1848' ");
                // JRResultSetDataSource jasperReports = new JRResultSetDataSource(res);
                 Path template = FileSystems.getDefault().getPath(cleanDirString(getSystemJasperDirectory()) + jasperfile);
-                JasperPrint jasperPrint = JasperFillManager.fillReport(template.toString(), hm, con );
+                JasperPrint jasperPrint = JasperFillManager.fillReport(template.toString(), hm, null );
                 
                 JasperViewer jasperViewer = new JasperViewer(jasperPrint, false);
                 jasperViewer.setVisible(true);
@@ -21228,7 +21315,7 @@ MainFrame.bslog(e);
                 
           
     }    
-    
+    */
     public static void printCFO(String id) throws SQLException, JRException {
        
             Connection con = null;

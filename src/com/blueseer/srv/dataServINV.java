@@ -31,6 +31,7 @@ import static com.blueseer.inv.invData.addItemMasterMass;
 import static com.blueseer.inv.invData.addItemMstr;
 import static com.blueseer.inv.invData.addLocationMstr;
 import static com.blueseer.inv.invData.addPLMstr;
+import static com.blueseer.inv.invData.addQualMstr;
 import static com.blueseer.inv.invData.addRoutingMstr;
 import static com.blueseer.inv.invData.addUOMConvMstr;
 import static com.blueseer.inv.invData.addUOMMstr;
@@ -41,6 +42,7 @@ import static com.blueseer.inv.invData.bind_tree_op;
 import static com.blueseer.inv.invData.deleteItemMstr;
 import static com.blueseer.inv.invData.deleteLocationMstr;
 import static com.blueseer.inv.invData.deletePLMstr;
+import static com.blueseer.inv.invData.deleteQualMstr;
 import static com.blueseer.inv.invData.deleteRoutingMstr;
 import static com.blueseer.inv.invData.deleteUOMConvMstr;
 import static com.blueseer.inv.invData.deleteUOMMstr;
@@ -78,6 +80,7 @@ import static com.blueseer.inv.invData.getLocationMaintInit;
 import static com.blueseer.inv.invData.getLocationMstr;
 import static com.blueseer.inv.invData.getOrderMaintDetailEvent;
 import static com.blueseer.inv.invData.getPLMstr;
+import static com.blueseer.inv.invData.getQualMstr;
 import static com.blueseer.inv.invData.getRecentTransByItem;
 import static com.blueseer.inv.invData.getRoutingMstr;
 import static com.blueseer.inv.invData.getTotalCostElements;
@@ -95,6 +98,7 @@ import static com.blueseer.inv.invData.updateCurrentItemCost;
 import static com.blueseer.inv.invData.updateItemMstr;
 import static com.blueseer.inv.invData.updateLocationMstr;
 import static com.blueseer.inv.invData.updatePLMstr;
+import static com.blueseer.inv.invData.updateQualMstr;
 import static com.blueseer.inv.invData.updateRoutingMstr;
 import static com.blueseer.inv.invData.updateUOMConvMstr;
 import static com.blueseer.inv.invData.updateUOMMstr;
@@ -260,6 +264,55 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(r);
             break;
           }
+        
+        case "addQualMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.qual_mstr x = objectMapper.readValue(sb.toString(), invData.qual_mstr.class);            
+            response.getWriter().print(arrayToJson(addQualMstr(x)));
+            break;
+          }
+        
+        case "updateQualMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.qual_mstr x = objectMapper.readValue(sb.toString(), invData.qual_mstr.class);            
+            response.getWriter().print(arrayToJson(updateQualMstr(x)));
+            break;
+          }
+        
+        case "deleteQualMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.qual_mstr x = objectMapper.readValue(sb.toString(), invData.qual_mstr.class);            
+            response.getWriter().print(arrayToJson(deleteQualMstr(x)));
+            break;
+          }
+        
+        case "getQualMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            invData.qual_mstr x = getQualMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
         
         case "addWareHouseMstr" : { 
             String line;

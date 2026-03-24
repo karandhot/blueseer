@@ -294,7 +294,9 @@ public class AcctMaint extends javax.swing.JPanel implements IBlueSeerV  {
             if (s[0].equals("canupdate")) {
               canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
             }
-          
+            if (s[0].equals("site")) {
+                defaultSite = s[1];
+            }
             if (s[0].equals("currencies")) {
               ddcur.addItem(s[1]); 
             }

@@ -2459,6 +2459,278 @@ public class invData {
     }
     
     
+    public static String[] addQualMstr(qual_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addQualMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
+        String sqlSelect = "SELECT * FROM  qual_mstr where qual_id = ?";
+        String sqlInsert = "insert into qual_mstr "
+            + "(qual_id, qual_site," +
+            " qual_userid, qual_date_crt, qual_date_upd, qual_date_cls, qual_originator, " +
+            " qual_vend, qual_vend_name, qual_vend_contact, qual_qpr, qual_infor," +
+            " qual_sendsupp, qual_sort, qual_rework, qual_scrap, qual_dev, qual_dev_nbr," +
+            " qual_src_line, qual_line_dept, qual_src_recv, qual_src_cust, qual_src_eng," +
+            " qual_src_oth, qual_src_oth_desc, qual_int_sup, qual_ext_sup, qual_item," +
+            " qual_item_desc, qual_qty_rej, qual_qty_susp, qual_qty_tot_def, qual_desc_iss," +
+            " qual_desc_fin_hist, qual_desc_sqe_comt, qual_tot_charge," +
+            " qual_dec1, qual_date1, qual_int1 )"
+                        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?); "; 
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+             PreparedStatement ps = con.prepareStatement(sqlSelect);) {
+             ps.setString(1, x.qual_id);
+          try (ResultSet res = ps.executeQuery();
+               PreparedStatement psi = con.prepareStatement(sqlInsert);) {  
+            if (! res.isBeforeFirst()) {
+            psi.setString(1, x.qual_id);
+            psi.setString(2, x.qual_site);
+            psi.setString(3, x.qual_userid);
+            psi.setString(4, x.qual_date_crt);
+            psi.setString(5, x.qual_date_upd);
+            psi.setString(6, x.qual_date_cls);
+            psi.setString(7, x.qual_originator);
+            psi.setString(8, x.qual_vend);
+            psi.setString(9, x.qual_vend_name);
+            psi.setString(10, x.qual_vend_contact);
+            psi.setString(11, x.qual_qpr);
+            psi.setString(12, x.qual_infor);
+            psi.setString(13, x.qual_sendsupp);
+            psi.setString(14, x.qual_sort);
+            psi.setString(15, x.qual_rework);
+            psi.setString(16, x.qual_scrap);
+            psi.setString(17, x.qual_dev);
+            psi.setString(18, x.qual_dev_nbr);
+            psi.setString(19, x.qual_src_line);
+            psi.setString(20, x.qual_line_dept);
+            psi.setString(21, x.qual_src_recv);
+            psi.setString(22, x.qual_src_cust);
+            psi.setString(23, x.qual_src_eng);
+            psi.setString(24, x.qual_src_oth);
+            psi.setString(25, x.qual_src_oth_desc);
+            psi.setString(26, x.qual_int_sup);
+            psi.setString(27, x.qual_ext_sup);
+            psi.setString(28, x.qual_item);
+            psi.setString(29, x.qual_item_desc);
+            psi.setString(30, x.qual_qty_rej);
+            psi.setString(31, x.qual_qty_susp);
+            psi.setString(32, x.qual_qty_tot_def);
+            psi.setString(33, x.qual_desc_iss);
+            psi.setString(34, x.qual_desc_fin_hist);
+            psi.setString(35, x.qual_desc_sqe_comt);
+            psi.setString(36, x.qual_tot_charge);
+            psi.setString(37, x.qual_dec1);
+            psi.setString(38, x.qual_date1);
+            psi.setString(39, x.qual_int1);
+            int rows = psi.executeUpdate();
+           
+            m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
+            } else {
+            m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordAlreadyExists};    
+            }
+          } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+          }
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+
+    public static String[] updateQualMstr(qual_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateQualMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
+        String sql = "update qual_mstr set "
+            + "qual_site = ?," +
+            " qual_userid = ?, qual_date_crt = ?, qual_date_upd = ?, qual_date_cls = ?, qual_originator = ?, " +
+            " qual_vend = ?, qual_vend_name = ?, qual_vend_contact = ?, qual_qpr = ?, qual_infor = ?," +
+            " qual_sendsupp = ?, qual_sort = ?, qual_rework = ?, qual_scrap = ?, qual_dev = ?, qual_dev_nbr = ?," +
+            " qual_src_line = ?, qual_line_dept = ?, qual_src_recv = ?, qual_src_cust = ?, qual_src_eng = ?," +
+            " qual_src_oth = ?, qual_src_oth_desc = ?, qual_int_sup = ?, qual_ext_sup = ?, qual_item = ?," +
+            " qual_item_desc = ?, qual_qty_rej = ?, qual_qty_susp = ?, qual_qty_tot_def = ?, qual_desc_iss = ?," +
+            " qual_desc_fin_hist = ?, qual_desc_sqe_comt = ?, qual_tot_charge = ?," +
+            " qual_dec1 = ?, qual_date1 = ?, qual_int1 = ? where qual_id = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(39, x.qual_id); 
+            ps.setString(1, x.qual_site);
+            ps.setString(2, x.qual_userid);
+            ps.setString(3, x.qual_date_crt);
+            ps.setString(4, x.qual_date_upd);
+            ps.setString(5, x.qual_date_cls);
+            ps.setString(6, x.qual_originator);
+            ps.setString(7, x.qual_vend);
+            ps.setString(8, x.qual_vend_name);
+            ps.setString(9, x.qual_vend_contact);
+            ps.setString(10, x.qual_qpr);
+            ps.setString(11, x.qual_infor);
+            ps.setString(12, x.qual_sendsupp);
+            ps.setString(13, x.qual_sort);
+            ps.setString(14, x.qual_rework);
+            ps.setString(15, x.qual_scrap);
+            ps.setString(16, x.qual_dev);
+            ps.setString(17, x.qual_dev_nbr);
+            ps.setString(18, x.qual_src_line);
+            ps.setString(19, x.qual_line_dept);
+            ps.setString(20, x.qual_src_recv);
+            ps.setString(21, x.qual_src_cust);
+            ps.setString(22, x.qual_src_eng);
+            ps.setString(23, x.qual_src_oth);
+            ps.setString(24, x.qual_src_oth_desc);
+            ps.setString(25, x.qual_int_sup);
+            ps.setString(26, x.qual_ext_sup);
+            ps.setString(27, x.qual_item);
+            ps.setString(28, x.qual_item_desc);
+            ps.setString(29, x.qual_qty_rej);
+            ps.setString(30, x.qual_qty_susp);
+            ps.setString(31, x.qual_qty_tot_def);
+            ps.setString(32, x.qual_desc_iss);
+            ps.setString(33, x.qual_desc_fin_hist);
+            ps.setString(34, x.qual_desc_sqe_comt);
+            ps.setString(35, x.qual_tot_charge);
+            ps.setString(36, x.qual_dec1);
+            ps.setString(37, x.qual_date1);
+            ps.setString(38, x.qual_int1);
+            int rows = ps.executeUpdate(); 
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+
+    public static String[] deleteQualMstr(qual_mstr x) { 
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteQualMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
+        String sql = "delete from qual_mstr where qual_id = ?; ";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
+	PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, x.qual_id);
+        int rows = ps.executeUpdate();
+        m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
+        } catch (SQLException s) {
+	       MainFrame.bslog(s);
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+        }
+        return m;
+    }
+    
+    public static qual_mstr getQualMstr(String[] x) {
+        qual_mstr r = null;
+        String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getQualMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServINV");
+                r = objectMapper.readValue(returnstring, qual_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new qual_mstr(m);
+                return r;
+            }
+        }
+        String sql = "select * from qual_mstr where qual_id = ? ;";
+        try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());   
+	PreparedStatement ps = con.prepareStatement(sql);) {
+        ps.setString(1, x[0]);
+             try (ResultSet res = ps.executeQuery();) {
+                if (! res.isBeforeFirst()) {
+                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.noRecordFound};
+                r = new qual_mstr(m);
+                } else {   
+                    while(res.next()) {
+                        m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
+                        r = new qual_mstr(m, res.getString("qual_id"), 
+                            res.getString("qual_site"),
+                            res.getString("qual_userid"),
+                            res.getString("qual_date_crt"),    
+                            res.getString("qual_date_upd"),
+                            res.getString("qual_date_cls"),
+                            res.getString("qual_originator"),
+                            res.getString("qual_vend"),
+                            res.getString("qual_vend_name"), 
+                            res.getString("qual_vend_contact"),
+                            res.getString("qual_qpr"),
+                            res.getString("qual_infor"),
+                            res.getString("qual_sendsupp"),
+                            res.getString("qual_sort"),
+                            res.getString("qual_rework"),
+                            res.getString("qual_scrap"),
+                            res.getString("qual_dev"),
+                            res.getString("qual_dev_nbr"),
+                            res.getString("qual_src_line"),
+                            res.getString("qual_line_dept"),
+                            res.getString("qual_src_recv"),
+                            res.getString("qual_src_cust"),
+                            res.getString("qual_src_eng"),
+                            res.getString("qual_src_oth"),
+                            res.getString("qual_src_oth_desc"),
+                            res.getString("qual_int_sup"),
+                            res.getString("qual_ext_sup"),
+                            res.getString("qual_item"),
+                                res.getString("qual_item_desc"),
+                                res.getString("qual_qty_rej"),
+                                res.getString("qual_qty_susp"),
+                                res.getString("qual_qty_tot_def"),
+                                res.getString("qual_desc_iss"),
+                                res.getString("qual_desc_fin_hist"),
+                                res.getString("qual_desc_sqe_comt"),
+                                res.getString("qual_tot_charge"),
+                                res.getString("qual_dec1"),
+                                res.getString("qual_date1"),
+                                res.getString("qual_int1")
+                        );
+                    }
+                }
+            }
+        } catch (SQLException s) {   
+	       MainFrame.bslog(s);  
+               m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+               r = new qual_mstr(m);
+        }
+        return r;
+    }
+    
+    
+    
+    
     public static String[] addUpdateINVCtrl(inv_ctrl x) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
@@ -3068,6 +3340,96 @@ public class invData {
    
 
     /* misc functions */
+    public static String getQPRPrintData(String key) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                
+                res = st.executeQuery("select * from qual_mstr " + 
+                " inner join site_mstr on site_site = qual_site " +
+                " inner join ov_ctrl " +   
+                " left outer join vd_mstr on vd_addr = qual_vend " +        
+                " where qual_id = " + "'" + key + "'");
+                
+                    
+                    int i = 0;
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray();   
+                        rowArray.put(res.getString("qual_id"));  // 0
+                        rowArray.put(res.getString("qual_site")); 
+                        rowArray.put(res.getString("qual_userid")); 
+                        rowArray.put(res.getString("qual_date_crt"));    
+                        rowArray.put(res.getString("qual_date_upd")); 
+                        rowArray.put(res.getString("qual_date_cls")); 
+                        rowArray.put(res.getString("qual_originator")); 
+                        rowArray.put(res.getString("qual_vend")); 
+                        rowArray.put(res.getString("qual_vend_name"));  
+                        rowArray.put(res.getString("qual_vend_contact")); 
+                        rowArray.put(res.getString("qual_qpr")); // 10
+                        rowArray.put(res.getString("qual_infor")); 
+                        rowArray.put(res.getString("qual_sendsupp")); 
+                        rowArray.put(res.getString("qual_sort")); 
+                        rowArray.put(res.getString("qual_rework")); 
+                        rowArray.put(res.getString("qual_scrap")); 
+                        rowArray.put(res.getString("qual_dev")); 
+                        rowArray.put(res.getString("qual_dev_nbr")); 
+                        rowArray.put(res.getString("qual_src_line")); 
+                        rowArray.put(res.getString("qual_line_dept")); 
+                        rowArray.put(res.getString("qual_src_recv"));  // 20
+                        rowArray.put(res.getString("qual_src_cust")); 
+                        rowArray.put(res.getString("qual_src_eng")); 
+                        rowArray.put(res.getString("qual_src_oth")); 
+                        rowArray.put(res.getString("qual_src_oth_desc")); 
+                        rowArray.put(res.getString("qual_int_sup")); 
+                        rowArray.put(res.getString("qual_ext_sup")); 
+                        rowArray.put(res.getString("qual_item")); 
+                        rowArray.put(res.getString("qual_item_desc")); 
+                        rowArray.put(res.getString("qual_qty_rej")); 
+                        rowArray.put(res.getString("qual_qty_susp")); // 30
+                        rowArray.put(res.getString("qual_qty_tot_def")); 
+                        rowArray.put(res.getString("qual_desc_iss")); 
+                        rowArray.put(res.getString("qual_desc_fin_hist")); 
+                        rowArray.put(res.getString("qual_desc_sqe_comt")); 
+                        rowArray.put(res.getString("qual_tot_charge")); 
+                        rowArray.put(res.getString("qual_dec1")); 
+                        rowArray.put(res.getString("qual_date1")); 
+                        rowArray.put(res.getString("qual_int1")); 
+                        rowArray.put(res.getString("vd_addr"));
+                        rowArray.put(res.getString("vd_name")); // 40
+                        rowArray.put(res.getString("ov_image_directory"));
+                        rowArray.put(res.getString("ov_jasper_directory"));
+                        rowArray.put(res.getString("site_logo"));
+                      
+                        jsonarray.put(rowArray);
+                        i++;
+                    }
+                    
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
     public static String getInvRptPickerData(String[] keys) {
         JSONArray jsonarray = new JSONArray();
         try {
