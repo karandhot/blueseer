@@ -80,8 +80,8 @@ public class ExpenseBrowse extends javax.swing.JPanel {
     public String rsData; 
     Object[][] roData;
     ArrayList<String[]> initDataSets = new ArrayList<>();
-    String defaultsite = "";
-    String defaultcurrency = "";
+    String defaultSite = "";
+    String defaultCurrency = "";
     
      String chartfilepath = OVData.getSystemTempDirectory() + "/" + "chartexpinc.jpg";
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -396,18 +396,18 @@ public class ExpenseBrowse extends javax.swing.JPanel {
               ddsite.addItem(s[1]); 
             }
             if (s[0].equals("site")) {
-              defaultsite = s[1]; 
+              defaultSite = s[1]; 
             }
             if (s[0].equals("vendors")) {
               ddfromvend.addItem(s[1]); 
               ddtovend.addItem(s[1]); 
             }
             if (s[0].equals("currency")) {
-              defaultcurrency = s[1]; 
+              defaultCurrency = s[1]; 
             }
         }
         if (ddsite.getItemCount() > 0) {
-            ddsite.setSelectedItem(defaultsite);
+            ddsite.setSelectedItem(defaultSite);
         }
        
         ddfromvend.setSelectedIndex(0);

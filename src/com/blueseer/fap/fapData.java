@@ -1210,6 +1210,7 @@ public class fapData {
 
 }
 
+    
     public static String[] getPOsummaryChargesTaxes(String po) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();

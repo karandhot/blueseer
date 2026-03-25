@@ -3340,6 +3340,71 @@ public class invData {
    
 
     /* misc functions */
+    public static String getQPRBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                if (keys[5].isBlank()) {
+                    res = st.executeQuery("select * from qual_mstr where " +
+                        " qual_vend >= " + "'" + keys[2] + "'" + " AND " +
+                        " qual_vend <= " + "'" + keys[3] + "'" + " AND " +
+                        " qual_site = " + "'" + keys[4] + "'" + " AND " +        
+                        " qual_date_crt >= " + "'" + keys[0] + "'" + " AND " +
+                        " qual_date_crt <= " + "'" + keys[1] + "'" + 
+                        " order by qual_id ;");     
+                } else {
+                    res = st.executeQuery("select * from qual_mstr where " +
+                        " qual_vend >= " + "'" + keys[2] + "'" + " AND " +
+                        " qual_vend <= " + "'" + keys[3] + "'" + " AND " +
+                        " qual_site = " + "'" + keys[4] + "'" + " AND " + 
+                        " qual_item = " + "'" + keys[5] + "'" + " AND " +         
+                        " qual_date_crt >= " + "'" + keys[0] + "'" + " AND " +
+                        " qual_date_crt <= " + "'" + keys[1] + "'" + 
+                        " order by qual_id ;");   
+                }
+                    while (res.next()) {
+                   
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("qual_id"));
+                        rowArray.put(res.getString("qual_item"));
+                        rowArray.put(res.getString("qual_item_desc"));
+                        rowArray.put(res.getString("qual_vend"));
+                        rowArray.put(res.getString("qual_vend_name"));
+                        rowArray.put(res.getString("qual_userid"));
+                        rowArray.put(res.getString("qual_date_crt"));
+                        rowArray.put(res.getString("qual_date_cls"));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
+    
     public static String getQPRPrintData(String key) {
         JSONArray jsonarray = new JSONArray();
         try {

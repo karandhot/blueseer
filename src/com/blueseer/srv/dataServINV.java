@@ -80,6 +80,7 @@ import static com.blueseer.inv.invData.getLocationMaintInit;
 import static com.blueseer.inv.invData.getLocationMstr;
 import static com.blueseer.inv.invData.getOrderMaintDetailEvent;
 import static com.blueseer.inv.invData.getPLMstr;
+import static com.blueseer.inv.invData.getQPRBrowseView;
 import static com.blueseer.inv.invData.getQualMstr;
 import static com.blueseer.inv.invData.getRecentTransByItem;
 import static com.blueseer.inv.invData.getRoutingMstr;
@@ -754,6 +755,19 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                request.getHeader("site")
                };     
         response.getWriter().print(getItemBrowseView(it));  
+        break;
+        }
+        
+        case "getQPRBrowseView" : {
+        String[] it = new String[]{
+               request.getHeader("fromdate"), 
+               request.getHeader("todate"), 
+               request.getHeader("fromvend"), 
+               request.getHeader("tovend"), 
+               request.getHeader("site"),
+               request.getHeader("item")
+               };     
+        response.getWriter().print(getQPRBrowseView(it));  
         break;
         }
         

@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.fgl;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.rcv.*;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
@@ -70,19 +71,29 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import static com.blueseer.fgl.fglData.get_pie_EmpPayByDate;
+import static com.blueseer.fgl.fglData.get_pie_EmpTypePayByDate;
 import com.blueseer.hrm.hrmData;
+import com.blueseer.inv.invData;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -96,9 +107,13 @@ import org.jfree.data.general.DefaultPieDataset;
  * @author vaughnte
  */
 public class PayRollBrowse extends javax.swing.JPanel {
- 
-    String empfilepath = OVData.getSystemTempDirectory() + "/" + "chartexpinc.jpg";
-    String buysellfilepath = OVData.getSystemTempDirectory() + "/" + "chartbuysell.jpg";
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String empfilepath = "";
+    String buysellfilepath = "";
     
      public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
      //pyd_empnbr, pyd_emplname, pyd_empfname, pyd_empdept, pyd_emptype, pyd_paydate, pyd_checknbr, pyd_payamt
@@ -149,53 +164,99 @@ public class PayRollBrowse extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
-     public void chartEmployee() {
-         try {
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
           
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                case "getBrowseDetView":
+                    message = getBrowseDetView(key[0],key[1]);
+                    break;
+                    
+                                    
+                default:
+                    message = new String[]{"1", "unknown action"};
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
             try {
-                
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");       
-                 
-                if (bsmf.MainFrame.dbtype.equals("sqlite")) {
-                 res = st.executeQuery("select pyd_empnbr || '=' || pyd_emplname as name, " +
-                        " sum(pyd_payamt) as 'sum' from pay_det " +
-                        " where pyd_paydate >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                        " AND pyd_paydate <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +       
-                        " group by name  ;");   
-                } else {
-                 res = st.executeQuery("select concat(pyd_empnbr,'=',pyd_emplname) as name, " +
-                        " sum(pyd_payamt) as 'sum' from pay_det " +
-                        " where pyd_paydate >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                        " AND pyd_paydate <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +       
-                        " group by name  ;");   
-                }
-                
-             
-                DefaultPieDataset dataset = new DefaultPieDataset();
-               
-                String acct = "";
-                while (res.next()) {
-                      acct = res.getString("name");  
-                    double amt = res.getDouble("sum");
-                    if (amt > 0) {
-                       dataset.setValue(acct, amt);
-                    }
-                }
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+            if (this.action.equals("getBrowseDetView")) {
+                done_getBrowseDetView();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
+    public void chartEmployee() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd"); 
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        ArrayList<String[]> data = new ArrayList<>();
+        
+        data = get_pie_EmpPayByDate(dfdate.format(dcFrom.getDate()),
+            dfdate.format(dcTo.getDate()));
+        
+        for (String[] r : data) {
+            double amt = bsParseDouble(r[1]);
+            dataset.setValue(r[0], amt);
+        }
+        
         JFreeChart chart = ChartFactory.createPieChart("PayRoll By Employee", dataset, true, true, false);
         PiePlot plot = (PiePlot) chart.getPlot();
-      //  plot.setSectionPaint(KEY1, Color.green);
-      //  plot.setSectionPaint(KEY2, Color.red);
-     //   plot.setExplodePercent(KEY1, 0.10);
-        //plot.setSimpleLabels(true);
-
         PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(
             "{0}: {1} ({2})", new DecimalFormat("$ #,##0.00", new DecimalFormatSymbols(Locale.US)), new DecimalFormat("0%", new DecimalFormatSymbols(Locale.US)));
         plot.setLabelGenerator(gen);
@@ -211,64 +272,24 @@ public class PayRollBrowse extends javax.swing.JPanel {
         myicon.getImage().flush();  
       //  myicon.getImage().getScaledInstance(400, 200, Image.SCALE_SMOOTH);
         this.chartlabel.setIcon(myicon);
-        this.repaint();
-       
-       // bsmf.MainFrame.show("your chart is complete...go to chartview");
-                
-              } catch (SQLException s) {
-                  MainFrame.bslog(s);
-                  bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
     }
        
-      public void chartEmpType() {
-         try {
-          
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");       
-                 
-                  
-                res = st.executeQuery("select pyd_emptype, sum(pyd_payamt) as 'sum' from pay_det " +
-                        " where pyd_paydate >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" +
-                        " AND pyd_paydate <= " + "'" + dfdate.format(dcTo.getDate()) + "'" +       
-                        " group by pyd_emptype order by pyd_emptype   ;");
-             
-                DefaultPieDataset dataset = new DefaultPieDataset();
-               
-                String acct = "";
-                while (res.next()) {
-                      acct = res.getString("pyd_emptype");
-                    double amt = res.getDouble("sum");
-                    if (amt < 0) {amt = amt * -1;}
-                  dataset.setValue(acct, amt);
-                }
-        JFreeChart chart = ChartFactory.createPieChart("PayRoll By Type", dataset, true, true, false);
+    public void chartEmpType() {
+         
+          DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd"); 
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        ArrayList<String[]> data = new ArrayList<>();
+        
+        data = get_pie_EmpTypePayByDate(dfdate.format(dcFrom.getDate()),
+            dfdate.format(dcTo.getDate()));
+        
+        for (String[] r : data) {
+            double amt = bsParseDouble(r[1]);
+            dataset.setValue(r[0], amt);
+        }
+        
+        JFreeChart chart = ChartFactory.createPieChart("PayRoll By Employee Type", dataset, true, true, false);
         PiePlot plot = (PiePlot) chart.getPlot();
-      //  plot.setSectionPaint(KEY1, Color.green);
-      //  plot.setSectionPaint(KEY2, Color.red);
-     //   plot.setExplodePercent(KEY1, 0.10);
-        //plot.setSimpleLabels(true);
-
         PieSectionLabelGenerator gen = new StandardPieSectionLabelGenerator(
             "{0}: {1} ({2})", new DecimalFormat("$ #,##0.00", new DecimalFormatSymbols(Locale.US)), new DecimalFormat("0%", new DecimalFormatSymbols(Locale.US)));
         plot.setLabelGenerator(gen);
@@ -276,91 +297,72 @@ public class PayRollBrowse extends javax.swing.JPanel {
         try {
         
         ChartUtilities.saveChartAsJPEG(new File(buysellfilepath), chart, (int) (this.getWidth()/2.5), (int) (this.getHeight()/2.8));
+       // ChartUtilities.saveChartAsJPEG(new File(exoincfilepath), chart, 400, 200);
         } catch (IOException e) {
             MainFrame.bslog(e);
         }
         ImageIcon myicon = new ImageIcon(buysellfilepath);
-        myicon.getImage().flush();   
+        myicon.getImage().flush();  
+      //  myicon.getImage().getScaledInstance(400, 200, Image.SCALE_SMOOTH);
         this.pielabel.setIcon(myicon);
-        this.repaint();
-       
-       // bsmf.MainFrame.show("your chart is complete...go to chartview");
+          
+    }
+     
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
                 
-              } catch (SQLException s) {
-                  MainFrame.bslog(s);
-                  bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
+                component.setEnabled(b);
             }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
         }
-    }
-       
-    
-    public void getdetail(String empnbr, String checknbr) {
-      
-         modeldetail.setNumRows(0);
-         double total = 0;
-         
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                String blanket = "";
-                //"RecordID", "indate", "outdate", "intime", "outtime", "code_id", "code_orig", "tothours"
-                res = st.executeQuery("select indate, outdate, intime, outtime, code_id, tothrs, recid, code_orig " +
-                        " from time_clock " +
-                        " where checknbr = " + "'" + checknbr + "'" +
-                        " and emp_nbr = " + "'" + empnbr + "'" + ";");
-                while (res.next()) {
-                   modeldetail.addRow(new Object[]{ 
-                      res.getString("recid"), 
-                       res.getString("indate"),
-                       res.getString("outdate"),
-                       res.getString("intime"),
-                       res.getString("outtime"),
-                       res.getString("code_id"),
-                      res.getString("code_orig"), 
-                      res.getDouble("tothrs")});
-                }
-               
-              
-                tabledetail.setModel(modeldetail);
-               //  tabledetail.getColumnModel().getColumn(5).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
-    }
+    } 
     
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
@@ -407,7 +409,20 @@ public class PayRollBrowse extends javax.swing.JPanel {
     }
     
     public void initvars(String[] arg) {
-     
+     executeTask("dataInit", null);
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "employees");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        setPanelComponentState(this, true);
         tbtotalnet.setText("0");
         tbtotalgross.setText("0");
         tbcount.setText("0");
@@ -423,52 +438,159 @@ public class PayRollBrowse extends javax.swing.JPanel {
         modeldetail.setNumRows(0);
         tablereport.setModel(mymodel);
         tabledetail.setModel(modeldetail);
-        
-           tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-           tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-           tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-           tablereport.getColumnModel().getColumn(11).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-         
-       
-          
-         
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
-        
-        
-        
-         btdetail.setEnabled(false);
         detailpanel.setVisible(false);
+        btdetail.setEnabled(false);
         chartpanel.setVisible(false);
         
         ddsite.removeAllItems();
-        ArrayList sites = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (Object site : sites) {
-            ddsite.addItem(site);
-        }
-        
         ddempfrom.removeAllItems();
-        ArrayList<String> emps = hrmData.getempmstrlist();
-        for (String emp : emps) {
-            ddempfrom.addItem(emp);
-        }
-        
         ddempto.removeAllItems();
-        for (String emp : emps) {
-            ddempto.addItem(emp);
+        
+        String tempdir = "";
+        
+        for (String[] s : initDataSets) {
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+            if (s[0].equals("tempdir")) {
+              tempdir = s[1]; 
+            }
+            if (s[0].equals("employees")) {
+              ddempfrom.addItem(s[1]); 
+              ddempto.addItem(s[1]);
+            }
+        }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultSite);
         }
         
-        
-         if (ddempfrom.getItemCount() > 0)
-        ddempfrom.setSelectedIndex(0);
+        empfilepath = tempdir + "/" + "chartexpinc.jpg";
+        buysellfilepath = tempdir + "/" + "chartbuysell.jpg";
         
         if (ddempto.getItemCount() > 0)
         ddempto.setSelectedIndex(ddempto.getItemCount() - 1);
         
-        
-          
-          
+        tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+        tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tablereport.getColumnModel().getColumn(11).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+         
     }
+    
+    public String[] getBrowseView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getPayRollBrowseView"});
+        list.add(new String[]{"param1",dfdate.format(dcFrom.getDate())});
+        list.add(new String[]{"param2",dfdate.format(dcTo.getDate())});
+        list.add(new String[]{"param3",ddempfrom.getSelectedItem().toString()});
+        list.add(new String[]{"param4",ddempto.getSelectedItem().toString()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getPayRollBrowseView")};
+            }
+        } else {
+            jsonString = fglData.getPayRollBrowseView(new String[]{
+                dfdate.format(dcFrom.getDate()),
+                dfdate.format(dcTo.getDate()),
+                ddempfrom.getSelectedItem().toString(), 
+                ddempto.getSelectedItem().toString()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getPayRollBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+        setPanelComponentState(this, true);
+        int i = 0;
+        double totalnet = 0;
+        double totalgross = 0;
+        mymodel.setNumRows(0);
+        if (roData != null) {
+        for (Object[] rowData : roData) {
+          if (! cbsalary.isSelected() && roData[i][5].toString().equals("Salary")) {
+              continue;
+          }
+          if (! cbhourly.isSelected() && roData[i][5].toString().equals("Hourly")) {
+              continue;
+          }
+            roData[i][9] = bsParseDouble(roData[i][9].toString());
+            roData[i][10] = bsParseDouble(roData[i][10].toString());
+            roData[i][11] = bsParseDouble(roData[i][11].toString());
+            totalnet += bsParseDouble(roData[i][11].toString());
+            totalgross += bsParseDouble(roData[i][10].toString());
+            i++;
+            mymodel.addRow(rowData);
+        }
+        }  
+        chartEmpType();
+        chartEmployee();   
+        tbtotalnet.setText(currformatDouble(totalnet));
+        tbtotalgross.setText(currformatDouble(totalgross));
+        tbcount.setText(String.valueOf(i));        
+        roData = null;
+    }   
+    
+    public String[] getBrowseDetView(String empnbr, String checknbr) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getPayRollBrowseDetView"});
+            list.add(new String[]{"param1", empnbr});
+            list.add(new String[]{"param2", checknbr});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServPUR"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = fglData.getPayRollBrowseDetView(empnbr, checknbr); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getBrowseDetView() {
+      modeldetail.setNumRows(0);
+       int i = 0;  
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+                roData[i][7] = bsParseDouble(roData[i][7].toString());
+                modeldetail.addRow(rowData);
+                i++;
+            } 
+        }
+       }
+       roData = null;
+    }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -783,103 +905,9 @@ public class PayRollBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-    
-try {
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-             
-               mymodel.setNumRows(0);
-               tbtotalnet.setText("0");
-               tbtotalgross.setText("0");
-               tbcount.setText("0"); 
-               int i = 0;
-               double totalnet = 0;
-               double totalgross = 0;
-               double netcheck = 0;
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-               
-               
-                  
-                 String empfrom = "";
-                 String empto = "";
-                 if (ddempfrom.getSelectedItem() != null)
-                     empfrom = ddempfrom.getSelectedItem().toString();
-                 
-                 if (ddempto.getSelectedItem() != null)
-                     empto = ddempto.getSelectedItem().toString();
-                      
-                 
-            
-        
-             res = st.executeQuery("select pyd_id, pyd_empnbr, pyd_emplname, pyd_empfname, pyd_empdept, pyd_emptype, pyd_paydate, pyd_checknbr, pyd_payamt, " +
-                         " (select sum(pyl_amt) from pay_line where pyl_id = pyd_id and pyl_checknbr = pyd_checknbr and pyl_type = 'deduction' ) as 'deductions' " +
-                         " from pay_det where " +
-                        " pyd_empnbr >= " + "'" + empfrom + "'" + " AND " +
-                        " pyd_empnbr <= " + "'" + empto + "'" + " AND " +
-                     " pyd_paydate >= " + "'" + dfdate.format(dcFrom.getDate()) + "'" + " AND " +
-                        " pyd_paydate <= " + "'" + dfdate.format(dcTo.getDate()) + "'" + 
-                        " order by pyd_empnbr ;");
-                     
-                  
-                
-                while (res.next()) {
-                 i++;
-                 netcheck = res.getDouble("pyd_payamt") - res.getDouble("deductions");
-                 totalgross += res.getDouble("pyd_payamt");
-                 totalnet += netcheck;
-                 
-                  if (! cbsalary.isSelected() && res.getString("pyd_emptype").equals("Salary")) {
-                      continue;
-                  }
-                  if (! cbhourly.isSelected() && res.getString("pyd_emptype").equals("Hourly")) {
-                      continue;
-                  }
-                 
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickbasket, 
-                                res.getString("pyd_id"),
-                                res.getString("pyd_empnbr"),
-                                res.getString("pyd_emplname"),
-                                res.getString("pyd_empfname"),
-                                res.getString("pyd_empdept"),
-                                res.getString("pyd_emptype"),
-                                res.getString("pyd_paydate"),
-                                res.getString("pyd_checknbr"),
-                                res.getDouble("pyd_payamt"),
-                                res.getDouble("deductions"),
-                                netcheck
-                            });
-               } // while   
-                 
-                chartEmpType();
-                chartEmployee();   
-                tbtotalnet.setText(currformatDouble(totalnet));
-                tbtotalgross.setText(currformatDouble(totalgross));
-                tbcount.setText(String.valueOf(i));
-        
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
+        mymodel.setNumRows(0);
+        setPanelComponentState(this, false);
+        executeTask("getBrowseView", null);     
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btdetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdetailActionPerformed
@@ -892,7 +920,7 @@ try {
         int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
         if ( col == 0) {
-                getdetail(tablereport.getValueAt(row, 1).toString(), tablereport.getValueAt(row, 7).toString());
+                executeTask("getBrowseDetView", new String[]{tablereport.getValueAt(row, 1).toString(), tablereport.getValueAt(row, 7).toString()});
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
               

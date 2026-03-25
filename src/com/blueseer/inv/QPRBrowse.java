@@ -28,6 +28,7 @@ package com.blueseer.inv;
 
 import com.blueseer.rcv.*;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static bsmf.MainFrame.checkperms;
@@ -69,9 +70,13 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import com.blueseer.prd.prdData;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import com.blueseer.vdr.venData;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
@@ -79,18 +84,26 @@ import java.util.Calendar;
 import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 
 /**
  *
  * @author vaughnte
  */
 public class QPRBrowse extends javax.swing.JPanel {
- 
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultSite = "";
+    String defaultCurrency = "";
+    
      public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
      
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -148,6 +161,132 @@ public class QPRBrowse extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
+    
     
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
@@ -194,66 +333,115 @@ public class QPRBrowse extends javax.swing.JPanel {
     }
     
     public void initvars(String[] arg) {
-     
-        
+    executeTask("dataInit", null);
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "vendors");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        setPanelComponentState(this, true);
         java.util.Date now = new java.util.Date();
-         dcfrom.setDate(now);
-         dcto.setDate(now);
-       //  Calendar calfrom = Calendar.getInstance();
-       //  calfrom.add(Calendar.DATE, -365);
-       //  dcfrom.setDate(calfrom.getTime());
-       
+        dcfrom.setDate(now);
+        dcto.setDate(now);
         cbopen.setSelected(false);
        
-        mymodel.setNumRows(0);
-        tablereport.setModel(mymodel);
+       mymodel.setNumRows(0);
+       tablereport.setModel(mymodel);
         
-           tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-           tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
-         
-       
-          
-         
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
-        
+       tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+       tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
         detailpanel.setVisible(false);
         
         ddsite.removeAllItems();
-        ArrayList sites = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (Object site : sites) {
-            ddsite.addItem(site);
-        }
-        
-        ArrayList<String> items = invData.getItemMasterAlllist();
-        dditem.removeAllItems();
-        for (int i = 0; i < items.size(); i++) {
-            dditem.addItem(items.get(i));
-        }  
-        dditem.insertItemAt("", 0);
-        dditem.setSelectedIndex(0);
-        
         ddvendfrom.removeAllItems();
-        ArrayList vends = venData.getVendMstrListMinusCarrier();
-        for (Object vend : vends) {
-            ddvendfrom.addItem(vend);
-        }
-        ddvendfrom.insertItemAt("", 0);
-        ddvendfrom.setSelectedIndex(0);
-        
         ddvendto.removeAllItems();
-        for (Object vend : vends) {
-            ddvendto.addItem(vend);
-        }
         
+        for (String[] s : initDataSets) {
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+            if (s[0].equals("vendors")) {
+              ddvendfrom.addItem(s[1]); 
+              ddvendto.addItem(s[1]);
+            }
+        }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultSite);
+        }
         
         if (ddvendto.getItemCount() > 0)
         ddvendto.setSelectedIndex(ddvendto.getItemCount() - 1);
-        
-        
-          
-          
     }
+    
+    public String[] getBrowseView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getQPRBrowseView"});
+        list.add(new String[]{"fromdate",dfdate.format(dcfrom.getDate())});
+        list.add(new String[]{"todate",dfdate.format(dcto.getDate())});
+        list.add(new String[]{"fromvend",ddvendfrom.getSelectedItem().toString()});
+        list.add(new String[]{"tovend",ddvendto.getSelectedItem().toString()});
+        list.add(new String[]{"site",ddsite.getSelectedItem().toString()});
+        list.add(new String[]{"item",tbitem.getText()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getQPRBrowseView")};
+            }
+        } else {
+            jsonString = invData.getQPRBrowseView(new String[]{
+                dfdate.format(dcfrom.getDate()),
+                dfdate.format(dcto.getDate()),
+                ddvendfrom.getSelectedItem().toString(), 
+                ddvendto.getSelectedItem().toString(), 
+                ddsite.getSelectedItem().toString(),
+                tbitem.getText()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getQPRBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+        setPanelComponentState(this, true);
+        int i = 0;
+        mymodel.setNumRows(0);
+        if (roData != null) {
+        for (Object[] rowData : roData) {
+            i++;
+            mymodel.addRow(rowData);
+        }
+        
+        }          
+        roData = null;
+    }   
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -284,8 +472,8 @@ public class QPRBrowse extends javax.swing.JPanel {
         dcfrom = new com.toedter.calendar.JDateChooser();
         dcto = new com.toedter.calendar.JDateChooser();
         cbopen = new javax.swing.JCheckBox();
-        dditem = new javax.swing.JComboBox<>();
         jLabel2 = new javax.swing.JLabel();
+        tbitem = new javax.swing.JTextField();
         jPanel3 = new javax.swing.JPanel();
 
         setBackground(new java.awt.Color(0, 102, 204));
@@ -390,7 +578,7 @@ public class QPRBrowse extends javax.swing.JPanel {
                                 .addComponent(jLabel4))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(dcfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 21, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
                                 .addComponent(jLabel1)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(ddvendfrom, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -405,12 +593,12 @@ public class QPRBrowse extends javax.swing.JPanel {
                         .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(btRun)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
-                        .addComponent(cbopen)
-                        .addContainerGap())
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 15, Short.MAX_VALUE)
+                        .addComponent(cbopen))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(dditem, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(97, 97, 97))))
+                        .addComponent(tbitem, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -432,8 +620,8 @@ public class QPRBrowse extends javax.swing.JPanel {
                         .addComponent(ddvendto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel3)
                         .addComponent(jLabel4)
-                        .addComponent(dditem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel2))
+                        .addComponent(jLabel2)
+                        .addComponent(tbitem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(dcto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -487,106 +675,16 @@ public class QPRBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-    
-try {
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                DecimalFormat df = new DecimalFormat("#0.00", new DecimalFormatSymbols(Locale.US));
-                int i = 0;
-               
-               mymodel.setNumRows(0);
-            
-                 DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                
-                
-                  
-                 String vendfrom = "";
-                 String vendto = "";
-                 if (ddvendfrom.getSelectedItem() != null)
-                     vendfrom = ddvendfrom.getSelectedItem().toString();
-                 
-                 if (ddvendto.getSelectedItem() != null)
-                     vendto = ddvendto.getSelectedItem().toString();
-                      
-                  
-                 
-         //     new String[]{"Detail", "PO", "Vend", "Line", "Part", "Type", "Status", "OrdQty", "RecvQty"});   
-                if (dditem.getSelectedItem().toString().isEmpty()) {
-                    res = st.executeQuery("select * from qual_mstr where " +
-                        " qual_vend >= " + "'" + vendfrom + "'" + " AND " +
-                        " qual_vend <= " + "'" + vendto + "'" + " AND " +
-                        " qual_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " +        
-                        " qual_date_crt >= " + "'" + dfdate.format(dcfrom.getDate()) + "'" + " AND " +
-                        " qual_date_crt <= " + "'" + dfdate.format(dcto.getDate()) + "'" + 
-                        " order by qual_id ;");  
-                } else {
-                    res = st.executeQuery("select * from qual_mstr where " +
-                        " qual_vend >= " + "'" + vendfrom + "'" + " AND " +
-                        " qual_vend <= " + "'" + vendto + "'" + " AND " +
-                        " qual_site = " + "'" + ddsite.getSelectedItem().toString() + "'" + " AND " + 
-                        " qual_item = " + "'" + dditem.getSelectedItem().toString() + "'" + " AND " +         
-                        " qual_date_crt >= " + "'" + dfdate.format(dcfrom.getDate()) + "'" + " AND " +
-                        " qual_date_crt <= " + "'" + dfdate.format(dcto.getDate()) + "'" + 
-                        " order by qual_id ;");
-                }
-                
-                     
-                  
-                
-                       while (res.next()) {
-                        if (cbopen.isSelected() && ! res.getString("qual_date_cls").isEmpty()) {
-                            continue;
-                        }   
-                    mymodel.addRow(new Object[]{BlueSeerUtils.clickflag, 
-                        res.getString("qual_id"),
-                            res.getString("qual_item"),
-                            res.getString("qual_item_desc"),
-                            res.getString("qual_vend"),
-                            res.getString("qual_vend_name"),
-                            res.getString("qual_userid"),
-                            res.getString("qual_date_crt"),
-                            res.getString("qual_date_cls")
-                    });
-               
-             
-                   
-                } // while   
-                    
-                 
-        
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
+        mymodel.setNumRows(0);
+        setPanelComponentState(this, false);
+        executeTask("getBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void tablereportMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablereportMouseClicked
         
         int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
-       /*
-        if ( col == 1) {
-                getdetail(tablereport.getValueAt(row, 2).toString());
-                btdetail.setEnabled(true);
-                detailpanel.setVisible(true);
-              
-        }
-        */
+      
         if ( col == 0) {
                if (! checkperms("QPRMaint")) { return; }
               String[] arg = new String[] {tablereport.getValueAt(row, 1).toString()};
@@ -600,7 +698,6 @@ try {
     private javax.swing.JCheckBox cbopen;
     private com.toedter.calendar.JDateChooser dcfrom;
     private com.toedter.calendar.JDateChooser dcto;
-    private javax.swing.JComboBox<String> dditem;
     private javax.swing.JComboBox ddsite;
     private javax.swing.JComboBox ddvendfrom;
     private javax.swing.JComboBox ddvendto;
@@ -620,5 +717,6 @@ try {
     private javax.swing.JTable tabledetail;
     private javax.swing.JPanel tablepanel;
     private javax.swing.JTable tablereport;
+    private javax.swing.JTextField tbitem;
     // End of variables declaration//GEN-END:variables
 }

@@ -3697,6 +3697,221 @@ public class fglData {
         return jsonarray.toString(); 
     }
    
+    public static String getPayRollBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 double netcheck = 0;
+                    res = st.executeQuery("select pyd_id, pyd_empnbr, pyd_emplname, pyd_empfname, pyd_empdept, pyd_emptype, pyd_paydate, pyd_checknbr, pyd_payamt, " +
+                         " (select sum(pyl_amt) from pay_line where pyl_id = pyd_id and pyl_checknbr = pyd_checknbr and pyl_type = 'deduction' ) as 'deductions' " +
+                         " from pay_det where " +
+                        " pyd_empnbr >= " + "'" + keys[2] + "'" + " AND " +
+                        " pyd_empnbr <= " + "'" + keys[3] + "'" + " AND " +
+                     " pyd_paydate >= " + "'" + keys[0] + "'" + " AND " +
+                        " pyd_paydate <= " + "'" + keys[1] + "'" + 
+                        " order by pyd_empnbr ;");
+                   
+                    while (res.next()) {  
+                    netcheck = res.getDouble("pyd_payamt") - res.getDouble("deductions");    
+                    JSONArray rowArray = new JSONArray();
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("pyd_id"));
+                        rowArray.put(res.getString("pyd_empnbr"));
+                        rowArray.put(res.getString("pyd_emplname"));
+                        rowArray.put(res.getString("pyd_empfname"));
+                        rowArray.put(res.getString("pyd_empdept"));
+                        rowArray.put(res.getString("pyd_emptype"));
+                        rowArray.put(res.getString("pyd_paydate"));
+                        rowArray.put(res.getString("pyd_checknbr"));
+                        rowArray.put(bsNumber(res.getDouble("pyd_payamt")));                        
+                        rowArray.put(bsNumber(res.getDouble("deductions")));
+                        rowArray.put(netcheck);
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
+    public static String getPayRollBrowseDetView(String empnbr, String checknbr) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 double netcheck = 0;
+                    res = st.executeQuery("select indate, outdate, intime, outtime, code_id, tothrs, recid, code_orig " +
+                        " from time_clock " +
+                        " where checknbr = " + "'" + checknbr + "'" +
+                        " and emp_nbr = " + "'" + empnbr + "'" + ";");
+                  
+                    while (res.next()) {  
+                    netcheck = res.getDouble("pyd_payamt") - res.getDouble("deductions");    
+                    JSONArray rowArray = new JSONArray();
+                        rowArray.put(res.getString("recid"));
+                        rowArray.put(res.getString("indate"));
+                        rowArray.put(res.getString("outdate"));
+                        rowArray.put(res.getString("intime"));
+                        rowArray.put(res.getString("outtime"));
+                        rowArray.put(res.getString("code_id"));
+                        rowArray.put(res.getString("code_orig"));
+                        rowArray.put(bsNumber(res.getDouble("tothrs")));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
+    public static ArrayList<String[]> get_pie_EmpPayByDate(String fromdate, String todate) {
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "get_pie_EmpPayByDate"});
+            list.add(new String[]{"param1", fromdate});
+            list.add(new String[]{"param2", todate});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+    }
+    ArrayList<String[]> myarray = new ArrayList();
+
+    try{
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+            res = st.executeQuery("select pyd_empnbr || '=' || pyd_emplname as name, " +
+                        " sum(pyd_payamt) as 'sum' from pay_det " +
+                        " where pyd_paydate >= " + "'" + fromdate + "'" +
+                        " AND pyd_paydate <= " + "'" + todate + "'" +       
+                        " group by name  ;"); 
+           while (res.next()) {
+               String[] x = new String[2];
+               x[0] = res.getString("name");
+               x[1] = res.getString("sum");
+                myarray.add(x);
+            }
+
+       }
+        catch (SQLException s){
+             bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    return myarray;
+
+}
+
+    public static ArrayList<String[]> get_pie_EmpTypePayByDate(String fromdate, String todate) {
+    if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "get_pie_EmpTypePayByDate"});
+            list.add(new String[]{"param1", fromdate});
+            list.add(new String[]{"param2", todate});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServFIN"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+    }
+    ArrayList<String[]> myarray = new ArrayList();
+
+    try{
+
+            Connection con = null;
+            if (ds != null) {
+            con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+            res = st.executeQuery("select pyd_emptype, sum(pyd_payamt) as 'sum' from pay_det " +
+                        " where pyd_paydate >= " + "'" + fromdate + "'" +
+                        " AND pyd_paydate <= " + "'" + todate + "'" +       
+                        " group by pyd_emptype order by pyd_emptype   ;");
+           while (res.next()) {
+               String[] x = new String[2];
+               x[0] = res.getString("pyd_emptype");
+               x[1] = res.getString("sum");
+                myarray.add(x);
+            }
+
+       }
+        catch (SQLException s){
+             bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    return myarray;
+
+}
+
      
     public static void exportInvoiceCSV(ArrayList<String> list) {
      FileDialog fDialog;
