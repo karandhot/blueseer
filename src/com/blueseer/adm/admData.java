@@ -3585,6 +3585,16 @@ public class admData {
                             }
                         }
                         
+                        if (sd.equals("banks")) {
+                            res = st.executeQuery("select bk_id from bk_mstr ;");
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "banks";
+                               s[1] = res.getString("bk_id");
+                               lines.add(s);
+                            }
+                        }
+                        
                         if (sd.equals("warehouses")) {
                             res = st.executeQuery("select wh_id from wh_mstr ;");
                             while (res.next()) {

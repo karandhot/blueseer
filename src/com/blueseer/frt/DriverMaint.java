@@ -55,6 +55,7 @@ import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerT;
+import com.blueseer.utl.IBlueSeerV;
 import com.blueseer.utl.OVData;
 import com.blueseer.vdr.venData;
 import static com.blueseer.vdr.venData.addVendMstr;
@@ -85,10 +86,16 @@ import javax.swing.SwingWorker;
  *
  * @author vaughnte
  */
-public class DriverMaint extends javax.swing.JPanel implements IBlueSeerT {
+public class DriverMaint extends javax.swing.JPanel implements IBlueSeerV {
 
-    // global variable declarations
-                boolean isLoad = false;
+     // global variable declarations
+        boolean isLoad = false;
+        boolean canUpdate = false;
+        boolean isAutoPost = false;
+        ArrayList<String[]> initDataSets = null;
+        String defaultSite = "";
+        String defaultCurrency = "";
+        String defaultCC = "";
                 public static drv_mstr x = null;
     // global datatablemodel declarations       
    javax.swing.table.DefaultTableModel attachmentmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -287,7 +294,7 @@ public class DriverMaint extends javax.swing.JPanel implements IBlueSeerT {
        }
     }
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        isLoad = true;
        
        jTabbedPane1.removeAll();
@@ -301,7 +308,7 @@ public class DriverMaint extends javax.swing.JPanel implements IBlueSeerT {
        
        
        String  now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
-       int year = Integer.valueOf(now.substring(0,4));
+       int year = Integer.parseInt(now.substring(0,4));
        tbkey.setText("");
        tbline1.setText("");
        tblname.setText("");
@@ -327,7 +334,9 @@ public class DriverMaint extends javax.swing.JPanel implements IBlueSeerT {
        
         
        
-        ArrayList<String[]> initDataSets = frtData.getDriverMaintInit();
+        if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "accounts,depts,terms,states,countries");
+        }
         
         ddstate.removeAllItems();
         ddlicensestate.removeAllItems();
@@ -339,6 +348,15 @@ public class DriverMaint extends javax.swing.JPanel implements IBlueSeerT {
         
         
         for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
             if (s[0].equals("states")) {
               ddstate.addItem(s[1]); 
               ddlicensestate.addItem(s[1]);
@@ -386,7 +404,7 @@ public class DriverMaint extends javax.swing.JPanel implements IBlueSeerT {
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btdelete.setEnabled(false);
@@ -444,7 +462,7 @@ public class DriverMaint extends javax.swing.JPanel implements IBlueSeerT {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         
@@ -1304,6 +1322,7 @@ public class DriverMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
         BlueSeerUtils.messagereset();
+        initDataSets = null;
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 

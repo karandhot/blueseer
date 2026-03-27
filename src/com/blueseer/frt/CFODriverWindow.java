@@ -56,8 +56,9 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.ctr.cusData;
 import static com.blueseer.frt.CFOMaint.fc;
+import com.blueseer.frt.frtData.drv_mstr;
 import static com.blueseer.frt.frtData.getCFOCtrl;
-import static com.blueseer.frt.frtData.getDriverInfo;
+import static com.blueseer.frt.frtData.getDriverMstr;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
@@ -917,7 +918,7 @@ try {
             String driverconcat = "";
             for (Map.Entry<String, ArrayList<String>> val : lhm.entrySet()) {
                 
-                String[] drv = getDriverInfo(val.getKey());
+                drv_mstr drv = getDriverMstr(new String[]{val.getKey()});
                 
 	    	ArrayList<String> f = val.getValue();
                 daysv[0] = (f.contains(days[0])) ? "scheduled" : "open";
@@ -928,7 +929,7 @@ try {
                 daysv[5] = (f.contains(days[5])) ? "scheduled" : "open";
                 daysv[6] = (f.contains(days[6])) ? "scheduled" : "open";
                 
-                driverconcat = val.getKey() + " - " + drv[0] + ", " + drv[1];
+                driverconcat = val.getKey() + " - " + drv.drv_lname() + ", " + drv.drv_fname();
                 modeldriver.addRow(new Object[]{ 
                       driverconcat,
                       daysv[0],

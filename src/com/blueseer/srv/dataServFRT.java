@@ -26,16 +26,55 @@ SOFTWARE.
 package com.blueseer.srv;
 
 
+import com.blueseer.frt.frtData;
+import static com.blueseer.frt.frtData.addBrokerMstr;
+import static com.blueseer.frt.frtData.addCFOStatus;
 import static com.blueseer.frt.frtData.addCarrierMstr;
+import static com.blueseer.frt.frtData.addCodeFreight;
+import static com.blueseer.frt.frtData.addDriverMstr;
+import static com.blueseer.frt.frtData.addOrUpdateCodeFreight;
+import static com.blueseer.frt.frtData.addUpdateCFOCtrl;
+import com.blueseer.frt.frtData.brk_mstr;
 import com.blueseer.frt.frtData.car_mstr;
+import com.blueseer.frt.frtData.cfo_det;
+import com.blueseer.frt.frtData.cfo_mstr;
+import com.blueseer.frt.frtData.cfo_status;
+import com.blueseer.frt.frtData.code_freight;
+import static com.blueseer.frt.frtData.deleteBrokerMstr;
 import static com.blueseer.frt.frtData.deleteCarrierMstr;
+import static com.blueseer.frt.frtData.deleteCodeFreight;
+import static com.blueseer.frt.frtData.deleteDriverMstr;
+import com.blueseer.frt.frtData.drv_mstr;
+import com.blueseer.frt.frtData.frt_ctrl;
+import static com.blueseer.frt.frtData.getBrokerMstr;
+import static com.blueseer.frt.frtData.getCFOCtrl;
+import static com.blueseer.frt.frtData.getCFODet;
+import static com.blueseer.frt.frtData.getCFOLines;
+import static com.blueseer.frt.frtData.getCFOMstr;
+import static com.blueseer.frt.frtData.getCFOStatus;
+import static com.blueseer.frt.frtData.getCFOStatusInit;
+import static com.blueseer.frt.frtData.getCFOStatusList;
 import static com.blueseer.frt.frtData.getCarrierMstr;
+import static com.blueseer.frt.frtData.getCodeFreight;
+import static com.blueseer.frt.frtData.getDriverMstr;
+import static com.blueseer.frt.frtData.getMakeModel;
+import static com.blueseer.frt.frtData.updateBrokerMstr;
+import static com.blueseer.frt.frtData.updateCFORejection;
 import static com.blueseer.frt.frtData.updateCarrierMstr;
+import static com.blueseer.frt.frtData.updateCodeFreight;
+import static com.blueseer.frt.frtData.updateDriverMstr;
+import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.boolToJson;
+import static com.blueseer.utl.BlueSeerUtils.bsParseInt;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
+import com.blueseer.utl.OVData;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -126,6 +165,292 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
       break;
     }
     
+    case "addBrokerMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      frtData.brk_mstr am = objectMapper.readValue(sb.toString(), frtData.brk_mstr.class);            
+      response.getWriter().print(arrayToJson(addBrokerMstr(am)));
+      break;
+    }
+    
+    case "updateBrokerMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      brk_mstr x = objectMapper.readValue(sb.toString(), brk_mstr.class);            
+      response.getWriter().print(arrayToJson(updateBrokerMstr(x)));
+      break;
+    }
+    
+    case "deleteBrokerMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      brk_mstr x = objectMapper.readValue(sb.toString(), brk_mstr.class);            
+      response.getWriter().print(arrayToJson(deleteBrokerMstr(x)));
+      break;
+    }
+    
+    case "getBrokerMstr" : {
+      String[] key = new String[]{request.getHeader("param1")}; 
+      brk_mstr x = getBrokerMstr(key);
+      ObjectMapper objectMapper = new ObjectMapper();
+      String r = objectMapper.writeValueAsString(x);
+      response.getWriter().print(r);
+      break;
+    }
+    
+    case "addDriverMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      frtData.drv_mstr am = objectMapper.readValue(sb.toString(), frtData.drv_mstr.class);            
+      response.getWriter().print(arrayToJson(addDriverMstr(am)));
+      break;
+    }
+    
+    case "updateDriverMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      drv_mstr x = objectMapper.readValue(sb.toString(), drv_mstr.class);            
+      response.getWriter().print(arrayToJson(updateDriverMstr(x)));
+      break;
+    }
+    
+    case "deleteDriverMstr" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      drv_mstr x = objectMapper.readValue(sb.toString(), drv_mstr.class);            
+      response.getWriter().print(arrayToJson(deleteDriverMstr(x)));
+      break;
+    }
+    
+    case "getDriverMstr" : {
+      String[] key = new String[]{request.getHeader("param1")}; 
+      drv_mstr x = getDriverMstr(key);
+      ObjectMapper objectMapper = new ObjectMapper();
+      String r = objectMapper.writeValueAsString(x);
+      response.getWriter().print(r);
+      break;
+    }
+    
+    case "addCodeFreight" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      frtData.code_freight am = objectMapper.readValue(sb.toString(), frtData.code_freight.class);            
+      response.getWriter().print(arrayToJson(addCodeFreight(am)));
+      break;
+    }
+    
+    case "addOrUpdateCodeFreight" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      frtData.code_freight am = objectMapper.readValue(sb.toString(), frtData.code_freight.class);            
+      response.getWriter().print(arrayToJson(addOrUpdateCodeFreight(am)));
+      break;
+    }
+    
+    case "updateCodeFreight" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      code_freight x = objectMapper.readValue(sb.toString(), code_freight.class);            
+      response.getWriter().print(arrayToJson(updateCodeFreight(x)));
+      break;
+    }
+    
+    case "deleteCodeFreight" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      code_freight x = objectMapper.readValue(sb.toString(), code_freight.class);            
+      response.getWriter().print(arrayToJson(deleteCodeFreight(x)));
+      break;
+    }
+    
+    case "getCodeFreight" : {
+      String[] key = new String[]{request.getHeader("param1")}; 
+      code_freight x = getCodeFreight(key);
+      ObjectMapper objectMapper = new ObjectMapper();
+      String r = objectMapper.writeValueAsString(x);
+      response.getWriter().print(r);
+      break;
+    }
+    
+    case "addUpdateCFOCtrl" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      frtData.frt_ctrl am = objectMapper.readValue(sb.toString(), frtData.frt_ctrl.class);            
+      response.getWriter().print(arrayToJson(addUpdateCFOCtrl(am)));
+      break;
+    }
+    
+    case "getCFOCtrl" : {
+      String[] key = new String[]{request.getHeader("param1")}; 
+      frt_ctrl x = getCFOCtrl(key);
+      ObjectMapper objectMapper = new ObjectMapper();
+      String r = objectMapper.writeValueAsString(x);
+      response.getWriter().print(r);
+      break;
+    }
+    
+        
+    case "addCFOStatus" : {
+      String line;
+      StringBuilder sb = new StringBuilder();  
+      BufferedReader reader = request.getReader();  // as string
+      while ((line = reader.readLine()) != null) {  
+      sb.append(line);
+      } 
+      ObjectMapper objectMapper = new ObjectMapper();
+      frtData.cfo_status am = objectMapper.readValue(sb.toString(), frtData.cfo_status.class);            
+      response.getWriter().print(arrayToJson(addCFOStatus(am)));
+      break;
+    }
+    
+    case "getCFOStatus" : {
+      String[] key = new String[]{request.getHeader("param1")}; 
+      cfo_status x = getCFOStatus(key);
+      ObjectMapper objectMapper = new ObjectMapper();
+      String r = objectMapper.writeValueAsString(x);
+      response.getWriter().print(r);
+      break;
+    }
+    
+    
+    case "getCFOMstr" : {
+      String[] key = new String[]{request.getHeader("param1")}; 
+      cfo_mstr x = getCFOMstr(key);
+      ObjectMapper objectMapper = new ObjectMapper();
+      String r = objectMapper.writeValueAsString(x);
+      response.getWriter().print(r);
+      break;
+    }
+    
+    case "getCFODet" : {       
+        ArrayList<cfo_det> xd = getCFODet(request.getHeader("param1"), request.getHeader("param2"));
+        ObjectMapper omsd = new ObjectMapper(); 
+        String rsd = omsd.writeValueAsString(xd);
+        response.getWriter().print(rsd);
+        break;
+        } 
+
+    case "getCFOStatusList" : {       
+        ArrayList<cfo_status> xd = getCFOStatusList(request.getHeader("param1"), request.getHeader("param2"));
+        ObjectMapper omsd = new ObjectMapper(); 
+        String rsd = omsd.writeValueAsString(xd);
+        response.getWriter().print(rsd);
+        break;
+        } 
+
+    case "getFreightCodeByCodeKey" : {
+            response.getWriter().print(frtData.getFreightCodeByCodeKey(request.getHeader("param1"), request.getHeader("param2")));   
+            break; 
+    }
+    
+    case "getCFODefaultRevision" : {
+            response.getWriter().print(frtData.getCFODefaultRevision(request.getHeader("param1")));   
+            break; 
+    }
+    
+    case "getCFOCust" : {
+            response.getWriter().print(frtData.getCFOCust(request.getHeader("param1")));   
+            break; 
+    }
+    
+    case "getCFOCustfonbr" : {
+            response.getWriter().print(frtData.getCFOCustfonbr(request.getHeader("param1")));   
+            break; 
+    }
+    
+    
+    case "getCFOStatusInit" : {
+      response.getWriter().print(ArrayListStringArrayToJson(getCFOStatusInit()));
+      break;
+    }
+    
+    case "getMakeModel" : {
+      response.getWriter().print(ArrayListStringToJson(getMakeModel(request.getHeader("param1"))));
+      break;
+    }
+    
+    case "getCFOLines" : {
+      response.getWriter().print(ArrayListStringToJson(getCFOLines(request.getHeader("param1"))));
+      break;
+    }
+    
+    case "updateFreightInvoice" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper om = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+            ArrayList<String[]> al = om.readValue(ca[0], new TypeReference<ArrayList<String[]>>() {});
+            frtData.updateFreightInvoice(al, ca[1], ca[2]);    
+            break;
+        }
+    
+    case "updateCFORejection" : {
+        response.getWriter().println(boolToJson(updateCFORejection(request.getHeader("param1"), 
+                request.getHeader("param2"), 
+                request.getHeader("param3")))); 
+        break;
+        }
+
         
         
         default:

@@ -28,12 +28,14 @@ package com.blueseer.srv;
 
 import com.blueseer.adm.admData;
 import com.blueseer.shp.shpData;
+import static com.blueseer.shp.shpData.addUpdateShipMeta;
 import static com.blueseer.shp.shpData.getShipperMstrSet;
 import static com.blueseer.shp.shpData.getShpRptPickerData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringArrayToJson;
 import static com.blueseer.utl.BlueSeerUtils.ArrayListStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.boolToJson;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -132,6 +134,9 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(arrayToJson(shpData.confirmShipperTransaction(request.getHeader("param1"),request.getHeader("param2"),parseDate(request.getHeader("param3")))));  
             break;
             
+        case "getShipperSAC" :
+            response.getWriter().print(ArrayListStringArrayToJson(shpData.getShipperSAC(request.getHeader("param1"))));
+            break;
             
         case "getShipperMstrSet" :        
             shpData.Shipper shset = getShipperMstrSet(new String[]{request.getHeader("param1")});
@@ -192,7 +197,15 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         response.getWriter().print(getShpRptPickerData(x));  
         break;
         }
-            
+         
+        case "addUpdateShipMeta" : {
+        response.getWriter().println(boolToJson(addUpdateShipMeta(request.getHeader("param1"), 
+                request.getHeader("param2"), 
+                request.getHeader("param3"),
+                request.getHeader("param4")))); 
+        break;
+        }
+
             
         default:
         response.getWriter().print("");

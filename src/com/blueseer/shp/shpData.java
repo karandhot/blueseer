@@ -64,6 +64,7 @@ import static com.blueseer.utl.BlueSeerUtils.getGlobalProgTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToBoolean;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
@@ -2828,6 +2829,18 @@ public class shpData {
     }
 
     public static ArrayList<String[]> getShipperSAC(String shipper) {
+      if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getShipperSAC"});
+            list.add(new String[]{"param1", shipper});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServSHP"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        
       ArrayList<String[]> sac = new ArrayList<String[]>();
       ArrayList<String> orders = new ArrayList<String>();
       
@@ -4947,6 +4960,20 @@ public class shpData {
 
     public static boolean addUpdateShipMeta(String id, String type, String key, String value) {
         boolean x = false;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "addUpdateShipMeta"});
+            list.add(new String[]{"param1", id});
+            list.add(new String[]{"param2", type});
+            list.add(new String[]{"param3", key});
+            list.add(new String[]{"param4", value});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServSHP"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return x;
+            }
+        }
         try {
             
             Connection con = null;

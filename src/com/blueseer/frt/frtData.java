@@ -32,11 +32,19 @@ import static bsmf.MainFrame.ds;
 import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import static com.blueseer.adm.admData.addChangeLog;
 import com.blueseer.edi.EDI;
+import static com.blueseer.shp.shpData.addUpdateShipMeta;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
+import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToBoolean;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.sql.Connection;
@@ -45,6 +53,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 /**
@@ -270,6 +280,18 @@ public class frtData {
     }
     
     public static String[] addVehicleMstr(veh_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addVehicleMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  veh_mstr where veh_id = ?";
         String sqlInsert = "insert into veh_mstr (veh_id, veh_desc, veh_type," +
@@ -333,6 +355,18 @@ public class frtData {
     }
 
     public static String[] updateVehicleMstr(veh_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateVehicleMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sql = "update veh_mstr set veh_desc = ?, veh_type = ?," +
         "veh_subtype = ?,  veh_status = ?,  veh_make = ?,  veh_model = ?,  veh_submodel = ?," +
@@ -385,6 +419,22 @@ public class frtData {
     public static veh_mstr getVehicleMstr(String[] x) {
         veh_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getVehicleMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServFRT");
+                r = objectMapper.readValue(returnstring, veh_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new veh_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from veh_mstr where veh_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -438,7 +488,19 @@ public class frtData {
     }
     
     public static String[] deleteVehicleMstr(veh_mstr x) { 
-       String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteVehicleMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
         String sql = "delete from veh_mstr where veh_id = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql)) {
@@ -453,6 +515,18 @@ public class frtData {
     }
     
     public static String[] addDriverMstr(drv_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addDriverMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  drv_mstr where drv_id = ?";
         String sqlInsert = "insert into drv_mstr (drv_id, drv_status, drv_lname," +
@@ -515,6 +589,18 @@ public class frtData {
     }
 
     public static String[] updateDriverMstr(drv_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateDriverMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sql = "update drv_mstr set drv_status = ?, drv_lname = ?," +
         "drv_fname = ?,  drv_line1 = ?,  drv_line2 = ?,  drv_city = ?,  drv_state = ?," +
@@ -566,6 +652,22 @@ public class frtData {
     public static drv_mstr getDriverMstr(String[] x) {
         drv_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getDriverMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServFRT");
+                r = objectMapper.readValue(returnstring, drv_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new drv_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from drv_mstr where drv_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -618,7 +720,19 @@ public class frtData {
     }
     
     public static String[] deleteDriverMstr(drv_mstr x) { 
-       String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteDriverMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
         String sql = "delete from drv_mstr where drv_id = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql)) {
@@ -633,6 +747,18 @@ public class frtData {
     }
     
     public static String[] addBrokerMstr(brk_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addBrokerMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  brk_mstr where brk_id = ?";
         String sqlInsert = "insert into brk_mstr (brk_id, brk_status, brk_name," +
@@ -687,6 +813,18 @@ public class frtData {
     }
 
     public static String[] updateBrokerMstr(brk_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateBrokerMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         String sql = "update brk_mstr set brk_status = ?, brk_name = ?," +
             "brk_line1 = ?, brk_line2 = ?, brk_city = ?, brk_state = ?, brk_zip = ?," +
@@ -730,6 +868,22 @@ public class frtData {
     public static brk_mstr getBrokerMstr(String[] x) {
         brk_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getBrokerMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServFRT");
+                r = objectMapper.readValue(returnstring, brk_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new brk_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from brk_mstr where brk_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -777,7 +931,19 @@ public class frtData {
     }
     
     public static String[] deleteBrokerMstr(brk_mstr x) { 
-       String[] m = new String[2];
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteBrokerMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m = new String[2];
         String sql = "delete from brk_mstr where brk_id = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql)) {
@@ -792,6 +958,18 @@ public class frtData {
     }
     
     public static String[] addUpdateCFOCtrl(frt_ctrl x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addUpdateCFOCtrl"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         int rows = 0;
         String[] m = new String[2];
         String sqlSelect = "SELECT * FROM  frt_ctrl"; // there should always be only 1 or 0 records 
@@ -830,6 +1008,22 @@ public class frtData {
     public static frt_ctrl getCFOCtrl(String[] x) {
         frt_ctrl r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getCFOCtrl"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServFRT");
+                r = objectMapper.readValue(returnstring, frt_ctrl.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new frt_ctrl(m);
+                return r;
+            }
+        }
         String sql = "select * from frt_ctrl;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -857,6 +1051,18 @@ public class frtData {
     }
     
     public static String[] addCFOStatus(cfo_status x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addCFOStatus"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         int rows = 0;
         String sqlInsert = "insert into cfo_status (cfox_nbr, cfox_revision, cfox_cfonbr, " +
@@ -897,6 +1103,21 @@ public class frtData {
         cfo_status r = null;
         String[] m = new String[2];
         ArrayList<cfo_status> list = new ArrayList<cfo_status>();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<>();
+            paramlist.add(new String[]{"id","getCFOStatusList"});
+            paramlist.add(new String[]{"param1",code});
+            paramlist.add(new String[]{"param2",revision});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServFRT");
+                list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<cfo_status>>() {});
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+                return list;
+            }
+        }
         String sql = "select * from cfo_status where cfox_nbr = ? and cfox_revision = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -945,6 +1166,22 @@ public class frtData {
     public static cfo_status getCFOStatus(String[] x) {
         cfo_status r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getCFOStatus"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServFRT");
+                r = objectMapper.readValue(returnstring, cfo_status.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new cfo_status(m);
+                return r;
+            }
+        }
         String sql = "select * from cfo_status where cfox_nbr = ? and cfox_key = ?;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -1418,6 +1655,16 @@ public class frtData {
     }
     
     public static ArrayList<String[]> getCFOStatusInit() {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getCFOStatusInit"});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         String defaultsite = "";
         ArrayList<String[]> lines = new ArrayList<String[]>();
         try{
@@ -1531,7 +1778,17 @@ public class frtData {
     
     
     public static ArrayList<String> getMakeModel(String make) {
-       
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getMakeModel"});
+            list.add(new String[]{"param1", make});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         ArrayList<String> lines = new ArrayList<String>();
         try{
         Connection con = null;
@@ -1563,48 +1820,19 @@ public class frtData {
         return lines;
     }
     
-       
-    
-    public static String[] getBrokerInfo(String broker) {
-       
-        String[] x = new String[8]; // id, name, phone, contact, acct, cc, bank, terms
-        try{
-        Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-        Statement st = con.createStatement();
-        ResultSet res = null;
-        try{
-            res = st.executeQuery("select * from brk_mstr where brk_id = " + "'" + broker + "'" + ";");
-            while (res.next()) {
-               x[0] =res.getString("brk_id");
-               x[1] =res.getString("brk_name");
-               x[2] =res.getString("brk_phone");
-               x[3] =res.getString("brk_contact");
-               x[4] =res.getString("brk_acct");
-               x[5] =res.getString("brk_cc");
-               x[6] =res.getString("brk_bank");
-               x[7] =res.getString("brk_terms");
-            }
-        }
-        catch (SQLException s){
-             MainFrame.bslog(s);
-        } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               con.close();
-        }
-    }
-    catch (Exception e){
-        MainFrame.bslog(e);
-    }
-        return x;
-    }
     
     public static ArrayList<String> getCFOLines(String order) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getCFOLines"});
+            list.add(new String[]{"param1", order});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
         ArrayList<String> lines = new ArrayList<String>();
         try{
         Connection con = null;
@@ -2203,8 +2431,25 @@ public class frtData {
     
     
     public static cfo_mstr getCFOMstr(String[] x) {
+        
         cfo_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getCFOMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServFRT");
+                r = objectMapper.readValue(returnstring, cfo_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new cfo_mstr(m);
+                return r;
+            }
+        }
         String sql = "";
         if (x.length > 1 && x[1] != null && ! x[1].isBlank()) {
             sql = "select * from cfo_mstr where cfo_nbr = ? and cfo_revision = ? ;";
@@ -2277,8 +2522,24 @@ public class frtData {
      
     public static ArrayList<cfo_det> getCFODet(String code, String revision) {
         cfo_det r = null;
-        String[] m = new String[2];
         ArrayList<cfo_det> list = new ArrayList<cfo_det>();
+        String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<>();
+            paramlist.add(new String[]{"id","getCFODet"});
+            paramlist.add(new String[]{"param1",code});
+            paramlist.add(new String[]{"param2",revision});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServFRT");
+                list = objectMapper.readValue(returnstring, new TypeReference<ArrayList<cfo_det>>() {});
+                return list;
+            } catch (IOException ex) {
+                bslog(ex);
+                return list;
+            }
+        }
+        
         String sql = "select * from cfo_det where cfod_nbr = ? and cfod_revision = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql);) {
@@ -2597,7 +2858,20 @@ public class frtData {
         ps.close();
     }
     
-     public static String[] addCodeFreight(code_freight x) {
+    
+    public static String[] addCodeFreight(code_freight x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addCodeFreight"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m ;
         String sqlSelect = "SELECT * FROM  code_freight where freight_code = ? and codefreight_key = ?";
         String sqlInsert = "insert into code_freight (freight_code, freight_key, freight_value, freight_internal) " 
@@ -2630,6 +2904,18 @@ public class frtData {
     }
 
     public static String[] addOrUpdateCodeFreight(code_freight x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addOrUpdateCodeFreight"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m ;
         String sqlSelect = "SELECT * FROM  code_freight where freight_code = ? and freight_key = ?";
         String sqlInsert = "insert into code_freight (freight_code, freight_key, freight_value, freight_internal) " 
@@ -2670,6 +2956,18 @@ public class frtData {
     }
     
     public static String[] updateCodeFreight(code_freight x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","updateCodeFreight"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m ;
         String sql = "update code_freight set freight_value = ?, freight_internal = ? " +   
                           " where freight_code = ? and freight_key = ? ; ";
@@ -2689,7 +2987,19 @@ public class frtData {
     }
     
     public static String[] deleteCodeFreight(code_freight x) { 
-       String[] m ;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","deleteCodeFreight"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
+        String[] m ;
         String sql = "delete from code_freight where freight_code = ? and freight_key = ?; ";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());
 	PreparedStatement ps = con.prepareStatement(sql)) {
@@ -2707,6 +3017,22 @@ public class frtData {
     public static code_freight getCodeFreight(String[] x) {
         code_freight r = null;
         String[] m ;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getCodeFreight"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServFRT");
+                r = objectMapper.readValue(returnstring, code_freight.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new code_freight(m);
+                return r;
+            }
+        }
         String sql = "";
          if (x.length >= 2 && ! x[1].isEmpty()) {
             sql = "select * from code_freight where freight_code = ? and freight_key = ? ;"; 
@@ -2747,8 +3073,174 @@ public class frtData {
     
     
     // misc
+    public static String[] updateFreightInvoice(ArrayList<String[]> sacs, String shipper, String userid) {
+      
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> xlist = new ArrayList<>();
+            xlist.add(new String[]{"id","updateFreightInvoice"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(sacs);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(shipper);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(userid);
+                return jsonToStringArray(sendServerPost(xlist, jsonString, null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        } 
+       String[] m = new String[]{"0",""};
+    
+       DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd"); 
+       ArrayList<String> orders = new ArrayList<String>();
+       ArrayList<String[]> sac = new ArrayList<String[]>();
+       Double matltax = 0.00;
+       Double totamt = 0.00;
+       String cfonbr = "";
+       String custnbr = "";
+       String shipdate = "";
+       String site = "";
+       double prev_openamount = 0.00;
+       double prev_ARamount  = 0.00;
+       double new_openamount = 0.00;
+       
+       double totalcharges = 0;
+       double amount = 0.00;
+       try{
+
+        Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+
+            res = st.executeQuery("select * from ship_mstr where sh_id = " + "'" + shipper + "'" + ";");
+            while (res.next()) {
+               cfonbr = res.getString("sh_so");
+               custnbr = res.getString("sh_po");
+               shipdate = res.getString("sh_shipdate");
+               site = res.getString("sh_site");
+            }
+            
+            res = st.executeQuery("select * from ar_mstr where ar_nbr = " + "'" + shipper + "'" + ";");
+            while (res.next()) {
+               prev_openamount = res.getDouble("ar_open_amt");
+               prev_ARamount = res.getDouble("ar_amt");
+            }
+            
+            
+            // delete old ship_det records first
+             st.executeUpdate("delete from ship_det where shd_id = " + "'" + shipper + "'");
+
+            int j = 0; 
+            for (String[] s : sacs) { // array = type, code, desc, amt
+               j++;
+                totalcharges += Double.valueOf(s[3]); 
+              
+              
+                if (s[0].equals("discount")) {
+                    amount = -1 * bsParseDouble(s[3]);
+                } else {
+                    amount = bsParseDouble(s[3]);
+                }
+                
+                st.executeUpdate("insert into ship_det "
+                        + "(shd_id, shd_line, shd_item, shd_custitem, shd_so, shd_po, shd_date, shd_qty, shd_uom, "
+                        + "shd_listprice, shd_disc, shd_netprice, shd_wh, shd_loc, shd_desc, shd_taxamt, shd_site, shd_soline ) "
+                        + " values ( " + "'" + shipper + "'" + ","
+                        + "'" + (j + 1) + "'" + ","
+                        + "'" + s[1] + "'" + ","
+                        + "'" + "Flat Rate" + "'" + ","
+                        + "'" + cfonbr + "'" + ","
+                        + "'" + cfonbr + "'" + ","        
+                        + "'" + shipdate + "'" + ","        
+                        + "'" + "1" + "'" + ","
+                        + "'" + "EA" + "'" + ","
+                        + "'" + amount + "'" + ","        
+                        + "'" + "0" + "'" + ","
+                        + "'" + amount + "'" + ","
+                        + "''" + ","
+                        + "''" + ","
+                        + "'" + s[2] + "'" + ","
+                        + "'" + "0" + "'" + ","        
+                        + "'" + site + "'" + ","
+                        + "'" + j + "'" // sh_soline        
+                        + ")"
+                        + ";");
+            }
+            
+            new_openamount = totalcharges - prev_openamount;
+            
+            // BAD Idea!!!  These updates will definitely have repercussions depending on timing of invoice change
+            
+            st.executeUpdate("update ar_mstr set ar_amt = " + "'" + totalcharges + "'" + "," +
+                    " ar_base_amt = " + "'" + totalcharges + "'" + "," +
+                    " ar_open_amt = " + "'" + new_openamount + "'"  +
+                    " where ar_nbr = " + "'" + shipper + "'" + ";" );
+          
+             ArrayList<admData.change_log> list = new ArrayList<admData.change_log>();
+             admData.change_log z = new admData.change_log(null, 
+                "",
+                shipper,
+                "ship_det", 
+                "CFOInvoice", // class
+                userid, // userid
+                "Freight Invoice Change Previous Total: " + prev_ARamount + "  New Total: " + totalcharges,
+                "",// ts
+                "", // type
+                "" // ref
+                );
+             list.add(z);
+             addChangeLog(list);
+               
+            
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+           if (res != null) {
+                res.close();
+            }
+            if (st != null) {
+                st.close();
+            }
+            con.close();
+        }
+
+    }
+       
+   
+       
+       
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+    
+    addUpdateShipMeta(shipper, "EDI", "InvoiceStatus", "change");    // change , addendum, or blank for original (same as no record)
+    
+    return m;
+    }
+    
+    
     public static String getFreightCodeByCodeKey(String code, String key) {
-       String mystring = "";
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getFreightCodeByCodeKey"});
+            list.add(new String[]{"param1", code});
+            list.add(new String[]{"param2", key});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                return sendServerPost(list, "", null, "dataServFRT");
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        }
+        String mystring = "";
         try{
             
             Connection con = null;
@@ -2819,6 +3311,18 @@ public class frtData {
     }
     
     public static String getCFODefaultRevision(String cfo) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getCFODefaultRevision"});
+            list.add(new String[]{"param1", cfo});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                return sendServerPost(list, "", null, "dataServFRT");
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        }
         String item = "";
         try{
         Connection con = null;
@@ -2885,6 +3389,19 @@ public class frtData {
     }
     
     public static String getCFOCust(String order) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getCFOCust"});
+            list.add(new String[]{"param1", order});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                return sendServerPost(list, "", null, "dataServFRT");
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        }
+        
         String cust = "";
           try{
 
@@ -2923,6 +3440,18 @@ public class frtData {
    }
 
     public static String getCFOCustfonbr(String order) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getCFOCustfonbr"});
+            list.add(new String[]{"param1", order});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                return sendServerPost(list, "", null, "dataServFRT");
+            } catch (IOException ex) {
+                bslog(ex);
+                return "";
+            }
+        }
         String custfonbr = "";
           try{
 
@@ -2959,77 +3488,24 @@ public class frtData {
     }
          return custfonbr;
    }
-
-    public static String[] getDriverInfo(String drvid) {
+    
+    public static boolean updateCFORejection(String nbr, String code, String reason) {
+        boolean r = false;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "updateCFORejection"});
+            list.add(new String[]{"param1", nbr});
+            list.add(new String[]{"param2", code});
+            list.add(new String[]{"param3", reason});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return r;
+            }
+        }
         
-        String[] r = new String[]{"","",""}; // lname, lfname, phone
         try{
-        Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-        Statement st = con.createStatement();
-        ResultSet res = null;
-            try{
-                res = st.executeQuery("select drv_lname, drv_fname, drv_phone from drv_mstr where drv_id = " + "'" + drvid + "'" + 
-                        ";");
-                while (res.next()) {
-                    r[0] = res.getString("drv_lname");
-                    r[1] = res.getString("drv_fname");
-                    r[2] = res.getString("drv_phone");
-                }
-            }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               con.close();
-            }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
-             return r;
-    }
-    
-    public static String getDriverPhone(String driver) {
-       
-        String x = "";
-        try{
-        Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-        Statement st = con.createStatement();
-        ResultSet res = null;
-        try{
-            res = st.executeQuery("select drv_phone from drv_mstr where drv_id = " + "'" + driver + "'" + ";");
-            while (res.next()) {
-               x =res.getString("drv_phone");
-            }
-        }
-        catch (SQLException s){
-             MainFrame.bslog(s);
-        } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               con.close();
-        }
-    }
-    catch (Exception e){
-        MainFrame.bslog(e);
-    }
-        return x;
-    }
-    
-    
-    public static void updateCFORejection(String nbr, String code, String reason) {
-       try{
         Connection con = null;
             if (ds != null) {
               con = ds.getConnection();
@@ -3041,8 +3517,8 @@ public class frtData {
            st.executeUpdate(
                  " update cfo_mstr set cfo_rejectcode = " + "'" + code + "'" + ", " + " cfo_rejection = " + "'" + reason + "'" + 
                  " where cfo_nbr = " + "'" + nbr + "'" + ";" );
-        }
-        catch (SQLException s){
+        r = true;
+        } catch (SQLException s){
              MainFrame.bslog(s);
         } finally {
             if (st != null) {
@@ -3054,6 +3530,7 @@ public class frtData {
     catch (Exception e){
         MainFrame.bslog(e);
     }
+        return r;
     }
     
     

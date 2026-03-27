@@ -43,13 +43,14 @@ import static com.blueseer.ctr.cusData.getShipAddressInfo;
 import static com.blueseer.edi.EDI.Create990;
 import com.blueseer.fgl.fglData;
 import static com.blueseer.frt.frtData.addCFOTransaction;
+import com.blueseer.frt.frtData.brk_mstr;
 import com.blueseer.frt.frtData.cfo_det;
 import com.blueseer.frt.frtData.cfo_item;
 import com.blueseer.frt.frtData.cfo_mstr;
 import com.blueseer.frt.frtData.cfo_sos;
 import static com.blueseer.frt.frtData.deleteCFOMstr;
 import com.blueseer.frt.frtData.frt_ctrl;
-import static com.blueseer.frt.frtData.getBrokerInfo;
+import static com.blueseer.frt.frtData.getBrokerMstr;
 import static com.blueseer.frt.frtData.getCFOCtrl;
 import static com.blueseer.frt.frtData.getCFODet;
 import static com.blueseer.frt.frtData.getCFOItem;
@@ -4138,9 +4139,9 @@ public class CFOMaint extends javax.swing.JPanel implements IBlueSeerT {
 
     private void ddbrokerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddbrokerActionPerformed
         if (! isLoad && ddbroker.getSelectedItem() != null && ! ddbroker.getSelectedItem().toString().isBlank()) {
-            String[] x = getBrokerInfo(ddbroker.getSelectedItem().toString());
-            tbbrokercell.setText(x[2]);
-            tbbrokercontact.setText(x[3]);
+            brk_mstr brk = getBrokerMstr(new String[]{ddbroker.getSelectedItem().toString()});
+            tbbrokercell.setText(brk.brk_phone());
+            tbbrokercontact.setText(brk.brk_contact());
         }
     }//GEN-LAST:event_ddbrokerActionPerformed
 

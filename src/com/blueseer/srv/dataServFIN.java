@@ -75,6 +75,8 @@ import static com.blueseer.fgl.fglData.getPayProfile;
 import static com.blueseer.fgl.fglData.getPayProfileDet;
 import static com.blueseer.fgl.fglData.getTaxDet;
 import static com.blueseer.fgl.fglData.getTaxMstr;
+import static com.blueseer.fgl.fglData.get_pie_EmpPayByDate;
+import static com.blueseer.fgl.fglData.get_pie_EmpTypePayByDate;
 import static com.blueseer.fgl.fglData.updateAcctMstr;
 import static com.blueseer.fgl.fglData.updateBankMstr;
 import static com.blueseer.fgl.fglData.updateCurrMstr;
@@ -708,6 +710,32 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     request.getHeader("param5")})); 
       break;
     } 
+    
+    case "getPayRollBrowseView" : { 
+      response.getWriter().print(fglData.getPayRollBrowseView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4")})); 
+      break;
+    } 
+    
+    case "getPayRollBrowseDetView" : { 
+      response.getWriter().print(fglData.getPayRollBrowseDetView(request.getHeader("param1"), 
+                    request.getHeader("param2"))); 
+      break;
+    } 
+    
+    case "get_pie_EmpPayByDate" : { 
+      response.getWriter().print(ArrayListStringArrayToJson(get_pie_EmpPayByDate(request.getHeader("param1"), 
+                    request.getHeader("param2"))));
+      break;
+    }
+    
+    case "get_pie_EmpTypePayByDate" : { 
+      response.getWriter().print(ArrayListStringArrayToJson(get_pie_EmpTypePayByDate(request.getHeader("param1"), 
+                    request.getHeader("param2"))));
+      break;
+    }
     
     case "getGlTranBrowseView" : { 
       response.getWriter().print(fglData.getGlTranBrowseView(new String[]{request.getHeader("param1"), 

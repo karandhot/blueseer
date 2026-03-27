@@ -48,6 +48,7 @@ import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeerT;
+import com.blueseer.utl.IBlueSeerV;
 import com.blueseer.utl.OVData;
 import java.awt.Color;
 import java.awt.Component;
@@ -56,6 +57,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -75,10 +77,16 @@ import javax.swing.SwingWorker;
  *
  * @author vaughnte
  */
-public class FreightCodeMaint extends javax.swing.JPanel implements IBlueSeerT    {
+public class FreightCodeMaint extends javax.swing.JPanel implements IBlueSeerV    {
 
-    // global variable declarations
-    boolean isLoad = false;
+   // global variable declarations
+        boolean isLoad = false;
+        boolean canUpdate = false;
+        boolean isAutoPost = false;
+        ArrayList<String[]> initDataSets = null;
+        String defaultSite = "";
+        String defaultCurrency = "";
+        String defaultCC = "";
     public static code_freight x = null;
     
     // lookup variables
@@ -275,18 +283,22 @@ public class FreightCodeMaint extends javax.swing.JPanel implements IBlueSeerT  
        }
     }
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
         isLoad = true;
-           tbkey.setText("");
+        tbkey.setText("");
         tbkey2.setText("");
         tbvalue.setText("");
+        
+        if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
+        }
         
        isLoad = false;
     }
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btdelete.setEnabled(false);
@@ -351,7 +363,7 @@ public class FreightCodeMaint extends javax.swing.JPanel implements IBlueSeerT  
     public void initvars(String[] arg) {
         
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         cbsystem.setEnabled(false);
@@ -656,6 +668,7 @@ public class FreightCodeMaint extends javax.swing.JPanel implements IBlueSeerT  
 
     private void btclearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btclearActionPerformed
         BlueSeerUtils.messagereset();
+        initDataSets = null;
         initvars(null);
     }//GEN-LAST:event_btclearActionPerformed
 

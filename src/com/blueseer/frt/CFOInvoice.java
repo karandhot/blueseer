@@ -47,6 +47,7 @@ import static com.blueseer.frt.frtData.getBrokerMstr;
 import static com.blueseer.frt.frtData.getDriverMstr;
 import static com.blueseer.frt.frtData.updateBrokerMstr;
 import static com.blueseer.frt.frtData.updateDriverMstr;
+import static com.blueseer.frt.frtData.updateFreightInvoice;
 import com.blueseer.frt.frtData.veh_mstr;
 import com.blueseer.shp.shpData;
 import static com.blueseer.shp.shpData.addUpdateShipMeta;
@@ -309,8 +310,6 @@ public class CFOInvoice extends javax.swing.JPanel {
     public void setComponentDefaultValues() {
        isLoad = true;
        
-       String  now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
-       int year = Integer.valueOf(now.substring(0,4));
        tbkey.setText("");
        
         sactable.setModel(sacmodel);
@@ -389,149 +388,17 @@ public class CFOInvoice extends javax.swing.JPanel {
         
      
     public String[] updateRecord(String[] x) {
-    String[] m = new String[]{"0",""};
-    
-      DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd"); 
-       ArrayList<String> orders = new ArrayList<String>();
-       ArrayList<String[]> sac = new ArrayList<String[]>();
-       Double matltax = 0.00;
-       Double totamt = 0.00;
-       String shipper = tbkey.getText();
-       String cfonbr = "";
-       String custnbr = "";
-       String shipdate = "";
-       String site = "";
-       double prev_openamount = 0.00;
-       double prev_ARamount  = 0.00;
-       double new_openamount = 0.00;
-       
-       double totalcharges = 0;
-       double amount = 0.00;
-       try{
-
-        Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-        Statement st = con.createStatement();
-        ResultSet res = null;
-        try{
-
-            res = st.executeQuery("select * from ship_mstr where sh_id = " + "'" + shipper + "'" + ";");
-            while (res.next()) {
-               cfonbr = res.getString("sh_so");
-               custnbr = res.getString("sh_po");
-               shipdate = res.getString("sh_shipdate");
-               site = res.getString("sh_site");
-            }
-            
-            res = st.executeQuery("select * from ar_mstr where ar_nbr = " + "'" + shipper + "'" + ";");
-            while (res.next()) {
-               prev_openamount = res.getDouble("ar_open_amt");
-               prev_ARamount = res.getDouble("ar_amt");
-            }
-            
-            
-            // delete old ship_det records first
-             st.executeUpdate("delete from ship_det where shd_id = " + "'" + shipper + "'");
-
-             
-            for (int j = 0; j < sactable.getRowCount(); j++) {
-              totalcharges += Double.valueOf(sactable.getValueAt(j, 3).toString()); 
-              
-              
-                if (sactable.getValueAt(j, 0).toString().equals("discount") &&
-                sactable.getValueAt(j, 3).toString().equals("amount")) {
-                    amount = -1 * bsParseDouble(sactable.getValueAt(j, 3).toString());
-                } else {
-                    amount = bsParseDouble(sactable.getValueAt(j, 3).toString());
-                }
-                
-                st.executeUpdate("insert into ship_det "
-                        + "(shd_id, shd_line, shd_item, shd_custitem, shd_so, shd_po, shd_date, shd_qty, shd_uom, "
-                        + "shd_listprice, shd_disc, shd_netprice, shd_wh, shd_loc, shd_desc, shd_taxamt, shd_site, shd_soline ) "
-                        + " values ( " + "'" + shipper + "'" + ","
-                        + "'" + (j + 1) + "'" + ","
-                        + "'" + sactable.getValueAt(j, 1).toString().replace("'", "") + "'" + ","
-                        + "'" + "Flat Rate" + "'" + ","
-                        + "'" + cfonbr + "'" + ","
-                        + "'" + cfonbr + "'" + ","        
-                        + "'" + shipdate + "'" + ","        
-                        + "'" + "1" + "'" + ","
-                        + "'" + "EA" + "'" + ","
-                        + "'" + amount + "'" + ","        
-                        + "'" + "0" + "'" + ","
-                        + "'" + amount + "'" + ","
-                        + "''" + ","
-                        + "''" + ","
-                        + "'" + sactable.getValueAt(j, 2).toString().replace("'", "") + "'" + ","
-                        + "'" + "0" + "'" + ","        
-                        + "'" + site + "'" + ","
-                        + "'" + (j + 1) + "'" // sh_soline        
-                        + ")"
-                        + ";");
-            }
-            
-            new_openamount = totalcharges - prev_openamount;
-            
-            // BAD Idea!!!  These updates will definitely have repercussions depending on timing of invoice change
-            
-            st.executeUpdate("update ar_mstr set ar_amt = " + "'" + totalcharges + "'" + "," +
-                    " ar_base_amt = " + "'" + totalcharges + "'" + "," +
-                    " ar_open_amt = " + "'" + new_openamount + "'"  +
-                    " where ar_nbr = " + "'" + shipper + "'" + ";" );
-            /*            
-            st.executeUpdate("update gl_tran set glt_amt = " + "'" + totalcharges + "'" + "," +
-                    " glt_base_amt = " + "'" + totalcharges + "'" + 
-                    " where glt_type = 'ISS-SALES' and glt_ref = " + "'" + shipper + "'" + " and glt_site = " + "'" + site + "'" + ";" );
-           
-            st.executeUpdate("update gl_hist set glh_amt = " + "'" + totalcharges + "'" + "," +
-                    " glh_base_amt = " + "'" + totalcharges + "'" + 
-                    " where glh_type = 'ISS-SALES' and glh_ref = " + "'" + shipper + "'" + " and glh_site = " + "'" + site + "'" + ";" );
-            
-            st.executeUpdate("update acb_mstr set acb_amt = " + "'" + totalcharges + "'" + "," +
-                    " glh_base_amt = " + "'" + totalcharges + "'" + 
-                    " where glh_type = 'ISS-SALES' and glh_ref = " + "'" + shipper + "'" + " and glh_site = " + "'" + site + "'" + ";" );
-            */
-             ArrayList<change_log> list = new ArrayList<change_log>();
-             change_log z = new change_log(null, 
-                "",
-                tbkey.getText().toString(),
-                "ship_det", 
-                "CFOInvoice", // class
-                bsmf.MainFrame.userid, // userid
-                "Freight Invoice Change Previous Total: " + prev_ARamount + "  New Total: " + totalcharges,
-                "",// ts
-                "", // type
-                "" // ref
-                );
-             list.add(z);
-             addChangeLog(list);
-               
-            
+        ArrayList<String[]> list = new ArrayList<>();
+        
+        for (int j = 0; j < sactable.getRowCount(); j++) {
+         
+            list.add(new String[]{sactable.getValueAt(j, 0).toString(),
+         sactable.getValueAt(j, 1).toString(),
+         sactable.getValueAt(j, 2).toString(),
+         sactable.getValueAt(j, 3).toString()});
+         
         }
-        catch (SQLException s){
-             MainFrame.bslog(s);
-        } finally {
-           if (res != null) {
-                res.close();
-            }
-            if (st != null) {
-                st.close();
-            }
-            con.close();
-        }
-
-    }
-       
-   
-       
-       
-    catch (Exception e){
-        MainFrame.bslog(e);
-    }
+    String[] m = updateFreightInvoice(list, tbkey.getText(), bsmf.MainFrame.userid);
     
     addUpdateShipMeta(tbkey.getText(), "EDI", "InvoiceStatus", "change");    // change , addendum, or blank for original (same as no record)
     
