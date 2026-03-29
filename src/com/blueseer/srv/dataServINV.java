@@ -38,6 +38,7 @@ import static com.blueseer.inv.invData.addUOMMstr;
 import static com.blueseer.inv.invData.addUpdateINVCtrl;
 import static com.blueseer.inv.invData.addWareHouseMstr;
 import static com.blueseer.inv.invData.addWorkCenterMstr;
+import static com.blueseer.inv.invData.bind_tree;
 import static com.blueseer.inv.invData.bind_tree_op;
 import static com.blueseer.inv.invData.deleteItemMstr;
 import static com.blueseer.inv.invData.deleteLocationMstr;
@@ -51,6 +52,7 @@ import static com.blueseer.inv.invData.deleteWorkCenterMstr;
 import static com.blueseer.inv.invData.deleteZeroInventoryRecs;
 import static com.blueseer.inv.invData.getBOMsByItemSite;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
+import static com.blueseer.inv.invData.getComponentByBomOp;
 import static com.blueseer.inv.invData.getCurrentCost;
 import static com.blueseer.inv.invData.getINVCtrl;
 import static com.blueseer.inv.invData.getInvBrowseView;
@@ -834,6 +836,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;    
         }
         
+        case "getComponentByBomOp" : {
+            response.getWriter().print(arrayToJson(getComponentByBomOp(request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"))));
+            break;    
+        }
+        
         case "getCurrentCost" :   {     
             response.getWriter().print(ArrayListDoubleToJson(getCurrentCost(request.getHeader("param1"))));
             break;    
@@ -866,6 +876,17 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         case "bind_tree_op" : { 
             DefaultMutableTreeNode x = bind_tree_op(request.getHeader("param1"));
+            ObjectMapper objectMapper = new ObjectMapper(); 
+            String r = "";
+            if (x != null && x.getChildCount() > 0) {
+            r = objectMapper.writeValueAsString(x);
+            } 
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "bind_tree" : { 
+            DefaultMutableTreeNode x = bind_tree(request.getHeader("param1"), request.getHeader("param2"), null);
             ObjectMapper objectMapper = new ObjectMapper(); 
             String r = "";
             if (x != null && x.getChildCount() > 0) {

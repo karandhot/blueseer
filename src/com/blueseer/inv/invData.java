@@ -5837,6 +5837,25 @@ public class invData {
                     res.getString("itc_out_top")};
                     myarray.add(arr);
                 }
+                
+                ArrayList<Double> currlist = invData.getCurrentCost(item);
+                double totalcurr = 0.0;
+                for (double d : currlist) {
+                    totalcurr += d;
+                }
+                String[] arrm = new String[]{"currentmtl", bsNumber(currlist.get(0))};
+                myarray.add(arrm);
+                String[] arrl = new String[]{"currentlbr", bsNumber(currlist.get(1))};
+                myarray.add(arrl);
+                String[] arrb = new String[]{"currentbdn", bsNumber(currlist.get(2))};
+                myarray.add(arrb);
+                String[] arrovh = new String[]{"currentovh", bsNumber(currlist.get(3))};
+                myarray.add(arrovh);
+                String[] arrout = new String[]{"currentout", bsNumber(currlist.get(4))};
+                myarray.add(arrout);
+                String[] arrtot = new String[]{"currenttot", bsNumber(currlist.get(5))};
+                myarray.add(arrtot);
+              
 
                }
                 catch (SQLException s){
@@ -7774,8 +7793,7 @@ public class invData {
         }
         return hm;
     } 
-   
-    
+       
     public static String[] getItemDetail(String item) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<>();
@@ -7789,7 +7807,7 @@ public class invData {
             }
         }   
         
-        String[] x = new String[]{"","","","","","","","","","",""};
+        String[] x = new String[]{"","","","","","","","","","","",""};
            int days = 0;
            Calendar caldate = Calendar.getInstance();
            try{
@@ -7802,7 +7820,10 @@ public class invData {
             Statement st = con.createStatement();
             ResultSet res = null;
             try{
-                res = st.executeQuery("select it_item, it_desc, it_uom, it_prodline, it_code, it_rev, it_status, it_site, it_loc, it_wh, it_expiredays from item_mstr where it_item = " + "'" + item + "';" );
+                res = st.executeQuery("select it_item, it_desc, it_uom, it_prodline, it_code, it_rev, it_status, it_site, it_loc, it_wh, it_expiredays " +
+                        " from item_mstr " +
+                        " left outer join item_cost on itc_item = it_item and itc_set = 'standard' " +
+                        " where it_item = " + "'" + item + "';" );
                while (res.next()) {
                    if (res.getString("it_expiredays") != null && ! res.getString("it_expiredays").isEmpty()) {
                    days = res.getInt("it_expiredays");
@@ -7821,6 +7842,7 @@ public class invData {
                   caldate.add(Calendar.DATE, days);
                   x[10] = BlueSeerUtils.setDateFormat(caldate.getTime());
                 }
+                x[11] = res.getString("itc_total");
                 }
           } catch (SQLException s) {
                 MainFrame.bslog(s);
@@ -7905,6 +7927,81 @@ public class invData {
 
     }
 
+    public static String[] getComponentByBomOp(String parent, String component, String op, String bom) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getItemComponentDetail"});
+            list.add(new String[]{"param1",  parent});
+            list.add(new String[]{"param2",  component});
+            list.add(new String[]{"param3",  op});
+            list.add(new String[]{"param4",  bom});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServINV"));  
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }   
+        
+        String[] x = new String[]{"","","","","","","","",""};
+           int days = 0;
+           Calendar caldate = Calendar.getInstance();
+           try{
+            Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try{
+                res = st.executeQuery("SELECT ps_child, it_desc, ps_op, ps_qty_per, itc_total, it_expiredays, ps_serialized, ps_ref, it_code  " +
+                       " FROM  pbm_mstr inner join item_mstr on it_item = ps_child  " +
+                       " left outer join item_cost on itc_item = it_item and itc_set = 'standard' " +
+                       " where ps_parent = " + "'" + parent + "'" + 
+                       " AND ps_child = " + "'" + component + "'" + 
+                       " AND ps_op = " + "'" + op + "'" +
+                       " AND ps_bom = " + "'" + bom + "'" +          
+                             " ;");
+                while (res.next()) {
+                   if (res.getString("it_expiredays") != null && ! res.getString("it_expiredays").isEmpty()) {
+                   days = res.getInt("it_expiredays");
+                   }  
+                x[0] = res.getString("ps_child"); 
+                x[1] = res.getString("it_desc"); 
+                x[2] = res.getString("ps_op"); 
+                x[3] = res.getString("ps_qty_per"); 
+                x[4] = res.getString("itc_total"); 
+                if (days > 0) {
+                  caldate.add(Calendar.DATE, days);
+                  x[5] = BlueSeerUtils.setDateFormat(caldate.getTime());
+                }
+                x[6] = res.getString("ps_serialized");
+                x[7] = res.getString("ps_ref");
+                x[8] = res.getString("it_code");
+                
+                
+                }
+          } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+          }
+        } catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return x;
+
+    }
+
+    
     public static ArrayList<String> getItemRoutingOPs(String myitem) {
        ArrayList myarray = new ArrayList();
         try{
@@ -8842,6 +8939,85 @@ public class invData {
         return mynode;
      }
     
+    public static DefaultMutableTreeNode bind_tree(String item, String bomid, Connection bscon)  {  
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","bind_tree"});
+            list.add(new String[]{"param1",item});
+            list.add(new String[]{"param2",bomid});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServINV");
+                DefaultMutableTreeNode r = new DefaultMutableTreeNode();
+                if (returnstring != null && ! returnstring.isBlank()) {
+                 r = objectMapper.readValue(returnstring, DefaultMutableTreeNode.class); 
+                }
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        
+       DefaultMutableTreeNode mynode = new DefaultMutableTreeNode(item); 
+       ArrayList<String> myops = new ArrayList<String>();
+        //myops = OVData.getItemRoutingOPs(mypart);  //based on itr_cost
+       //  myops = invData._getItemWFOPs(item, bscon);   // based on it_wf and wf_mstr
+        myops = invData.getRoutingOperationsByBOM(bomid);  // based on the specific BOM id
+        
+        if (bscon == null) {
+            if (ds != null) {
+                 try {
+                     bscon = ds.getConnection();
+                 } catch (SQLException ex) {
+                     MainFrame.bslog(ex);
+                 }
+            } else {
+                 try {   
+                     bscon = DriverManager.getConnection(url + db, user, pass);
+                 } catch (SQLException ex) {
+                     MainFrame.bslog(ex);
+                 }
+            }
+        }
+        
+        for ( String myvalue : myops) {
+            DefaultMutableTreeNode opnode = new DefaultMutableTreeNode(myvalue);
+            opnode = get_nodes_by_op_detail_new(item, item, myvalue, bomid, bscon);
+            mynode.add(opnode);
+        }
+       return mynode;
+      }
+    
+    public static DefaultMutableTreeNode get_nodes_by_op_detail_new(String root, String item, String myop, String rootbom, Connection bscon)  {
+        //  bsmf.MainFrame.show(root + "/" + mypart + "/" + myop);
+        String myroot = "";
+            if (root.toLowerCase().equals(item.toLowerCase()))
+            myroot = myop;
+        else
+            myroot = item;
+         DefaultMutableTreeNode mynode = new DefaultMutableTreeNode(myroot);
+         
+        
+        ArrayList<String[]> mylist = OVData._getpsmstrlistbyopnew(item, myop, rootbom, bscon);
+     //   mylist = OVData.getpsmstrlist(newpart[0]);
+        for ( String[] myvalue : mylist) {
+              if (myvalue[0].toUpperCase().compareTo(item.toUpperCase().toString()) == 0) {
+               
+                  if (myvalue[2].toUpperCase().compareTo("M") == 0) {
+                    DefaultMutableTreeNode mfgnode = new DefaultMutableTreeNode(); 
+                    mfgnode = bind_tree(myvalue[1], myvalue[5], bscon);
+                    mynode.add(mfgnode);
+                  } else {
+                  DefaultMutableTreeNode childnode = new DefaultMutableTreeNode(myvalue[1]);   
+                 
+                  mynode.add(childnode);
+                  }
+              }
+        }
+        return mynode;
+     } 
+     
      
     
                

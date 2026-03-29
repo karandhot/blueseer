@@ -36,11 +36,14 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import static com.blueseer.inv.invData.addPBM;
 import static com.blueseer.inv.invData.addupdateBOMMstr;
 import com.blueseer.inv.invData.bom_mstr;
 import static com.blueseer.inv.invData.deletePBM;
 import static com.blueseer.inv.invData.getBOMMstr;
+import static com.blueseer.inv.invData.getComponentByBomOp;
+import static com.blueseer.inv.invData.getItemDetail;
 import static com.blueseer.inv.invData.getItemOutCost;
 import static com.blueseer.inv.invData.getItemOvhCost;
 import com.blueseer.inv.invData.pbm_mstr;
@@ -74,11 +77,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.LocalDateTime;
@@ -116,14 +115,17 @@ public class BOMMaint extends javax.swing.JPanel {
     
     // global variable declarations
                 boolean isLoad = false;
-                String site = "";
+                ArrayList<String[]> initDataSets = null;
+                String defaultSite = "";
+                String defaultCurrency = "";
+                boolean canUpdate = false;
                 String parent = "";
                 String BomID = "";
                 String RoutingID = "";
                 boolean bomexist = false;
                 boolean newbomid = false;
                 public static bom_mstr x = null;
-                ArrayList<String[]> initdata = new ArrayList<String[]>();
+                ArrayList<String[]> bomdata = new ArrayList<String[]>();
                 ArrayList<Double> currentcost = new ArrayList<Double>();
                 
      javax.swing.table.DefaultTableModel matlmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
@@ -189,7 +191,7 @@ public class BOMMaint extends javax.swing.JPanel {
                     message = getRecord(key);    
                     break;   
                 case "run":
-                    OVData.setStandardCosts(site, parent);
+                    OVData.setStandardCosts(defaultSite, parent);
                     break; 
                 default:
                     message = new String[]{"1", "unknown action"};
@@ -339,11 +341,16 @@ public class BOMMaint extends javax.swing.JPanel {
        }
     }
     
-    public void setComponentDefaultValues() {
-       isLoad = true; 
+    public void setComponentDefaultValues(boolean init) {
+       isLoad = true;
+       
+       if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "items");
+       }
+       
+       
        bomexist = false;
        newbomid = false;
-       site = "";
        parent = "";
        
        tbkey.setText("");
@@ -393,12 +400,22 @@ public class BOMMaint extends javax.swing.JPanel {
     	}
         jTree1.setVisible(false);
        
-        site = OVData.getDefaultSite();
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("items")) {
+              ddcomp.addItem(s[1]);
+            }
+        }
         
-        ArrayList<String> mylist = invData.getItemMasterAlllist();
-               for (int i = 0; i < mylist.size(); i++) {
-                    ddcomp.addItem(mylist.get(i));
-               }
+        
         
        isLoad = false; 
     }
@@ -407,7 +424,7 @@ public class BOMMaint extends javax.swing.JPanel {
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btupdate.setEnabled(false);
         btdelete.setEnabled(false);
@@ -549,7 +566,7 @@ public class BOMMaint extends javax.swing.JPanel {
         
     public void initvars(String[] arg) {
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btlookup.setEnabled(true);
          if (arg != null && arg.length > 0) {
             executeTask("get",arg);
@@ -564,11 +581,11 @@ public class BOMMaint extends javax.swing.JPanel {
     public String[] getRecord(String[] key) {
           
         // init data
-        initdata = invData.getBOMInit(key[0], site, key[1], bsmf.MainFrame.userid);
+        bomdata = invData.getBOMInit(key[0], defaultSite, key[1], bsmf.MainFrame.userid);
         
         // lets first determine if there are any BOMs default or alternates
        // BomID = OVData.getDefaultBomID(key[0]);
-        for (String[] code : initdata) {
+        for (String[] code : bomdata) {
             if (code[0].equals("defaultbom"))
             BomID = code[1];
         }
@@ -593,7 +610,7 @@ public class BOMMaint extends javax.swing.JPanel {
         
         // override message if no routing for parent item
         boolean isrouting = false;
-        for (String[] code : initdata) {
+        for (String[] code : bomdata) {
             if (code[0].equals("defaultrouting"))
             isrouting = true;
             RoutingID = code[1];
@@ -749,7 +766,7 @@ public class BOMMaint extends javax.swing.JPanel {
                //  initvars(new String[]{tbkey.getText(),target.getValueAt(row,1).toString()});
                 getRecord(new String[]{tbkey.getText(),target.getValueAt(row,1).toString()});
                 if (BlueSeerUtils.ConvertStringToBool(x.bom_primary())) {
-                    for (String[] code : initdata) {
+                    for (String[] code : bomdata) {
                         if (code[0].equals("cost")) {
                         tbparentcostSTD.setText(currformat(code[1]));
                         }
@@ -790,7 +807,7 @@ public class BOMMaint extends javax.swing.JPanel {
       double matlcost = 0.00;
       String defaultrouting = "";
       
-      for (String[] code : initdata) {
+      for (String[] code : bomdata) {
           
             if (code[0].equals("routings"))
             ddrouting.addItem(code[1]);
@@ -869,7 +886,7 @@ public class BOMMaint extends javax.swing.JPanel {
     }
     
     public void updateFormRollCost() {
-        tbparentcostSTD.setText(String.valueOf(bsFormatDouble5(invData.getItemCost(parent, "STANDARD", site))));
+        tbparentcostSTD.setText(String.valueOf(bsFormatDouble5(invData.getItemCost(parent, "STANDARD", defaultSite))));
         if (! tbparentcostCUR.getText().equals(tbparentcostSTD.getText())) {
              tbparentcostCUR.setBackground(Color.green);
              tbparentcostSTD.setBackground(Color.yellow);
@@ -905,7 +922,7 @@ public class BOMMaint extends javax.swing.JPanel {
         double ovhcost = 0.00;
         double outcost = 0.00;
         
-        for (String[] code : initdata) {
+        for (String[] code : bomdata) {
             if (code[0].equals("ovhcost")) {
             ovhcost = bsParseDouble(code[1]);
             }
@@ -1021,125 +1038,26 @@ public class BOMMaint extends javax.swing.JPanel {
 }
     
     public void getComponents(String parent, String bomid) {
-               
-       double matlcost = 0.00;
-       calcCost cur = new calcCost("current");
-       matlcost = cur.getMtlCost(parent, bomid);
-       
-       tbtotmaterial.setText(String.valueOf(matlcost));
-        try {
-           Connection con = null;
-            if (ds != null) {
-                  con = ds.getConnection();
-            } else {
-                  con = DriverManager.getConnection(url + db, user, pass);  
+        
+        for (String[] d : bomdata) {
+            matlmodel.setRowCount(0);
+            matltable.setModel(matlmodel);
+            if (d[0].equals("components")) {
+                matlmodel.addRow(new Object[]{
+                    d[1], //res.getString("ps_child"),
+                    d[2], // res.getString("ps_op"),
+                    d[3], //res.getDouble("ps_qty_per"),
+                    d[4], //res.getDouble("b.itc_total"),
+                    d[5] //res.getDouble("a.itc_total")
+                });
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-               
-                int i = 0;
-
-                
-                matlmodel.setRowCount(0);
-                matltable.setModel(matlmodel);
-                            
-                // ReportPanel.TableReport.getColumn("CallID").setCellRenderer(new ButtonRenderer());
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
-
-               res = st.executeQuery("SELECT ps_child, ps_qty_per, ps_type, ps_op, a.itc_total as 'a.itc_total', b.itc_total as 'b.itc_total' " +
-                        " FROM  pbm_mstr  " +
-                        " left outer join item_cost a on a.itc_item = ps_child and a.itc_set = 'standard' and a.itc_site = " + "'" + site + "'" +
-                        " left outer join item_cost b on b.itc_item = ps_child and b.itc_set = 'current' and b.itc_site = " + "'" + site + "'" +
-                        " where ps_parent = " + "'" + parent + "'" + 
-                        " and ps_bom = " + "'" + bomid + "'" +        
-                        " order by ps_child ;");
-
-                while (res.next()) {
-                    i++;
-                  //  matlcost += res.getDouble("ps_qty_per") * res.getDouble("itc_total");
-                    matlmodel.addRow(new Object[]{
-                                res.getString("ps_child"),
-                                res.getString("ps_op"),
-                                res.getDouble("ps_qty_per"),
-                                res.getDouble("b.itc_total"),
-                                res.getDouble("a.itc_total")
-                            });
-              
-                }
-                
-               tbtotmaterial.setText(String.valueOf(bsFormatDouble5(matlcost)));
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
+            if (d[0].equals("currenttot")) {
+               tbtotmaterial.setText(d[1]); 
             }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
+        }        
         
     }
     
-    public void getComponentDetail(String component) {
-       
-        tbcomptype.setText("");
-        lblcomp.setText("");
-        tbcompcost.setText("");
-         
-         try {
-            Connection con = null;
-            if (ds != null) {
-                  con = ds.getConnection();
-            } else {
-                  con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-               
-                boolean proceed = true;
-                int i = 0;
-                String type = "";
-                
-           res = st.executeQuery("SELECT it_item, it_desc, it_code, itc_total from item_mstr left outer join item_cost on itc_item = it_item and itc_set = 'standard' and itc_site = it_site " +
-                   " where it_item = " + "'" + 
-                            ddcomp.getSelectedItem().toString() + "'" + ";");
-                    i = 0;
-                    while (res.next()) {
-                        i++;
-                        tbcomptype.setText(res.getString("it_code"));
-                        lblcomp.setText(res.getString("it_desc"));
-                        tbcompcost.setText(String.valueOf(bsFormatDouble5(res.getDouble("itc_total"))));
-                        
-                    }
-                   
-             } catch (SQLException s) {
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-                MainFrame.bslog(s);
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-        
-        
-    }
-   
     public void resetForm() {
        isLoad = true; 
       // bomexist = false;
@@ -1214,110 +1132,33 @@ public class BOMMaint extends javax.swing.JPanel {
     
     public void setcomponentattributes(String parent, String component, String op, String bomid) {
        
-          tbqtyper.setText("");
-          tbref.setText("");
+        tbqtyper.setText("");
+        tbref.setText("");
+        String[] xarr = getComponentByBomOp(parent, component, op, bomid);
+        ddop.setSelectedItem(xarr[2]);
+        tbqtyper.setText(String.valueOf(bsFormatDouble5(bsParseDouble(xarr[3]))));
+        tbref.setText(xarr[7]);
+        ddcomp.setSelectedItem(xarr[0]);
+        cbserialized.setSelected(BlueSeerUtils.ConvertStringToBool(xarr[6]));
         
-        try {
-
-          Connection con = null;
-            if (ds != null) {
-                  con = ds.getConnection();
-            } else {
-                  con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-               
-                boolean proceed = true;
-                int i = 0;
-                String type = "";
-           res = st.executeQuery("SELECT ps_parent, ps_child, ps_op, ps_serialized, ps_qty_per, it_desc, it_uom,  ps_ref FROM  pbm_mstr " +
-                   " inner join item_mstr on it_item = ps_child " +
-                   " where ps_parent = " + "'" + parent + "'" + 
-                   " AND ps_child = " + "'" + component + "'" + 
-                   " AND ps_op = " + "'" + op + "'" +
-                   " AND ps_bom = " + "'" + bomid + "'" +     
-                   ";");
-                    i = 0;
-                    while (res.next()) {
-                        i++;
-                        ddop.setSelectedItem(res.getString("ps_op"));
-                        tbqtyper.setText(String.valueOf(bsFormatDouble5(res.getDouble("ps_qty_per"))));
-                        tbref.setText(res.getString("ps_ref"));
-                        ddcomp.setSelectedItem(res.getString("ps_child"));
-                        cbserialized.setSelected(BlueSeerUtils.ConvertStringToBool(res.getString("ps_serialized")));
-                        
-                        // set update button 
-                        
-                    }
-                    if (i == 0) {
-                        btadd.setEnabled(true);
-                        btpdf.setEnabled(false);
-                    } else {
-                        btadd.setEnabled(true);
-                        btpdf.setEnabled(true);
-                    }
-                    
-              res = st.executeQuery("SELECT it_item, it_desc, it_code, itc_total from item_mstr left outer join item_cost on itc_item = it_item and itc_set = 'standard' and itc_site = it_site " +
-                   " where it_item = " + "'" + 
-                            component + "'" + ";");
-                    i = 0;
-                    while (res.next()) {
-                        i++;
-                        tbcomptype.setText(res.getString("it_code"));
-                        lblcomp.setText(res.getString("it_desc"));
-                        tbcompcost.setText(String.valueOf(bsFormatDouble5(res.getDouble("itc_total"))));
-                        
-                    }       
-                    
-                    
-             } catch (SQLException s) {
-                 bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-                MainFrame.bslog(s);
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+        if (xarr[0].isBlank()) {
+            btadd.setEnabled(true);
+            btpdf.setEnabled(false);
+        } else {
+            btadd.setEnabled(true);
+            btpdf.setEnabled(true);
         }
+        tbcomptype.setText(xarr[8]);
+        lblcomp.setText(xarr[1]);
+        tbcompcost.setText(String.valueOf(bsFormatDouble5(bsParseDouble(xarr[4]))));
         
         
     }
     
     public void bind_tree(String parentpart, String bomid) {
-     
-        Connection bscon = null;
-             if (ds != null) {
-                 try {
-                     bscon = ds.getConnection();
-                 } catch (SQLException ex) {
-                     MainFrame.bslog(ex);
-                 }
-            } else {
-                 try {   
-                     bscon = DriverManager.getConnection(url + db, user, pass);
-                 } catch (SQLException ex) {
-                     MainFrame.bslog(ex);
-                 }
-            }
+            
         
-       DefaultMutableTreeNode mynode = OVData.get_op_nodes_new(parentpart, bomid, bscon);
-      
-        if (bscon != null) {
-            try {
-                bscon.close();
-            } catch (SQLException ex) {
-                MainFrame.bslog(ex);
-            }
-        }
-       
+       DefaultMutableTreeNode mynode = invData.bind_tree(parentpart, bomid, null);
        
        DefaultTreeModel model = (DefaultTreeModel)jTree1.getModel();
         model.setRoot(mynode);
@@ -2200,8 +2041,18 @@ public class BOMMaint extends javax.swing.JPanel {
     }//GEN-LAST:event_btpdfActionPerformed
 
     private void ddcompActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddcompActionPerformed
-         if (ddcomp.getSelectedItem() != null && ! isLoad)
-            getComponentDetail(ddcomp.getSelectedItem().toString());
+         if (ddcomp.getSelectedItem() != null && ! isLoad) {
+            tbcomptype.setText("");
+            lblcomp.setText("");
+            tbcompcost.setText("");
+            String[] x = getItemDetail(ddcomp.getSelectedItem().toString());
+                if (x != null && x.length == 11) {
+                tbcomptype.setText(x[4]);
+                lblcomp.setText(x[1]);
+                tbcompcost.setText(x[11]);
+                }
+         }
+           
     }//GEN-LAST:event_ddcompActionPerformed
 
     private void tbrunratesimFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tbrunratesimFocusLost

@@ -3988,52 +3988,7 @@ public class OVData {
        return mynode;
       }
     
-    public static DefaultMutableTreeNode get_op_nodes_new(String item, String bomid, Connection bscon)  {  
-       DefaultMutableTreeNode mynode = new DefaultMutableTreeNode(item); 
-       ArrayList<String> myops = new ArrayList<String>();
-        //myops = OVData.getItemRoutingOPs(mypart);  //based on itr_cost
-       //  myops = invData._getItemWFOPs(item, bscon);   // based on it_wf and wf_mstr
-        myops = invData.getRoutingOperationsByBOM(bomid);  // based on the specific BOM id
-        for ( String myvalue : myops) {
-          //  DefaultMutableTreeNode thisop = new DefaultMutableTreeNode(myvalue);
-          //  mynode.add(thisop);
-            DefaultMutableTreeNode opnode = new DefaultMutableTreeNode(myvalue);
-            
-            opnode = OVData.get_nodes_by_op_detail_new(item, item, myvalue, bomid, bscon);
-            mynode.add(opnode);
-        }
-       return mynode;
-      }
-    
-    public static DefaultMutableTreeNode get_nodes_by_op_detail_new(String root, String item, String myop, String rootbom, Connection bscon)  {
-        //  bsmf.MainFrame.show(root + "/" + mypart + "/" + myop);
-        String myroot = "";
-            if (root.toLowerCase().equals(item.toLowerCase()))
-            myroot = myop;
-        else
-            myroot = item;
-         DefaultMutableTreeNode mynode = new DefaultMutableTreeNode(myroot);
-         
         
-        ArrayList<String[]> mylist = OVData._getpsmstrlistbyopnew(item, myop, rootbom, bscon);
-     //   mylist = OVData.getpsmstrlist(newpart[0]);
-        for ( String[] myvalue : mylist) {
-              if (myvalue[0].toUpperCase().compareTo(item.toUpperCase().toString()) == 0) {
-               
-                  if (myvalue[2].toUpperCase().compareTo("M") == 0) {
-                    DefaultMutableTreeNode mfgnode = new DefaultMutableTreeNode(); 
-                    mfgnode = get_op_nodes_new(myvalue[1], myvalue[5], bscon);
-                    mynode.add(mfgnode);
-                  } else {
-                  DefaultMutableTreeNode childnode = new DefaultMutableTreeNode(myvalue[1]);   
-                 
-                  mynode.add(childnode);
-                  }
-              }
-        }
-        return mynode;
-     } 
-         
       
       
     public static DefaultMutableTreeNode get_nodes_by_op(String item, String myop)  {
