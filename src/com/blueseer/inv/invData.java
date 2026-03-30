@@ -1068,10 +1068,15 @@ public class invData {
     public static bom_mstr getBOMMstr(String[] x) {
         bom_mstr r = null;
         String[] m = new String[2];
+        String param2 = "";
+        if (x.length > 1) {
+            param2 = x[1];
+        }
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id","getBOMMstr"});
             list.add(new String[]{"param1",x[0]});
+            list.add(new String[]{"param2",param2});
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 String returnstring = sendServerPost(list, "", null, "dataServINV");

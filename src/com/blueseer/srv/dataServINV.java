@@ -237,7 +237,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
           }
         
         case "getBOMMstr" : { 
-            String[] key = new String[]{request.getHeader("param1")}; 
+            String[] key = new String[]{request.getHeader("param1"), request.getHeader("param2")}; 
             invData.bom_mstr x = getBOMMstr(key);
             ObjectMapper objectMapper = new ObjectMapper();
             String r = objectMapper.writeValueAsString(x);
