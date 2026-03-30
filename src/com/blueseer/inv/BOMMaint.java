@@ -126,7 +126,6 @@ public class BOMMaint extends javax.swing.JPanel {
                 boolean newbomid = false;
                 public static bom_mstr x = null;
                 ArrayList<String[]> bomdata = new ArrayList<String[]>();
-                ArrayList<Double> currentcost = new ArrayList<Double>();
                 
      javax.swing.table.DefaultTableModel matlmodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                     new String[]{
@@ -602,9 +601,6 @@ public class BOMMaint extends javax.swing.JPanel {
                 
         x = z;     
         
-        // get current cost
-        calcCost cur = new calcCost("current");
-        currentcost = cur.getTotalCost(key[0], BomID);
         
         String[] message = x.m();
         
@@ -764,7 +760,7 @@ public class BOMMaint extends javax.swing.JPanel {
                 if ( column == 0) {
                 ludialog.dispose();
                //  initvars(new String[]{tbkey.getText(),target.getValueAt(row,1).toString()});
-                getRecord(new String[]{tbkey.getText(),target.getValueAt(row,1).toString()});
+                getRecord(new String[]{tbkey.getText(),target.getValueAt(row,1).toString()}); // remote call
                 if (BlueSeerUtils.ConvertStringToBool(x.bom_primary())) {
                     for (String[] code : bomdata) {
                         if (code[0].equals("cost")) {
@@ -775,11 +771,11 @@ public class BOMMaint extends javax.swing.JPanel {
                     tbparentcostSTD.setText(currformat("0"));
                 }
                 tbbomid.setText(target.getValueAt(row,1).toString());
-                bind_tree(tbkey.getText(),target.getValueAt(row,1).toString());
-                getComponents(tbkey.getText(),target.getValueAt(row,1).toString());
-                callSimulateCost();
-                updateCurrentItemCost(tbkey.getText());
-                getCurrentCost(x.bom_item(), x.bom_id());
+                bind_tree(tbkey.getText(),target.getValueAt(row,1).toString()); // remote call
+                getComponents(tbkey.getText(),target.getValueAt(row,1).toString()); // local call on bomdata
+                callSimulateCost();  // local call on bomdata
+                updateCurrentItemCost(tbkey.getText()); // remote call update
+                getCurrentCost(); // local call on bomdata
                 cbdefault.setSelected(BlueSeerUtils.ConvertStringToBool(x.bom_primary()));
                 cbenabled.setSelected(BlueSeerUtils.ConvertStringToBool(x.bom_enabled()));
                 tbbomdesc.setText(x.bom_desc());
@@ -861,7 +857,7 @@ public class BOMMaint extends javax.swing.JPanel {
          
           callSimulateCost();
          
-          getCurrentCost(x.bom_item(), x.bom_id());
+          getCurrentCost();
           
           cbdefault.setSelected(BlueSeerUtils.ConvertStringToBool(x.bom_primary()));
           cbenabled.setSelected(BlueSeerUtils.ConvertStringToBool(x.bom_enabled()));
@@ -880,7 +876,7 @@ public class BOMMaint extends javax.swing.JPanel {
         getComponents(tbkey.getText(), tbbomid.getText());
         callSimulateCost();
         updateCurrentItemCost(tbkey.getText());
-        getCurrentCost(tbkey.getText(), tbbomid.getText());
+        getCurrentCost();
         setAction(x.m());
         
     }
@@ -897,17 +893,30 @@ public class BOMMaint extends javax.swing.JPanel {
         setAction(new String[]{"0","roll complete"});
     }
     
-    public void getCurrentCost(String item, String bom) {
+    public void getCurrentCost() {
         
-        calcCost cur = new calcCost("current");
-        currentcost = cur.getTotalCost(item, bom);
+        double opcost = 0;
+        for (String[] code : bomdata) {
+            if (code[0].equals("currenttot")) {
+               tbparentcostCUR.setText(bsFormatDouble5(bsParseDouble(code[1])));
+            }
+            
+            // operational only
+            if (code[0].equals("currentlbr")) {
+               opcost += bsParseDouble(code[1]);
+            }
+            if (code[0].equals("currentbdn")) {
+               opcost += bsParseDouble(code[1]);
+            }
+            if (code[0].equals("currentovh")) {
+               opcost += bsParseDouble(code[1]);
+            }
+            if (code[0].equals("currentout")) {
+               opcost += bsParseDouble(code[1]);
+            }
+        }
+        tbtotoperational.setText(bsFormatDouble5(opcost));
         
-        tbparentcostCUR.setText(bsFormatDouble5(currentcost.get(0) + currentcost.get(1) + currentcost.get(2) + currentcost.get(3) + currentcost.get(4)));
-        tbtotoperational.setText(bsFormatDouble5(currentcost.get(1) + currentcost.get(2) + currentcost.get(3) + currentcost.get(4)));
-                
-      //  double current = costlist.get(0) + costlist.get(1) + costlist.get(2) + costlist.get(3) + costlist.get(4);
-        
-     //   double standard = Double.valueOf(tbparentcostSTD.getText());
          if (! tbparentcostCUR.getText().equals(tbparentcostSTD.getText())) {
                  tbparentcostCUR.setBackground(Color.green);
                  tbparentcostSTD.setBackground(Color.yellow);
@@ -943,24 +952,37 @@ public class BOMMaint extends javax.swing.JPanel {
         double setupsizesim = 0.00;
         double lotsizesim = 0.00;
         
-        if (! tbpphsim.getText().isEmpty())
+        if (! tbpphsim.getText().isEmpty()) {
         pphsim = bsParseDouble(tbpphsim.getText());
+        }
         
-        if (! tbppssim.getText().isEmpty())
+        if (! tbppssim.getText().isEmpty()) {
         ppssim = bsParseDouble(tbppssim.getText());
+        }
         
-        if (! tbrunratesim.getText().isEmpty())
+        if (! tbrunratesim.getText().isEmpty()) {
         runratesim = bsParseDouble(tbrunratesim.getText());
-        if (! tbsetupratesim.getText().isEmpty())
+        }
+        
+        if (! tbsetupratesim.getText().isEmpty()) {
         setupratesim = bsParseDouble(tbsetupratesim.getText());
-        if (! tbburdenratesim.getText().isEmpty())
+        }
+        
+        if (! tbburdenratesim.getText().isEmpty()) {
         burdenratesim = bsParseDouble(tbburdenratesim.getText());
-        if (! tbcrewsizesim.getText().isEmpty())
+        }
+        
+        if (! tbcrewsizesim.getText().isEmpty()) {
         crewsizesim = bsParseDouble(tbcrewsizesim.getText());
-        if (! tbsetupsizesim.getText().isEmpty())
+        }
+        
+        if (! tbsetupsizesim.getText().isEmpty()) {
         setupsizesim = bsParseDouble(tbsetupsizesim.getText());
-        if (! tblotsize.getText().isEmpty())
+        }
+        
+        if (! tblotsize.getText().isEmpty()) {
         lotsizesim = bsParseDouble(tblotsize.getText());
+        }
         
         
         if (pphsim != 0) {
